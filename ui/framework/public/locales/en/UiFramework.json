@@ -206,6 +206,7 @@
     "promptAtCursor": "Show prompt at cursor",
     "moreInfo": "Click for more information",
     "mouse": "Mouse",
-    "touch": "Touch"
+    "touch": "Touch",
+    "pin": "Pin"
   }
 }

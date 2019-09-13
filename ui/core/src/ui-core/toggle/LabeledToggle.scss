@@ -2,10 +2,19 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "../style/index.scss";
 
-.components-property-list--horizontal {
-  .components-toggle-editor {
-    margin-left:        $uicore-font-size;    // Clear the resizer in the PropertyGrid
+.core-inputs-labeled-toggle {
+  flex:         1;
+  display:      flex;
+  box-sizing:   border-box;
+  align-items:  center;
+
+  >.label {
+    padding-left: .5em;
+    font-size:    $uicore-font-size;
   }
+
+  &.disabled > .label {   color: $buic-text-color-disabled; }
+
 }

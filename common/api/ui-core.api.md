@@ -746,6 +746,19 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
 }
 
 // @public
+export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @public
+export interface LabeledToggleProps extends ToggleProps {
+    label?: string;
+    labelClassName?: string;
+    labelStyle?: React.CSSProperties;
+}
+
+// @public
 export const LeadingText: React.FunctionComponent<TextProps>;
 
 // @public
@@ -1025,6 +1038,7 @@ export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
+    isPinned?: boolean;
     left: number;
     moveFocus?: boolean;
     // (undocumented)
@@ -1578,6 +1592,7 @@ export interface ToggleProps extends CommonProps {
     buttonType?: ToggleButtonType;
     disabled?: boolean;
     isOn?: boolean;
+    large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
     rounded?: boolean;

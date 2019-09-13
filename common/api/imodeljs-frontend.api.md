@@ -7777,14 +7777,19 @@ export class ToolAdmin {
 export class ToolAssistance {
     static readonly altKey: string;
     static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static readonly altSymbol: string;
+    static readonly altSymbolKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
     static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
     static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
     static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
     static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
+    static createModifierKeyInstruction(modifierKey: string, image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static readonly ctrlSymbol: string;
+    static readonly ctrlSymbolKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly downSymbol: string;
     static readonly inputsLabel: string;
     static readonly leftSymbol: string;

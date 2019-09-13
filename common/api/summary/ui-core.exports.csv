@@ -82,6 +82,8 @@ public;LabeledSelect
 public;LabeledSelectProps 
 public;LabeledTextarea 
 public;LabeledTextareaProps 
+public;LabeledToggle 
+public;LabeledToggleProps 
 public;LeadingText: React.FunctionComponent
 public;LeadingText2: React.FunctionComponent
 internal;Line

@@ -171,6 +171,22 @@ export class ToolAssistance {
     return { keys: [` ${ToolAssistance.shiftKey} `] };
   }
 
+  /** Ctrl key symbol. */
+  public static readonly ctrlSymbol: string = "\u2038";
+
+  /** Keyboard info for Ctrl key symbol. */
+  public static get ctrlSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo {
+    return { keys: [ToolAssistance.ctrlSymbol] };
+  }
+
+  /** Alt key symbol. */
+  public static readonly altSymbol: string = "\u2387";
+
+  /** Keyboard info for Alt key symbol. */
+  public static get altSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo {
+    return { keys: [ToolAssistance.altSymbol] };
+  }
+
   /** Creates a [[ToolAssistanceInstruction]].
    */
   public static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction {
@@ -200,6 +216,25 @@ export class ToolAssistance {
       isNew,
       inputMethod,
     };
+    return instruction;
+  }
+
+  /** Creates a [[ToolAssistanceInstruction]] with a modifier key and an image.
+   */
+  public static createModifierKeyInstruction(modifierKey: string, image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction {
+    if (inputMethod === undefined)
+      inputMethod = ToolAssistanceInputMethod.Both;
+
+    const keyboardInfo = { keys: [modifierKey] };
+
+    const instruction: ToolAssistanceInstruction = {
+      image,
+      text,
+      keyboardInfo,
+      isNew,
+      inputMethod,
+    };
+
     return instruction;
   }
 

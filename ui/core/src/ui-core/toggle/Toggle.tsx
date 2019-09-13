@@ -37,6 +37,8 @@ export interface ToggleProps extends CommonProps {
   onChange?: (checked: boolean) => any;
   /** Function called when the toggle loses focus  */
   onBlur?: (event: React.FocusEvent) => any;
+  /** Use larger size */
+  large?: boolean;
 }
 
 /** @internal */
@@ -104,6 +106,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     const toggleClassName = classnames(
       "core-toggle",
       this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",
+      this.props.large && "core-toggle-large",
       this.props.rounded && "rounded",
       this.props.disabled && "disabled",
       this.props.className);
@@ -117,7 +120,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
         <input checked={this.state.checked} className="core-toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
-        <span className="core-toggle-label" />
+        <span className="core-toggle-background" />
         <span className={checkmarkClassName} />
         <span className="core-toggle-handle" style={toggleHandleStyle} />
       </label>

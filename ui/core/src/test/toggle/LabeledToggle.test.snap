@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LabeledToggle /> renders correctly 1`] = `
+<label
+  className="core-inputs-labeled-toggle"
+>
+  <Toggle
+    buttonType={1}
+    isOn={false}
+    rounded={true}
+    showCheckmark={false}
+  />
+  <div
+    className="label"
+  >
+    toggle test
+  </div>
+</label>
+`;
+
+exports[`<LabeledToggle /> renders disabled correctly 1`] = `
+<label
+  className="core-inputs-labeled-toggle disabled"
+>
+  <Toggle
+    buttonType={1}
+    disabled={true}
+    isOn={false}
+    rounded={true}
+    showCheckmark={false}
+  />
+  <div
+    className="label"
+  >
+    toggle test
+  </div>
+</label>
+`;

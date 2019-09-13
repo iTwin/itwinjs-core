@@ -63,6 +63,7 @@ export * from "./ui-core/loading/LoadingStatus";
 export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/toggle/Toggle";
+export * from "./ui-core/toggle/LabeledToggle";
 
 export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";

@@ -13,10 +13,13 @@ import {
   ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
   ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
-import { Checkbox, SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings, HorizontalTabs } from "@bentley/ui-core";
+import {
+  SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
+  HorizontalTabs, UiCore, LabeledToggle,
+} from "@bentley/ui-core";
 import {
   ToolAssistance, ToolAssistanceDialog, FooterPopup,
-  ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem,
+  ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem, TitleBarButton,
 } from "@bentley/ui-ninezone";
 
 import {
@@ -73,6 +76,7 @@ interface ToolAssistanceFieldState {
   showMouseInstructions: boolean;
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
+  dialogPinned: boolean;
 }
 
 /** Tool Assistance Field React component.
@@ -114,6 +118,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showMouseInstructions: false,
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
+      dialogPinned: false,
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
@@ -145,8 +150,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public componentWillUnmount() {
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
-
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, this.state.showPromptAtCursor);
   }
 
   private _handleToolAssistanceChangedEvent = (args: ToolAssistanceChangedEventArgs): void => {
@@ -243,23 +246,17 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public render(): React.ReactNode {
     const { instructions } = this.state;
 
-    let dialogTitle = UiFramework.translate("toolAssistance.title");
+    const dialogTitle = (IModelApp.toolAdmin.activeTool) ? IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
     const mouseLabel = UiFramework.translate("toolAssistance.mouse");
     const touchLabel = UiFramework.translate("toolAssistance.touch");
     let prompt = "";
     let tooltip = "";
     let toolIcon: React.ReactNode;
-    let toolStateIcon: React.ReactNode;
     let dialogContent: React.ReactNode;
-
-    // istanbul ignore next
-    if (IModelApp.toolAdmin.activeTool)
-      dialogTitle = IModelApp.toolAdmin.activeTool.flyover + " - " + dialogTitle;
 
     if (instructions) {
       prompt = instructions.mainInstruction.text;
       toolIcon = <Icon iconSpec={this.state.toolIconSpec} />;
-      toolStateIcon = ToolAssistanceField.getInstructionImage(instructions.mainInstruction);
 
       let displayableSections: ToolAssistanceSection[] | undefined;
       if (instructions.sections) {
@@ -300,8 +297,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
               <>
                 <ToolAssistanceSeparator key="prompt-sep" />
                 <ToolAssistanceItem key="prompt-item">
-                  <Checkbox label={UiFramework.translate("toolAssistance.promptAtCursor")}
-                    checked={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
+                  <LabeledToggle
+                    label={UiFramework.translate("toolAssistance.promptAtCursor")}
+                    isOn={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
                 </ToolAssistanceItem>
               </>
             }
@@ -331,7 +329,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             icons={
               <>
                 {toolIcon}
-                {toolStateIcon}
               </>
             }
             indicatorRef={this._indicator}
@@ -347,8 +344,23 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this._target}
+          isPinned={this.state.dialogPinned}
         >
           <ToolAssistanceDialog
+            buttons={
+              <>
+                {!this.state.dialogPinned &&
+                  <TitleBarButton onClick={this._handlePinButtonClick} title={UiFramework.translate("toolAssistance.pin")}>
+                    <i className={"icon icon-pin"} />
+                  </TitleBarButton>
+                }
+                {this.state.dialogPinned &&
+                  <TitleBarButton onClick={this._handleCloseButtonClick} title={UiCore.translate("dialog.close")}>
+                    <i className={"icon icon-close"} />
+                  </TitleBarButton>
+                }
+              </>
+            }
             title={dialogTitle}
           >
             {dialogContent}
@@ -358,9 +370,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     );
   }
 
-  private _onPromptAtCursorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const target = event.target;
-    const checked = target.checked;
+  private _onPromptAtCursorChange = (checked: boolean) => {
+    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
 
     this.setState({ showPromptAtCursor: checked });
   }
@@ -370,6 +381,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handleOutsideClick = (e: MouseEvent) => {
+    if (this.state.dialogPinned)
+      return;
+
     if (!this._indicator.current ||
       !(e.target instanceof Node) ||
       this._indicator.current.contains(e.target))
@@ -386,6 +400,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       this.setOpenWidget(this._className);
   }
 
+  private _handlePinButtonClick = () => {
+    this.setState({ dialogPinned: true });
+  }
+
+  private _handleCloseButtonClick = () => {
+    this.setState({ dialogPinned: false });
+    this._handleClose();
+  }
+
   private setOpenWidget(openWidget: StatusBarFieldId) {
     this.props.onOpenWidget(openWidget);
   }
@@ -394,19 +417,45 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public static getInstructionImage(instruction: ToolAssistanceInstruction): React.ReactNode {
     let image: React.ReactNode;
 
-    if (typeof instruction.image === "string") {
+    if ((typeof instruction.image === "string" || instruction.image !== ToolAssistanceImage.Keyboard) && instruction.keyboardInfo) {
+      if (instruction.keyboardInfo.keys.length === 1 && !instruction.keyboardInfo.bottomKeys) {
+        const key = instruction.keyboardInfo.keys[0];
+        const rightImage = (typeof instruction.image === "string") ?
+          <div className="uifw-toolassistance-icon-medium"><Icon iconSpec={instruction.image} /></div> :
+          this.getInstructionSvgImage(instruction, "uifw-toolassistance-svg-medium");
+
+        image = (
+          <FillCentered>
+            {ToolAssistanceField.getKeyNode(key, 0, "uifw-toolassistance-key-modifier")}
+            {rightImage}
+          </FillCentered>
+        );
+      } else {
+        Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: Invalid keyboardInfo provided with image`);
+      }
+    } else if (typeof instruction.image === "string") {
       if (instruction.image)
-        image = <Icon iconSpec={instruction.image} />;
+        image = <div className="uifw-toolassistance-icon-large"><Icon iconSpec={instruction.image} /></div>;
     } else if (instruction.image === ToolAssistanceImage.Keyboard) {
       if (instruction.keyboardInfo) {
         image = ToolAssistanceField.getInstructionKeyboardImage(instruction.keyboardInfo);
       } else {
-        Logger.logError(UiFramework.loggerCategory(this), `ToolAssistanceImage.Keyboard specified but no keyboardInfo provided`);
+        Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: ToolAssistanceImage.Keyboard specified but no keyboardInfo provided`);
       }
     } else {
+      image = this.getInstructionSvgImage(instruction, "uifw-toolassistance-svg");
+    }
+
+    return image;
+  }
+
+  private static getInstructionSvgImage(instruction: ToolAssistanceInstruction, className: string): React.ReactNode {
+    let image: React.ReactNode;
+
+    // istanbul ignore else
+    if (typeof instruction.image !== "string" && instruction.image !== ToolAssistanceImage.Keyboard) {
       const toolAssistanceImage: ToolAssistanceImage = instruction.image;
       let svgImage = "";
-      let className = "uifw-toolassistance-svg";
 
       switch (toolAssistanceImage) {
         case ToolAssistanceImage.AcceptPoint:
@@ -456,13 +505,13 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
       }
 
-      if (svgImage) {
-        image = (
-          <div className={className}>
+      image = (
+        <div className={className}>
+          {svgImage &&
             <SvgSprite src={svgImage} />
-          </div>
-        );
-      }
+          }
+        </div>
+      );
     }
 
     return image;

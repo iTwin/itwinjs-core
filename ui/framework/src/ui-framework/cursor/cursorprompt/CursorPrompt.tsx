@@ -9,7 +9,7 @@ import * as React from "react";
 import { RelativePosition, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { Timer, BodyText, Point, PointProps } from "@bentley/ui-core";
 
-import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs, ToolAssistanceField, Icon } from "../../../ui-framework";
+import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs, Icon } from "../../../ui-framework";
 
 import "./CursorPrompt.scss";
 
@@ -32,12 +32,9 @@ export class CursorPrompt {
     this._relativePosition = relativePosition;
     this._offset = Point.create(offset);
 
-    const instructionImage = ToolAssistanceField.getInstructionImage(instruction);
-
     const promptElement = (
       <div className="uifw-cursor-prompt">
         {toolIconSpec && <span className="uifw-cursor-prompt-icon"><Icon iconSpec={toolIconSpec} /></span>}
-        {instructionImage && <span className="uifw-cursor-prompt-icon">{instructionImage}</span>}
         <BodyText className="uifw-cursor-prompt-text">{instruction.text}</BodyText>
       </div >
     );
