@@ -16,6 +16,7 @@ import { Viewer, ViewerProps } from "./Viewer";
 import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { NotificationsWindow } from "./Notifications";
+import { FpsMonitor } from "./FpsMonitor";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -33,6 +34,11 @@ export class Surface {
 
     addSnapModes(document.getElementById("snapModesContainer")!);
     new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement);
+    new FpsMonitor({
+      checkbox: document.getElementById("fps-checkbox") as HTMLInputElement,
+      label: document.getElementById("fps-label") as HTMLLabelElement,
+      output: document.getElementById("fps-output") as HTMLSpanElement,
+    });
 
     this._keyinDiv = document.getElementById("keyin-entry")!;
     this.keyinField = new KeyinField({
