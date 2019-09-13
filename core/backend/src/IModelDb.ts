@@ -35,7 +35,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
