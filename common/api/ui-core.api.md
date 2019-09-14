@@ -460,7 +460,9 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
     footerStyle?: React.CSSProperties;
+    header?: React.ReactNode;
     height?: string | number;
+    hideHeader?: boolean;
     inset?: boolean;
     maxHeight?: number;
     maxWidth?: number;
