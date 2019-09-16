@@ -836,11 +836,11 @@ export class Matrix3d implements BeJSONFunctions {
   public columnZMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
   /** Return the X column magnitude */
-  public columnXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[3], this.coffs[6]); }
+  public columnXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
   /** Return the Y column magnitude */
-  public columnYMagnitude(): number { return Math.hypot(this.coffs[1], this.coffs[4], this.coffs[7]); }
+  public columnYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
   /** Return the Z column magnitude */
-  public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
+  public columnZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
   /** Return magnitude of columnX cross columnY. */
   public columnXYCrossProductMagnitude(): number {
@@ -850,11 +850,11 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** Return the X row magnitude d */
-  public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
+  public rowXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[1], this.coffs[2]); }
   /** Return the Y row magnitude  */
-  public rowYMagnitude(): number { return Math.hypot(this.coffs[3], this.coffs[4], this.coffs[5]); }
+  public rowYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[3], this.coffs[4], this.coffs[5]); }
   /** Return the Z row magnitude  */
-  public rowZMagnitude(): number { return Math.hypot(this.coffs[6], this.coffs[7], this.coffs[8]); }
+  public rowZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]); }
   /** Return the dot product of column X with column Y */
   /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {

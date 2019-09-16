@@ -93,7 +93,7 @@ class GeometryCheck {
       }
     } else {
       // no roots. expect trig condition ....
-      this.ck.testCoordinateOrder(Math.hypot(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
+      this.ck.testCoordinateOrder(Geometry.hypotenuseXY(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
     }
 
   }

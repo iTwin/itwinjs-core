@@ -59,12 +59,12 @@ export class Complex implements BeJSONFunctions {
       result);
   }
   /** Return the mangitude of the complex number */
-  public magnitude(): number { return Math.hypot(this.x, this.y); }
+  public magnitude(): number { return Geometry.hypotenuseXY(this.x, this.y); }
   /** Return the angle from x axis to the vector (x,y) */
   public angle(): Angle { return Angle.createAtan2(this.y, this.x); }
   /** Return the xy plane distance between this and other */
   public distance(other: Complex) {
-    return Math.hypot(this.x - other.x, this.y - other.y);
+    return Geometry.hypotenuseXY(this.x - other.x, this.y - other.y);
   }
   /** Return the squared xy plane distance between this and other. */
   public magnitudeSquared(): number { return this.x * this.x + this.y * this.y; }

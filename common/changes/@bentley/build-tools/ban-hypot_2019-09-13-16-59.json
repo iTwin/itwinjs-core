@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add tslint rule banning Math.hypot",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Matt.Gooding@bentley.com"
+}
