@@ -59,6 +59,8 @@ import {
   CursorPopupContent,
   VisibilityWidget,
   ZoneLocation,
+  StagePanelHeader,
+  StagePanelLocation,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -72,7 +74,7 @@ import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl, PanelVisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
+import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -95,7 +97,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       <Widget
         iconSpec="icon-placeholder"
         labelKey="SampleApp:widgets.VisibilityTree"
-        control={PanelVisibilityTreeWidgetControl}
+        control={VisibilityTreeWidgetControl}
         applicationData={{ iModelConnection: this.iModelConnection }}
       />],
   };
@@ -224,6 +226,12 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         leftPanel={
           <StagePanel
+            header={<StagePanelHeader
+              collapseButton
+              collapseButtonTitle="Collapse"
+              location={StagePanelLocation.Left}
+              title="Visibility tree"
+            />}
             size={280}
             widgets={this._leftPanel.widgets}
           />

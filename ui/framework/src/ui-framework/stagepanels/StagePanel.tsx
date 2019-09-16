@@ -51,15 +51,16 @@ export enum StagePanelLocation {
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
   allowedZones?: ZoneLocation[];
-  /** Default size of the panel. */
-  size?: number;
-  /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
-  defaultState?: StagePanelState;
-  /** Indicates whether the panel is resizable. Defaults to true. */
-  resizable: boolean;
   /** Any application data to attach to this Panel. */
   applicationData?: any;
-
+  /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
+  defaultState?: StagePanelState;
+  /** Stage panel header. */
+  header?: React.ReactNode;
+  /** Indicates whether the panel is resizable. Defaults to true. */
+  resizable: boolean;
+  /** Default size of the panel. */
+  size?: number;
   /** Properties for the Widgets in this Panel. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
@@ -100,7 +101,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
     panelDef.size = props.size;
     panelDef.location = panelLocation;
-
+    // panelDef.panelState = StagePanelState.Minimized;
     if (props.defaultState)
       panelDef.panelState = props.defaultState;
     panelDef.resizable = props.resizable;

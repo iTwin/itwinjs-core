@@ -8,9 +8,6 @@ import {
   ConfigurableCreateInfo,
   WidgetControl,
   VisibilityTree,
-  FrontstageManager,
-  StagePanelLocation,
-  StagePanelState,
 } from "@bentley/ui-framework";
 import { IModelConnection, IModelApp, Viewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 
@@ -21,40 +18,6 @@ export class VisibilityTreeWidgetControl extends WidgetControl {
       this.reactElement = <VisibilityTreeWidget iModelConnection={options.iModelConnection} />;
     else
       this.reactElement = "no imodel";
-  }
-}
-
-export class PanelVisibilityTreeWidgetControl extends WidgetControl {
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-
-    this.reactElement = (
-      <>
-        <div
-          onClick={() => {
-            const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-            if (!activeFrontstageDef)
-              return;
-            const stagePanel = activeFrontstageDef.getStagePanelDef(StagePanelLocation.Left);
-            if (!stagePanel)
-              return;
-            stagePanel.panelState = StagePanelState.Minimized;
-          }}
-          style={{
-            cursor: "pointer",
-            marginLeft: "auto",
-            padding: "10px",
-            width: "fit-content",
-          }}
-        >
-          X
-        </div>
-        {options && options.iModelConnection ?
-          <VisibilityTreeWidget iModelConnection={options.iModelConnection} /> :
-          "no imodel"
-        }
-      </>
-    );
   }
 }
 

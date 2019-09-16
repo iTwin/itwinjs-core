@@ -33,6 +33,7 @@ export interface FrameworkStagePanelProps {
   changeHandler: StagePanelChangeHandler;
   draggedWidgetId: WidgetZoneId | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  header?: React.ReactNode;
   initialSize?: number;
   isInFooterMode: boolean;
   isTargeted: boolean;
@@ -102,53 +103,58 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
                 ref={this._measurer}
                 style={{ width: "100%", height: "100%", position: "absolute", zIndex: -1 }}
               />
-              <SplitterTarget
-                isVertical={isVertical}
-                onTargetChanged={this._handleTargetChanged}
-                paneCount={paneCount}
-                style={{
-                  ...isTargetVisible ? {} : { display: "none" },
-                }}
-              />
-              <Splitter
-                isGripHidden={this.props.panel.isCollapsed}
-                isVertical={isVertical}
-              >
-                {Array.from({ length: this.props.widgetCount }, (_, index) => index).map((index) => {
-                  return this.props.renderPane(index);
-                })}
-                {this.props.panel.panes.map((pane, index) => {
-                  const openWidgetId = pane.widgets.find((wId) => this.props.widgets[wId].tabIndex >= 0);
-                  const activeTabIndex = openWidgetId ? this.props.widgets[openWidgetId].tabIndex : 0;
-                  const firstWidget = this.props.widgets[pane.widgets[0]];
-                  return (
-                    <div
-                      key={`w-${index}`}
-                      style={{ height: "100%", position: "relative" }}
-                    >
-                      <WidgetStack
-                        activeTabIndex={activeTabIndex}
-                        draggedWidget={undefined}
-                        fillZone={true}
-                        getWidgetContentRef={this.props.getWidgetContentRef}
-                        horizontalAnchor={firstWidget.horizontalAnchor}
-                        isCollapsed={this.props.panel.isCollapsed}
-                        isFloating={false}
-                        isInStagePanel={true}
-                        openWidgetId={openWidgetId}
-                        verticalAnchor={firstWidget.verticalAnchor}
-                        widgets={pane.widgets}
-                        widgetTabs={this.props.widgetTabs}
-                        widgetChangeHandler={this.props.widgetChangeHandler}
-                      />
-                      {isSplitterTargetVisible && <SplitterPaneTarget
-                        onTargetChanged={this._handlePaneTargetChanged}
-                        paneIndex={index}
-                      />}
-                    </div>
-                  );
-                })}
-              </Splitter>
+              <div className="uifw-content">
+                {this.props.panel.isCollapsed ? undefined : this.props.header}
+                <div className="uifw-widgets">
+                  <SplitterTarget
+                    isVertical={isVertical}
+                    onTargetChanged={this._handleTargetChanged}
+                    paneCount={paneCount}
+                    style={{
+                      ...isTargetVisible ? {} : { display: "none" },
+                    }}
+                  />
+                  <Splitter
+                    isGripHidden={this.props.panel.isCollapsed}
+                    isVertical={isVertical}
+                  >
+                    {Array.from({ length: this.props.widgetCount }, (_, index) => index).map((index) => {
+                      return this.props.renderPane(index);
+                    })}
+                    {this.props.panel.panes.map((pane, index) => {
+                      const openWidgetId = pane.widgets.find((wId) => this.props.widgets[wId].tabIndex >= 0);
+                      const activeTabIndex = openWidgetId ? this.props.widgets[openWidgetId].tabIndex : 0;
+                      const firstWidget = this.props.widgets[pane.widgets[0]];
+                      return (
+                        <div
+                          key={`w-${index}`}
+                          style={{ height: "100%", position: "relative" }}
+                        >
+                          <WidgetStack
+                            activeTabIndex={activeTabIndex}
+                            draggedWidget={undefined}
+                            fillZone={true}
+                            getWidgetContentRef={this.props.getWidgetContentRef}
+                            horizontalAnchor={firstWidget.horizontalAnchor}
+                            isCollapsed={this.props.panel.isCollapsed}
+                            isFloating={false}
+                            isInStagePanel={true}
+                            openWidgetId={openWidgetId}
+                            verticalAnchor={firstWidget.verticalAnchor}
+                            widgets={pane.widgets}
+                            widgetTabs={this.props.widgetTabs}
+                            widgetChangeHandler={this.props.widgetChangeHandler}
+                          />
+                          {isSplitterTargetVisible && <SplitterPaneTarget
+                            onTargetChanged={this._handlePaneTargetChanged}
+                            paneIndex={index}
+                          />}
+                        </div>
+                      );
+                    })}
+                  </Splitter>
+                </div>
+              </div>
             </NZ_StagePanel>
           );
         }}

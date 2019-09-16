@@ -114,6 +114,7 @@ export * from "./ui-framework/zones/ZoneDef";
 export * from "./ui-framework/stagepanels/FrameworkStagePanel";
 export * from "./ui-framework/stagepanels/StagePanel";
 export * from "./ui-framework/stagepanels/StagePanelDef";
+export * from "./ui-framework/stagepanels/StagePanelHeader";
 
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/GroupItem";

@@ -321,6 +321,8 @@ alpha;StagePanel
 public;StagePanelChangeHandler
 alpha;StagePanelDef 
 alpha;StagePanelDefaultProps = Pick
+alpha;StagePanelHeader 
+alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
 alpha;StagePanelProps
 internal;StagePanelRuntimeProps

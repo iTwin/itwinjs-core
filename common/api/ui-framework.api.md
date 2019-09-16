@@ -1622,6 +1622,8 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
+    header?: React_2.ReactNode;
+    // (undocumented)
     initialSize?: number;
     // (undocumented)
     isInFooterMode: boolean;
@@ -3449,6 +3451,20 @@ export class StagePanelDef extends WidgetHost {
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
+export class StagePanelHeader extends React_2.PureComponent<StagePanelHeaderProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface StagePanelHeaderProps extends CommonProps {
+    collapseButton?: boolean;
+    collapseButtonTitle?: string;
+    location: StagePanelLocation;
+    title?: string;
+}
+
+// @alpha
 export enum StagePanelLocation {
     // (undocumented)
     Bottom = 4,
@@ -3469,6 +3485,7 @@ export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
     defaultState?: StagePanelState;
+    header?: React_2.ReactNode;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
