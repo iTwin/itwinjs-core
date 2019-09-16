@@ -4558,6 +4558,8 @@ export class OffScreenTarget extends Target {
     // (undocumented)
     onResized(): void;
     // (undocumented)
+    readImageToCanvas(): HTMLCanvasElement;
+    // (undocumented)
     setViewRect(rect: ViewRect, temporary: boolean): void;
     // (undocumented)
     updateViewRect(): boolean;
@@ -4608,6 +4610,8 @@ export class OnScreenTarget extends Target {
     onResized(): void;
     // (undocumented)
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
+    // (undocumented)
+    readImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
     setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
@@ -5738,6 +5742,8 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
+    readImageToCanvas(): HTMLCanvasElement;
+    // (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
     // (undocumented)
     abstract readonly renderSystem: RenderSystem;
@@ -6822,6 +6828,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly compositor: SceneCompositor;
     // (undocumented)
     protected _compositor: SceneCompositor;
+    // (undocumented)
+    copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
     readonly currentBatchId: number;
     // (undocumented)
@@ -9071,6 +9079,8 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
+    // @internal
+    readImageToCanvas(): HTMLCanvasElement;
     // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal

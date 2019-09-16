@@ -820,6 +820,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
 
   /** Specify whether webgl content should be rendered directly to the screen.
    * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.

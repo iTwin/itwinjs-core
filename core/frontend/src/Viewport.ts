@@ -2676,10 +2676,17 @@ export abstract class Viewport implements IDisposable {
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
-   * @note By default the image is returned upside-down. Pass `true` for `flipVertically` to flip it along the x-axis.
+   * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     return this.target.readImage(rect, targetSize, flipVertically);
+  }
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+   * @internal
+   */
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this.target.readImageToCanvas();
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates

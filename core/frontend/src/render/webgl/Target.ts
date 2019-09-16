@@ -1233,6 +1233,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
+  public copyImageToCanvas(): HTMLCanvasElement {
+    const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
+    const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
+    return undefined !== canvas ? canvas : document.createElement("canvas");
+  }
+
   public drawPlanarClassifiers() {
     if (this._planarClassifiers)
       this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
@@ -1442,6 +1448,10 @@ export class OnScreenTarget extends Target {
     this.updateViewRect();
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
+
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+  }
 }
 
 /** @internal */
@@ -1484,6 +1494,7 @@ export class OffScreenTarget extends Target {
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (color === undefined)
       return false;
+
     this._fbo = FrameBuffer.create([color]);
     assert(this._fbo !== undefined);
     return this._fbo !== undefined;
@@ -1496,6 +1507,10 @@ export class OffScreenTarget extends Target {
 
   protected _endPaint(): void {
     System.instance.frameBufferStack.pop();
+  }
+
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this.copyImageToCanvas();
   }
 }
 
