@@ -3164,6 +3164,7 @@ export class ScreenViewport extends Viewport {
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
     }
 
+    this.target.updateViewRect();
     this.invalidateRenderPlan();
   }
 }

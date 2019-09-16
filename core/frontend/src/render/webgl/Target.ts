@@ -15,7 +15,7 @@ import {
   Transform,
   Vector3d,
   XAndY,
-  } from "@bentley/geometry-core";
+} from "@bentley/geometry-core";
 import {
   BeTimePoint,
   Id64,
@@ -1445,7 +1445,6 @@ export class OnScreenTarget extends Target {
       return;
 
     this._usingWebGLCanvas = toScreen;
-    this.updateViewRect();
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
