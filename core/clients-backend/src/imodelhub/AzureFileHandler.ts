@@ -326,34 +326,38 @@ export class AzureFileHandler implements FileHandler {
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
 
-    let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
-    let i = 0;
-    const callback = (progress: ProgressInfo) => {
-      const uploaded = i * chunkSize + progress.loaded;
-      progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
-    };
-    for (; i * chunkSize < fileSize; ++i) {
-      await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
-      blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
+    try {
+      let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
+      let i = 0;
+      const callback = (progress: ProgressInfo) => {
+        const uploaded = i * chunkSize + progress.loaded;
+        progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+      };
+      for (; i * chunkSize < fileSize; ++i) {
+        await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
+        blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
+      }
+      blockList += "</BlockList>";
+
+      const options: RequestOptions = {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/xml",
+          "Content-Length": blockList.length,
+        },
+        body: blockList,
+        agent: this.agent,
+        timeout: {
+          response: 5000,
+          deadline: 60000,
+        },
+      };
+
+      const uploadUrl = `${uploadUrlString}&comp=blocklist`;
+      await request(requestContext, uploadUrl, options);
+    } finally {
+      fs.closeSync(file);
     }
-    blockList += "</BlockList>";
-
-    const options: RequestOptions = {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/xml",
-        "Content-Length": blockList.length,
-      },
-      body: blockList,
-      agent: this.agent,
-      timeout: {
-        response: 5000,
-        deadline: 60000,
-      },
-    };
-
-    const uploadUrl = `${uploadUrlString}&comp=blocklist`;
-    await request(requestContext, uploadUrl, options);
   }
 
   /**

@@ -250,8 +250,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  // WIP: Need fix from Raman before IModelTransformer portion of test can be added
-  it.skip("Clone/upgrade test", async () => {
+  it("Clone/upgrade test", async () => {
     const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
     const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
