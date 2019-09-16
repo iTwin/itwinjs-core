@@ -557,7 +557,7 @@ export class IModelTransformer {
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
    */
-  private importModelContents(sourceModeledElementId: Id64String): void {
+  public importModelContents(sourceModeledElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {

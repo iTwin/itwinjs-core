@@ -291,7 +291,7 @@ describe("IModelTransformerHub (#integration)", () => {
       // push targetDb schema changes
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore"); // WIP: currently causes BeAssert in RevisionManager::CreateRevisionObject renaming temp revision changes file
+      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
       await sourceDb.close(requestContext, KeepBriefcase.No);
       await targetDb.close(requestContext, KeepBriefcase.No);
