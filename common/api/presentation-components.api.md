@@ -67,6 +67,7 @@ export class ContentDataProvider implements IContentDataProvider {
     getContentDescriptor: (() => Promise<Descriptor | undefined>) & _.MemoizedFunction;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
+    getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>;
     imodel: IModelConnection;
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
@@ -147,13 +148,13 @@ export class LabelsProvider implements IPresentationLabelsProvider {
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
     constructor(imodel: IModelConnection, rulesetId: string);
+    dispose(): void;
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
     includeFieldsWithNoValues: boolean;
-    // (undocumented)
     protected invalidateCache(props: CacheInvalidationProps): void;
-    protected isFieldFavorite(_field: Field): boolean;
+    protected isFieldFavorite(field: Field): boolean;
     protected isFieldHidden(field: Field): boolean;
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;

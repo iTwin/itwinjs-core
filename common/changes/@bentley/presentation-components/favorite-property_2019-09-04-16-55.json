@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implemented favorite properties logic in PresentationPropertyDataProvider",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Vismantas.Stonkus@bentley.com"
+}

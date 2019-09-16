@@ -6,7 +6,7 @@
 
 import * as _ from "lodash";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   KeySet, DEFAULT_KEYS_BATCH_SIZE, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
@@ -336,6 +336,16 @@ export class ContentDataProvider implements IContentDataProvider {
     if (undefined !== contentAndSize)
       return contentAndSize.content;
     return undefined;
+  }
+
+  /**
+   * Get field using PropertyRecord.
+   */
+  public async getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined> {
+    const descriptor = await this.getContentDescriptor();
+    if (undefined === descriptor)
+      return undefined;
+    return descriptor.getFieldByName(propertyRecord.property.name, true);
   }
 
   private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {

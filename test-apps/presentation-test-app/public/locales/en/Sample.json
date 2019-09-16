@@ -8,6 +8,14 @@
         "find-similar": {
           "label": "Find Similar",
           "description": "Find elements with similar properties"
+        },
+        "add-favorite": {
+          "label": "Add to Favorite",
+          "description": "Add this property to Favorite category"
+        },
+        "remove-favorite": {
+          "label": "Remove from Favorite",
+          "description": "Remove this property from Favorite category"
         }
       }
     },

@@ -9,6 +9,7 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { Field } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64Arg } from '@bentley/bentleyjs-core';
@@ -29,6 +30,14 @@ import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+
+// @beta
+export class FavoritePropertyManager {
+    add(field: Field): void;
+    has(field: Field): boolean;
+    onFavoritesChanged: BeEvent<() => void>;
+    remove(field: Field): void;
+}
 
 // @alpha
 export interface HiliteSet {
@@ -54,6 +63,8 @@ export class PersistenceHelper {
 
 // @public
 export class Presentation {
+    // @internal (undocumented)
+    static favoriteProperties: FavoritePropertyManager;
     // @internal (undocumented)
     static i18n: I18N;
     static initialize(props?: PresentationManagerProps): void;

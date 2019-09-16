@@ -41,3 +41,70 @@ ignore: true
     * [HalfEdgeGraph.grabMask]($geometry)
   * `Triangulation`
     * [Triangulation.flipTrianglesInEdgeSet]($geometry)
+
+## Favorite Properties
+
+### Summary
+
+* Favorite properties manager stores favorite properties and lets checking if a given field should be displayed as favorite.
+* `PresentationPropertyDataProvider` puts all favorite properties into an additional 'Favorite' category that's displayed
+at the top and is auto-expanded.
+
+### Details
+
+* `FavoritePropertyManager` (accessed through singleton `Presentation.favoriteProperties`) in `@bentley/presentation-frontend`
+  * `add(field: Field): void`
+    * For `PropertiesField` and `NestedContentField` - marks all properties in the field as favorite.
+    * For other types of fields - marks the field as favorite by it's name.
+  * `remove(field: Field): void`
+    * For `PropertiesField` and `NestedContentField` - removes all properties in the field from favorites list.
+    * For other types of fields - removes the field from favorites list.
+  * `has(field: Field): boolean`
+    * For `PropertiesField` and `NestedContentField` - returns true if field contains at least one favorite property.
+    * For other types of fields - returns true if field's name is in the favorites list.
+  * `onFavoritesChanged: BeEvent<() => void>`
+    * Event that's raised when favorite properties change.
+
+* `ContentDataProvider` (base of `PresentationPropertyDataProvider` and `PresentationTableDataProvider`) in `@bentley/presentation-components`
+  * `getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>`
+    * Returns a field object that was used to create the given `PropertyRecord`. The field contains meta-data about the properties whose values are stored in the `PropertyRecord`.
+
+### Usage example
+
+```ts
+// needs to be called once before working with `Presentation` API
+Presentation.initialize();
+
+<...>
+
+private _onAddFavorite = (propertyField: Field) => {
+  Presentation.favoriteProperties.add(propertyField);
+  this.setState({ contextMenu: undefined });
+}
+private _onRemoveFavorite = (propertyField: Field) => {
+  Presentation.favoriteProperties.remove(propertyField);
+  this.setState({ contextMenu: undefined });
+}
+
+private async buildContextMenu(args: PropertyGridContextMenuArgs) {
+  const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
+  const items: ContextMenuItemInfo[] = [];
+  if (field !== undefined) {
+    if (Presentation.favoriteProperties.has(field)) {
+      items.push({
+        key: "remove-favorite",
+        onSelect: () => this._onRemoveFavorite(field),
+        title: "Add this property to Favorite category",
+        label: "Add to Favorite",
+      });
+    } else {
+      items.push({
+        key: "add-favorite",
+        onSelect: () => this._onAddFavorite(field),
+        title: "Remove this property from Favorite category",
+        label: "Remove from Favorite",
+      });
+    }
+  }
+}
+```

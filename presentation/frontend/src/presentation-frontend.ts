@@ -13,6 +13,7 @@ export { Presentation } from "./Presentation";
 export { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 export { RulesetManager } from "./RulesetManager";
 export { RulesetVariablesManager } from "./RulesetVariablesManager";
+export { FavoritePropertyManager } from "./FavoritePropertyManager";
 
 /**
  * @module UnifiedSelection
