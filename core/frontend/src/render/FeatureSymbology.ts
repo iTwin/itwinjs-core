@@ -307,8 +307,9 @@ export namespace FeatureSymbology {
      * @internal
      */
     public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
+
       if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
-        return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi);
+        return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi, animationNodeId);
 
       let app = !this._lineWeights ? Overrides._weight1Appearance : Appearance.defaults;
       const modelApp = this.getModelOverrides(modelLo, modelHi);
@@ -356,13 +357,13 @@ export namespace FeatureSymbology {
     /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
      * @internal
      */
-    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined {
+    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined {
       let app = Appearance.defaults;
       const modelApp = this.getModelOverrides(modelLo, modelHi);
       if (undefined !== modelApp)
         app = modelApp.extendAppearance(app);
 
-      const elemApp = this.getElementOverrides(elemLo, elemHi, 0);
+      const elemApp = this.getElementOverrides(elemLo, elemHi, animationNodeId);
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
