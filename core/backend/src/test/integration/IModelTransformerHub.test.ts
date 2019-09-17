@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ChangeOpCode, ColorDef, IModelVersion, IModel } from "@bentley/imodeljs-common";
+import { ChangeOpCode, ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import { ChangeSummaryExtractOptions, InstanceChange } from "../../ChangeSummaryManager";
 import { ElementAspect, ExternalSourceAspect } from "../../ElementAspect";
 import { Entity } from "../../Entity";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, IModelTransformer, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
 import { Model } from "../../Model";
 import { Relationship } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -277,6 +277,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // populate sourceDb
       IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, () => "Populate Source");
@@ -293,9 +294,20 @@ describe("IModelTransformerHub (#integration)", () => {
       targetDb.saveChanges();
       await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
+      // import sourceDb changes into targetDb
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
+      await targetDb.concurrencyControl.request(requestContext);
+      targetDb.saveChanges();
+      await targetDb.pushChanges(requestContext, () => "Import changes from sourceDb");
+
+      // close iModel briefcases
       await sourceDb.close(requestContext, KeepBriefcase.No);
       await targetDb.close(requestContext, KeepBriefcase.No);
     } finally {
+      // delete iModel briefcases
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }
