@@ -394,9 +394,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   private _handleToolAssistanceIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
-    if (isOpen)
+    if (isOpen) {
+      if (this.state.isPinned)
+        this.setState({ isPinned: false });
       this.setOpenWidget(null);
-    else
+    } else
       this.setOpenWidget(this._className);
   }
 

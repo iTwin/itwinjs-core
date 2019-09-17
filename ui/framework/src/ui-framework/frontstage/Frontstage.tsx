@@ -294,6 +294,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     if (this.props.runtimeProps && this.props.runtimeProps.frontstageDef) {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
 
+      // istanbul ignore else
       if (frontstageDef.contentLayoutDef && frontstageDef.contentGroup)
         contentLayout = (
           <ContentLayout
@@ -317,6 +318,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const { location } = panelDef;
       const panelElement = Frontstage.getStagePanelElement(location, this.props);
 
+      // istanbul ignore else
       if (panelElement && React.isValidElement(panelElement)) {
         const panelKey = getNestedStagePanelKey(panelDef.location);
         const panels = runtimeProps.nineZone.nested.panels[panelKey.id];
@@ -359,6 +361,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
       const panelsManager = nestedPanelsManager.getPanelsManager("inner");
       const type = panelsManager.findWidget(zoneId, runtimeProps.nineZone.nested.panels.inner);
+      // istanbul ignore if
       if (type !== undefined)
         return null;
 

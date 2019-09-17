@@ -349,6 +349,32 @@ describe("ToolAssistanceField", () => {
     expect(statusBarInstance.state.openWidget).not.null;
   });
 
+  it("dialog should open and close on click, even if pinned", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const helloWorld = "Hello World!";
+    const notifications = new AppNotificationManager();
+    notifications.outputPrompt(helloWorld);
+    wrapper.update();
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+    toolAssistanceField.setState({ isPinned: true });
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(0);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+
+    wrapper.unmount();
+  });
+
   it("should set showPromptAtCursor on toggle click", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
 
