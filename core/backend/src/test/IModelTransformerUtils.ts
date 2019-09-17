@@ -14,7 +14,7 @@ import * as path from "path";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
   DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GroupModel,
+  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GroupModel,
   IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
@@ -87,7 +87,7 @@ export namespace IModelTransformerUtils {
     };
     const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
-    // Insert PhysicalElements
+    // Insert PhysicalObject1
     const physicalObjectProps1: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
@@ -102,6 +102,19 @@ export namespace IModelTransformerUtils {
     };
     const physicalObjectId1: Id64String = sourceDb.elements.insertElement(physicalObjectProps1);
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    // Insert PhysicalObject1 children
+    const childObjectProps1A: GeometricElement3dProps = physicalObjectProps1;
+    childObjectProps1A.userLabel = "ChildObject1A";
+    childObjectProps1A.parent = new ElementOwnsChildElements(physicalObjectId1);
+    childObjectProps1A.placement!.origin = Point3d.create(0, 1, 1);
+    const childObjectId1A: Id64String = sourceDb.elements.insertElement(childObjectProps1A);
+    assert.isTrue(Id64.isValidId64(childObjectId1A));
+    const childObjectProps1B: GeometricElement3dProps = childObjectProps1A;
+    childObjectProps1B.userLabel = "ChildObject1B";
+    childObjectProps1B.placement!.origin = Point3d.create(1, 0, 1);
+    const childObjectId1B: Id64String = sourceDb.elements.insertElement(childObjectProps1B);
+    assert.isTrue(Id64.isValidId64(childObjectId1B));
+    // Insert PhysicalObject2
     const physicalObjectProps2: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
@@ -116,6 +129,7 @@ export namespace IModelTransformerUtils {
     };
     const physicalObjectId2: Id64String = sourceDb.elements.insertElement(physicalObjectProps2);
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
+    // Insert PhysicalObject3
     const physicalObjectProps3: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
@@ -380,13 +394,19 @@ export namespace IModelTransformerUtils {
     const physicalObjectId2: Id64String = queryByUserLabel(targetDb, "PhysicalObject2");
     const physicalObjectId3: Id64String = queryByUserLabel(targetDb, "PhysicalObject3");
     const physicalElementId1: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
+    const childObjectId1A: Id64String = queryByUserLabel(targetDb, "ChildObject1A");
+    const childObjectId1B: Id64String = queryByUserLabel(targetDb, "ChildObject1B");
     assertTargetElement(sourceDb, targetDb, physicalObjectId1);
     assertTargetElement(sourceDb, targetDb, physicalObjectId2);
     assertTargetElement(sourceDb, targetDb, physicalObjectId3);
     assertTargetElement(sourceDb, targetDb, physicalElementId1);
+    assertTargetElement(sourceDb, targetDb, childObjectId1A);
+    assertTargetElement(sourceDb, targetDb, childObjectId1B);
     const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
     const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
     const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
+    const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
+    const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
@@ -396,6 +416,8 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
+    assert.equal(childObject1A.parent!.id, physicalObjectId1);
+    assert.equal(childObject1B.parent!.id, physicalObjectId1);
     // ElementUniqueAspects
     const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
     assert.equal(targetUniqueAspects.length, 1);
