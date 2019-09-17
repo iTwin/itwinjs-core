@@ -5,6 +5,8 @@
 import { OpenMode, assert } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
+  CloudStorageContainerUrl,
+  CloudStorageTileCache,
   ElectronRpcConfiguration,
   ElectronRpcManager,
   IModelReadRpcInterface,
@@ -15,6 +17,7 @@ import {
   SnapshotIModelRpcInterface,
   MobileRpcConfiguration,
   MobileRpcManager,
+  TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
@@ -115,6 +118,20 @@ async function signIn(): Promise<boolean> {
   return true;
 }
 
+class FakeTileCache extends CloudStorageTileCache {
+  public constructor() { super(); }
+
+  protected async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
+    const init: RequestInit = {
+      headers: container.headers,
+      method: "GET",
+    };
+
+    const url = container.url + `/${this.formResourceName(id)}`;
+    return fetch(url, init);
+  }
+}
+
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
@@ -136,6 +153,9 @@ async function main() {
     DisplayTestApp.tileAdminProps.disableMagnification = true;
 
   DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+
+  if (configuration.useFakeCloudStorageTileCache)
+    (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
   await DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (false !== configuration.enableDiagnostics)

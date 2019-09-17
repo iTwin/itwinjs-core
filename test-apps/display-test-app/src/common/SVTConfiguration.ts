@@ -21,4 +21,5 @@ export interface SVTConfiguration {
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   directScreenRendering?: boolean; // default ON
+  useFakeCloudStorageTileCache?: boolean; // default OFF
 }

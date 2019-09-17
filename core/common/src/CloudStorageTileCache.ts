@@ -41,7 +41,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
     return expiry;
   }
 
-  private constructor() {
+  protected constructor() {
     super();
   }
 
@@ -65,7 +65,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
   public formResourceName(id: TileContentIdentifier): string {
     const changeSetId = id.iModelToken.changeSetId || "first";
-    const version = undefined !== id.guid ? id.guid : changeSetId;
+    const version = id.guid ? id.guid : changeSetId; // NB: id.guid can be null (backend) OR undefined (frontend) here...
     return `tiles/${id.treeId}/${version}/${id.contentId}`;
   }
 }

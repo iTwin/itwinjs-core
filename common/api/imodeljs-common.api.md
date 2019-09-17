@@ -693,6 +693,7 @@ export enum CloudStorageProvider {
 
 // @beta (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
+    protected constructor();
     // (undocumented)
     formContainerName(id: TileContentIdentifier): string;
     // (undocumented)
