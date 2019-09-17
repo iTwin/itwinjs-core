@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Explicit undefined initialization for HalfEdge",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Matt.Gooding@bentley.com"
+}

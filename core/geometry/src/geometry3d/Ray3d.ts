@@ -31,6 +31,7 @@ export class Ray3d implements BeJSONFunctions {
   private constructor(origin: Point3d, direction: Vector3d) {
     this.origin = origin;
     this.direction = direction;
+    this.a = undefined;
   }
   private static _create(x: number, y: number, z: number, u: number, v: number, w: number) {
     return new Ray3d(Point3d.create(x, y, z), Vector3d.create(u, v, w));

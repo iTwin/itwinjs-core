@@ -71,9 +71,9 @@ export class HalfEdge {
   private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
-  private _facePredecessor!: HalfEdge;
-  private _faceSuccessor!: HalfEdge;
-  private _edgeMate!: HalfEdge;
+  private _facePredecessor: HalfEdge;
+  private _faceSuccessor: HalfEdge;
+  private _edgeMate: HalfEdge;
   /** previous half edge "around the face"
    */
   public get facePredecessor(): HalfEdge { return this._facePredecessor; }
@@ -201,7 +201,14 @@ export class HalfEdge {
     this.x = x;
     this.y = y;
     this.z = z;
-    // Other variables are by default undefined
+    // Explicit init to undefined is important for performance here
+    this.sortAngle = undefined;
+    this.sortData = undefined;
+    this.edgeTag = undefined;
+    // Always created in pairs, init here to make TS compiler and JS runtime happy
+    this._facePredecessor = this;
+    this._faceSuccessor = this;
+    this._edgeMate = this;
   }
 
   /**
