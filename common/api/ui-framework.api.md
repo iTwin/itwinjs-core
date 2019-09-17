@@ -1994,8 +1994,11 @@ export class FrontstageDef {
     // (undocumented)
     nineZone?: NineZoneManagerProps;
     onActivated(): void;
+    protected _onActivated(): void;
     onDeactivated(): void;
+    protected _onDeactivated(): void;
     onFrontstageReady(): void;
+    protected _onFrontstageReady(): void;
     // @alpha
     readonly panelDefs: StagePanelDef[];
     // @alpha (undocumented)
@@ -2126,7 +2129,7 @@ export interface FrontstageProps extends CommonProps {
 export abstract class FrontstageProvider {
     abstract readonly frontstage: React_2.ReactElement<FrontstageProps>;
     readonly frontstageDef: FrontstageDef | undefined;
-    initializeDef(): FrontstageDef;
+    initializeDef(frontstageDef?: FrontstageDef): FrontstageDef;
 }
 
 // @public
