@@ -21,6 +21,7 @@ import { Complex } from "../numerics/Complex";
 
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
+import { MomentData } from "../geometry4d/MomentData";
 
 /* tslint:disable:variable-name no-console*/
 
@@ -67,6 +68,7 @@ export class Checker {
     ReportRoundTripFileNames: false,
     ConvexSetCorners: false,
     PolygonOffset: false,
+    UnionFind: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
@@ -235,14 +237,14 @@ export class Checker {
   }
 
   public testUndefined(dataA: any, ...params: any[]): boolean {
-  if (dataA === undefined)
-    return this.announceOK();
-  this.announceError("Expect undefined", dataA, params);
+    if (dataA === undefined)
+      return this.announceOK();
+    this.announceError("Expect undefined", dataA, params);
 
-  return false;
-}
+    return false;
+  }
 
-public testDefined(dataA: any, ...params: any[]): boolean {
+  public testDefined(dataA: any, ...params: any[]): boolean {
   if (dataA !== undefined)
     return this.announceOK();
   this.announceError("Expect defined", dataA, params);
@@ -315,6 +317,17 @@ public testDefined(dataA: any, ...params: any[]): boolean {
   if (Geometry.isSmallMetricDistance(dataA.maxDiff(dataB)))
     return this.announceOK();
   return this.announceError(" expect same Matrix4d", dataA, dataB, params);
+}
+  /**
+   * Test these components of MomentData:
+   * * centroid
+   * * radiiOfGyration
+   * * principal directions
+   */
+  public testCentroidAndRadii(dataA: MomentData, dataB: MomentData, ...params: any[]): boolean {
+  if (MomentData.areEquivalentPrincipalAxes(dataA, dataB))
+    return this.announceOK();
+  return this.announceError("Fail areEquivalentPrincipalAxes", dataA, dataB, params);
 }
 
   public testMatrix3d(dataA: Matrix3d, dataB: Matrix3d, ...params: any[]): boolean {

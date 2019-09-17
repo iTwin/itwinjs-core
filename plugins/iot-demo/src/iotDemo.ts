@@ -22,10 +22,19 @@ import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 
 import { IotUiProvider } from "./ui/IotUiProvider";
 import { IoTDeviceType, AnimationType } from "./IoTDefinitions";
+import { IoTMonitor } from "./iotMonitor";
 import { IoTSimulator } from "./simulator/IoTSimulator";
 
+export class ColorValue {
+  constructor(public red: number, public blue: number, public green: number) { }
+}
+
+class ColorTime {
+  constructor(public time: number, public value: ColorValue, public interpolation: number, public reading: any) { }
+}
+
 // runs an IoT Animation
-abstract class IoTAnimation {
+export abstract class IoTAnimation {
   private _requestContext: ClientRequestContext;
   protected _elementMap: Map<string, Id64String> | undefined;
   protected _modelId: Id64String | undefined;
@@ -78,7 +87,19 @@ abstract class IoTAnimation {
     this._selectedView.displayStyle = displayStyleState;
   }
 
+  // cancel any animation schedule.
+  public stopAnimationSchedule() {
+    const displayStyleState = this._selectedView.displayStyle;
+    if (displayStyleState.scheduleScript) {
+      displayStyleState.scheduleScript = undefined;
+      this._selectedView.displayStyle = displayStyleState;
+    }
+  }
+
   private async _getElementMap(): Promise<void> {
+    if (undefined !== this._elementMap)
+      return;
+
     const iModel = this._selectedView.iModel;
     this._elementMap = new Map<string, Id64String>();
 
@@ -92,6 +113,11 @@ abstract class IoTAnimation {
       this._modelId = row.modelId;
       this._elementMap.set(row.archSpace_number, row.id);
     }
+  }
+
+  public async getElementIdFromDeviceId(deviceId: string): Promise<Id64String | undefined> {
+    await this._getElementMap();
+    return this._elementMap!.get(deviceId);
   }
 
   public async run() {
@@ -175,18 +201,57 @@ abstract class IoTAnimation {
     schedule.push({ modelId: this._modelId, elementTimelines });
     return schedule;
   }
-  protected abstract colorFromReading(reading: any): ColorValue;
+
+  public async getLatestTimeAndReading(): Promise<any> {
+    // get the latest time from the animation.
+    if (this._plugin.simulationUrl) {
+      // TBD
+    } else {
+      await (this._plugin.simulationPromise);
+      const query: any = { building: "Building 41", type: IoTDeviceType[this._type] };
+      if (this._floor)
+        query.floor = this._floor;
+      const thisReading: { readingTime: number, readings: any[] } = this._plugin.localSimulator!.getLatestTimeAndReading(query);
+      return Promise.resolve(thisReading);
+    }
+  }
+
+  // get the tool tip from the current position in the animation.
+  public getToolTip(hit: HitDetail): string[] | undefined {
+    if ((undefined === this.scheduleMap) || (undefined === this._selectedView))
+      return undefined;
+
+    const renderScript: RenderScheduleState.Script | undefined = this._selectedView.displayStyle.scheduleScript;
+    if (undefined === renderScript)
+      return undefined;
+
+    // here we have a scheduleScript.
+    const animationFraction = this._selectedView.animationFraction;
+    const scheduleMap: Map<Id64String, ColorTime[]> = this.scheduleMap;
+    const elementTimeList = scheduleMap.get(hit.sourceId);
+    if (undefined === elementTimeList)
+      return undefined;
+
+    // find the msec from the animationFraction and our startTime and duration.
+    // The duration is in minutes, but we want seconds since start.
+    const msecSinceStart = animationFraction * this.duration! * 60 * 1000;
+    const currentSeconds = (this.startMsec! + msecSinceStart) / 1000.0;
+
+    // find where we are in the list of times
+    let foundColorTime = elementTimeList[0];
+    for (const thisTime of elementTimeList) {
+      if (thisTime.time >= currentSeconds) {
+        break;
+      } else {
+        foundColorTime = thisTime;
+      }
+    }
+    return this.toolTipFromReading(foundColorTime.reading);
+  }
+
+  public abstract colorFromReading(reading: any): ColorValue;
 
   public abstract toolTipFromReading(reading: any): string[] | undefined;
-
-}
-
-class ColorValue {
-  constructor(public red: number, public blue: number, public green: number) { }
-}
-
-class ColorTime {
-  constructor(public time: number, public value: ColorValue, public interpolation: number, public reading: any) { }
 
 }
 
@@ -195,7 +260,7 @@ class IoTHeatCoolAnimation extends IoTAnimation {
     super(plugin, selectedView, type, visibility, interpolation, floor, startMsec, duration);
   }
 
-  protected colorFromReading(reading: any): ColorValue {
+  public colorFromReading(reading: any): ColorValue {
     // RBB -- Temperatures don't seem to vary much -- temporarily set range to 70 to 72 so we can see color variation.
     const heating: number = reading.heat;
     const cooling: number = reading.cool;
@@ -214,14 +279,14 @@ class IoTHeatCoolAnimation extends IoTAnimation {
   public toolTipFromReading(reading: any): string[] | undefined {
     const messages: string[] = [];
     const i18n = this._plugin.i18n;
-    messages.push(i18n.translate("IoTDemo:Messages.TemperatureToolTip", { temp: reading.temp.toFixed(1) }));
+    messages.push(i18n.translate("iotDemo:Messages.TemperatureToolTip", { temp: reading.temp.toFixed(1) }));
 
     if ((undefined !== reading.heat) && (0 !== reading.heat)) {
-      const speedString: string = i18n.translate((reading.heat > 1) ? "IoTDemo:Messages.High" : "IoTDemo:Messages.Low");
-      messages.push(i18n.translate("IoTDemo:Messages.HeatToolTip", { highLow: speedString, setPoint: reading.setHt.toFixed(0) }));
+      const speedString: string = i18n.translate((reading.heat > 1) ? "iotDemo:Messages.High" : "iotDemo:Messages.Low");
+      messages.push(i18n.translate("iotDemo:Messages.HeatToolTip", { highLow: speedString, setPoint: reading.setHt.toFixed(0) }));
     } else if ((undefined !== reading.cool) && (0 !== reading.cool)) {
-      const speedString: string = i18n.translate((reading.cool > 1) ? "IoTDemo:Messages.High" : "IoTDemo:Messages.Low");
-      messages.push(i18n.translate("IoTDemo:Messages.CoolToolTip", { highLow: speedString, setPoint: reading.setCool.toFixed(0) }));
+      const speedString: string = i18n.translate((reading.cool > 1) ? "iotDemo:Messages.High" : "iotDemo:Messages.Low");
+      messages.push(i18n.translate("iotDemo:Messages.CoolToolTip", { highLow: speedString, setPoint: reading.setCool.toFixed(0) }));
     }
     return messages;
   }
@@ -236,7 +301,7 @@ class IoTTemperatureAnimation extends IoTHeatCoolAnimation {
     this._gradient = Gradient.Symb.createThematic(thematicSettings);
   }
 
-  protected colorFromReading(reading: any): ColorValue {
+  public colorFromReading(reading: any): ColorValue {
     const temperature = reading.temp;
     let fraction = (temperature - 71.0) / 4.0;
     if (fraction < 0)
@@ -254,7 +319,7 @@ class IoTCo2Animation extends IoTAnimation {
     super(plugin, selectedView, type, visibility, interpolation, floor, startMsec, duration);
   }
 
-  protected colorFromReading(reading: any): ColorValue {
+  public colorFromReading(reading: any): ColorValue {
     const ppm: number = reading.ppm;
     let fractionBad = (ppm - 400) / 300;
     if (fractionBad < 0)
@@ -271,7 +336,7 @@ class IoTCo2Animation extends IoTAnimation {
 
   public toolTipFromReading(reading: any): string[] | undefined {
     const i18n = this._plugin.i18n;
-    return [i18n.translate("IoTDemo:Messages.Co2ToolTip", { co2ppm: reading.ppm.toFixed(0) })];
+    return [i18n.translate("iotDemo:Messages.Co2ToolTip", { co2ppm: reading.ppm.toFixed(0) })];
   }
 }
 
@@ -282,7 +347,7 @@ class IoTStateAnimation extends IoTAnimation {
     super(plugin, selectedView, type, visibility, interpolation, floor, startMsec, duration);
   }
 
-  protected colorFromReading(reading: any): ColorValue {
+  public colorFromReading(reading: any): ColorValue {
     return reading[this._stateProperty] ? this._onColor : this._offColor;
   }
 
@@ -303,45 +368,23 @@ class IotToolTipProvider implements ToolTipProvider {
   }
 
   public async augmentToolTip(hit: HitDetail, tooltipPromise: Promise<HTMLElement | string>): Promise<HTMLElement | string> {
-    const animation: IoTAnimation | undefined = this.plugin.animation;
-    if ((undefined === this.plugin.animationView) || (undefined === animation) || (undefined === animation.scheduleMap))
-      return tooltipPromise;
+    let iotInfo: string[] | undefined;
+    if (this.plugin.animation)
+      iotInfo = this.plugin.animation.getToolTip(hit);
+    else if (this.plugin.iotMonitor)
+      iotInfo = await this.plugin.iotMonitor.getToolTip(hit);
 
-    const renderScript: RenderScheduleState.Script | undefined = this.plugin.animationView.displayStyle.scheduleScript;
-    if (undefined === renderScript) {
+    if ((undefined === iotInfo) || (0 === iotInfo.length))
       return tooltipPromise;
-    }
-    // here we have a scheduleScript.
-    const animationFraction = this.plugin.animationView.animationFraction;
-    const scheduleMap: Map<Id64String, ColorTime[]> = animation.scheduleMap;
-    const elementTimeList = scheduleMap.get(hit.sourceId);
-    if (undefined === elementTimeList)
-      return tooltipPromise;
-
-    // find the msec from the animationFraction and our startTime and duration.
-    // The duration is in minutes, but we want seconds since start.
-    const msecSinceStart = animationFraction * animation.duration! * 60 * 1000;
-    const currentSeconds = (animation.startMsec! + msecSinceStart) / 1000.0;
-
-    // find where we are in the list of times
-    let foundColorTime = elementTimeList[0];
-    for (const thisTime of elementTimeList) {
-      if (thisTime.time >= currentSeconds) {
-        break;
-      } else {
-        foundColorTime = thisTime;
-      }
-    }
 
     // wait for previous tooltip.
     tooltipPromise.then((tooltip) => {
       if (tooltip instanceof HTMLDivElement) {
-        const augmentWith = animation.toolTipFromReading(foundColorTime.reading);
-        if (undefined === augmentWith)
+        if (undefined === iotInfo)
           return tooltip;
 
         let out = "";
-        augmentWith.forEach((augment) => out += IModelApp.i18n.translateKeys(augment) + "<br>");
+        iotInfo.forEach((augment) => out += this.plugin.i18n.translateKeys(augment) + "<br>");
         const newDiv: HTMLDivElement = document.createElement("div");
         newDiv.innerHTML = out;
         tooltip.prepend(newDiv);
@@ -357,7 +400,8 @@ class IotToolTipProvider implements ToolTipProvider {
 
 export class IoTDemoPlugin extends Plugin {
   private _i18NNamespace?: I18NNamespace;
-  private _iotUiProvider?: IotUiProvider;
+  public iotMonitor: IoTMonitor | undefined;
+  public iotUiProvider?: IotUiProvider;
   public simulationUrl: string | undefined;
   public animation: IoTAnimation | undefined;
   public animationView: ScreenViewport | undefined;
@@ -375,7 +419,7 @@ export class IoTDemoPlugin extends Plugin {
     this.startTime = new Date(this.endTime.getTime() - (4 * 24 * 60 * 60 * 1000));
   }
 
-  private _createAnimation(selectedView: ScreenViewport, type: AnimationType, floor: string, duration?: number, startMsec?: number): IoTAnimation | undefined {
+  public createAnimation(selectedView: ScreenViewport, type: AnimationType, floor: string, duration?: number, startMsec?: number): IoTAnimation | undefined {
     switch (type) {
       case AnimationType.HeatingCooling:
         return new IoTHeatCoolAnimation(this, selectedView, type, 95, 2, floor, startMsec, duration);
@@ -387,18 +431,18 @@ export class IoTDemoPlugin extends Plugin {
         return new IoTCo2Animation(this, selectedView, type, 95, 2, floor, startMsec, duration);
       }
       case AnimationType.Occupancy: {
-        const trueString = this.i18n.translate("IoTDemo:Messages.OccupiedToolTip");
-        const falseString = this.i18n.translate("IoTDemo:Messages.UnoccupiedToolTip");
+        const trueString = this.i18n.translate("iotDemo:Messages.OccupiedToolTip");
+        const falseString = this.i18n.translate("iotDemo:Messages.UnoccupiedToolTip");
         return new IoTStateAnimation(this, selectedView, type, 99, 1, "occupied", trueString, falseString, new ColorValue(220, 220, 220), new ColorValue(50, 50, 50), floor, startMsec, duration);
       }
 
       case AnimationType.Smoke: {
-        const trueString = this.i18n.translate("IoTDemo:Messages.SmokeToolTip");
+        const trueString = this.i18n.translate("iotDemo:Messages.SmokeToolTip");
         return new IoTStateAnimation(this, selectedView, type, 99, 1, "smoke", trueString, undefined, new ColorValue(255, 0, 0), new ColorValue(50, 50, 50), floor, startMsec, duration);
       }
 
       case AnimationType.Fire: {
-        const trueString = this.i18n.translate("IoTDemo:Messages.FireToolTip");
+        const trueString = this.i18n.translate("iotDemo:Messages.FireToolTip");
         return new IoTStateAnimation(this, selectedView, type, 99, 1, "fire", trueString, undefined, new ColorValue(255, 0, 0), new ColorValue(50, 50, 50), floor, startMsec, duration);
       }
     }
@@ -410,38 +454,59 @@ export class IoTDemoPlugin extends Plugin {
     this.animationView = IModelApp.viewManager.selectedView;
     if (!this.animationView)
       return;
-    this.animation = this._createAnimation(this.animationView!, type, "Floor 1", duration, startMsec);
-    if (this.animation) {
-        this.animation.run().catch(() => {});
+
+    if (this.iotMonitor) {
+      this.iotMonitor.stopMonitor();
+      this.iotMonitor = undefined;
     }
+
+    this.animation = this.createAnimation(this.animationView!, type, "Floor 1", duration, startMsec);
+    if (this.animation) {
+      this.animation.run().catch(() => { });
+    }
+  }
+
+  public runMonitor(type: AnimationType) {
+    // stop any existing animation.
+    if (this.animation) {
+      this.animation.stopAnimationSchedule();
+      this.animation = undefined;
+    }
+    if (!this.iotMonitor) {
+      this.iotMonitor = new IoTMonitor(this);
+    }
+    if (this.localSimulator)
+      this.localSimulator.continueSimulation();
+
+    this.iotMonitor.startMonitor(type);
   }
 
   /** Invoked the first time this plugin is loaded. */
   public onLoad(args: string[]): void {
-    this._i18NNamespace = this.i18n.registerNamespace("IoTDemo");
+    this._i18NNamespace = this.i18n.registerNamespace("iotDemo");
     this._i18NNamespace!.readFinished.then(() => {
-      const message: string = this.i18n.translate("IoTDemo:Messages.Start");
+      const message: string = this.i18n.translate("iotDemo:Messages.Start");
       const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
       IModelApp.notifications.outputMessage(msgDetails);
 
       IModelApp.viewManager.addToolTipProvider(new IotToolTipProvider(this));
-      this._iotUiProvider = new IotUiProvider(this);
+      this.iotUiProvider = new IotUiProvider(this);
       // When a new UiProvider is registered the UI is typically refreshed so any plugin provided items are displayed.
       // A call to PluginUiManager.unregister will allow any UI provided by the provider to be removed.
-      PluginUiManager.register(this._iotUiProvider);
+      PluginUiManager.register(this.iotUiProvider);
       // if we have a simulationUrl, we'll use it, otherwise we generate the simulated data in the front end.
       if (args.length > 1) {
         this.simulationUrl = args[1];
         // TBD: retrieve the start and end times from the server.
         // this.getStartEndTimesFromServer();
-        this._iotUiProvider.showIotDialog();
+        this.iotUiProvider.showIotDialog();
       } else {
         this.localSimulator = new IoTSimulator(this.resolveResourceUrl("assets/microsoft-campus.json"));
         this.simulationPromise = this.localSimulator.runSimulation();
         this.simulationPromise.then(() => {
-          this._iotUiProvider!.minDate = this.localSimulator!.getStartTime();
-          this._iotUiProvider!.maxDate = this.localSimulator!.getEndTime();
-          this._iotUiProvider!.showIotDialog();
+          this.iotUiProvider!.minDate = this.localSimulator!.getStartTime();
+          this.iotUiProvider!.maxDate = this.localSimulator!.getEndTime();
+          this.iotUiProvider!.showIotDialog();
         }).catch(() => { });
       }
     }).catch(() => { });

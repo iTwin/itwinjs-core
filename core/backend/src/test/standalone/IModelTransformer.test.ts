@@ -3,10 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { LowAndHighXYZ, Point3d, Range3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ColorDef, IModel, Placement3d, Placement3dProps } from "@bentley/imodeljs-common";
+import { Point3d } from "@bentley/geometry-core";
+import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import * as hash from "object-hash";
 import * as path from "path";
 import {
   BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
@@ -66,6 +65,7 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Initial Import");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       const transformer = new TestIModelTransformer(sourceDb, targetDb);
+      assert.isTrue(transformer.context.isBetweenIModels);
       transformer.importAll();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
@@ -161,44 +161,7 @@ describe("IModelTransformer", () => {
     });
   }
 
-  function isEqualHash(object1: object, object2: object): boolean {
-    const options: object = { respectType: false };
-    const hash1: string = hash(object1, options);
-    const hash2: string = hash(object2, options);
-    assert.exists(hash1);
-    assert.exists(hash2);
-    // console.log("==="); // tslint:disable-line:no-console
-    // (hash as any).writeToStream(object1, options, process.stdout);
-    // console.log("\n==="); // tslint:disable-line:no-console
-    // (hash as any).writeToStream(object2, options, process.stdout);
-    // console.log("\n==="); // tslint:disable-line:no-console
-    return hash1 === hash2;
-  }
-
-  it("test object-hash", async () => {
-    assert.isTrue(isEqualHash({ a: 1, b: "B" }, { b: "B", a: 1 }), "Object member order should not matter");
-    assert.isFalse(isEqualHash([1, 2], [2, 1]), "Array entry order should matter");
-    const point1: Point3d = new Point3d(1, 2, 3);
-    const point2: Point3d = new Point3d(1, 2, 3);
-    const range1: Range3d = new Range3d(1, 1, 1, 2, 2, 2);
-    const range2: Range3d = new Range3d(1, 1, 1, 2, 2, 2);
-    const placement1: Placement3d = new Placement3d(point1, new YawPitchRollAngles(), range1);
-    const placement2: Placement3d = new Placement3d(point2, new YawPitchRollAngles(), range2);
-    assert.isTrue(isEqualHash(placement1, placement2), "Should have same hash");
-    placement2.bbox.high.z = 3;
-    assert.isFalse(isEqualHash(placement1, placement2), "Should recurse into nested objects to detect difference");
-    const pointProps1: XYZProps = { x: 1, y: 2, z: 3 };
-    const pointProps2: XYZProps = { x: 1, y: 2, z: 3 };
-    const rangeProps1: LowAndHighXYZ = { low: { x: 1, y: 1, z: 1 }, high: { x: 2, y: 2, z: 2 } };
-    const rangeProps2: LowAndHighXYZ = { low: { x: 1, y: 1, z: 1 }, high: { x: 2, y: 2, z: 2 } };
-    const placementProps1: Placement3dProps = { origin: pointProps1, angles: {}, bbox: rangeProps1 };
-    const placementProps2: Placement3dProps = { origin: pointProps2, angles: {}, bbox: rangeProps2 };
-    assert.isTrue(isEqualHash(placementProps1, placementProps2), "Should have same hash");
-    placementProps2.bbox!.high.z = 3;
-    assert.isFalse(isEqualHash(placementProps1, placementProps2), "Should recurse into nested objects to detect difference");
-  });
-
-  it.skip("should clone test file", async () => {
+  it("should clone test file", async () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDb: IModelDb = IModelDb.openSnapshot(sourceFileName);
@@ -224,7 +187,7 @@ describe("IModelTransformer", () => {
     targetDb.closeSnapshot();
   });
 
-  it.skip("should sync Team iModels into Shared", async () => {
+  it("should sync Team iModels into Shared", async () => {
     const iModelA: IModelDb = createTeamIModel("A", Point3d.create(0, 0, 0), ColorDef.green);
     const iModelB: IModelDb = createTeamIModel("B", Point3d.create(0, 10, 0), ColorDef.blue);
     const iModelShared: IModelDb = createSharedIModel(["A", "B"]);
@@ -235,7 +198,7 @@ describe("IModelTransformer", () => {
     if (true) {
       const subjectId: Id64String = getTeamSubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
-      transformerA2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerA2S.excludeSubject("/Context");
       transformerA2S.excludeElement(IModel.dictionaryId);
       transformerA2S.importAll();
@@ -246,7 +209,7 @@ describe("IModelTransformer", () => {
     if (true) {
       const subjectId: Id64String = getTeamSubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
-      transformerB2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerB2S.excludeSubject("/Context");
       transformerB2S.excludeElement(IModel.dictionaryId);
       transformerB2S.importAll();

@@ -45,6 +45,7 @@ export class StrokeOptions {
   /** whether or not to triangulate each added facet */
   public shouldTriangulate: boolean = false;
   private _needNormals?: boolean;
+  private _needTwoSided?: boolean;
   private _needParams?: boolean;
   /** ask if params are requested. */
   public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
@@ -54,6 +55,10 @@ export class StrokeOptions {
   public get needNormals(): boolean { return this._needNormals !== undefined ? this._needNormals : false; }
   /** set the normals request flag */
   public set needNormals(value: boolean) { this._needNormals = value; }
+  /** set request for two-sided facets. */
+  public set needTwoSided(value: boolean) { this._needTwoSided = value; }
+  /** ask if twoSided is requested. */
+  public get needTwoSided(): boolean { return this._needTwoSided !== undefined ? this._needTwoSided : false; }
   /** optional color request flag */
   public needColors?: boolean;
   /** default number of strokes for a circle. */

@@ -225,8 +225,9 @@ export class Transform implements BeJSONFunctions {
   }
   /** Reinitialize by directly installing origin and columns of the matrix
    */
-  public setOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d) {
-    this._origin.setFrom(origin);
+  public setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined) {
+    if (origin !== undefined)
+      this._origin.setFrom(origin);
     this._matrix.setColumns(vectorX, vectorY, vectorZ);
   }
 

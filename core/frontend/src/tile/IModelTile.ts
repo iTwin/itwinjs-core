@@ -248,16 +248,18 @@ export namespace IModelTile {
     private _iModel: IModelConnection;
     private _type: BatchType;
     private _edgesRequired: boolean;
+    private readonly _guid: string | undefined;
     private readonly _contentIdProvider: ContentIdProvider;
     protected get _batchType() { return this._type; }
     protected get _loadEdges(): boolean { return this._edgesRequired; }
 
-    public constructor(iModel: IModelConnection, formatVersion: number | undefined, batchType: BatchType, edgesRequired: boolean, allowInstancing: boolean) {
+    public constructor(iModel: IModelConnection, formatVersion: number | undefined, batchType: BatchType, edgesRequired: boolean, allowInstancing: boolean, guid: string | undefined) {
       super();
       this._iModel = iModel;
       this._type = batchType;
       this._edgesRequired = edgesRequired;
       this._contentIdProvider = ContentIdProvider.create(allowInstancing, formatVersion);
+      this._guid = guid;
     }
 
     public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
@@ -357,7 +359,7 @@ export namespace IModelTile {
         return cancelMe;
       };
 
-      return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId, handleCacheMiss);
+      return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId, handleCacheMiss, this._guid);
     }
 
     public adjustContentIdSizeMultiplier(contentId: string, sizeMultiplier: number): string {

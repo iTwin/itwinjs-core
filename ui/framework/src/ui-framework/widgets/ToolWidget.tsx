@@ -118,45 +118,61 @@ interface Props extends CommonProps {
   verticalToolbar?: React.ReactNode;
 }
 
+interface ToolWidgetWithDefState {
+  horizontalToolbar: React.ReactNode;
+  verticalToolbar: React.ReactNode;
+  cornerItem: React.ReactNode;
+}
+
 /** Tool Widget React component.
  */
-class ToolWidgetWithDef extends React.Component<Props> {
+class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
   constructor(props: Props) {
     super(props);
+
+    if (PluginUiManager.hasRegisteredProviders) {
+      this.props.toolWidgetDef.generateMergedItemLists();
+    }
+
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
+    const cornerItem = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
+    this.state = { horizontalToolbar, verticalToolbar, cornerItem };
+  }
+
+  private reloadToolbars() {
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
+    this.setState({ horizontalToolbar, verticalToolbar });
   }
 
   private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
     // create, merge, and cache ItemList from plugins
     this.props.toolWidgetDef.generateMergedItemLists();
-    // force update when list of registered UiPluginProvides change
-    this.forceUpdate();
+    this.reloadToolbars();
   }
 
   public componentDidMount() {
     PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
-    if (PluginUiManager.hasRegisteredProviders) {
-      this.props.toolWidgetDef.generateMergedItemLists();
-      // force update when list of registered UiPluginProvides change
-      this.forceUpdate();
-    }
   }
 
   public componentWillUnmount() {
     PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
-  public render(): React.ReactNode {
-    const button = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
+  public componentDidUpdate(prevProps: Props) {
+    if (this.props !== prevProps)
+      this.reloadToolbars();
+  }
 
+  public render(): React.ReactNode {
     return (
       <NZ_ToolsWidget
         className={this.props.className}
         style={this.props.style}
-        button={button}
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
+        button={this.state.cornerItem}
+        horizontalToolbar={this.state.horizontalToolbar}
+        verticalToolbar={this.state.verticalToolbar}
         preserveSpace={true}
         onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />

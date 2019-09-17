@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../../_geometry";
-@import "../../_prefix";
+@import "../../geometry";
+@import "../../prefix";
 
 .nz-zones-target-arrow {
   color: $buic-text-color-reverse;

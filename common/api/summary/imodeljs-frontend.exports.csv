@@ -32,6 +32,7 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
+internal;areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 

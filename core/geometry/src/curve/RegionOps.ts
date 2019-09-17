@@ -225,8 +225,9 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       graphCheckPoint("After regularize", graph, "MR");
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
     const exteriorMask = HalfEdgeMask.EXTERIOR;
-    const faceVisitedMask = HalfEdgeMask.VISITED;
-    const nodeVisitedMask = HalfEdgeMask.WORK_MASK0;
+    const faceVisitedMask = graph.grabMask();
+
+    const nodeVisitedMask = graph.grabMask();
     const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
     graph.clearMask(allMasksToClear);
     const callbacks = new RegionOpsBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
@@ -237,7 +238,8 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       callbacks);
     if (graphCheckPoint)
       graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
-
+    graph.dropMask(faceVisitedMask);
+    graph.dropMask(nodeVisitedMask);
     return PolyfaceBuilder.graphToPolyface(graph);
   }
   return undefined;

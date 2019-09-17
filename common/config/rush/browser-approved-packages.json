@@ -243,6 +243,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "cors",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "cpx",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },

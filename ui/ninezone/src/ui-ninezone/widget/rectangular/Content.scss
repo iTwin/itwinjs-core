@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../../_scrollbar";
-@import "../_variables";
+@import "../../scrollbar";
+@import "../variables";
 
 .nz-widget-rectangular-content {
   $padding: 10px;

@@ -32,6 +32,8 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/safearea/SafeAreaContext";
+
 export * from "./ui-framework/configurableui/ConfigurableUiContent";
 export * from "./ui-framework/configurableui/ConfigurableUiControl";
 export * from "./ui-framework/configurableui/ConfigurableUiManager";

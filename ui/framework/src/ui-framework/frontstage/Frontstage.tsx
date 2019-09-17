@@ -326,6 +326,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const panelRuntimeProps: StagePanelRuntimeProps = {
           draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
+          isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
           panel,
           panelDef,
@@ -443,7 +444,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
     /** For Zones area within the Nine-zone area; excludes */
     const zonesStyle: React.CSSProperties = {
-      position: "absolute",
       pointerEvents: "none",
       display: "flex",
       flexFlow: "column",

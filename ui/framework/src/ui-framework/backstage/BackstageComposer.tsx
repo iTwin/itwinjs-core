@@ -113,11 +113,11 @@ export class BackstageComposer extends React.Component<BackstageProps, Backstage
         if (itemSpec.itemType === BackstageItemType.ActionItem) {
           const actionSpec = itemSpec as ActionItemSpec;
           itemNodes.push(<CommandLaunchBackstageItem isEnabled={enabled} iconSpec={actionSpec.icon} commandId={actionSpec.itemId} execute={actionSpec.execute}
-            label={actionSpec.label} description={actionSpec.subtitle} tooltip={actionSpec.toolTip} key={actionSpec.itemId} />);
+            label={actionSpec.label} description={actionSpec.subtitle} tooltip={actionSpec.tooltip} key={actionSpec.itemId} />);
         } else if (itemSpec.itemType === BackstageItemType.StageLauncher) {
           const launchSpec = itemSpec as StageLauncher;
           itemNodes.push(<FrontstageLaunchBackstageItem isEnabled={enabled} iconSpec={launchSpec.icon} frontstageId={launchSpec.stageId}
-            label={launchSpec.label} description={launchSpec.subtitle} tooltip={launchSpec.toolTip} key={launchSpec.itemId} />);
+            label={launchSpec.label} description={launchSpec.subtitle} tooltip={launchSpec.tooltip} key={launchSpec.itemId} />);
         } else /* istanbul ignore else */ if (itemSpec.itemType === BackstageItemType.CustomItem) {
           const customSpec = itemSpec as CustomItemSpec;
           const provider = BackstageItemManager.getBackstageItemProvider(customSpec.customItemProviderId);
@@ -137,10 +137,10 @@ export class BackstageComposer extends React.Component<BackstageProps, Backstage
     return (
       <Backstage
         accessToken={this.state.accessToken}
-        isVisible={this.props.isVisible}
-        showOverlay={this.props.showOverlay}
-        onClose={this.props.onClose}
         header={this.props.header}
+        isVisible={this.props.isVisible}
+        onClose={this.props.onClose}
+        showOverlay={this.props.showOverlay}
       >
         {this.getBackstageItemNodes()}
       </Backstage>

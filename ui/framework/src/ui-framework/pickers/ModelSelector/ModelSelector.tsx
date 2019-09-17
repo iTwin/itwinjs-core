@@ -65,12 +65,12 @@ export class ModelSelectorWidget extends React.Component<
   constructor(props: ModelSelectorWidgetProps) {
     super(props);
     this._initState();
-    this._initialize(); // tslint:disable-line:no-floating-promises
   }
 
   /** @internal */
-  public componentDidMount() {
+  public async componentDidMount() {
     this._isMounted = true;
+    await this.initialize();
   }
 
   /** @internal */
@@ -78,7 +78,7 @@ export class ModelSelectorWidget extends React.Component<
     this._isMounted = false;
   }
 
-  private _initialize = async () => {
+  private async initialize() {
     await this._initModelState();
     await this._initCategoryState();
     this._initGroups();

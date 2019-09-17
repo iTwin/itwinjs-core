@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import classnames from "classnames";
-
 import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
 import {
   Footer,
@@ -16,13 +15,12 @@ import {
   MessageButton, Status, MessageHyperlink, MessageProgress,
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
-
-import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
-import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { MessageDiv } from "../messages/MessageSpan";
-
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { UiFramework } from "../UiFramework";
+import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import "./StatusBar.scss";
 
 // tslint:disable-next-line: variable-name
@@ -118,13 +116,18 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     }
 
     return (
-      <Footer
-        messages={this.getFooterMessage()}
-        isInFooterMode={this.props.isInFooterMode}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-      >
-        {footerSections}
-      </Footer>
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <Footer
+            messages={this.getFooterMessage()}
+            isInFooterMode={this.props.isInFooterMode}
+            onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+            safeAreaInsets={safeAreaInsets}
+          >
+            {footerSections}
+          </Footer>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 

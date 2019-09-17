@@ -298,6 +298,7 @@ describe("ToolWidget", () => {
 });
 
 describe("Test Plugin items", () => {
+
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -343,14 +344,42 @@ describe("Test Plugin items", () => {
       return returnState;
     };
 
+    const testH1Def = new CommandItemDef({
+      commandId: "test-h1-tool",
+      execute: (): void => { },
+      iconSpec: "icon-developer",
+      label: "test-h1-tool",
+    });
+
+    const testV1Def = new CommandItemDef({
+      commandId: "test-v1-tool",
+      execute: (): void => { },
+      iconSpec: "icon-developer",
+      label: "test-v1-tool",
+    });
+
+    const testC1Def = new CommandItemDef({
+      commandId: "test-c1-tool",
+      execute: (): void => { },
+      iconSpec: "icon-developer",
+      label: "test-c1-tool",
+    });
+
+    const testC2Def = new CommandItemDef({
+      commandId: "test-c2-tool",
+      execute: (): void => { },
+      iconSpec: "icon-developer",
+      label: "test-c2-tool",
+    });
+
     const conditionItemDef = new ConditionalItemDef({
-      items: [CoreTools.zoomViewCommand, CoreTools.panViewCommand],
+      items: [testC1Def, testC2Def],
       stateSyncIds: [testItemEventId],
       stateFunc: testItemStateFunc,
     });
 
-    const hItemList = new ItemList([CoreTools.selectElementCommand, conditionItemDef]);
-    const vItemList = new ItemList([CoreTools.rotateViewCommand, group1]);
+    const hItemList = new ItemList([testH1Def, conditionItemDef]);
+    const vItemList = new ItemList([testV1Def, group1]);
 
     showConditionalTool = true;
 

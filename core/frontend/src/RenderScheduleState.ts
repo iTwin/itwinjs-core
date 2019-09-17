@@ -10,6 +10,7 @@ import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { DisplayStyleState } from "./DisplayStyleState";
 import { AnimationBranchStates, AnimationBranchState, RenderClipVolume } from "./render/System";
 
 /** @internal */
@@ -58,38 +59,30 @@ export namespace RenderScheduleState {
       this.value = props.value;
     }
   }
-  export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
-    public currentClip?: RenderClipVolume;
-    public elementIds: Id64String[];
-    public batchId: number;
+  export class Timeline implements RenderSchedule.TimelineProps {
     public visibilityTimeline?: VisibilityEntry[];
     public colorTimeline?: ColorEntry[];
     public transformTimeline?: TransformEntry[];
     public cuttingPlaneTimeline?: CuttingPlaneEntry[];
-    public get isValid() { return this.elementIds.length > 0 && (Array.isArray(this.visibilityTimeline) && this.visibilityTimeline.length > 0) || (Array.isArray(this.colorTimeline) && this.colorTimeline.length > 0); }
-    private constructor(elementIds: Id64String[], batchId: number) { this.elementIds = elementIds; this.batchId = batchId; }
-    public static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline {
-      if (!json)
-        return new ElementTimeline([], 0);
+    public currentClip?: RenderClipVolume;
 
-      const val = new ElementTimeline(json.elementIds, json.batchId);
+    public extractTimelinesFromJSON(json: RenderSchedule.TimelineProps) {
       if (json.visibilityTimeline) {
-        val.visibilityTimeline = [];
-        json.visibilityTimeline.forEach((entry) => val.visibilityTimeline!.push(new VisibilityEntry(entry)));
+        this.visibilityTimeline = [];
+        json.visibilityTimeline.forEach((entry) => this.visibilityTimeline!.push(new VisibilityEntry(entry)));
       }
       if (json.colorTimeline) {
-        val.colorTimeline = [];
-        json.colorTimeline.forEach((entry) => val.colorTimeline!.push(new ColorEntry(entry)));
+        this.colorTimeline = [];
+        json.colorTimeline.forEach((entry) => this.colorTimeline!.push(new ColorEntry(entry)));
       }
       if (json.transformTimeline) {
-        val.transformTimeline = [];
-        json.transformTimeline.forEach((entry) => val.transformTimeline!.push(new TransformEntry(entry)));
+        this.transformTimeline = [];
+        json.transformTimeline.forEach((entry) => this.transformTimeline!.push(new TransformEntry(entry)));
       }
       if (json.cuttingPlaneTimeline) {
-        val.cuttingPlaneTimeline = [];
-        json.cuttingPlaneTimeline.forEach((entry) => val.cuttingPlaneTimeline!.push(new CuttingPlaneEntry(entry)));
+        this.cuttingPlaneTimeline = [];
+        json.cuttingPlaneTimeline.forEach((entry) => this.cuttingPlaneTimeline!.push(new CuttingPlaneEntry(entry)));
       }
-      return val;
     }
     public get duration() {
       const duration = Range1d.createNull();
@@ -100,10 +93,8 @@ export namespace RenderScheduleState {
 
       return duration;
     }
-    public get containsFeatureOverrides() { return undefined !== this.visibilityTimeline || undefined !== this.colorTimeline; }
-    public get containsAnimationBatches() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline || (undefined !== this.colorTimeline && 0 !== this.batchId) || (undefined !== this.visibilityTimeline && 0 !== this.batchId); }
 
-    private static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]) {
+    public static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]) {
       if (!timeline || timeline.length === 0)
         return false;
 
@@ -139,19 +130,9 @@ export namespace RenderScheduleState {
 
       return visibility;
     }
-
-    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]) {
-      let colorOverride, transparencyOverride;
-
-      const visibility = this.getVisibilityOverride(time, interval);
-      if (visibility <= 0) {
-        overrides.setAnimationNodeNeverDrawn(batchId);
-        return;
-      }
-      if (visibility < 100)
-        transparencyOverride = 1.0 - visibility / 100.0;
-
-      if (undefined !== this.colorTimeline && ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
+    public getColorOverride(time: number, interval: Interval): RgbColor | undefined {
+      let colorOverride;
+      if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
           const entry1 = this.colorTimeline![interval.index1].value;
@@ -159,16 +140,9 @@ export namespace RenderScheduleState {
         } else
           colorOverride = new RgbColor(entry0.red, entry0.green, entry0.blue);
       }
-
-      if (colorOverride || transparencyOverride) {
-        if (0 === batchId) {
-          for (const elementId of elementIds)
-            overrides.overrideElement(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
-        } else {
-          overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
-        }
-      }
+      return colorOverride;
     }
+
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
       if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
         return undefined;
@@ -235,53 +209,137 @@ export namespace RenderScheduleState {
       const clipPlaneSet = UnionOfConvexClipPlaneSets.createConvexSets([ConvexClipPlaneSet.createPlanes([clipPlane])]);
       const clipPrimitive = ClipPrimitive.createCapture(clipPlaneSet);
       const clipVector = ClipVector.createCapture([clipPrimitive]);
-
       this.currentClip = IModelApp.renderSystem.createClipVolume(clipVector);
       return this.currentClip;
     }
   }
 
-  export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
+  export class ElementTimeline extends Timeline implements RenderSchedule.ElementTimelineProps {
+    public elementIds: Id64String[];
+    public batchId: number;
+
+    public get isValid() { return this.elementIds.length > 0 && (Array.isArray(this.visibilityTimeline) && this.visibilityTimeline.length > 0) || (Array.isArray(this.colorTimeline) && this.colorTimeline.length > 0); }
+    private constructor(elementIds: Id64String[], batchId: number) {
+      super();
+      this.elementIds = elementIds; this.batchId = batchId;
+    }
+    public static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline {
+      if (!json)
+        return new ElementTimeline([], 0);
+
+      const val = new ElementTimeline(json.elementIds, json.batchId);
+      val.extractTimelinesFromJSON(json);
+      return val;
+    }
+
+    public get containsFeatureOverrides() { return undefined !== this.visibilityTimeline || undefined !== this.colorTimeline; }
+    public get containsAnimation() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline || (undefined !== this.colorTimeline && 0 !== this.batchId) || (undefined !== this.visibilityTimeline && 0 !== this.batchId); }
+    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]) {
+      let transparencyOverride;
+
+      const visibility = this.getVisibilityOverride(time, interval);
+      if (visibility <= 0) {
+        overrides.setAnimationNodeNeverDrawn(batchId);
+        return;
+      }
+      if (visibility < 100)
+        transparencyOverride = 1.0 - visibility / 100.0;
+
+      const colorOverride = this.getColorOverride(time, interval);
+
+      if (colorOverride || transparencyOverride) {
+        if (0 === batchId) {
+          for (const elementId of elementIds)
+            overrides.overrideElement(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        } else {
+          overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        }
+      }
+    }
+  }
+
+  export class ModelTimeline extends Timeline implements RenderSchedule.ModelTimelineProps {
     public modelId: Id64String;
     public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
-    public containsAnimationBatches: boolean = false;
-    private constructor(modelId: Id64String) { this.modelId = modelId; }
+    public containsModelAnimation: boolean = false;
+    public containsElementAnimation: boolean = false;
+    private constructor(modelId: Id64String) {
+      super();
+      this.modelId = modelId;
+    }
     public get duration() {
-      const duration = Range1d.createNull();
+      const duration = super.duration;
       this.elementTimelines.forEach((element) => duration.extendRange(element.duration));
       return duration;
     }
 
-    public static fromJSON(json?: RenderSchedule.ModelTimelineProps) {
+    public static fromJSON(json?: RenderSchedule.ModelTimelineProps, displayStyle?: DisplayStyleState) {
       if (!json)
         return new ModelTimeline("");
 
-      const value = new ModelTimeline(json.modelId);
+      let modelId = json.modelId;
+      if (undefined !== json.realityModelUrl && undefined !== displayStyle) {
+        displayStyle.forEachRealityModel((realityModel) => {
+          if (realityModel.url === json.realityModelUrl &&
+            undefined !== realityModel.treeRef &&
+            undefined !== realityModel.treeRef.treeOwner.tileTree)
+            modelId = realityModel.treeRef.treeOwner.tileTree.modelId;
+        });
+      }
+
+      const value = new ModelTimeline(modelId);
+      value.extractTimelinesFromJSON(json);
+      value.containsFeatureOverrides = undefined !== value.visibilityTimeline || undefined !== value.colorTimeline;
+      value.containsModelAnimation = undefined !== value.transformTimeline || undefined !== value.cuttingPlaneTimeline;
       if (json.elementTimelines)
         json.elementTimelines.forEach((element) => {
           const elementTimeline = ElementTimeline.fromJSON(element);
           value.elementTimelines.push(elementTimeline);
           if (elementTimeline.containsFeatureOverrides)
             value.containsFeatureOverrides = true;
-          if (elementTimeline.containsAnimationBatches)
-            value.containsAnimationBatches = true;
+          if (elementTimeline.containsAnimation)
+            value.containsElementAnimation = true;
         });
 
       return value;
     }
-    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId, entry.elementIds)); }
+
+    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
+      const interval = new Interval();
+      let transparencyOverride;
+
+      const visibility = this.getVisibilityOverride(time, interval);
+
+      if (visibility < 100)
+        transparencyOverride = 1.0 - visibility / 100.0;
+
+      const colorOverride = this.getColorOverride(time, interval);
+
+      if (colorOverride || transparencyOverride) {
+        console.log("Model Transparency: " + transparencyOverride);   // tslint:disable-line
+        overrides.overrideModel(this.modelId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+      }
+
+      this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId, entry.elementIds));
+    }
+    private getAnimationBranch(timeline: Timeline, branchId: number, branches: AnimationBranchStates, scheduleTime: number, interval: Interval) {
+      const transform = timeline.getAnimationTransform(scheduleTime, interval);
+      const clip = timeline.getAnimationClip(scheduleTime, interval);
+      if (transform || clip)
+        branches.set(this.modelId + ((branchId < 0) ? "" : ("_Node_" + branchId.toString())), new AnimationBranchState(transform, clip));
+    }
+
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
       const interval = new Interval();
+      this.getAnimationBranch(this, -1, branches, scheduleTime, interval);
       for (let i = 0; i < this.elementTimelines.length; i++) {
         const elementTimeline = this.elementTimelines[i];
         if (elementTimeline.getVisibilityOverride(scheduleTime, interval) <= 0.0) {
           branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(undefined, undefined, true));
         } else {
-          const transform = elementTimeline.getAnimationTransform(scheduleTime, interval);
-          const clip = elementTimeline.getAnimationClip(scheduleTime, interval);
-          if (transform || clip)
-            branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+          this.getAnimationBranch(elementTimeline, i + 1, branches, scheduleTime, interval);
+
         }
       }
     }
@@ -291,21 +349,23 @@ export namespace RenderScheduleState {
     public modelTimelines: ModelTimeline[] = [];
     public iModel: IModelConnection;
     public displayStyleId: Id64String;
+    public containsElementAnimation = false;
+    public containsModelAnimation = false;
 
     constructor(displayStyleId: Id64String, iModel: IModelConnection) { this.displayStyleId = displayStyleId; this.iModel = iModel; }
     public static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
       const value = new Script(displayStyleId, iModel);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
+
+      for (const modelTimeline of value.modelTimelines) {
+        if (modelTimeline.containsModelAnimation) value.containsModelAnimation = true;
+        if (modelTimeline.containsElementAnimation) value.containsElementAnimation = true;
+      }
       return value;
     }
-    public get containsAnimationBatches() {
-      for (const modelTimeline of this.modelTimelines)
-        if (modelTimeline.containsAnimationBatches)
-          return true;
-      return false;
-    }
+
     public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-      if (!this.containsAnimationBatches)
+      if (!this.containsModelAnimation && !this.containsElementAnimation)
         return undefined;
 
       const animationBranches = new Map<string, AnimationBranchState>();
@@ -329,11 +389,12 @@ export namespace RenderScheduleState {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
     public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+      // Only if the animation contains animation (transform or cutting plane) of individual elements do we require seperate tilesets for animations.
       if (Id64.isTransient(modelId))
         return undefined;
 
       for (const modelTimeline of this.modelTimelines)
-        if (modelTimeline.modelId === modelId && modelTimeline.containsAnimationBatches)
+        if (modelTimeline.modelId === modelId && modelTimeline.containsElementAnimation)
           return this.displayStyleId;
 
       return undefined;

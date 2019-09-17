@@ -72,7 +72,7 @@ import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
+import { VisibilityTreeWidgetControl, PanelVisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -91,12 +91,13 @@ import rotateIcon from "../icons/rotate.svg";
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
   private _leftPanel = {
-    widgets: [<Widget
-      iconSpec="icon-placeholder"
-      labelKey="SampleApp:widgets.VisibilityTree"
-      control={VisibilityTreeWidgetControl}
-      applicationData={{ iModelConnection: this.iModelConnection }}
-    />],
+    widgets: [
+      <Widget
+        iconSpec="icon-placeholder"
+        labelKey="SampleApp:widgets.VisibilityTree"
+        control={PanelVisibilityTreeWidgetControl}
+        applicationData={{ iModelConnection: this.iModelConnection }}
+      />],
   };
 
   private _rightPanel = {
@@ -240,48 +241,50 @@ export class ViewsFrontstage extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
+  private _nestedGroup = new GroupItemDef({
+    groupId: "nested-group",
+    labelKey: "SampleApp:buttons.toolGroup",
+    iconSpec: "icon-placeholder",
+    items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+    AppTools.item6, AppTools.item7, AppTools.item8],
+    // direction: Direction.Bottom,
+    itemsInColumn: 7,
+  });
 
   private get _groupItemDef(): GroupItemDef {
-    return new GroupItemDef({
-      groupId: "nested-group",
-      labelKey: "SampleApp:buttons.toolGroup",
-      iconSpec: "icon-placeholder",
-      items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-      AppTools.item6, AppTools.item7, AppTools.item8],
-      // direction: Direction.Bottom,
-      itemsInColumn: 7,
-    });
+    return this._nestedGroup;
   }
+
+  private _openNestedAnimationStageDef = new CommandItemDef({
+    iconSpec: "icon-camera-animation",
+    labelKey: "SampleApp:buttons.openNestedAnimationStage",
+    execute: async () => {
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      if (activeContentControl && activeContentControl.viewport &&
+        (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
+        const frontstageProvider = new NestedAnimationStage();
+        const frontstageDef = frontstageProvider.initializeDef();
+        SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+        await FrontstageManager.openNestedFrontstage(frontstageDef);
+      }
+    },
+    isVisible: false, // default to not show and then allow stateFunc to redefine.
+    stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+    stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+      const returnState: BaseItemState = { ...currentState };
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      if (activeContentControl && activeContentControl.viewport &&
+        (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+        returnState.isVisible = true;
+      else
+        returnState.isVisible = false;
+      return returnState;
+    },
+  });
 
   /** Command that opens a nested Frontstage */
   private get _openNestedAnimationStage() {
-    return new CommandItemDef({
-      iconSpec: "icon-camera-animation",
-      labelKey: "SampleApp:buttons.openNestedAnimationStage",
-      execute: async () => {
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport &&
-          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
-          const frontstageProvider = new NestedAnimationStage();
-          const frontstageDef = frontstageProvider.initializeDef();
-          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-          await FrontstageManager.openNestedFrontstage(frontstageDef);
-        }
-      },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport &&
-          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
-
-    });
+    return this._openNestedAnimationStageDef;
   }
 
   /** Tool that will start a sample activity and display ActivityMessage.
@@ -649,77 +652,71 @@ class FrontstageToolWidget extends React.Component {
 
   // cSpell:enable
 
-  private get _horizontalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.selectElementCommand,
-      this._openNestedAnimationStage,
-      new ToolItemDef({
-        toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
-        execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
-        betaBadge: true,
-      }),
-      CoreTools.keyinBrowserButtonItemDef,
-      AppTools.tool1,
-      new ConditionalItemDef({
-        conditionalId: "Conditional-tool-2",
-        items: [AppTools.tool2, this._viewportPopupButtonItemDef],
-        stateSyncIds: [SampleAppUiActionId.setTestProperty],
-        stateFunc: this._enabledTestStateFunc,
-        betaBadge: true,
-      }),
-      AppTools.toolWithSettings,
-      AppTools.toggleHideShowItemsCommand,
-      new ConditionalItemDef({
-        conditionalId: "Conditional-formatting",
-        items: [
-          new GroupItemDef({
-            groupId: "tool-formatting-setting",
-            labelKey: "SampleApp:buttons.toolGroup",
-            iconSpec: "icon-placeholder",
-            items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
-            itemsInColumn: 4,
-          }),
-        ],
-        stateSyncIds: [SampleAppUiActionId.setTestProperty],
-        stateFunc: this._visibleTestStateFunc,
-        betaBadge: true,
-      }),
-    ]);
-    return items;
-  }
+  private _horizontalToolbarItems = new ItemList([
+    CoreTools.selectElementCommand,
+    this._openNestedAnimationStage,
+    new ToolItemDef({
+      toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
+      execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
+      betaBadge: true,
+    }),
+    CoreTools.keyinBrowserButtonItemDef,
+    AppTools.tool1,
+    new ConditionalItemDef({
+      conditionalId: "Conditional-tool-2",
+      items: [AppTools.tool2, this._viewportPopupButtonItemDef],
+      stateSyncIds: [SampleAppUiActionId.setTestProperty],
+      stateFunc: this._enabledTestStateFunc,
+      betaBadge: true,
+    }),
+    AppTools.toolWithSettings,
+    AppTools.toggleHideShowItemsCommand,
+    new ConditionalItemDef({
+      conditionalId: "Conditional-formatting",
+      items: [
+        new GroupItemDef({
+          groupId: "tool-formatting-setting",
+          labelKey: "SampleApp:buttons.toolGroup",
+          iconSpec: "icon-placeholder",
+          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
+          itemsInColumn: 4,
+        }),
+      ],
+      stateSyncIds: [SampleAppUiActionId.setTestProperty],
+      stateFunc: this._visibleTestStateFunc,
+      betaBadge: true,
+    }),
+  ]);
 
-  private get _verticalToolbarItems(): ItemList {
-    const items = new ItemList([
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.openCloseProperties",
-        iconSpec: "icon-placeholder",
-        items: [AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.messageDemos",
-        iconSpec: "icon-placeholder",
-        items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.dialogDemos",
-        iconSpec: "icon-placeholder",
-        items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.anotherGroup",
-        iconSpec: "icon-placeholder",
-        items: [
-          AppTools.tool1, AppTools.tool2, this._groupItemDef,
-          this._saveContentLayout, this._restoreContentLayout,
-          this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
-        ],
-        stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-        stateFunc: this._anotherGroupStateFunc,
-        betaBadge: true,
-      }),
-    ]);
-    return items;
-  }
+  private _verticalToolbarItems = new ItemList([
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.openCloseProperties",
+      iconSpec: "icon-placeholder",
+      items: [AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.messageDemos",
+      iconSpec: "icon-placeholder",
+      items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.dialogDemos",
+      iconSpec: "icon-placeholder",
+      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.anotherGroup",
+      iconSpec: "icon-placeholder",
+      items: [
+        AppTools.tool1, AppTools.tool2, this._groupItemDef,
+        this._saveContentLayout, this._restoreContentLayout,
+        this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
+      ],
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: this._anotherGroupStateFunc,
+      betaBadge: true,
+    }),
+  ]);
 
   public render() {
     return (
@@ -774,27 +771,21 @@ class FrontstageNavigationWidget extends React.Component {
     });
   }
 
-  private get _horizontalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.fitViewCommand,
-      CoreTools.windowAreaCommand,
-      CoreTools.zoomViewCommand,
-      CoreTools.panViewCommand,
-      CoreTools.sectionByPlaneCommand,
-      this._rotateViewCommand,  /* Use an SVG icon  */
-    ]);
-    return items;
-  }
+  private _horizontalToolbarItems = new ItemList([
+    CoreTools.fitViewCommand,
+    CoreTools.windowAreaCommand,
+    CoreTools.zoomViewCommand,
+    CoreTools.panViewCommand,
+    CoreTools.sectionByPlaneCommand,
+    this._rotateViewCommand,  /* Use an SVG icon  */
+  ]);
 
-  private get _verticalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.walkViewCommand,
-      CoreTools.flyViewCommand,
-      CoreTools.toggleCameraViewCommand,
-      this._viewSelectorItemDef,
-    ]);
-    return items;
-  }
+  private _verticalToolbarItems = new ItemList([
+    CoreTools.walkViewCommand,
+    CoreTools.flyViewCommand,
+    CoreTools.toggleCameraViewCommand,
+    this._viewSelectorItemDef,
+  ]);
 
   public render() {
     return (

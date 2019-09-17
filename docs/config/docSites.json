@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.3.0": "changehistory"
+      "v1.4.0": "changehistory"
     },
     "packageAliases": {
       "backend": "imodeljs-backend",

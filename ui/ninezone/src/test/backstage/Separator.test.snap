@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<BackstageSeparator /> renders correctly 1`] = `
-<div
+<li
   className="nz-backstage-separator"
 />
 `;

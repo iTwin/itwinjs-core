@@ -173,7 +173,7 @@ export class Element extends Entity implements ElementProps {
     const display = this.getDisplayLabel();
     msg.push(display ? display : addKey("Id") + this.id + ", " + addKey("Type") + this.className);
 
-    if (this.category)
+    if (this instanceof GeometricElement)
       msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
 
     msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
@@ -203,6 +203,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
+  /** The origin, orientation, and bounding box of this GeometricElement. */
+  public abstract get placement(): Placement2d | Placement3d;
 
   /** @internal */
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
@@ -216,7 +218,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   /** Type guard for instanceof [[GeometricElement2d]] */
   public is2d(): this is GeometricElement2d { return this instanceof GeometricElement2d; }
   /** Get the [Transform]($geometry) from the Placement of this GeometricElement */
-  public getPlacementTransform(): Transform { return this.placement.getTransform(); }
+  public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   /** @internal */

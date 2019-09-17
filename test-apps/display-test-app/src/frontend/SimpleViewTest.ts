@@ -30,9 +30,10 @@ import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
-import { Viewer } from "./Viewer";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { setTitle } from "./Title";
+import { Surface } from "./Surface";
+import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
@@ -179,14 +180,40 @@ async function main() {
   }
 }
 
+async function documentLoaded(): Promise<void> {
+  const readyState = /^complete$/;
+  if (readyState.test(document.readyState))
+    return Promise.resolve();
+
+  return new Promise<void>((resolve) => {
+    const listener = () => {
+      if (readyState.test(document.readyState)) {
+        document.removeEventListener("readystatechange", listener);
+        resolve();
+      }
+    };
+
+    document.addEventListener("readystatechange", listener);
+    listener();
+  });
+}
+
 async function initView() {
   // open the specified view
   showStatus("opening View", configuration.viewName);
-  await Viewer.create({
+  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!);
+
+  // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
+  // Consistently reproducible for some folks, not others...
+  await documentLoaded();
+
+  const viewer = await DisplayTestApp.surface.createViewer({
     iModel: activeViewState.iModelConnection!,
     defaultViewName: configuration.viewName,
     fileDirectoryPath: configuration.standalonePath,
   });
+
+  viewer.dock(Dock.Full);
 
   showStatus("View Ready");
   hideSpinner();

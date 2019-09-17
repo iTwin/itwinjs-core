@@ -390,9 +390,17 @@ export class Tool {
    */
   public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
 
+  /**
+   * Translate key to localized string. This method is public so it can be overridden by tools in plugins
+   *  since external plugins must perform their own localization.
+   */
+  public static translateWithNamespace(namespaceName: string, key: string): string {
+    return IModelApp.i18n.translateWithNamespace(namespaceName, key);
+  }
+
   private static getLocalizedKey(name: string): string | undefined {
     const key = "tools." + this.toolId + "." + name;
-    const val = IModelApp.i18n.translateWithNamespace(this.namespace.name, key);
+    const val = this.translateWithNamespace(this.namespace.name, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 

@@ -36,7 +36,7 @@ export class Robot extends SpatialLocationElement {
 
   // You can write methods to implement business logic that apps can call.
   public someBusinessLogic(): void {
-    if ((this.testProperty === "something") && this.isPrivate) {
+    if (this.radius < 12.34) {
       // ... do something ...
     }
   }

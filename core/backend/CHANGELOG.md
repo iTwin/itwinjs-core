@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- 170215: Setup a way to supply authorization through the backend for frontend requests. 
+- Bug 163480: Allow attaching change cache file before change summary extraction. 
+- 162722, 162377: Added change summary test, and improved doc a little. 
+- Add minimum brep size option to IModelDb.exportGraphics
+- FunctionalSchema.importSchema is now deprecated.
+- Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions
+- Added performance logging for tile upload
+- Bug 162459: IModelConnection.close() for read-only connections should not close the Db at the backend; Bug 162373: Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase. 
+- Add method to create view with camera
+- Fixed misleading logging output in tile upload
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

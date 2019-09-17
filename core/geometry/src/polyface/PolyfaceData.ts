@@ -62,14 +62,18 @@ export class PolyfaceData {
   public face: FacetFaceData[];
   /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
+  private _twoSided: boolean;
+  public get twoSided(): boolean { return this._twoSided; }
+  public set twoSided(value: boolean) { this._twoSided = value; }
   /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
-  public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
+  public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false) {
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
     this.face = [];
     if (needNormals) { this.normal = new GrowableXYZArray(); this.normalIndex = []; }
     if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
+    this._twoSided = twoSided;
   }
   /** Return a depp clone. */
   public clone(): PolyfaceData {
@@ -78,7 +82,7 @@ export class PolyfaceData {
     result.pointIndex = this.pointIndex.slice();
     result.edgeVisible = this.edgeVisible.slice();
     result.face = this.face.slice();
-
+    result.twoSided = this.twoSided;
     if (this.normal)
       result.normal = this.normal.clone();
     if (this.param)
@@ -191,7 +195,7 @@ export class PolyfaceData {
 
     if (this.normal && this.normalIndex && other.normal && other.normalIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.normal.transferFromGrowableXYZArray(i, other.normal, other.pointIndex[index0 + i]);
+        this.normal.transferFromGrowableXYZArray(i, other.normal, other.normalIndex[index0 + i]);
       for (let i = 0; i < numWrap; i++)
         this.normal.transferFromGrowableXYZArray(numEdge + i, this.normal, i);
 
@@ -215,7 +219,7 @@ export class PolyfaceData {
 
     if (this.color && this.colorIndex && other.color && other.colorIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.color[i] = other.color[this.colorIndex[index0 + i]];
+        this.color[i] = other.color[other.colorIndex[index0 + i]];
       for (let i = 0; i < numWrap; i++)
         this.color[numEdge + i] = this.color[i];
 

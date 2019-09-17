@@ -170,13 +170,13 @@ describe("ElementAspectPerfomance", () => {
       returnEle1.userLabel = returnEle1.userLabel + "updated";
       imodeldb.elements.updateElement(returnEle1);
       const aspects: ElementAspect[] = imodeldb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
-      aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
+      (aspects[0] as any).testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
       imodeldb.elements.updateAspect(aspects[0]);
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
       const aspectsUpdated: ElementAspect[] = imodeldb.elements.getAspects(eleId, aspectProps.classFullName);
       assert.equal(aspectsUpdated.length, 1);
-      assert.equal(aspectsUpdated[0].testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
+      assert.equal((aspectsUpdated[0] as any).testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
       totalTimeUpdate = totalTimeUpdate + elapsedTime2;
 
       // delete element with unique aspect
@@ -237,7 +237,7 @@ describe("ElementAspectPerfomance", () => {
       let foundIndex: number = -1;
       for (const aspect of aspects) {
         foundIndex++;
-        if (aspect.testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
+        if ((aspect as any).testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
           found = true;
           break;
         }
@@ -250,7 +250,7 @@ describe("ElementAspectPerfomance", () => {
       returnEle2.userLabel = returnEle2.userLabel + "updated";
       imodeldb.elements.updateElement(returnEle2);
       const aspects1: ElementAspect[] = imodeldb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
-      aspects1[foundIndex].testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
+      (aspects1[foundIndex] as any).testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
       imodeldb.elements.updateAspect(aspects1[foundIndex]);
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
@@ -258,7 +258,7 @@ describe("ElementAspectPerfomance", () => {
 
       const aspectsUpdated: ElementAspect[] = imodeldb.elements.getAspects(eleId, aspectProps.classFullName);
       assert.equal(aspectsUpdated.length, aspects1.length);
-      assert.equal(aspectsUpdated[foundIndex].testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
+      assert.equal((aspectsUpdated[foundIndex] as any).testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
 
       // delete element with multi aspect
       const startTime3 = new Date().getTime();

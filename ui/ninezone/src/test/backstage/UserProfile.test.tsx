@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
-import { UserProfile } from "../../ui-ninezone";
+import { UserProfile, SafeAreaInsets } from "../../ui-ninezone";
 
 describe("<UserProfile />", () => {
   it("should render", () => {
@@ -14,5 +13,9 @@ describe("<UserProfile />", () => {
 
   it("renders correctly", () => {
     shallow(<UserProfile />).should.matchSnapshot();
+  });
+
+  it("renders safe area aware correctly", () => {
+    shallow(<UserProfile safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });
 });

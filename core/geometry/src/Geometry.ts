@@ -187,6 +187,11 @@ export class Geometry {
     return x > this.hugeCoordinate || x < - this.hugeCoordinate;
   }
 
+  /** Test if a number is odd.
+   */
+  public static isOdd(x: number): boolean {
+    return (x & (0x01)) === 1;
+  }
   /** Radians value for full circle 2PI radians minus `smallAngleRadians` */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - 1.0e-12;    // smallAngleRadians less than 360degrees
   /** Correct `distance` to zero if smaller than metric tolerance.   Otherwise return it unchanged. */

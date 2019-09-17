@@ -29,7 +29,13 @@ export class DiagnosticsPanel {
     this._fpsTracker = new FpsTracker(this._element, vp);
 
     this.addSeparator();
-    this.keyinField = new KeyinField(this._element, vp);
+    this.keyinField = new KeyinField({
+      parent: this._element,
+      baseId: "diagnosticsPanelKeyin",
+      wantButton: true,
+      wantLabel: true,
+      historyLength: 20,
+    });
 
     this.addSeparator();
     this._statsTracker = new TileStatisticsTracker(this._element, vp);

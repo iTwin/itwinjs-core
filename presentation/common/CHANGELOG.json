@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "1.4.0",
+      "tag": "@bentley/presentation-common_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Escape double quotes when creating intance filter for 'find similar' ruleset"
+          },
+          {
+            "comment": "Add NodeArtifacts presentation rule"
+          },
+          {
+            "comment": "Add `hideExpression` attribute to node specifications"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/presentation-common_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

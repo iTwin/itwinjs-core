@@ -8,6 +8,7 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle } from "@bentley/ui-core";
 import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
+import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 import "./StagePanel.scss";
 
 /** Describes available stage panel types.
@@ -61,6 +62,8 @@ export interface StagePanelProps extends CommonProps {
   onToggleCollapse?: () => void;
   /** Function called when resize action is performed. */
   onResize?: (resizeBy: number) => void;
+  /** Describes respected safe area insets. */
+  safeAreaInsets?: SafeAreaInsets;
   /** Stage panel size. */
   size?: number;
   /** Stage panel type. */
@@ -78,6 +81,7 @@ export class StagePanel extends React.PureComponent<StagePanelProps> {
     const className = classnames(
       "nz-stagePanels-stagePanel",
       StagePanelTypeHelpers.getCssClassName(this.props.type),
+      this.props.safeAreaInsets && SafeAreaInsetsHelpers.getCssClassNames(this.props.safeAreaInsets),
       this.props.className);
     const isVertical = StagePanelTypeHelpers.isVertical(this.props.type);
     const style = {

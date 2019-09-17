@@ -15,6 +15,7 @@ import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { ClipVector } from "./ClipVector";
+/** @module CartesianGeometry */
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -274,7 +275,7 @@ export class ClipUtilities {
   /**
    * Return the range of various types of clippers
    * * `ConvexClipPlaneSet` -- dispatch to `rangeOfConvexClipPlaneSetIntersectionWithRange`
-   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `UnionOfConvexClipPlaneSet` -- union of ranges of member `ConvexClipPlaneSet`
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
@@ -321,7 +322,7 @@ export class ClipUtilities {
    * Test if various types of clippers have any intersection with a range.
    * * This follows the same logic as `rangeOfClipperIntersectionWithRange` but attempts to exit at earliest point of confirmed intersection
    * * `ConvexClipPlaneSet` -- dispatch to `doesConvexClipPlaneSetIntersectRange`
-   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `UnionOfConvexClipPlaneSet` -- union of ranges of member `ConvexClipPlaneSet`
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.

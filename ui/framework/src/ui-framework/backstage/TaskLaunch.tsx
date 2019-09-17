@@ -5,16 +5,13 @@
 /** @module Backstage */
 
 import * as React from "react";
-
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { Logger } from "@bentley/bentleyjs-core";
-
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps, BackstageItem } from "./BackstageItem";
+import { Backstage } from "./Backstage";
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public
@@ -114,7 +111,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem
+      <BackstageItem
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
@@ -122,7 +119,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
         onClick={this.execute}
       >
         {this.state.label}
-      </NZ_BackstageItem>
+      </BackstageItem>
     );
   }
 }

@@ -1,6 +1,40 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Register tools for AccuDraw shortcuts to support keyboard shortcuts.
+- Partially support animation of classifiers for MicroSoft Poc.  
+- Prevent ambient occlusion from being applied to unlit geometry.
+- Add methods for setting render schedule in display style
+- Identify classified reality data to avoid snap using classification element geometry.
+- Apply pseudo bias to batch range when tileset has huge offset.
+- Add workaround for ContextCapture tiles with large offsets.
+- load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script
+- Refine tile corners on reprojection.  Fix bing HTTP request
+- Added a new component for the Poc, an icon picker.
+- Support symbology overrides with no batchId for render schedules, Plugin case fixes.
+- Don't display markers that are very close to eye point.
+- Change how Marker scale is computed for views background map displayed.
+- Report coordinates to message center for copy to clipboard. Support drawing views.
+- Ensure texture memory is properly tracked.
+- Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions
+- Added access to debugging features to RenderSystem via RenderSystemDebugControl; includes support for forcing webgl context loss and toggling pseudo-wiremesh surface display.
+- Support reality model masking via black classifier geometry.
+- Support nearest snap for reality models.
+- Remove doubling of planar classifier size.  This caused excessive generation time.
+- Refine texture projection calculation to include height range (for terrain). 
+- Ensure DisplayStyle3dState.sunDirection is synchronized with DisplayStyle3dSettings JSON.
+- Clip volume applied to view also applies to reality models.
+- Added SetupCameraTool for defining camera by eye point and target point.
+- Prioritize requests for reality model tiles based on distance from camera.
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Tweak tile priorities so that reality models don't block quicker maps and classifiers.
+- Call to pickNearestVisibleGeometry on 1st data button almost always succeeds now that acs plane is used, remove from updateTargetCenter.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

@@ -42,8 +42,6 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "isStatusBar": false,
       "isToolSettings": false,
       "priority": 0,
-      "renderHorizontalToolbar": [Function],
-      "renderVerticalToolbar": [Function],
       "state": 4,
       "stateChanged": false,
       "syncEventIds": Array [],

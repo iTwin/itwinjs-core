@@ -19,21 +19,24 @@ import {
   EmphasizeSelectedElementsTool,
   IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import {
-  ChangeViewFlagsTool,
-  ToggleSkyboxTool,
-} from "./tools/ChangeViewFlagsTool";
+import { InspectElementTool } from "./tools/InspectElementTool";
+import { ChangeViewFlagsTool, ToggleSkyboxTool } from "./tools/ChangeViewFlagsTool";
 import {
   SaveViewTool,
   ApplyViewTool,
 } from "./tools/SavedViews";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { ToggleFrustumSnapshotTool } from "./tools/FrustumDecoration";
+import {
+  ToggleFrustumSnapshotTool,
+  ToggleSelectedViewFrustumTool,
+} from "./tools/FrustumDecoration";
 import {
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
+import { RealityTransitionTool } from "./tools/RealityTransitionTool";
+import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -57,6 +60,7 @@ export class FrontendDevTools {
 
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
 
+    InspectElementTool.register(i18n);
     ReportWebGLCompatibilityTool.register(i18n);
 
     LoseWebGLContextTool.register(i18n);
@@ -78,10 +82,13 @@ export class FrontendDevTools {
 
     ToggleProjectExtentsTool.register(i18n);
     ToggleFrustumSnapshotTool.register(i18n);
+    ToggleSelectedViewFrustumTool.register(i18n);
+    ToggleToolTipsTool.register(i18n);
 
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
+    RealityTransitionTool.register(i18n);
 
     return i18n.readFinished;
   }

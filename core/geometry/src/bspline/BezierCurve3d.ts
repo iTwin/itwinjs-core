@@ -14,6 +14,8 @@ import { LineString3d } from "../curve/LineString3d";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { Range3d } from "../geometry3d/Range";
+/** @module Bspline */
+
 // ================================================================================================================
 // ================================================================================================================
 // ================================================================================================================

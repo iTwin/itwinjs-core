@@ -41,9 +41,6 @@ export const getDefaultAllowsMerging = (id: WidgetZoneId): boolean => {
 };
 
 /** @internal */
-export const FOOTER_HEIGHT = 40;  // Must match $footer-height in footer\_variables.scss
-
-/** @internal */
 export const getDefaultZoneManagerProps = (id: WidgetZoneId): ZoneManagerProps => ({
   allowsMerging: getDefaultAllowsMerging(id),
   id,
@@ -51,7 +48,7 @@ export const getDefaultZoneManagerProps = (id: WidgetZoneId): ZoneManagerProps =
     left: 0,
     top: 0,
     right: 0,
-    bottom: id === 8 ? FOOTER_HEIGHT : 0,
+    bottom: 0,
   },
   isLayoutChanged: false,
   widgets: [id],
