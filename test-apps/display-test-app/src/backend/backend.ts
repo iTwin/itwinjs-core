@@ -32,12 +32,19 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
-    configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
+
+    if (undefined !== process.env.SVT_DISABLE_DIAGNOSTICS)
+      configuration.enableDiagnostics = false;
+
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 
-    configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
-    configuration.disableMagnification = undefined !== process.env.SVT_DISABLE_MAGNIFICATION;
+    if (undefined !== process.env.SVT_DISABLE_INSTANCING)
+      configuration.disableInstancing = true;
+
+    if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
+      configuration.disableMagnification = true;
+
     const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
     if (undefined !== treeExpiration)
       try {
@@ -46,11 +53,14 @@ function setupStandaloneConfiguration() {
         //
       }
 
-    configuration.displaySolarShadows = true;
-    configuration.logarithmicZBuffer = undefined === process.env.SVT_DISABLE_LOG_Z || "false" === process.env.SVT_DISABLE_LOG_Z;
-    configuration.directScreenRendering = undefined === process.env.SVT_DISABLE_DIRECT_SCREEN_RENDERING;
+    if (undefined !== process.env.SVT_DISABLE_LOG_Z)
+      configuration.logarithmicZBuffer = false;
 
-    configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
+    if (undefined !== process.env.SVT_DISABLE_DIRECT_SCREEN_RENDERING)
+      configuration.directScreenRendering = false;
+
+    if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
+      configuration.preserveShaderSourceCode = true;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)

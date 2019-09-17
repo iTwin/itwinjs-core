@@ -89,6 +89,7 @@ rush install -c
 
 ## Environment Variables
 
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
 * SVT_STANDALONE_FILENAME (required)
   * Absoluate path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH

@@ -124,21 +124,21 @@ async function main() {
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
-    preserveShaderSourceCode: configuration.preserveShaderSourceCode,
-    displaySolarShadows: configuration.displaySolarShadows,
-    logarithmicDepthBuffer: configuration.logarithmicZBuffer,
-    directScreenRendering: configuration.directScreenRendering,
+    preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
+    logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
+    directScreenRendering: false !== configuration.directScreenRendering,
   };
 
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
+
   if (configuration.disableMagnification)
     DisplayTestApp.tileAdminProps.disableMagnification = true;
 
   DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 
   await DisplayTestApp.startup({ renderSys: renderSystemOptions });
-  if (configuration.enableDiagnostics)
+  if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
