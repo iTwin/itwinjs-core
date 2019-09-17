@@ -215,12 +215,11 @@ export namespace IModelTile {
         idStr = idStr + "E:0_";
       }
     } else {
+      const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
+      idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+
       if (undefined !== treeId.animationId) {
-        idStr = idStr + "A:" + treeId.animationId + "_";      // Temporary.... Tile publishing is currently either animation or classification - Just do animation for now (Microsoft Poc).
-        idStr = idStr + "E:0_";
-      } else {
-        const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
-        idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+        idStr = idStr + "A:" + treeId.animationId + "_";
       }
     }
 
