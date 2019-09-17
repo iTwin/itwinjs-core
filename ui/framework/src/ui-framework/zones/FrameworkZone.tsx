@@ -18,6 +18,7 @@ import {
 import { WidgetChangeHandler, TargetChangeHandler } from "../frontstage/FrontstageComposer";
 import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal
@@ -46,26 +47,35 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
   public render(): React.ReactNode {
     const zIndexStyle: React.CSSProperties | undefined = this.props.zone.floating ?
       { zIndex: this.props.zone.floating.stackId, position: "relative" } : undefined;
-
     return (
-      <span style={zIndexStyle}>
-        <NZ_Zone
-          bounds={this.props.zone.floating ? this.props.zone.floating.bounds : this.props.zone.bounds}
-          className={this.props.className}
-          style={this.props.style}
-          isHidden={this.props.isHidden}
-        >
-          {this._getWidget()}
-        </NZ_Zone>
-        <NZ_Zone bounds={this.props.zone.bounds}>
-          <ZoneTargets
-            zoneId={this.props.zone.id}
-            dropTarget={this.props.dropTarget}
-            targetChangeHandler={this.props.targetChangeHandler}
-          />
-        </NZ_Zone>
-        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
-      </span>
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <span style={zIndexStyle}>
+            <NZ_Zone
+              bounds={this.props.zone.floating ? this.props.zone.floating.bounds : this.props.zone.bounds}
+              className={this.props.className}
+              style={this.props.style}
+              isHidden={this.props.isHidden}
+              id={this.props.zone.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              {this._getWidget()}
+            </NZ_Zone>
+            <NZ_Zone
+              bounds={this.props.zone.bounds}
+              id={this.props.zone.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              <ZoneTargets
+                zoneId={this.props.zone.id}
+                dropTarget={this.props.dropTarget}
+                targetChangeHandler={this.props.targetChangeHandler}
+              />
+            </NZ_Zone>
+            {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
+          </span>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 

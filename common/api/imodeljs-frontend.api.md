@@ -980,6 +980,9 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
+// @internal
+export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean;
+
 // @beta
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
@@ -1559,6 +1562,8 @@ export class CategorySelectorState extends ElementState {
 // @internal (undocumented)
 export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, _requestContext: ClientRequestContext, _accessToken: string, _tileUrlTemplate: string, _maxDepth: number, heightRange: Range1d);
+    // (undocumented)
+    addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
     // (undocumented)
     readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
@@ -3284,6 +3289,8 @@ export abstract class ImageryProvider {
     // (undocumented)
     abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
     // (undocumented)
+    getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[];
+    // (undocumented)
     abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
@@ -3493,7 +3500,7 @@ export namespace IModelConnection {
         // (undocumented)
         forEachTreeOwner(func: (owner: TileTree.Owner) => void): void;
         // (undocumented)
-        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
+        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
         // (undocumented)
         getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner;
         // (undocumented)
@@ -3786,6 +3793,8 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
     // (undocumented)
+    addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
+    // (undocumented)
     getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
 }
 
@@ -3806,6 +3815,8 @@ export abstract class MapTileLoaderBase extends TileLoader {
     protected readonly _heightRange: Range1d | undefined;
     // (undocumented)
     protected _iModel: IModelConnection;
+    // (undocumented)
+    readonly isContentUnbounded: boolean;
     // (undocumented)
     abstract loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
@@ -5444,39 +5455,21 @@ export namespace RenderScheduleState {
         value: RenderSchedule.CuttingPlaneProps;
     }
     // (undocumented)
-    export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
+    export class ElementTimeline extends Timeline implements RenderSchedule.ElementTimelineProps {
         // (undocumented)
         batchId: number;
         // (undocumented)
-        colorTimeline?: ColorEntry[];
-        // (undocumented)
-        readonly containsAnimationBatches: boolean;
+        readonly containsAnimation: boolean;
         // (undocumented)
         readonly containsFeatureOverrides: boolean;
-        // (undocumented)
-        currentClip?: RenderClipVolume;
-        // (undocumented)
-        cuttingPlaneTimeline?: CuttingPlaneEntry[];
-        // (undocumented)
-        readonly duration: Range1d;
         // (undocumented)
         elementIds: Id64String[];
         // (undocumented)
         static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline;
         // (undocumented)
-        getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined;
-        // (undocumented)
-        getAnimationTransform(time: number, interval: Interval): Transform | undefined;
-        // (undocumented)
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]): void;
         // (undocumented)
-        getVisibilityOverride(time: number, interval: Interval): number;
-        // (undocumented)
         readonly isValid: boolean;
-        // (undocumented)
-        transformTimeline?: TransformEntry[];
-        // (undocumented)
-        visibilityTimeline?: VisibilityEntry[];
     }
     // (undocumented)
     export class Interval {
@@ -5491,17 +5484,19 @@ export namespace RenderScheduleState {
         init(index0: number, index1: number, fraction: number): void;
     }
     // (undocumented)
-    export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
+    export class ModelTimeline extends Timeline implements RenderSchedule.ModelTimelineProps {
         // (undocumented)
-        containsAnimationBatches: boolean;
+        containsElementAnimation: boolean;
         // (undocumented)
         containsFeatureOverrides: boolean;
+        // (undocumented)
+        containsModelAnimation: boolean;
         // (undocumented)
         readonly duration: Range1d;
         // (undocumented)
         elementTimelines: ElementTimeline[];
         // (undocumented)
-        static fromJSON(json?: RenderSchedule.ModelTimelineProps): ModelTimeline;
+        static fromJSON(json?: RenderSchedule.ModelTimelineProps, displayStyle?: DisplayStyleState): ModelTimeline;
         // (undocumented)
         getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number): void;
         // (undocumented)
@@ -5513,9 +5508,11 @@ export namespace RenderScheduleState {
     export class Script {
         constructor(displayStyleId: Id64String, iModel: IModelConnection);
         // (undocumented)
-        readonly containsAnimationBatches: boolean;
+        containsElementAnimation: boolean;
         // (undocumented)
         readonly containsFeatureOverrides: boolean;
+        // (undocumented)
+        containsModelAnimation: boolean;
         // (undocumented)
         displayStyleId: Id64String;
         // (undocumented)
@@ -5532,6 +5529,33 @@ export namespace RenderScheduleState {
         iModel: IModelConnection;
         // (undocumented)
         modelTimelines: ModelTimeline[];
+    }
+    // (undocumented)
+    export class Timeline implements RenderSchedule.TimelineProps {
+        // (undocumented)
+        colorTimeline?: ColorEntry[];
+        // (undocumented)
+        currentClip?: RenderClipVolume;
+        // (undocumented)
+        cuttingPlaneTimeline?: CuttingPlaneEntry[];
+        // (undocumented)
+        readonly duration: Range1d;
+        // (undocumented)
+        extractTimelinesFromJSON(json: RenderSchedule.TimelineProps): void;
+        // (undocumented)
+        static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]): boolean;
+        // (undocumented)
+        getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined;
+        // (undocumented)
+        getAnimationTransform(time: number, interval: Interval): Transform | undefined;
+        // (undocumented)
+        getColorOverride(time: number, interval: Interval): RgbColor | undefined;
+        // (undocumented)
+        getVisibilityOverride(time: number, interval: Interval): number;
+        // (undocumented)
+        transformTimeline?: TransformEntry[];
+        // (undocumented)
+        visibilityTimeline?: VisibilityEntry[];
     }
     // (undocumented)
     export class TimelineEntry implements RenderSchedule.TimelineEntryProps {
@@ -7356,7 +7380,7 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract readonly realityTileExpirationTime: BeDuration;
     // @internal (undocumented)
-    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
+    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
@@ -7421,6 +7445,8 @@ export abstract class TileLoader {
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
+    // (undocumented)
+    readonly isContentUnbounded: boolean;
     // (undocumented)
     protected readonly _loadEdges: boolean;
     // (undocumented)
@@ -7609,6 +7635,7 @@ export class Tool {
     run(..._args: any[]): boolean;
     static toolId: string;
     readonly toolId: string;
+    static translateWithNamespace(namespaceName: string, key: string): string;
 }
 
 // @public
@@ -9228,6 +9255,8 @@ export abstract class ViewState extends ElementState {
     load(): Promise<void>;
     lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent): void;
+    // @internal (undocumented)
+    static maxSkew: number;
     readonly name: string;
     // @internal
     abstract onRenderFrame(_viewport: Viewport): void;

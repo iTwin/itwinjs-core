@@ -497,11 +497,25 @@ describe("RegionInOut", () => {
     const testBasis = Plane3dByOriginAndVectors.createXYPlane();
     let x0 = 0.0;
     const y0 = 0.0;
+    const z1 = 0.01;
     const errorVector = Vector3d.create(-1, 1, 0);
     const parityRegions = Sample.createSimpleParityRegions(true) as AnyRegion[];
     const unionRegions = Sample.createSimpleUnions() as AnyRegion[];
     for (const loop of parityRegions.concat(unionRegions)) {
+      const range = loop.range();
       const primitives = loop.collectCurvePrimitives();
+      // arbitrarily test various points on a line.
+      const bigMarkerSize = 0.1;
+      for (const fy of [0.4, 0.5, 0.6]) {
+        for (const fx of [-0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0, 1.05]) {
+          range.fractionToPoint(fx, fy, 0, testPoint);
+          const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
+          let marker = 0;
+          if (classify < 0) marker = -4;
+          if (classify > 0) marker = 4;
+          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, bigMarkerSize, x0, y0, z1);
+        }
+      }
       // We trust
       // 1) primitives have usual CCW outside, CW holes
       // 2) points close to primitives are in to left, out to right -- other primitives are not nearby
@@ -516,8 +530,10 @@ describe("RegionInOut", () => {
               basis.origin.plusScaled(perp, q * smallDistance, testPoint);
               const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
               ck.testExactNumber(q, classify, "InOut", { primitive: cp, f: fraction, point: testPoint });
-              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint,
-                q === 0 ? smallDistance * 20 : smallDistance, x0, y0);
+              let marker = 0;
+              if (q < 0) marker = -4;
+              if (q > 0) marker = 4;
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, smallDistance, x0, y0, z1);
               if (q !== classify) {
                 RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
                 GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(testPoint, testPoint.plus(errorVector)), x0, y0);

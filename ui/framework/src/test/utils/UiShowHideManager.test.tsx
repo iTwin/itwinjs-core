@@ -142,7 +142,7 @@ describe("UiShowHideManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(UiShowHideManager.isUiVisible).to.eq(true);
 
-      await TestUtils.tick(500);
+      await TestUtils.tick(700);
       expect(UiShowHideManager.isUiVisible).to.eq(false);
     });
 

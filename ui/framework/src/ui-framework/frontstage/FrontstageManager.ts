@@ -19,6 +19,7 @@ import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidCont
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup } from "../content/ContentGroup";
+import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -211,6 +212,11 @@ export class FrontstageManager {
 
   /** Get  Nine-zone State Manager. */
   public static get NineZoneManager() { return this._nineZoneManager; }
+
+  /** Get Widget State Changed event.
+   * @alpha
+   */
+  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
 
   /** Clears the Frontstage map.
    */

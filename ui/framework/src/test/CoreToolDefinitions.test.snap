@@ -272,8 +272,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "isStatusBar": false,
       "isToolSettings": false,
       "priority": 0,
-      "renderHorizontalToolbar": [Function],
-      "renderVerticalToolbar": [Function],
       "state": 4,
       "stateChanged": false,
       "syncEventIds": Array [],

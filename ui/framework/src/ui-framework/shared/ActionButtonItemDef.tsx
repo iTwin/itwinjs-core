@@ -19,6 +19,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
   public size?: SizeProps;
+  public static defaultButtonSize = 42;
 
   constructor(itemProps: ItemProps) {
     super(itemProps);
@@ -40,7 +41,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   }
 
   public getDimension(orientation: Orientation): number {
-    let dimension = 0;
+    let dimension = ActionButtonItemDef.defaultButtonSize;
     if (this.size)
       dimension = (orientation === Orientation.Horizontal) ? this.size.width : this.size.height;
 

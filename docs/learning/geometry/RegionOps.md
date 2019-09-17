@@ -3,6 +3,8 @@
 
 ## RegionOps.splitPathsByRegionInOnOutXY
 
+This splits any curve into parts in, on, and outside an xy region.
+
 |  |  |
 |---|---|
 | 25 points | ![>](./figs/RegionOps/splitPathsByRegionInOnOutXY/InOutSplitsInput.png) |
@@ -27,3 +29,18 @@ Unit Test
   * source: imodeljs\core\geometry\src\test\topology\RegionOps.test.ts
   * test name: "InOutSplits"
   * output: imodeljs\core\geometry\src\test\output\RegionOps\InOutSplits.imjs
+
+## RegionOps.splitPathsByRegionInOnOutXY
+
+This tests whether single points are in, out, or on an xy region.
+
+|  |  |
+|---|---|
+| Parity region with various test points <br> circle is "on" <br> diamond is "in" <br> plus is "out" | ![>](./figs/RegionOps/testPointInOnOutRegionXY\ParityRegionWithSinglePointInOut.png) |
+
+
+Unit Test
+  * source: imodeljs\core\geometry\src\test\topology\RegionOps.test.ts
+  * test name: "MixedInOut"
+  * output: imodeljs\core\geometry\src\test\output\RegionOps\MixedInOut.imjs
+

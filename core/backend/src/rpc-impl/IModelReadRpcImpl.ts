@@ -8,16 +8,38 @@ import { ClientRequestContext, assert, Id64, Id64String, Logger, OpenMode, IMode
 import { Range3dProps, Range3d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
-  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModelProps,
-  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, IModelTokenProps, ModelProps, RpcInterface, RpcManager,
-  SnapRequestProps, SnapResponseProps, ViewStateProps, IModel, IModelVersion, QueryLimit, QueryQuota, QueryResponse, QueryPriority,
-  MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ElementProps,
+  EntityMetaData,
+  EntityQueryParams,
+  GeoCoordinatesResponseProps,
+  GeometrySummaryRequestProps,
+  IModel,
+  IModelCoordinatesResponseProps,
+  IModelProps,
+  IModelReadRpcInterface,
+  IModelToken,
+  IModelTokenProps,
+  IModelVersion,
+  ImageSourceFormat,
+  MassPropertiesRequestProps,
+  MassPropertiesResponseProps,
+  ModelProps,
+  QueryLimit,
+  QueryPriority,
+  QueryQuota,
+  QueryResponse,
+  RpcInterface,
+  RpcManager,
+  SnapRequestProps,
+  SnapResponseProps,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DictionaryModel } from "../Model";
+import { generateGeometrySummaries } from "../GeometrySummary";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -116,6 +138,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       }
     }
     return elementProps;
+  }
+
+  public async getGeometrySummary(tokenProps: IModelTokenProps, request: GeometrySummaryRequestProps): Promise<string> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const iModel = IModelDb.find(iModelToken);
+    return generateGeometrySummaries(request, iModel);
   }
 
   public async queryElementProps(tokenProps: IModelTokenProps, params: EntityQueryParams): Promise<ElementProps[]> {

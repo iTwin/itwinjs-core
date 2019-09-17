@@ -9,28 +9,28 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -40,7 +40,7 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -48,41 +48,41 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -96,28 +96,28 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -127,7 +127,7 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -135,41 +135,41 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -181,28 +181,28 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -212,7 +212,7 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -220,41 +220,41 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -272,28 +272,28 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -303,7 +303,7 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -311,41 +311,41 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -361,6 +361,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
       header={null}
       isOpen={true}
       onClose={[Function]}
+      safeAreaInsets={0}
       showOverlay={true}
     >
       <div
@@ -376,9 +377,9 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="Test1"
-            label="backstage.testFrontstage1"
+            label="TestApp:backstage.testFrontstage1"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -390,37 +391,50 @@ exports[`BackstageComposer should handle sync events 1`] = `
               onClick={[Function]}
               subtitle=""
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+                subtitle=""
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.testFrontstage1
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.testFrontstage1
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </FrontstageLaunchBackstageItem>
           <FrontstageLaunchBackstageItem
             frontstageId="Test2"
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="Test2"
-            label="backstage.testFrontstage2"
+            label="TestApp:backstage.testFrontstage2"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -432,37 +446,50 @@ exports[`BackstageComposer should handle sync events 1`] = `
               onClick={[Function]}
               subtitle=""
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+                subtitle=""
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.testFrontstage2
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.testFrontstage2
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </FrontstageLaunchBackstageItem>
           <FrontstageLaunchBackstageItem
             frontstageId="Test4"
             iconSpec="icon-placeholder"
             isEnabled={false}
             key="Test4"
-            label="backstage.testFrontstage4"
+            label="TestApp:backstage.testFrontstage4"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -474,28 +501,41 @@ exports[`BackstageComposer should handle sync events 1`] = `
               onClick={[Function]}
               subtitle=""
             >
-              <li
-                className="nz-backstage-item nz-disabled"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={true}
+                onClick={[Function]}
+                safeAreaInsets={0}
+                subtitle=""
+              >
+                <li
+                  className="nz-backstage-item nz-disabled"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.testFrontstage4
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.testFrontstage4
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </FrontstageLaunchBackstageItem>
           <SeparatorBackstageItem
             key="backstage-item-separator-100-200"
@@ -503,7 +543,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             <BackstageSeparator
               key="NaN"
             >
-              <div
+              <li
                 className="nz-backstage-separator"
               />
             </BackstageSeparator>
@@ -513,9 +553,9 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-folder-opened"
             isEnabled={true}
             key="IModelOpen"
-            label="backstage.imodelopen"
+            label="TestApp:backstage.imodelopen"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-folder-opened"
@@ -527,28 +567,41 @@ exports[`BackstageComposer should handle sync events 1`] = `
               onClick={[Function]}
               subtitle=""
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-folder-opened"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+                subtitle=""
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-folder-opened"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.imodelopen
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-folder-opened"
+                    >
+                      <i
+                        className="icon icon-folder-opened"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.imodelopen
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </FrontstageLaunchBackstageItem>
           <CommandLaunchBackstageItem
             commandId="IModelIndex"
@@ -556,9 +609,9 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="IModelIndex"
-            label="teat.label"
+            label="TestApp:teat.label"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -569,40 +622,52 @@ exports[`BackstageComposer should handle sync events 1`] = `
               key="IModelIndex"
               onClick={[Function]}
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    teat.label
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:teat.label
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </CommandLaunchBackstageItem>
           <CommandLaunchBackstageItem
             commandId="CmdTest"
-            description="subtitle"
+            description="TestApp:subtitle"
             execute={[Function]}
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="CmdTest"
-            label="teat.label"
-            tooltip="tool-tip"
+            label="TestApp:teat.label"
+            tooltip="TestApp:tool-tip"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -613,28 +678,40 @@ exports[`BackstageComposer should handle sync events 1`] = `
               key="CmdTest"
               onClick={[Function]}
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    teat.label
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:teat.label
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </CommandLaunchBackstageItem>
           <SeparatorBackstageItem
             key="backstage-item-separator-200-400"
@@ -642,21 +719,21 @@ exports[`BackstageComposer should handle sync events 1`] = `
             <BackstageSeparator
               key="NaN"
             >
-              <div
+              <li
                 className="nz-backstage-separator"
               />
             </BackstageSeparator>
           </SeparatorBackstageItem>
           <FrontstageLaunchBackstageItem
-            description="backstage.iModelStage"
+            description="TestApp:backstage.iModelStage"
             frontstageId="ViewsFrontstage"
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="ViewsFrontstage"
-            label="backstage.viewIModel"
-            tooltip="backstage.tooltip"
+            label="TestApp:backstage.viewIModel"
+            tooltip="TestApp:backstage.tooltip"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="icon-placeholder"
@@ -666,33 +743,46 @@ exports[`BackstageComposer should handle sync events 1`] = `
               isDisabled={false}
               key="ViewsFrontstage"
               onClick={[Function]}
-              subtitle="backstage.iModelStage"
+              subtitle="TestApp:backstage.iModelStage"
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="icon-placeholder"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+                subtitle="TestApp:backstage.iModelStage"
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon icon-placeholder"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.viewIModel
-                  </span>
-                  <span>
-                    backstage.iModelStage
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="icon-placeholder"
+                    >
+                      <i
+                        className="icon icon-placeholder"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.viewIModel
+                    </span>
+                    <span>
+                      TestApp:backstage.iModelStage
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </FrontstageLaunchBackstageItem>
           <SeparatorBackstageItem
             key="backstage-item-separator-400-500"
@@ -700,21 +790,21 @@ exports[`BackstageComposer should handle sync events 1`] = `
             <BackstageSeparator
               key="NaN"
             >
-              <div
+              <li
                 className="nz-backstage-separator"
               />
             </BackstageSeparator>
           </SeparatorBackstageItem>
           <CommandLaunchBackstageItem
             commandId="custom-test"
-            description="subtitle"
+            description="TestApp:subtitle"
             execute={[Function]}
             iconSpec="TestApp:icon"
             key="custom-test"
-            label="backstage.custom"
-            tooltip="tool-tip"
+            label="TestApp:backstage.custom"
+            tooltip="TestApp:tool-tip"
           >
-            <BackstageItem
+            <Component
               icon={
                 <Unknown
                   iconSpec="TestApp:icon"
@@ -725,28 +815,40 @@ exports[`BackstageComposer should handle sync events 1`] = `
               key="custom-test"
               onClick={[Function]}
             >
-              <li
-                className="nz-backstage-item"
-                onClick={[Function]}
-              >
-                <div
-                  className="nz-icon"
-                >
-                  <Component
+              <BackstageItem
+                icon={
+                  <Unknown
                     iconSpec="TestApp:icon"
+                  />
+                }
+                isActive={false}
+                isDisabled={false}
+                onClick={[Function]}
+                safeAreaInsets={0}
+              >
+                <li
+                  className="nz-backstage-item"
+                  onClick={[Function]}
+                >
+                  <div
+                    className="nz-icon"
                   >
-                    <i
-                      className="icon TestApp:icon"
-                    />
-                  </Component>
-                </div>
-                <div>
-                  <span>
-                    backstage.custom
-                  </span>
-                </div>
-              </li>
-            </BackstageItem>
+                    <Component
+                      iconSpec="TestApp:icon"
+                    >
+                      <i
+                        className="icon TestApp:icon"
+                      />
+                    </Component>
+                  </div>
+                  <div>
+                    <span>
+                      TestApp:backstage.custom
+                    </span>
+                  </div>
+                </li>
+              </BackstageItem>
+            </Component>
           </CommandLaunchBackstageItem>
         </ul>
       </div>

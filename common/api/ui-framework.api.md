@@ -9,6 +9,7 @@ import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
+import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -71,6 +72,7 @@ import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/imodeljs-frontend';
 import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
+import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SheetProps } from '@bentley/imodeljs-common';
@@ -122,6 +124,8 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     constructor(itemProps: ItemProps);
     // (undocumented)
     protected _commandHandler?: CommandHandler;
+    // (undocumented)
+    static defaultButtonSize: number;
     // (undocumented)
     execute(): void;
     // (undocumented)
@@ -319,11 +323,14 @@ export interface BackstageEventArgs {
     isVisible: boolean;
 }
 
+// @internal (undocumented)
+export const BackstageItem: (props: BackstageItemProps_2) => JSX.Element;
+
 // @beta
 export class BackstageItemManager {
-    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): ActionItemSpec;
-    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): CustomItemSpec;
-    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): StageLauncher;
+    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): ActionItemSpec;
+    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): CustomItemSpec;
+    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): StageLauncher;
     static getBackstageItemProvider(providerId: string): BackstageItemProvider | undefined;
     static getBackstageItemSpecs(): BackstageItemSpec[];
     static readonly hasRegisteredProviders: boolean;
@@ -364,7 +371,7 @@ export interface BackstageItemSpec {
     itemType: BackstageItemType;
     label: string;
     subtitle?: string;
-    toolTip?: string;
+    tooltip?: string;
 }
 
 // @public
@@ -1617,6 +1624,8 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     initialSize?: number;
     // (undocumented)
+    isInFooterMode: boolean;
+    // (undocumented)
     isTargeted: boolean;
     // (undocumented)
     location: StagePanelLocation;
@@ -1902,6 +1911,8 @@ export class FrontstageManager {
     static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
+    // @alpha
+    static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
@@ -2738,7 +2749,7 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
     // (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -2854,6 +2865,21 @@ export interface NineZoneChangeHandler {
     // (undocumented)
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
+
+// @alpha
+export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
+}
+
+// @alpha
+export interface PanelStateChangedEventArgs {
+    // (undocumented)
+    panelDef: StagePanelDef;
+    // (undocumented)
+    panelState: StagePanelState;
+}
+
+// @internal (undocumented)
+export const panelStateToIsCollapsed: (panelState: StagePanelState) => boolean;
 
 // @public
 export class PointerMessage extends React_2.Component<PointerMessageProps, PointerMessageState> {
@@ -3051,6 +3077,9 @@ export interface RotationData {
 
 // @internal (undocumented)
 export const RULESET: Ruleset;
+
+// @alpha
+export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
 
 // @beta
 export class SavedView {
@@ -3454,6 +3483,8 @@ export interface StagePanelRuntimeProps {
     // (undocumented)
     getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
+    isInFooterMode: boolean;
+    // (undocumented)
     isTargeted: boolean;
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
@@ -3847,7 +3878,7 @@ export class Toolbar extends React_2.Component<ToolbarProps, State> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: State): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -3867,6 +3898,7 @@ export class ToolbarButtonHelper {
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
+    initialSize?: Size;
     items: ItemList;
     orientation: Orientation;
     panelAlignment?: ToolbarPanelAlignment;
@@ -3895,9 +3927,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalPanelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    renderHorizontalToolbar: () => React_2.ReactNode;
+    renderHorizontalToolbar(): React_2.ReactNode;
     // (undocumented)
-    renderVerticalToolbar: () => React_2.ReactNode;
+    renderVerticalToolbar(): React_2.ReactNode;
     // (undocumented)
     verticalDirection: Direction;
     // (undocumented)

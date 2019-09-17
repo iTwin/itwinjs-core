@@ -32,6 +32,8 @@ import { Angle } from "../../geometry3d/Angle";
 import { Cone } from "../../solid/Cone";
 import { Sphere } from "../../solid/Sphere";
 import { Box } from "../../solid/Box";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { MomentData } from "../../geometry4d/MomentData";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -264,8 +266,13 @@ describe("Polyface.Box", () => {
     //    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const volume = PolyfaceQuery.sumTetrahedralVolumes(polyface);
+    const volumeXY = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, Plane3dByOriginAndUnitNormal.createXYPlane(Point3d.create(1, 1, 0)));
+    const planeQ = Plane3dByOriginAndUnitNormal.create(Point3d.create(1, 2, 3), Vector3d.create(3, -1, 2))!;
+    const volumeQ = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeQ);
     ck.testCoordinate(expectedArea, area);
-    ck.testCoordinate(expectedVolume, volume);
+    ck.testCoordinate(expectedVolume, volume, "tetrahedral volume");
+    ck.testCoordinate(expectedVolume, volumeXY.volume, "volume computed between mesh and xy plane");
+    ck.testCoordinate(expectedVolume, volumeQ.volume, "volume computed between mesh and non-principal plane");
     polyface.reverseIndices();
     const area1 = PolyfaceQuery.sumFacetAreas(polyface);
     const volume1 = PolyfaceQuery.sumTetrahedralVolumes(polyface);
@@ -283,6 +290,68 @@ describe("Polyface.Box", () => {
     polyfaceB.data.pointIndex[0] -= 1;
     ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
     // console.log(polyfaceB);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.RaggedBoxVolume", () => {
+    const ck = new Checker();
+    const builder = PolyfaceBuilder.create();
+    const a = 2; const b = 3; const c = 4;
+    const expectedVolume = a * b * c;
+    const expectedAreaZX = a * c;
+    const xzPlane = Plane3dByOriginAndUnitNormal.createZXPlane();
+    const openBox = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), false);
+    builder.addBox(openBox!);
+    const polyface = builder.claimPolyface();
+    // the box is open top and bottom !!
+    const volumeZX = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, xzPlane);
+    ck.testDefined(volumeZX.positiveProjectedFacetAreaMoments);
+    ck.testDefined(volumeZX.negativeProjectedFacetAreaMoments);
+    if (volumeZX.positiveProjectedFacetAreaMoments && volumeZX.negativeProjectedFacetAreaMoments) {
+      ck.testCoordinate(expectedAreaZX, volumeZX.positiveProjectedFacetAreaMoments.quantitySum);
+      ck.testCoordinate(expectedAreaZX, volumeZX.negativeProjectedFacetAreaMoments.quantitySum);
+      ck.testCoordinate(expectedVolume, volumeZX.volume);
+      ck.testCentroidAndRadii(volumeZX.positiveProjectedFacetAreaMoments, volumeZX.negativeProjectedFacetAreaMoments, "open box ragged moments");
+    }
+    // In other planes, the missing facets are NOT perpendicular, and we expect to detect the mismatched projections in the moments.
+    const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 0, 0, 1, 2, 3)!;
+    const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB)!;
+    ck.testFalse(MomentData.areEquivalentPrincipalAxes(volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.RaggedBoxMisMatch", () => {
+    const ck = new Checker();
+
+    const ay = 1.0;
+    const ax0 = 4.0;  // significantly bitter than ay so principal X is global x even if either or both are multiplied by a factor not to far from 1
+    const zPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const f = 0.9;
+    // exercise deep branches in axis equivalence
+    const zTop = 1;
+    const zBottom = -1;
+    // point with (x,y,q)
+    //    q = 0 means do not expect same moments.
+    //    q = 1 means expect same moments
+    for (const corner of [
+      Point3d.create(ax0, ay, 1),    // everything matches
+      Point3d.create(-ax0, -ay, 1),    // everything matches
+      Point3d.create(ax0 * f, ay / f, 0),    // area matches
+      Point3d.create(ax0 * 2, ay, 0),    // same orientation, different radii.
+      Point3d.create(ax0, ay * 0.9, 0),    // same orientation, different radii.
+      Point3d.create(ay, ax0, 0),    // rotate 90 degrees, same radii
+    ]) {
+      const builder = PolyfaceBuilder.create();
+      const bx = corner.x;
+      const by = corner.y;
+      const expectSameMoments = corner.z === 1;
+      // positive polygon
+      builder.addPolygon([Point3d.create(-ax0, -ay, zTop), Point3d.create(ax0, -ay, zTop), Point3d.create(ax0, ay, zTop), Point3d.create(-ax0, ay, zTop)]);
+      builder.addPolygon([Point3d.create(-bx, -by, zBottom), Point3d.create(-bx, by, zBottom), Point3d.create(bx, by, zBottom), Point3d.create(bx, -by, zBottom)]);
+      const polyface = builder.claimPolyface();
+      const volumeData = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, zPlane);
+      ck.testBoolean(expectSameMoments, MomentData.areEquivalentPrincipalAxes(volumeData.positiveProjectedFacetAreaMoments, volumeData.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

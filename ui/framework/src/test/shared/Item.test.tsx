@@ -114,11 +114,11 @@ describe("Item", () => {
     expect(numericKey).to.eq(100);
   });
 
-  it("ActionButtonItemDef with no size returns dimension of 0", () => {
+  it("ActionButtonItemDef with no size returns default dimension of 42", () => {
     const testItem = new TestItemDef({
       iconSpec: "icon-placeholder",
     });
-    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(0);
+    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(ActionButtonItemDef.defaultButtonSize);
   });
 
   it("ActionButtonItemDef with size returns correct dimension", () => {

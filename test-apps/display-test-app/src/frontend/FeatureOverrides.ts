@@ -212,20 +212,20 @@ export class Settings implements IDisposable {
     label.innerText = "Transparency ";
     div.appendChild(label);
 
-    const slider = document.createElement("input");
-    slider.type = "range";
-    slider.className = "slider";
-    slider.min = "0.0";
-    slider.max = "1.0";
-    slider.step = "0.05";
-    slider.value = "0.0";
-    slider.disabled = true;
-    div.appendChild(slider);
+    const num = createNumericInput({
+      parent: div,
+      value: 0,
+      disabled: true,
+      min: 0,
+      max: 255,
+      step: 1,
+      handler: (value) => this.updateTransparency(value / 255),
+    });
+    div.appendChild(num);
 
-    slider.addEventListener("input", () => this.updateTransparency(parseFloat(slider.value)));
     cb.addEventListener("click", () => {
-      slider.disabled = !cb.checked;
-      this.updateTransparency(cb.checked ? parseFloat(slider.value) : undefined);
+      num.disabled = !cb.checked;
+      this.updateTransparency(cb.checked ? parseInt(num.value, 10) / 255 : undefined);
     });
 
     parent.appendChild(div);

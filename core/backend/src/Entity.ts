@@ -8,7 +8,6 @@ import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import * as hash from "object-hash";
 
 /** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
  * @public
@@ -26,7 +25,11 @@ export class Entity implements EntityProps {
    */
   public static get className(): string { return "Entity"; }
 
-  [propName: string]: any;
+  /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
+   * This property makes such code slightly less tedious to read and write.
+   * @internal
+   */
+  public get asAny(): any { return this; }
 
   /** The name of the BIS Schema that defines this class */
   public get schemaName(): string { return this._ctor.schema.schemaName; }
@@ -45,7 +48,7 @@ export class Entity implements EntityProps {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
+    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty(props[propName]));
   }
 
   /** @internal */
@@ -54,7 +57,7 @@ export class Entity implements EntityProps {
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
-    this.forEachProperty((propName: string) => val[propName] = this[propName]);
+    this.forEachProperty((propName: string) => val[propName] = (this as any)[propName]);
     return val;
   }
 
@@ -78,13 +81,4 @@ export class Entity implements EntityProps {
 
   /** Make a deep copy of this Entity */
   public clone(): this { return new this._ctor(this, this.iModel) as this; }
-
-  /** Compute a hash of the props of this Entity.
-   * @alpha
-   */
-  public computeHash(): string {
-    const options: object = { respectType: false };
-    const props: EntityProps = this.toJSON();
-    return hash(props, options);
-  }
 }

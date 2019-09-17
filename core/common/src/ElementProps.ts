@@ -217,13 +217,13 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   identifier: string;
   /** The kind of object within the source repository. */
   kind: string;
-  /** An optional value that is typically a version number or a psuedo version number like last modified time.
+  /** An optional value that is typically a version number or a pseudo version number like last modified time.
    * It will be used by the synchronization process to detect that a source object is unchanged so that computing a cryptographic hash can be avoided.
    * If present, this value must be guaranteed to change when any of the source object's content changes.
    */
   version?: string;
-  /** The cryptographic hash (any algorithm) of the source object's content. It must be guaranteed to change when the source object's content changes. */
-  checksum: string;
+  /** The optional cryptographic hash (any algorithm) of the source object's content. If defined, it must be guaranteed to change when the source object's content changes. */
+  checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
 }

@@ -231,14 +231,22 @@ export class IModelHost {
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
+      // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
       if (!serializedContext.authorization)
         return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
 
-      const accessToken = AccessToken.fromTokenString(serializedContext.authorization);
-      const userId = serializedContext.userId; // Really needed only for JWTs
-      if (!userId)
-        throw new BentleyError(AuthStatus.Error, "UserId needs to be passed into the backend", Logger.logError, loggerCategory);
-      accessToken.setUserInfo(new UserInfo(userId));
+      // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
+      let accessToken: AccessToken;
+      if (!IModelHost.authorizationClient) {
+        // Determine the access token from the frontend request
+        accessToken = AccessToken.fromTokenString(serializedContext.authorization);
+        const userId = serializedContext.userId;
+        if (userId)
+          accessToken.setUserInfo(new UserInfo(userId));
+      } else {
+        // Determine the access token from  the backend's authorization client
+        accessToken = await IModelHost.authorizationClient.getAccessToken();
+      }
 
       return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
     };

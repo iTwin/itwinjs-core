@@ -503,7 +503,7 @@ export interface DisplayStyleSettingsProps {
   /** Schedule script
    * @beta
    */
-  scheduleScript?: RenderSchedule.ElementTimelineProps[];
+  scheduleScript?: RenderSchedule.ModelTimelineProps[];
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */

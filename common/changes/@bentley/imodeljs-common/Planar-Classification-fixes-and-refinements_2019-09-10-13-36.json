@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refine planar projection frustum calculation",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

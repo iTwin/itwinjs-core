@@ -52,7 +52,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
     );
   }
 
-  public componentWillReceiveProps(newProps: TestMessageBoxProps) {
+  public componentDidUpdate(newProps: TestMessageBoxProps) {
     if (newProps !== this.props) {
       this.setState((_prevState) => {
         return {

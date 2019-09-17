@@ -40,7 +40,7 @@ function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64String, i
  */
 function getViewBackgroundColor(view: ViewDefinition): ColorDef {
   const displayStyle: DisplayStyle = view.loadDisplayStyle(); // Load the view's display style from the IModelDb.
-  return displayStyle.backgroundColor; // Extract the background color.
+  return displayStyle.settings.backgroundColor; // Extract the background color.
 }
 // __PUBLISH_EXTRACT_END__
 

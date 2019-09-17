@@ -23,7 +23,7 @@ import { ToolBarDropDown } from "./ToolBar";
 import { Provider } from "./FeatureOverrides";
 
 export interface ApplySavedView {
-  setView(view: ViewState): Promise<void>;
+  applySavedView(view: ViewState): Promise<void>;
 }
 
 export class SavedViewPicker extends ToolBarDropDown {
@@ -164,7 +164,8 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     const vsp = JSON.parse(this._selectedView.viewStatePropsString);
     const viewState = await deserializeViewState(vsp, this._vp.iModel);
-    await this._viewer.setView(viewState);
+    viewState.code.value = this._selectedView.name;
+    await this._viewer.applySavedView(viewState);
 
     const overrideElementsString = this._selectedView.overrideElements;
     if (undefined !== overrideElementsString) {

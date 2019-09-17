@@ -28,6 +28,7 @@ describe("FrameworkStagePanel", () => {
     changeHandler: changeHandler.object,
     draggedWidgetId: undefined,
     getWidgetContentRef: getWidgetContentRef.object,
+    isInFooterMode: false,
     isTargeted: false,
     renderPane: renderPane.object,
     resizable: false,
@@ -75,7 +76,7 @@ describe("FrameworkStagePanel", () => {
       draggedWidgetId={6}
       location={StagePanelLocation.Top}
       panel={panel}
-    />).should.matchSnapshot();
+    />).dive().should.matchSnapshot();
   });
 
   it("should not render w/o panes and target", () => {
@@ -104,7 +105,7 @@ describe("FrameworkStagePanel", () => {
       location={StagePanelLocation.Top}
       widgetCount={1}
       panel={panel}
-    />).should.matchSnapshot();
+    />).dive().should.matchSnapshot();
   });
 
   it("should render SplitterPaneTarget", () => {
@@ -121,7 +122,7 @@ describe("FrameworkStagePanel", () => {
       allowedZones={[6]}
       location={StagePanelLocation.Top}
       panel={panel}
-    />).should.matchSnapshot();
+    />).dive().should.matchSnapshot();
   });
 
   it("should handle resize", () => {
@@ -138,7 +139,7 @@ describe("FrameworkStagePanel", () => {
       panel={panel}
       resizable
     />);
-    const nzStagePanel = sut.find(NZ_StagePanel);
+    const nzStagePanel = sut.dive().find(NZ_StagePanel);
     nzStagePanel.prop("onResize")!(50);
     changeHandler.verify((x) => x.handlePanelResize(StagePanelLocation.Top, 50), moq.Times.once());
   });
@@ -156,7 +157,7 @@ describe("FrameworkStagePanel", () => {
       location={StagePanelLocation.Top}
       panel={panel}
     />);
-    const stagePanelTarget = sut.find(StagePanelTarget);
+    const stagePanelTarget = sut.dive().find(StagePanelTarget);
     stagePanelTarget.prop("onTargetChanged")!(true);
     changeHandler.verify((x) => x.handlePanelTargetChange(StagePanelLocation.Top), moq.Times.once());
   });
@@ -174,7 +175,7 @@ describe("FrameworkStagePanel", () => {
       location={StagePanelLocation.Top}
       panel={panel}
     />);
-    const stagePanelTarget = sut.find(StagePanelTarget);
+    const stagePanelTarget = sut.dive().find(StagePanelTarget);
     stagePanelTarget.prop("onTargetChanged")!(false);
     changeHandler.verify((x) => x.handlePanelTargetChange(undefined), moq.Times.once());
   });
@@ -194,7 +195,7 @@ describe("FrameworkStagePanel", () => {
       location={StagePanelLocation.Top}
       panel={panel}
     />);
-    const splitterPaneTarget = sut.find(SplitterPaneTarget);
+    const splitterPaneTarget = sut.dive().find(SplitterPaneTarget);
     splitterPaneTarget.prop("onTargetChanged")(0);
     changeHandler.verify((x) => x.handlePanelPaneTargetChange(StagePanelLocation.Top, 0), moq.Times.once());
   });
@@ -212,7 +213,7 @@ describe("FrameworkStagePanel", () => {
       location={StagePanelLocation.Top}
       panel={panel}
     />);
-    const nzStagePanel = sut.find(NZ_StagePanel);
+    const nzStagePanel = sut.dive().find(NZ_StagePanel);
     nzStagePanel.prop("onToggleCollapse")!();
     changeHandler.verify((x) => x.handleTogglePanelCollapse(StagePanelLocation.Top), moq.Times.once());
   });
@@ -232,6 +233,6 @@ describe("FrameworkStagePanel", () => {
       {...props}
       location={StagePanelLocation.Top}
       panel={panel}
-    />).should.matchSnapshot(true);
+    />).dive().should.matchSnapshot(true);
   });
 });

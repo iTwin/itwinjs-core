@@ -293,13 +293,28 @@ export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
 
 // @beta
 export class KeyinField {
-    constructor(parent: HTMLElement, _vp: Viewport);
+    constructor(props: KeyinFieldProps);
     // (undocumented)
     readonly autoCompleteList: DataList;
     // (undocumented)
-    readonly focus: () => void;
+    focus(): void;
     // (undocumented)
     readonly keyins: string[];
+    // (undocumented)
+    loseFocus(): void;
+    // (undocumented)
+    selectAll(): void;
+    // (undocumented)
+    readonly textBox: TextBox;
+}
+
+// @beta
+export interface KeyinFieldProps {
+    baseId: string;
+    historyLength?: number;
+    parent?: HTMLElement;
+    wantButton?: boolean;
+    wantLabel?: boolean;
 }
 
 // @alpha (undocumented)
@@ -558,7 +573,7 @@ export interface SliderProps {
     value: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface TextBox {
     // (undocumented)
     div: HTMLDivElement;
@@ -581,7 +596,7 @@ export interface TextBoxProps {
     // (undocumented)
     handler?: TextBoxHandler;
     // (undocumented)
-    id: string;
+    id?: string;
     // (undocumented)
     inline?: boolean;
     // (undocumented)
@@ -660,6 +675,20 @@ export class ToggleProjectExtentsTool extends Tool {
 export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleSelectedViewFrustumTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }

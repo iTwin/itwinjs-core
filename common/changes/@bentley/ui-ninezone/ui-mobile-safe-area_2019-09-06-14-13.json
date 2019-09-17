@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Make components aware of safe area insets.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    },
+    {
+      "comment": "Enable backstage scrolling.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

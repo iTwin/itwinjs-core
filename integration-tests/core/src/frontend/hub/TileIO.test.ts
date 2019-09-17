@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ModelProps, RelatedElementProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
-import { BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { CloudStorageTileCache, ModelProps, RelatedElementProps, BatchType, ServerTimeoutError, TileContentIdentifier } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
@@ -510,12 +510,21 @@ async function waitUntil(condition: () => boolean): Promise<void> {
   return waitUntil(condition);
 }
 
-async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesRequired = true, animationId?: Id64String): Promise<TileTree> {
+async function getGeometricModel(imodel: IModelConnection, modelId: Id64String): Promise<GeometricModelState> {
   await imodel.models.load(modelId)!;
   const baseModel = imodel.models.getLoaded(modelId)!;
   expect(baseModel).not.to.be.undefined;
   const model = baseModel.asGeometricModel!;
+  expect(model).not.to.be.undefined;
+  return model;
+}
 
+async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesRequired = true, animationId?: Id64String): Promise<TileTree> {
+  const model = await getGeometricModel(imodel, modelId);
+  return getPrimaryTileTree(model, edgesRequired, animationId);
+}
+
+async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<TileTree> {
   // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleScript.getModelAnimationId(modelId) and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
   let scheduleScript;
@@ -523,7 +532,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
     scheduleScript = { getModelAnimationId: () => animationId };
 
   const fakeViewState = {
-    iModel: imodel,
+    iModel: model.iModel,
     scheduleScript,
     viewFlags: {
       edgesRequired: () => edgesRequired,
@@ -553,7 +562,8 @@ describe("mirukuru TileTree", () => {
   afterEach(() => {
     if (imodel) {
       // Ensure tiles are not in memory...
-      imodel.tiles.purge(BeTimePoint.now().plus(BeDuration.fromSeconds(500)));
+      // NB: purge() does not suffice - we have to discard the suppliers and their TreeOwners too, because geometryGuid.
+      imodel.tiles.dispose();
       // Reset statistics...
       IModelApp.tileAdmin.resetStatistics();
     }
@@ -577,7 +587,7 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true);
+    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true, undefined);
     const tree = new TileTree(TileTree.paramsFromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile, () => false);
@@ -633,7 +643,7 @@ describe("mirukuru TileTree", () => {
     // Test directly loading a tile tree of version 3.0
     const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
     expect(v3Props).not.to.be.undefined;
-    const loader = new IModelTile.Loader(imodel, v3Props.formatVersion, BatchType.Primary, false, false);
+    const loader = new IModelTile.Loader(imodel, v3Props.formatVersion, BatchType.Primary, false, false, undefined);
     v3Props.rootTile.contentId = loader.rootContentId;
     const v3Tree = new TileTree(TileTree.paramsFromJSON(v3Props, imodel, true, loader, "0x1c"));
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
@@ -727,6 +737,49 @@ describe("mirukuru TileTree", () => {
     edgesRequired = false;
     const noEdges2 = treeRef.treeOwner;
     expect(noEdges2).to.equal(noEdges);
+  });
+
+  it("should preserve model's geometryGuid as cache key", async () => {
+    const model = await getGeometricModel(imodel, "0x1c");
+    expect(model.geometryGuid).to.be.undefined;
+    let tree = await getPrimaryTileTree(model, true);
+    let loader = tree.loader as IModelTile.Loader;
+
+    const getGuid = () => (loader as any)._guid;
+    expect(getGuid()).to.be.undefined;
+
+    model.geometryGuid = "abcdef";
+    tree = await getPrimaryTileTree(model, false);
+    loader = tree.loader as IModelTile.Loader;
+    expect(getGuid()).not.to.be.undefined;
+    expect(getGuid()).to.equal("abcdef");
+
+    model.geometryGuid = undefined;
+  });
+
+  it("should use correct URL for tile cache", async () => {
+    const model = await getGeometricModel(imodel, "0x1c");
+    model.geometryGuid = undefined;
+    const expectContentId = async (expected: string, edgesRequired: boolean) => {
+      let contentId: string | undefined;
+      const cache = CloudStorageTileCache.getCache();
+      const retrieveImpl = cache.retrieve;
+      cache.retrieve = async (id: TileContentIdentifier) => {
+        contentId = cache.formResourceName(id);
+        cache.retrieve = retrieveImpl;
+        return cache.retrieve(id);
+      };
+
+      const tree = await getPrimaryTileTree(model, edgesRequired);
+      await tree.loader.requestTileContent(tree.rootTile, () => false);
+      expect(contentId).not.to.be.undefined;
+      expect(contentId!.includes(expected)).to.be.true;
+    };
+
+    await expectContentId("first", false);
+    model.geometryGuid = "abcdef";
+    await expectContentId("abcdef", true);
+    model.geometryGuid = undefined;
   });
 });
 

@@ -46,7 +46,7 @@ describe("OidcAgentClient (#integration)", () => {
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
     const now = Date.now();
-    const jwt: AccessToken = await agentClient.getToken(requestContext);
+    const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 
     const expiresAt = jwt.getExpiresAt();
     chai.assert.isDefined(expiresAt);
@@ -59,7 +59,7 @@ describe("OidcAgentClient (#integration)", () => {
     await validator.validateConnectAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
-    const refreshJwt: AccessToken = await agentClient.refreshToken(requestContext, jwt);
+    const refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext);
     await validator.validateConnectAccess(refreshJwt);
     await validator.validateIModelHubAccess(refreshJwt);
   });
@@ -67,23 +67,25 @@ describe("OidcAgentClient (#integration)", () => {
   it("should not refresh token unless necessary", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
 
-    const jwt: AccessToken = await agentClient.getToken(requestContext);
+    const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 
     // Refresh after a second, and the token should remain the same
     await BeDuration.wait(1000);
-    let refreshJwt: AccessToken = await agentClient.refreshToken(requestContext, jwt);
+    let refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext);
     chai.assert.strictEqual(refreshJwt, jwt);
 
     // Set the expiry of the token to be 2 min from now, and the token should remain the same
     const twoMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
     const jwtExpiresAtTwoMinFromNow = AccessToken.fromJsonWebTokenString(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), twoMinFromNow, jwt.getUserInfo());
-    refreshJwt = await agentClient.refreshToken(requestContext, jwtExpiresAtTwoMinFromNow);
+    (agentClient as any)._accessToken = jwtExpiresAtTwoMinFromNow;
+    refreshJwt = await agentClient.getAccessToken(requestContext);
     chai.assert.strictEqual(refreshJwt, jwtExpiresAtTwoMinFromNow);
 
     // Set the expiry of the token to be less than a min from now, and the token should be refreshed
     const lessThanMinFromNow = new Date(Date.now() + 59 * 1000);
     const jwtExpiresAtLessThanMinFromNow = AccessToken.fromJsonWebTokenString(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), lessThanMinFromNow, jwt.getUserInfo());
-    refreshJwt = await agentClient.refreshToken(requestContext, jwtExpiresAtLessThanMinFromNow);
+    (agentClient as any)._accessToken = jwtExpiresAtLessThanMinFromNow;
+    refreshJwt = await agentClient.getAccessToken(requestContext);
     chai.assert.notStrictEqual(refreshJwt.toTokenString(IncludePrefix.No), jwtExpiresAtLessThanMinFromNow.toTokenString(IncludePrefix.No));
   });
 });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "170215: Setup a way to supply authorization through the backend for frontend requests. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

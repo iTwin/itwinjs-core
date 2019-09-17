@@ -14,6 +14,7 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
+import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
 
 /**
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.
@@ -67,26 +68,28 @@ export class Triangulator {
    * * (vx,vy): nodeA to nodeA2,
    * * (wx,wy): nodeA to nodeB2
    * * this determinant is positive if nodeA is "in the circle" of nodeB2, nodeA1, nodeA2
+   * * Return true if clearly positive
+   * * Return false if clearly negative or almost zero.
    * @param nodeA node on the diagonal edge of candidate for edge flip.
    * @param if true, divide the determinant by the sum of absolute values of the cubic terms of the determinant.
-   * @return the determinant (but undefined if the faces are not triangles as expected.)
+   * @return the determinant as modified per comment (but undefined if the faces are not triangles as expected.)
    */
-  private static computeInCircleDeterminant(nodeA: HalfEdge, normalize: boolean): number | undefined {
+  public static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
     if (nodeA2.faceSuccessor !== nodeA)
-      return undefined;
+      return false;
     const nodeB = nodeA.edgeMate;
     const nodeB1 = nodeB.faceSuccessor;
     const nodeB2 = nodeB1.faceSuccessor;
     if (nodeB2.faceSuccessor !== nodeB)
-      return undefined;
+      return false;
     const ux = nodeA1.x - nodeA.x;
     const uy = nodeA1.y - nodeA.y;
     const vx = nodeA2.x - nodeA.x;
     const vy = nodeA2.y - nodeA.y;
     if (Geometry.crossProductXYXY(ux, uy, vx, vy) < 0)
-      return undefined;
+      return false;
     // we assume identical coordinates in pairs (nodeA, nodeB1)  and (nodeA1, nodeB)
     const wx = nodeB2.x - nodeA.x;
     const wy = nodeB2.y - nodeA.y;
@@ -97,61 +100,61 @@ export class Triangulator {
       wx, wy, tx,
       vx, vy, ty,
       ux, uy, tz);
-    if (!normalize) return q;
+    if (q < 0)
+      return false;
     const denom = Math.abs(wx * vy * tz) + Math.abs(wx * ty * ux) + Math.abs(tx * vx * uy)
       + Math.abs(wx * ty * uy) + Math.abs(wy * vx * tz) + Math.abs(tx * vy * ux);
-    return q / denom;   // divide by zero?  only if collapsed to a point.
+    return q > 1.0e-12 * denom;
   }
+
   /**
    *  *  Visit each node of the graph array
    *  *  If a flip would be possible, test the results of flipping using incircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
-    const nodeArray = graph.allHalfEdges;
-    graph.clearMask(HalfEdgeMask.VISITED);
-    let foundNonVisited = false;
-    const smallDeterminant = 1.0e-15;
-    const maxFlip = 10.0 * nodeArray.length;
-    let numFlip = 0;
-    const numNode = nodeArray.length;
-    const barrierMasks = HalfEdgeMask.EXTERIOR | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.BOUNDARY_EDGE;
-    for (let i = 0; i < numNode && numFlip < maxFlip; i++) {
-      const node = nodeArray[i];
-
-      // HalfEdge has already been visited or is exterior node
-      if (node.isMaskSet(HalfEdgeMask.VISITED))
-        continue;
-
-      node.setMask(HalfEdgeMask.VISITED);
-      node.edgeMate.setMask(HalfEdgeMask.VISITED);
-
-      if (node.edgeMate === undefined || node.isMaskSet(barrierMasks)) // Flip not allowed
-        continue;
-
-      foundNonVisited = true;
-      const incircle = Triangulator.computeInCircleDeterminant(node, true);
-      if (incircle !== undefined && incircle > smallDeterminant) {
-        // Mark all nodes involved in flip as needing to be buffer (other than alpha and beta node we started with)
-        node.facePredecessor.clearMask(HalfEdgeMask.VISITED);
-        node.faceSuccessor.clearMask(HalfEdgeMask.VISITED);
-        node.edgeMate.facePredecessor.clearMask(HalfEdgeMask.VISITED);
-        node.edgeMate.faceSuccessor.clearMask(HalfEdgeMask.VISITED);
-        // Flip the triangles
-        Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
-        numFlip++;
-      }
-
-      // If at the end of the loop, check if we found an unvisited node we tried to flip.. if so, restart loop
-      if (i === nodeArray.length - 1 && foundNonVisited) {
-        i = -1;
-        foundNonVisited = false;
-      }
-    }
-
-    graph.clearMask(HalfEdgeMask.VISITED);
+    const edgeSet = MarkedEdgeSet.create(graph)!;
+    for (const node of graph.allHalfEdges)
+      edgeSet.addToSet(node);
+    const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
+    edgeSet.teardown();
     return numFlip;
   }
+
+  /**
+   *  *  Visit each node of the graph array
+   *  *  If a flip would be possible, test the results of flipping using incircle condition
+   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
+   */
+  public static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number {
+    const barrierMasks = HalfEdgeMask.EXTERIOR | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.BOUNDARY_EDGE;
+
+    const nodeArray = graph.allHalfEdges;
+    const maxTest = 10.0 * nodeArray.length;
+    let numFlip = 0;
+    let numOK = 0;
+    let node;
+    while (undefined !== (node = edgeSet.chooseAndRemoveAny())) {
+
+      if (node.isMaskSet(barrierMasks)) // Flip not allowed
+        continue;
+
+      if (Triangulator.computeInCircleDeterminantIsStrongPositive(node)) {
+        // Flip the triangles
+        Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
+        // keep looking at the 2 faces
+        edgeSet.addAroundFace(node);
+        edgeSet.addAroundFace(node.edgeMate);
+        numFlip++;
+      } else {
+        numOK++;
+      }
+      if (numFlip + numOK > maxTest)
+        break;
+    }
+    return numFlip;
+  }
+
   /** Create a graph with a triangulation points.
    * * The outer limit of the graph is the convex hull of the points.
    * * The outside loop is marked `HalfEdgeMask.EXTERIOR`
@@ -171,18 +174,22 @@ export class Triangulator {
       context.insertAndRetriangulate(p, true);
       numInsert++;
       if (numInsert > 16) {
+        /*
         context.reset();
         Triangulator.flipTriangles(context.graph);
         // console.log (" intermediate flips " + numFlip);
+        */
         numInsert = 0;
       }
     }
-    // final touchup for aspect ratio flip
-    for (let i = 0; i < 15; i++) {
-      const numFlip = Triangulator.flipTriangles(graph);
-      if (numFlip === 0)
-        break;
-    }
+    /*
+        // final touchup for aspect ratio flip
+        for (let i = 0; i < 15; i++) {
+          const numFlip = Triangulator.flipTriangles(graph);
+          if (numFlip === 0)
+            break;
+        }
+        */
     return graph;
   }
   /**
@@ -451,8 +458,8 @@ export class Triangulator {
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
     while (Triangulator.isInteriorTriangle(a0) && Triangulator.isInteriorTriangle(b1)) {
-      const detA = Triangulator.computeInCircleDeterminant(a0, true);
-      if (detA === undefined || detA < 1.0e-10)
+      const detA = Triangulator.computeInCircleDeterminantIsStrongPositive(a0);
+      if (!detA)
         break;
       // Flip the triangles
       const a1 = b1.faceSuccessor;

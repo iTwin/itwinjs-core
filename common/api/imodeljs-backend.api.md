@@ -672,6 +672,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     onSavedChanges(): void;
     // @internal (undocumented)
+    onUndoRedo(): void;
+    // @internal (undocumented)
     readonly pendingRequest: ConcurrencyControl.Request;
     // (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
@@ -1380,8 +1382,8 @@ export class EmbeddedFileLink extends LinkElement {
 export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
-    // (undocumented)
-    [propName: string]: any;
+    // @internal
+    readonly asAny: any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
     readonly classFullName: string;
@@ -1389,8 +1391,6 @@ export class Entity implements EntityProps {
     static readonly className: string;
     readonly className: string;
     clone(): this;
-    // @alpha
-    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1528,12 +1528,10 @@ export interface ExportPartLinesInfo {
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
-    checksum: string;
+    checksum?: string;
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    // @alpha
-    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };
@@ -1652,6 +1650,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
+    abstract readonly placement: Placement2d | Placement3d;
     // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
@@ -2135,8 +2134,29 @@ export class IModelJsFsStats {
 }
 
 // @alpha
+export class IModelTransformContext {
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
+    // @internal
+    cloneElement(sourceElementId: Id64String): ElementProps;
+    dispose(): void;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
+    // @internal
+    importCodeSpec(sourceCodeSpecId: Id64String): void;
+    // @internal
+    importFont(sourceFontNumber: number): void;
+    readonly isBetweenIModels: boolean;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+}
+
+// @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
+    readonly context: IModelTransformContext;
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     detectElementDeletes(): void;
@@ -2155,8 +2175,6 @@ export class IModelTransformer {
     excludeRelationshipClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
     findMissingPredecessors(sourceElement: Element): Id64Set;
-    findTargetCodeSpecId(sourceId: Id64String): Id64String;
-    findTargetElementId(sourceElementId: Id64String): Id64String;
     protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string;
     protected formatElementForLogger(elementProps: ElementProps): string;
     protected formatIdForLogger(id: Id64String): string;
@@ -2170,7 +2188,6 @@ export class IModelTransformer {
     importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModels(modeledElementClass: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
@@ -2196,9 +2213,6 @@ export class IModelTransformer {
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
-    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
-    remapElement(sourceId: Id64String, targetId: Id64String): void;
-    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldDeleteElement(_targetElement: Element): boolean;
     protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
@@ -2207,9 +2221,9 @@ export class IModelTransformer {
     protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
-    protected _sourceDb: IModelDb;
-    protected _targetDb: IModelDb;
-    protected _targetScopeElementId: Id64String;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+    readonly targetScopeElementId: Id64String;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;

@@ -88,6 +88,7 @@ internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;FacetFaceData
+public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
 public;Geometry

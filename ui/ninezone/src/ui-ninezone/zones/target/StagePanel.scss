@@ -2,8 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "../_variables";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "../../safearea";
+@import "../variables";
 
 .nz-zones-target-stagePanel {
   @mixin background($direction) {
@@ -98,5 +99,37 @@
     content: '';
     transition: all 0.2s linear;
     position: absolute;
+  }
+
+  &.nz-safe-area-left {
+    &.nz-panel-left {
+      &:after {
+        @include nz-safe-area-left;
+      }
+    }
+  }
+
+  &.nz-safe-area-top {
+    &.nz-panel-top {
+      &:after {
+        @include nz-safe-area-top;
+      }
+    }
+  }
+
+  &.nz-safe-area-right {
+    &.nz-panel-right {
+      &:after {
+        @include nz-safe-area-right;
+      }
+    }
+  }
+
+  &.nz-safe-area-bottom {
+    &.nz-panel-bottom {
+      &:after {
+        @include nz-safe-area-bottom;
+      }
+    }
   }
 }

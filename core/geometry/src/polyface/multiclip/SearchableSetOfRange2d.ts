@@ -26,6 +26,13 @@ export class SearchableSetOfRange2d<T> {
   private updateForSearch() {
 
   }
+  public totalRange(result?: Range2d): Range2d {
+    result = result ? result : Range2d.createNull();
+    for (const r of this._rangeArray)
+      result.extendRange(r);
+    return result;
+  }
+  /** Add a range to the search set. */
   public addRange(range: LowAndHighXY, tag: T) {
     this._isDirty = true;
     const myRange = Range2d.createNull();

@@ -110,6 +110,7 @@ function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, i
 
 /** @internal */
 export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
+  private readonly _copyrightImagesByViewportId = new Map<number, HTMLImageElement>();
   private static _scratchRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
   private static _scratchQParams = QParams3d.fromRange(CesiumWorldTerrainTileLoader._scratchRange);
@@ -118,11 +119,23 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchTriangle = new Triangle();
   private static _scratchNormal = Vector3d.createZero();
+
   constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d) {
     super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
   public getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string {
     return (IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution"));
+  }
+  public addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void {
+    let image = this._copyrightImagesByViewportId.get(viewport.viewportId);
+    if (undefined === image) {
+      // This image is rather large. Cesium's usage guidelines prohibit resizing it.
+      image = new Image();
+      image.src = "images/ion_color_white.png";
+      this._copyrightImagesByViewportId.set(viewport.viewportId, image);
+    }
+
+    images.unshift(image);
   }
   public get maxDepth(): number { return this._maxDepth; }
   public get geometryAttributionProvider(): MapTileGeometryAttributionProvider { return this; }

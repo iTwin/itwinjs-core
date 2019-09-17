@@ -408,9 +408,6 @@ export class ToolAdmin {
   private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
 
-  // Workaround for Edge Bug.
-  private static _keysCurrentlyDown = new Set<string>(); // The (small) set of keys that are currently pressed.
-
   /** Handler that wants to process synching latest tool setting properties with UI.
    *  @internal
    */
@@ -427,20 +424,8 @@ export class ToolAdmin {
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
-    if (ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
-      return;
-
-    // Workaround for Edge Bug. Edge doesn't correctly set the "repeat" flag for keyboard events. We therefore have to implement it
-    // ourselves. Keep the test above since it will be faster for other browsers. We can delete this entire block of code when Edge works correctly.
-    if (ev.type === "keydown") {
-      if (ToolAdmin._keysCurrentlyDown.has(ev.code)) // if we've already received a keydown for this key, its a repeat. Skip it
-        return;
-      ToolAdmin._keysCurrentlyDown.add(ev.code);
-    } else {
-      ToolAdmin._keysCurrentlyDown.delete(ev.code);
-    }
-
-    IModelApp.toolAdmin.addEvent(ev);
+    if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+      IModelApp.toolAdmin.addEvent(ev);
   }
 
   /** @internal */
@@ -455,8 +440,6 @@ export class ToolAdmin {
       ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
     });
 
-    // the list of currently down keys can get out of sync if a key goes down and then we lose focus. Clear the list every time we get focus.
-    window.onfocus = () => { ToolAdmin._keysCurrentlyDown.clear(); };
     ToolAdmin._removals.push(() => { window.onfocus = null; });
   }
 

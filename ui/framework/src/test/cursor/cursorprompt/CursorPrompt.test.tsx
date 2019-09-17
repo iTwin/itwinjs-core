@@ -33,7 +33,7 @@ describe("CursorPrompt", () => {
     wrapper.unmount();
   });
 
-  it("should display, update and close", async () => {
+  it.skip("should display, update and close", async () => {
     const wrapper = mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 

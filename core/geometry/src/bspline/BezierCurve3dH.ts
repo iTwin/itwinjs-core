@@ -16,6 +16,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { Range3d } from "../geometry3d/Range";
+/** @module Bspline */
 
 /** 3d curve with homogeneous weights.
  * * A control point with weight w and cartesian (projected) coordinates x,y,z has the weight multiplied into the coordinates,

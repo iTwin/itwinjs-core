@@ -8,6 +8,8 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { SmallSystem } from "../numerics/Polynomials";
 import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
+import { Triangulator } from "./Triangulation";
 
 /** @module Topology */
 /**
@@ -18,6 +20,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
  */
 export class InsertAndRetriangulateContext {
   private _graph: HalfEdgeGraph;
+  private _edgeSet: MarkedEdgeSet;
   private _searcher: HalfEdgePositionDetail;
   // Temporaries used in reAimFromFace
   // private _lastBefore: HalfEdgePositionDetail;
@@ -25,6 +28,7 @@ export class InsertAndRetriangulateContext {
 
   private constructor(graph: HalfEdgeGraph) {
     this._graph = graph;
+    this._edgeSet = MarkedEdgeSet.create(graph)!;
     this._searcher = HalfEdgePositionDetail.create();
     // this._lastBefore = HalfEdgePositionDetail.create();
     // this._firstAfter = HalfEdgePositionDetail.create();
@@ -38,17 +42,9 @@ export class InsertAndRetriangulateContext {
   // Walk face from edgeNode;  insert new edges back to start node from all except
   //   immediate successor and predecessor.
   // insert all new nodes, and nodes of the existing face, in edgeSet.
-  private retriangulateFromBaseVertex(centralNode: HalfEdge, _edgeSet: any) {
+  private retriangulateFromBaseVertex(centralNode: HalfEdge) {
     const numNode = centralNode.countEdgesAroundFace();
-    /*
-    if (nullptr != edgeSet) {
-      VU_FACE_LOOP(node, centralNode)
-      {
-        vu_markedEdgeSetTestAndAdd(edgeSet, node);
-      }
-      END_VU_FACE_LOOP(node, centralNode)
-    }
-    */
+    this._edgeSet.addAroundFace(centralNode);
     if (numNode < 4 || centralNode.signedFaceArea() <= 0.0)
       return;
     const numEdge = numNode - 3;
@@ -58,11 +54,7 @@ export class InsertAndRetriangulateContext {
       farNode = farNode.faceSuccessor;
       nearNode = this._graph.createEdgeHalfEdgeHalfEdge(nearNode, 0, farNode, 0);
       farNode = nearNode.faceSuccessor;
-      /*
-
-      if (nullptr != edgeSet)
-        vu_markedEdgeSetTestAndAdd(edgeSet, newA);
-      */
+      this._edgeSet.addToSet(nearNode);
     }
   }
   /** Reset the "current" position to unknown state. */
@@ -131,7 +123,7 @@ export class InsertAndRetriangulateContext {
     else
       this._searcher = this.searchForNearestVertex(xyz);
   }
-  public insertAndRetriangulate(xyz: Point3d, newZWins: boolean, edgeSet?: any): boolean {
+  public insertAndRetriangulate(xyz: Point3d, newZWins: boolean): boolean {
     this.moveToPoint(this._searcher, xyz);
     const seedNode = this._searcher.node;
     let stat = false;
@@ -139,15 +131,17 @@ export class InsertAndRetriangulateContext {
     } else if (this._searcher.isFace) {
       if (!seedNode.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const newInteriorNode = this._graph.createEdgeXYZHalfEdge(xyz.x, xyz.y, xyz.z, 0, seedNode, 0);
-        this.retriangulateFromBaseVertex(newInteriorNode, edgeSet);
+        this.retriangulateFromBaseVertex(newInteriorNode);
+        Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
         this._searcher.resetAsVertex(newInteriorNode);
       }
       stat = true;
     } else if (this._searcher.isEdge) {
       const newA = this._graph.splitEdgeAtFraction(seedNode, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
-      this.retriangulateFromBaseVertex(newA, edgeSet);
-      this.retriangulateFromBaseVertex(newB, edgeSet);
+      this.retriangulateFromBaseVertex(newA);
+      this.retriangulateFromBaseVertex(newB);
+      Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
       this._searcher.resetAsVertex(newA);
       stat = true;
     } else if (this._searcher.isVertex) {
@@ -184,8 +178,8 @@ export class InsertAndRetriangulateContext {
       if (!psc.setSearchRay(movingPosition, xyz, ray)) {
         return false;
       } else if (movingPosition.isFace) {
-        const lastBefore =  HalfEdgePositionDetail.create();
-        const firstAfter =  HalfEdgePositionDetail.create();
+        const lastBefore = HalfEdgePositionDetail.create();
+        const firstAfter = HalfEdgePositionDetail.create();
         const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore` !!
         switch (rc) {

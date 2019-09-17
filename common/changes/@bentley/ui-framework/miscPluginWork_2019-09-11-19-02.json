@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change BackstageItemSpec to use localized strings not keys to be localized due to the way Plugins provide localization.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

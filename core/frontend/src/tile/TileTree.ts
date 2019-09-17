@@ -225,6 +225,7 @@ export abstract class TileLoader {
   protected get _loadEdges(): boolean { return true; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
+  public get isContentUnbounded(): boolean { return false; }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed the `[propName: string]: any` indexed from Entity. It prevented the compiler from catching many basic errors.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

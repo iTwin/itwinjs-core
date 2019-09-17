@@ -161,6 +161,7 @@ public;IModelHost
 public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
+alpha;IModelTransformContext
 alpha;IModelTransformer
 internal;class InformationCarrierElement 
 public;class InformationContentElement 

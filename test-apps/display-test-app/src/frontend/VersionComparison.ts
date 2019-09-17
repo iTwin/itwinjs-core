@@ -14,6 +14,7 @@ import {
   ChangeFlags,
   FeatureOverrideProvider,
   FeatureSymbology,
+  IModelApp,
   IModelConnection,
   SceneContext,
   SpatialModelState,
@@ -21,6 +22,7 @@ import {
   SpatialViewState,
   TiledGraphicsProvider,
   TileTree,
+  Tool,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 
@@ -278,5 +280,16 @@ export async function disableVersionComparison(vp: Viewport): Promise<void> {
   if (undefined !== existing && existing instanceof Provider) {
     existing.dispose();
     await existing.iModel.closeSnapshot();
+  }
+}
+
+export class VersionComparisonTool extends Tool {
+  public static toolId = "VersionComparison";
+  public run(_args: any[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      emulateVersionComparison(vp); // tslint:disable-line:no-floating-promises
+
+    return true;
   }
 }
