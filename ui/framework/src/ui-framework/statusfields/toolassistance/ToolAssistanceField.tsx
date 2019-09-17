@@ -76,7 +76,7 @@ interface ToolAssistanceFieldState {
   showMouseInstructions: boolean;
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
-  dialogPinned: boolean;
+  isPinned: boolean;
 }
 
 /** Tool Assistance Field React component.
@@ -118,7 +118,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showMouseInstructions: false,
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
-      dialogPinned: false,
+      isPinned: false,
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
@@ -344,17 +344,17 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this._target}
-          isPinned={this.state.dialogPinned}
+          isPinned={this.state.isPinned}
         >
           <ToolAssistanceDialog
             buttons={
               <>
-                {!this.state.dialogPinned &&
+                {!this.state.isPinned &&
                   <TitleBarButton onClick={this._handlePinButtonClick} title={UiFramework.translate("toolAssistance.pin")}>
                     <i className={"icon icon-pin"} />
                   </TitleBarButton>
                 }
-                {this.state.dialogPinned &&
+                {this.state.isPinned &&
                   <TitleBarButton onClick={this._handleCloseButtonClick} title={UiCore.translate("dialog.close")}>
                     <i className={"icon icon-close"} />
                   </TitleBarButton>
@@ -381,7 +381,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handleOutsideClick = (e: MouseEvent) => {
-    if (this.state.dialogPinned)
+    if (this.state.isPinned)
       return;
 
     if (!this._indicator.current ||
@@ -401,11 +401,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handlePinButtonClick = () => {
-    this.setState({ dialogPinned: true });
+    this.setState({ isPinned: true });
   }
 
   private _handleCloseButtonClick = () => {
-    this.setState({ dialogPinned: false });
+    this.setState({ isPinned: false });
     this._handleClose();
   }
 

@@ -237,11 +237,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
-    this.setState((_prevState) => {
-      return {
-        modalFrontstageCount: FrontstageManager.modalFrontstageCount,
-      };
-    });
+    this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   }
 
   private _navigationBack = () => {

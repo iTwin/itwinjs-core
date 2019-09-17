@@ -183,7 +183,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
   }
 }
 
-/** CursorPrompt content with padding
+/** CursorPopup content with padding
  * @beta
  */
 // tslint:disable-next-line:variable-name

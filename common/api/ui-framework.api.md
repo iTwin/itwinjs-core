@@ -13,6 +13,7 @@ import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { ButtonProps } from '@bentley/ui-core';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
@@ -55,6 +56,7 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
+import { Omit } from '@bentley/ui-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -112,6 +114,76 @@ import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @internal
+export interface AccudrawPopupInfo {
+    // (undocumented)
+    el: HTMLElement;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    isVisible: boolean;
+    // (undocumented)
+    pt: XAndY;
+    // (undocumented)
+    size?: Size;
+    // (undocumented)
+    type: AccudrawPopupType;
+}
+
+// @internal
+export class AccudrawPopupsChangedEvent extends UiEvent<{}> {
+}
+
+// @internal
+export enum AccudrawPopupType {
+    // (undocumented)
+    Calculator = 2,
+    // (undocumented)
+    InputEditor = 1,
+    // (undocumented)
+    MenuButton = 0
+}
+
+// @alpha
+export class AccudrawUiManager {
+    // @internal (undocumented)
+    static clearPopups(): void;
+    // (undocumented)
+    static hideCalculator(): void;
+    // (undocumented)
+    static hideInputEditor(): void;
+    // (undocumented)
+    static hideMenuButton(id: string): void;
+    // @internal (undocumented)
+    static readonly onAccudrawPopupsChangedEvent: AccudrawPopupsChangedEvent;
+    // @internal (undocumented)
+    static readonly popupCount: number;
+    // @internal (undocumented)
+    static readonly popups: AccudrawPopupInfo[];
+    // (undocumented)
+    static removeCalculator(): void;
+    // (undocumented)
+    static removeInputEditor(): void;
+    // (undocumented)
+    static removeMenuButton(id: string): void;
+    // (undocumented)
+    static showCalculator(el: HTMLElement, pt: XAndY, resultIcon: string, onOk: CalculatorOkFunc, onCancel: CalculatorCancelFunc): void;
+    // (undocumented)
+    static showInputEditor(el: HTMLElement, pt: XAndY, iconSpec: string, onCommit: (value: number) => void, onCancel: () => void): void;
+    // (undocumented)
+    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: MenuItemProps[]): void;
+}
+
+// @alpha
+export class AccudrawUiRenderer extends React_2.Component<CommonProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    }
 
 // @public
 export interface Action<T extends string> {
@@ -250,9 +322,6 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
 // @public
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
-
-// @beta
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -448,6 +517,96 @@ export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProp
     // @internal (undocumented)
     readonly state: BooleanListenerState;
 }
+
+// @alpha (undocumented)
+export class Calculator extends React_2.PureComponent<CalculatorProps, CalculatorState> {
+    constructor(props: CalculatorProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    static readonly defaultProps: CalculatorPropsProps;
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha (undocumented)
+export type CalculatorCancelFunc = () => void;
+
+// @internal (undocumented)
+export class CalculatorEngine {
+    constructor();
+    // (undocumented)
+    clearAll(): void;
+    // (undocumented)
+    readonly displayValue: string;
+    // (undocumented)
+    processOperator(operator: CalculatorOperator): string;
+    // (undocumented)
+    processValue(value: string): string;
+    // (undocumented)
+    readonly result: number;
+    }
+
+// @internal (undocumented)
+export enum CalculatorKeyType {
+    // (undocumented)
+    Equals = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Operator = 1
+}
+
+// @alpha (undocumented)
+export type CalculatorOkFunc = (value: number) => void;
+
+// @internal (undocumented)
+export enum CalculatorOperator {
+    // (undocumented)
+    Add = 4,
+    // (undocumented)
+    Backspace = 3,
+    // (undocumented)
+    Clear = 1,
+    // (undocumented)
+    ClearAll = 2,
+    // (undocumented)
+    Decimal = 9,
+    // (undocumented)
+    Divide = 7,
+    // (undocumented)
+    Equals = 10,
+    // (undocumented)
+    Multiply = 6,
+    // (undocumented)
+    NegPos = 8,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Subtract = 5
+}
+
+// @internal (undocumented)
+export interface CalculatorPopupInfo extends AccudrawPopupInfo {
+    // (undocumented)
+    onCancel: CalculatorCancelFunc;
+    // (undocumented)
+    onOk: CalculatorOkFunc;
+    // (undocumented)
+    resultIcon: string;
+}
+
+// @alpha (undocumented)
+export interface CalculatorProps extends CommonProps {
+    // @internal
+    engine: CalculatorEngine;
+    onCancel?: CalculatorCancelFunc;
+    onOk?: CalculatorOkFunc;
+    resultIcon?: React_2.ReactNode;
+}
+
+// @internal (undocumented)
+export type CalculatorPropsProps = Pick<CalculatorProps, "engine">;
 
 // @alpha
 export class CardContainer extends React_2.Component<CardContainerProps> {
@@ -2185,6 +2344,16 @@ export interface IModelUserInfo {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
+// @internal (undocumented)
+export interface InputEditorPopupInfo extends AccudrawPopupInfo {
+    // (undocumented)
+    iconSpec: string;
+    // (undocumented)
+    onCancel: () => void;
+    // (undocumented)
+    onCommit: (value: number) => void;
+}
+
 // @public
 export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
     // (undocumented)
@@ -2288,12 +2457,6 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
     isEnabled?: boolean;
     isPressed?: boolean;
     isVisible?: boolean;
-}
-
-// @public
-export interface ItemPropsList {
-    // @beta (undocumented)
-    items?: AnyItemProps[];
 }
 
 // @public
@@ -2588,6 +2751,53 @@ export class MarkupTools {
     static readonly sketchToolDef: ToolItemDef;
     // (undocumented)
     static readonly symbolToolDef: ToolItemDef;
+}
+
+// @alpha (undocumented)
+export class MenuButton extends React_2.PureComponent<MenuButtonProps, MenuButtonState> {
+    constructor(props: MenuButtonProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @internal (undocumented)
+export interface MenuButtonPopupInfo extends AccudrawPopupInfo {
+    // (undocumented)
+    content: React_2.ReactNode;
+}
+
+// @alpha (undocumented)
+export interface MenuButtonProps extends SquareButtonProps {
+    onSizeKnown?: (size: SizeProps) => void;
+    point: PointProps;
+}
+
+// @alpha
+export class MenuItem extends ItemDefBase {
+    constructor(props: MenuItemProps);
+    // (undocumented)
+    readonly actionItem: ActionButtonItemDef | undefined;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    itemPicked(): void;
+    // (undocumented)
+    readonly submenu: MenuItem[];
+    }
+
+// @alpha
+export class MenuItemHelpers {
+    // (undocumented)
+    static createMenuItemNodes(itemList: MenuItem[]): React_2.ReactNode[];
+    // (undocumented)
+    static createMenuItems(itemPropsList: MenuItemProps[]): MenuItem[];
+}
+
+// @alpha
+export interface MenuItemProps extends ItemProps {
+    id: string;
+    item?: CommandItemProps;
+    submenu?: MenuItemProps[];
 }
 
 // @public

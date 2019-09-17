@@ -56,24 +56,24 @@ export class UiFramework {
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
   /**
-   * Called by IModelApp to initialize the UiFramework
-   * @param store The single redux store created by the IModelApp.
-   * @param i18n The internationalization service created by the IModelApp.
+   * Called by the app to initialize the UiFramework
+   * @param store The single redux store created by the app.
+   * @param i18n The internationalization service created by the app.
    * @param oidcConfig Configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
    */
   public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any> {
     return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
   }
 
   /**
-   * Called by IModelApp to initialize the UiFramework
-   * @param store The single redux store created by the IModelApp.
-   * @param i18n The internationalization service created by the IModelApp.
+   * Called by the app to initialize the UiFramework
+   * @param store The single redux store created by the app.
+   * @param i18n The internationalization service created by the app.
    * @param oidcConfig Optional configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
-   * @param projectServices Optional IModelApp defined projectServices.If not specified DefaultProjectServices will be used.
-   * @param iModelServices Optional IModelApp defined iModelServices.If not specified DefaultIModelServices will be used.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
+   * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
@@ -136,7 +136,7 @@ export class UiFramework {
     return UiFramework._store;
   }
 
-  /** The internationalization service created by the IModelApp. */
+  /** The internationalization service created by the app. */
   public static get i18n(): I18N {
     if (!UiFramework._i18n)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);

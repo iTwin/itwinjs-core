@@ -131,15 +131,15 @@ export interface CustomItemProps extends ItemProps {
   reactElement: React.ReactNode;
 }
 
-/** Union of all Item properties.
- * @beta
+/** Properties for a Menu item
+ * @alpha
  */
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
+export interface MenuItemProps extends ItemProps {
+  /** The id for the menu item. */
+  id: string;
 
-/** Definition for a list of AnyItemProps.
- * @public
- */
-export interface ItemPropsList {
-  /** @beta */
-  items?: AnyItemProps[];
+  /** The item to execute when this item is invoked. Either 'item' or 'submenu' must be specified. */
+  item?: CommandItemProps;
+  /** Nested array of item props. Either 'item' or 'submenu' must be specified. */
+  submenu?: MenuItemProps[];
 }

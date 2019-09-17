@@ -65,6 +65,7 @@ import {
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
@@ -89,6 +90,7 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 
 import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
+import { AccudrawTools } from "../../tools/AccudrawTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
@@ -423,6 +425,12 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
+  private get _openCalculatorItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { ModalDialogManager.openDialog(<CalculatorDialog opened={true} />); },
+    });
+  }
+
   private get _viewportDialogItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.viewportDialog", execute: () => { this.openViewportDialog(); },
@@ -529,21 +537,6 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _moreCursorPopups() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.moreCursorPopups", execute: async () => {
-        CursorPopupManager.open("testTR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 11);
-        CursorPopupManager.open("testR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 11);
-        CursorPopupManager.open("testBR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 11);
-        CursorPopupManager.open("testB2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 11);
-        CursorPopupManager.open("testBL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 11);
-        CursorPopupManager.open("testL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 11);
-        CursorPopupManager.open("testTL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 11);
-        CursorPopupManager.open("testT2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 11);
-      },
-    });
-  }
-
   private get _endCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
@@ -567,21 +560,13 @@ class FrontstageToolWidget extends React.Component {
 
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
-    CursorPopupManager.close("testTR2", false);
     CursorPopupManager.close("testR1", false);
-    CursorPopupManager.close("testR2", false);
     CursorPopupManager.close("testBR1", false);
-    CursorPopupManager.close("testBR2", false);
     CursorPopupManager.close("testB1", false);
-    CursorPopupManager.close("testB2", false);
     CursorPopupManager.close("testBL1", false);
-    CursorPopupManager.close("testBL2", false);
     CursorPopupManager.close("testL1", false);
-    CursorPopupManager.close("testL2", false);
     CursorPopupManager.close("testTL1", false);
-    CursorPopupManager.close("testTL2", false);
     CursorPopupManager.close("testT1", false);
-    CursorPopupManager.close("testT2", false);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
@@ -710,7 +695,7 @@ class FrontstageToolWidget extends React.Component {
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity],
+      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.anotherGroup",
@@ -718,7 +703,8 @@ class FrontstageToolWidget extends React.Component {
       items: [
         AppTools.tool1, AppTools.tool2, this._groupItemDef,
         this._saveContentLayout, this._restoreContentLayout,
-        this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
+        this._startCursorPopup, this._addCursorPopups, this._endCursorPopup,
+        AccudrawTools.addMenuButton, AccudrawTools.hideMenuButton, AccudrawTools.showCalculator, AccudrawTools.showInputEditor,
       ],
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: this._anotherGroupStateFunc,

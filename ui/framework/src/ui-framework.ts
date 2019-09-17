@@ -77,6 +77,7 @@ export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/ConditionalItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/ToolItemDef";
+export * from "./ui-framework/shared/MenuItem";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -167,7 +168,10 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
 
-export * from "./ui-framework/theme/ThemeManager";
+export * from "./ui-framework/accudraw/AccudrawUiManager";
+export * from "./ui-framework/accudraw/Calculator";
+export * from "./ui-framework/accudraw/CalculatorEngine";
+export * from "./ui-framework/accudraw/MenuButton";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

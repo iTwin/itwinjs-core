@@ -338,9 +338,9 @@ describe("ToolAssistanceField", () => {
 
     const toolAssistanceField = wrapper.find(ToolAssistanceField);
     expect(toolAssistanceField.length).to.eq(1);
-    expect(toolAssistanceField.state("dialogPinned")).to.be.false;
-    toolAssistanceField.setState({ dialogPinned: true });
-    expect(toolAssistanceField.state("dialogPinned")).to.be.true;
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+    toolAssistanceField.setState({ isPinned: true });
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
 
     const outsideClick = new MouseEvent("");
     sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
@@ -493,19 +493,19 @@ describe("ToolAssistanceField", () => {
 
     const toolAssistanceField = wrapper.find(ToolAssistanceField);
     expect(toolAssistanceField.length).to.eq(1);
-    expect(toolAssistanceField.state("dialogPinned")).to.be.false;
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
 
     let buttons = wrapper.find(TitleBarButton); // Pin button
     expect(buttons.length).to.eq(1);
     buttons.simulate("click");
     wrapper.update();
-    expect(toolAssistanceField.state("dialogPinned")).to.be.true;
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
 
     buttons = wrapper.find(TitleBarButton);   // Close button
     expect(buttons.length).to.eq(1);
     buttons.simulate("click");
     wrapper.update();
-    expect(toolAssistanceField.state("dialogPinned")).to.be.false;
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(0);
 

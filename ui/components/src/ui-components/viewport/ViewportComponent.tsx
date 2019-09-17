@@ -41,10 +41,10 @@ export interface ViewportProps extends CommonProps {
   viewState?: ViewState;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
+
   /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** @internal */
-
   getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
   /** @internal used only for testing */
   viewManagerOverride?: ViewManager;

@@ -666,6 +666,18 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
     render(): JSX.Element;
 }
 
+// @alpha
+export class IconInput extends React.PureComponent<IconInputProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface IconInputProps extends InputProps {
+    containerClassName?: string;
+    icon: React.ReactNode;
+}
+
 // @beta
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)

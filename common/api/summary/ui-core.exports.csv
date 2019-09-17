@@ -69,6 +69,8 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
+alpha;IconInput 
+alpha;IconInputProps 
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "../variables";
 
 #uifw-configurableui-wrapper {
   position: relative;
@@ -59,11 +60,11 @@
 
   >.nz-popup-tooltip {
     border: {
-      color: $buic-foreground-disabled;
-      radius: 3px;
+      color: $uifw-popup-border-color;
+      radius: $uifw-popup-border-radius;
       style: solid;
-      width: 1px;
-    }
+      width: $uifw-popup-border-width;
+      }
   }
 }
 

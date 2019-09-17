@@ -61,9 +61,9 @@ export interface KeyboardShortcutProps extends ItemProps {
    */
   key: string | FunctionKey | SpecialKey;
 
-  /** The item to execute when this shortcut is invoked. Either 'items' or 'shortcuts' must be specified. */
+  /** The item to execute when this shortcut is invoked. Either 'item' or 'shortcuts' must be specified. */
   item?: ActionButtonItemDef;
-  /** Nested array of shortcut props. Either 'items' or 'shortcuts' must be specified. */
+  /** Nested array of shortcut props. Either 'item' or 'shortcuts' must be specified. */
   shortcuts?: KeyboardShortcutProps[];
 
   /** Indicates whether the Alt key required. Default - false */

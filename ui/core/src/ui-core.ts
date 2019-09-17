@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore focustrap imagecheckbox iconinput
+
 export * from "./ui-core/UiCore";
 
 export * from "./ui-core/base/Div";
@@ -30,8 +33,6 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
-// cSpell:ignore focustrap
-
 export * from "./ui-core/focustrap/FocusTrap";
 
 export * from "./ui-core/hocs/withIsPressed";
@@ -49,7 +50,6 @@ export * from "./ui-core/popup/Popup";
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
-// cSpell:ignore imagecheckbox
 export * from "./ui-core/imagecheckbox/ImageCheckBox";
 
 export * from "./ui-core/searchbox/SearchBox";
@@ -97,6 +97,7 @@ export * from "./ui-core/button/UnderlinedButton";
 export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
 export * from "./ui-core/inputs/InputStatus";
+export * from "./ui-core/inputs/iconinput/IconInput";
 export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledSelect";
