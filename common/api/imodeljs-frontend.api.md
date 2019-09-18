@@ -2607,7 +2607,7 @@ export namespace FeatureSymbology {
         // @internal
         getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
         // @internal
-        protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined;
+        protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined;
         // @internal (undocumented)
         protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined;
         getElementOverridesById(id: Id64String): Appearance | undefined;
@@ -7391,6 +7391,8 @@ export abstract class TileAdmin {
     abstract readonly tileExpirationTime: BeDuration;
     // @internal (undocumented)
     abstract readonly tileTreeExpirationTime: BeDuration | undefined;
+    // @internal (undocumented)
+    abstract readonly useProjectExtents: boolean;
 }
 
 // @alpha (undocumented)
@@ -7406,6 +7408,8 @@ export namespace TileAdmin {
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
+        // @internal
+        useProjectExtents?: boolean;
     }
     export interface Statistics {
         numActiveRequests: number;
