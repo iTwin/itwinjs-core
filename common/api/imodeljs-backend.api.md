@@ -1917,7 +1917,7 @@ export class IModelDb extends IModel {
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
     // @internal (undocumented)
-    static performUpgrade(pathname: string): any;
+    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
