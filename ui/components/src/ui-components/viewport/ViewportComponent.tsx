@@ -87,14 +87,14 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       throw new UiError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
 
     const viewState = await this.getViewState();
+    /* istanbul ignore else */
+    if (!this._mounted)
+      return;
 
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
     const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
     this._vp = screenViewport.create(this._viewportDiv.current, viewState);
     viewManager.addViewport(this._vp);
-
-    if (this.props.viewportRef)
-      this.props.viewportRef(this._vp);
 
     ViewportComponentEvents.initialize();
     ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent);
@@ -104,6 +104,10 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     this._vp.onViewChanged.addListener(this._handleViewChanged);
     this._viewClassFullName = this._vp.view.classFullName;
     this.setState({ viewId: this._vp.view.id });
+
+    /* istanbul ignore else */
+    if (this.props.viewportRef)
+      this.props.viewportRef(this._vp);
   }
 
   public componentWillUnmount() {
