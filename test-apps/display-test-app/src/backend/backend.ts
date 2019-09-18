@@ -37,6 +37,7 @@ function setupStandaloneConfiguration() {
       configuration.signInForStandalone = true;
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
+    configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
     configuration.disableMagnification = undefined !== process.env.SVT_DISABLE_MAGNIFICATION;
     const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
     if (undefined !== treeExpiration)

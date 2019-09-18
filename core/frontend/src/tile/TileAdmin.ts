@@ -43,6 +43,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get enableInstancing(): boolean;
   /** @internal */
+  public abstract get useProjectExtents(): boolean;
+  /** @internal */
   public abstract get disableMagnification(): boolean;
 
   /** @internal */
@@ -182,6 +184,16 @@ export namespace TileAdmin {
      * @internal
      */
     maximumMajorTileFormatVersion?: number;
+
+    /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
+     * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
+     * Setting this option to `true` will instead base the range of the tree on the project extents.
+     *
+     * Default value: false
+     *
+     * @internal
+     */
+    useProjectExtents?: boolean;
 
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.
@@ -359,6 +371,7 @@ class Admin extends TileAdmin {
   private readonly _enableInstancing: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
+  private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -409,6 +422,7 @@ class Admin extends TileAdmin {
     this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+    this._useProjectExtents = true === options.useProjectExtents;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
       if (undefined === seconds)
@@ -432,6 +446,7 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get useProjectExtents() { return this._useProjectExtents; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get realityTileExpirationTime() { return this._realityTileExpirationTime; }

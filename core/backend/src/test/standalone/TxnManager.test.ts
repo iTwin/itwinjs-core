@@ -48,7 +48,7 @@ describe("TxnManager", () => {
 
   after(() => imodel.closeStandalone());
 
-  it.only("Undo/Redo", async () => {
+  it("Undo/Redo", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
     const modelId = props.model;
