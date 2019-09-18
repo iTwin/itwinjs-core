@@ -5,7 +5,7 @@
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { UpdateModelOptions } from "../../IModelDb";
@@ -48,7 +48,7 @@ describe("TxnManager", () => {
 
   after(() => imodel.closeStandalone());
 
-  it("Undo/Redo", async () => {
+  it.only("Undo/Redo", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
     const modelId = props.model;
@@ -211,6 +211,14 @@ describe("TxnManager", () => {
     model = models.getModel(modelId);
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
+
+    // Deleting a geometric element updates model's GeometryGuid
+    const guid4 = model.geometryGuid;
+    toModify.delete();
+    imodel.saveChanges("save deletion of element");
+    assert.throws(() => elements.getElement(modifyId));
+    model = models.getModel(modelId);
+    expect(model.geometryGuid).not.to.equal(guid4);
   });
 
   it("Element drives element events", async () => {
