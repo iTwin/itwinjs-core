@@ -268,4 +268,21 @@ describe("GeometryA", () => {
       ck.testTrue(Geometry.isIn01(f, false), "isIn01 with test suppressed)");
     expect(ck.getNumErrors()).equals(0);
   });
+  /*
+    it.only("Hypot", () => {
+      for (const outerMultiplier of [1, 0.12312, 1.3284723423489789789789789, -0.892734238742384723, 1.23218987987929232323423e10]) {
+        console.log();
+        console.log("Outer multiplier", outerMultiplier);
+        for (const multiplier of [1, 10, 100, 1000.0, 10000.0, 1.0 - 6, 1.0e10, 0.1232131231, 1.3423423e12, 5.23423989081213887821238823712e12]) {
+          const a = 3.0 * multiplier * outerMultiplier;
+          const b = 4.0 * multiplier * outerMultiplier;
+          const c = Math.abs(5.0 * multiplier * outerMultiplier);
+          const q = Math.hypot(a, b);
+          const r = Geometry.hypotenuseXY(a, b);
+          console.log(a, b, c, "(KAHAN " + q + "  error " + (q - c) / c + ")", "(BSI " + r + "  error  " + (r - c) / c + ")");
+        }
+      }
+    });
+  */
+
 });

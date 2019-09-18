@@ -9,6 +9,7 @@ ignore: true
 
 * PolyfaceQuery method to partition by connectivity
 * Optimize triangle flipping
+* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
 
 ### Details
 
@@ -41,6 +42,11 @@ ignore: true
     * [HalfEdgeGraph.grabMask]($geometry)
   * `Triangulation`
     * [Triangulation.flipTrianglesInEdgeSet]($geometry)
+ * Classes for 2d range searching.
+    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
+    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
+    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
+    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
 
 ## Favorite Properties
 
@@ -108,3 +114,4 @@ private async buildContextMenu(args: PropertyGridContextMenuArgs) {
   }
 }
 ```
+

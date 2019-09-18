@@ -27,6 +27,7 @@ import { ChainMergeContext } from "../topology/ChainMerge";
 import { UnionFindContext } from "../numerics/UnionFind";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { RangeLengthData } from "./RangeLengthData";
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -489,8 +490,20 @@ export class PolyfaceQuery {
     return chainContext.collectMaximalChains();
   }
 
+  /** Find segments (within the linestring) which project to facets.
+   * * Return chains.
+   */
+  public static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData {
+    if (polyface instanceof Polyface) {
+      return this.collectRangeLengthData(polyface.createVisitor(0));
+    }
+    const rangeData = new RangeLengthData();
+    // polyface is a visitor ...
+    for (polyface.reset(); polyface.moveToNextFacet();)
+      rangeData.accumulateGrowableXYZArrayRange(polyface.point);
+    return rangeData;
+  }
 }
-
 /** Announce the points on a drape panel.
  * * The first two points in the array are always along the draped line segment.
  * * The last two are always on the facet.

@@ -531,34 +531,3 @@ export class SaveAndRestoreCheckTransform {
     this.baseTransform = Checker.getTransform();
   }
 }
-
-/**
- * Accumulate given values. Return the mean, standard deviation.
- */
-export class UsageSums {
-  public sums: Float64Array = new Float64Array(3);
-  public min: number;
-  public max: number;
-
-  public constructor() {
-    this.min = Number.MAX_VALUE; this.max = -Number.MAX_VALUE;
-    this.clearSums();
-  }
-
-  public get count(): number { return this.sums[0]; }
-  public get mean(): number { return this.sums[0] > 0 ? this.sums[1] / this.sums[0] : 0.0; }
-
-  public clearSums() {
-    this.sums[0] = this.sums[1] = this.sums[2] = 0;
-    this.min = Number.MAX_VALUE;
-    this.max = -Number.MAX_VALUE;
-  }
-
-  public accumulate(x: number) {
-    this.sums[0] += 1;
-    this.sums[1] += x;
-    this.sums[2] += x * x;
-    if (x > this.max) this.max = x;
-    if (x < this.min) this.min = x;
-  }
-}

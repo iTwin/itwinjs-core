@@ -18,8 +18,9 @@ import { ChainMergeContext } from "../topology/ChainMerge";
 import { LineString3d } from "../curve/LineString3d";
 import { SweepContour } from "../solid/SweepContour";
 import { PolygonOps } from "../geometry3d/PolygonOps";
-import { SearchableSetOfRange2d } from "./multiclip/SearchableSetOfRange2d";
 import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
+import { PolyfaceQuery } from "./PolyfaceQuery";
+import { RangeSearch } from "./multiclip/RangeSearch";
 
 /** PolyfaceClip is a static class gathering operations using Polyfaces and clippers.
  * @public
@@ -148,8 +149,10 @@ export class PolyfaceClip {
   public static clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorA: PolyfaceVisitor, visitorB: PolyfaceVisitor,
     builderAUnderB: PolyfaceBuilder | undefined,
     builderAOverB: PolyfaceBuilder | undefined) {
-
-    const searchA = new SearchableSetOfRange2d<number>();
+    const rangeDataA = PolyfaceQuery.collectRangeLengthData(visitorA);
+    const searchA = RangeSearch.create2dSearcherForRangeLengthData<number>(rangeDataA);
+    if (!searchA)
+      return;
     const range = Range3d.create();
     for (visitorA.reset(); visitorA.moveToNextFacet();) {
       visitorA.point.setRange(range);
@@ -213,7 +216,5 @@ export class PolyfaceClip {
       meshAUnderB: builderAUnderB.claimPolyface(),
       meshAOverB: builderAOverB.claimPolyface(),
     };
-
   }
-
 }
