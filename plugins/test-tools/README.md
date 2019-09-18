@@ -1,8 +1,8 @@
-# WMS Example Plugin
+# Test Tools Example Plugin
 
 Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
-An iModel.js example Plugin that demonstrates adding a WMS (Web Map Service) tiled graphics provider to the graphics of a view:
+An iModel.js example Plugin that adds some tools used for testing various WIP features in iModel.js.
 
 This plugin serves as an example of a plugin that can be added to iModel.js host applications.
 See http://imodeljs.org for comprehensive documentation on the iModel.js API and the various constructs used in this sample.
@@ -29,7 +29,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Start the plugin using the PluginTool - PluginTool.run("localhost:3000/wmsPlugin");
+7. Start the plugin using the PluginTool - PluginTool.run("localhost:3000/testTools");
 
 ## Contributing
 

@@ -269,7 +269,27 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert.isDefined(iModelId);
   });
 
-  // Application Setting
+  // Application Setting with the same name as a User App Setting (make sure they are independently stored.)
+  it("should maintain app-specific settings separately from user settings with the same namespace/name (#integration)", async () => {
+    const independentAppSetting = { stringValue: "App independence test", numberValue: 82919, arrayValue: [10, 14, 84, 1, 8, 87, 5, 13, 90, 7, 13, 92] };
+
+    const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", "AppUser1", true);
+    chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
+
+    // save the new setting (deleted above, so we know it's new)
+    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, independentAppSetting, "TestSettings", "AppUser1", true);
+    chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
+
+    // read back the result.
+    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "AppUser1", true);
+    chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
+    chai.assert(getResult.setting, "Setting should be returned");
+    chai.expect(getResult.setting.stringValue).equals(independentAppSetting.stringValue);
+    chai.expect(getResult.setting.numberValue).equals(independentAppSetting.numberValue);
+    chai.assert(arraysEqual(getResult.setting.arrayValue, independentAppSetting.arrayValue), "retrieved array contents correct");
+
+  });
+
   it("should save and retrieve an Application Setting (#integration)", async () => {
     const appSetting = { appString: "application String", appNumber: 112, appArray: [101, 102, 103, 104] };
 
@@ -686,6 +706,40 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.expect(getResult2.setting.iModelNumber).equals(iModelSharedSetting.iModelNumber);
     chai.assert(arraysEqual(getResult2.setting.iModelArray, iModelSharedSetting.iModelArray), "retrieved array contents correct");
 
+  });
+
+});
+
+describe("ConnectSettingsClient-User (#integration)", () => {
+  let projectId: GuidString;
+  let iModelId: GuidString;
+  const settingsClient = new ConnectSettingsClient("1001");
+  let requestContext: AuthorizedClientRequestContext;
+
+  before(async () => {
+    const authToken: AuthorizationToken = await TestConfig.login();
+    const accessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
+
+    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    chai.assert.isDefined(projectId);
+    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    chai.assert.isDefined(iModelId);
+  });
+
+  // Application User Setting
+  it("should still retrieve a user setting after an App setting with the same name is stored. (#integration)", async () => {
+    const appUserSettings = {appString: "application User String 1", appNumber: 7, appArray: [20, 30, 40, 50] };
+
+    // read back the AppUser results.
+    for (let iSetting: number = 0; iSetting < 6; iSetting++) {
+      const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", "AppUser1", true);
+      chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
+      chai.assert(getResult.setting, "Setting should be returned");
+      chai.expect(getResult.setting.appString).equals(appUserSettings.appString);
+      chai.expect(getResult.setting.appNumber).equals(appUserSettings.appNumber);
+      chai.assert(arraysEqual(getResult.setting.appArray, appUserSettings.appArray), "retrieved array contents correct");
+    }
   });
 
 });

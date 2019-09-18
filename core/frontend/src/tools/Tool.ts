@@ -7,7 +7,7 @@
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
@@ -370,6 +370,9 @@ export class Tool {
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
 
+  /** The internationalization services instance used to translate strings from the namespace. If undefined, uses IModelApp.i18n */
+  public static i18n: I18N | undefined;
+
   public constructor(..._args: any[]) { }
 
   /** The minimum number of arguments allowed by [[parseAndRun]]. If subclasses override [[parseAndRun]], they should also
@@ -389,20 +392,14 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
+   * @param i18n optional internationalization services object (required only for externally hosted plugins). If undefined, use IModelApp.i18n.
    */
-  public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
-
-  /**
-   * Translate key to localized string. This method is public so it can be overridden by tools in plugins
-   *  since external plugins must perform their own localization.
-   */
-  public static translateWithNamespace(namespaceName: string, key: string): string {
-    return IModelApp.i18n.translateWithNamespace(namespaceName, key);
-  }
+  public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = "tools." + this.toolId + "." + name;
-    const val = this.translateWithNamespace(this.namespace.name, key);
+    const i18n: I18N = this.i18n ? this.i18n : IModelApp.i18n;
+    const val =  i18n.translateWithNamespace(this.namespace.name, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -773,9 +770,12 @@ export class ToolRegistry {
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: ToolType, namespace?: I18NNamespace) {
+  public register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
+
+    if (i18n)
+      toolClass.i18n = i18n;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it

@@ -90,12 +90,14 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
     if (oidcConfig) {
-      UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
-        .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
-      return Promise.all([readFinishedPromise, initOidcPromise]);
+      if (oidcConfig) {
+        UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
+        const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
+          .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
+        return Promise.all([readFinishedPromise, initOidcPromise]);
+      }
+      return readFinishedPromise;
     }
-    return readFinishedPromise;
   }
 
   /** Unregisters the UiFramework internationalization service namespace */

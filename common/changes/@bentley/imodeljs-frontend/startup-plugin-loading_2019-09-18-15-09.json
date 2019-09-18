@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added facility to load plugins specified in settings at startup",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

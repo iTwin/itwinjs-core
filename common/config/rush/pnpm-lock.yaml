@@ -46,6 +46,7 @@ dependencies:
   '@rush-temp/rpc-integration-tests': 'file:projects/rpc-integration-tests.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:projects/test-apps-synchro-schedule-importer.tgz'
+  '@rush-temp/test-tools': 'file:projects/test-tools.tgz'
   '@rush-temp/ui-components': 'file:projects/ui-components.tgz'
   '@rush-temp/ui-core': 'file:projects/ui-core.tgz'
   '@rush-temp/ui-framework': 'file:projects/ui-framework.tgz'
@@ -14536,6 +14537,22 @@ packages:
       integrity: sha512-tGRMi7jrlBJxZCxS4ooOiFTOH+NwNAPJYGlUWo9yjUPBnzDXCFJKyji3Pm/5s4KiIrlYBmCVrDrYD4Qqx9OrgA==
       tarball: 'file:projects/test-apps-synchro-schedule-importer.tgz'
     version: 0.0.0
+  'file:projects/test-tools.tgz':
+    dependencies:
+      '@types/node': 10.14.1
+      rimraf: 2.7.1
+      tsconfig-paths: 3.9.0
+      tslint: 5.20.0_typescript@3.5.3
+      tslint-etc: 1.7.0_tslint@5.20.0+typescript@3.5.3
+      typescript: 3.5.3
+      webpack: 4.40.1_webpack@4.40.1
+      webpack-cli: 3.3.8_webpack@4.40.1
+    dev: false
+    name: '@rush-temp/test-tools'
+    resolution:
+      integrity: sha512-ExPFXVZ0gbA3acTJ947Q3Jyxhj5jBATr57biCwtR3iJh0Ul+uYmoTssaQWrAs753uwq7au8N+Tg2iMnKZytE6g==
+      tarball: 'file:projects/test-tools.tgz'
+    version: 0.0.0
   'file:projects/ui-components.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.31
@@ -15001,6 +15018,7 @@ specifiers:
   '@rush-temp/rpc-integration-tests': 'file:./projects/rpc-integration-tests.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:./projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:./projects/test-apps-synchro-schedule-importer.tgz'
+  '@rush-temp/test-tools': 'file:./projects/test-tools.tgz'
   '@rush-temp/ui-components': 'file:./projects/ui-components.tgz'
   '@rush-temp/ui-core': 'file:./projects/ui-core.tgz'
   '@rush-temp/ui-framework': 'file:./projects/ui-framework.tgz'

@@ -1,8 +1,8 @@
-# WMS Example Plugin
+# IotDemo Example Plugin
 
 Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
-An iModel.js example Plugin that demonstrates adding a WMS (Web Map Service) tiled graphics provider to the graphics of a view:
+An iModel.js example Plugin that loosely emulates the functions of a network of IoT devices that monitor a building's temperature, heating and cooling, Co2 levels, smoke, and fire alarms.
 
 This plugin serves as an example of a plugin that can be added to iModel.js host applications.
 See http://imodeljs.org for comprehensive documentation on the iModel.js API and the various constructs used in this sample.
@@ -13,13 +13,13 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 2. The dependencies are installed as part of "rush install" in the iModel.js monorepository.
 
-3. Build the plugin as part of the "rush build" in the iModel.js monorepository, or separtely build using the npm build command.
+3. Build the plugin as part of the "rush build" in the iModel.js monorepository, or separately build using the npm build command.
 
   ```sh
   npm run build
   ```
 
-4. Copy the output files in lib/webresource to the corresponding directories in the output directory of the host application.
+4. Copy all the output files in the lib/build directory tree to imjs_plugins/iotDemo directory in the web resources of the host application.
 
 5. Start the host application - go to its directory and run:
 
@@ -28,6 +28,8 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
   ```
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
+
+7. Start the plugin using the PluginTool - PluginTool.run("localhost:3000/iotDemo");
 
 ## Contributing
 

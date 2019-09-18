@@ -3346,6 +3346,8 @@ export class IModelApp {
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static readonly notifications: NotificationManager;
+    // @internal (undocumented)
+    static readonly pluginAdmin: PluginAdmin;
     // @alpha
     static readonly quantityFormatter: QuantityFormatter;
     // @beta
@@ -3383,6 +3385,8 @@ export interface IModelAppOptions {
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     notifications?: NotificationManager;
+    // @internal (undocumented)
+    pluginAdmin?: PluginAdmin;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
     // @internal (undocumented)
@@ -3679,6 +3683,37 @@ export interface LinkElementsInfo {
         end: number;
     }>;
     onClick?: (record: PropertyRecord, text: string) => void;
+}
+
+// @internal (undocumented)
+export class LoadSavedPluginsResult {
+    constructor(status: LoadSavedPluginsStatus, i18nkey?: string | undefined, pluginResults?: Map<string, PluginLoadResults> | undefined);
+    // (undocumented)
+    i18nkey?: string | undefined;
+    // (undocumented)
+    pluginResults?: Map<string, PluginLoadResults> | undefined;
+    // (undocumented)
+    report(): void;
+    // (undocumented)
+    status: LoadSavedPluginsStatus;
+}
+
+// @internal (undocumented)
+export enum LoadSavedPluginsStatus {
+    // (undocumented)
+    AllPluginsFailedToLoad = 5,
+    // (undocumented)
+    LoadError = 6,
+    // (undocumented)
+    NoSavedPlugins = 2,
+    // (undocumented)
+    NotLoggedIn = 1,
+    // (undocumented)
+    SettingsInvalid = 3,
+    // (undocumented)
+    SomePluginsFailedToLoad = 4,
+    // (undocumented)
+    Success = 0
 }
 
 // @public
@@ -4886,14 +4921,32 @@ export abstract class Plugin {
 
 // @beta
 export class PluginAdmin {
+    constructor();
     // (undocumented)
-    static addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
+    addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
+    addSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
+    // @internal (undocumented)
+    static detailsFromPluginLoadResults(pluginName: string, results: PluginLoadResults, reportSuccess: boolean): {
+        detailHTML: HTMLElement | undefined;
+        detailStrings: string[] | undefined;
+    };
     // (undocumented)
-    static getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
+    getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
     // (undocumented)
-    static getTarFileName(pluginRootName: string): string;
+    getTarFileName(pluginRootName: string): string;
+    // @deprecated
     static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
-    static register(plugin: Plugin): string[] | undefined;
+    loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
+    // @internal
+    loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
+    // @internal (undocumented)
+    loadViewStartupPlugins(): Promise<void>;
+    // (undocumented)
+    onInitialized(): void;
+    register(plugin: Plugin): string[] | undefined;
+    // @deprecated
+    static register(plugin: Plugin): void;
+    removeSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, allUsers: boolean, settingName: string): Promise<void>;
     }
 
 // @beta
@@ -7633,6 +7686,7 @@ export class Tool {
     readonly flyover: string;
     static readonly flyover: string;
     static hidden: boolean;
+    static i18n: I18N | undefined;
     static iconSpec: string;
     readonly iconSpec: string;
     readonly keyin: string;
@@ -7644,11 +7698,10 @@ export class Tool {
     static namespace: I18NNamespace;
     // @beta
     parseAndRun(..._args: string[]): boolean;
-    static register(namespace?: I18NNamespace): void;
+    static register(namespace?: I18NNamespace, i18n?: I18N): void;
     run(..._args: any[]): boolean;
     static toolId: string;
     readonly toolId: string;
-    static translateWithNamespace(namespaceName: string, key: string): string;
 }
 
 // @public
@@ -7891,7 +7944,7 @@ export class ToolRegistry {
     // @internal
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
-    register(toolClass: ToolType, namespace?: I18NNamespace): void;
+    register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
     registerModule(moduleObj: any, namespace?: I18NNamespace): void;
     run(toolId: string, ...args: any[]): boolean;
     // (undocumented)

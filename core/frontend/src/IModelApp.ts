@@ -43,6 +43,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { PluginAdmin } from "./plugin/Plugin";
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -89,6 +90,8 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** @internal */
   terrainProvider?: TerrainProvider;
+  /** @internal */
+  pluginAdmin?: PluginAdmin;
 }
 
 /**
@@ -110,6 +113,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
+  private static _pluginAdmin: PluginAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -170,6 +174,8 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
+  /** @internal */
+  public static get pluginAdmin() { return this._pluginAdmin; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -278,6 +284,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
+    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;       // TBD... (opts.terrainProvider !== undefined) ? opts.terrainProvider : new WorldTerrainProvider();
 
@@ -288,7 +295,9 @@ export class IModelApp {
     this.accuSnap.onInitialized();
     this.locateManager.onInitialized();
     this.tentativePoint.onInitialized();
-    if (this._terrainProvider) this._terrainProvider.onInitialized();
+    this.pluginAdmin.onInitialized();
+    if (this._terrainProvider)
+      this._terrainProvider.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -334,4 +343,5 @@ export class IModelApp {
       };
     };
   }
+
 }
