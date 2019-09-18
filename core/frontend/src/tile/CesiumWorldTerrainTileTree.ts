@@ -129,9 +129,10 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   public addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void {
     let image = this._copyrightImagesByViewportId.get(viewport.viewportId);
     if (undefined === image) {
-      // This image is rather large. Cesium's usage guidelines prohibit resizing it.
       image = new Image();
       image.src = "images/ion_color_white.png";
+      image.width = 173;
+      image.height = 30;
       this._copyrightImagesByViewportId.set(viewport.viewportId, image);
     }
 
