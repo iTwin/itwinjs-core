@@ -7911,6 +7911,7 @@ export class ToolSettings {
     static startDragDistanceInches: number;
     static touchMoveDelay: BeDuration;
     static touchMoveDistanceInches: number;
+    static touchZoomChangeThresholdInches: number;
     static viewingInertia: {
         enabled: boolean;
         damping: number;

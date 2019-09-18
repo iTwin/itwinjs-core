@@ -40,6 +40,8 @@ export class ToolSettings {
   public static touchMoveDistanceInches = 0.15;
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
+  /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
+  public static touchZoomChangeThresholdInches = 0.20;
   /** Radius in screen inches to search for elements that anchor viewing operations. */
   public static viewToolPickRadiusInches = 0.20;
   /** Camera angle enforced for walk tool. */

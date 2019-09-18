@@ -2140,7 +2140,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport!;
     const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
 
-    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
+    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(ToolSettings.touchZoomChangeThresholdInches))
       return 1.0;
 
     return Geometry.clamp(this._startDistance / distance, .1, 10);
@@ -2265,8 +2265,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport;
     const thisPt = ev.viewPoint;
     const smallDistance = vp.pixelsFromInches(0.05);
-    if (this._lastPtView.isAlmostEqualXY(thisPt, smallDistance))
-      return;
+    if (1 === ev.touchCount && this._lastPtView.isAlmostEqualXY(thisPt, smallDistance))
+      return; // Don't early return if multi-touch, center doesn't have to move for zoom...
 
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
