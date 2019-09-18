@@ -259,5 +259,8 @@
   "localFileStage": {
     "localFile": "Local File",
     "selectFile": "Select Local File"
+  },
+  "statusFields": {
+    "unnamedDisplayStyle": "unnamed"
   }
 }

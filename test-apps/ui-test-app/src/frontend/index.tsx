@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool,
+  IModelAppOptions, SelectionTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
@@ -277,10 +277,22 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
+    const viewStates: ViewState[] = [];
+    let defaultViewState: ViewState | undefined;
 
     // store the first selected viewId as default - mostly used by frontstages defined in plugins that want to open a IModelViewport
-    if (viewIdsSelected && viewIdsSelected.length > 0)
-      UiFramework.setDefaultViewId(viewIdsSelected[0]);
+    if (viewIdsSelected && viewIdsSelected.length > 0) {
+      for (const viewId of viewIdsSelected) {
+        const viewState = await iModelConnection.views.load(viewId);
+        if (viewState) {
+          if (!defaultViewState)
+            defaultViewState = viewState;
+          viewStates.push(viewState);
+        }
+      }
+      if (defaultViewState)
+        UiFramework.setDefaultViewState(defaultViewState);
+    }
 
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
@@ -293,7 +305,7 @@ export class SampleAppIModelApp {
 
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === viewsFrontstage) {
-      const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+      const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       frontstageDef = frontstageProvider.frontstageDef;
     } else {

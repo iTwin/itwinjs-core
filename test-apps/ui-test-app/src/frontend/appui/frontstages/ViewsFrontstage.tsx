@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   IModelConnection,
@@ -15,6 +15,7 @@ import {
   OutputMessagePriority,
   OutputMessageType,
   RelativePosition,
+  ViewState,
 } from "@bentley/imodeljs-frontend";
 
 import {
@@ -108,25 +109,25 @@ export class ViewsFrontstage extends FrontstageProvider {
     allowedZones: [6, 9],
   };
 
-  constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
+  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
   }
 
   public get frontstage() {
     // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewIds.length);
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps from number of viewIds: " + this.viewIds.length));
+      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
 
-    // create the content props.
+    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
-    for (const viewId of this.viewIds) {
+    for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewId, iModelConnection: this.iModelConnection, rulesetId: "Items" },
+        applicationData: { viewState, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
     }

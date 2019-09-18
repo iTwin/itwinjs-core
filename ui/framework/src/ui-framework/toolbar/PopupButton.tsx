@@ -128,6 +128,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       // istanbul ignore else
       if (this.props.stateFunc)
         newState = this.props.stateFunc(newState);
+      // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
       }
@@ -144,7 +145,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
-    // istanbul ignore else
+    // istanbul ignore next
     if (e.key === "Escape") {
       this.minimize();
       KeyboardShortcutManager.setFocusToHome();

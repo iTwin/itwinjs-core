@@ -9,7 +9,7 @@ import { Store } from "redux";
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent, UiError, getClassName } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -253,6 +253,12 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewId : /* istanbul ignore next */  undefined;
   }
 
+  public static setDefaultViewState(viewState: ViewState, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultViewState, viewState, immediateSync);
+  }
+  public static getDefaultViewState(): ViewState | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewState : /* istanbul ignore next */  undefined;
+  }
   public static setDefaultRulesetId(viewId: string, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultRulesetId, viewId, immediateSync);
   }

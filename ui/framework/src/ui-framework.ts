@@ -48,6 +48,8 @@ export * from "./ui-framework/content/ContentViewManager";
 export * from "./ui-framework/content/SavedView";
 export * from "./ui-framework/content/SavedViewLayout";
 export * from "./ui-framework/content/ViewportContentControl";
+export * from "./ui-framework/content/IModelViewport";
+export * from "./ui-framework/content/DefaultViewOverlay";
 
 export * from "./ui-framework/dialog/DialogManagerBase";
 export * from "./ui-framework/dialog/ModalDialogManager";

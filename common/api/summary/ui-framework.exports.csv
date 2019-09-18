@@ -135,6 +135,7 @@ public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
 internal;DefaultToolSettingsProvider 
+alpha;DefaultViewOverlay 
 public;DescriptionProps
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
@@ -200,6 +201,8 @@ internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
 internal;IModelUserInfo
+beta;IModelViewportControl 
+beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 internal;InputEditorPopupInfo 
 public;InputFieldMessage 
