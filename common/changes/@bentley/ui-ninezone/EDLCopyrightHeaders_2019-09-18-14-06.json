@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "copyright headers",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Earlin.Lutz@bentley.com"
+}

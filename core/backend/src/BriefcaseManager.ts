@@ -943,12 +943,13 @@ export class BriefcaseManager {
         const changeSetsToDownload = new Array<ChangeSet>(changeSet);
         await BriefcaseManager.imodelClient.changeSets.download(requestContext, changeSetsToDownload, changeSetsPath);
         requestContext.enter();
-      } catch {
+      } catch (error) {
         requestContext.enter();
         // Note: If the cache was shared across processes, it's possible that the download was completed by another process
         if (BriefcaseManager.wasChangeSetDownloaded(changeSet, changeSetsPath))
           continue;
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download changesets", Logger.logError, loggerCategory));
+        Logger.logError(loggerCategory, "Could not download changesets", () => ({ iModelId }));
+        throw error;
       }
     }
     perfLogger.dispose();

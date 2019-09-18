@@ -14,6 +14,7 @@ import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import { SelectionScopesManager } from "../selection/SelectionScopesManager";
 import { PresentationManager } from "../PresentationManager";
+import { FavoritePropertyManager } from "../FavoritePropertyManager";
 
 describe("Presentation", () => {
 
@@ -38,10 +39,12 @@ describe("Presentation", () => {
     it("creates manager instances", () => {
       expect(() => Presentation.presentation).to.throw();
       expect(() => Presentation.selection).to.throw();
+      expect(() => Presentation.favoriteProperties).to.throw();
       expect(() => Presentation.i18n).to.throw();
       Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
       expect(Presentation.selection).to.be.instanceof(SelectionManager);
+      expect(Presentation.favoriteProperties).to.be.instanceof(FavoritePropertyManager);
     });
 
     it("initializes PresentationManager with props", () => {
@@ -115,10 +118,12 @@ describe("Presentation", () => {
       Presentation.initialize();
       expect(Presentation.presentation).to.be.not.null;
       expect(Presentation.selection).to.be.not.null;
+      expect(Presentation.favoriteProperties).to.be.not.null;
       expect(Presentation.i18n).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.presentation).to.throw;
       expect(() => Presentation.selection).to.throw;
+      expect(() => Presentation.favoriteProperties).to.throw;
       expect(() => Presentation.i18n).to.throw;
     });
 
@@ -160,6 +165,26 @@ describe("Presentation", () => {
       expect(Presentation.selection).to.not.eq(otherManager);
       Presentation.selection = otherManager;
       expect(Presentation.selection).to.eq(otherManager);
+    });
+
+  });
+
+  describe("[set] favoriteProperties", () => {
+
+    it("overwrites favoriteProperties instance before initialization", () => {
+      const favoritePropertyManager = new FavoritePropertyManager();
+      Presentation.favoriteProperties = favoritePropertyManager;
+      Presentation.initialize();
+      expect(Presentation.favoriteProperties).to.eq(favoritePropertyManager);
+    });
+
+    it("overwrites favoriteProperties instance after initialization", () => {
+      const favoriteProperties = new FavoritePropertyManager();
+      Presentation.initialize();
+      expect(Presentation.favoriteProperties).to.be.not.null;
+      expect(Presentation.favoriteProperties).to.not.eq(favoriteProperties);
+      Presentation.favoriteProperties = favoriteProperties;
+      expect(Presentation.favoriteProperties).to.eq(favoriteProperties);
     });
 
   });

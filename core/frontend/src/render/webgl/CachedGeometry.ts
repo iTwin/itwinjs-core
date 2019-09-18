@@ -520,7 +520,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
     this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
-    }
+  }
 
   private _setPointsFromFrustum(frustum: Frustum) {
     const wp = this.worldPos;

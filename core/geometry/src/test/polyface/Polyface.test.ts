@@ -34,6 +34,7 @@ import { Sphere } from "../../solid/Sphere";
 import { Box } from "../../solid/Box";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { MomentData } from "../../geometry4d/MomentData";
+import { Geometry } from "../../Geometry";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -684,7 +685,7 @@ describe("Polyface.Faces", () => {
         ck.testCoordinate(currentParam.y, 0);
       } else if (idx % 4 === 1) {
         const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
-        ck.testCoordinate(currentParam.x, Math.hypot(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+        ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
         ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
       }
       // else if (idx % 4 === 2)

@@ -107,6 +107,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   public get supportsViewSelectorChange(): boolean { return true; }
 
   /** Process a ViewSelector change. */
+  // istanbul ignore next
   public async processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void> {
     if (this.viewport) {
       if (IModelApp.viewManager && this.viewport === IModelApp.viewManager.selectedView)

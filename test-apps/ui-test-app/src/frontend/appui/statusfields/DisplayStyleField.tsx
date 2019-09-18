@@ -39,7 +39,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
   private async setStateFromActiveContent(contentControl?: ContentControl): Promise<void> {
     if (contentControl && contentControl.viewport) {
-      const unnamedPrefix = IModelApp.i18n.translate("NavigatorApp:statusFields.unnamedDisplayStyle");
+      const unnamedPrefix = IModelApp.i18n.translate("SampleApp:statusFields.unnamedDisplayStyle");
       const displayStyles = new Map<Id64String, DisplayStyleState>();
       const view = contentControl.viewport.view;
       const is3d = view.is3d();

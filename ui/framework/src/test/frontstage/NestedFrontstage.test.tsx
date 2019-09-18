@@ -5,6 +5,8 @@
 import * as React from "react";
 import TestUtils from "../TestUtils";
 import { expect } from "chai";
+import * as sinon from "sinon";
+
 import {
   Frontstage,
   FrontstageManager,
@@ -18,6 +20,7 @@ import {
   NestedFrontstage,
   ToolWidget,
   CoreTools,
+  FrontstageDef,
 } from "../../ui-framework";
 import { TestFrontstage, TestContentControl, AppStatusBarWidgetControl } from "./FrontstageTestUtils";
 
@@ -89,6 +92,11 @@ class FrontstageToolWidget extends React.Component {
   }
 }
 
+class TestFrontstageDef extends FrontstageDef {
+  protected _onActivated(): void { }
+  protected _onDeactivated(): void { }
+}
+
 describe("NestedFrontstage", () => {
 
   before(async () => {
@@ -109,23 +117,33 @@ describe("NestedFrontstage", () => {
     expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
     expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
 
+    const frontstageDef = new TestFrontstageDef();
+    const spyActivated = sinon.spy(frontstageDef, "_onActivated" as any);
+    const spyDeactivated = sinon.spy(frontstageDef, "_onDeactivated" as any);
+
     const nestedFrontstageProvider = new TestNestedFrontstage();
-    const nestedFrontstageDef = nestedFrontstageProvider.initializeDef();
+    const nestedFrontstageDef = nestedFrontstageProvider.initializeDef(frontstageDef);
+    expect(frontstageDef === nestedFrontstageDef).to.be.true;
+
     await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
     expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
     expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
+    expect(spyActivated.calledOnce).to.be.true;
 
     const nestedFrontstageProvider2 = new TestNestedFrontstage();
     const nestedFrontstageDef2 = nestedFrontstageProvider2.initializeDef();
     await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
     expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
     expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
+    expect(spyDeactivated.calledOnce).to.be.true;
 
     NestedFrontstage.backToPreviousFrontstageCommand.execute();
     expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
+    expect(spyActivated.calledTwice).to.be.true;
 
     NestedFrontstage.backToPreviousFrontstageCommand.execute();
     expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(spyDeactivated.calledTwice).to.be.true;
 
     expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
   });

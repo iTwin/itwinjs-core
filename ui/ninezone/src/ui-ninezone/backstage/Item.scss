@@ -58,10 +58,6 @@
       overflow: hidden;
     }
 
-    > span:nth-child(1) {
-      line-height: $nz-backstage-item-font-size;
-    }
-
     > span:nth-child(2) {
       margin-top: $uicore-s;
       font-size: $uicore-font-size;

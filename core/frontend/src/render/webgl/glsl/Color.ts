@@ -31,8 +31,8 @@ const returnColor = `
   return color;
 `;
 const applyInstanceColor = `
-  color.rgb = mix(color.rgb, a_instanceRgba.rgb / 255.0, extractInstanceBit(kOvrBit_Rgb));
-  color.a = mix(color.a, a_instanceRgba.a / 255.0, extractInstanceBit(kOvrBit_Alpha));
+  color.rgb = mix(color.rgb, a_instanceRgba.rgb / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Rgb));
+  color.a = mix(color.a, a_instanceRgba.a / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Alpha));
 `;
 
 const computeInstancedElementColor = computeElementColor + applyInstanceColor;

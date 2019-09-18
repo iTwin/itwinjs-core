@@ -29,6 +29,10 @@ describe("<Toggle />", () => {
     ).should.matchSnapshot();
   });
 
+  it("renders large correctly", () => {
+    shallow(<Toggle large={true} />).should.matchSnapshot();
+  });
+
   it("Toggle should call onChange handler", () => {
     const spyMethod = sinon.spy();
     const handleChange = (_checked: boolean) => {

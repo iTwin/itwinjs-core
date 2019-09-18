@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "tomas.lapienis@bentley.com"
+}

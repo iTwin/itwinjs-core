@@ -10,7 +10,7 @@
   $vertical-padding: 12px;
 
   background-color: $buic-background-titlebar;
-  min-height: 36px;
+  min-height: $nz-footer-title-bar-height;
   box-sizing: border-box;
   display: grid;
   grid-auto-flow: column;

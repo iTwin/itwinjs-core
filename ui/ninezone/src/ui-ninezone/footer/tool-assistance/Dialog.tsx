@@ -19,6 +19,8 @@ export interface ToolAssistanceDialogProps extends CommonProps {
   children?: React.ReactNode;
   /** Dialog title. */
   title?: string;
+  /** Title bar buttons. I.e. [[TitleBarButton]] */
+  buttons?: React.ReactNode;
 }
 
 /** Tool assistance dialog used with [[ToolAssistance]] component.
@@ -39,7 +41,9 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
         titleBar={
           <TitleBar
             title={this.props.title}
-          />
+          >
+            {this.props.buttons}
+          </TitleBar>
         }
       >
         <div className="nz-content">

@@ -565,6 +565,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
     }
   }
+  /** get range of points. */
+  public getRange(transform?: Transform): Range3d {
+    const range = Range3d.createNull();
+    this.extendRange(range, transform);
+    return range;
+  }
 
   /** Initialize `range` with coordinates in this array. */
   public setRange(range: Range3d, transform?: Transform) {

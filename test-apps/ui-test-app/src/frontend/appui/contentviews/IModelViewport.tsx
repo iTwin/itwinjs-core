@@ -5,63 +5,35 @@
 import * as React from "react";
 
 import {
-  ViewportComponent,
-} from "@bentley/ui-components";
-import {
   ConfigurableCreateInfo,
   ConfigurableUiManager,
   ContentViewManager,
-  ViewportContentControl,
-  UiFramework,
   ViewSelector,
   ViewUtilities,
+  IModelViewportControl as UIFW_IModelViewportControl,
+  IModelViewportControlOptions,
 } from "@bentley/ui-framework";
-import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-
-import { AnimationViewOverlay } from "./AnimationViewOverlay";
-
-// create a HOC viewport component that supports unified selection
-// tslint:disable-next-line:variable-name
-const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
  */
-export class IModelViewportControl extends ViewportContentControl {
-  public static id = "IModelViewport";
-  private _options: any;
-
-  private _onPlayPauseAnimation = (isPlaying: boolean): void => {
-    const isVisible = UiFramework.getIsUiVisible();
-    // turn off ui elements when playing
-    if (isVisible === isPlaying)
-      UiFramework.setIsUiVisible(!isVisible);
-  }
-
-  private _getViewOverlay = (viewport: ScreenViewport): React.ReactNode => {
-    return (
-      <AnimationViewOverlay viewport={viewport} onPlayPause={this._onPlayPauseAnimation} />
-    );
+export class IModelViewportControl extends UIFW_IModelViewportControl {
+  public static get id() {
+    return "TestApp.IModelViewport";
   }
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
+  }
 
-    this._options = options;
-
-    if (options.viewId || options.viewState) {
-      this.reactElement = this.getReactElement(options.iModelConnection, options.viewId, options.viewState);
-    } else {
-      this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
-      this.setIsReady();
-    }
+  /** Get the React component that will be shown when no iModel data is available */
+  protected getNoContentReactElement(options: IModelViewportControlOptions): React.ReactNode {
+    return <MockIModelViewport bgColor={options.bgColor ? options.bgColor : "black"} />;
   }
 
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> {
-    if (this._options.viewId || this._options.viewState)
+    if (this._viewState)
       return super.isReady;
     else
       return Promise.resolve();
@@ -78,43 +50,17 @@ export class IModelViewportControl extends ViewportContentControl {
         ViewUtilities.isSheetView(this.viewport),
         false);
   }
-
-  /** Get the NavigationAidControl associated with this ContentControl */
-  public get navigationAidControl(): string {
-    if (this._options.viewId || this._options.viewState)
-      return super.navigationAidControl;
-    else
-      return "StandardRotationNavigationAid";
-  }
-
-  /** Get the React.Element for a ViewSelector change. */
-  public getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _viewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode {
-    return this.getReactElement(iModelConnection, undefined, viewState);
-  }
-
-  /** Get the React.Element for */
-  private getReactElement(iModelConnection: IModelConnection, viewDefinitionId?: Id64String, viewState?: ViewState): React.ReactNode {
-    return (
-      <UnifiedSelectionViewport
-        viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
-        viewDefinitionId={viewDefinitionId}
-        viewState={viewState}
-        imodel={iModelConnection}
-        ruleset={this._options.ruleset}
-        getViewOverlay={this._getViewOverlay} />
-    );
-  }
-
 }
 
-// This is used for fake viewports (those with no ViewId or ViewState)
+// This is used for fake viewports (those with no ViewState and/or ImodelConnection)
 interface MockIModelViewportProps {
-  bgColor: string;
+  bgColor?: string;
 }
 
-/** iModel Viewport React component */
+/** MockIModelViewport used when imodelConnection and ViewState are not defined
+ * @internal
+ */
 class MockIModelViewport extends React.Component<MockIModelViewportProps> {
-  // private _containerDiv: HTMLDivElement|null;
   private _htmlCanvas!: HTMLCanvasElement;
 
   constructor(props: MockIModelViewportProps) {
@@ -133,7 +79,7 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     };
 
     return (
-      <div style={divStyle}>
+      <div className="ContentViewPane" style={divStyle}>
         <canvas className="uifw-unselectable" style={canvasStyle} ref={(element: any) => { this._htmlCanvas = element; }}
           onMouseMove={this._onMouseMove}
           onMouseLeave={this._onMouseLeave}

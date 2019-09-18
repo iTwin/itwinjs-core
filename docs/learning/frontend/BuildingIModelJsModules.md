@@ -214,6 +214,24 @@ index.html
       height: 100%;
     }
   </style>
+  <script>
+    // refuse to continue if using Internet Explorer or old Edge.
+    if (!!document.documentMode || !!window.StyleMedia) {
+      const body = document.createElement("body");
+      const newDiv = document.createElement("div");
+      newDiv.style.font = "normal bold 16px sans-serif";
+      newDiv.style.display="flex";
+      newDiv.style.justifyContent="center";
+      newDiv.style.position="relative";
+      newDiv.style.top="25%";
+      newDiv.innerHTML = "Sorry, the browser you are using is not supported. Please open the iModel.js viewer with Firefox, Chrome, or Safari.";
+      body.appendChild(newDiv);
+      document.body = body;
+      // this effectively comments off the other script tags.
+      document.write('<script type="text/undefined">');
+    }
+  </script>
+
   <!-- use the webpack-generated runtime.js to get our modules to share dependencies. -->
   <script type="text/javascript" src="runtime.js"></script>
   <!-- Use the IModelJs loader to load the system modules in the correct order -->

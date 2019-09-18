@@ -12,14 +12,19 @@ import {
   IModelDb, IModelJsFs, IModelTransformer,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import {
-  assertSharedIModelContents, assertTargetDbContents, assertTeamIModelContents, assertUpdatesInTargetDb, createSharedIModel, createTeamIModel, getTeamSubjectId,
-  populateSourceDb, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb,
-} from "../IModelTransformerUtils";
+import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
+  const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
+
   before(async () => {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    }
+    if (!IModelJsFs.existsSync(outputDir)) {
+      IModelJsFs.mkdirSync(outputDir);
+    }
     // initialize logging
     if (false) {
       Logger.initializeToConsole();
@@ -29,17 +34,14 @@ describe("IModelTransformer", () => {
   });
 
   it("should import", async () => {
-    const outputDir = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(outputDir))
-      IModelJsFs.mkdirSync(outputDir);
     // Source IModelDb
     const createdOutputFile: string = path.join(outputDir, "TestIModelTransformer-Source.bim");
     if (IModelJsFs.existsSync(createdOutputFile))
       IModelJsFs.removeSync(createdOutputFile);
     const sourceDb: IModelDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
     assert.isTrue(IModelJsFs.existsSync(createdOutputFile));
-    await prepareSourceDb(sourceDb);
-    populateSourceDb(sourceDb);
+    await IModelTransformerUtils.prepareSourceDb(sourceDb);
+    IModelTransformerUtils.populateSourceDb(sourceDb);
     sourceDb.saveChanges();
     // Target IModelDb
     const importedOutputFile: string = path.join(outputDir, "TestIModelTransformer-Target.bim");
@@ -47,7 +49,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.removeSync(importedOutputFile);
     const targetDb: IModelDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
     assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
-    await prepareTargetDb(targetDb);
+    await IModelTransformerUtils.prepareTargetDb(targetDb);
     targetDb.saveChanges();
 
     let numElementsExcluded: number;
@@ -86,7 +88,7 @@ describe("IModelTransformer", () => {
       numElementAspectsExcluded = transformer.numElementAspectsExcluded;
       numRelationshipExcluded = transformer.numRelationshipsExcluded;
       targetDb.saveChanges();
-      assertTargetDbContents(sourceDb, targetDb);
+      IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
       transformer.dispose();
     }
 
@@ -125,7 +127,7 @@ describe("IModelTransformer", () => {
     }
 
     if (true) { // update source db, then import again
-      updateSourceDb(sourceDb);
+      IModelTransformerUtils.updateSourceDb(sourceDb);
       sourceDb.saveChanges();
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
@@ -142,7 +144,7 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsDeleted, 1);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       targetDb.saveChanges();
-      assertUpdatesInTargetDb(targetDb);
+      IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
       const expectedNumTargetElements: number = numTargetElements + transformer.numElementsInserted - transformer.numElementsDeleted;
       const expectedNumExternalSourceAspects: number = numTargetExternalSourceAspects + transformer.numElementsInserted - transformer.numElementsDeleted;
       assert.equal(expectedNumTargetElements, count(targetDb, Element.classFullName), "Third import should not add elements");
@@ -188,38 +190,64 @@ describe("IModelTransformer", () => {
   });
 
   it("should sync Team iModels into Shared", async () => {
-    const iModelA: IModelDb = createTeamIModel("A", Point3d.create(0, 0, 0), ColorDef.green);
-    const iModelB: IModelDb = createTeamIModel("B", Point3d.create(0, 10, 0), ColorDef.blue);
-    const iModelShared: IModelDb = createSharedIModel(["A", "B"]);
-
-    assertTeamIModelContents(iModelA, "A");
-    assertTeamIModelContents(iModelB, "B");
+    const iModelShared: IModelDb = IModelTransformerUtils.createSharedIModel(outputDir, ["A", "B"]);
 
     if (true) {
-      const subjectId: Id64String = getTeamSubjectId(iModelShared, "A");
+      const iModelA: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "A", Point3d.create(0, 0, 0), ColorDef.green);
+      IModelTransformerUtils.assertTeamIModelContents(iModelA, "A");
+      const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerA2S.excludeSubject("/Context");
       transformerA2S.excludeElement(IModel.dictionaryId);
       transformerA2S.importAll();
       transformerA2S.dispose();
+      iModelA.closeSnapshot();
       iModelShared.saveChanges("Imported A");
+      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A"]);
     }
 
     if (true) {
-      const subjectId: Id64String = getTeamSubjectId(iModelShared, "B");
+      const iModelB: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "B", Point3d.create(0, 10, 0), ColorDef.blue);
+      IModelTransformerUtils.assertTeamIModelContents(iModelB, "B");
+      const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerB2S.excludeSubject("/Context");
       transformerB2S.excludeElement(IModel.dictionaryId);
       transformerB2S.importAll();
       transformerB2S.dispose();
+      iModelB.closeSnapshot();
       iModelShared.saveChanges("Imported B");
-      assertSharedIModelContents(iModelShared, ["A", "B"]);
+      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["B"]);
     }
 
-    iModelA.closeSnapshot();
-    iModelB.closeSnapshot();
+    if (true) {
+      const iModelConsolidated: IModelDb = IModelTransformerUtils.createConsolidatedIModel(outputDir, "Consolidated");
+      const transformerS2C = new IModelTransformer(iModelShared, iModelConsolidated);
+      const subjectA: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
+      const subjectB: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
+      const definitionA: Id64String = IModelTransformerUtils.queryDefinitionPartitionId(iModelShared, subjectA, "A");
+      const definitionB: Id64String = IModelTransformerUtils.queryDefinitionPartitionId(iModelShared, subjectB, "B");
+      const definitionC: Id64String = IModelTransformerUtils.queryDefinitionPartitionId(iModelConsolidated, IModel.rootSubjectId, "Consolidated");
+      transformerS2C.context.remapElement(definitionA, definitionC);
+      transformerS2C.context.remapElement(definitionB, definitionC);
+      const physicalA: Id64String = IModelTransformerUtils.queryPhysicalPartitionId(iModelShared, subjectA, "A");
+      const physicalB: Id64String = IModelTransformerUtils.queryPhysicalPartitionId(iModelShared, subjectB, "B");
+      const physicalC: Id64String = IModelTransformerUtils.queryPhysicalPartitionId(iModelConsolidated, IModel.rootSubjectId, "Consolidated");
+      transformerS2C.context.remapElement(physicalA, physicalC);
+      transformerS2C.context.remapElement(physicalB, physicalC);
+      transformerS2C.importModel(definitionA);
+      transformerS2C.importModel(definitionB);
+      transformerS2C.importModel(physicalA);
+      transformerS2C.importModel(physicalB);
+      transformerS2C.importSkippedElements();
+      transformerS2C.importRelationships(ElementRefersToElements.classFullName);
+      transformerS2C.dispose();
+      IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
+      iModelConsolidated.closeSnapshot();
+    }
+
     iModelShared.closeSnapshot();
   });
 });

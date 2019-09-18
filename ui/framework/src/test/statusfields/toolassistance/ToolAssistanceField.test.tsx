@@ -3,14 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { mount } from "enzyme";
+import { mount, ReactWrapper } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { FooterPopup } from "@bentley/ui-ninezone";
-import { Checkbox, LocalUiSettings } from "@bentley/ui-core";
+import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
+import { Toggle, LocalUiSettings } from "@bentley/ui-core";
 
 import TestUtils, { storageMock } from "../../TestUtils";
 import {
@@ -51,6 +51,14 @@ describe("ToolAssistanceField", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
+  const clickIndicator = (wrapper: ReactWrapper) => {
+    wrapper.update();
+    const indicator = wrapper.find("div.nz-indicator");
+    expect(indicator.length).to.eq(1);
+    indicator.simulate("click");
+    wrapper.update();
+  };
+
   before(async () => {
     await TestUtils.initializeUiFramework();
     MockRender.App.startup();
@@ -90,17 +98,11 @@ describe("ToolAssistanceField", () => {
     notifications.outputPrompt(helloWorld);
     wrapper.update();
 
-    let indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
 
-    indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(0);
 
@@ -122,10 +124,7 @@ describe("ToolAssistanceField", () => {
     notifications.setToolAssistance(instructions);
     wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find(".nz-footer-toolAssistance-newDot").length).to.eq(3);
     expect(wrapper.find(".nz-text-new").length).to.eq(3);
@@ -145,10 +144,7 @@ describe("ToolAssistanceField", () => {
 
     wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key").length).to.eq(1);
 
@@ -183,12 +179,8 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2, section3]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(4);
@@ -207,12 +199,8 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key-large").length).to.eq(1);
 
@@ -229,12 +217,8 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key-medium").length).to.eq(2);
 
@@ -251,12 +235,8 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key-small").length).to.eq(4);
 
@@ -295,6 +275,46 @@ describe("ToolAssistanceField", () => {
     (Logger.logError as any).restore();
   });
 
+  it("createModifierKeyInstruction should generate valid instruction", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true, ToolAssistanceInputMethod.Both, ToolAssistance.createKeyboardInfo([]));
+
+    const instruction1 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, "Shift + something else");
+    const instruction2 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, "icon-cursor-click", "Ctrl + something else");
+    const instruction3 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, "shiftKey + drag something");
+    const instruction4 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.RightClickDrag, "shiftKey + drag something");
+    const instruction5 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.MouseWheelClickDrag, "shiftKey + drag something");
+    const section1 = ToolAssistance.createSection([instruction1, instruction2, instruction3, instruction4, instruction5], "Inputs");
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
+    notifications.setToolAssistance(instructions);
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.uifw-toolassistance-key-modifier").length).to.eq(5);
+    expect(wrapper.find("div.uifw-toolassistance-svg-medium").length).to.eq(1);
+    expect(wrapper.find("div.uifw-toolassistance-icon-medium").length).to.eq(1);
+    expect(wrapper.find("div.uifw-toolassistance-svg-medium-wide").length).to.eq(3);
+
+    wrapper.unmount();
+  });
+
+  it("invalid modifier key info along with image should log error", () => {
+    const spyMethod = sinon.spy(Logger, "logError");
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true, ToolAssistanceInputMethod.Both, ToolAssistance.createKeyboardInfo([]));
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    notifications.setToolAssistance(instructions);
+
+    spyMethod.called.should.true;
+
+    wrapper.unmount();
+    (Logger.logError as any).restore();
+  });
+
   it("should close on outside click", () => {
     const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
     const footerPopup = wrapper.find(FooterPopup);
@@ -309,7 +329,53 @@ describe("ToolAssistanceField", () => {
     expect(statusBarInstance.state.openWidget).null;
   });
 
-  it("should set showPromptAtCursor on checkbox click", async () => {
+  it("should not close on outside click if pinned", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = wrapper.instance();
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+    toolAssistanceField.setState({ isPinned: true });
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
+
+    const outsideClick = new MouseEvent("");
+    sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(statusBarInstance.state.openWidget).not.null;
+  });
+
+  it("dialog should open and close on click, even if pinned", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const helloWorld = "Hello World!";
+    const notifications = new AppNotificationManager();
+    notifications.outputPrompt(helloWorld);
+    wrapper.update();
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+    toolAssistanceField.setState({ isPinned: true });
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(0);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+
+    wrapper.unmount();
+  });
+
+  it("should set showPromptAtCursor on toggle click", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
 
     const toolAssistanceField = wrapper.find(ToolAssistanceField);
@@ -320,16 +386,12 @@ describe("ToolAssistanceField", () => {
     const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
     const instructions = ToolAssistance.createInstructions(mainInstruction);
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
-    const checkBox = wrapper.find(Checkbox);
-    expect(checkBox.length).to.eq(1);
-    checkBox.find("input").simulate("change", { target: { checked: false } });
+    const toggle = wrapper.find(Toggle);
+    expect(toggle.length).to.eq(1);
+    toggle.find("input").simulate("change", { target: { checked: false } });
 
     expect(toolAssistanceField.state("showPromptAtCursor")).to.be.false;
 
@@ -402,12 +464,8 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     const tabList = wrapper.find("ul.uifw-toolAssistance-tabs");
     expect(tabList.length).to.eq(1);
@@ -439,15 +497,43 @@ describe("ToolAssistanceField", () => {
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 
     notifications.setToolAssistance(instructions);
-    wrapper.update();
 
-    const indicator = wrapper.find("div.nz-indicator");
-    expect(indicator.length).to.eq(1);
-    indicator.simulate("click");
-    wrapper.update();
+    clickIndicator(wrapper);
 
     const showTouchInstructions = wrapper.find(ToolAssistanceField).state("showTouchInstructions");
     expect(showTouchInstructions).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  it("dialog should open, pin and close on click", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const helloWorld = "Hello World!";
+    const notifications = new AppNotificationManager();
+    notifications.outputPrompt(helloWorld);
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+
+    let buttons = wrapper.find(TitleBarButton); // Pin button
+    expect(buttons.length).to.eq(1);
+    buttons.simulate("click");
+    wrapper.update();
+    expect(toolAssistanceField.state("isPinned")).to.be.true;
+
+    buttons = wrapper.find(TitleBarButton);   // Close button
+    expect(buttons.length).to.eq(1);
+    buttons.simulate("click");
+    wrapper.update();
+    expect(toolAssistanceField.state("isPinned")).to.be.false;
+
+    expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(0);
 
     wrapper.unmount();
   });

@@ -21,6 +21,7 @@ import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
+import { AccudrawUiRenderer } from "../accudraw/AccudrawUiManager";
 
 import "./configurableui.scss";
 
@@ -75,6 +76,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <KeyboardShortcutMenu />
         <InputFieldMessage />
         <CursorPopupRenderer />
+        <AccudrawUiRenderer />
       </div>
     );
   }

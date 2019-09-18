@@ -29,6 +29,7 @@ alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
+beta;DiagnosticsPanelProps
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
 beta;FpsTracker

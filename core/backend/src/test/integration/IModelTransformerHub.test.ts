@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ChangeOpCode, ColorDef, IModelVersion, IModel } from "@bentley/imodeljs-common";
+import { ChangeOpCode, ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import { ChangeSummaryExtractOptions, InstanceChange } from "../../ChangeSummaryManager";
 import { ElementAspect, ExternalSourceAspect } from "../../ElementAspect";
 import { Entity } from "../../Entity";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, IModelTransformer, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
 import { Model } from "../../Model";
 import { Relationship } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { assertTargetDbContents, assertUpdatesInTargetDb, populateSourceDb, populateTeamIModel, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb } from "../IModelTransformerUtils";
+import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
@@ -102,7 +102,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const sourceSeedDb: IModelDb = IModelDb.createSnapshot(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await prepareSourceDb(sourceSeedDb);
+    await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
     sourceSeedDb.closeSnapshot();
     const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -115,7 +115,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb: IModelDb = IModelDb.createSnapshot(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await prepareTargetDb(targetSeedDb);
+    await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
     targetSeedDb.closeSnapshot();
     const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
@@ -130,7 +130,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #1
       if (true) {
-        populateSourceDb(sourceDb);
+        IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Populate source");
@@ -161,7 +161,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #1");
-        assertTargetDbContents(sourceDb, targetDb);
+        IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
         // expect inserts and a few updates from transforming the result of populateSourceDb
@@ -186,7 +186,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #2
       if (true) {
-        updateSourceDb(sourceDb);
+        IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Update source");
@@ -218,7 +218,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #2");
-        assertUpdatesInTargetDb(targetDb);
+        IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
         // expect no inserts from transforming the result of updateSourceDb
@@ -250,8 +250,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  // WIP: Need fix from Raman before IModelTransformer portion of test can be added
-  it.skip("Clone/upgrade test", async () => {
+  it("Clone/upgrade test", async () => {
     const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
     const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
@@ -277,7 +276,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
       // populate sourceDb
-      populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, () => "Populate Source");
@@ -292,11 +292,22 @@ describe("IModelTransformerHub (#integration)", () => {
       // push targetDb schema changes
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore"); // WIP: currently causes BeAssert in RevisionManager::CreateRevisionObject renaming temp revision changes file
+      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
+      // import sourceDb changes into targetDb
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
+      await targetDb.concurrencyControl.request(requestContext);
+      targetDb.saveChanges();
+      await targetDb.pushChanges(requestContext, () => "Import changes from sourceDb");
+
+      // close iModel briefcases
       await sourceDb.close(requestContext, KeepBriefcase.No);
       await targetDb.close(requestContext, KeepBriefcase.No);
     } finally {
+      // delete iModel briefcases
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }

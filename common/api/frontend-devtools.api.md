@@ -234,14 +234,25 @@ export function deserializeViewState(props: ViewStateProps, iModel: IModelConnec
 
 // @beta
 export class DiagnosticsPanel {
-    constructor(vp: Viewport);
+    constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)
     dispose(): void;
     // (undocumented)
     readonly element: HTMLElement;
     // (undocumented)
-    readonly keyinField: KeyinField;
+    readonly keyinField?: KeyinField;
     }
+
+// @beta
+export interface DiagnosticsPanelProps {
+    exclude?: {
+        keyin?: boolean;
+        fps?: boolean;
+        tileStats?: boolean;
+        memory?: boolean;
+        toolSettings?: boolean;
+    };
+}
 
 // @beta
 export abstract class EmphasizeElementsTool extends Tool {

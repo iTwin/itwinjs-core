@@ -15,7 +15,7 @@ import {
   Transform,
   Vector3d,
   XAndY,
-  } from "@bentley/geometry-core";
+} from "@bentley/geometry-core";
 import {
   BeTimePoint,
   Id64,
@@ -877,20 +877,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
-  private _doDebugPaint: boolean = false;
-  protected debugPaint(): void { }
-
   public recordPerformanceMetric(operation: string): void {
     if (this.performanceMetrics)
       this.performanceMetrics.recordTime(operation);
   }
 
   private paintScene(sceneMilSecElapsed?: number): void {
-    if (this._doDebugPaint) {
-      this.debugPaint();
-      return;
-    }
-
     if (!this._dcAssigned) {
       return;
     }
@@ -1241,6 +1233,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
+  public copyImageToCanvas(): HTMLCanvasElement {
+    const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
+    const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
+    return undefined !== canvas ? canvas : document.createElement("canvas");
+  }
+
   public drawPlanarClassifiers() {
     if (this._planarClassifiers)
       this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
@@ -1261,18 +1259,49 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _endPaint(): void;
 }
 
+class CanvasState {
+  public readonly canvas: HTMLCanvasElement;
+  private _width = 0;
+  private _height = 0;
+  public needsClear = false;
+
+  public constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+  }
+
+  // Returns true if the rect actually changed.
+  public updateDimensions(): boolean {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    if (w === this._width && h === this._height)
+      return false;
+
+    // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
+    this.canvas.width = this._width = w;
+    this.canvas.height = this._height = h;
+    return true;
+  }
+
+  public get width() { return this._width; }
+  public get height() { return this._height; }
+}
+
 /** A Target that renders to a canvas on the screen
  * @internal
  */
 export class OnScreenTarget extends Target {
-  private readonly _canvas: HTMLCanvasElement;
+  private readonly _2dCanvas: CanvasState;
+  private readonly _webglCanvas: CanvasState;
+  private _usingWebGLCanvas = false;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private readonly _prevViewRect = new ViewRect();
   private _animationFraction: number = 0;
+
+  private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
-    this._canvas = canvas;
+    this._2dCanvas = new CanvasState(canvas);
+    this._webglCanvas = new CanvasState(System.instance.canvas);
   }
 
   public dispose() {
@@ -1312,34 +1341,11 @@ export class OnScreenTarget extends Target {
     return undefined !== this._blitGeom;
   }
 
-  protected debugPaint(): void {
-    const rect = this.viewRect;
-    const canvas = System.instance.canvas;
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-
-    const gl = System.instance.context;
-    gl.viewport(0, 0, rect.width, rect.height);
-    gl.clearColor(1, 0, 1, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    const context = this._canvas.getContext("2d", { alpha: false });
-    assert(null !== context);
-    context!.drawImage(canvas, 0, 0);
-  }
-
   public updateViewRect(): boolean {
-    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
-    const viewRect = this.renderRect;
-
-    if (this._prevViewRect.width !== viewRect.width || this._prevViewRect.height !== viewRect.height) {
-      // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
-      this._canvas.width = viewRect.width;
-      this._canvas.height = viewRect.height;
-      this._prevViewRect.setFrom(viewRect);
-      return true;
-    }
-    return false;
+    const changed2d = this._2dCanvas.updateDimensions();
+    const changedWebGL = this._webglCanvas.updateDimensions();
+    this.renderRect.init(0, 0, this._curCanvas.width, this._curCanvas.height);
+    return this._usingWebGLCanvas ? changedWebGL : changed2d;
   }
 
   protected _beginPaint(): void {
@@ -1375,37 +1381,41 @@ export class OnScreenTarget extends Target {
   }
 
   protected _endPaint(): void {
-    const onscreenContext = this._canvas.getContext("2d", { alpha: false });
-    assert(null !== onscreenContext);
-    assert(undefined !== this._blitGeom);
-    if (undefined === this._blitGeom || null === onscreenContext) {
+    if (undefined === this._blitGeom)
       return;
-    }
 
     const system = System.instance;
-    system.frameBufferStack.pop();
-
-    // Copy framebuffer contents to off-screen canvas
-    system.applyRenderState(RenderState.defaults);
     const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
+
+    system.frameBufferStack.pop();
+    system.applyRenderState(RenderState.defaults);
     system.techniques.draw(drawParams);
 
-    // NB: Very early on we found that we needed to do a clearRect() on the 2d context to prevent artifacts in final image...
-    // this turned out to be a significant performance issue in Firefox and removal produced no artifacts.
-    // onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    if (this._usingWebGLCanvas)
+      return; // We already drew (using WebGL) the framebuffer contents directly to the on-screen WebGL canvas.
 
     // Copy off-screen canvas contents to on-screen canvas
-    onscreenContext.drawImage(system.canvas, 0, 0);
+    const onscreenContext = this._2dCanvas.canvas.getContext("2d", { alpha: true });
+    assert(null !== onscreenContext);
+    if (null !== onscreenContext)
+      onscreenContext.drawImage(system.canvas, 0, 0);
   }
 
   protected drawOverlayDecorations(): void {
+    const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
+    if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
+      ctx.clearRect(0, 0, this._2dCanvas.width, this._2dCanvas.height);
+      this._2dCanvas.needsClear = false;
+    }
+
     if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
-      const ctx = this._canvas.getContext("2d", { alpha: false })!;
       for (const overlay of this._decorations.canvasDecorations) {
         ctx.save();
         if (overlay.position)
           ctx.translate(overlay.position.x, overlay.position.y);
+
         overlay.drawDecoration(ctx);
+        this._2dCanvas.needsClear = true;
         ctx.restore();
       }
     }
@@ -1428,6 +1438,18 @@ export class OnScreenTarget extends Target {
   public onResized(): void {
     this._dcAssigned = false;
     this._fbo = dispose(this._fbo);
+  }
+
+  public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
+    if (toScreen === this._usingWebGLCanvas)
+      return;
+
+    this._usingWebGLCanvas = toScreen;
+    return toScreen ? this._webglCanvas.canvas : undefined;
+  }
+
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 }
 
@@ -1471,6 +1493,7 @@ export class OffScreenTarget extends Target {
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (color === undefined)
       return false;
+
     this._fbo = FrameBuffer.create([color]);
     assert(this._fbo !== undefined);
     return this._fbo !== undefined;
@@ -1483,6 +1506,10 @@ export class OffScreenTarget extends Target {
 
   protected _endPaint(): void {
     System.instance.frameBufferStack.pop();
+  }
+
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this.copyImageToCanvas();
   }
 }
 

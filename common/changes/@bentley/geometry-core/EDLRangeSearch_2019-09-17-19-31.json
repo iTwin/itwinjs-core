@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fast range filtering for cutFill (and other) searches",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

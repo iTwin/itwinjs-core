@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Create a common IModelViewPort control that supports Design Review and ui-test-app.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

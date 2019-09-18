@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   IModelConnection,
@@ -15,6 +15,7 @@ import {
   OutputMessagePriority,
   OutputMessageType,
   RelativePosition,
+  ViewState,
 } from "@bentley/imodeljs-frontend";
 
 import {
@@ -59,10 +60,13 @@ import {
   CursorPopupContent,
   VisibilityWidget,
   ZoneLocation,
+  StagePanelHeader,
+  StagePanelLocation,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
@@ -72,7 +76,7 @@ import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl, PanelVisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
+import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -87,6 +91,7 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 
 import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
+import { AccudrawTools } from "../../tools/AccudrawTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
@@ -95,7 +100,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       <Widget
         iconSpec="icon-placeholder"
         labelKey="SampleApp:widgets.VisibilityTree"
-        control={PanelVisibilityTreeWidgetControl}
+        control={VisibilityTreeWidgetControl}
         applicationData={{ iModelConnection: this.iModelConnection }}
       />],
   };
@@ -104,25 +109,25 @@ export class ViewsFrontstage extends FrontstageProvider {
     allowedZones: [6, 9],
   };
 
-  constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
+  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
   }
 
   public get frontstage() {
     // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewIds.length);
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps from number of viewIds: " + this.viewIds.length));
+      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
 
-    // create the content props.
+    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
-    for (const viewId of this.viewIds) {
+    for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewId, iModelConnection: this.iModelConnection, rulesetId: "Items" },
+        applicationData: { viewState, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
     }
@@ -224,6 +229,12 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         leftPanel={
           <StagePanel
+            header={<StagePanelHeader
+              collapseButton
+              collapseButtonTitle="Collapse"
+              location={StagePanelLocation.Left}
+              title="Visibility tree"
+            />}
             size={280}
             widgets={this._leftPanel.widgets}
           />
@@ -415,6 +426,12 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
+  private get _openCalculatorItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { ModalDialogManager.openDialog(<CalculatorDialog opened={true} />); },
+    });
+  }
+
   private get _viewportDialogItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.viewportDialog", execute: () => { this.openViewportDialog(); },
@@ -521,21 +538,6 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _moreCursorPopups() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.moreCursorPopups", execute: async () => {
-        CursorPopupManager.open("testTR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 11);
-        CursorPopupManager.open("testR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 11);
-        CursorPopupManager.open("testBR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 11);
-        CursorPopupManager.open("testB2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 11);
-        CursorPopupManager.open("testBL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 11);
-        CursorPopupManager.open("testL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 11);
-        CursorPopupManager.open("testTL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 11);
-        CursorPopupManager.open("testT2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 11);
-      },
-    });
-  }
-
   private get _endCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
@@ -559,21 +561,13 @@ class FrontstageToolWidget extends React.Component {
 
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
-    CursorPopupManager.close("testTR2", false);
     CursorPopupManager.close("testR1", false);
-    CursorPopupManager.close("testR2", false);
     CursorPopupManager.close("testBR1", false);
-    CursorPopupManager.close("testBR2", false);
     CursorPopupManager.close("testB1", false);
-    CursorPopupManager.close("testB2", false);
     CursorPopupManager.close("testBL1", false);
-    CursorPopupManager.close("testBL2", false);
     CursorPopupManager.close("testL1", false);
-    CursorPopupManager.close("testL2", false);
     CursorPopupManager.close("testTL1", false);
-    CursorPopupManager.close("testTL2", false);
     CursorPopupManager.close("testT1", false);
-    CursorPopupManager.close("testT2", false);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
@@ -702,7 +696,7 @@ class FrontstageToolWidget extends React.Component {
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity],
+      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.anotherGroup",
@@ -710,7 +704,8 @@ class FrontstageToolWidget extends React.Component {
       items: [
         AppTools.tool1, AppTools.tool2, this._groupItemDef,
         this._saveContentLayout, this._restoreContentLayout,
-        this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
+        this._startCursorPopup, this._addCursorPopups, this._endCursorPopup,
+        AccudrawTools.addMenuButton, AccudrawTools.hideMenuButton, AccudrawTools.showCalculator, AccudrawTools.showInputEditor,
       ],
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: this._anotherGroupStateFunc,

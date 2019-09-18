@@ -18,7 +18,8 @@
     "alert": "Alert",
     "settings": "Settings",
     "minimize": "Minimize",
-    "overflow": "Overflow"
+    "overflow": "Overflow",
+    "no-content": "No data for this content view"
   },
   "rotations": {
     "top": "Top",
@@ -206,6 +207,7 @@
     "promptAtCursor": "Show prompt at cursor",
     "moreInfo": "Click for more information",
     "mouse": "Mouse",
-    "touch": "Touch"
+    "touch": "Touch",
+    "pin": "Pin"
   }
 }

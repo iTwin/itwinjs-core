@@ -21,15 +21,17 @@ import {
   ZoneLocation,
   ActionItemButton,
   CoreTools,
+  UiFramework,
+  IModelViewportControl,
 } from "@bentley/ui-framework";
 
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { IModelViewportControl as App_IModelViewport } from "../contentviews/IModelViewport";
 
 export class Frontstage3 extends FrontstageProvider {
 
@@ -50,12 +52,12 @@ export class Frontstage3 extends FrontstageProvider {
       {
         contents: [
           {
-            classId: "IModelViewport",
-            applicationData: { label: "Content 1a", bgColor: "black" },
+            classId: IModelViewportControl.id,
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
-            classId: "IModelViewport",
-            applicationData: { label: "Content 2a", bgColor: "black" },
+            classId: App_IModelViewport.id,
+            applicationData: { label: "Content 2a", bgColor: "blue" },
           },
           {
             classId: "TableExampleContent",

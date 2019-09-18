@@ -99,7 +99,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       this.setState({ isActive });
   }
 
-  // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
+  // TODO: add tooltip, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
       <BackstageItem

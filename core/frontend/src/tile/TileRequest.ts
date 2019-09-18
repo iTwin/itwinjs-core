@@ -67,6 +67,9 @@ export class TileRequest {
     try {
       response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
       gotResponse = true;
+
+      // Set this now, so our `isCanceled` check can see it.
+      this._state = TileRequest.State.Loading;
     } catch (err) {
       if (err instanceof AbandonedError) {
         // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
@@ -133,8 +136,6 @@ export class TileRequest {
       this.setFailed();
       return Promise.resolve();
     }
-
-    this._state = TileRequest.State.Loading;
 
     try {
       const content = await this.loader.loadTileContent(this.tile, data, () => this.isCanceled);

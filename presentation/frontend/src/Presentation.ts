@@ -10,16 +10,19 @@ import { PresentationError, PresentationStatus } from "@bentley/presentation-com
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
+import { FavoritePropertyManager } from "./FavoritePropertyManager";
 
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let i18n: I18N | undefined;
+let favoritePropertyManager: FavoritePropertyManager | undefined;
 
 /**
  * Static class used to statically set up Presentation library for the frontend.
  * Basically what it does is:
  * - Create a singleton [[PresentationManager]] instance
  * - Create a singleton [[SelectionManager]] instance
+ * - Create a singleton [[FavoritePropertyManager]]] instance
  *
  * @public
  */
@@ -68,6 +71,9 @@ export class Presentation {
         scopes: scopesManager,
       });
     }
+    if (!favoritePropertyManager) {
+      favoritePropertyManager = new FavoritePropertyManager();
+    }
   }
 
   /**
@@ -79,6 +85,7 @@ export class Presentation {
       presentationManager.dispose();
     presentationManager = undefined;
     selectionManager = undefined;
+    favoritePropertyManager = undefined;
     i18n = undefined;
   }
 
@@ -110,6 +117,21 @@ export class Presentation {
   /** @internal */
   public static set selection(value: SelectionManager) {
     selectionManager = value;
+  }
+
+  /**
+   * Get the singleton [[FavoritePropertyManager]]
+   * @beta
+   */
+  public static get favoriteProperties(): FavoritePropertyManager {
+    if (!favoritePropertyManager)
+      throw new Error("Favorite Properties must be first initialized by calling Presentation.initialize");
+    return favoritePropertyManager;
+  }
+
+  /** @internal */
+  public static set favoriteProperties(value: FavoritePropertyManager) {
+    favoritePropertyManager = value;
   }
 
   /**

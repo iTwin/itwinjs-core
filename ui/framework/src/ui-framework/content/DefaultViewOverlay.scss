@@ -5,7 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/style/index";
 
 // 40px is used to ensure scrubber is not drawn behind a widget tab
-.dataviz-view-overlay {
+.uifw-view-overlay {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -16,12 +16,12 @@
   bottom: 10px;
   left: 40px;
   right: 40px;
-  z-index: 1900;
+  z-index: 4000;
 }
 
 $widget-transparency: 0.90;
 
-.dataviz-animation-overlay {
+.uifw-animation-overlay {
   display: flex;
   justify-content: center;
   align-items: center;

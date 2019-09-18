@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IconInput renders correctly 1`] = `
+<div
+  className="core-iconInput-container"
+>
+  <Input />
+  <div
+    className="core-iconInput-icon"
+  >
+    <Component
+      iconName="icon-placeholder"
+    />
+  </div>
+</div>
+`;

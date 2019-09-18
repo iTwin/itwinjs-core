@@ -16,7 +16,7 @@ export class DebugPanel extends ToolBarDropDown {
   public constructor(vp: Viewport, parentElement: HTMLElement) {
     super();
     this._viewport = vp;
-    this._panel = new DiagnosticsPanel(this._viewport);
+    this._panel = new DiagnosticsPanel(this._viewport, { exclude: { keyin: true } });
 
     this._parentElement = parentElement;
     this._panel.element.className = "debugPanel";
@@ -40,7 +40,7 @@ export class DebugPanel extends ToolBarDropDown {
     togglePinnedButton.div.style.cssFloat = "right";
 
     parentElement.appendChild(this._element);
-    this._panel.keyinField.focus();
+    this.focusKeyin();
   }
 
   public dispose(): void {
@@ -51,8 +51,13 @@ export class DebugPanel extends ToolBarDropDown {
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
   protected _open(): void {
     this._element.style.display = "block";
-    this._panel.keyinField.focus();
+    this.focusKeyin();
   }
 
   protected _close(): void { this._element.style.display = "none"; }
+
+  private focusKeyin(): void {
+    if (undefined !== this._panel.keyinField)
+      this._panel.keyinField.focus();
+  }
 }

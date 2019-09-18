@@ -46,11 +46,12 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
   public onAnimationFractionChanged = (animationFraction: number) => {
     this.animationFraction = animationFraction;
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._viewport)
       this._viewport.animationFraction = animationFraction;
   }
 
+  // istanbul ignore next
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.updateSettings(settings);
   }

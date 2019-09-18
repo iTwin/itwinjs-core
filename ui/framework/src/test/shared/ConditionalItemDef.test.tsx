@@ -97,6 +97,7 @@ describe("ConditionalItemDef", () => {
     expect(tool1.isVisible).to.be.false;
     expect(tool2.isEnabled).to.be.true;
     expect(tool2.isVisible).to.be.true;
+    expect(conditionalItem.getVisibleItems().length).to.eq(1);
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
@@ -106,6 +107,7 @@ describe("ConditionalItemDef", () => {
     expect(tool1.isVisible).to.be.true;
     expect(tool2.isEnabled).to.be.true;
     expect(tool2.isVisible).to.be.true;
+    expect(conditionalItem.getVisibleItems().length).to.eq(2);
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 

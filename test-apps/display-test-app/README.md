@@ -89,6 +89,7 @@ rush install -c
 
 ## Environment Variables
 
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
 * SVT_STANDALONE_FILENAME (required)
   * Absoluate path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH
@@ -117,6 +118,11 @@ rush install -c
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
+* SVT_DISABLE_DIRECT_SCREEN_RENDERING
+  * If defined, we will not render webgl content directly to the screen when only 1 on-screen viewport is open.
+* SVT_FAKE_CLOUD_STORAGE
+  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/.
+    * NOTE: This currently only works when running display-test-app in a browser.
 
 ## Key-ins
 

@@ -1,5 +1,10 @@
 sep=;
 Release Tag;API Item
+internal;AccudrawPopupInfo
+internal;AccudrawPopupsChangedEvent 
+internal;AccudrawPopupType
+alpha;AccudrawUiManager
+alpha;AccudrawUiRenderer 
 public;Action
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
@@ -17,7 +22,6 @@ public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
 alpha;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
-beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
@@ -37,6 +41,15 @@ beta;BadgeType
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
+alpha;Calculator 
+alpha;CalculatorCancelFunc = () => void
+internal;CalculatorEngine
+internal;CalculatorKeyType
+alpha;CalculatorOkFunc = (value: number) => void
+internal;CalculatorOperator
+internal;CalculatorPopupInfo 
+alpha;CalculatorProps 
+internal;CalculatorPropsProps = Pick
 alpha;CardContainer 
 alpha;CardContainerProps 
 alpha;CardInfo
@@ -122,6 +135,7 @@ public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
 internal;DefaultToolSettingsProvider 
+alpha;DefaultViewOverlay 
 public;DescriptionProps
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
@@ -187,7 +201,10 @@ internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
 internal;IModelUserInfo
+beta;IModelViewportControl 
+beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
+internal;InputEditorPopupInfo 
 public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
@@ -197,7 +214,6 @@ public;class ItemDefBase
 public;ItemList 
 public;ItemMap 
 public;ItemProps 
-public;ItemPropsList
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
 public;KeyboardShortcutManager
@@ -223,6 +239,12 @@ beta;ListPickerProps
 beta;ListPickerPropsExtended 
 alpha;MapMode
 public;MarkupTools
+alpha;MenuButton 
+internal;MenuButtonPopupInfo 
+alpha;MenuButtonProps 
+alpha;MenuItem 
+alpha;MenuItemHelpers
+alpha;MenuItemProps 
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 
@@ -321,6 +343,8 @@ alpha;StagePanel
 public;StagePanelChangeHandler
 alpha;StagePanelDef 
 alpha;StagePanelDefaultProps = Pick
+alpha;StagePanelHeader 
+alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
 alpha;StagePanelProps
 internal;StagePanelRuntimeProps

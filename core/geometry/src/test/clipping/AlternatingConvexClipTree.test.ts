@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker, UsageSums, SaveAndRestoreCheckTransform } from "../Checker";
+import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Geometry } from "../../Geometry";
@@ -17,6 +17,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Sample } from "../../serialization/GeometrySamples";
+import { UsageSums } from "../../numerics/UsageSums";
 
 /* tslint:disable: no-console */
 
@@ -104,8 +105,8 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
   const numTest = fractions.length * fractions.length;
   if (Checker.noisy.clipTree === true) {
     console.log("ClipperTest  (polygonPoints: " + points.length + ") (TestPoint: " + numTest + ")");
-    console.log("IN: " + inSum.count + " avg: " + inSum.mean + " max: " + inSum.max);
-    console.log("OUT: " + outSum.count + " avg: " + outSum.mean + " max: " + outSum.max);
+    console.log("IN: " + inSum.count + " avg: " + inSum.mean + " max: " + inSum.minMax);
+    console.log("OUT: " + outSum.count + " avg: " + outSum.mean + " max: " + outSum.minMax);
   }
 }
 

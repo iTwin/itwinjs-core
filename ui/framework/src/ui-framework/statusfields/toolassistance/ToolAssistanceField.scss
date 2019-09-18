@@ -6,10 +6,14 @@
 
 $image-size: 22px;
 $image-size-wide: 30px;
+$image-size-medium: 16px;
+$image-size-medium-wide: 20px;
+
 $key-size: 20px;
 $key-size-small: 12px;
 $key-size-medium: 18px;
 $key-size-large: 36px;
+$key-size-modifier: 22px;
 
 .uifw-statusFields-toolassistance {
   $font-size-medium: 12px;
@@ -76,13 +80,13 @@ $key-size-large: 36px;
   }
 
   &.uifw-toolassistance-key-medium {
-    font-size: 11px;
+    font-size: 12px;
     width: $key-size-medium;
     height: $key-size-medium;
   }
 
   &.uifw-toolassistance-key-large {
-    font-size: 10.5px;
+    font-size: 11px;
     width: $key-size-large;
     text-transform: none;
   }
@@ -103,6 +107,25 @@ $key-size-large: 36px;
   }
 }
 
+.uifw-toolassistance-key-modifier {
+  font-size: 8px;
+  width: $key-size-modifier;
+  height: $key-size-medium;
+  text-transform: none;
+}
+
+.uifw-toolassistance-icon-medium {
+  width: $image-size-medium;
+  height: $image-size-medium;
+  display: inline-block;
+  font-size: $image-size-medium;
+  padding-left: 2px;
+}
+
+.uifw-toolassistance-icon-large {
+  font-size: $image-size;
+}
+
 .uifw-toolassistance-svg {
   width: $image-size;
   height: $image-size;
@@ -111,6 +134,20 @@ $key-size-large: 36px;
 .uifw-toolassistance-svg-wide {
   width: $image-size-wide;
   height: $image-size;
+}
+
+.uifw-toolassistance-svg-medium {
+  width: $image-size-medium;
+  height: $image-size-medium;
+  display: inline-block;
+  padding-left: 2px;
+}
+
+.uifw-toolassistance-svg-medium-wide {
+  width: $image-size-medium-wide;
+  height: $image-size-medium;
+  display: inline-block;
+  padding-left: 0px;
 }
 
 .nz-footer-toolAssistance-instruction-image {
@@ -127,6 +164,17 @@ $key-size-large: 36px;
   padding-right: $horizontal-padding;
   padding-top: $vertical-padding;
   padding-bottom: $vertical-padding;
+
+  .uifw-toolAssistance-toggle-container {
+    flex: 1;
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+
+    .uifw-toolAssistance-toggle-label {
+      padding-left: .5em;
+    }
+  }
 }
 
 .uifw-toolAssistance-tabs {

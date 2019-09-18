@@ -242,8 +242,8 @@ describe("PolyfaceClip", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    for (const numX of [2, 5]) {
-      for (const numY of [2, 4]) {
+    for (const numX of [2, 5, 10]) {
+      for (const numY of [2, 4, 15]) {
         for (const mapY of [false, true]) {
           y0 = 0;
           const yStep = numY + 1;

@@ -81,6 +81,16 @@
   font-family: monospace, monospace;
 }
 
+#fps-container {
+  font-family: monospace, monospace;
+  margin-left: 15px;
+  margin-right: 5px;
+}
+
+#fps-checkbox {
+  vertical-align: middle;
+}
+
 .floating-window-header {
   display: flex;
   flex-direction: column;

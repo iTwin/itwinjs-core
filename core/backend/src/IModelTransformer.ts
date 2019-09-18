@@ -10,10 +10,10 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelTransformContext } from "./IModelTransformContext";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -30,7 +30,7 @@ export class IModelTransformer {
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
   public readonly targetScopeElementId: Id64String = IModel.rootSubjectId;
   /** The IModelTransformContext for this IModelTransformer. */
-  public readonly context: IModelTransformContext;
+  public readonly context: IModelCloneContext;
 
   /** The set of CodeSpecs to exclude from transformation to the target iModel. */
   protected _excludedCodeSpecNames = new Set<string>();
@@ -55,7 +55,7 @@ export class IModelTransformer {
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String) {
     this.sourceDb = sourceDb;
     this.targetDb = targetDb;
-    this.context = new IModelTransformContext(sourceDb, targetDb);
+    this.context = new IModelCloneContext(sourceDb, targetDb);
     if (undefined !== targetScopeElementId) this.targetScopeElementId = targetScopeElementId;
     this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
   }
@@ -352,7 +352,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement.id);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
     targetElementProps.federationGuid = sourceElement.federationGuid; // cloneElement strips off federationGuid
     return targetElementProps;
   }
@@ -557,7 +557,7 @@ export class IModelTransformer {
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
    */
-  private importModelContents(sourceModeledElementId: Id64String): void {
+  public importModelContents(sourceModeledElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
@@ -644,14 +644,18 @@ export class IModelTransformer {
   }
 
   /** Import elements that were skipped in a prior pass */
-  public importSkippedElements(): void {
+  public importSkippedElements(numRetries: number = 3): void {
     Logger.logTrace(loggerCategory, `[Source] importSkippedElements(), numSkipped=${this._skippedElementIds.size}`);
-    this._skippedElementIds.forEach((elementId: Id64String) => {
-      this._skippedElementIds.delete(elementId);
-      this.importElement(elementId);
-    });
+    const copyOfSkippedElementIds: Id64Set = this._skippedElementIds;
+    this._skippedElementIds = new Set<Id64String>();
+    copyOfSkippedElementIds.forEach((elementId: Id64String) => this.importElement(elementId));
     if (this._skippedElementIds.size > 0) {
-      throw new IModelError(IModelStatus.BadRequest, "Not all skipped elements could be processed", Logger.logError, loggerCategory);
+      if (--numRetries > 0) {
+        Logger.logTrace(loggerCategory, "[Source] Retrying importSkippedElements()");
+        this.importSkippedElements(numRetries);
+      } else {
+        throw new IModelError(IModelStatus.BadRequest, "Not all skipped elements could be processed", Logger.logError, loggerCategory);
+      }
     }
   }
 

@@ -209,8 +209,8 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** @internal */
-  public static performUpgrade(pathname: string) {
+  /** @deprecated @internal */
+  public static performUpgrade(pathname: string): DbResult {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
     if (DbResult.BE_SQLITE_OK === res)

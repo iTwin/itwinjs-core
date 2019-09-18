@@ -21,6 +21,12 @@ describe("Popup />", () => {
     const wrapper = render(<Popup isOpen={true} top={30} left={70} />);
     wrapper.unmount();
   });
+
+  it("mounts with role correctly", () => {
+    const wrapper = render(<Popup isOpen={true} top={30} left={70} role="alert" />);
+    wrapper.unmount();
+  });
+
   it("renders correctly closed and open", () => {
     const component = render(<Popup isOpen={false} top={30} left={70} />);
     expect(component.queryByTestId("core-popup")).not.to.exist;
@@ -377,6 +383,7 @@ describe("Popup />", () => {
       expect(spy.calledOnceWithExactly(mouseDown)).be.true;
       wrapper.unmount();
     });
+
     it("should close on click outside without onOutsideClick", () => {
       const spyOnClose = sinon.spy();
       const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
@@ -436,6 +443,7 @@ describe("Popup />", () => {
 
       wrapper.unmount();
     });
+
     it("should close on Enter", () => {
       const spyOnClose = sinon.spy();
       const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
@@ -448,6 +456,7 @@ describe("Popup />", () => {
 
       wrapper.unmount();
     });
+
     it("should do nothing on 'a'", () => {
       const spyOnClose = sinon.spy();
       const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose}><div>fake content</div></Popup>);
@@ -460,6 +469,20 @@ describe("Popup />", () => {
 
       wrapper.unmount();
     });
+
+    it("should not close if Pinned", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} isPinned={true} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+
+      spyOnClose.calledOnce.should.false;
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      wrapper.unmount();
+    });
+
   });
 
 });

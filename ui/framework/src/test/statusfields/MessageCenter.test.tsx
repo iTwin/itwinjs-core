@@ -90,28 +90,6 @@ describe("MessageCenter", () => {
     wrapper.unmount();
   });
 
-  it("Message Center should close", () => {
-    MessageManager.clearMessages();
-    expect(MessageManager.messages.length).to.eq(0);
-
-    const infoMessage = new NotifyMessageDetails(OutputMessagePriority.Info, "Message text.");
-    MessageManager.addMessage(infoMessage);
-    expect(MessageManager.messages.length).to.eq(1);
-
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
-    wrapper.find("div.nz-balloon").simulate("click");
-    wrapper.update();
-
-    const buttons = wrapper.find("div.nz-footer-dialog-button");
-    expect(buttons.length).to.eq(2);
-
-    buttons.at(1).simulate("click");
-    wrapper.update();
-
-    wrapper.unmount();
-  });
-
   it("Message Center should change tabs", () => {
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);

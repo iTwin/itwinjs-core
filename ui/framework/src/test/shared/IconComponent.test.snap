@@ -16,8 +16,12 @@ exports[`IconComponent should render correctly with icon class string 1`] = `
 />
 `;
 
-exports[`IconComponent should render correctly with icon src string 1`] = `
+exports[`IconComponent should render correctly with icon svg string 1`] = `
 <i
-  className="icon src:test.svg"
-/>
+  className="icon uifw-item-svg-icon"
+>
+  <SvgSprite
+    src="test.svg"
+  />
+</i>
 `;

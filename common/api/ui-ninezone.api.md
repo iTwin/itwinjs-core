@@ -319,6 +319,7 @@ export interface FooterPopupProps extends CommonProps {
     children?: React.ReactNode;
     contentType: FooterPopupContentType;
     isOpen?: boolean;
+    isPinned?: boolean;
     onClose?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     target?: React.RefObject<HTMLElement>;
@@ -1483,6 +1484,7 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
 
 // @beta
 export interface ToolAssistanceDialogProps extends CommonProps {
+    buttons?: React.ReactNode;
     children?: React.ReactNode;
     title?: string;
 }

@@ -10,6 +10,16 @@
       true,
       "PromisedAssertion"
     ],
+    "ban": [
+      true,
+      {
+        "name": [
+          "Math",
+          "hypot"
+        ],
+        "message": "Use Geometry.hypotenuse methods instead"
+      }
+    ],
     "no-return-await": true,
     "promise-function-async": true,
     "no-floating-promises": true,

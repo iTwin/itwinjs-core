@@ -460,7 +460,9 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
     footerStyle?: React.CSSProperties;
+    header?: React.ReactNode;
     height?: string | number;
+    hideHeader?: boolean;
     inset?: boolean;
     maxHeight?: number;
     maxWidth?: number;
@@ -664,6 +666,18 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
     render(): JSX.Element;
 }
 
+// @alpha
+export class IconInput extends React.PureComponent<IconInputProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface IconInputProps extends InputProps {
+    containerClassName?: string;
+    icon: React.ReactNode;
+}
+
 // @beta
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
@@ -743,6 +757,19 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
+}
+
+// @public
+export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @public
+export interface LabeledToggleProps extends ToggleProps {
+    label?: string;
+    labelClassName?: string;
+    labelStyle?: React.CSSProperties;
 }
 
 // @public
@@ -1025,6 +1052,7 @@ export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
+    isPinned?: boolean;
     left: number;
     moveFocus?: boolean;
     // (undocumented)
@@ -1578,6 +1606,7 @@ export interface ToggleProps extends CommonProps {
     buttonType?: ToggleButtonType;
     disabled?: boolean;
     isOn?: boolean;
+    large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
     rounded?: boolean;

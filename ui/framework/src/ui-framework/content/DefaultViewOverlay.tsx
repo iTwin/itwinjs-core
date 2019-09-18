@@ -2,43 +2,39 @@
  * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
  * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
  *--------------------------------------------------------------------------------------------*/
+/** @module ContentView */
+
 import * as React from "react";
 
-import {
-  TimelineDataProvider,
-  TimelineComponent,
-  SolarTimeline,
-  SolarDataProvider,
-} from "@bentley/ui-components";
-import {
-  ContentViewManager,
-  SyncUiEventDispatcher,
-  SyncUiEventArgs,
-  SyncUiEventId,
-  ScheduleAnimationTimelineDataProvider,
-  AnalysisAnimationTimelineDataProvider,
-  SolarTimelineDataProvider,
-} from "@bentley/ui-framework";
+import { TimelineDataProvider, TimelineComponent, SolarTimeline, SolarDataProvider } from "@bentley/ui-components";
 import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
+import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
+import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
+import { ContentViewManager } from "./ContentViewManager";
 
-import "./AnimationViewOverlay.scss";
+import "./DefaultViewOverlay.scss";
 
 /** Props of Viewport Overlay Control that show timelines
  */
-interface AnimationOverlayProps {
+interface Props {
   viewport: ScreenViewport;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
 
-interface AnimationOverlayState {
+interface State {
   showOverlay: boolean;
   dataProvider?: TimelineDataProvider;
   solarDataProvider?: SolarDataProvider;
 }
 
-/** Overlay for iModel Viewport that will show either schedule, analysis, or solar timelines. */
-export class AnimationViewOverlay extends React.Component<AnimationOverlayProps, AnimationOverlayState> {
-  private _componentUnmounting = false;
+/** Overlay for iModel Viewport that will show either schedule, analysis, or solar timelines.
+ * @alpha
+ */
+// istanbul ignore next
+export class DefaultViewOverlay extends React.Component<Props, State> {
+  private _componentMounted = false;
   private _removeListener?: () => void | undefined;
 
   constructor(props: any) {
@@ -62,6 +58,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     this._setTimelineDataProvider(this.props.viewport);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     this._removeListener = this.props.viewport.onDisplayStyleChanged.addListener(this._handleDisplayStyleChange, this);
+    this._componentMounted = true;
   }
 
   private setShowOverlayState(): void {
@@ -87,7 +84,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
   }
 
   public componentWillUnmount() {
-    this._componentUnmounting = true;
+    this._componentMounted = false;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     if (this.state.solarDataProvider && this.state.solarDataProvider.viewport) {
       if (this.state.solarDataProvider.viewport.onViewChanged)
@@ -116,7 +113,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore if
-    if (this._componentUnmounting) return;
+    if (this._componentMounted) return;
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
@@ -200,18 +197,19 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     if (this.state.showOverlay) {
       if (this.state.solarDataProvider) {
         return (
-          <div className="dataviz-view-overlay">
-            <div className="dataviz-animation-overlay">
+          <div className="uifw-view-overlay">
+            <div className="uifw-animation-overlay">
               <SolarTimeline dataProvider={this.state.solarDataProvider} />
             </div>
           </div>
         );
       }
 
+      // handle both schedule and analysis animations
       if (this.state.dataProvider) {
         return (
-          <div className="dataviz-view-overlay">
-            <div className="dataviz-animation-overlay">
+          <div className="uifw-view-overlay">
+            <div className="uifw-animation-overlay">
               <TimelineComponent
                 startDate={this.state.dataProvider.start}
                 endDate={this.state.dataProvider.end}
@@ -219,9 +217,9 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
                 totalDuration={this.state.dataProvider.duration}
                 milestones={this.state.dataProvider.getMilestones()}
                 minimized={true}
+                alwaysMinimized={this.state.dataProvider.getMilestonesCount() > 0}
                 onChange={this.state.dataProvider.onAnimationFractionChanged}
                 onPlayPause={this.props.onPlayPause}
-                showDuration={false}
               />
             </div>
           </div>
