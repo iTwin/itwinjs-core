@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "In the Model/Category/Spatial trees, center the error message",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "joe.zbuchalski@bentley.com"
+}

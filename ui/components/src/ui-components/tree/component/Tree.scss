@@ -12,7 +12,12 @@
 }
 
 .components-tree-errormessage {
-  padding-left: "10px"
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%,-50%);
+  font-style: italic;
+  color: $buic-foreground-muted;
 }
 
 .components-tree {
