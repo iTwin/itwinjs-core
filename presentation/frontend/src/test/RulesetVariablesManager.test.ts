@@ -5,41 +5,34 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common";
+import { VariableValueTypes } from "@bentley/presentation-common";
 
 describe("RulesetVariablesManager", () => {
 
   let vars: RulesetVariablesManagerImpl;
-  let rulesetId: string;
   let variableId: string;
 
   beforeEach(() => {
-    rulesetId = faker.random.uuid();
     variableId = faker.random.word();
-    vars = new RulesetVariablesManagerImpl(rulesetId);
+    vars = new RulesetVariablesManagerImpl();
   });
 
-  describe("[get] state", () => {
+  describe("getAllVariables", () => {
 
-    it("returns valid object when there're no values", async () => {
-      expect(vars.state).to.deep.eq({ [rulesetId]: [] });
+    it("return empty array if there's no variables", async () => {
+      expect(await vars.getAllVariables()).to.deep.eq([]);
     });
 
-    it("returns values stored by the manager", async () => {
-      const values: Array<[string, VariableValueTypes, VariableValue]> = [
-        [faker.random.word(), VariableValueTypes.Int, faker.random.number()],
-        [faker.random.word(), VariableValueTypes.String, faker.random.words()],
-      ];
-      await vars.setInt(values[0][0], values[0][2] as number);
-      await vars.setString(values[1][0], values[1][2] as string);
-      expect(vars.state).to.deep.eq({ [rulesetId]: values });
+    it("returns variables", async () => {
+      const variables = [{ id: variableId, type: VariableValueTypes.String, value: faker.random.word() }];
+      await vars.setString(variables[0].id, variables[0].value);
+      const allVariables = await vars.getAllVariables();
+      expect(allVariables).to.deep.eq(variables);
     });
-
   });
 
   describe("string", () => {
@@ -49,10 +42,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.word();
       await vars.setString(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getString(variableId)).to.eq(value);
     });
 
@@ -65,10 +56,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.boolean();
       await vars.setBool(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getBool(variableId)).to.eq(value);
     });
 
@@ -97,10 +86,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.number();
       await vars.setInt(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getInt(variableId)).to.eq(value);
     });
 
@@ -123,10 +110,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = [faker.random.number(), faker.random.number()];
       await vars.setInts(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getInts(variableId)).to.eq(value);
     });
 
@@ -149,10 +134,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = createRandomId();
       await vars.setId64(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getId64(variableId)).to.eq(value);
     });
 
@@ -175,10 +158,8 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = [createRandomId(), createRandomId()];
       await vars.setId64s(variableId, value);
-      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getId64s(variableId)).to.eq(value);
     });
 

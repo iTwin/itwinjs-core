@@ -40,10 +40,16 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   public toJSON(): Ruleset { return this._ruleset; }
 }
 
-/** @internal */
+/**
+ * @internal
+ * @deprecated Will be dropped in 2.0.0
+ */
 export type RulesetManagerState = Ruleset[];
 
-/** @internal */
+/**
+ * @internal
+ * @deprecated Will be dropped in 2.0.0
+ */
 export namespace RulesetManagerState {
   export const STATE_ID = "rulesets";
 }

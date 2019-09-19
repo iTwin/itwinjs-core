@@ -16,7 +16,7 @@ export {
 export { PresentationError, PresentationStatus } from "./Error";
 export { KeySet, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./KeySet";
 export { PersistentKeysContainer } from "./PersistentKeysContainer";
-export { RulesetVariablesState, VariableValueTypes, VariableValue } from "./RulesetVariables";
+export { RulesetVariablesState, RulesetVariable, VariableValueTypes, VariableValue } from "./RulesetVariables";
 export { RegisteredRuleset, RulesetManagerState } from "./RegisteredRuleset";
 export { RulesetsFactory } from "./RulesetsFactory";
 export { LoggingNamespaces } from "./Logging";
@@ -44,7 +44,7 @@ export {
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
   PresentationRpcResponse,
 } from "./PresentationRpcInterface";
-export { RpcRequestsHandler, RpcRequestsHandlerProps, IClientStateHolder } from "./RpcRequestsHandler";
+export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./RpcRequestsHandler";
 
 /**
  * @module UnifiedSelection

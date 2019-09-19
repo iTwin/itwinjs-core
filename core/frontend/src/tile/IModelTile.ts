@@ -201,7 +201,7 @@ export namespace IModelTile {
     const admin = IModelApp.tileAdmin;
     const version = admin.getMaximumMajorTileFormatVersion();
     if (version >= 4) {
-      const useProjectExtents = BatchType.VolumeClassifier === treeId.type; // NB: Legacy flag.
+      const useProjectExtents = admin.useProjectExtents || BatchType.VolumeClassifier === treeId.type;
       const flags = useProjectExtents ? "_1-" : "_0-";
       idStr = version.toString() + flags;
     }
@@ -215,12 +215,11 @@ export namespace IModelTile {
         idStr = idStr + "E:0_";
       }
     } else {
+      const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
+      idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+
       if (undefined !== treeId.animationId) {
-        idStr = idStr + "A:" + treeId.animationId + "_";      // Temporary.... Tile publishing is currently either animation or classification - Just do animation for now (Microsoft Poc).
-        idStr = idStr + "E:0_";
-      } else {
-        const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
-        idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+        idStr = idStr + "A:" + treeId.animationId + "_";
       }
     }
 

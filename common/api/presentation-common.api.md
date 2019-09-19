@@ -4,7 +4,6 @@
 
 ```ts
 
-import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
@@ -146,7 +145,7 @@ export namespace ClassInfo {
     export function toJSON(info: ClassInfo): ClassInfoJSON;
 }
 
-// @internal
+// @internal @deprecated
 export type ClientStateSyncRequestOptions = PresentationRpcRequestOptions & {
     state: {
         [id: string]: unknown;
@@ -482,16 +481,6 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
 
 // @public
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
-
-// @internal
-export interface IClientStateHolder<TState> {
-    // (undocumented)
-    key: string;
-    // (undocumented)
-    onStateChanged: BeEvent<() => void>;
-    // (undocumented)
-    state: TState | undefined;
-}
 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
@@ -937,13 +926,14 @@ export class PresentationRpcInterface extends RpcInterface {
     getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
-    // @internal
+    // @internal @deprecated
     syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
 }
 
 // @public
 export interface PresentationRpcRequestOptions {
     clientId?: string;
+    // @deprecated
     clientStateId?: string;
 }
 
@@ -1231,7 +1221,11 @@ export interface RequestOptions<TIModel> {
 
 // @public
 export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
-    rulesetId: string;
+    // @deprecated
+    rulesetId?: string;
+    rulesetOrId?: Ruleset | string;
+    // @beta
+    rulesetVariables?: RulesetVariable[];
 }
 
 // @public
@@ -1244,7 +1238,6 @@ export interface RootNodeRule extends NavigationRuleBase {
 export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
-    readonly clientStateId: string | undefined;
     // (undocumented)
     computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
@@ -1281,15 +1274,10 @@ export class RpcRequestsHandler implements IDisposable {
     getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKeyJSON): Promise<number>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
-    // (undocumented)
-    registerClientStateHolder(holder: IClientStateHolder<any>): void;
     request<TResult, TOptions extends PresentationRpcRequestOptions & {
         imodel: IModelToken;
     }, TArg = any>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
-    sync(token: IModelToken): Promise<void>;
-    // (undocumented)
-    unregisterClientStateHolder(holder: IClientStateHolder<any>): void;
-}
+    }
 
 // @internal
 export interface RpcRequestsHandlerProps {
@@ -1315,10 +1303,10 @@ export interface Ruleset {
     vars?: VariablesGroup[];
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type RulesetManagerState = Ruleset[];
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export namespace RulesetManagerState {
     const // (undocumented)
     STATE_ID = "rulesets";
@@ -1337,13 +1325,23 @@ export class RulesetsFactory {
     }>;
     }
 
-// @internal (undocumented)
+// @beta
+export interface RulesetVariable {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    type: VariableValueTypes;
+    // (undocumented)
+    value: VariableValue;
+}
+
+// @internal @deprecated (undocumented)
 export interface RulesetVariablesState {
     // (undocumented)
     [rulesetId: string]: Array<[string, VariableValueTypes, VariableValue]>;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export namespace RulesetVariablesState {
     const // (undocumented)
     STATE_ID = "ruleset variables";
@@ -1557,7 +1555,7 @@ export interface VariablesGroup {
     vars: Variable[];
 }
 
-// @internal
+// @beta
 export type VariableValue = boolean | string | number | number[] | Id64String[];
 
 // @public
@@ -1568,7 +1566,7 @@ export enum VariableValueType {
     YesNo = "YesNo"
 }
 
-// @internal
+// @beta
 export enum VariableValueTypes {
     Bool = "bool",
     Id64 = "id64",

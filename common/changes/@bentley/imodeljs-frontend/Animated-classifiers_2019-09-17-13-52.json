@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support animation and classification in same tiles.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}
