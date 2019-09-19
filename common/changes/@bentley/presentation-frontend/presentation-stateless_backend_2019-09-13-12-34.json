@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added Ruleset and Ruleset variables to request options to support stateless presentation backend",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Saulius.Skliutas@bentley.com"
+}

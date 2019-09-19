@@ -65,7 +65,6 @@ public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit
-internal;IClientStateHolder
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -181,6 +180,7 @@ public;Ruleset
 internal;RulesetManagerState = Ruleset[]
 internal;RulesetManagerState
 public;RulesetsFactory
+beta;RulesetVariable
 internal;RulesetVariablesState
 internal;RulesetVariablesState
 public;RuleTypes
@@ -214,6 +214,6 @@ public;ValuesDictionary
 public;ValuesMap 
 public;Variable
 public;VariablesGroup
-internal;VariableValue = boolean | string | number | number[] | Id64String[]
+beta;VariableValue = boolean | string | number | number[] | Id64String[]
 public;VariableValueType
-internal;VariableValueTypes
+beta;VariableValueTypes
