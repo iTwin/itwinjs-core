@@ -5,8 +5,10 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
   direction={3}
   groupItemDef={
     GroupItemDef {
+      "_description": "",
       "_itemList": ItemList [
         CommandItemDef {
+          "_description": "",
           "_label": "Tool 1",
           "_tooltip": "",
           "betaBadge": false,
@@ -22,6 +24,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "stateSyncIds": Array [],
         },
         CommandItemDef {
+          "_description": "",
           "_label": "Tool 2",
           "_tooltip": "",
           "applicationData": Object {
@@ -45,6 +48,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       ],
       "_itemMap": Map {
         "tool1" => CommandItemDef {
+          "_description": "",
           "_label": "Tool 1",
           "_tooltip": "",
           "betaBadge": false,
@@ -60,6 +64,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "stateSyncIds": Array [],
         },
         "tool2" => CommandItemDef {
+          "_description": "",
           "_label": "Tool 2",
           "_tooltip": "",
           "applicationData": Object {
@@ -82,6 +87,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
       },
       "_label": "tests.label",
+      "_panelLabel": "",
       "_tooltip": "",
       "betaBadge": false,
       "direction": 3,
@@ -97,6 +103,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "isVisible": true,
       "items": Array [
         CommandItemDef {
+          "_description": "",
           "_label": "Tool 1",
           "_tooltip": "",
           "betaBadge": false,
@@ -112,6 +119,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "stateSyncIds": Array [],
         },
         CommandItemDef {
+          "_description": "",
           "_label": "Tool 2",
           "_tooltip": "",
           "applicationData": Object {
@@ -142,6 +150,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
   items={
     Array [
       CommandItemDef {
+        "_description": "",
         "_label": "Tool 1",
         "_tooltip": "",
         "betaBadge": false,
@@ -157,6 +166,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "stateSyncIds": Array [],
       },
       CommandItemDef {
+        "_description": "",
         "_label": "Tool 2",
         "_tooltip": "",
         "applicationData": Object {

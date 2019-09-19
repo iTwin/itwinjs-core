@@ -33,7 +33,7 @@ export class CoreTools {
     return new CustomItemDef({
       customId: "uif:keyinbrowser",
       reactElement: (
-        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" betaBadge={true}>
+        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" tooltip="keyinbrowser (tooltip)" betaBadge={true}>
           {this._renderKeyInBrowser}
         </PopupButton>
       ),
@@ -51,7 +51,7 @@ export class CoreTools {
       toolId: FitViewTool.toolId,
       iconSpec: FitViewTool.iconSpec,
       label: () => FitViewTool.flyover,
-      tooltip: () => FitViewTool.description,
+      description: () => FitViewTool.description,
       execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
     });
   }
@@ -61,7 +61,7 @@ export class CoreTools {
       toolId: WindowAreaTool.toolId,
       iconSpec: WindowAreaTool.iconSpec,
       label: () => WindowAreaTool.flyover,
-      tooltip: () => WindowAreaTool.description,
+      description: () => WindowAreaTool.description,
       execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -71,7 +71,7 @@ export class CoreTools {
       toolId: ZoomViewTool.toolId,
       iconSpec: ZoomViewTool.iconSpec,
       label: () => ZoomViewTool.flyover,
-      tooltip: () => ZoomViewTool.description,
+      description: () => ZoomViewTool.description,
       execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -81,7 +81,7 @@ export class CoreTools {
       toolId: PanViewTool.toolId,
       iconSpec: PanViewTool.iconSpec,
       label: () => PanViewTool.flyover,
-      tooltip: () => PanViewTool.description,
+      description: () => PanViewTool.description,
       execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -91,7 +91,7 @@ export class CoreTools {
       toolId: RotateViewTool.toolId,
       iconSpec: RotateViewTool.iconSpec,
       label: () => RotateViewTool.flyover,
-      tooltip: () => RotateViewTool.description,
+      description: () => RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -101,7 +101,7 @@ export class CoreTools {
       toolId: WalkViewTool.toolId,
       iconSpec: WalkViewTool.iconSpec,
       label: () => WalkViewTool.flyover,
-      tooltip: () => WalkViewTool.description,
+      description: () => WalkViewTool.description,
       execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -111,7 +111,7 @@ export class CoreTools {
       toolId: SelectionTool.toolId,
       iconSpec: SelectionTool.iconSpec,
       label: () => SelectionTool.flyover,
-      tooltip: () => SelectionTool.description,
+      description: () => SelectionTool.description,
       execute: () => {
         IModelApp.tools.run(SelectionTool.toolId);
       },
@@ -123,7 +123,7 @@ export class CoreTools {
       toolId: ViewToggleCameraTool.toolId,
       iconSpec: ViewToggleCameraTool.iconSpec,
       label: () => ViewToggleCameraTool.flyover,
-      tooltip: () => ViewToggleCameraTool.description,
+      description: () => ViewToggleCameraTool.description,
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -133,7 +133,7 @@ export class CoreTools {
       toolId: FlyViewTool.toolId,
       iconSpec: FlyViewTool.iconSpec,
       label: () => FlyViewTool.flyover,
-      tooltip: () => FlyViewTool.description,
+      description: () => FlyViewTool.description,
       execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -144,7 +144,7 @@ export class CoreTools {
       toolId: ViewClipByPlaneTool.toolId,
       iconSpec: ViewClipByPlaneTool.iconSpec,
       label: () => ViewClipByPlaneTool.flyover,
-      tooltip: () => ViewClipByPlaneTool.description,
+      description: () => ViewClipByPlaneTool.description,
       execute: () => {
         const vp = IModelApp.viewManager.selectedView;
         if (!vp || !vp.view.is3d())
@@ -167,7 +167,7 @@ export class CoreTools {
       toolId: ViewUndoTool.toolId,
       iconSpec: ViewUndoTool.iconSpec,
       label: () => ViewUndoTool.flyover,
-      tooltip: () => ViewUndoTool.description,
+      description: () => ViewUndoTool.description,
       execute: () => { IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView); },
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
@@ -185,7 +185,7 @@ export class CoreTools {
       toolId: ViewRedoTool.toolId,
       iconSpec: ViewRedoTool.iconSpec,
       label: () => ViewRedoTool.flyover,
-      tooltip: () => ViewRedoTool.description,
+      description: () => ViewRedoTool.description,
       execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {

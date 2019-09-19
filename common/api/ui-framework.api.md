@@ -2247,8 +2247,10 @@ export class GroupItemDef extends ActionButtonItemDef {
     itemsInColumn: number;
     // @internal (undocumented)
     overflow: boolean;
+    readonly panelLabel: string;
     // (undocumented)
     resolveItems(force?: boolean): void;
+    setPanelLabel(v: string | StringGetter): void;
     // (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
@@ -2263,6 +2265,8 @@ export interface GroupItemProps extends ItemProps {
     items: AnyItemDef[];
     // (undocumented)
     itemsInColumn?: number;
+    paneLabelKey?: string;
+    panelLabel?: string | StringGetter;
 }
 
 // @internal (undocumented)
@@ -2443,6 +2447,7 @@ export abstract class ItemDefBase {
     applicationData?: any;
     // (undocumented)
     betaBadge: boolean;
+    readonly description: string;
     // (undocumented)
     iconElement?: React.ReactNode;
     // (undocumented)
@@ -2460,6 +2465,7 @@ export abstract class ItemDefBase {
     // (undocumented)
     isVisible: boolean;
     readonly label: string;
+    setDescription(v: string | StringGetter): void;
     setLabel(v: string | StringGetter): void;
     setTooltip(v: string | StringGetter): void;
     // (undocumented)
@@ -2492,7 +2498,7 @@ export class ItemMap extends Map<string, ItemDefBase> {
 }
 
 // @public
-export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
+export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
     applicationData?: any;
     betaBadge?: boolean;
     isActive?: boolean;

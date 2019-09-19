@@ -28,7 +28,7 @@ export class AppTools {
       toolId: Tool1.toolId,
       iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
-      tooltip: () => Tool1.description,
+      description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
       },
@@ -64,7 +64,7 @@ export class AppTools {
       toolId: AnalysisAnimationTool.toolId,
       iconSpec: "icon-camera-animation",
       label: () => AnalysisAnimationTool.flyover,
-      tooltip: () => AnalysisAnimationTool.description,
+      description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
       isVisible: false, // default to not show and then allow stateFunc to redefine.
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
@@ -445,6 +445,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOpen",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openPropertyGrid",
+      tooltip: "Open Vertical PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
@@ -462,6 +463,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.closePropertyGrid",
+      tooltip: "Close PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {

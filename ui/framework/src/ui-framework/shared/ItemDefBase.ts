@@ -23,6 +23,7 @@ export interface BaseItemState {
 export abstract class ItemDefBase {
   private _label: string | StringGetter = "";
   private _tooltip: string | StringGetter = "";
+  private _description: string | StringGetter = "";
 
   public isVisible: boolean = true;
   public isEnabled: boolean = true;
@@ -52,6 +53,7 @@ export abstract class ItemDefBase {
 
     me._label = PropsHelper.getStringSpec(itemProps.label, itemProps.labelKey);
     me._tooltip = PropsHelper.getStringSpec(itemProps.tooltip, itemProps.tooltipKey);
+    me._description = PropsHelper.getStringSpec(itemProps.description, itemProps.descriptionKey);
 
     if (itemProps.stateFunc)
       me.stateFunc = itemProps.stateFunc;
@@ -89,5 +91,17 @@ export abstract class ItemDefBase {
    */
   public setTooltip(v: string | StringGetter) {
     this._tooltip = v;
+  }
+
+  /** Get the description string */
+  public get description(): string {
+    return PropsHelper.getStringFromSpec(this._description);
+  }
+
+  /** Set the description.
+   * @param v A string or a function to get the string.
+   */
+  public setDescription(v: string | StringGetter) {
+    this._description = v;
   }
 }

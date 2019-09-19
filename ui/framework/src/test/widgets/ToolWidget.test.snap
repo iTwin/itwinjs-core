@@ -15,8 +15,9 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_description": [Function],
                 "_label": [Function],
-                "_tooltip": [Function],
+                "_tooltip": "",
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -47,6 +48,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             items={
               Array [
                 CommandItemDef {
+                  "_description": "",
                   "_label": "",
                   "_tooltip": "",
                   "betaBadge": false,
@@ -62,6 +64,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "stateSyncIds": Array [],
                 },
                 CommandItemDef {
+                  "_description": "",
                   "_label": "",
                   "_tooltip": "",
                   "applicationData": Object {
@@ -96,6 +99,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           "getCommandArgs": undefined,
           "parameters": undefined,
         },
+        "_description": "",
         "_label": "",
         "_tooltip": "",
         "betaBadge": false,
@@ -168,6 +172,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             items={
               Array [
                 CommandItemDef {
+                  "_description": "",
                   "_label": "",
                   "_tooltip": "",
                   "betaBadge": false,
@@ -183,6 +188,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "stateSyncIds": Array [],
                 },
                 CommandItemDef {
+                  "_description": "",
                   "_label": "",
                   "_tooltip": "",
                   "applicationData": Object {

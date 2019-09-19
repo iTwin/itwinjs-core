@@ -685,16 +685,20 @@ class FrontstageToolWidget extends React.Component {
   private _verticalToolbarItems = new ItemList([
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
+      panelLabel: "Open Close Properties",
       iconSpec: "icon-placeholder",
       items: [AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.messageDemos",
+      // deprecated way of using tooltip to specify panelLabel
+      tooltip: "Message Demos (Tooltip)",
       iconSpec: "icon-placeholder",
       items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
+      panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
       items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
     }),

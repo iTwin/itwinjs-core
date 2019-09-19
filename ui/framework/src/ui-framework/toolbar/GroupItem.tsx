@@ -16,7 +16,7 @@ import {
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemProps, AnyItemDef } from "../shared/ItemProps";
+import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
 import { Icon, IconSpec } from "../shared/IconComponent";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
@@ -49,6 +49,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
+  private _panelLabel: string | StringGetter = "";
 
   constructor(groupItemProps: GroupItemProps) {
     super(groupItemProps);
@@ -57,12 +58,24 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
     this.items = groupItemProps.items;
   }
 
   public get id(): string {
     return this.groupId;
+  }
+
+  /** Get the panelLabel string */
+  public get panelLabel(): string {
+    return PropsHelper.getStringFromSpec(this._panelLabel);
+  }
+
+  /** Set the panelLabel.
+   * @param v A string or a function to get the string.
+   */
+  public setPanelLabel(v: string | StringGetter) {
+    this._panelLabel = v;
   }
 
   public resolveItems(force?: boolean): void {
@@ -294,7 +307,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
 
     trays.set(trayId, {
       columns,
-      title: groupItemDef.tooltip,
+      title: groupItemDef.panelLabel ? groupItemDef.panelLabel : groupItemDef.tooltip, // we fallback to use tooltip since tooltip was originally (and confusingly) used as a panelLabel
       groupItemDef,
     });
   }

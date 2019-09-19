@@ -62,7 +62,7 @@ export interface TooltipProps {
 /** Definition that specifies properties shared between many ConfigurableUi components.
  * @public
  */
-export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
+export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
   /** if set, component will be visible - defaults to true */
   isVisible?: boolean;
   /** if set, component will be enabled - defaults to true */
@@ -113,6 +113,10 @@ export interface GroupItemProps extends ItemProps {
   items: AnyItemDef[];
   direction?: Direction;
   itemsInColumn?: number;
+  /** if set, it is used to explicitly set a label at top of open group component. */
+  panelLabel?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if panelLabel is not explicitly set. */
+  paneLabelKey?: string;
 }
 
 /** Definition for a Conditional item that conditionally renders other items based on UiSync events.

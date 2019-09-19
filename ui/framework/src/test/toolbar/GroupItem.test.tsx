@@ -294,6 +294,7 @@ describe("GroupItem", () => {
       const groupItemDef = new GroupItemDef({
         groupId: "my-group1",
         labelKey: "SampleApp:buttons.toolGroup",
+        panelLabel: "panel-label",
         iconSpec: "icon-placeholder",
         items: [tool1, tool2],
         direction: Direction.Bottom,
