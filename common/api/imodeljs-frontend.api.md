@@ -4819,6 +4819,7 @@ export namespace PerModelCategoryVisibility {
     }
     export interface Overrides {
         clearOverrides(modelIds?: Id64Arg): void;
+        forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     }

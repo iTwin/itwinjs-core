@@ -949,6 +949,11 @@ export namespace PerModelCategoryVisibility {
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
+    /** Iterates each override.
+     * @param func Accepts the model and category Ids and a boolean indicating if the category is visible. Returns `false` to terminate iteration or `true` to continue.
+     * @returns `true` if iteration completed; `false` if the callback requested early termination.
+     */
+    forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
   }
 }
 
@@ -1094,6 +1099,14 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         }
       }
     }
+  }
+
+  public forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean {
+    for (const entry of this)
+      if (!func(entry.modelId, entry.categoryId, entry.visible))
+        return false;
+
+    return true;
   }
 }
 
