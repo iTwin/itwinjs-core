@@ -23,5 +23,7 @@
   > .nz-title {
     color: $buic-text-color;
     filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+    white-space: nowrap;
+    overflow: hidden;
   }
 }

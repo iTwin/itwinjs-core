@@ -50,7 +50,9 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
           {this.props.buttons}
         </TitleBar>
         <div className="nz-content">
-          {this.props.children}
+          <div>
+            {this.props.children}
+          </div>
         </div>
       </div>
     );

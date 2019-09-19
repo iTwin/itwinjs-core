@@ -9,6 +9,8 @@ exports[`<ToolSettings /> renders correctly 1`] = `
   />
   <div
     className="nz-content"
-  />
+  >
+    <div />
+  </div>
 </div>
 `;
