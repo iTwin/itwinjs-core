@@ -141,6 +141,37 @@
   border-top: 25px solid #44ff44;
 }
 
+.floating-window-header-close {
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 20px;
+  height: 25px;
+  opacity: 0.5;
+  cursor: default;
+}
+.floating-window-header-close:hover {
+  opacity: 1;
+}
+.floating-window-header-close:before, .floating-window-header-close:after {
+  position: absolute;
+  left: 9px;
+  content: ' ';
+  height: 24px;
+  width: 2px;
+  background-color: #333;
+}
+.floating-window-header-close:before {
+  transform: rotate(36deg);
+}
+.floating-window-header-close:after {
+  transform: rotate(-36deg);
+}
+
+.window-pinned {
+  border-top-color: crimson;
+}
+
 .topdiv {
   display: flex;
   align-items: center;

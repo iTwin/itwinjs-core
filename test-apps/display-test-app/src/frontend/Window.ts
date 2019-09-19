@@ -6,23 +6,26 @@
 import { Surface } from "./Surface";
 
 class DragState {
-  private _pos1 = 0;
-  private _pos2 = 0;
-  private _pos3 = 0;
-  private _pos4 = 0;
+  private _newX = 0;
+  private _newY = 0;
+  private _prevX = 0;
+  private _prevY = 0;
 
   public constructor(window: Window, click: HTMLElement) {
     const drag = (e: MouseEvent) => {
       window.invalidateDock();
       const target = window.container;
+      const surf = window.surface.element;
       e.preventDefault();
-      this._pos1 = this._pos3 - e.clientX;
-      this._pos2 = this._pos4 - e.clientY;
-      this._pos3 = e.clientX;
-      this._pos4 = e.clientY;
+      this._newX = this._prevX - e.clientX;
+      this._newY = this._prevY - e.clientY;
+      this._prevX = e.clientX;
+      this._prevY = e.clientY;
 
-      const top = Math.max(0, target.offsetTop - this._pos2);
-      const left = Math.max(0, target.offsetLeft - this._pos1);
+      let top = Math.max(0, target.offsetTop - this._newY);
+      let left = Math.max(0, target.offsetLeft - this._newX);
+      top = Math.min(surf.clientHeight - target.clientHeight, top);
+      left = Math.min(surf.clientWidth - target.clientWidth, left);
       target.style.top = top + "px";
       target.style.left = left + "px";
     };
@@ -34,8 +37,8 @@ class DragState {
 
     const startDrag = (e: MouseEvent) => {
       e.preventDefault();
-      this._pos3 = e.clientX;
-      this._pos4 = e.clientY;
+      this._prevX = e.clientX;
+      this._prevY = e.clientY;
       document.addEventListener("mousemove", drag);
       document.addEventListener("mouseup", stopDrag);
 
@@ -61,12 +64,20 @@ class ResizeState {
       window.invalidateDock();
       const width = this._prevWidth + (e.pageX - this._prevMouseX);
       const height = this._prevHeight - (e.pageY - this._prevMouseY);
+      const windowTop = this._prevY + (e.pageY - this._prevMouseY);
+      const windowLeft = parseInt(window.container.style.left!, 10);
+      const windowRight = windowLeft + width;
+      const prevBottom = this._prevY + this._prevHeight;
+      const surfaceWidth = window.surface.element.clientWidth;
+      const surfaceRight = window.surface.element.clientLeft + surfaceWidth;
+      const surfaceTop = window.surface.element.clientTop;
+
       if (width > this.minSize)
-        target.style.width = width + "px";
+        target.style.width = ((windowRight <= surfaceRight) ? width : surfaceWidth - windowLeft) + "px";
 
       if (height > minSize) {
-        target.style.height = height + "px";
-        target.style.top = this._prevY + (e.pageY - this._prevMouseY) + "px";
+        target.style.height = ((windowTop >= surfaceTop) ? height : prevBottom) + "px";
+        target.style.top = ((windowTop >= surfaceTop) ? windowTop : surfaceTop) + "px";
       }
     };
 
@@ -119,6 +130,8 @@ class WindowHeader {
   public readonly window: Window;
   public readonly element: HTMLElement;
   private readonly _titleElement: HTMLElement;
+  private readonly _closeElement: HTMLElement;
+  private readonly _resizerElement: HTMLElement;
   private _dockState?: DockState;
   private readonly _resizeState: ResizeState;
 
@@ -131,9 +144,15 @@ class WindowHeader {
     this.element.appendChild(this._titleElement);
     this.setTitle(title);
 
-    const resizer = document.createElement("div");
-    resizer.className = "floating-window-header-resize";
-    this.element.appendChild(resizer);
+    this._closeElement = document.createElement("div");
+    this._closeElement.className = "floating-window-header-close";
+    this._closeElement.onclick = () => this.window.surface.close(this.window);
+    this.element.appendChild(this._closeElement);
+    this.hideCloseWidget(!this.window.isCloseable);
+
+    this._resizerElement = document.createElement("div");
+    this._resizerElement.className = "floating-window-header-resize";
+    this.element.appendChild(this._resizerElement);
 
     parent.appendChild(this.element);
 
@@ -141,7 +160,7 @@ class WindowHeader {
     new DragState(window, this.element);
 
     // Left-drag corner => resize
-    this._resizeState = new ResizeState(window, resizer);
+    this._resizeState = new ResizeState(window, this._resizerElement);
 
     // Double-click => maximize or restore
     const maximizeOrRestore = () => {
@@ -164,13 +183,15 @@ class WindowHeader {
   }
 
   public dock(dock: Dock): void {
+    // NB: Don't update saved position+dimensions if currently docked.
+    const state = this._dockState;
     const target = this.window.container;
     this._dockState = {
       dock,
-      width: target.clientWidth,
-      height: target.clientHeight,
-      top: target.style.top!,
-      left: target.style.left!,
+      width: undefined !== state ? state.width : target.clientWidth,
+      height: undefined !== state ? state.height : target.clientHeight,
+      top: undefined !== state ? state.top : target.style.top!,
+      left: undefined !== state ? state.left : target.style.left!,
     };
     this.applyDock();
   }
@@ -227,6 +248,39 @@ class WindowHeader {
     this.window.focus();
   }
 
+  public ensureInSurface(): void {
+    const surf = this.window.surface;
+    const surfaceTop = surf.element.clientTop;
+    const surfaceBottom = surf.element.clientHeight;
+    const surfaceLeft = surf.element.clientLeft;
+    const surfaceRight = surfaceLeft + surf.element.clientWidth;
+    const style = this.window.container.style;
+    const windowHeight = this.window.container.clientHeight;
+    const windowWidth = this.window.container.clientWidth;
+    let windowTop = parseInt(style.top!, 10);
+    let windowLeft = parseInt(style.left!, 10);
+    const windowBottom = windowTop + windowHeight;
+    const windowRight = windowLeft + windowWidth;
+
+    // assure the window above of the surface boarder
+    if (windowBottom >= surfaceBottom)
+      windowTop = (surfaceBottom - windowHeight);
+    if (windowTop < surfaceTop)
+      windowTop = surfaceTop;
+    style.top = windowTop + "px";
+    if (windowHeight > surfaceBottom)
+      style.height = surfaceBottom + "px";
+
+    // assure the window left of the surface boarder
+    if (windowRight >= surfaceRight)
+      windowLeft = (surfaceRight - windowWidth);
+    if (windowLeft < surfaceLeft)
+      windowLeft = surfaceLeft;
+    style.left = windowLeft + "px";
+    if (windowWidth > surfaceRight)
+      style.width = surfaceRight + "px";
+  }
+
   public addDock(add: Dock): void {
     if (undefined === this._dockState) {
       this.dock(add);
@@ -271,6 +325,17 @@ class WindowHeader {
     cont.style.width = (cont.clientWidth + dw) + "px";
     cont.style.height = (cont.clientHeight + dh) + "px";
   }
+
+  public hideCloseWidget(hide: boolean) {
+    this._closeElement.style.display = hide ? "none" : "block";
+  }
+
+  public markAsPinned(isPinned: boolean) {
+    if (isPinned)
+      this._resizerElement.classList.add("window-pinned");
+    else
+      this._resizerElement.classList.remove("window-pinned");
+  }
 }
 
 export interface WindowProps {
@@ -286,7 +351,7 @@ export abstract class Window {
   public readonly container: HTMLElement;
   public readonly contentDiv: HTMLDivElement;
   public readonly surface: Surface;
-  public isPinned = false; // Do not set directly - use Surface.togglePin(window)
+  private _isPinned = false;
 
   public abstract get windowId(): string;
 
@@ -295,6 +360,10 @@ export abstract class Window {
     this.container = document.createElement("div");
     this.container.className = "floating-window-container";
 
+    this.container.style.top = 0 + "px";
+    this.container.style.left = 0 + "px";
+    this.container.style.width = (surface.element.clientWidth / 3) + "px";
+    this.container.style.height = (surface.element.clientHeight / 3) + "px";
     if (undefined !== props) {
       if (undefined !== props.top)
         this.container.style.top = props.top + "px";
@@ -313,6 +382,13 @@ export abstract class Window {
     this.container.appendChild(this.contentDiv);
   }
 
+  // Do not set directly - use Surface.togglePin(window)
+  public get isPinned(): boolean { return this._isPinned; }
+  public set isPinned(value: boolean) {
+    this._header.markAsPinned(value);
+    this._isPinned = value;
+  }
+
   public set title(title: string | undefined) {
     this._header.setTitle(title);
   }
@@ -325,8 +401,10 @@ export abstract class Window {
   public dock(dock: Dock) { this._header.dock(dock); }
   public updateDock() { this._header.applyDock(); }
   public undock() { this._header.undock(); }
+  public ensureInSurface() { this._header.ensureInSurface(); }
   public invalidateDock() { this._header.invalidateDock(); }
   public addDock(dock: Dock) { this._header.addDock(dock); }
+  public updateUi(): void { this._header.hideCloseWidget(!this.isCloseable); }
 
   public onFocus(): void {
     this.container.classList.add("window-focused");

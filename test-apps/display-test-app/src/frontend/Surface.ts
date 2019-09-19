@@ -56,86 +56,21 @@ export class Surface {
     this.notifications = new NotificationsWindow(this, { title: "Notifications", width: 800, height: 800, maxStoredMessages: 50 });
     this.addWindow(this.notifications);
 
-    document.addEventListener("keyup", (e) => {
-      // back-tick to focus key-in field
-      if ("`" === e.key) {
-        this.keyinField.focus();
-        return;
+    document.addEventListener("keydown", (e) => {
+      const handler = this.getKeyboardShortcutHandler(e);
+      if (undefined !== handler) {
+        handler();
+        e.preventDefault();
       }
-
-      if (!e.ctrlKey)
-        return;
-
-      // Ctrl-[/] => focus previous/next window
-      if ("[" === e.key || "]" === e.key) {
-        if (this._windows.length <= 1)
-          return;
-
-        // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
-        this.focusNextOrPrevious("]" === e.key);
-        return;
-      }
-
-      // Ctrl-\ => clone focused viewport
-      if ("\\" === e.key) {
-        const win = this.focusedWindow;
-        if (win instanceof Viewer)
-          this.addViewer(win.clone());
-
-        return;
-      }
-
-      // Ctrl-| => close focused window
-      if ("|" === e.key) {
-        const win = this.focusedWindow;
-        if (undefined !== win)
-          this.close(win);
-
-        return;
-      }
-
-      // Ctrl-N => toggle notifications window focus
-      if ("n" === e.key) {
-        if (this.focusedWindow !== this.notifications)
-          this.notifications.focus();
-        else
-          this.focusNext();
-
-        return;
-      }
-
-      // Ctrl-h/j/k/l => dock focused window to edge/corner
-      if (undefined === this.focusedWindow)
-        return;
-
-      if ("p" === e.key) {
-        this.togglePin(this.focusedWindow);
-        return;
-      }
-
-      let dock = 0;
-      switch (e.key) {
-        case "h":
-          dock = Dock.Left;
-          break;
-        case "l":
-          dock = Dock.Right;
-          break;
-        case "k":
-          dock = Dock.Top;
-          break;
-        case "j":
-          dock = Dock.Bottom;
-          break;
-      }
-
-      if (0 !== dock)
-        this.focusedWindow.addDock(dock);
     });
 
     window.onresize = () => {
-      for (const window of this._windows)
-        window.updateDock();
+      for (const window of this._windows) {
+        if (window.isDocked)
+          window.updateDock();
+        else
+          window.ensureInSurface();
+      }
     };
 
     IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
@@ -159,6 +94,70 @@ export class Surface {
     });
   }
 
+  private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
+    if (e.repeat)
+      return undefined;
+
+    const key = e.key;
+    if ("`" === key)
+      return () => this.keyinField.focus();
+
+    if (!e.ctrlKey)
+      return undefined;
+
+    switch (key) {
+      case "[":
+      case "]":
+        return () => this.focusNextOrPrevious("]" === key);
+    }
+
+    const focused = this.focusedWindow;
+    if (undefined === focused)
+      return undefined;
+
+    let dock: Dock | undefined;
+    switch (key) {
+      case "\\":
+        return () => {
+          if (focused instanceof Viewer)
+            this.addViewer(focused.clone());
+        };
+      case "|":
+        return () => this.close(focused);
+      case "n":
+        // NB: This doesn't work in Chrome (it doesn't give us the keydown event for ctrl-n)
+        return () => {
+          if (focused !== this.notifications)
+            this.notifications.focus();
+          else
+            this.focusNext();
+        };
+      case "p":
+        return () => this.togglePin(focused);
+      case "i":
+        return () => focused.dock(Dock.Full);
+      case "m":
+        return () => focused.undock();
+      case "h":
+        dock = Dock.Left;
+        break;
+      case "l":
+        dock = Dock.Right;
+        break;
+      case "k":
+        dock = Dock.Top;
+        break;
+      case "j":
+        dock = Dock.Bottom;
+        break;
+    }
+
+    if (undefined !== dock)
+      return () => focused.addDock(dock!);
+
+    return undefined;
+  }
+
   public createNamedWindow(props: NamedWindowProps): NamedWindow {
     const window = new NamedWindow(this, props);
     this.element.appendChild(window.container);
@@ -179,7 +178,13 @@ export class Surface {
 
   private addWindow(window: Window): void {
     this._windows.push(window);
+    window.ensureInSurface();
+    this.updateWindowsUi();
     this.focus(window);
+  }
+
+  private updateWindowsUi(): void {
+    this._windows.forEach((window: Window) => window.updateUi());
   }
 
   public focus(window: Window): void {
@@ -279,6 +284,7 @@ export class Surface {
       this.element.removeChild(window.container);
       window.onClose();
     }
+    this.updateWindowsUi();
   }
 
   public onResetIModel(viewer: Viewer): void {
