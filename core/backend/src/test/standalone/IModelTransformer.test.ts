@@ -2,17 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  IModelDb, IModelJsFs, IModelTransformer,
-} from "../../imodeljs-backend";
+import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelDb, IModelJsFs, IModelTransformer, Subject } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
+import { IModelTransformerUtils, IModelTransformerWithAsserts, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
@@ -35,20 +32,14 @@ describe("IModelTransformer", () => {
 
   it("should import", async () => {
     // Source IModelDb
-    const createdOutputFile: string = path.join(outputDir, "TestIModelTransformer-Source.bim");
-    if (IModelJsFs.existsSync(createdOutputFile))
-      IModelJsFs.removeSync(createdOutputFile);
-    const sourceDb: IModelDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    assert.isTrue(IModelJsFs.existsSync(createdOutputFile));
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
+    const sourceDb: IModelDb = IModelDb.createSnapshot(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
     await IModelTransformerUtils.prepareSourceDb(sourceDb);
     IModelTransformerUtils.populateSourceDb(sourceDb);
     sourceDb.saveChanges();
     // Target IModelDb
-    const importedOutputFile: string = path.join(outputDir, "TestIModelTransformer-Target.bim");
-    if (IModelJsFs.existsSync(importedOutputFile))
-      IModelJsFs.removeSync(importedOutputFile);
-    const targetDb: IModelDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
-    assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
+    const targetDb: IModelDb = IModelDb.createSnapshot(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
     await IModelTransformerUtils.prepareTargetDb(targetDb);
     targetDb.saveChanges();
 
@@ -162,6 +153,57 @@ describe("IModelTransformer", () => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
   }
+
+  it("should import everything below a Subject", async () => {
+    // Source IModelDb
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
+    const sourceDb: IModelDb = IModelDb.createSnapshot(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
+    await IModelTransformerUtils.prepareSourceDb(sourceDb);
+    IModelTransformerUtils.populateSourceDb(sourceDb);
+    const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
+    assert.isTrue(Id64.isValidId64(sourceSubjectId));
+    sourceDb.saveChanges();
+    // Target IModelDb
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TargetImportSubject.bim");
+    const targetDb: IModelDb = IModelDb.createSnapshot(targetDbFile, { rootSubject: { name: "TargetImportSubject" } });
+    await IModelTransformerUtils.prepareTargetDb(targetDb);
+    const targetSubjectId = Subject.insert(targetDb, IModel.rootSubjectId, "Target Subject", "Target Subject Description");
+    assert.isTrue(Id64.isValidId64(targetSubjectId));
+    targetDb.saveChanges();
+    // Import from beneath source Subject into target Subject
+    const transformer = new TestIModelTransformer(sourceDb, targetDb);
+    transformer.importFonts();
+    transformer.importSubject(sourceSubjectId, targetSubjectId);
+    transformer.importRelationships(ElementRefersToElements.classFullName);
+    transformer.dispose();
+    targetDb.saveChanges();
+    IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb, "Target Subject");
+    const targetSubject: Subject = targetDb.elements.getElement<Subject>(targetSubjectId);
+    assert.equal(targetSubject.description, "Target Subject Description");
+    // Close
+    sourceDb.closeSnapshot();
+    targetDb.closeSnapshot();
+  });
+
+  // WIP: Using IModelTransformer within the same iModel is not yet supported
+  it.skip("should clone Model within same iModel", async () => {
+    // Set up the IModelDb with a populated source Subject and an "empty" target Subject
+    const iModelFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
+    const iModelDb: IModelDb = IModelDb.createSnapshot(iModelFile, { rootSubject: { name: "CloneModel" } });
+    await IModelTransformerUtils.prepareSourceDb(iModelDb);
+    IModelTransformerUtils.populateSourceDb(iModelDb);
+    const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
+    assert.isTrue(Id64.isValidId64(sourceSubjectId));
+    const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
+    assert.isTrue(Id64.isValidId64(targetSubjectId));
+    iModelDb.saveChanges();
+    // Import from beneath source Subject into target Subject
+    const transformer = new IModelTransformerWithAsserts(iModelDb, iModelDb);
+    transformer.importSubject(sourceSubjectId, targetSubjectId);
+    transformer.dispose();
+    iModelDb.saveChanges();
+    iModelDb.closeSnapshot();
+  });
 
   it("should clone test file", async () => {
     // open source iModel

@@ -2198,6 +2198,7 @@ export class IModelTransformer {
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(numRetries?: number): void;
+    importSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;

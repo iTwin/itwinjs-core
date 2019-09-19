@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
@@ -22,6 +22,8 @@ import { KnownTestLocations } from "./KnownTestLocations";
 
 /** IModelTransformer utilities shared by both standalone and integration tests. */
 export namespace IModelTransformerUtils {
+
+  const federationGuid3: GuidString = Guid.createValue();
 
   export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
     // Import desired target schemas
@@ -47,7 +49,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
     // Insert RepositoryModel structure
-    const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject description");
+    const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject Description");
     assert.isTrue(Id64.isValidId64(subjectId));
     const sourceOnlySubjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Only in Source");
     assert.isTrue(Id64.isValidId64(sourceOnlySubjectId));
@@ -135,6 +137,7 @@ export namespace IModelTransformerUtils {
       model: physicalModelId,
       category: sourcePhysicalCategoryId,
       code: Code.createEmpty(),
+      federationGuid: federationGuid3,
       userLabel: "PhysicalObject3",
     };
     const physicalObjectId3: Id64String = sourceDb.elements.insertElement(physicalObjectProps3);
@@ -326,7 +329,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
   }
 
-  export function assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb): void {
+  export function assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb, targetSubjectName: string = "Subject"): void {
     // CodeSpec
     assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec"));
     assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
@@ -336,10 +339,10 @@ export namespace IModelTransformerUtils {
       assert.exists(targetDb.fontMap.getFont("Arial"));
     }
     // Subject
-    const subjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Subject"))!;
+    const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
     const subjectProps: SubjectProps = targetDb.elements.getElementProps(subjectId) as SubjectProps;
-    assert.equal(subjectProps.description, "Subject description"); // description is an auto-handled property
+    assert.equal(subjectProps.description, `${targetSubjectName} Description`);
     const sourceOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Source"));
     assert.equal(undefined, sourceOnlySubjectId);
     const targetOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Target"))!;
@@ -404,11 +407,13 @@ export namespace IModelTransformerUtils {
     assertTargetElement(sourceDb, targetDb, childObjectId1B);
     const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
     const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
+    const physicalObject3: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId3);
     const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
     const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
     const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
     assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by transformElement override");
@@ -452,10 +457,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(displayStyle3d.settings.hasSubCategoryOverride);
     assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
     assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
-    if (false) {
-      // WIP: Need new addon build before this can be enabled!
-      assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped");
-    }
+    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped");
     // ViewDefinition
     const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;
     assertTargetElement(sourceDb, targetDb, viewId);
@@ -725,10 +727,24 @@ export namespace IModelTransformerUtils {
   }
 
   function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
-    return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=?`, (statement: ECSqlStatement): Id64String => {
-      statement.bindString(1, userLabel);
+    return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
+      statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
     });
+  }
+}
+
+export class IModelTransformerWithAsserts extends IModelTransformer {
+  // Debugging aid that asserts valid Ids before native code is called
+  protected insertElement(targetElementProps: ElementProps): Id64String {
+    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.model));
+    assert.doesNotThrow(() => this.targetDb.models.getModel(targetElementProps.model));
+    assert.doesNotThrow(() => this.targetDb.codeSpecs.getById(targetElementProps.code.spec));
+    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.code.scope));
+    if (targetElementProps.parent) {
+      assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.parent!.id));
+    }
+    return super.insertElement(targetElementProps);
   }
 }
 

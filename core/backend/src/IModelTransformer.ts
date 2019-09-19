@@ -8,7 +8,7 @@ import { Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IMod
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, GeometricElement, Subject } from "./Element";
+import { DefinitionPartition, Element, GeometricElement, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -352,9 +352,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
-    targetElementProps.federationGuid = sourceElement.federationGuid; // cloneElement strips off federationGuid
-    return targetElementProps;
+    return this.context.cloneElement(sourceElement);
   }
 
   /** Insert the transformed Element into the target iModel.
@@ -588,6 +586,38 @@ export class IModelTransformer {
     // import DefinitionModels before other types of Models
     definitionModelIds.forEach((modelId: Id64String) => this.importModel(modelId));
     otherModelIds.forEach((modelId: Id64String) => this.importModel(modelId));
+  }
+
+  /** Import all sub-models that recursively descend from the specified Subject in the source iModel. */
+  private importSubjectSubModels(sourceSubjectId: Id64String): void {
+    // import DefinitionModels first
+    const childDefinitionPartitionSql = `SELECT ECInstanceId FROM ${DefinitionPartition.classFullName} WHERE Parent.Id=:subjectId`;
+    this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, (statement: ECSqlStatement) => {
+      statement.bindId("subjectId", sourceSubjectId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        this.importModel(statement.getValue(0).getId());
+      }
+    });
+    // import other partitions next
+    const childPartitionSql = `SELECT ECInstanceId FROM ${InformationPartitionElement.classFullName} WHERE Parent.Id=:subjectId`;
+    this.sourceDb.withPreparedStatement(childPartitionSql, (statement: ECSqlStatement) => {
+      statement.bindId("subjectId", sourceSubjectId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const modelId: Id64String = statement.getValue(0).getId();
+        const model: Model = this.sourceDb.models.getModel(modelId);
+        if (!(model instanceof DefinitionModel)) {
+          this.importModel(modelId);
+        }
+      }
+    });
+    // recurse into child Subjects
+    const childSubjectSql = `SELECT ECInstanceId FROM ${Subject.classFullName} WHERE Parent.Id=:subjectId`;
+    this.sourceDb.withPreparedStatement(childSubjectSql, (statement: ECSqlStatement) => {
+      statement.bindId("subjectId", sourceSubjectId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        this.importSubjectSubModels(statement.getValue(0).getId());
+      }
+    });
   }
 
   /** Returns true if a change within a Model is detected.
@@ -1021,7 +1051,17 @@ export class IModelTransformer {
     this.context.importCodeSpec(sourceCodeSpecId);
   }
 
-  /** Attempts to import everything from the source iModel into the target iModel. */
+  /** Recursively import all Elements and sub-Models that descend from the specified Subject */
+  public importSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void {
+    this.sourceDb.elements.getElement<Subject>(sourceSubjectId); // throws if sourceSubjectId is not a Subject
+    this.targetDb.elements.getElement<Subject>(targetSubjectId); // throws if targetSubjectId is not a Subject
+    this.context.remapElement(sourceSubjectId, targetSubjectId);
+    this.importChildElements(sourceSubjectId);
+    this.importSubjectSubModels(sourceSubjectId);
+    this.importSkippedElements();
+  }
+
+  /** Import everything from the source iModel into the target iModel. */
   public importAll(): void {
     this.initFromExternalSourceAspects();
     this.importCodeSpecs();

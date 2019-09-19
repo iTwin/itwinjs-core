@@ -20,7 +20,7 @@ export class IModelCloneContext {
   /** The native import context */
   private _nativeContext: IModelJsNative.ImportContext;
 
-  /** Construct a new IModelTransformContext.
+  /** Construct a new IModelCloneContext.
    * @param sourceDb The source IModelDb.
    * @param targetDb If provided the target IModelDb. If not provided, the source and target are the same IModelDb.
    */
@@ -33,7 +33,7 @@ export class IModelCloneContext {
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */
   public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
 
-  /** Dispose any native resources associated with this IModelTransformContext. */
+  /** Dispose any native resources associated with this IModelCloneContext. */
   public dispose(): void {
     this._nativeContext.dispose();
   }
@@ -91,11 +91,15 @@ export class IModelCloneContext {
    */
   public cloneElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id);
-    if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
-      // WIP: temporary work-around for addon bug!
-      targetElementProps.code.scope = IModel.rootSubjectId;
+    if (this.isBetweenIModels) {
+      // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
+      targetElementProps.federationGuid = sourceElement.federationGuid;
+      if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
+        // WIP: temporary work-around for addon bug!
+        targetElementProps.code.scope = IModel.rootSubjectId;
+      }
     }
-    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName) as any; // "as any" so we can call the protected methods
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName) as any; // "as any" so we can call the protected onCloned method
     jsClass.onCloned(this, sourceElement, targetElementProps);
     return targetElementProps;
   }
