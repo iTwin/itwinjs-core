@@ -27,6 +27,7 @@ import { PersistentKeysContainer } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
+import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 
@@ -112,6 +113,8 @@ export interface RulesetManager {
 
 // @public
 export interface RulesetVariablesManager {
+    // @internal
+    getAllVariables(): Promise<RulesetVariable[]>;
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;
     getId64s(variableId: string): Promise<Id64String[]>;
