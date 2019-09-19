@@ -2828,7 +2828,14 @@ export class ScreenViewport extends Viewport {
   private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
     // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(this.vpDiv).zIndex || "0", 10);
+    let parentZ = 0;
+    const styleZ = window.getComputedStyle(this.vpDiv).zIndex;
+    if (null !== styleZ) {
+      parentZ = parseInt(styleZ, 10);
+      if (Number.isNaN(parentZ))
+        parentZ = 0;
+    }
+
     element.style.zIndex = (parentZ + zIndex).toString();
     parent.appendChild(element);
   }

@@ -969,6 +969,19 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 }
 
 // @beta
+export class ObservableSet<T> extends Set<T> {
+    // @internal (undocumented)
+    add(item: T): this;
+    // @internal (undocumented)
+    clear(): void;
+    // @internal (undocumented)
+    delete(item: T): boolean;
+    readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onCleared: BeEvent<() => void>;
+    readonly onDeleted: BeEvent<(item: T) => void>;
+}
+
+// @beta
 export class OneAtATimeAction<T> {
     constructor(run: (...args: any[]) => Promise<T>);
     // (undocumented)

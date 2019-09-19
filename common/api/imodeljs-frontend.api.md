@@ -3958,11 +3958,13 @@ export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElemen
 
 // @public
 export abstract class MarkerSet<T extends Marker> {
+    constructor();
     addDecoration(context: DecorateContext): void;
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
     getMinScaleViewW(vp: Viewport): number;
+    markDirty(): void;
     readonly markers: Set<T>;
     minimumClusterSize: number;
     // @internal (undocumented)

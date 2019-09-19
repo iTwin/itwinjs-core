@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix marker decorations not updating when markers are added or deleted; fix canvas decorations sometimes failing to display in Firefox.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
