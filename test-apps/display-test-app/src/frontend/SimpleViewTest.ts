@@ -148,10 +148,10 @@ async function main() {
 
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
-    
+
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
-    
+
   if (configuration.disableMagnification)
     DisplayTestApp.tileAdminProps.disableMagnification = true;
 

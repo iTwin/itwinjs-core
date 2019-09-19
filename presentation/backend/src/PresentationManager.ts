@@ -5,7 +5,7 @@
 /** @module Core */
 
 import * as path from "path";
-import * as hash from "object-hash"
+import * as hash from "object-hash";
 import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {

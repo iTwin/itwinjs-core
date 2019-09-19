@@ -11,7 +11,7 @@ import {
   Paged, SelectionScope, DescriptorOverrides,
   PresentationRpcResponse, HierarchyRpcRequestOptions,
   ContentRpcRequestOptions, SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions, ClientStateSyncRequestOptions
+  LabelRpcRequestOptions, ClientStateSyncRequestOptions,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -40,10 +40,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   private _statelessImpl: PresentationRpcImplStateless;
   private _statefulImpl: PresentationRpcImplStateful;
 
-  public constructor(_id?: string) {
+  public constructor(id?: string) {
     super();
-    this._statelessImpl = new PresentationRpcImplStateless(_id);
-    this._statefulImpl = new PresentationRpcImplStateful(_id);
+    this._statelessImpl = new PresentationRpcImplStateless(id);
+    this._statefulImpl = new PresentationRpcImplStateful(id);
   }
 
   private pickImpl<TOptions extends { clientStateId?: string }>(options: TOptions) {

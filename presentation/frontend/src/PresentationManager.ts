@@ -10,7 +10,7 @@ import {
   RpcRequestsHandler, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable
+  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
