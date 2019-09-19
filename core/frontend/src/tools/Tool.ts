@@ -370,8 +370,8 @@ export class Tool {
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
 
-  /** The internationalization services instance used to translate strings from the namespace. If undefined, uses IModelApp.i18n */
-  public static i18n: I18N | undefined;
+  /** The internationalization services instance used to translate strings from the namespace. */
+  public static i18n: I18N;
 
   public constructor(..._args: any[]) { }
 
@@ -398,8 +398,7 @@ export class Tool {
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = "tools." + this.toolId + "." + name;
-    const i18n: I18N = this.i18n ? this.i18n : IModelApp.i18n;
-    const val =  i18n.translateWithNamespace(this.namespace.name, key);
+    const val = this.i18n.translateWithNamespace(this.namespace.name, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -774,8 +773,7 @@ export class ToolRegistry {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
 
-    if (i18n)
-      toolClass.i18n = i18n;
+    toolClass.i18n = (i18n) ? i18n : IModelApp.i18n;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it
@@ -791,14 +789,14 @@ export class ToolRegistry {
    * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, namespace?: I18NNamespace) {
+  public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
 
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, namespace);
+        this.register(thisTool, namespace, i18n);
       }
     }
   }

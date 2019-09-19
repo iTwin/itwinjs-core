@@ -7686,7 +7686,7 @@ export class Tool {
     readonly flyover: string;
     static readonly flyover: string;
     static hidden: boolean;
-    static i18n: I18N | undefined;
+    static i18n: I18N;
     static iconSpec: string;
     readonly iconSpec: string;
     readonly keyin: string;
@@ -7945,7 +7945,7 @@ export class ToolRegistry {
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
     register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
-    registerModule(moduleObj: any, namespace?: I18NNamespace): void;
+    registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
     run(toolId: string, ...args: any[]): boolean;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;

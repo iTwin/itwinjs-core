@@ -24,6 +24,11 @@
         {
           "source": "./src/public/**/*",
           "dest": "./lib/public"
+        },
+        {
+          "source": "./src/loader/checkbrowser.js",
+          "dest": "./lib/loader",
+          "copy": true
         }
       ],
       "webpack": {
@@ -36,6 +41,12 @@
           "dest": "./lib/module",
           "entry": "./lib/loader/IModelJsLoader.js",
           "bundleName": "IModelJsLoader",
+          "type": "system"
+        },
+        {
+          "dest": "./lib/module",
+          "entry": "./lib/loader/checkbrowser.js",
+          "bundleName": "checkbrowser",
           "type": "system"
         }
       ]
