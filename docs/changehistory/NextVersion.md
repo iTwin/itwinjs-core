@@ -3,6 +3,13 @@ ignore: true
 ---
 # NextVersion
 
+## Display system enhancements
+
+### Performance enhancements
+
+* Made display system enhancement for rendering directly to screen. This significantly improves performance on iOS and some non-Chrome browsers. For models that aren't bound by primitive count, this can be a more than doubling of FPS.
+  * To enable this enhancement, see `RenderSystem.Options.directScreenRendering`.
+
 ## Geometry
 
 ### Summary
