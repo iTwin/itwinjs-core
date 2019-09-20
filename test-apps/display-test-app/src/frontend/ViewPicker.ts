@@ -11,7 +11,11 @@ import {
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
+  CategorySelectorState,
+  DisplayStyle3dState,
   IModelConnection,
+  ModelSelectorState,
+  SpatialViewState,
   ViewState,
 } from "@bentley/imodeljs-frontend";
 
@@ -57,9 +61,6 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
 
     const query = { wantPrivate: false };
     const specs = await iModel.views.getViewList(query);
-    if (0 === specs.length)
-      return Promise.resolve();
-
     for (const spec of specs)
       this.insert(spec);
 
@@ -72,7 +73,7 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
       }
     }
 
-    if (Id64.isInvalid(this._defaultViewId)) {
+    if (Id64.isInvalid(this._defaultViewId) && 0 < this._array.length) {
       this._defaultViewId = this._array[0].id;
       const defaultViewId = await iModel.views.queryDefaultViewId();
       for (const spec of this) {
@@ -83,8 +84,87 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
       }
     }
 
-    const selectedView = await iModel.views.load(this._defaultViewId);
+    if (Id64.isInvalid(this._defaultViewId))
+      this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName });
+
+    const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureViewState(iModel) : await iModel.views.load(this._defaultViewId);
     this._views.set(this._defaultViewId, selectedView);
+  }
+
+  private manufactureViewState(iModel: IModelConnection): SpatialViewState {
+    const ext = iModel.projectExtents;
+    const viewDefinitionProps = {
+      classFullName: SpatialViewState.classFullName,
+      userLabel: "Manufactured View",
+      model: Id64.invalid,
+      code: {
+        spec: Id64.invalid,
+        value: "Manufactured View",
+        scope: Id64.invalid,
+      },
+      categorySelectorId: Id64.invalid,
+      displayStyleId: Id64.invalid,
+      modelSelectorId: Id64.invalid,
+      cameraOn: false,
+      origin: ext.low,
+      extents: ext.high.minus(ext.low),
+      camera: {
+        lens: 90,
+        focusDist: ext.high.z - ext.low.z,
+        eye: { x: 0, y: 0, z: 0 },
+      },
+    };
+
+    const codeProps = {
+      spec: Id64.invalid,
+      value: "",
+      scope: Id64.invalid,
+    };
+
+    const categorySelectorProps = {
+      classFullName: CategorySelectorState.classFullName,
+      model: Id64.invalid,
+      code: codeProps,
+      categories: [],
+    };
+
+    const modelSelectorProps = {
+      classFullName: ModelSelectorState.classFullName,
+      model: Id64.invalid,
+      code: codeProps,
+      models: [],
+    };
+
+    const displayStyleProps = {
+      classFullName: DisplayStyle3dState.classFullName,
+      model: Id64.invalid,
+      code: codeProps,
+      jsonProperties: {
+        styles: {
+          backgroundColor: 0xffffff,
+          viewflags: {
+            backgroundMap: true,
+          },
+          environment: {
+            ground: {
+              display: true,
+            },
+            sky: {
+              display: true,
+            },
+          },
+        },
+      },
+    };
+
+    const props = {
+      viewDefinitionProps,
+      categorySelectorProps,
+      modelSelectorProps,
+      displayStyleProps,
+    };
+
+    return SpatialViewState.createFromProps(props, iModel);
   }
 }
 

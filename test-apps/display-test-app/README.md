@@ -39,7 +39,7 @@ npm run start:servers
 
 ## Using display-test-app
 
-Currently, display-test-app only supports opening snapshot iModels from the local disk. You must define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine. Upon startup, a viewport displaying the contents of this iModel will be displayed. Thereafter, other iModels can be opened within the same session.
+Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
 
 display-test-app's UI consists of:
 * A toolbar containing tools for interacting with the currently-selected viewport.
@@ -90,10 +90,10 @@ rush install -c
 ## Environment Variables
 
 You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
-* SVT_STANDALONE_FILENAME (required)
-  * Absoluate path to an iModel to be opened on start-up.
-* SVT_STANDALONE_FILEPATH
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
+* SVT_STANDALONE_FILENAME
+  * Absolute path to an iModel to be opened on start-up.
+* SVT_STANDALONE_FILEPATH (browser only)
+  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels.
 * SVT_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
@@ -121,7 +121,7 @@ You can use these environment variables to alter the default behavior of various
 * SVT_DISABLE_DIRECT_SCREEN_RENDERING
   * If defined, we will not render webgl content directly to the screen when only 1 on-screen viewport is open.
 * SVT_FAKE_CLOUD_STORAGE
-  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/.
+  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
 
 ## Key-ins

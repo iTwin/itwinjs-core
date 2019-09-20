@@ -27,52 +27,51 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (MobileRpcConfiguration.isMobileBackend)
     return configuration;
 
-  const filename = process.env.SVT_STANDALONE_FILENAME;
-  if (filename !== undefined) {
-    configuration.standalone = true;
-    configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
-    configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-    configuration.iModelName = filename;
+  // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
+  // At some point we will reinstate ability to open from hub.
+  configuration.standalone = true;
+  configuration.iModelName = process.env.SVT_STANDALONE_FILENAME;
+  configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
+  configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
 
-    if (undefined !== process.env.SVT_DISABLE_DIAGNOSTICS)
-      configuration.enableDiagnostics = false;
+  if (undefined !== process.env.SVT_DISABLE_DIAGNOSTICS)
+    configuration.enableDiagnostics = false;
 
-    if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
-      configuration.signInForStandalone = true;
+  if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
+    configuration.signInForStandalone = true;
 
-    if (undefined !== process.env.SVT_DISABLE_INSTANCING)
-      configuration.disableInstancing = true;
+  if (undefined !== process.env.SVT_DISABLE_INSTANCING)
+    configuration.disableInstancing = true;
 
-    if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
-      configuration.disableMagnification = true;
+  if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
+    configuration.disableMagnification = true;
 
-    configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
-    const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
-    if (undefined !== treeExpiration)
-      try {
-        configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
-      } catch (_) {
-        //
-      }
+  configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+  const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
+  if (undefined !== treeExpiration)
+    try {
+      configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
+    } catch (_) {
+      //
+    }
 
-    if (undefined !== process.env.SVT_DISABLE_LOG_Z)
-      configuration.logarithmicZBuffer = false;
+  if (undefined !== process.env.SVT_DISABLE_LOG_Z)
+    configuration.logarithmicZBuffer = false;
 
-    if (undefined !== process.env.SVT_DISABLE_DIRECT_SCREEN_RENDERING)
-      configuration.directScreenRendering = false;
+  if (undefined !== process.env.SVT_DISABLE_DIRECT_SCREEN_RENDERING)
+    configuration.directScreenRendering = false;
 
-    if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
-      configuration.preserveShaderSourceCode = true;
+  if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
+    configuration.preserveShaderSourceCode = true;
 
-    const extensions = process.env.SVT_DISABLED_EXTENSIONS;
-    if (undefined !== extensions)
-      configuration.disabledExtensions = extensions.split(";");
+  const extensions = process.env.SVT_DISABLED_EXTENSIONS;
+  if (undefined !== extensions)
+    configuration.disabledExtensions = extensions.split(";");
 
-    configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
+  configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
 
-    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-    fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
-  }
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
 
   return configuration;
 }

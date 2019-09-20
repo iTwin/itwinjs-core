@@ -414,9 +414,12 @@ export class Viewer extends Window {
 
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
-  public get isCloseable() { return Surface.instance.hasMultipleViewers; }
-  public onClose(): void {
-    // ###TODO? this.dispose();
+  public onClosing(): void {
     IModelApp.viewManager.dropViewport(this.viewport, true);
+  }
+
+  public onClosed(): void {
+    if (undefined === IModelApp.viewManager.selectedView)
+      this._imodel.closeSnapshot(); // tslint:disable-line:no-floating-promises
   }
 }

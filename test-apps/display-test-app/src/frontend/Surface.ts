@@ -5,11 +5,16 @@
 
 import {
   IModelApp,
+  IModelConnection,
   Tool,
 } from "@bentley/imodeljs-frontend";
 import {
   KeyinField,
 } from "@bentley/frontend-devtools";
+import {
+  createToolButton,
+  ToolBar,
+} from "./ToolBar";
 import { DisplayTestApp } from "./App";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 import { Viewer, ViewerProps } from "./Viewer";
@@ -17,6 +22,7 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { NotificationsWindow } from "./Notifications";
 import { FpsMonitor } from "./FpsMonitor";
+import { selectFileName } from "./FileOpen";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -25,12 +31,15 @@ export class Surface {
   private readonly _toolbarDiv: HTMLElement;
   private readonly _windows: Window[] = [];
   public readonly notifications: NotificationsWindow;
+  private readonly _toolbar: ToolBar;
 
   public static get instance() { return DisplayTestApp.surface; }
 
   public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement) {
     this.element = surfaceDiv;
     this._toolbarDiv = toolbarDiv;
+    this._toolbar = this.createToolBar();
+    this._toolbarDiv.appendChild(this._toolbar.element);
 
     addSnapModes(document.getElementById("snapModesContainer")!);
     new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement);
@@ -89,9 +98,51 @@ export class Surface {
           current.onSelected();
           this._toolbarDiv.appendChild(current.toolBar.element);
           this.focus(current);
+          return;
         }
       }
+
+      this._toolbarDiv.appendChild(this._toolbar.element);
+      this.focus(this.notifications);
     });
+  }
+
+  private createToolBar(): ToolBar {
+    const div = document.createElement("div");
+    div.className = "topdiv";
+    const tb = new ToolBar(div);
+
+    tb.addItem(createToolButton({
+      className: "bim-icon-briefcases",
+      tooltip: "Open iModel from disk",
+      click: () => {
+        this.openIModel(); // tslint:disable-line:no-floating-promises
+      },
+    }));
+
+    tb.addItem(createToolButton({
+      className: "bim-icon-property-data",
+      tooltip: "TODO Open null iModel",
+      click: () => alert("TODO: Option to open a 'null' IModelConnection"),
+    }));
+
+    return tb;
+  }
+
+  private async openIModel(): Promise<void> {
+    const filename = selectFileName();
+    if (undefined === filename)
+      return Promise.resolve();
+
+    try {
+      const iModel = await IModelConnection.openSnapshot(filename);
+      const viewer = await this.createViewer({ iModel });
+      viewer.dock(Dock.Full);
+    } catch (err) {
+      alert("Error opening iModel: " + err.toString());
+    }
+
+    return Promise.resolve();
   }
 
   private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
@@ -278,11 +329,13 @@ export class Surface {
   }
 
   private forceClose(window: Window): void {
+    // NB: Must do this before computing index, because closing a Viewer changes the selected viewport which changes focus which changes order of windows in array.
+    window.onClosing();
     const index = this._windows.indexOf(window);
     if (-1 !== index) {
       this._windows.splice(index, 1);
       this.element.removeChild(window.container);
-      window.onClose();
+      window.onClosed();
     }
     this.updateWindowsUi();
   }

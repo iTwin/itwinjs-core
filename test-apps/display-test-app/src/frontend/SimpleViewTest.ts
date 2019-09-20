@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, assert } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   CloudStorageContainerUrl,
@@ -29,7 +29,6 @@ import {
   RenderSystem,
   WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
-import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
@@ -40,7 +39,6 @@ import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
-const activeViewState: SimpleViewState = new SimpleViewState();
 const configuration = {} as SVTConfiguration;
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
@@ -69,35 +67,22 @@ async function retrieveConfiguration(): Promise<void> {
 }
 
 // opens the configured iModel from disk
-async function openSnapshotIModel(state: SimpleViewState, filename: string) {
+async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   configuration.standalone = true;
-  state.iModelConnection = await IModelConnection.openSnapshot(filename);
-  configuration.iModelName = state.iModelConnection.name;
+  const iModelConnection = await IModelConnection.openSnapshot(filename);
+  configuration.iModelName = iModelConnection.name;
+  return iModelConnection;
 }
 
-// If we are using a browser, close the current iModel before leaving
-window.onbeforeunload = () => {
-  if (activeViewState.iModelConnection !== undefined)
-    if (configuration.standalone)
-      activeViewState.iModelConnection.closeSnapshot(); // tslint:disable-line:no-floating-promises
-    else {
-      activeViewState.iModelConnection.close(); // tslint:disable-line:no-floating-promises
-    }
-};
-
-async function initializeOidc(requestContext: FrontendRequestContext) {
-  assert(!!activeViewState);
-  if (activeViewState.oidcClient)
-    return;
-
+async function initializeOidc(requestContext: FrontendRequestContext): Promise<OidcBrowserClient> {
   const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
 
   const oidcClient = new OidcBrowserClient(oidcConfig);
   await oidcClient.initialize(requestContext);
-  activeViewState.oidcClient = oidcClient;
   IModelApp.authorizationClient = oidcClient;
+  return oidcClient;
 }
 
 // Wraps the signIn process
@@ -107,14 +92,14 @@ async function initializeOidc(requestContext: FrontendRequestContext) {
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
-  await initializeOidc(requestContext);
+  const oidcClient = await initializeOidc(requestContext);
 
-  if (!activeViewState.oidcClient!.hasSignedIn) {
-    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
+  if (!oidcClient.hasSignedIn) {
+    await oidcClient.signIn(new FrontendRequestContext());
     return false;
   }
 
-  activeViewState.accessToken = await activeViewState.oidcClient!.getAccessToken(requestContext);
+  await oidcClient.getAccessToken(requestContext);
   return true;
 }
 
@@ -193,11 +178,16 @@ async function main() {
       if (!signedIn)
         return;
     }
-    const iModelName = configuration.iModelName!;
-    await openSnapshotIModel(activeViewState, iModelName);
-    setTitle(iModelName);
+
+    let iModel: IModelConnection | undefined;
+    const iModelName = configuration.iModelName;
+    if (undefined !== iModelName) {
+      iModel = await openSnapshotIModel(iModelName);
+      setTitle(iModelName);
+    }
+
     await uiReady; // Now wait for the HTML UI to finish loading.
-    await initView();
+    await initView(iModel);
   } catch (reason) {
     alert(reason);
     return;
@@ -222,7 +212,7 @@ async function documentLoaded(): Promise<void> {
   });
 }
 
-async function initView() {
+async function initView(iModel: IModelConnection | undefined) {
   // open the specified view
   showStatus("opening View", configuration.viewName);
   DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!);
@@ -231,13 +221,15 @@ async function initView() {
   // Consistently reproducible for some folks, not others...
   await documentLoaded();
 
-  const viewer = await DisplayTestApp.surface.createViewer({
-    iModel: activeViewState.iModelConnection!,
-    defaultViewName: configuration.viewName,
-    fileDirectoryPath: configuration.standalonePath,
-  });
+  if (undefined !== iModel) {
+    const viewer = await DisplayTestApp.surface.createViewer({
+      iModel,
+      defaultViewName: configuration.viewName,
+      fileDirectoryPath: configuration.standalonePath,
+    });
 
-  viewer.dock(Dock.Full);
+    viewer.dock(Dock.Full);
+  }
 
   showStatus("View Ready");
   hideSpinner();

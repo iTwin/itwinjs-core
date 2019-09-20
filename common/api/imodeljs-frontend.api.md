@@ -2153,7 +2153,7 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
+    static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
     // (undocumented)
     readonly defaultExtentLimits: ExtentLimits;
     }
@@ -6572,7 +6572,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
-    static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
+    static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState;
     // @internal (undocumented)
     createScene(context: SceneContext): void;
     // (undocumented)

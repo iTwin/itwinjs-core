@@ -1568,7 +1568,7 @@ export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
   private readonly _treeRefs: SpatialModelTileTrees;
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
     const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
@@ -1793,7 +1793,7 @@ export class DrawingViewState extends ViewState2d {
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
   private _modelLimits?: ExtentLimits;
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
     // use "new this" so subclasses are correct

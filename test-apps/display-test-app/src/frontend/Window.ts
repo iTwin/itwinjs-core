@@ -416,7 +416,8 @@ export abstract class Window {
     this._header.element.classList.remove("window-header-focused");
   }
 
-  public onClose(): void { }
+  public onClosing(): void { }
+  public onClosed(): void { }
   public get isCloseable(): boolean { return true; }
 
   public resizeContent(w: number, h: number): void {
