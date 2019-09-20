@@ -5,7 +5,10 @@
   "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
+  },
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib package-deps.json .nyc_output",

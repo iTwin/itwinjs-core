@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/perf-tools"
   },
   "scripts": {
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",

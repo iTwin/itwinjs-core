@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/clients-backend"
   },
   "keywords": [
     "Oidc Client"

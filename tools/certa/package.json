@@ -6,7 +6,7 @@
   "main": "bin/certa.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/certa"
   },
   "bin": {
     "certa": "./bin/certa.js"

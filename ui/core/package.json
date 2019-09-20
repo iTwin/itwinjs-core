@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/core"
   },
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
