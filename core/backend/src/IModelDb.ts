@@ -35,6 +35,7 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -1422,7 +1423,7 @@ export namespace IModelDb {
       const val = this._iModel.nativeDb.getElement(elementIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
-      return val.result! as T;
+      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1508,8 +1509,8 @@ export namespace IModelDb {
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(elProps, iModel);
-
-      const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
+      const valJson = JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false));
+      const val = iModel.nativeDb.insertElement(valJson);
       if (val.error)
         throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
@@ -1527,7 +1528,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(elProps, iModel);
 
-      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps));
+      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (stat !== IModelStatus.Success)
         throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64, Id64String, BeEvent } from "@bentley/bentleyjs-core";
-import { RulesetVariablesState, VariableValueTypes, VariableValue, IClientStateHolder } from "@bentley/presentation-common";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { VariableValueTypes, VariableValue, RulesetVariable } from "@bentley/presentation-common";
 
 /**
  * Presentation ruleset variables' registry.
@@ -72,27 +72,27 @@ export interface RulesetVariablesManager {
    * Sets `Id64String[]` variable value
    */
   setId64s(variableId: string, value: Id64String[]): Promise<void>;
+
+  /** Retrieves all variables.
+   * @internal
+   */
+  getAllVariables(): Promise<RulesetVariable[]>;
 }
 
 /** @internal */
-export class RulesetVariablesManagerImpl implements RulesetVariablesManager, IClientStateHolder<RulesetVariablesState> {
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 
-  private _rulesetId: string;
   private _clientValues = new Map<string, [VariableValueTypes, VariableValue]>();
-  public key = RulesetVariablesState.STATE_ID;
-  public onStateChanged = new BeEvent<() => void>();
 
-  public constructor(rulesetId: string) {
-    this._rulesetId = rulesetId;
+  public constructor() {
   }
 
-  public get state(): RulesetVariablesState {
-    const state: RulesetVariablesState = {};
-    const values: Array<[string, VariableValueTypes, VariableValue]> = [];
+  public async getAllVariables(): Promise<RulesetVariable[]> {
+    const variables: RulesetVariable[] = [];
     for (const entry of this._clientValues)
-      values.push([entry[0], entry[1][0], entry[1][1]]);
-    state[this._rulesetId] = values;
-    return state;
+      variables.push({ id: entry[0], type: entry[1][0], value: entry[1][1] });
+
+    return variables;
   }
 
   private changeValueType(actualValue: VariableValue, fromType: VariableValueTypes, toType: VariableValueTypes): VariableValue | undefined {
@@ -141,7 +141,6 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager, ICl
   }
   private async setValue(id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
     this._clientValues.set(id, [type, value]);
-    this.onStateChanged.raiseEvent();
   }
 
   /**

@@ -40,6 +40,18 @@ describe("RulesetManager", () => {
       expect(result).to.be.undefined;
     });
 
+    it("does not call addon's getRulesets second time", async () => {
+      const ruleset = { id: faker.random.uuid(), rules: [] };
+      const hash = faker.random.uuid();
+      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable(moq.Times.once());
+      manager.get(ruleset.id);
+      const result = manager.get(ruleset.id);
+      addonMock.verifyAll();
+      expect(result).to.not.be.undefined;
+      expect(result!.toJSON()).to.deep.eq(ruleset);
+      expect(result!.uniqueIdentifier).to.deep.eq(hash);
+    });
+
   });
 
   describe("add", () => {
@@ -48,6 +60,17 @@ describe("RulesetManager", () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
       addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable();
+      const result = manager.add(ruleset);
+      addonMock.verifyAll();
+      expect(ruleset).to.deep.equal(result.toJSON());
+      expect(hash).to.equal(result.uniqueIdentifier);
+    });
+
+    it("does not call addon's addRuleset second time", async () => {
+      const ruleset = { id: faker.random.uuid(), rules: [] };
+      const hash = faker.random.uuid();
+      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable(moq.Times.once());
+      manager.add(ruleset);
       const result = manager.add(ruleset);
       addonMock.verifyAll();
       expect(ruleset).to.deep.equal(result.toJSON());

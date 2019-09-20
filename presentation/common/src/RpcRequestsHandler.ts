@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { Guid, BeEvent, IDisposable, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, IDisposable, Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import { KeySetJSON } from "./KeySet";
 import { PresentationStatus, PresentationError } from "./Error";
@@ -34,18 +34,6 @@ export interface RpcRequestsHandlerProps {
 }
 
 /**
- * An interface for something that stores client state that needs
- * to be synced with the backend.
- *
- * @internal
- */
-export interface IClientStateHolder<TState> {
-  key: string;
-  state: TState | undefined;
-  onStateChanged: BeEvent<() => void>;
-}
-
-/**
  * RPC requests handler that wraps [[PresentationRpcInterface]] and
  * adds handling for cases when backend needs to be synced with client
  * state.
@@ -54,23 +42,15 @@ export interface IClientStateHolder<TState> {
  */
 export class RpcRequestsHandler implements IDisposable {
   private _maxRequestRepeatCount: number = 10;
-  private _clientStateId?: string;
-  private _clientStateHolders: Array<IClientStateHolder<any>>;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
 
-  /** ID that identifies current client state */
-  public get clientStateId() { return this._clientStateId; }
-
   public constructor(props?: RpcRequestsHandlerProps) {
     this.clientId = (props && props.clientId) ? props.clientId : Guid.createValue();
-    this._clientStateHolders = [];
   }
 
   public dispose() {
-    this._clientStateHolders.forEach((h) => h.onStateChanged.removeListener(this.onClientStateChanged));
-    this._clientStateHolders = [];
   }
 
   // tslint:disable-next-line:naming-convention
@@ -79,44 +59,7 @@ export class RpcRequestsHandler implements IDisposable {
   private createRequestOptions<T>(options: T): PresentationRpcRequestOptions & T {
     return Object.assign({}, options, {
       clientId: this.clientId,
-      clientStateId: this._clientStateId,
     });
-  }
-
-  public registerClientStateHolder(holder: IClientStateHolder<any>) {
-    this._clientStateHolders.push(holder);
-    holder.onStateChanged.addListener(this.onClientStateChanged);
-  }
-
-  public unregisterClientStateHolder(holder: IClientStateHolder<any>) {
-    const index = this._clientStateHolders.indexOf(holder);
-    if (- 1 !== index)
-      this._clientStateHolders.splice(index, 1);
-    holder.onStateChanged.removeListener(this.onClientStateChanged);
-  }
-
-  // tslint:disable-next-line:naming-convention
-  private onClientStateChanged = (): void => {
-    this._clientStateId = Guid.createValue();
-  }
-
-  /**
-   * Syncs backend with the client state provided by client state holders
-   *
-   * @internal
-   */
-  public async sync(token: IModelToken): Promise<void> {
-    const clientState: { [stateKey: string]: any } = {};
-    for (const holder of this._clientStateHolders) {
-      const holderState = holder.state;
-      const existing = clientState[holder.key];
-      if (existing && typeof existing === "object" && typeof holderState === "object") {
-        clientState[holder.key] = { ...existing, ...holderState };
-      } else {
-        clientState[holder.key] = holderState;
-      }
-    }
-    await this.rpcClient.syncClientState(token.toJSON(), this.createRequestOptions({ state: clientState }));
   }
 
   private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelToken, repeatCount: number = 1): Promise<TResult> {
@@ -125,11 +68,6 @@ export class RpcRequestsHandler implements IDisposable {
     if (response.statusCode === PresentationStatus.Success)
       return response.result!;
 
-    if (response.statusCode === PresentationStatus.BackendOutOfSync) {
-      options.clientStateId = this._clientStateId;
-      await this.sync(imodelToken);
-      return this.requestRepeatedly(func, options, imodelToken);
-    }
     if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount) {
       repeatCount++;
       return this.requestRepeatedly(func, options, imodelToken, repeatCount);

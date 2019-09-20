@@ -5,6 +5,7 @@
 /** @module Core */
 
 import * as path from "path";
+import * as hash from "object-hash";
 import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
@@ -13,7 +14,7 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags,
+  ContentFlags, Ruleset, RulesetVariable,
 } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -174,6 +175,38 @@ export class PresentationManager {
     this.getNativePlatform().setupLocaleDirectories(localeDirectories);
   }
 
+  private ensureRulesetRegistered<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string }>(options: TOptions) {
+    const { rulesetOrId, rulesetId, ...strippedOptions } = options;
+
+    if (!rulesetOrId && !rulesetId)
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Neither ruleset nor ruleset id are supplied");
+
+    let nativeRulesetId: string;
+    if (rulesetOrId && typeof rulesetOrId === "object") {
+      const rulesetNativeId = `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
+      const rulesetWithNativeId = { ...rulesetOrId, id: rulesetNativeId };
+      nativeRulesetId = this._rulesets.add(rulesetWithNativeId).id;
+    } else {
+      nativeRulesetId = rulesetOrId || rulesetId!;
+    }
+
+    return { rulesetId: nativeRulesetId, ...strippedOptions };
+  }
+
+  private handleOptions<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+    const { rulesetVariables, ...strippedOptions } = options;
+    const optionsWithRulesetId = this.ensureRulesetRegistered(strippedOptions);
+
+    if (rulesetVariables) {
+      const variablesManager = this.vars(optionsWithRulesetId.rulesetId);
+      for (const variable of rulesetVariables) {
+        variablesManager.setValue(variable.id, variable.type, variable.value);
+      }
+    }
+
+    return optionsWithRulesetId;
+  }
+
   /**
    * Retrieves nodes and node count
    * @param requestContext Client request context
@@ -201,11 +234,13 @@ export class PresentationManager {
    */
   public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]> {
     requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+
     let params;
     if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, { nodeKey: parentKey });
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, options, { nodeKey: parentKey });
     else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, options);
     return this.request<Node[]>(requestContext, requestOptions.imodel, params, Node.listReviver);
   }
 
@@ -218,11 +253,13 @@ export class PresentationManager {
    */
   public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number> {
     requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+
     let params;
     if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, { nodeKey: parentKey });
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, options, { nodeKey: parentKey });
     else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, options);
     return this.request<number>(requestContext, requestOptions.imodel, params);
   }
 
@@ -236,7 +273,9 @@ export class PresentationManager {
    */
   public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, options, {
       paths,
       markedIndex,
     });
@@ -252,7 +291,9 @@ export class PresentationManager {
    */
   public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, options, {
       filterText,
     });
     return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
@@ -269,7 +310,9 @@ export class PresentationManager {
    */
   public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, options, {
       displayType,
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       selection,
@@ -289,7 +332,9 @@ export class PresentationManager {
    */
   public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
@@ -306,7 +351,9 @@ export class PresentationManager {
    */
   public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
@@ -348,7 +395,9 @@ export class PresentationManager {
    */
   public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       fieldName,

@@ -31,6 +31,7 @@ export interface PresentationRpcRequestOptions {
   /**
    * Client state identifier. Backend requests client to synchronize state
    * if client state ID doesn't match what's stored on the backend.
+   * @deprecated Will be dropped in 2.0.0
    */
   clientStateId?: string;
 }
@@ -76,6 +77,7 @@ export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions & {
 /**
  * Data structure for synchronizing backend with frontend state.
  * @internal Sync is done by presentation framework - no need to expose that
+ * @deprecated Will be dropped in 2.0.0
  */
 export type ClientStateSyncRequestOptions = PresentationRpcRequestOptions & { state: { [id: string]: unknown } };
 
@@ -89,7 +91,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.0.0";
+  public static interfaceVersion = "1.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -114,6 +116,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 
-  /** @internal Used internally to sync backend with frontend state */
+  /**
+   * @internal Used internally to sync backend with frontend state
+   * @deprecated Will be dropped in 2.0.0
+   */
   public async syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse { return this.forward(arguments); }
 }

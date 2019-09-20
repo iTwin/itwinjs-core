@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import { Ruleset } from "./rules/Ruleset";
+import { RulesetVariable } from "./RulesetVariables";
+
 /**
  * A generic request options type used for both hierarchy and content requests
  * @public
@@ -17,14 +20,25 @@ export interface RequestOptions<TIModel> {
 }
 
 /**
- * Options for requests that require presentation ruleset ID. Not
+ * Options for requests that require presentation ruleset. Not
  * meant to be used directly, see one of the subclasses.
  *
  * @public
  */
 export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
-  /** Id of the ruleset to use when requesting data */
-  rulesetId: string;
+  /**
+   * Id of the ruleset to use when requesting data
+   * @deprecated Use rulesetOrId instead
+   */
+  rulesetId?: string;
+
+  /** Ruleset or id of the ruleset to use when requesting data */
+  rulesetOrId?: Ruleset | string;
+
+  /** Ruleset variables to use when requesting data
+   * @beta
+   */
+  rulesetVariables?: RulesetVariable[];
 }
 
 /**

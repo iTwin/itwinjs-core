@@ -17,6 +17,7 @@ export interface SVTConfiguration {
   disableInstancing?: boolean;
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
+  useProjectExtents?: boolean;
   displaySolarShadows?: boolean; // default ON
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
