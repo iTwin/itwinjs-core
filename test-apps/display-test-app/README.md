@@ -55,6 +55,7 @@ Much of display-test-app's functionality can be efficiently accessed via the key
 
 Viewports are displayed as floating windows. The currently-focused window is indicated by a bright title bar and border. Windows can be manipulated as follows:
 * Left-drag title bar: move the window.
+* Left-click cross in top-left corner: close the window.
 * Left-drag triangle in top-right corner: resize the window
 * Double-click title bar: undock the window if docked; otherwise maximize the window.
 * Ctrl-h/l/j/k: dock to the left/right/bottom/top edge respectively. Behavior is similar to pressing the Windows key plus an array key in Windows.
@@ -62,7 +63,9 @@ Viewports are displayed as floating windows. The currently-focused window is ind
 * Ctrl-[/]: focus previous/next window.
 * Ctrl-\: clone the focused viewport.
 * Ctrl-|: close the focused window.
-* Ctrl-p: toggle pinned state of the focused window. A pinned window renders on top of other windows even when it is not focused.
+* Ctrl-p: toggle pinned state of the focused window. A pinned window renders on top of other windows even when it is not focused.  Pinned windows will show a right red tringle in the right right corner of the window.
+* Ctrl-m: maximize the focused window.
+* Ctrl-i: restore the focused window.
 
 The currently-selected viewport is indicated by a gold border. The toolbar always operates on the selected viewport, and many key-ins operate on the selected viewport if no explicit viewport ID argument is supplied.
 
