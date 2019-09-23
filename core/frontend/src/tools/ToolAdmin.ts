@@ -865,13 +865,8 @@ export class ToolAdmin {
           const overlayHit = this.pickCanvasDecoration(touchEv);
           if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
             return;
-          if (await IModelApp.accuSnap.onTouchTap(touchEv)) {
-            if (undefined !== tool) {
-              tool.onSuspend();
-              tool.onUnsuspend(); // Give tool an opportunity to update tool assistance since button event won't be passed alone...
-            }
+          if (await IModelApp.accuSnap.onTouchTap(touchEv))
             return;
-          }
           if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
             return;
         }
