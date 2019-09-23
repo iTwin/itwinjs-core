@@ -296,6 +296,7 @@ export class IModelApp {
     this.locateManager.onInitialized();
     this.tentativePoint.onInitialized();
     this.pluginAdmin.onInitialized();
+    this.quantityFormatter.onInitialized();
     if (this._terrainProvider)
       this._terrainProvider.onInitialized();
   }

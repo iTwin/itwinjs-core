@@ -18,11 +18,10 @@ import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
 import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, ParseResults, SuppressLabelEditorParams, CustomFormattedNumberParams } from "../properties/EditorParams";
+import { PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
-import { QuantityType } from "../QuantityFormatter";
+import { LengthDescription } from "../properties/LengthDescription";
 import { PrimitiveValue } from "../properties/Value";
 
 /** @internal */
@@ -2541,40 +2540,11 @@ export class SetupCameraTool extends PrimitiveTool {
     vp.animateToCurrent(startFrust, BeDuration.fromMilliseconds(500));
   }
 
-  private _lengthFormatterSpec?: FormatterSpec;
-  private _lengthParserSpec?: ParserSpec;
-
-  public get lengthFormatterSpec(): FormatterSpec | undefined {
-    if (undefined === this._lengthFormatterSpec)
-      this._lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-    return this._lengthFormatterSpec;
-  }
-
-  public get lengthParserSpec(): ParserSpec | undefined {
-    if (undefined === this._lengthParserSpec)
-      this._lengthParserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
-    return this._lengthParserSpec;
-  }
-
-  private _formatLength = (numberValue: number): string => {
-    if (this.lengthFormatterSpec)
-      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.lengthFormatterSpec);
-    return numberValue.toFixed(2);
-  }
-
-  private _parseLength = (userInput: string): ParseResults => {
-    if (this.lengthParserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.lengthParserSpec);
-      return (QuantityStatus.Success === parseResult.status ? { value: parseResult.value } : {});
-    }
-    const rtnValue = Number.parseFloat(userInput);
-    return (Number.isNaN(rtnValue) ? {} : { value: rtnValue });
-  }
-
   private _useCameraHeightValue = new ToolSettingsValue(false);
   public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
   public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
   private static _useCameraHeightName = "useCameraHeight";
+
   private static _getUseCameraHeightDescription = (): PropertyDescription => {
     return {
       name: SetupCameraTool._useCameraHeightName,
@@ -2615,56 +2585,34 @@ export class SetupCameraTool extends PrimitiveTool {
   public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
   public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
   private static _cameraHeightName = "cameraHeight";
+  private static _cameraHeightDescription?: LengthDescription;
   private _getCameraHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._cameraHeightName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.CameraHeight"),
-      typename: "number",
-      editor: {
-        name: "number-custom",
-        params: [
-          {
-            type: PropertyEditorParamTypes.CustomFormattedNumber,
-            formatFunction: this._formatLength,
-            parseFunction: this._parseLength,
-          } as CustomFormattedNumberParams,
-        ],
-      },
-    };
+    if (!SetupCameraTool._cameraHeightDescription)
+      SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.CameraHeight"));
+    return SetupCameraTool._cameraHeightDescription;
   }
 
   private _targetHeightValue = new ToolSettingsValue(0.0);
   public get targetHeight(): number { return this._targetHeightValue.value as number; }
   public set targetHeight(option: number) { this._targetHeightValue.value = option; }
   private static _targetHeightName = "targetHeight";
+  private static _targetHeightDescription?: LengthDescription;
   private _getTargetHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._targetHeightName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.TargetHeight"),
-      typename: "number",
-      editor: {
-        name: "number-custom",
-        params: [
-          {
-            type: PropertyEditorParamTypes.CustomFormattedNumber,
-            formatFunction: this._formatLength,
-            parseFunction: this._parseLength,
-          } as CustomFormattedNumberParams,
-        ],
-      },
-    };
+    if (!SetupCameraTool._targetHeightDescription)
+      SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.TargetHeight"));
+    return SetupCameraTool._targetHeightDescription;
   }
 
   private syncCameraHeightState(): void {
     const cameraHeightValue = new ToolSettingsValue(this.cameraHeight);
-    cameraHeightValue.displayValue = this._formatLength(cameraHeightValue.value as number);
+    cameraHeightValue.displayValue = SetupCameraTool._cameraHeightDescription!.format(cameraHeightValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   private syncTargetHeightState(): void {
     const targetHeightValue = new ToolSettingsValue(this.targetHeight);
-    targetHeightValue.displayValue = this._formatLength(targetHeightValue.value as number);
+    targetHeightValue.displayValue = SetupCameraTool._targetHeightDescription!.format(targetHeightValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
     this.syncToolSettingsProperties([syncItem]);
   }

@@ -340,6 +340,11 @@ export class QuantityFormatter implements UnitsProvider {
   protected _imperialParserSpecsByType = new Map<QuantityType, ParserSpec>();
   protected _metricUnitParserSpecsByType = new Map<QuantityType, ParserSpec>();
 
+  public onInitialized() {
+    // initialize default format and parsing specs
+    this.loadFormatAndParsingMaps(this._activeSystemIsImperial); // tslint:disable-line:no-floating-promises
+  }
+
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
     for (const entry of unitData) {

@@ -52,8 +52,10 @@ export class AppTools {
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
       execute: async () => {
+        // ==== The following is no longer required since the default specs will be loaded when the QuantityFormatters onInitialized method is processed
+        // as the ImodelApp starts. =====
         // make sure formatting and parsing data are cached before the tool starts.
-        await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
+        // await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
         IModelApp.tools.run(ToolWithSettings.toolId);
       },
     });

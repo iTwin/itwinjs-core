@@ -32,8 +32,8 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
       params: [
         {
           type: PropertyEditorParamTypes.CustomFormattedNumber,
-          formatFunction: this._format,
-          parseFunction: this._parse,
+          formatFunction: this.format,
+          parseFunction: this.parse,
         } as CustomFormattedNumberParams,
       ],
     };
@@ -47,14 +47,14 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     }
   }
 
-  private _format = (numberValue: number): string => {
+  public format = (numberValue: number): string => {
     if (this.formatterSpec) {
       return IModelApp.quantityFormatter.formatQuantity(numberValue, this.formatterSpec);
     }
     return numberValue.toFixed(2);
   }
 
-  private _parse = (userInput: string): ParseResults => {
+  public parse = (userInput: string): ParseResults => {
     if (this.parserSpec) {
       const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.parserSpec);
       if (parseResult.status === QuantityStatus.Success) {

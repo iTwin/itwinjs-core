@@ -1346,9 +1346,13 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     // (undocumented)
     editor: PropertyEditorInfo;
     // (undocumented)
+    format: (numberValue: number) => string;
+    // (undocumented)
     readonly formatterSpec: FormatterSpec | undefined;
     // (undocumented)
     name: string;
+    // (undocumented)
+    parse: (userInput: string) => ParseResults;
     // (undocumented)
     abstract readonly parseError: string;
     // (undocumented)
@@ -5248,6 +5252,8 @@ export class QuantityFormatter implements UnitsProvider {
     protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
     // (undocumented)
     protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    // (undocumented)
+    onInitialized(): void;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
     useImperialFormats: boolean;
 }
@@ -6282,10 +6288,6 @@ export class SetupCameraTool extends PrimitiveTool {
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
-    // (undocumented)
-    readonly lengthFormatterSpec: FormatterSpec | undefined;
-    // (undocumented)
-    readonly lengthParserSpec: ParserSpec | undefined;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)

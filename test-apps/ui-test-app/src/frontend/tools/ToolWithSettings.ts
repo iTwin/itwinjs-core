@@ -294,17 +294,10 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- Length ---------------
-  private _formatLength = (numberValue: number): string => {
-    if (this._lengthDescription.formatterSpec) {
-      return IModelApp.quantityFormatter.formatQuantity(numberValue, this._lengthDescription.formatterSpec);
-    }
-    return numberValue.toFixed(2);
-  }
-
   private static _lengthName = "length";
 
   // if _lengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
-  private _lengthValue = new ToolSettingsValue(0.0);
+  private _lengthValue = new ToolSettingsValue(1.5);  // value in meters
 
   public get length(): number {
     return this._lengthValue.value as number;
@@ -430,7 +423,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private syncLengthState(): void {
     const lengthValue = new ToolSettingsValue(this.length);
-    lengthValue.displayValue = this._formatLength(lengthValue.value as number);
+    lengthValue.displayValue = this._lengthDescription.format(lengthValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }
