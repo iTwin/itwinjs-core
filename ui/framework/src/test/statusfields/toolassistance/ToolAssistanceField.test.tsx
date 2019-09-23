@@ -225,6 +225,25 @@ describe("ToolAssistanceField", () => {
     wrapper.unmount();
   });
 
+  it("ToolAssistanceImage.Keyboard with a modifier key should a medium modifier key & medium key", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
+    const instruction1 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), "Press Ctrl+Z", true);
+    const section1 = ToolAssistance.createSection([instruction1], "Inputs");
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
+
+    notifications.setToolAssistance(instructions);
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key-modifier").length).to.eq(1);
+    expect(wrapper.find(".nz-content-dialog .uifw-toolassistance-key-medium").length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
   it("ToolAssistanceImage.Keyboard with bottomRow should use small keys", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 

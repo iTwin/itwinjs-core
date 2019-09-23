@@ -541,11 +541,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       );
     } else if (keyboardInfo.keys.length === 2) {
       image = (
-        <span>
+        <FillCentered>
           {keyboardInfo.keys.map((key: string, index3: number) => {
-            return ToolAssistanceField.getKeyNode(key, index3, "uifw-toolassistance-key-medium");
+            let className = "uifw-toolassistance-key-medium";
+            if (key.length > 1)
+              className = "uifw-toolassistance-key-modifier";
+            return ToolAssistanceField.getKeyNode(key, index3, className);
           })}
-        </span>
+        </FillCentered>
       );
     } else if (keyboardInfo.keys[0]) {
       if (keyboardInfo.keys[0].length > 1)

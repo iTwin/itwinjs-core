@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tool Assistance for Ctrl+Z and other chars",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

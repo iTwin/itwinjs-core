@@ -53,13 +53,14 @@ export class Tool2 extends PrimitiveTool {
     const instruction12 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.altKey, "icon-cursor-click", "Alt + something else");
 
     const instruction13 = ToolAssistance.createInstruction("icon-cursor-click", "Using icon-cursor-click icon");
+    const instruction14 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), "Press Ctrl+Z", true);
 
     const instructionT1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Tap on something", false, ToolAssistanceInputMethod.Touch);
     const instructionT2 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Tap on something then drag", false, ToolAssistanceInputMethod.Touch);
 
     const section1 = ToolAssistance.createSection([
       instruction1, instruction2, instruction3, instruction4, instruction5, instruction6, instruction7, instruction8,
-      instruction9, instruction10, instruction11, instruction12, instruction13,
+      instruction9, instruction10, instruction11, instruction12, instruction13, instruction14,
       instructionT1, instructionT2],
       ToolAssistance.inputsLabel);
 
