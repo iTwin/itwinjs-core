@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ability to Scroll to Table row via scrollToRow Prop",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

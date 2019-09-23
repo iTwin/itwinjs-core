@@ -2593,11 +2593,14 @@ export interface TableProps extends CommonProps {
     onRowsDeselected?: (rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>;
     onRowsLoaded?: (firstRowIndex: number, lastRowIndex: number) => void;
     onRowsSelected?: (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>;
+    // @internal (undocumented)
+    onScrollToRow?: (rowIndex: number) => void;
     pageAmount?: number;
     propertyValueRendererManager?: PropertyValueRendererManager;
     // @internal (undocumented)
     renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
     reorderableColumns?: boolean;
+    scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
     showHideColumns?: boolean;

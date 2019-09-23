@@ -11,6 +11,7 @@ import {
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
+import { BodyText } from "@bentley/ui-core";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -25,6 +26,7 @@ interface TableExampleState {
   selectionMode: SelectionMode;
   tableSelectionTarget: TableSelectionTarget;
   selectedIndexes: any[];
+  topRow: number;
 }
 
 const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {
@@ -116,7 +118,13 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     const dataProvider = new SimpleTableDataProvider(columns);
     dataProvider.setItems(rows);
 
-    this.state = { dataProvider, selectedIndexes: [], selectionMode: SelectionMode.Single, tableSelectionTarget: TableSelectionTarget.Row };
+    this.state = {
+      dataProvider,
+      selectedIndexes: [],
+      selectionMode: SelectionMode.Single,
+      tableSelectionTarget: TableSelectionTarget.Row,
+      topRow: 0,
+    };
   }
 
   private _onChangeSelectionMode = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -173,20 +181,31 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     return updated;
   }
 
+  private _onTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value !== null) {
+      const value = parseInt(e.target.value, 10);
+      this.setState({ topRow: value });
+    }
+  }
+
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
-        <div style={{ marginBottom: "4px" }}>
+        <div style={{ marginTop: "3px", marginBottom: "4px" }}>
           <select onChange={this._onChangeSelectionMode}>
             <option value={SelectionMode.Single}> Single </option>
             < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
             < option value={SelectionMode.Multiple} > Multiple </option>
             < option value={SelectionMode.Extended} > Extended </option>
           </select>
-          < select onChange={this._onChangeTableSelectionTarget} >
+          <select onChange={this._onChangeTableSelectionTarget} >
             <option value={TableSelectionTarget.Row}> Row </option>
             < option value={TableSelectionTarget.Cell} > Cell </option>
           </select>
+          <label>
+            <BodyText>Top row:</BodyText>
+            <input onChange={this._onTopRowChange} style={{ width: "100px" }} />
+          </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
           <Table
@@ -194,6 +213,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             tableSelectionTarget={this.state.tableSelectionTarget}
             selectionMode={this.state.selectionMode}
             onPropertyUpdated={this._handlePropertyUpdated}
+            scrollToRow={this.state.topRow}
           />
         </div>
       </div>

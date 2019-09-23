@@ -103,6 +103,10 @@ export interface TableProps extends CommonProps {
 
   /** Hide the header */
   hideHeader?: boolean;
+  /** Specifies a row index to scroll to */
+  scrollToRow?: number;
+  /** @internal */
+  onScrollToRow?: (rowIndex: number) => void;
 }
 
 /** Properties for a Table cell
@@ -232,6 +236,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
   private _pressedItemSelected: boolean = false;
   private _tableRef = React.createRef<HTMLDivElement>();
+  private _gridRef = React.createRef<ReactDataGrid<any>>();
 
   /** @internal */
   public readonly state = initialState;
@@ -255,6 +260,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // tslint:disable-next-line:naming-convention
   private get rowItemSelectionHandlers(): Array<SingleSelectionHandler<number>> {
+    // istanbul ignore else
     if (!this._rowItemSelectionHandlers) {
       this._rowItemSelectionHandlers = [];
       for (let i = 0; i < this.state.rowsCount; i++)
@@ -265,6 +271,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // tslint:disable-next-line:naming-convention
   private get cellItemSelectionHandlers(): Array<Array<SingleSelectionHandler<CellKey>>> {
+    // istanbul ignore else
     if (!this._cellItemSelectionHandlers) {
       this._cellItemSelectionHandlers = [];
       for (let rowIndex = 0; rowIndex < this.state.rowsCount; rowIndex++) {
@@ -329,11 +336,18 @@ export class Table extends React.Component<TableProps, TableState> {
       this.update();
       return;
     }
+
     if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected
       || this.props.tableSelectionTarget !== previousProps.tableSelectionTarget) {
       this.updateSelectedRows();
       this.updateSelectedCells();
+    }
+
+    if (this.props.scrollToRow !== previousProps.scrollToRow) {
+      // istanbul ignore else
+      if (this.props.scrollToRow)
+        this.scrollToRow(this.props.scrollToRow);
     }
 
     /* istanbul ignore next */
@@ -353,6 +367,23 @@ export class Table extends React.Component<TableProps, TableState> {
   public componentWillUnmount() {
     this._isMounted = false;
     this._disposableListeners.dispose();
+  }
+
+  private scrollToRow(rowIndex: number) {
+    // istanbul ignore else
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      // istanbul ignore else
+      if (grid.getRowOffsetHeight && grid.getDataGridDOMNode) {
+        const top = grid.getRowOffsetHeight() * rowIndex;
+        const gridCanvas = grid.getDataGridDOMNode().querySelector(".react-grid-Canvas");
+        gridCanvas.scrollTop = top;
+
+        // istanbul ignore else
+        if (this.props.onScrollToRow)
+          this.props.onScrollToRow(rowIndex);
+      }
+    }
   }
 
   private async handlePendingUpdate(): Promise<UpdateStatus> {
@@ -587,6 +618,7 @@ export class Table extends React.Component<TableProps, TableState> {
       const lowerNumber = rowIndex1 < rowIndex2 ? rowIndex1 : rowIndex2;
       const higherNumber = rowIndex1 > rowIndex2 ? rowIndex1 : rowIndex2;
       for (let i = lowerNumber; i <= higherNumber; i++) {
+        // istanbul ignore else
         if (!this._selectedRowIndices.has(i)) {
           selections.push(i);
           this._selectedRowIndices.add(i);
@@ -598,11 +630,13 @@ export class Table extends React.Component<TableProps, TableState> {
     },
     updateSelection: (selections: number[], deselections: number[]): void => {
       for (const rowIndex of selections) {
+        // istanbul ignore else
         if (!this._selectedRowIndices.has(rowIndex))
           this._selectedRowIndices.add(rowIndex);
       }
 
       for (const rowIndex of deselections) {
+        // istanbul ignore else
         if (this._selectedRowIndices.has(rowIndex))
           this._selectedRowIndices.delete(rowIndex);
       }
@@ -710,6 +744,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     const selectedRowIndices = this._selectedRowIndices;
     for (const rowIndex of loadResult.selectedRowIndices) {
+      // istanbul ignore else
       if (!selectedRowIndices.has(rowIndex))
         selectedRowIndices.add(rowIndex);
     }
@@ -845,6 +880,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     for (let i = 0; i < this.state.columns.length; i++) {
       const column = this.state.columns[i];
+      // istanbul ignore else
       if (column.key === columnKey) {
         columnIndex = i;
         break;
@@ -862,6 +898,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     for (let i = 0; i < this.state.columns.length; i++) {
       const column = this.state.columns[i];
+      // istanbul ignore else
       if (column.key === columnKey) {
         columnIndex = i;
         break;
@@ -1195,6 +1232,7 @@ export class Table extends React.Component<TableProps, TableState> {
           <ReactResizeDetector handleWidth handleHeight >
             {(width: number, height: number) =>
               <ReactDataGrid
+                ref={this._gridRef}
                 columns={visibleColumns}
                 rowGetter={this._rowGetter}
                 rowRenderer={rowRenderer}
