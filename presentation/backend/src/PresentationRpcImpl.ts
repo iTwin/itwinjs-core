@@ -11,7 +11,7 @@ import {
   Paged, SelectionScope, DescriptorOverrides,
   PresentationRpcResponse, HierarchyRpcRequestOptions,
   ContentRpcRequestOptions, SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions, ClientStateSyncRequestOptions
+  LabelRpcRequestOptions, ClientStateSyncRequestOptions,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -40,10 +40,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   private _statelessImpl: PresentationRpcImplStateless;
   private _statefulImpl: PresentationRpcImplStateful;
 
-  public constructor(_id?: string) {
+  public constructor(id?: string) {
     super();
-    this._statelessImpl = new PresentationRpcImplStateless(_id);
-    this._statefulImpl = new PresentationRpcImplStateful(_id);
+    this._statelessImpl = new PresentationRpcImplStateless(id);
+    this._statefulImpl = new PresentationRpcImplStateful(id);
   }
 
   private pickImpl<TOptions extends { clientStateId?: string }>(options: TOptions) {
@@ -70,6 +70,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   public async getFilteredNodePaths(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, filterText: string): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.pickImpl(requestOptions).getFilteredNodePaths(token, requestOptions, filterText);
+  }
+
+  public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return this.pickImpl(requestOptions).loadHierarchy(token, requestOptions);
   }
 
   public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {
@@ -108,7 +112,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.pickImpl(requestOptions).computeSelection(token, requestOptions, ids, scopeId);
   }
 
-  public async syncClientState(token: IModelToken, options: ClientStateSyncRequestOptions): PresentationRpcResponse {
-    return this._statefulImpl.syncClientState(token, options);
+  public async syncClientState(token: IModelToken, requestOptions: ClientStateSyncRequestOptions): PresentationRpcResponse {
+    return this.pickImpl(requestOptions).syncClientState(token, requestOptions);
   }
 }

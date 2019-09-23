@@ -304,7 +304,6 @@ public;Reducer
 public;ReducerActions
 public;ReducerMapActions
 internal;RotationData
-internal;RULESET: Ruleset
 alpha;SafeAreaContext: React_2.Context
 beta;SavedView
 beta;SavedViewLayout
@@ -435,6 +434,7 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityComponent 
+public;VisibilityComponentHierarchy
 alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps

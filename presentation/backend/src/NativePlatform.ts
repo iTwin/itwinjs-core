@@ -17,6 +17,7 @@ export enum NativePlatformRequestTypes {
   GetChildrenCount = "GetChildrenCount",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
+  LoadHierarchy = "LoadHierarchy",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
@@ -29,7 +30,6 @@ export interface NativePlatformDefinition extends IDisposable {
   forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void>;
   setupRulesetDirectories(directories: string[]): void;
   setupSupplementalRulesetDirectories(directories: string[]): void;
-  setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
   getRulesets(rulesetId: string): string;
   addRuleset(serializedRulesetJson: string): string;
@@ -41,11 +41,11 @@ export interface NativePlatformDefinition extends IDisposable {
 }
 
 /** @internal */
-export const createDefaultNativePlatform = (id?: string): new () => NativePlatformDefinition => {
+export const createDefaultNativePlatform = (id: string, localeDirectories: string[], taskAllocationsMap: { [priority: number]: number }): new () => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
-    private _nativeAddon = new IModelHost.platform.ECPresentationManager(id);
+    private _nativeAddon = new IModelHost.platform.ECPresentationManager(id, localeDirectories, taskAllocationsMap);
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
@@ -86,9 +86,6 @@ export const createDefaultNativePlatform = (id?: string): new () => NativePlatfo
     }
     public setupSupplementalRulesetDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
-    }
-    public setupLocaleDirectories(directories: string[]): void {
-      this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
       if (!imodel.briefcase || !imodel.nativeDb)

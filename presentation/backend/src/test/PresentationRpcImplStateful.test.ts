@@ -551,6 +551,15 @@ describe("PresentationRpcImplStateful", () => {
 
     });
 
+    describe("loadHierarchy", () => {
+
+      it("should return `PresentationStatus.Error`", async () => {
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams });
+        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
+      });
+
+    });
+
     describe("getContentDescriptor", () => {
 
       it("calls manager", async () => {

@@ -431,6 +431,22 @@ describe("PresentationRpcImplStateless", () => {
 
     });
 
+    describe("loadHierarchy", () => {
+
+      it("calls manager", async () => {
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+      });
+
+    });
+
     describe("getContentDescriptor", () => {
 
       it("calls manager", async () => {
@@ -937,6 +953,15 @@ describe("PresentationRpcImplStateless", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
+      });
+
+    });
+
+    describe("syncClientState", () => {
+
+      it("should return `PresentationStatus.Error`", async () => {
+        const actualResult = await impl.syncClientState(testData.imodelToken, { ...defaultRpcParams, clientId: "a", clientStateId: "b", state: {} });
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Error);
       });
 
     });

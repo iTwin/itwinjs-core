@@ -5,8 +5,8 @@
 /** @module Core */
 
 import * as path from "path";
-import * as hash from "object-hash"
-import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
+import * as hash from "object-hash";
+import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
@@ -14,7 +14,7 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority,
 } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -52,6 +52,39 @@ export interface PresentationManagerProps {
    * for `IModelDb.onOpened` event and force pre-loads all ECSchemas.
    */
   enableSchemasPreload?: boolean;
+
+  /**
+   * A map of 'priority' to 'number of slots allocated for simultaneously running tasks'
+   * where 'priority' is the highest task priority that can allocate a slot. Example:
+   * ```ts
+   * {
+   *   100: 1,
+   *   500: 2,
+   * }
+   * ```
+   * The above means there's one slot for tasks that are at most of 100 priority and there are
+   * 2 slots for tasks that have at most of 500 priority. Higher priority tasks may allocate lower
+   * priority slots, so a task of 400 priority could take all 3 slots.
+   *
+   * Configuring this map provides ability to choose how many tasks of what priority can run simultaneously.
+   * E.g. in the above example only 1 task can run simultaneously if it's priority is less than 100 even though
+   * we have lots of them queued. This leaves 2 slots for higher priority tasks which can be handled without
+   * having to wait for the lower priority slot to free up.
+   *
+   * Defaults to
+   * ```ts
+   * {
+   *   [RequestPriority.Preload]: 1,
+   *   [RequestPriority.Max]: 1,
+   * }
+   * ```
+   *
+   * **Warning:** Tasks with priority higher than maximum priority in the slots allocation map will never
+   * be handled.
+   *
+   * @alpha
+   */
+  taskAllocationsMap?: { [priority: number]: number };
 
   /**
    * An identifier which helps separate multiple presentation managers. It's
@@ -93,12 +126,16 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props || {};
     this._isDisposed = false;
-    if (props && props.addon)
+    if (props && props.addon) {
       this._nativePlatform = props.addon;
+    } else {
+      const nativePlatformImpl = createDefaultNativePlatform(this._props.id || "",
+        createLocaleDirectoryList(props), createTaskAllocationsMap(props));
+      this._nativePlatform = new nativePlatformImpl();
+    }
     this.setupRulesetDirectories(props);
     if (props)
       this.activeLocale = props.activeLocale;
-    this.setupLocaleDirectories(props);
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = IModelDb.onOpened.addListener(this.onIModelOpened);
@@ -144,10 +181,6 @@ export class PresentationManager {
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
-    if (!this._nativePlatform) {
-      const nativePlatformImpl = createDefaultNativePlatform(this._props.id);
-      this._nativePlatform = new nativePlatformImpl();
-    }
     return this._nativePlatform!;
   }
 
@@ -162,17 +195,6 @@ export class PresentationManager {
     this.getNativePlatform().setupSupplementalRulesetDirectories(supplementalRulesetDirectories);
     if (props && props.rulesetDirectories)
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
-  }
-
-  private setupLocaleDirectories(props?: PresentationManagerProps) {
-    const localeDirectories = [path.join(__dirname, "assets", "locales")];
-    if (props && props.localeDirectories) {
-      props.localeDirectories.forEach((dir) => {
-        if (-1 === localeDirectories.indexOf(dir))
-          localeDirectories.push(dir);
-      });
-    }
-    this.getNativePlatform().setupLocaleDirectories(localeDirectories);
   }
 
   private ensureRulesetRegistered<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string }>(options: TOptions) {
@@ -297,6 +319,24 @@ export class PresentationManager {
       filterText,
     });
     return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
+  }
+
+  /**
+   * Loads the whole hierarchy with the specified parameters
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @return A promise object that resolves when the hierarchy is fully loaded
+   * @beta
+   */
+  public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void> {
+    requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+    const params = this.createRequestParams(NativePlatformRequestTypes.LoadHierarchy, options);
+    const start = new Date();
+    await this.request<void>(requestContext, requestOptions.imodel, params);
+    Logger.logInfo("ECPresentation.Node", `Loading full hierarchy for `
+      + `iModel "${requestOptions.imodel.iModelToken.iModelId}" and ruleset "${options.rulesetId}" `
+      + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 
   /**
@@ -627,5 +667,27 @@ const skipTransients = (callback: (id: Id64String) => void) => {
   return (id: Id64String) => {
     if (!Id64.isTransient(id))
       callback(id);
+  };
+};
+
+const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
+  const localeDirectories = [path.join(__dirname, "assets", "locales")];
+  if (props && props.localeDirectories) {
+    props.localeDirectories.forEach((dir) => {
+      if (-1 === localeDirectories.indexOf(dir))
+        localeDirectories.push(dir);
+    });
+  }
+  return localeDirectories;
+};
+
+const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
+  if (props && props.taskAllocationsMap)
+    return props.taskAllocationsMap;
+
+  // by default we allocate one slot for preloading tasks and one for all other requests
+  return {
+    [RequestPriority.Preload]: 1,
+    [RequestPriority.Max]: 1,
   };
 };

@@ -15,8 +15,8 @@ import {
   Omit, SelectionScope, DescriptorOverrides,
   PresentationRpcResponse, PresentationRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions,
+  SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
+  LabelRpcRequestOptions, PresentationRpcInterface,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -42,9 +42,10 @@ type ContentGetter<TResult = any> = (requestContext: ClientRequestContext, reque
  *
  * @internal
  */
-export class PresentationRpcImplStateless {
+export class PresentationRpcImplStateless extends PresentationRpcInterface {
 
   public constructor(_id?: string) {
+    super();
   }
 
   /**
@@ -151,6 +152,14 @@ export class PresentationRpcImplStateless {
     });
   }
 
+  public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      // note: we intentionally don't await here - don't want frontend waiting for this task to complete
+      // tslint:disable-next-line: no-floating-promises
+      this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options);
+    });
+  }
+
   public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) => {
       const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(requestContext, options, displayType, KeySet.fromJSON(keys), selection);
@@ -217,6 +226,13 @@ export class PresentationRpcImplStateless {
       requestContext.enter();
       return keys.toJSON();
     });
+  }
+
+  public async syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse {
+    return {
+      statusCode: PresentationStatus.Error,
+      errorMessage: "'syncClientState' call is deprecated since PresentationRpcInterface version 1.1.0",
+    };
   }
 }
 

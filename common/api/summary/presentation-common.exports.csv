@@ -171,6 +171,7 @@ public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RequestOptions
 public;RequestOptionsWithRuleset
+beta;RequestPriority
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps

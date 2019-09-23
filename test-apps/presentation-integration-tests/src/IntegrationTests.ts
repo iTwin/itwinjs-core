@@ -9,7 +9,7 @@ import * as cpx from "cpx";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { LoggingNamespaces } from "@bentley/presentation-common";
+import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
 import { PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
@@ -67,6 +67,9 @@ export const initialize = (backendTimeout: number = 0) => {
     rulesetDirectories: ["lib/assets/rulesets"],
     localeDirectories: ["lib/assets/locales"],
     activeLocale: "en-PSEUDO",
+    taskAllocationsMap: {
+      [RequestPriority.Max]: 1,
+    },
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",

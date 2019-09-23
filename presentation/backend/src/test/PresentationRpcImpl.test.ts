@@ -128,6 +128,17 @@ describe("PresentationRpcImpl", () => {
 
     });
 
+    describe("loadHierarchy", () => {
+
+      it("calls stateless implementation", async () => {
+        statelessImpl.setup((x) => x.loadHierarchy(testData.imodelToken, defaultRpcParams))
+          .verifiable(moq.Times.once());
+        await impl.loadHierarchy(testData.imodelToken, defaultRpcParams);
+        statelessImpl.verifyAll();
+      });
+
+    });
+
     describe("getContentDescriptor", () => {
 
       it("calls stateless implementation", async () => {

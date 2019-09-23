@@ -48,6 +48,8 @@ export default class App extends React.Component<{}, State> {
 
   // tslint:disable-next-line:naming-convention
   private onIModelSelected = async (imodel: IModelConnection | undefined) => {
+    this.tryPreloadHierarchy(imodel, this.state.currentRulesetId);
+
     const viewDefinitionId = imodel ? await this.getFirstViewDefinitionId(imodel) : undefined;
     this.setState({ ...this.state, imodel, currentViewDefinitionId: viewDefinitionId });
   }
@@ -56,7 +58,19 @@ export default class App extends React.Component<{}, State> {
   private onRulesetSelected = (rulesetId: string | undefined) => {
     if (this.state.imodel)
       Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
+
+    this.tryPreloadHierarchy(this.state.imodel, rulesetId);
+
     this.setState({ ...this.state, currentRulesetId: rulesetId });
+  }
+
+  private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {
+    if (!imodel || !rulesetId)
+      return;
+
+    // no need to wait on this - we just want to queue a request and forget it
+    // tslint:disable-next-line: no-floating-promises
+    Presentation.presentation.loadHierarchy({ imodel, rulesetId });
   }
 
   private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
