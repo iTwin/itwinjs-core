@@ -47,6 +47,15 @@ describe("Favorite Properties", () => {
     propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
   });
 
+  const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {
+    for (const category of props.categories) {
+      const record = props.records[category.name].find((r) => r.property.displayLabel === label);
+      if (record)
+        return record;
+    }
+    return undefined;
+  };
+
   it("creates Property Data with favorite properties category", async () => {
     propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
     let propertyData = await propertiesDataProvider.getData();
@@ -83,13 +92,31 @@ describe("Favorite Properties", () => {
     expect(propertyData.records[favoritesCategoryName].length).to.eq(17);
   });
 
-  const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {
-    for (const category of props.categories) {
-      const record = props.records[category.name].find((r) => r.property.displayLabel === label);
-      if (record)
-        return record;
-    }
-    return undefined;
-  };
+  it("favorites common properties of different element types", async () => {
+    propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+    let propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.be.eq(4);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.false;
+
+    // find the property record to make the property favorite
+    const record = getPropertyRecordByLabel(propertyData, "Model")!;
+    const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
+    Presentation.favoriteProperties.add(field!);
+
+    // verify the property is now in favorites group
+    propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.eq(5);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
+    expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
+    expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
+
+    // verify the same property is now in favorites group when requesting content for another type of element
+    propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
+    propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.eq(5);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
+    expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
+    expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
+  });
 
 });
