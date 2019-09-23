@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d, Range1d } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import {
@@ -483,8 +483,8 @@ export class SceneContext extends RenderContext {
 
   public getTextureDrape(modelId: Id64String) { return this.textureDrapes.get(modelId); }
   public setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape) { this.textureDrapes.set(modelId, textureDrape); }
-  public addBackgroundDrapedModel(drapedTree: TileTree, heightRange?: Range1d): RenderTextureDrape | undefined {
-    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap, heightRange);
+  public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
+    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
     if (undefined !== drape)
       this.setTextureDrape(drapedTree.modelId, drape);
 

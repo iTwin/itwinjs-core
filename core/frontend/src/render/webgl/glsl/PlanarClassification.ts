@@ -12,12 +12,13 @@ import { addModelMatrix } from "./Vertex";
 const applyPlanarClassificationColor = `
   const float dimScale = .7;
   const float colorMix = .65;
+  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
   if (s_pClassColorParams.x > 4.0) {
-    if (v_pClassPos.x < 0.0 || v_pClassPos.x > 1.0 || v_pClassPos.y < 0.0 || v_pClassPos.y > 1.0)
+    if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
       discard;
-    return  TEXTURE(s_pClassSampler, v_pClassPos.xy);  // Texture/terrain drape.
+    return  TEXTURE(s_pClassSampler, classPos.xy);  // Texture/terrain drape.
   }
-  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, v_pClassPos.y / 2.0));
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
   if (colorTexel.a < .5) {
     if (s_pClassColorParams.y == 0.0)
       return vec4(0);                             // Unclassified, Off.
@@ -45,12 +46,14 @@ const applyPlanarClassificationColor = `
 
 const overrideFeatureId = `
   if (s_pClassColorParams.x == 5.0) return currentId;
-  vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, (1.0 + v_pClassPos.y) / 2.0));
+  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / 2.0));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
 
 const computeClassifiedSurfaceHiliteColor = `
-  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, v_pClassPos.xy);
+  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, classPos);
   if (hiliteTexel.a > 0.5 && isSurfaceBitSet(kSurfaceBit_HasTexture))
     return vec4(TEXTURE(s_texture, v_texCoord).a > 0.15 ? 1.0 : 0.0);
   else
@@ -58,11 +61,14 @@ const computeClassifiedSurfaceHiliteColor = `
 `;
 
 const computeClassifiedSurfaceHiliteColorNoTexture = `
-  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, v_pClassPos.xy);
+  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, classPos.xy);
   return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
 `;
 
-const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = classProj.xy/classProj.w;";
+const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos.xy = classProj.xy;";
+const computeClassifierPosW = "v_pClassPosW = classProj.w;";
+
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
@@ -81,6 +87,7 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
 
   addModelMatrix(vert);
   builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, computeClassifierPos);
+  builder.addInlineComputedVarying("v_pClassPosW", VariableType.Float, computeClassifierPosW);
 }
 
 /** @internal */

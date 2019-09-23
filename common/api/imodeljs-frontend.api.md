@@ -5694,7 +5694,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
-    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference, _heightRange?: Range1d): RenderTextureDrape | undefined;
+    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
@@ -5971,7 +5971,7 @@ export class SavedState {
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
-    addBackgroundDrapedModel(drapedTree: TileTree, heightRange?: Range1d): RenderTextureDrape | undefined;
+    addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined;
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)

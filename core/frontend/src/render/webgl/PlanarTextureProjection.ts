@@ -56,22 +56,25 @@ export class PlanarTextureProjection {
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
     const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
 
+    let tileRange;
+    const frustum = viewFrustum.getFrustum();
+
+    tileRange = Range3d.createNull();
+    const matrix = Matrix4d.createTransform(textureTransform);
+    const viewPlanes = new FrustumPlanes(viewFrustum.getFrustum());
+    tileTree.accumulateTransformedRange(tileRange, matrix, viewPlanes);
+
+    heightRange = Range1d.createXX(tileRange.xLow, tileRange.xHigh);
+    heightRange.low = Math.min(heightRange.low, textureDepth - .0001);    // Always include classification plane.
+    heightRange.high = Math.max(heightRange.high, textureDepth + .0001);
+
     const range = Range3d.createNull();
-    const frustum = new Frustum();
-
-    viewFrustum.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
-
     PlanarTextureProjection.extendRangeForFrustumPlaneIntersection(range, texturePlane, textureTransform, frustum, heightRange ? heightRange.low : 0.0);
-    if (heightRange)
+    if (heightRange.high > heightRange.low)
       PlanarTextureProjection.extendRangeForFrustumPlaneIntersection(range, texturePlane, textureTransform, frustum, heightRange.high);
 
-    if (!tileTree.loader.isContentUnbounded) {
-      const tileRange = Range3d.createNull();
-      const matrix = Matrix4d.createTransform(textureTransform);
-      const viewPlanes = new FrustumPlanes(viewFrustum.getFrustum());
-      tileTree.accumulateTransformedRange(tileRange, matrix, viewPlanes);
+    if (tileRange && !tileTree.loader.isContentUnbounded)
       range.intersect(tileRange, range);
-    }
 
     range.low.x = Math.min(range.low.x, textureDepth - .0001);    // Always include classification plane.
     range.high.x = Math.max(range.high.x, textureDepth + .0001);

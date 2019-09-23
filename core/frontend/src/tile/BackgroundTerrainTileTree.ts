@@ -160,7 +160,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
       }
 
       if (this._doDrape)
-        context.addBackgroundDrapedModel(tree, this.getHeightRange());
+        context.addBackgroundDrapedModel(tree);
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
       this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
       terrainTree.settings = context.viewport.displayStyle.backgroundMapSettings.terrainSettings;
