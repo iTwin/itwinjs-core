@@ -66,6 +66,7 @@ export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
+export * from "./RenderCompatibility";
 export * from "./oidc/OidcBrowserClient";
 export * from "./TerrainProvider";
 export * from "./properties/Description";

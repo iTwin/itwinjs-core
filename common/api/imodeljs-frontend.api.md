@@ -9664,6 +9664,39 @@ export class WalkViewTool extends ViewManip {
 // @internal (undocumented)
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth";
 
+// @beta
+export enum WebGLFeature {
+    DepthTexture = "depth texture",
+    FloatRendering = "float rendering",
+    FragDepth = "fragment depth",
+    Instancing = "instancing",
+    MinimalTextureUnits = "minimal texture units",
+    MrtPick = "mrt pick",
+    MrtTransparency = "mrt transparency",
+    ShadowMaps = "shadow maps",
+    UintElementIndex = "uint element index"
+}
+
+// @beta
+export interface WebGLRenderCompatibilityInfo {
+    contextErrorMessage?: string;
+    missingOptionalFeatures: WebGLFeature[];
+    missingRequiredFeatures: WebGLFeature[];
+    status: WebGLRenderCompatibilityStatus;
+    unmaskedRenderer?: string;
+    unmaskedVendor?: string;
+    userAgent: string;
+}
+
+// @beta
+export enum WebGLRenderCompatibilityStatus {
+    AllOkay = 0,
+    CannotCreateContext = 4,
+    MajorPerformanceCaveat = 2,
+    MissingOptionalFeatures = 1,
+    MissingRequiredFeatures = 3
+}
+
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {
     constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
