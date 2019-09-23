@@ -42,6 +42,8 @@ import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
 import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
 import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
 import twoTouchPinchIcon from "./gesture-pinch.svg";
+import touchCursorTapIcon from "./touch-cursor-point.svg";
+import touchCursorDragIcon from "./touch-cursor-pan.svg";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta
@@ -505,6 +507,13 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.TwoTouchPinch:
           svgImage = twoTouchPinchIcon;
+          break;
+        case ToolAssistanceImage.TouchCursorTap:
+          svgImage = touchCursorTapIcon;
+          break;
+        case ToolAssistanceImage.TouchCursorDrag:
+          svgImage = touchCursorDragIcon;
+          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
 

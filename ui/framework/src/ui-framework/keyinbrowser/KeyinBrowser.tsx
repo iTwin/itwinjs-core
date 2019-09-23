@@ -105,7 +105,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
           window.localStorage.setItem(key, objectAsString);
         }
 
-        IModelApp.tools.run(foundTool.toolId, args);
+        IModelApp.tools.run(foundTool.toolId, args && args.length > 0 ? args : undefined); // ###TODO: This needs to call parseAndRun...at least stop passing empty arg array to constructors that expect other things...
       }
     }
     this.props.onExecute && this.props.onExecute();

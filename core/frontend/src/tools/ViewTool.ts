@@ -2082,6 +2082,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _singleTouch = false;
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
+  private _hasZoom = false;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -2116,7 +2117,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   public onStart(ev: BeTouchEvent): void {
     const vp = this.viewport!;
     vp.getWorldFrustum(this._frustum);
-    this._inertiaVec = undefined;
 
     const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
     if (undefined !== visiblePoint) {
@@ -2134,6 +2134,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeZoomRatio(ev?: BeTouchEvent): number {
+    this._hasZoom = false;
     if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
@@ -2143,6 +2144,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(ToolSettings.touchZoomChangeThresholdInches))
       return 1.0;
 
+    this._hasZoom = true;
     return Geometry.clamp(this._startDistance / distance, .1, 10);
   }
 
@@ -2265,14 +2267,18 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport;
     const thisPt = ev.viewPoint;
     const smallDistance = vp.pixelsFromInches(0.05);
-    if (1 === ev.touchCount && this._lastPtView.isAlmostEqualXY(thisPt, smallDistance))
+    const samePoint = this._lastPtView.isAlmostEqualXY(thisPt, smallDistance);
+    if (1 === ev.touchCount && samePoint)
       return; // Don't early return if multi-touch, center doesn't have to move for zoom...
 
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      this._inertiaVec = this._lastPtView.vectorTo(thisPt);
-      this._inertiaVec.z = 0;
+      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate...
+      if (!samePoint && !this._hasZoom) {
+        this._inertiaVec = this._lastPtView.vectorTo(thisPt);
+        this._inertiaVec.z = 0;
+      }
       this._singleTouch = ev.isSingleTouch;
       this._lastPtView.setFrom(thisPt);
       this._lastPtView.z = this._startPtView.z;

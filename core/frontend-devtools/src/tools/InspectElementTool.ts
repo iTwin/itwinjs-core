@@ -38,7 +38,7 @@ export class InspectElementTool extends PrimitiveTool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 6; }
 
-  private _options: GeometrySummaryOptions = { };
+  private _options: GeometrySummaryOptions = {};
   private _elementId?: Id64String;
   private _modal = false;
   private _useSelection = false;
@@ -61,7 +61,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.AcceptSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
+    IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.ConfirmSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
   }
 
   public autoLockTarget(): void { }
@@ -173,7 +173,7 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-        messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occured while generating summary", err.toString());
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occured while generating summary", err.toString());
     }
 
     IModelApp.notifications.outputMessage(messageDetails);

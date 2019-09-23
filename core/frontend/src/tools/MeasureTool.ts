@@ -14,12 +14,13 @@ import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
 import { GeometryStreamProps, ColorDef, MassPropertiesRequestProps, MassPropertiesOperation, BentleyStatus, MassPropertiesResponseProps } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
-import { BeButtonEvent, EventHandled, CoordSource } from "./Tool";
+import { BeButtonEvent, EventHandled, InputSource } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
+import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 
 /** @alpha */
 class MeasureLabel implements CanvasDecoration {
@@ -87,6 +88,20 @@ class MeasureMarker extends Marker {
     this.labelFont = "18px san-serif";
     this.labelColor = "black";
   }
+
+  public onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Never forward event to active tool...
+
+  public onMouseEnter(ev: BeButtonEvent) {
+    super.onMouseEnter(ev);
+    if (this.title && InputSource.Touch === ev.inputSource && ev.viewport)
+      ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
+  }
+
+  public onMouseLeave() {
+    super.onMouseLeave();
+    if (this.title)
+      IModelApp.notifications.clearToolTip(); // Clear tool tip from tap since we won't get a motion event...
+  }
 }
 
 /** @alpha */
@@ -101,12 +116,38 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
-  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean { return super.isValidLocation(ev, isButtonEvent) || CoordSource.ElemSnap === ev.coordsFrom; }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public onUnsuspend(): void { this.showPrompt(); }
-  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey(0 === this._locationData.length ? "CoreTools:tools.Measure.Distance.Prompts.FirstPoint" : "CoreTools:tools.Measure.Distance.Prompts.NextPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(0 === this._locationData.length ? "CoreTools:tools.Measure.Distance.Prompts.FirstPoint" : "CoreTools:tools.Measure.Distance.Prompts.NextPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+    if (0 === this._locationData.length) {
+      if (this._acceptedSegments.length > 0) {
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+      }
+    } else {
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+    }
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
@@ -533,12 +574,31 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
-  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean { return super.isValidLocation(ev, isButtonEvent) || CoordSource.ElemSnap === ev.coordsFrom; }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public onUnsuspend(): void { this.showPrompt(); }
-  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey("CoreTools:tools.Measure.Location.Prompts.EnterPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.Measure.Location.Prompts.EnterPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+    if (0 !== this._acceptedLocations.length) {
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+    }
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
@@ -605,9 +665,6 @@ export class MeasureLocationTool extends PrimitiveTool {
     const toolTip = await this.getMarkerToolTip(point);
     const marker = new MeasureMarker((this._acceptedLocations.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
 
-    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
-    marker.onMouseButton = noOpButtonFunc;
-
     this._acceptedLocations.push(marker);
     this.reportMeasurements();
     this.setupAndPromptForNextAction();
@@ -659,7 +716,38 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   public onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
 
   public onUnsuspend(): void { this.showPrompt(); }
-  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.AcceptSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement"); }
+  protected showPrompt(): void {
+    const mainMsg = (this._useSelection ? (0 === this._acceptedMeasurements.length ? "CoreTools:tools.ElementSet.Prompts.ConfirmSelection" : "CoreTools:tools.ElementSet.Prompts.InspectResult") : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainMsg));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (this._useSelection) {
+      if (0 === this._acceptedMeasurements.length) {
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Mouse));
+      } else {
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+      }
+    } else {
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
+      if (0 !== this._acceptedMeasurements.length) {
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+      }
+    }
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
@@ -839,9 +927,6 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     const point = Point3d.fromJSON(result.centroid);
     const marker = new MeasureMarker((this._acceptedMeasurements.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
 
-    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
-    marker.onMouseButton = noOpButtonFunc;
-
     this._acceptedMeasurements.push(marker);
     await this.updateTotals(result);
     this.setupAndPromptForNextAction();
@@ -887,8 +972,8 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         if (0 !== this._acceptedMeasurements.length)
           return EventHandled.Yes;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.NotSuportedElmType")));
+        this.onReinitialize();
       }
-      this.onReinitialize();
       return EventHandled.Yes;
     }
 
@@ -905,9 +990,6 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     const toolTip = await this.getMarkerToolTip(result);
     const point = result.centroid ? Point3d.fromJSON(result.centroid) : ev.point.clone();
     const marker = new MeasureMarker((this._acceptedMeasurements.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
-
-    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
-    marker.onMouseButton = noOpButtonFunc;
 
     this._acceptedMeasurements.push(marker);
     this._acceptedIds.push(hit.sourceId);

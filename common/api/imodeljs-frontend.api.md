@@ -4068,7 +4068,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
-    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
     protected readonly _locationData: {
         point: Point3d;
@@ -4199,7 +4199,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
-    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -7894,6 +7894,7 @@ export class ToolAssistance {
     static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
     static createModifierKeyInstruction(modifierKey: string, image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
+    static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly ctrlSymbol: string;
@@ -7924,6 +7925,8 @@ export enum ToolAssistanceImage {
     OneTouchTap = 9,
     RightClick = 4,
     RightClickDrag = 7,
+    TouchCursorDrag = 16,
+    TouchCursorTap = 15,
     TwoTouchDrag = 13,
     TwoTouchPinch = 14,
     TwoTouchTap = 12
@@ -8672,8 +8675,6 @@ export class ViewClipTool extends PrimitiveTool {
     onUnsuspend(): void;
     // (undocumented)
     protected static _orientationName: string;
-    // (undocumented)
-    protected outputPrompt(prompt: string): void;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)

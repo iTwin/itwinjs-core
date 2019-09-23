@@ -41,6 +41,10 @@ export enum ToolAssistanceImage {
   TwoTouchDrag,
   /** Touch image with two fingers pinching */
   TwoTouchPinch,
+  /** Touch cursor image with single finger tapping once */
+  TouchCursorTap,
+  /** Touch cursor image with single finger dragging */
+  TouchCursorDrag,
 }
 
 /** Input Method for Tool Assistance instruction
@@ -246,6 +250,21 @@ export class ToolAssistance {
       bottomKeys,
     };
     return keyboardInfo;
+  }
+
+  /** Creates instructions for interaction with the touch cursor that are appended to the supplied [[ToolAssistanceInstruction]] array.
+   */
+  public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
+    const accuSnap = IModelApp.accuSnap;
+    if (accuSnap.isSnapEnabled && accuSnap.isSnapEnabledByUser && undefined === accuSnap.touchCursor) {
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:touchCursor.Activate"), false, ToolAssistanceInputMethod.Touch));
+      return true;
+    } else if (undefined !== accuSnap.touchCursor) {
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, IModelApp.i18n.translate("CoreTools:touchCursor.IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, IModelApp.i18n.translate("CoreTools:touchCursor.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+      return true;
+    }
+    return false;
   }
 
   /** Creates a [[ToolAssistanceSection]].

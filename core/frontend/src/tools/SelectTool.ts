@@ -181,43 +181,41 @@ export class SelectionTool extends PrimitiveTool {
     switch (method) {
       case SelectionMethod.Pick:
         const mousePickInstructions: ToolAssistanceInstruction[] = [];
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyElement"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyByBox"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyByLine"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
+        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
+        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.CrossingLine"), false, ToolAssistanceInputMethod.Mouse));
+        mousePickInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
         if (SelectionMode.Replace === mode) {
-          mousePickInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.ctrlKeyboardInfo, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
-          mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mousePickInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.ctrlKeyboardInfo, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
         }
         sections.push(ToolAssistance.createSection(mousePickInstructions, ToolAssistance.inputsLabel));
 
         const touchPickInstructions: ToolAssistanceInstruction[] = [];
-        touchPickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyElement"), false, ToolAssistanceInputMethod.Touch));
+        touchPickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
         sections.push(ToolAssistance.createSection(touchPickInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Line:
         const mouseLineInstructions: ToolAssistanceInstruction[] = [];
-        mouseLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Mouse));
-        mouseLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Mouse));
+        mouseLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
         if (SelectionMode.Replace === mode)
-          mouseLineInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mouseLineInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
         sections.push(ToolAssistance.createSection(mouseLineInstructions, ToolAssistance.inputsLabel));
 
         const touchLineInstructions: ToolAssistanceInstruction[] = [];
-        touchLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
+        touchLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
         sections.push(ToolAssistance.createSection(touchLineInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Box:
         const mouseBoxInstructions: ToolAssistanceInstruction[] = [];
-        mouseBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Mouse));
-        mouseBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Mouse));
-        mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+        mouseBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+        mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
         if (SelectionMode.Replace === mode)
-          mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
         sections.push(ToolAssistance.createSection(mouseBoxInstructions, ToolAssistance.inputsLabel));
 
         const touchBoxInstructions: ToolAssistanceInstruction[] = [];
-        touchBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
+        touchBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
         sections.push(ToolAssistance.createSection(touchBoxInstructions, ToolAssistance.inputsLabel));
         break;
     }
@@ -541,7 +539,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public onSuspend(): void { this._isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
-  public onUnsuspend(): void { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); } // TODO: Tool assistance...
+  public onUnsuspend(): void { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); }
 
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)

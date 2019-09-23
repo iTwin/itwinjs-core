@@ -24,7 +24,7 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
-import { AuthorizedFrontendRequestContext } from "../imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "../imodeljs-frontend";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
 /** @alpha The orientation to use to define the view clip volume */
@@ -84,7 +84,6 @@ export class ViewClipTool extends PrimitiveTool {
   public onUnsuspend(): void { this.showPrompt(); }
   public onRestartTool(): void { this.exitTool(); }
 
-  protected outputPrompt(prompt: string) { IModelApp.notifications.outputPromptByKey("CoreTools:tools.ViewClip." + prompt); }
   protected showPrompt(): void { }
   protected setupAndPromptForNextAction(): void { this.showPrompt(); }
 
@@ -351,7 +350,10 @@ export class ViewClipClearTool extends ViewClipTool {
   public static iconSpec = "icon-section-tool";
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && ViewClipTool.hasClip(vp)); }
 
-  protected showPrompt(): void { this.outputPrompt("Clear.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.Clear.Prompts.FirstPoint"));
+    IModelApp.notifications.setToolAssistance(ToolAssistance.createInstructions(mainInstruction));
+  }
 
   protected doClipClear(viewport: Viewport): boolean {
     if (!ViewClipTool.doClipClear(viewport))
@@ -402,11 +404,29 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     return false;
   }
 
-  protected showPrompt(): void { this.outputPrompt("ByPlane.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.ByPlane.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -460,25 +480,48 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 
   protected showPrompt(): void {
+    let mainMsg = "CoreTools:tools.ViewClip.ByShape.Prompts.";
     switch (this._points.length) {
       case 0:
-        this.outputPrompt("ByShape.Prompts.FirstPoint");
+        mainMsg += "FirstPoint";
         break;
       case 1:
-        this.outputPrompt("ByShape.Prompts.SecondPoint");
+        mainMsg += "SecondPoint";
         break;
       case 2:
-        this.outputPrompt("ByShape.Prompts.ThirdPoint");
+        mainMsg += "ThirdPoint";
         break;
       default:
-        this.outputPrompt("ByShape.Prompts.NextPoint");
+        mainMsg += "NextPoint";
         break;
     }
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainMsg));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    if (this._points.length > 1)
+      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
+    if (0 !== this._points.length)
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
     if (0 === this._points.length)
       return;
 
@@ -597,10 +640,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return false;
 
     this._points.pop();
-    if (0 === this._points.length)
-      this.onReinitialize();
-    else
-      this.setupAndPromptForNextAction();
+    this.setupAndPromptForNextAction();
     return true;
   }
 
@@ -617,11 +657,30 @@ export class ViewClipByRangeTool extends ViewClipTool {
   public static iconSpec = "icon-section-range";
   protected _corner?: Point3d;
 
-  protected showPrompt(): void { this.outputPrompt(undefined === this._corner ? "ByRange.Prompts.FirstPoint" : "ByRange.Prompts.NextPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(undefined === this._corner ? "CoreTools:tools.ViewClip.ByRange.Prompts.FirstPoint" : "CoreTools:tools.ViewClip.ByRange.Prompts.NextPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+    if (undefined !== this._corner)
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
   }
 
   protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean {
@@ -694,7 +753,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
   public async onUndoPreviousStep(): Promise<boolean> {
     if (undefined === this._corner)
       return false;
-    this.onReinitialize();
+    this._corner = undefined;
+    this.setupAndPromptForNextAction();
     return true;
   }
 }
@@ -705,7 +765,24 @@ export class ViewClipByElementTool extends ViewClipTool {
   public static iconSpec = "icon-section-element";
   constructor(clipEventHandler?: ViewClipEventHandler, protected _alwaysUseRange: boolean = false) { super(clipEventHandler); }
 
-  protected showPrompt(): void { this.outputPrompt("ByElement.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.ByElement.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   public onPostInstall(): void {
     super.onPostInstall();

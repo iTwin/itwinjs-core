@@ -174,7 +174,9 @@ describe("ToolAssistanceField", () => {
     const instruction34 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, "xyz");
     const instruction35 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchDrag, "xyz");
     const instruction36 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchPinch, "xyz");
-    const section3 = ToolAssistance.createSection([instruction31, instruction32, instruction33, instruction34, instruction35, instruction36], "Touch Inputs");
+    const instruction37 = ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, "xyz");
+    const instruction38 = ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, "xyz");
+    const section3 = ToolAssistance.createSection([instruction31, instruction32, instruction33, instruction34, instruction35, instruction36, instruction37, instruction38], "Touch Inputs");
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2, section3]);
 
@@ -184,7 +186,7 @@ describe("ToolAssistanceField", () => {
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(4);
-    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(14);
+    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(16);
 
     wrapper.unmount();
   });

@@ -148,8 +148,8 @@
         "Prompts": {
           "FirstPoint": "Identify shape start point",
           "SecondPoint": "Identify first edge endpoint",
-          "ThirdPoint": "Accept opposite corner (Ctrl to specify additional points)",
-          "NextPoint": "Accept shape (Ctrl to specify additional points)"
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
         }
       },
       "ByRange": {
@@ -342,17 +342,31 @@
     "ElementSet": {
       "Prompts": {
         "IdentifyElement": "Identify element",
-        "IdentifyByLine": "Identify elements by crossing line",
-        "IdentifyByBox": "Identify elements by box corners",
-        "InvertSelection": "Hold to invert selected state",
-        "OverlapSelection": "Reverse inside/overlap direction",
-        "ClearSelection": "Miss to clear selected elements",
-        "AcceptSelection": "Accept selection",
         "IdentifyPoint": "Identify point",
-        "StartPoint": "Identify start point",
-        "EndPoint": "Identify endpoint",
+        "ConfirmSelection": "Confirm selection",
+        "InspectResult": "Inspect result",
+        "StartPoint": "Define start point",
+        "EndPoint": "Define endpoint",
         "StartCorner": "Define corner point",
         "OppositeCorner": "Define opposite corner"
+      },
+      "Inputs": {
+        "CrossingLine": "Define crossing line",
+        "BoxCorners": "Define box corners",
+        "InvertSelection": "Invert selection",
+        "OverlapSelection": "Reverse inside/overlap direction",
+        "ClearSelection": "Miss to clear selection",
+        "AcceptSelection": "Accept selection",
+        "RejectSelection": "Reject selection",
+        "AcceptElement": "Accept element",
+        "AcceptPoint": "Accept point",
+        "AdditionalElement": "Identify additional elements",
+        "AdditionalPoint": "Define additional points",
+        "UndoLastPoint": "Undo last point",
+        "Complete": "Complete",
+        "Cancel": "Cancel",
+        "Restart": "Restart",
+        "Exit": "Exit"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -379,6 +393,11 @@
       "keyin": "load plugin",
       "description": "Loads a plugin module"
     }
+  },
+  "touchCursor": {
+    "Activate": "Activate touch cursor",
+    "AcceptPoint": "Accept point",
+    "IdentifyPoint": "Identify point"
   },
   "toolAssistance": {
     "altKey": "Alt",
