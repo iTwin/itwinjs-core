@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -454,6 +454,12 @@ export class IModelTransformer {
       if (missingPredecessorIds.size > 0) {
         this.skipElement(sourceElement);
         this.onElementSkipped(sourceElement);
+        if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) {
+          for (const missingPredecessorId of missingPredecessorIds) {
+            const missingPredecessorElement: Element = this.sourceDb.elements.getElement(missingPredecessorId);
+            Logger.logTrace(loggerCategory, `[Source] - Remapping not found for predecessor ${this.formatElementForLogger(missingPredecessorElement)}`);
+          }
+        }
         return; // skipping an element will also skip its children or sub-models
       }
       const targetElementProps: ElementProps = this.transformElement(sourceElement);
@@ -521,8 +527,9 @@ export class IModelTransformer {
     if (this.shouldExcludeElement(modeledElement)) {
       this.onElementExcluded(modeledElement);
     } else {
-      this.importModelContainer(sourceModeledElementId);
-      this.importModelContents(sourceModeledElementId);
+      const targetModeledElementId: Id64String = this.context.findTargetElementId(sourceModeledElementId);
+      this.importModelContainer(sourceModeledElementId, targetModeledElementId);
+      this.importModelContents(sourceModeledElementId, targetModeledElementId);
       this.importSubModels(sourceModeledElementId);
     }
   }
@@ -530,9 +537,8 @@ export class IModelTransformer {
   /** Import the model (the container only) into the target IModelDb
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
-  private importModelContainer(sourceModeledElementId: Id64String): void {
+  private importModelContainer(sourceModeledElementId: Id64String, targetModeledElementId: Id64String): void {
     const sourceModel: Model = this.sourceDb.models.getModel(sourceModeledElementId);
-    const targetModeledElementId = this.context.findTargetElementId(sourceModeledElementId);
     try {
       const targetModel: Model = this.targetDb.models.getModel(targetModeledElementId); // throws IModelError.NotFound if model does not exist
       const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
@@ -555,7 +561,9 @@ export class IModelTransformer {
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
    */
-  public importModelContents(sourceModeledElementId: Id64String): void {
+  public importModelContents(sourceModeledElementId: Id64String, targetModeledElementId: Id64String): void {
+    this.targetDb.models.getModel(targetModeledElementId); // throws if Model does not exist
+    this.context.remapElement(sourceModeledElementId, targetModeledElementId); // set remapping in case importModelContents is called directly
     Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {

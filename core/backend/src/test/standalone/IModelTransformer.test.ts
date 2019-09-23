@@ -154,6 +154,14 @@ describe("IModelTransformer", () => {
     });
   }
 
+  function countElementsInModel(iModelDb: IModelDb, modelId: Id64String): number {
+    const sql = `SELECT COUNT(*) FROM ${Element.classFullName} WHERE Model.Id=:modelId`;
+    return iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): number => {
+      statement.bindId("modelId", modelId);
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
+
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
@@ -203,6 +211,32 @@ describe("IModelTransformer", () => {
     transformer.dispose();
     iModelDb.saveChanges();
     iModelDb.closeSnapshot();
+  });
+
+  // WIP: Included as skipped until test file management strategy can be refined.
+  it.skip("should successfully complete PlantSight workflow", async () => {
+    // source
+    const sourceFileName = "d:/data/dgndb/PlantSight/PlantSightSource.bim";
+    const sourceDb: IModelDb = IModelDb.openSnapshot(sourceFileName);
+    const sourceModelId: Id64String = "0x20000000002";
+    assert.exists(sourceDb.elements.getElement(sourceModelId));
+    assert.exists(sourceDb.models.getModel(sourceModelId));
+    assert.isAtLeast(countElementsInModel(sourceDb, sourceModelId), 1, "Source Model should contain Elements");
+    // target
+    const targetFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
+    IModelJsFs.copySync("d:/data/dgndb/PlantSight/PlantSightTarget.bim", targetFileName);
+    const targetDb: IModelDb = IModelDb.openSnapshot(targetFileName);
+    const targetModelId: Id64String = "0x30000000002";
+    assert.exists(targetDb.elements.getElement(targetModelId));
+    assert.exists(targetDb.models.getModel(targetModelId));
+    assert.equal(countElementsInModel(targetDb, targetModelId), 0, "Target Model should not contain Elements yet");
+    // import Model contents
+    const transformer = new IModelTransformerWithAsserts(sourceDb, targetDb);
+    transformer.importModelContents(sourceModelId, targetModelId);
+    transformer.dispose();
+    // close
+    sourceDb.closeSnapshot();
+    targetDb.closeSnapshot();
   });
 
   it("should clone test file", async () => {
