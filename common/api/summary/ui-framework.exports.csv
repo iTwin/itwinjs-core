@@ -1,10 +1,9 @@
 sep=;
 Release Tag;API Item
-internal;AccudrawPopupInfo
-internal;AccudrawPopupsChangedEvent 
-internal;AccudrawPopupType
-alpha;AccudrawUiManager
-alpha;AccudrawUiRenderer 
+alpha;AccuDrawPopupManager
+alpha;AccuDrawPopupRenderer 
+internal;AccuDrawPopupsChangedEvent 
+internal;AccuDrawPopupType
 public;Action
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
@@ -42,12 +41,9 @@ public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
 alpha;Calculator 
-alpha;CalculatorCancelFunc = () => void
 internal;CalculatorEngine
 internal;CalculatorKeyType
-alpha;CalculatorOkFunc = (value: number) => void
 internal;CalculatorOperator
-internal;CalculatorPopupInfo 
 alpha;CalculatorProps 
 internal;CalculatorPropsProps = Pick
 alpha;CardContainer 
@@ -154,6 +150,7 @@ alpha;DrawingNavigationAidControl
 alpha;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
+internal;dummy_node = React_2.ReactNode
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
@@ -195,8 +192,8 @@ internal;HitBoxX
 internal;HitBoxY
 internal;HitBoxZ
 public;Icon: React_2.FunctionComponent
-public;IconProps
-public;IconSpec = string | React_2.ReactNode
+public;IconProps 
+public;IconSpec = IconSpec_2
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -204,7 +201,6 @@ internal;IModelUserInfo
 beta;IModelViewportControl 
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
-internal;InputEditorPopupInfo 
 public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
@@ -240,7 +236,6 @@ beta;ListPickerPropsExtended
 alpha;MapMode
 public;MarkupTools
 alpha;MenuButton 
-internal;MenuButtonPopupInfo 
 alpha;MenuButtonProps 
 alpha;MenuItem 
 alpha;MenuItemHelpers
@@ -278,6 +273,8 @@ public;NavigationWidgetProps
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
+alpha;OnCancelFunc = () => void
+alpha;OnCommitFunc = (value: number) => void
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean

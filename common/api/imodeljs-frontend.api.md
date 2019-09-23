@@ -950,6 +950,15 @@ export enum ActivityMessageEndReason {
     Completed = 0
 }
 
+// @beta
+export class AngleDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
+}
+
 // @internal
 export class AnimationBranchState {
     constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean);
@@ -1320,13 +1329,34 @@ export enum BadgeType {
 // @beta
 export interface BasePropertyEditorParams {
     // (undocumented)
-    type: PropertyEditorParamTypes;
+    type: string;
 }
 
 // @beta
 export interface BasePropertyValue {
     // (undocumented)
     valueFormat: PropertyValueFormat;
+}
+
+// @beta
+export abstract class BaseQuantityDescription implements PropertyDescription {
+    constructor(name: string, displayLabel: string, iconSpec?: string);
+    // (undocumented)
+    displayLabel: string;
+    // (undocumented)
+    editor: PropertyEditorInfo;
+    // (undocumented)
+    readonly formatterSpec: FormatterSpec | undefined;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    abstract readonly parseError: string;
+    // (undocumented)
+    readonly parserSpec: ParserSpec | undefined;
+    // (undocumented)
+    abstract readonly quantityType: QuantityType;
+    // (undocumented)
+    typename: string;
 }
 
 // @internal
@@ -3211,8 +3241,7 @@ export enum HitSource {
 
 // @beta
 export interface IconDefinition {
-    iconClass: string;
-    // (undocumented)
+    iconSpec: string;
     isEnabledFunction?: () => boolean;
 }
 
@@ -3671,6 +3700,15 @@ export enum KeyinStatus {
     Dynamic = 0,
     // (undocumented)
     Partial = 1
+}
+
+// @beta
+export class LengthDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
 }
 
 // @internal (undocumented)
@@ -5080,36 +5118,36 @@ export interface PropertyEditorInfo {
 }
 
 // @beta
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams;
+export type PropertyEditorParams = BasePropertyEditorParams;
 
 // @beta
 export enum PropertyEditorParamTypes {
     // (undocumented)
-    ButtonGroupData = 0,
+    ButtonGroupData = "ButtonGroupData",
     // (undocumented)
-    CheckBoxIcons = 1,
+    CheckBoxIcons = "CheckBoxIcons",
     // (undocumented)
-    ColorData = 10,
+    ColorData = "ColorData",
     // (undocumented)
-    CustomFormattedNumber = 11,
+    CustomFormattedNumber = "CustomFormattedNumber",
     // (undocumented)
-    Icon = 2,
+    Icon = "Icon",
     // (undocumented)
-    IconListData = 12,
+    IconListData = "IconListData",
     // (undocumented)
-    InputEditorSize = 3,
+    InputEditorSize = "InputEditorSize",
     // (undocumented)
-    JSON = 4,
+    JSON = "JSON",
     // (undocumented)
-    MultilineText = 5,
+    MultilineText = "MultilineText",
     // (undocumented)
-    Range = 6,
+    Range = "Range",
     // (undocumented)
-    Slider = 7,
+    Slider = "Slider",
     // (undocumented)
-    SuppressEditorLabel = 9,
+    SuppressEditorLabel = "SuppressEditorLabel",
     // (undocumented)
-    SuppressUnitLabel = 8
+    SuppressUnitLabel = "SuppressUnitLabel"
 }
 
 // @beta

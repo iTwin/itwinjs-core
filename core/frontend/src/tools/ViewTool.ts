@@ -20,7 +20,7 @@ import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
 import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, ParseResults } from "../properties/EditorParams";
+import { PropertyEditorParamTypes, ParseResults, SuppressLabelEditorParams, CustomFormattedNumberParams } from "../properties/EditorParams";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { QuantityType } from "../QuantityFormatter";
 import { PrimitiveValue } from "../properties/Value";
@@ -2579,7 +2579,7 @@ export class SetupCameraTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
     };
@@ -2599,7 +2599,7 @@ export class SetupCameraTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
     };
@@ -2621,7 +2621,7 @@ export class SetupCameraTool extends PrimitiveTool {
             type: PropertyEditorParamTypes.CustomFormattedNumber,
             formatFunction: this._formatLength,
             parseFunction: this._parseLength,
-          },
+          } as CustomFormattedNumberParams,
         ],
       },
     };
@@ -2643,7 +2643,7 @@ export class SetupCameraTool extends PrimitiveTool {
             type: PropertyEditorParamTypes.CustomFormattedNumber,
             formatFunction: this._formatLength,
             parseFunction: this._parseLength,
-          },
+          } as CustomFormattedNumberParams,
         ],
       },
     };

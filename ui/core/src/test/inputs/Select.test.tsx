@@ -2,8 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { mount, shallow } from "enzyme";
+import { render } from "@testing-library/react";
+import { expect } from "chai";
+
 import { Select } from "../../ui-core";
 
 describe("<Select />", () => {
@@ -38,4 +41,13 @@ describe("<Select />", () => {
   it("renders object options correctly", () => {
     shallow(<Select options={{ option1: "Option 1", option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
   });
+
+  it("focus into select with setFocus prop", () => {
+    const component = render(<Select options={[]} setFocus={true} />);
+    const input = component.container.querySelector("select");
+
+    const element = document.activeElement as HTMLElement;
+    expect(element && element === input).to.be.true;
+  });
+
 });

@@ -111,7 +111,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
         isInFooterMode={this.props.isInFooterMode}
       >
         <Select options={this.state.styleEntries} value={displayStyleId} onChange={this._handleDisplayStyleSelected}
-          title={IModelApp.i18n.translate("NavigatorApp:statusFields.displayStyle")}
+          title={IModelApp.i18n.translate("SampleApp:statusFields.displayStyle")}
           className="uifw-statusFields-displayStyle-selector" />
       </FooterIndicator >
     );

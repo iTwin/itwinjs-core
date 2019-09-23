@@ -88,7 +88,7 @@
     .core-context-menu-item {
       display: flex;
       cursor: default;
-      padding: ($uicore-unbordered-padding / 2) $uicore-bordered-padding;
+      padding: $uicore-bordered-padding $uicore-bordered-padding;
       width: calc(100% - 2 * #{$uicore-bordered-padding});
       align-items: center;
 
@@ -195,5 +195,9 @@
   .core-context-menu-divider {
     border-bottom: 1px solid $buic-background-divider;
     height: 0px;
+  }
+
+  .core-context-submenu-popup {
+    transform: translateY(-5px);  // Compensate for the vertical padding
   }
 }

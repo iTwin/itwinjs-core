@@ -8,7 +8,6 @@ import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { BaseItemState } from "../shared/ItemDefBase";
@@ -16,7 +15,7 @@ import { ToolItemProps, StringGetter } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Icon } from "@bentley/ui-core";
 import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties for the [[ToolButton]] React Component.

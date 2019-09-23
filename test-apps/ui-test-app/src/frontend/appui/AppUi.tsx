@@ -38,7 +38,7 @@ import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
-import { AccudrawTools } from "../tools/AccudrawTools";
+import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -374,15 +374,15 @@ export class AppUi {
         shortcuts: [
           {
             key: "a",
-            item: AccudrawTools.addMenuButton,
+            item: AccuDrawPopupTools.addMenuButton,
           },
           {
             key: "h",
-            item: AccudrawTools.hideMenuButton,
+            item: AccuDrawPopupTools.hideMenuButton,
           },
           {
             key: "c",
-            item: AccudrawTools.showCalculator,
+            item: AccuDrawPopupTools.showCalculator,
           },
         ],
       },

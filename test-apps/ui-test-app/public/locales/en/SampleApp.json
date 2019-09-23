@@ -152,7 +152,10 @@
     "accudrawSubMenu": "Accudraw Demos",
     "addMenuButton": "Add Menu Button",
     "hideMenuButton": "Hide Menu Button",
-    "showCalculator": "Show Calculator"
+    "showCalculator": "Show Calculator",
+    "showAngleEditor": "Show Angle Editor",
+    "showLengthEditor": "Show Length Editor",
+    "showHeightEditor": "Show Height Editor"
   },
   "tools": {
     "ToolWithSettings": {
@@ -261,6 +264,7 @@
     "selectFile": "Select Local File"
   },
   "statusFields": {
+    "displayStyle": "Display Style",
     "unnamedDisplayStyle": "unnamed"
   }
 }

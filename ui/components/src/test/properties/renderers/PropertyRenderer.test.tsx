@@ -124,7 +124,7 @@ describe("PropertyRenderer", () => {
         isEditing={true}
       />);
 
-    expect(propertyRenderer.find(".components-text-editor").length).to.eq(1);
+    expect(propertyRenderer.find("input.components-text-editor").length).to.eq(1);
   });
 
   it("calls onEditCommit on Enter key when editing", async () => {

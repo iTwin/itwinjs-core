@@ -84,7 +84,7 @@ describe("PropertyGrid", () => {
       expect(categoryBlock.exists(), "Second category block does not exist").to.be.true;
     });
 
-    it("if property record has links propertry set and onClick is not set, sets onClick property, otherwise not", async () => {
+    it("if property record has links property set and onClick is not set, sets onClick property, otherwise not", async () => {
       const testMatcher = (_displayValue: string) => [];
       const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       testRecord.links = {
@@ -191,7 +191,7 @@ describe("PropertyGrid", () => {
       expect(testNestedRecord2.links!.onClick).to.be.equal(propertyLinkClickFn);
     });
 
-    describe("default onPropertyLinkClick behaviour", () => {
+    describe("default onPropertyLinkClick behavior", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
       let testRecord: PropertyRecord;
       let wrapper: ReactWrapper<any, Readonly<{}>, React.Component<{}, {}, any>>;
@@ -290,10 +290,12 @@ describe("PropertyGrid", () => {
         await TestUtils.flushAsyncOperations();
         wrapper.update();
 
+        // cSpell:disable
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "pw://server.bentley.com:datasource-01/Documents/ProjectName"), "pw://server.bentley.com:datasource-01/Documents/ProjectName");
         expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+        // cSpell:enable
       });
     });
 
@@ -649,7 +651,7 @@ describe("PropertyGrid", () => {
       categoryBlock.find(".components--clickable").simulate("click");
       wrapper.update();
 
-      expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
 
       const inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);
@@ -703,7 +705,7 @@ describe("PropertyGrid", () => {
 
       categoryBlock.find(".components--clickable").simulate("click");
       wrapper.update();
-      expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
 
       const inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);

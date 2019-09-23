@@ -7,9 +7,9 @@
 import * as React from "react";
 
 import { RelativePosition, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { Timer, BodyText, Point, PointProps } from "@bentley/ui-core";
+import { Timer, BodyText, Point, PointProps, Icon } from "@bentley/ui-core";
 
-import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs, Icon } from "../../../ui-framework";
+import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs } from "../../../ui-framework";
 
 import "./CursorPrompt.scss";
 

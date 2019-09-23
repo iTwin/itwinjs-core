@@ -36,7 +36,7 @@ import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 import "./Table.scss";
 
-const TABLE_ROW_HEIGHT = 25;
+const TABLE_ROW_HEIGHT = 27;
 
 /**
  * Specifies table selection target.

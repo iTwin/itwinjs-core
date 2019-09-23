@@ -91,7 +91,7 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 
 import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
-import { AccudrawTools } from "../../tools/AccudrawTools";
+import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
@@ -709,7 +709,8 @@ class FrontstageToolWidget extends React.Component {
         AppTools.tool1, AppTools.tool2, this._groupItemDef,
         this._saveContentLayout, this._restoreContentLayout,
         this._startCursorPopup, this._addCursorPopups, this._endCursorPopup,
-        AccudrawTools.addMenuButton, AccudrawTools.hideMenuButton, AccudrawTools.showCalculator, AccudrawTools.showInputEditor,
+        AccuDrawPopupTools.addMenuButton, AccuDrawPopupTools.hideMenuButton, AccuDrawPopupTools.showCalculator,
+        AccuDrawPopupTools.showAngleEditor, AccuDrawPopupTools.showLengthEditor, AccuDrawPopupTools.showHeightEditor,
       ],
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: this._anotherGroupStateFunc,

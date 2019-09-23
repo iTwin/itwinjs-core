@@ -27,18 +27,23 @@
     &::-webkit-input-placeholder {  color: $buic-foreground-disabled; }
     &::placeholder {                color: $buic-foreground-disabled; }
 
-    &[disabled],
+    &[disabled] {
+
+      background-color:   $buic-background-control-disabled;
+      color:              $buic-foreground-disabled;
+      cursor:             not-allowed;
+    }
+
     &[readonly] {
 
-        background-color:   $buic-background-control-disabled;
-        color:              $buic-foreground-muted;
-        cursor:             not-allowed;
+      color:              $buic-foreground-muted;
+      cursor:             default;
     }
 
     &:focus {
 
-        border-color:       $buic-inputs-border;
-        outline:            0px;
-        box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
+      border-color:       $buic-inputs-border;
+      outline:            0px;
+      box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
     }
 }

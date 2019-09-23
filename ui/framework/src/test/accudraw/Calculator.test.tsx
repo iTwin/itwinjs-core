@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 
 import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { CalculatorOperator, CalculatorEngine } from "../../ui-framework/accudraw/CalculatorEngine";
-import { Icon } from "../../ui-framework/shared/IconComponent";
+import { Icon } from "@bentley/ui-core";
 
 describe("Calculator", () => {
 
@@ -29,6 +29,14 @@ describe("Calculator", () => {
 
   it("renders correctly", () => {
     shallow(<Calculator />).should.matchSnapshot();
+  });
+
+  it("should support initialValue", () => {
+    const wrapper = mount(<Calculator engine={new CalculatorEngine()} initialValue={100} />);
+
+    expect(wrapper.state("displayValue")).to.eq("100");
+
+    wrapper.unmount();
   });
 
   it("clicking on 1 button should put it in display", () => {

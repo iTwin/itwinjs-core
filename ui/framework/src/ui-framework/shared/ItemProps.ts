@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { IconProps } from "./IconComponent";
+import { IconProps } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ToolItemDef } from "./ToolItemDef";

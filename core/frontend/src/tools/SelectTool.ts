@@ -11,7 +11,7 @@ import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes } from "../properties/EditorParams";
+import { PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
 import { Pixel } from "../rendering";
@@ -102,15 +102,15 @@ export class SelectionTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.ButtonGroupData,
             buttons: [
-              { iconClass: "icon icon-select-single" },
-              { iconClass: "icon icon-select-line" },
-              { iconClass: "icon icon-select-box" },
+              { iconSpec: "icon-select-single" },
+              { iconSpec: "icon-select-line" },
+              { iconSpec: "icon-select-box" },
             ],
-          },
+          } as ButtonGroupEditorParams,
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
       enum: {
@@ -137,18 +137,18 @@ export class SelectionTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.ButtonGroupData,
             buttons: [
-              { iconClass: "icon icon-replace" },
-              { iconClass: "icon icon-select-plus" },
+              { iconSpec: "icon-replace" },
+              { iconSpec: "icon-select-plus" },
               {
-                iconClass: "icon icon-select-minus",
+                iconSpec: "icon-select-minus",
                 isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
               },
             ],
-          },
+          } as ButtonGroupEditorParams,
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
       enum: {

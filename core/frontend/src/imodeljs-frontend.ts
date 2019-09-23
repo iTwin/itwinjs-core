@@ -74,6 +74,9 @@ export * from "./properties/Record";
 export * from "./properties/Value";
 export * from "./properties/ToolSettingsValue";
 export * from "./properties/PrimitiveTypes";
+export * from "./properties/BaseQuantityDescription";
+export * from "./properties/AngleDescription";
+export * from "./properties/LengthDescription";
 export * from "./SolarCalculate";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

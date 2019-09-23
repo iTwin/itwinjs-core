@@ -7,10 +7,17 @@ import {
   PropertyRecord, PrimitiveValue, PropertyValueFormat,
   PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
   ParseResults,
+  ButtonGroupEditorParams,
+  ColorEditorParams,
+  CustomFormattedNumberParams,
+  BasePropertyEditorParams,
+  PropertyEditorInfo,
 } from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { ColorByName } from "@bentley/imodeljs-common";
+
+// cSpell:ignore buttongroup
 
 // tslint:disable: completed-docs
 
@@ -49,7 +56,7 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
-  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
     const value: PrimitiveValue = {
       displayValue,
       value: rawValue,
@@ -61,6 +68,9 @@ export class TestUtils {
       name,
       typename: "string",
     };
+
+    if (editorInfo)
+      description.editor = editorInfo;
 
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -141,15 +151,15 @@ export class TestUtils {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconClass: "icon-yellow" },
-            { iconClass: "icon-red" },
-            { iconClass: "icon-green" },
+            { iconSpec: "icon-yellow" },
+            { iconSpec: "icon-red" },
+            { iconSpec: "icon-green" },
             {
-              iconClass: "icon-blue",
+              iconSpec: "icon-blue",
               isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
             },
           ],
-        },
+        } as ButtonGroupEditorParams,
       ],
     };
   }
@@ -202,7 +212,7 @@ export class TestUtils {
               ColorByName.pink as number,
             ],
             numColumns: 2,
-          },
+          } as ColorEditorParams,
         ],
       },
     };
@@ -236,7 +246,7 @@ export class TestUtils {
 
   private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
 
-  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string) {
+  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string, editorParams?: BasePropertyEditorParams[]) {
 
     const value: PrimitiveValue = {
       displayValue: displayVal,
@@ -262,10 +272,16 @@ export class TestUtils {
                 return { value: rtnValue };
               }
             },
-          },
+          } as CustomFormattedNumberParams,
         ],
       },
     };
+
+    if (editorParams) {
+      editorParams.forEach((params: BasePropertyEditorParams) => {
+        description.editor!.params!.push(params);
+      });
+    }
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;

@@ -6,9 +6,9 @@
 
 import * as React from "react";
 
+import { Icon } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { StringGetter } from "../shared/ItemProps";
-import { Icon } from "../shared/IconComponent";
 
 /** A set of helper methods for various props
  * @public

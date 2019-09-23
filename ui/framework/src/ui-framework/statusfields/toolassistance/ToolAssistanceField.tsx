@@ -15,7 +15,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import {
   SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle,
+  HorizontalTabs, UiCore, LabeledToggle, Icon,
 } from "@bentley/ui-core";
 import {
   ToolAssistance, ToolAssistanceDialog, FooterPopup,
@@ -23,7 +23,7 @@ import {
 } from "@bentley/ui-ninezone";
 
 import {
-  UiFramework, StatusFieldProps, StatusBarFieldId, Icon, MessageManager,
+  UiFramework, StatusFieldProps, StatusBarFieldId, MessageManager,
   FrontstageManager, ToolAssistanceChangedEventArgs, ToolIconChangedEventArgs, CursorPrompt,
 } from "../../../ui-framework";
 

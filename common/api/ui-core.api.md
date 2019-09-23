@@ -666,6 +666,9 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
     render(): JSX.Element;
 }
 
+// @public
+export const Icon: React.FunctionComponent<IconProps>;
+
 // @alpha
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
@@ -677,6 +680,14 @@ export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
 }
+
+// @public
+export interface IconProps {
+    iconSpec?: IconSpec;
+}
+
+// @public
+export type IconSpec = string | React.ReactNode;
 
 // @beta
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
@@ -699,11 +710,14 @@ export interface ImageCheckBoxProps extends CommonProps {
 // @public
 export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    setFocus?: boolean;
 }
 
 // @public
@@ -1334,14 +1348,17 @@ export interface SearchBoxProps extends CommonProps {
 // @public
 export class Select extends React.PureComponent<SelectProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: string[] | {
         [key: string]: string;
     };
+    setFocus?: boolean;
 }
 
 // @beta
@@ -1588,6 +1605,8 @@ export const Title2: React.FunctionComponent<TextProps>;
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     constructor(props: ToggleProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     componentDidUpdate(prevProps: ToggleProps): void;
     // (undocumented)
     static defaultProps: Partial<ToggleProps>;
@@ -1610,6 +1629,7 @@ export interface ToggleProps extends CommonProps {
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
     rounded?: boolean;
+    setFocus?: boolean;
     showCheckmark?: boolean;
 }
 

@@ -2,13 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Accudraw */
+/** @module AccuDraw */
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput } from "@bentley/ui-core";
+import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput, Icon } from "@bentley/ui-core";
 
-import { Icon } from "../shared/IconComponent";
 import { SquareButton, SquareButtonProps } from "./SquareButton";
 import { CalculatorOperator, CalculatorEngine } from "./CalculatorEngine";
 
@@ -19,18 +18,20 @@ import backspaceIcon from "./backspace.svg";
 // cSpell:ignore plusmn
 
 /** @alpha */
-export type CalculatorOkFunc = (value: number) => void;
+export type OnCommitFunc = (value: number) => void;
 /** @alpha */
-export type CalculatorCancelFunc = () => void;
+export type OnCancelFunc = () => void;
 
 /** @alpha */
 export interface CalculatorProps extends CommonProps {
+  /** Initial value */
+  initialValue?: number;
   /** Icon to display beside the calculated result */
   resultIcon?: React.ReactNode;
   /** A function to be run when the OK button is clicked */
-  onOk?: CalculatorOkFunc;
+  onOk?: OnCommitFunc;
   /** A function to be run when the Cancel button is clicked */
-  onCancel?: CalculatorCancelFunc;
+  onCancel?: OnCancelFunc;
 
   /** @internal  Calculator state machine. */
   engine: CalculatorEngine;
@@ -56,8 +57,12 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
   constructor(props: CalculatorProps) {
     super(props);
 
+    let displayValue = "0";
+    if (this.props.initialValue)
+      displayValue = this.props.engine.processValue(this.props.initialValue.toString());
+
     this.state = {
-      displayValue: "0",
+      displayValue,
     };
   }
 

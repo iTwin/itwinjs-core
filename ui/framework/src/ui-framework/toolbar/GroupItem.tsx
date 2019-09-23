@@ -8,7 +8,7 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
@@ -17,7 +17,6 @@ import {
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
-import { Icon, IconSpec } from "../shared/IconComponent";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";

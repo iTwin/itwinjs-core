@@ -10,9 +10,9 @@ import {
   BackstageItemProps as NZ_BackstageItemProps,
 } from "@bentley/ui-ninezone";
 import { LabelProps, DescriptionProps, TooltipProps } from "../shared/ItemProps";
-import { IconProps, IconSpec } from "../shared/IconComponent";
 import { PropsHelper } from "../utils/PropsHelper";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { IconProps, IconSpec } from "@bentley/ui-core";
 
 /** Base properties for a [[Backstage]] item.
  * @public

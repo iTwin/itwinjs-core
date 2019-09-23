@@ -61,5 +61,11 @@
     "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
     "WebGLContextLost": "The WebGL rendering context was lost. Closing other browser tabs before reloading the page may help.",
     "Details": "In case you're interested in the details:"
+  },
+  "Properties": {
+    "Angle": "Angle",
+    "Length": "Length",
+    "UnableToParseAngle": "Unable to parse angle value",
+    "UnableToParseLength": "Unable to parse length value"
   }
 }

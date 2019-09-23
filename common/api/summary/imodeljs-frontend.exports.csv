@@ -28,6 +28,7 @@ alpha;ActionItemInsertSpec
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
+beta;AngleDescription 
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
@@ -45,6 +46,7 @@ internal;BackgroundTerrainTileTreeReference
 alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
+beta;class BaseQuantityDescription 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -199,6 +201,7 @@ public;IntersectDetail
 alpha;ItemField
 alpha;JsonEditorParams 
 internal;KeyinStatus
+beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 beta;LinkElementsInfo
 internal;LoadSavedPluginsResult
@@ -270,7 +273,7 @@ beta;PrimitiveValue
 alpha;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
-beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams
+beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue

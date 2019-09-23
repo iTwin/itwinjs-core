@@ -6,7 +6,8 @@
 
 import * as React from "react";
 
-import { IconProps } from "../shared/IconComponent";
+import { IconProps } from "@bentley/ui-core";
+
 import { WidgetState } from "./WidgetDef";
 import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";

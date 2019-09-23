@@ -707,6 +707,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
+          className="core-context-submenu-popup"
           opened={this.state.opened}
           selectedIndex={0}
           direction={renderDirection}

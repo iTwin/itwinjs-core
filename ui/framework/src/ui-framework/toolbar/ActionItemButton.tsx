@@ -6,10 +6,9 @@
 
 import * as React from "react";
 
-import { CommonProps, SizeProps } from "@bentley/ui-core";
+import { CommonProps, SizeProps, Icon } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 
-import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";

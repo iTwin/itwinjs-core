@@ -6,15 +6,15 @@
 
 import * as React from "react";
 
+import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
+import { CommonProps, Icon } from "@bentley/ui-core";
+import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
+
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { CommandItemDef } from "../shared/CommandItemDef";
-import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
-import { CommonProps } from "@bentley/ui-core";
-import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public

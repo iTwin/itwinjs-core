@@ -39,6 +39,7 @@ export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";
 
+export * from "./ui-core/icons/IconComponent";
 export * from "./ui-core/icons/SvgPath";
 export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";

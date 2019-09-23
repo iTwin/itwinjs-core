@@ -7,13 +7,12 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps, SizeProps, Icon } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { Icon } from "../shared/IconComponent";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { BetaBadge } from "../betabadge/BetaBadge";

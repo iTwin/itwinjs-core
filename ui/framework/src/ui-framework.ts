@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore safearea
+
 export * from "./ui-framework/UiFramework";
 
 export * from "./ui-framework/SessionState";
@@ -170,7 +173,7 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
 
-export * from "./ui-framework/accudraw/AccudrawUiManager";
+export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
 export * from "./ui-framework/accudraw/MenuButton";

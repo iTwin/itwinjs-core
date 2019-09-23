@@ -869,7 +869,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
-    render(): JSX.Element | null;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<CustomNumberEditorState>;
     }
@@ -2659,7 +2659,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     // (undocumented)
     getValue(): string;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<TextEditorState>;
     }
