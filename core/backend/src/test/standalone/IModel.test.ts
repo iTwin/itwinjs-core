@@ -575,6 +575,7 @@ describe("iModel", () => {
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
     assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
       imodel1.models.getSubModel(rootSubject.id); // throws error
@@ -598,6 +599,7 @@ describe("iModel", () => {
       const childLocalId = Id64.getLocalId(childId);
       const childBcId = Id64.getBriefcaseId(childId);
       if (childElement instanceof InformationPartitionElement) {
+        assert.isTrue(imodel1.elements.hasSubModel(childElement.id));
         const childSubModel: Model = imodel1.models.getSubModel(childElement.id);
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
@@ -612,6 +614,7 @@ describe("iModel", () => {
           assert.isTrue(childElement.code.value === "Repository Links");
         }
       } else if (childElement instanceof Subject) {
+        assert.isFalse(imodel1.elements.hasSubModel(childElement.id));
         if (childLocalId === 19 && childBcId === 0) {
           assert.isTrue(childElement instanceof Subject);
           assert.isTrue(childElement.code.value === "DgnV8:mf3, A", "Subject should have code value of DgnV8:mf3, A");

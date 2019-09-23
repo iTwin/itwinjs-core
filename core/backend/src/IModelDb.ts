@@ -1321,8 +1321,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<T>(this.getModelProps(modelId));
     }
 
-    /**
-     * Read the properties for a Model as a json string.
+    /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @return a json string with the properties of the model.
      */
@@ -1563,11 +1562,30 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
-      const childIds: Id64String[] = [];
-      for (const row of rows)
-        childIds.push(Id64.fromJSON(row.id));
-      return childIds;
+      const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
+        statement.bindId("elementId", elementId);
+        const childIds: Id64String[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          childIds.push(statement.getValue(0).getId());
+        }
+        return childIds;
+      });
+    }
+
+    /** Returns true if the specified Element has a sub-model.
+     * @see [[IModelDb.Models.getSubModel]]
+     */
+    public hasSubModel(elementId: Id64String): boolean {
+      if (IModel.rootSubjectId === elementId) {
+        return false; // Special case since the RepositoryModel does not sub-model the root Subject
+      }
+      // A sub-model will have the same Id value as the element it is describing
+      const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ECInstanceId=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", elementId);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
     }
 
     /** Get the root subject element. */
