@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -10,7 +11,7 @@ import {
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
   createRandomDescriptor, createRandomId, createRandomSelectionScope, createRandomContent,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -18,7 +19,7 @@ import {
   SelectionScopeRequestOptions,
   HierarchyRpcRequestOptions,
   Node, PageOptions, KeySet, InstanceKey, NodeKey,
-  Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement,
+  Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement, PresentationError,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager } from "../RulesetVariablesManager";
 import { PresentationManager } from "../PresentationManager";
@@ -26,6 +27,7 @@ import { PresentationRpcImplStateless } from "../PresentationRpcImplStateless";
 import { Presentation } from "../Presentation";
 import { RulesetManager } from "../RulesetManager";
 import "./IModelHostSetup";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 
 describe("PresentationRpcImplStateless", () => {
 
@@ -186,6 +188,50 @@ describe("PresentationRpcImplStateless", () => {
         expect(actualResult.result!.nodes).to.deep.eq(getChildNodeResult.map(Node.toJSON));
         expect(actualResult.result!.count).to.eq(getChildNodesCountResult);
       });
+
+      it("should return error result if manager throws", async () => {
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
+        expect(actualResult.errorMessage).to.eq("test error");
+      });
+
+      it("should return error result if manager throws and `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
+        expect(actualResult.errorMessage).to.eq("test error");
+      });
+
     });
 
     describe("getNodes", () => {
@@ -443,6 +489,36 @@ describe("PresentationRpcImplStateless", () => {
         const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
         expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+      });
+
+      it("does not await for load to complete", async () => {
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        const result = new ResolvablePromise<void>();
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+        await result.resolve();
+      });
+
+      it("logs warning if load throws", async () => {
+        const loggerSpy = sinon.spy(Logger, "logWarning");
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+        expect(loggerSpy).to.be.calledOnce;
       });
 
     });

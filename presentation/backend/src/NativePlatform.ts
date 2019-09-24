@@ -49,6 +49,7 @@ export const createDefaultNativePlatform = (id: string, localeDirectories: strin
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
         default: return PresentationStatus.Error;
       }
     }

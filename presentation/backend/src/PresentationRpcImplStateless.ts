@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -16,7 +16,7 @@ import {
   PresentationRpcResponse, PresentationRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
-  LabelRpcRequestOptions, PresentationRpcInterface,
+  LabelRpcRequestOptions, PresentationRpcInterface, Ruleset,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -99,19 +99,24 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
     } catch (e) {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
+
+    const resultPromise = request(requestContext, options)
+      .then((result: TResult) => this.successResponse(result))
+      .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
+
     if (this.requestTimeout === 0)
-      return this.successResponse(await request(requestContext, options));
+      return resultPromise;
+
     let timeout: NodeJS.Timeout;
-    const timingOut = new Promise((_resolve, reject) => {
+    const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
         reject("Timed out");
       }, this.requestTimeout);
     });
-    const result = await Promise.race([request(requestContext, options), timingOut])
-      .then((value) => this.successResponse(value as TResult))
+
+    return Promise.race([resultPromise, timeoutPromise])
       .catch(() => this.errorResponse(PresentationStatus.BackendTimeout))
       .finally(() => clearTimeout(timeout));
-    return result;
   }
 
   public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {
@@ -156,7 +161,8 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, async (requestContext, options) => {
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
       // tslint:disable-next-line: no-floating-promises
-      this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options);
+      this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options)
+        .catch((e) => Logger.logWarning("Presentation", `Error loading '${getRulesetId(requestOptions)}' hierarchy: ${e}`));
     });
   }
 
@@ -235,6 +241,18 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
     };
   }
 }
+
+// istanbul ignore next: used only for log messages
+const getRulesetId = (props: { rulesetOrId?: string | Ruleset; rulesetId?: string }) => {
+  if (props.rulesetOrId) {
+    if (typeof props.rulesetOrId === "object")
+      return props.rulesetOrId.id;
+    return props.rulesetOrId;
+  }
+  if (props.rulesetId)
+    return props.rulesetId;
+  return "<unknown>";
+};
 
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json)

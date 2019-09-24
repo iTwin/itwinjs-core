@@ -83,6 +83,13 @@ describe("default NativePlatform", () => {
     await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
+  it("throws on handleRequest cancelation response", async () => {
+    addonMock
+      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+      .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }); });
+    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
+  });
+
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))

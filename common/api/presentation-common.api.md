@@ -950,6 +950,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
 export enum PresentationStatus {
     BackendOutOfSync = 65542,
     BackendTimeout = 65543,
+    Canceled = 1,
     Error = 65536,
     InvalidArgument = 65539,
     InvalidResponse = 65540,
