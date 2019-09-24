@@ -11,13 +11,12 @@ import {
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
-  CategorySelectorState,
   DisplayStyle3dState,
   IModelConnection,
-  ModelSelectorState,
   SpatialViewState,
   ViewState,
 } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
   private _defaultViewId = Id64.invalid;
@@ -87,84 +86,33 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
     if (Id64.isInvalid(this._defaultViewId))
       this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName });
 
-    const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureViewState(iModel) : await iModel.views.load(this._defaultViewId);
+    const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureSpatialView(iModel) : await iModel.views.load(this._defaultViewId);
     this._views.set(this._defaultViewId, selectedView);
   }
 
-  private manufactureViewState(iModel: IModelConnection): SpatialViewState {
+  // create a new spatial view initialized to show the project extents from top view. Model and
+  // category selectors are empty, so this is really only useful for testing backgroundMaps and
+  // reality models.
+  private manufactureSpatialView(iModel: IModelConnection): SpatialViewState {
     const ext = iModel.projectExtents;
-    const viewDefinitionProps = {
-      classFullName: SpatialViewState.classFullName,
-      userLabel: "Manufactured View",
-      model: Id64.invalid,
-      code: {
-        spec: Id64.invalid,
-        value: "Manufactured View",
-        scope: Id64.invalid,
-      },
-      categorySelectorId: Id64.invalid,
-      displayStyleId: Id64.invalid,
-      modelSelectorId: Id64.invalid,
-      cameraOn: false,
-      origin: ext.low,
-      extents: ext.high.minus(ext.low),
-      camera: {
-        lens: 90,
-        focusDist: ext.high.z - ext.low.z,
-        eye: { x: 0, y: 0, z: 0 },
-      },
-    };
 
-    const codeProps = {
-      spec: Id64.invalid,
-      value: "",
-      scope: Id64.invalid,
-    };
+    // start with a new "blank" spatial view to show the extents of the project, from top view
+    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
 
-    const categorySelectorProps = {
-      classFullName: CategorySelectorState.classFullName,
-      model: Id64.invalid,
-      code: codeProps,
-      categories: [],
-    };
+    // turn on the background map
+    const style = blankView.displayStyle as DisplayStyle3dState;
+    const viewFlags = style.viewFlags;
+    viewFlags.backgroundMap = true;
+    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
 
-    const modelSelectorProps = {
-      classFullName: ModelSelectorState.classFullName,
-      model: Id64.invalid,
-      code: codeProps,
-      models: [],
-    };
+    style.backgroundColor = ColorDef.white;
 
-    const displayStyleProps = {
-      classFullName: DisplayStyle3dState.classFullName,
-      model: Id64.invalid,
-      code: codeProps,
-      jsonProperties: {
-        styles: {
-          backgroundColor: 0xffffff,
-          viewflags: {
-            backgroundMap: true,
-          },
-          environment: {
-            ground: {
-              display: true,
-            },
-            sky: {
-              display: true,
-            },
-          },
-        },
-      },
-    };
+    // turn on the skybox in the environment
+    const env = style.environment;
+    env.sky.display = true;
+    style.environment = env; // call to accessor to get the json properties to reflect the changes
 
-    const props = {
-      viewDefinitionProps,
-      categorySelectorProps,
-      modelSelectorProps,
-      displayStyleProps,
-    };
-
-    return SpatialViewState.createFromProps(props, iModel);
+    return blankView;
   }
 }
 

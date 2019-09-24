@@ -1559,7 +1559,7 @@ export class SpatialModelTileTrees {
 }
 
 /** Defines a view of one or more SpatialModels.
- * The list of viewed models is stored by the ModelSelector.
+ * The list of viewed models is stored in the ModelSelector.
  * @public
  */
 export class SpatialViewState extends ViewState3d {
@@ -1568,12 +1568,32 @@ export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
   private readonly _treeRefs: SpatialModelTileTrees;
 
+  /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
+   * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
+   * callers will modify the state to suit specific needs.
+   * @param iModel The IModelConnection for the new SpatialViewState
+   * @param origin The origin for the new SpatialViewState
+   * @param extents The extents for the new SpatialViewState
+   * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
+   * @beta
+   */
+  public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
+    const blank = {} as any;
+    const cat = new CategorySelectorState(blank, iModel);
+    const modelSelectorState = new ModelSelectorState(blank, iModel);
+    const displayStyleState = new DisplayStyle3dState(blank, iModel);
+    const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
+    view.setOrigin(origin);
+    view.setExtents(extents);
+    if (undefined !== rotation)
+      view.setRotation(rotation);
+    return view;
+  }
+
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
     const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
-
-    // use "new this" so subclasses are correct.
     return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
   }
 

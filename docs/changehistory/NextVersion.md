@@ -10,56 +10,15 @@ ignore: true
 * Made display system enhancement for rendering directly to screen. This significantly improves performance on iOS and some non-Chrome browsers. For models that aren't bound by primitive count, this can be a more than doubling of FPS.
   * To enable this enhancement, see `RenderSystem.Options.directScreenRendering`.
 
-## Geometry
+## Blank IModelConnections
 
-### Summary
-
-* PolyfaceQuery method to partition by connectivity
-* Optimize triangle flipping
-* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
-
-### Details
-
-* `PolyfaceQuery` methods
-  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has an edge in common with others in the same array.
-  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has (at least) a vertex in common with others in the same array.
-  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
-    * Return an array of polyfaces
-    * Each polyface has all the facets from one of the input facet index arrays.
-  * `PolyfaceVisitor`
-    * `myVisitor.setNumWrap (numWrap: number)`
-      * set numWrap for subsequent visits.
-  * `PolyfaceBuilder`
-    * `myBuilder.reversed: boolean`
-      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
-      * Carry `twoSided` flag through polyface builder actions.
-  * `PolyfaceQuery`
-    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-  * `UnionFindContext`
-    * New class to implement the UnionFind algorithm on a set of integers.
-  * `HalfEdge`
-    * [HalfEdge.setMaskAroundEdge]($geometry)
-    * [HalfEdge.clearMaskAroundEdge]($geometry)
-  * `HalfEdgeGraph`
-    * [HalfEdgeGraph.grabMask]($geometry)
-    * [HalfEdgeGraph.grabMask]($geometry)
-  * `Triangulation`
-    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
- * Classes for 2d range searching.
-    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
-    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
-    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
-    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
+The new method `IModelConnection.createBlank` provides a way for applications to create an `IModelConnection` that is not connected to an iModel or a backend. This is useful for using iModel.js to show *just* Reality data (reality meshes, point clouds, terrain, etc.), background maps, and other non-iModel-based graphics without requiring a backend server. There is also a new convenience method `SpatialViewState.createBlank` to create a *blank* spatial view appropriate for these non-iModel based visualizations. See the BlankConnections learning article for further details.
 
 ## Favorite Properties
 
 ### Summary
 
-* Favorite properties manager stores favorite properties and lets checking if a given field should be displayed as favorite.
+* Favorite properties manager stores favorite properties and determines whether a given field should be displayed as favorite.
 * `PresentationPropertyDataProvider` puts all favorite properties into an additional 'Favorite' category that's displayed
 at the top and is auto-expanded.
 
@@ -68,7 +27,7 @@ at the top and is auto-expanded.
 * `FavoritePropertyManager` (accessed through singleton `Presentation.favoriteProperties`) in `@bentley/presentation-frontend`
   * `add(field: Field): void`
     * For `PropertiesField` and `NestedContentField` - marks all properties in the field as favorite.
-    * For other types of fields - marks the field as favorite by it's name.
+    * For other types of fields - marks the field as favorite by its name.
   * `remove(field: Field): void`
     * For `PropertiesField` and `NestedContentField` - removes all properties in the field from favorites list.
     * For other types of fields - removes the field from favorites list.
@@ -121,4 +80,48 @@ private async buildContextMenu(args: PropertyGridContextMenuArgs) {
   }
 }
 ```
+## Geometry
+
+### Summary
+
+* PolyfaceQuery method to partition by connectivity
+* Optimize triangle flipping
+* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
+
+### Details
+
+* `PolyfaceQuery` methods
+  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has an edge in common with others in the same array.
+  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has (at least) a vertex in common with others in the same array.
+  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
+    * Return an array of polyfaces
+    * Each polyface has all the facets from one of the input facet index arrays.
+  * `PolyfaceVisitor`
+    * `myVisitor.setNumWrap (numWrap: number)`
+      * set numWrap for subsequent visits.
+  * `PolyfaceBuilder`
+    * `myBuilder.reversed: boolean`
+      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
+      * Carry `twoSided` flag through polyface builder actions.
+  * `PolyfaceQuery`
+    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+  * `UnionFindContext`
+    * New class to implement the UnionFind algorithm on a set of integers.
+  * `HalfEdge`
+    * [HalfEdge.setMaskAroundEdge]($geometry)
+    * [HalfEdge.clearMaskAroundEdge]($geometry)
+  * `HalfEdgeGraph`
+    * [HalfEdgeGraph.grabMask]($geometry)
+    * [HalfEdgeGraph.grabMask]($geometry)
+  * `Triangulation`
+    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
+ * Classes for 2d range searching.
+    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
+    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
+    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
+    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
 

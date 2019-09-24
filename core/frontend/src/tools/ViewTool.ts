@@ -2005,27 +2005,26 @@ export class WindowAreaTool extends ViewTool {
     }
 
     const corners = this.computeWindowCorners();
-    if (!corners)
+    if (undefined === corners)
       return;
 
     let delta: Vector3d;
     const vp = this.viewport!;
+    const view = vp.view;
     const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
-    if (vp.view.is3d() && vp.view.isCameraOn) {
-      const cameraView = vp.view as ViewState3d;
-
+    if (view.is3d() && view.isCameraOn) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
       const windowRange = new ViewRect(windowArray[0].x, windowArray[0].y, windowArray[1].x, windowArray[1].y);
 
       let npcZValues = vp.determineVisibleDepthRange(windowRange);
-      if (!npcZValues)
+      if (undefined === npcZValues)
         npcZValues = { minimum: 0, maximum: ViewManip.getFocusPlaneNpc(vp) };
 
-      const lensAngle = cameraView.getLensAngle();
+      const lensAngle = view.getLensAngle();
 
       vp.worldToNpcArray(corners);
       corners[0].z = corners[1].z = npcZValues.maximum;
@@ -2040,9 +2039,9 @@ export class WindowAreaTool extends ViewTool {
       const focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2));
 
       const newTarget = corners[0].interpolate(.5, corners[1]);
-      const newEye = newTarget.plusScaled(cameraView.getZVector(), focusDist);
+      const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle) !== ViewStatus.Success)
+      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
         return;
     } else {
       vp.rotation.multiplyVectorArrayInPlace(corners);
@@ -2050,16 +2049,16 @@ export class WindowAreaTool extends ViewTool {
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
       // get the view extents
-      delta.z = vp.view.getExtents().z;
+      delta.z = view.getExtents().z;
 
       // make sure its not too big or too small
-      if (ViewStatus.Success !== vp.view.validateViewDelta(delta, true))
+      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
         return;
 
-      vp.view.setExtents(delta);
+      view.setExtents(delta);
 
       const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
-      vp.view.setOrigin(Point3d.createFrom(originVec));
+      view.setOrigin(Point3d.createFrom(originVec));
     }
 
     vp.synchWithView(true);

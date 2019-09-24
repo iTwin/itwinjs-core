@@ -145,7 +145,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
       this._markers.push(marker);
     };
 
-    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.center);
+    createBoundsMarker(this.iModel.rootSubject.name, this._extents.center);
     createBoundsMarker("low", this._extents.low);
     createBoundsMarker("high", this._extents.high);
   }

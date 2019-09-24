@@ -1680,7 +1680,9 @@ export enum FillFlags {
 
 // @public
 export class FontMap {
-    constructor(props: FontMapProps);
+    constructor(props?: FontMapProps);
+    // (undocumented)
+    addFonts(fonts: FontProps[]): void;
     // (undocumented)
     readonly fonts: Map<number, FontProps>;
     getFont(arg: string | number): FontProps | undefined;
@@ -2476,14 +2478,14 @@ export enum ImageSourceFormat {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(iModelToken: IModelToken);
+    protected constructor(iModelToken?: IModelToken);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     static readonly dictionaryId: Id64String;
     readonly ecefLocation: EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
-    readonly globalOrigin: Point3d;
+    globalOrigin: Point3d;
     readonly iModelToken: IModelToken;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
@@ -2499,7 +2501,7 @@ export abstract class IModel implements IModelProps {
     // @internal (undocumented)
     toJSON(): IModelProps;
     // @internal (undocumented)
-    protected _token: IModelToken;
+    protected _token?: IModelToken;
 }
 
 // @beta
@@ -4929,13 +4931,7 @@ export class TerrainSettings {
     readonly heightOriginMode: TerrainHeightOriginMode;
     readonly providerName: TerrainProviderName;
     // (undocumented)
-    toJSON(): {
-        providerName: "CesiumWorldTerrain";
-        exaggeration: number;
-        applyLightng: boolean;
-        heightOrigin: number;
-        heightOriginMode: TerrainHeightOriginMode;
-    };
+    toJSON(): TerrainProps;
 }
 
 // @internal

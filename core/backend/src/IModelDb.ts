@@ -882,7 +882,7 @@ export class IModelDb extends IModel {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -897,7 +897,7 @@ export class IModelDb extends IModel {
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 

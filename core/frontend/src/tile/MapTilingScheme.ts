@@ -65,7 +65,7 @@ export abstract class MapTilingScheme {
   }
 
   /**
-   * Gets the fraction of the  innormalized (0-1) coordinates with at left, bottom.
+   * Gets the fraction of the normalized (0-1) coordinates with at left, bottom.
    *
    * @param x  column
    * @param y  row

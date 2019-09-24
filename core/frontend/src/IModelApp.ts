@@ -274,7 +274,6 @@ export class IModelApp {
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
-    // the startup function may have already allocated any of these members, so first test whether they're present
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
     this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
@@ -286,7 +285,7 @@ export class IModelApp {
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
     this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
-    this._terrainProvider = opts.terrainProvider;       // TBD... (opts.terrainProvider !== undefined) ? opts.terrainProvider : new WorldTerrainProvider();
+    this._terrainProvider = opts.terrainProvider;
 
     this.renderSystem.onInitialized();
     this.viewManager.onInitialized();

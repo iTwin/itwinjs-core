@@ -25,7 +25,13 @@ export interface FontMapProps { fonts: FontProps[]; }
  */
 export class FontMap {
   public readonly fonts = new Map<number, FontProps>();
-  constructor(props: FontMapProps) { props.fonts.forEach((font) => this.fonts.set(font.id, font)); }
+  constructor(props?: FontMapProps) {
+    if (undefined !== props)
+      this.addFonts(props.fonts);
+  }
+  public addFonts(fonts: FontProps[]) {
+    fonts.forEach((font) => this.fonts.set(font.id, font));
+  }
   public toJSON(): FontMapProps {
     const fonts: FontProps[] = [];
     this.fonts.forEach((font) => fonts.push(font));

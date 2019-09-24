@@ -1080,7 +1080,7 @@ export namespace Attachments {
 export class SheetViewState extends ViewState2d {
   /** @internal */
   public static get className() { return "SheetViewDefinition"; }
-  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct

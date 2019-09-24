@@ -73,6 +73,8 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
+    if (!this._imodel.isOpen)
+      return;
     const filename = this._imodel.iModelToken.key!;
     const esvString = await SVTRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);

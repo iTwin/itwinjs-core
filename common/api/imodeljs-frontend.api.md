@@ -44,6 +44,7 @@ import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
 import { ElementAlignedBox2d } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -1528,6 +1529,14 @@ export function bisectRange2d(range: Range3d, takeUpper: boolean): void;
 export function bisectRange3d(range: Range3d, takeUpper: boolean): void;
 
 // @beta
+export interface BlankConnectionProps {
+    extents: Range3dProps;
+    globalOrigin?: XYZProps;
+    location: Cartographic | EcefLocationProps;
+    name: string;
+}
+
+// @beta
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -2918,7 +2927,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 export class GeoServices {
     constructor(iModel: IModelConnection);
     // (undocumented)
-    getConverter(datum?: string): GeoConverter;
+    getConverter(datum?: string): GeoConverter | undefined;
     }
 
 // @internal (undocumented)
@@ -3450,6 +3459,8 @@ export class IModelConnection extends IModel {
     closeSnapshot(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
+    // @beta
+    static createBlank(props: BlankConnectionProps): IModelConnection;
     // @internal
     detachChangeCache(): Promise<void>;
     readonly elements: IModelConnection.Elements;
@@ -3462,15 +3473,19 @@ export class IModelConnection extends IModel {
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @alpha
     readonly hilited: HiliteSet;
-    // @alpha
+    // @beta
+    readonly isBlank: boolean;
+    // @beta
     readonly isClosed: boolean;
-    // @alpha
+    // @beta
     readonly isOpen: boolean;
     readonly isReadonly: boolean;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
     protected _noGcsDefined?: boolean;
+    // @beta
+    readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
     readonly openMode: OpenMode;
@@ -3542,7 +3557,10 @@ export namespace IModelConnection {
         getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner;
         // (undocumented)
         getTileTreeProps(id: string): Promise<TileTreeProps>;
+        // (undocumented)
+        readonly isDisposed: boolean;
         purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
+        reset(): void;
         }
     export class Views {
         // @internal
@@ -6348,7 +6366,7 @@ export class SheetViewState extends ViewState2d {
     // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
-    static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
+    static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
     // @internal
     createScene(context: SceneContext): void;
     // @internal (undocumented)
@@ -6611,6 +6629,8 @@ export class SpatialViewState extends ViewState3d {
     computeFitRange(): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
+    // @beta
+    static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState;
     // @internal (undocumented)

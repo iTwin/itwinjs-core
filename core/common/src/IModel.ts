@@ -96,6 +96,7 @@ export class EcefLocation implements EcefLocationProps {
     this.origin.freeze(); // may not be modified
     this.orientation.freeze(); // may not be modified
   }
+
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
@@ -194,6 +195,7 @@ export abstract class IModel implements IModelProps {
   private _globalOrigin!: Point3d;
   /** An offset to be applied to all spatial coordinates. */
   public get globalOrigin(): Point3d { return this._globalOrigin; }
+  public set globalOrigin(org: Point3d) { org.freeze(); this._globalOrigin = org; }
 
   private _ecefLocation?: EcefLocation;
   private _ecefTrans?: Transform;
@@ -220,21 +222,20 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected _token: IModelToken;
+  protected _token?: IModelToken;
 
   /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this._token; }
+  public get iModelToken(): IModelToken { return this._token!; }
 
   /** @internal */
-  protected constructor(iModelToken: IModelToken) { this._token = iModelToken; }
+  protected constructor(iModelToken?: IModelToken) { this._token = iModelToken; }
 
   /** @internal */
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
-    this._globalOrigin = Point3d.fromJSON(props.globalOrigin);
-    this._globalOrigin.freeze(); // cannot be modified
+    this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
     if (props.ecefLocation)
       this.setEcefLocation(props.ecefLocation);
   }

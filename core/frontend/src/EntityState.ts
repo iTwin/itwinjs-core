@@ -44,7 +44,7 @@ export class EntityState implements EntityProps {
    * @param _state source EntityState for clone
    */
   constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState) {
-    this.classFullName = props.classFullName;
+    this.classFullName = props.classFullName ? props.classFullName : this._ctor.classFullName;
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     this.jsonProperties = props.jsonProperties ? JSON.parse(JSON.stringify(props.jsonProperties)) : {}; // make sure we have our own copy
@@ -94,8 +94,10 @@ export class ElementState extends EntityState implements ElementProps {
     this.code = Code.fromJSON(props.code);
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = props.federationGuid;
-    this.userLabel = props.userLabel;
+    if (undefined !== props.federationGuid)
+      this.federationGuid = props.federationGuid;
+    if (undefined !== props.userLabel)
+      this.userLabel = props.userLabel;
   }
 
   /** @internal */

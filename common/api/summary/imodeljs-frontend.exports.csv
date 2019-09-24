@@ -60,6 +60,7 @@ public;BeWheelEventProps
 internal;BingElevationProvider
 internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
+beta;BlankConnectionProps
 beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):

@@ -23,6 +23,8 @@ import { TileLoadIndicator } from "./TileLoadIndicator";
 import { NotificationsWindow } from "./Notifications";
 import { FpsMonitor } from "./FpsMonitor";
 import { selectFileName } from "./FileOpen";
+import { Cartographic } from "@bentley/imodeljs-common";
+import { Range3d } from "@bentley/geometry-core";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -122,11 +124,25 @@ export class Surface {
 
     tb.addItem(createToolButton({
       className: "bim-icon-property-data",
-      tooltip: "TODO Open null iModel",
-      click: () => alert("TODO: Option to open a 'null' IModelConnection"),
+      tooltip: "Open Blank Connection",
+      click: () => {
+        this.openBlankConnection(); // tslint:disable-line:no-floating-promises
+      },
     }));
 
     return tb;
+  }
+
+  // create a new blank connection for testing backgroundMap and reality models.
+  private async openBlankConnection() {
+    const iModel = IModelConnection.createBlank({
+      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
+      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      name: "blank connection test",
+    });
+
+    const viewer = await this.createViewer({ iModel });
+    viewer.dock(Dock.Full);
   }
 
   private async openIModel(): Promise<void> {
@@ -359,7 +375,7 @@ export class CreateWindowTool extends Tool {
 
   public parseAndRun(...args: string[]): boolean {
     let name: string | undefined;
-    const props: WindowProps = { };
+    const props: WindowProps = {};
 
     for (const arg of args) {
       const parts = arg.split("=");

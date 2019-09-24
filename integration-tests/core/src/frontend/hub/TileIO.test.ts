@@ -563,7 +563,10 @@ describe("mirukuru TileTree", () => {
     if (imodel) {
       // Ensure tiles are not in memory...
       // NB: purge() does not suffice - we have to discard the suppliers and their TreeOwners too, because geometryGuid.
-      imodel.tiles.dispose();
+      // NB: dispose() is not right either - that permanently sets a flag that TileRequests check to determine if they should be cancelled.
+      // reset() is like dispose() except it does not set that flag.
+      imodel.tiles.reset();
+
       // Reset statistics...
       IModelApp.tileAdmin.resetStatistics();
     }

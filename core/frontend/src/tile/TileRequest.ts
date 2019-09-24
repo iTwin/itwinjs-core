@@ -35,7 +35,7 @@ export class TileRequest {
   public get isQueued() { return TileRequest.State.Queued === this._state; }
   public get isCanceled(): boolean {
     // If iModel was closed, cancel immediately
-    if (!this.tile.iModel.isOpen)
+    if (this.tile.iModel.tiles.isDisposed)
       return true;
 
     // After we've received the raw tile data, always finish processing it - otherwise tile may end up in limbo (and producing tile content should be faster than re-requesting raw data).

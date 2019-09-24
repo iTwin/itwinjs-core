@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added support for blank IModelConnections",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Keith.Bentley@bentley.com"
+}
