@@ -10,6 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
 import { UiFramework } from "../UiFramework";
 
+// istanbul ignore next
 class ProjectInfoImpl implements ProjectInfo {
   public readStatus: ProjectReadStatus;
 
@@ -22,6 +23,7 @@ class ProjectInfoImpl implements ProjectInfo {
  * Provides default [[ProjectServices]]
  * @internal
  */
+// istanbul ignore next
 export class DefaultProjectServices implements ProjectServices {
   private _connectClient: ConnectClient;
 

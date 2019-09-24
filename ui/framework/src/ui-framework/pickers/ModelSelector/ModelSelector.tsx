@@ -36,6 +36,7 @@ import "./ModelSelector.scss";
  * Model Selector [[WidgetControl]]
  * @internal
  */
+// istanbul ignore next
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -52,6 +53,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
  * @internal
  * @deprecated - Use [[VisibilityTree]] instead
  */
+// istanbul ignore next
 export class ModelSelectorWidget extends React.Component<
   ModelSelectorWidgetProps,
   ModelSelectorWidgetState

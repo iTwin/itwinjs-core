@@ -125,7 +125,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
   }
 
   public render() {
-    const { className, resultIcon, onOk, onCancel, ...props } = this.props;
+    const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props;
 
     const classNames = classnames(
       "uifw-calculator",

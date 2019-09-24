@@ -19,21 +19,25 @@ import { ProjectInfo } from "./ProjectServices";
 import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
 import { UiFramework } from "../UiFramework";
 
+// istanbul ignore next
 class IModelInfoImpl implements IModelInfo {
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {
   }
 }
 
+// istanbul ignore next
 class VersionInfoImpl implements VersionInfo {
   constructor(public name: string, public description: string, public createdDate: Date, public changeSetId: string, public userCreated: string | undefined, public smallThumbnail: string | undefined, public largeThumbnail: string | undefined) {
   }
 }
 
+// istanbul ignore next
 class ChangeSetInfoImpl implements ChangeSetInfo {
   constructor(public name: string, public description: string, public pushDate: Date, public changeSetId: string, public userCreated: string | undefined, public smallThumbnail: string | undefined, public largeThumbnail: string | undefined) {
   }
 }
 
+// istanbul ignore next
 class IModelUserInfoImpl implements IModelUserInfo {
   constructor(public firstName: string, public lastName: string, public email: string, public id: string = "") {
   }
@@ -43,6 +47,7 @@ class IModelUserInfoImpl implements IModelUserInfo {
  * Provides default [[IModelServices]]
  * @internal
  */
+// istanbul ignore next
 export class DefaultIModelServices implements IModelServices {
   private _hubClient: IModelHubClient;
 

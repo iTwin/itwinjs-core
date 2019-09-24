@@ -71,4 +71,26 @@ describe("CursorPrompt", () => {
     wrapper.unmount();
   });
 
+  it("should close if passed a blank instruction", async () => {
+    const wrapper = mount(<CursorPopupRenderer />);
+    expect(CursorPopupManager.popupCount).to.eq(0);
+
+    const cursorPrompt = new CursorPrompt(20, false);
+    cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"));
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
+
+    expect(CursorPopupManager.popupCount).to.eq(1);
+    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(1);
+
+    cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", ""));
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
+
+    expect(CursorPopupManager.popupCount).to.eq(0);
+    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
 });
