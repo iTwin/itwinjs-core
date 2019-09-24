@@ -91,7 +91,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.1.0";
+  public static interfaceVersion = "1.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -103,6 +103,8 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getNodesCount(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number> { return this.forward(arguments); }
   public async getNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
   public async getFilteredNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
+  /** @beta */
+  public async loadHierarchy(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void> { return this.forward(arguments); }
 
   public async getContentDescriptor(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> { return this.forward(arguments); }
   public async getContentSetSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number> { return this.forward(arguments); }

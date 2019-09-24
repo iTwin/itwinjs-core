@@ -7,6 +7,7 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
 import * as hash from "object-hash";
+import * as sinon from "sinon";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
@@ -25,7 +26,7 @@ import {
   HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  Ruleset, VariableValueTypes,
+  Ruleset, VariableValueTypes, RequestPriority,
 } from "@bentley/presentation-common";
 import { PropertyInfoJSON } from "@bentley/presentation-common/lib/EC";
 import { NodeKeyJSON, ECInstanceNodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -78,10 +79,39 @@ describe("PresentationManager", () => {
 
   describe("constructor", () => {
 
-    it("uses default native library implementation if not overridden", () => {
-      using(new PresentationManager(), (manager) => {
-        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+    describe("uses default native library implementation if not overridden", () => {
+
+      it("creates without props", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager(), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWith(
+            "",
+            [path.join(__dirname, "../assets/locales")],
+            { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+          );
+        });
       });
+
+      it("creates with props", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const testLocale = faker.random.locale();
+        const testTaskAllocations = { [999]: 111 };
+        const props = {
+          id: faker.random.uuid(),
+          localeDirectories: [testLocale, testLocale],
+          taskAllocationsMap: testTaskAllocations,
+        };
+        using(new PresentationManager(props), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWith(
+            props.id,
+            [path.join(__dirname, "../assets/locales"), testLocale],
+            testTaskAllocations,
+          );
+        });
+      });
+
     });
 
     it("uses addon implementation supplied through props", () => {
@@ -112,14 +142,6 @@ describe("PresentationManager", () => {
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
         using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
-        addon.verifyAll();
-      });
-
-      it("sets up locale directories if supplied", () => {
-        const suppliedDirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.resolve(__dirname, "../assets/locales"), "test1", "test2"];
-        addon.setup((x) => x.setupLocaleDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, localeDirectories: suppliedDirs }), (pm: PresentationManager) => { pm; });
         addon.verifyAll();
       });
 
@@ -690,6 +712,29 @@ describe("PresentationManager", () => {
       };
       const result = await manager.getNodePaths(ClientRequestContext.current, options, keyArray, markedIndex);
       verifyWithSnapshot(result, expectedParams);
+    });
+
+    it("requests hierarchy load", async () => {
+      // what the addon receives
+      const expectedParams = {
+        requestId: NativePlatformRequestTypes.LoadHierarchy,
+        params: {
+          rulesetId: getRulesetId(testData.rulesetOrId),
+        },
+      };
+
+      // what addon returns
+      setup("");
+
+      // test
+      const options: HierarchyRequestOptions<IModelDb> = {
+        imodel: imodelMock.object,
+        rulesetOrId: testData.rulesetOrId,
+      };
+      await manager.loadHierarchy(ClientRequestContext.current, options);
+
+      // verify the addon was called with correct params
+      verifyMockRequest(expectedParams);
     });
 
     it("returns content descriptor", async () => {

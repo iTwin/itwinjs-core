@@ -72,6 +72,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.pickImpl(requestOptions).getFilteredNodePaths(token, requestOptions, filterText);
   }
 
+  public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return this.pickImpl(requestOptions).loadHierarchy(token, requestOptions);
+  }
+
   public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {
     return this.pickImpl(requestOptions).getContentDescriptor(token, requestOptions, displayType, keys, selection);
   }
@@ -108,7 +112,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.pickImpl(requestOptions).computeSelection(token, requestOptions, ids, scopeId);
   }
 
-  public async syncClientState(token: IModelToken, options: ClientStateSyncRequestOptions): PresentationRpcResponse {
-    return this._statefulImpl.syncClientState(token, options);
+  public async syncClientState(token: IModelToken, requestOptions: ClientStateSyncRequestOptions): PresentationRpcResponse {
+    return this.pickImpl(requestOptions).syncClientState(token, requestOptions);
   }
 }

@@ -926,6 +926,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
+    // @beta (undocumented)
+    loadHierarchy(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void>;
     // @internal @deprecated
     syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
 }
@@ -948,6 +950,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
 export enum PresentationStatus {
     BackendOutOfSync = 65542,
     BackendTimeout = 65543,
+    Canceled = 1,
     Error = 65536,
     InvalidArgument = 65539,
     InvalidResponse = 65540,
@@ -1217,6 +1220,8 @@ export type RelationshipPath = RelatedClassInfo[];
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
+    // @beta
+    priority?: number;
 }
 
 // @public
@@ -1226,6 +1231,13 @@ export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIMod
     rulesetOrId?: Ruleset | string;
     // @beta
     rulesetVariables?: RulesetVariable[];
+}
+
+// @beta
+export enum RequestPriority {
+    Max,
+    Normal = 1000,
+    Preload = 0
 }
 
 // @public
@@ -1274,6 +1286,8 @@ export class RpcRequestsHandler implements IDisposable {
     getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKeyJSON): Promise<number>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
+    // (undocumented)
+    loadHierarchy(options: HierarchyRequestOptions<IModelToken>): Promise<void>;
     request<TResult, TOptions extends PresentationRpcRequestOptions & {
         imodel: IModelToken;
     }, TArg = any>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;

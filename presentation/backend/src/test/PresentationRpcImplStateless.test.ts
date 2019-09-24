@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -10,7 +11,7 @@ import {
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
   createRandomDescriptor, createRandomId, createRandomSelectionScope, createRandomContent,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -18,7 +19,7 @@ import {
   SelectionScopeRequestOptions,
   HierarchyRpcRequestOptions,
   Node, PageOptions, KeySet, InstanceKey, NodeKey,
-  Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement,
+  Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement, PresentationError,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager } from "../RulesetVariablesManager";
 import { PresentationManager } from "../PresentationManager";
@@ -26,6 +27,7 @@ import { PresentationRpcImplStateless } from "../PresentationRpcImplStateless";
 import { Presentation } from "../Presentation";
 import { RulesetManager } from "../RulesetManager";
 import "./IModelHostSetup";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 
 describe("PresentationRpcImplStateless", () => {
 
@@ -149,7 +151,7 @@ describe("PresentationRpcImplStateless", () => {
 
         presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return ({ nodes: getChildNodeResult, count: getChildNodesCountResult });
           })
           .verifiable();
@@ -176,7 +178,7 @@ describe("PresentationRpcImplStateless", () => {
 
         presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return ({ nodes: getChildNodeResult, count: getChildNodesCountResult });
           })
           .verifiable();
@@ -186,6 +188,50 @@ describe("PresentationRpcImplStateless", () => {
         expect(actualResult.result!.nodes).to.deep.eq(getChildNodeResult.map(Node.toJSON));
         expect(actualResult.result!.count).to.eq(getChildNodesCountResult);
       });
+
+      it("should return error result if manager throws", async () => {
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
+        expect(actualResult.errorMessage).to.eq("test error");
+      });
+
+      it("should return error result if manager throws and `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
+        expect(actualResult.errorMessage).to.eq("test error");
+      });
+
     });
 
     describe("getNodes", () => {
@@ -230,7 +276,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -313,7 +359,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return Promise.resolve(result);
           })
           .verifiable();
@@ -364,7 +410,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -419,7 +465,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -427,6 +473,52 @@ describe("PresentationRpcImplStateless", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
+      });
+
+    });
+
+    describe("loadHierarchy", () => {
+
+      it("calls manager", async () => {
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+      });
+
+      it("does not await for load to complete", async () => {
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        const result = new ResolvablePromise<void>();
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+        await result.resolve();
+      });
+
+      it("logs warning if load throws", async () => {
+        const loggerSpy = sinon.spy(Logger, "logWarning");
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => {
+            throw new PresentationError(PresentationStatus.Error, "test error");
+          })
+          .verifiable();
+        const actualResult = await impl.loadHierarchy(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+        expect(loggerSpy).to.be.calledOnce;
       });
 
     });
@@ -489,15 +581,15 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return descriptor;
           })
           .verifiable();
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, { ...defaultRpcParams, ...options },
           testData.displayType, keys.toJSON(), undefined);
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
+        expect(actualResult.result).to.be.undefined;
       });
 
     });
@@ -555,7 +647,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return ({ content, size: contentSize });
           })
           .verifiable();
@@ -641,7 +733,7 @@ describe("PresentationRpcImplStateless", () => {
         presentationManagerMock
           .setup((x) => x.getContentSetSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys)))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -701,7 +793,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return content;
           })
           .verifiable();
@@ -788,7 +880,7 @@ describe("PresentationRpcImplStateless", () => {
         };
         presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys), fieldName, maximumValueCount))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return distinctValues;
           })
           .verifiable();
@@ -871,7 +963,7 @@ describe("PresentationRpcImplStateless", () => {
         const result = [createRandomSelectionScope()];
         presentationManagerMock.setup((x) => x.getSelectionScopes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -929,7 +1021,7 @@ describe("PresentationRpcImplStateless", () => {
         const result = new KeySet();
         presentationManagerMock.setup((x) => x.computeSelection(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, ids, scope.id))
           .returns(async () => {
-            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout + 100));
             return result;
           })
           .verifiable();
@@ -937,6 +1029,15 @@ describe("PresentationRpcImplStateless", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
+      });
+
+    });
+
+    describe("syncClientState", () => {
+
+      it("should return `PresentationStatus.Error`", async () => {
+        const actualResult = await impl.syncClientState(testData.imodelToken, { ...defaultRpcParams, clientId: "a", clientStateId: "b", state: {} });
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Error);
       });
 
     });

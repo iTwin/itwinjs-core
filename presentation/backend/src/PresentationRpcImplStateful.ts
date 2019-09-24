@@ -17,7 +17,7 @@ import {
   PresentationRpcResponse, PresentationRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
-  LabelRpcRequestOptions,
+  LabelRpcRequestOptions, PresentationRpcInterface,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -45,11 +45,12 @@ type ContentGetter<TResult = any> = (requestContext: ClientRequestContext, reque
  * @internal
  * @deprecated Will be dropped in 2.0.0
  */
-export class PresentationRpcImplStateful {
+export class PresentationRpcImplStateful extends PresentationRpcInterface {
 
   private _clientStateIds: Map<string, string>; // clientId: clientStateId
 
   public constructor(_id?: string) {
+    super();
     this._clientStateIds = new Map();
   }
 
@@ -175,6 +176,13 @@ export class PresentationRpcImplStateful {
       requestContext.enter();
       return result.map(NodePathElement.toJSON);
     });
+  }
+
+  public async loadHierarchy(_token: IModelToken, _requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return {
+      statusCode: PresentationStatus.Error,
+      errorMessage: "'loadHierarchy' call is added to PresentationRpcInterface since version 1.2.0",
+    };
   }
 
   public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {

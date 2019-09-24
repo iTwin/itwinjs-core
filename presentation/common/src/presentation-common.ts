@@ -28,7 +28,7 @@ export { AsyncTasksTracker } from "./AsyncTasks";
 export {
   RequestOptions, HierarchyRequestOptions, ContentRequestOptions,
   LabelRequestOptions, SelectionScopeRequestOptions,
-  PageOptions, Paged, RequestOptionsWithRuleset,
+  PageOptions, Paged, RequestOptionsWithRuleset, RequestPriority,
 } from "./PresentationManagerOptions";
 
 /**

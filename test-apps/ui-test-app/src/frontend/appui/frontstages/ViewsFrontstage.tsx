@@ -59,6 +59,7 @@ import {
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
+  VisibilityComponentHierarchy,
   ZoneLocation,
   StagePanelHeader,
   StagePanelLocation,
@@ -186,7 +187,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories] }} fillZone={true} />,
               <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}

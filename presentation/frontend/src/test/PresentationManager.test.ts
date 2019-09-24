@@ -17,7 +17,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
-  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement, InstanceKey, Descriptor,
+  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement, InstanceKey, Descriptor, RequestPriority,
 } from "@bentley/presentation-common";
 import { PresentationManager } from "../PresentationManager";
 import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
@@ -302,6 +302,35 @@ describe("PresentationManager", () => {
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
       expect(result).to.be.deep.equal(value);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("loadHierarchy", () => {
+
+    it("calls loadHierarchy through proxy with default 'preload' priority", async () => {
+      const options: HierarchyRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        rulesetId: testData.rulesetId,
+      };
+      rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
+        .returns(() => Promise.resolve())
+        .verifiable();
+      await manager.loadHierarchy(options);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("calls loadHierarchy through proxy with specified priority", async () => {
+      const options: HierarchyRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        rulesetId: testData.rulesetId,
+        priority: 999,
+      };
+      rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
+        .returns(() => Promise.resolve())
+        .verifiable();
+      await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();
     });
 

@@ -7,7 +7,7 @@
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  RpcRequestsHandler, DescriptorOverrides,
+  RpcRequestsHandler, RequestPriority, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
   Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable,
@@ -191,6 +191,19 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(options), filterText);
     return result.map(NodePathElement.fromJSON);
+  }
+
+  /**
+   * Loads the whole hierarchy.
+   * @param requestOptions options for the request. If `requestOptions.priority` is not set, it defaults to `RequestPriority.Preload`.
+   * @return A promise object that resolves as soon as the load request is queued (not when loading finishes)
+   * @beta
+   */
+  public async loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
+    if (!requestOptions.priority)
+      requestOptions.priority = RequestPriority.Preload;
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    return this._requestsHandler.loadHierarchy(this.toIModelTokenOptions(options));
   }
 
   /**

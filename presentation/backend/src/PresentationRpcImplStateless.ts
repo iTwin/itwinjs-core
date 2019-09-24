@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -15,8 +15,8 @@ import {
   Omit, SelectionScope, DescriptorOverrides,
   PresentationRpcResponse, PresentationRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions,
+  SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
+  LabelRpcRequestOptions, PresentationRpcInterface, Ruleset,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -42,9 +42,10 @@ type ContentGetter<TResult = any> = (requestContext: ClientRequestContext, reque
  *
  * @internal
  */
-export class PresentationRpcImplStateless {
+export class PresentationRpcImplStateless extends PresentationRpcInterface {
 
   public constructor(_id?: string) {
+    super();
   }
 
   /**
@@ -98,19 +99,24 @@ export class PresentationRpcImplStateless {
     } catch (e) {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
+
+    const resultPromise = request(requestContext, options)
+      .then((result: TResult) => this.successResponse(result))
+      .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
+
     if (this.requestTimeout === 0)
-      return this.successResponse(await request(requestContext, options));
+      return resultPromise;
+
     let timeout: NodeJS.Timeout;
-    const timingOut = new Promise((_resolve, reject) => {
+    const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
         reject("Timed out");
       }, this.requestTimeout);
     });
-    const result = await Promise.race([request(requestContext, options), timingOut])
-      .then((value) => this.successResponse(value as TResult))
+
+    return Promise.race([resultPromise, timeoutPromise])
       .catch(() => this.errorResponse(PresentationStatus.BackendTimeout))
       .finally(() => clearTimeout(timeout));
-    return result;
   }
 
   public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {
@@ -148,6 +154,15 @@ export class PresentationRpcImplStateless {
       const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(requestContext, options, filterText);
       requestContext.enter();
       return result.map(NodePathElement.toJSON);
+    });
+  }
+
+  public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      // note: we intentionally don't await here - don't want frontend waiting for this task to complete
+      // tslint:disable-next-line: no-floating-promises
+      this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options)
+        .catch((e) => Logger.logWarning("Presentation", `Error loading '${getRulesetId(requestOptions)}' hierarchy: ${e}`));
     });
   }
 
@@ -218,7 +233,26 @@ export class PresentationRpcImplStateless {
       return keys.toJSON();
     });
   }
+
+  public async syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse {
+    return {
+      statusCode: PresentationStatus.Error,
+      errorMessage: "'syncClientState' call is deprecated since PresentationRpcInterface version 1.1.0",
+    };
+  }
 }
+
+// istanbul ignore next: used only for log messages
+const getRulesetId = (props: { rulesetOrId?: string | Ruleset; rulesetId?: string }) => {
+  if (props.rulesetOrId) {
+    if (typeof props.rulesetOrId === "object")
+      return props.rulesetOrId.id;
+    return props.rulesetOrId;
+  }
+  if (props.rulesetId)
+    return props.rulesetId;
+  return "<unknown>";
+};
 
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json)

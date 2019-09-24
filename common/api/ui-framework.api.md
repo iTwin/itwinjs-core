@@ -644,6 +644,8 @@ export class CategoryTree extends React_2.Component<CategoryTreeProps, CategoryT
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
+    // @internal
+    static readonly RULESET: Ruleset;
     }
 
 // @alpha
@@ -651,6 +653,7 @@ export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
     clearAll?: boolean;
+    enablePreloading?: boolean;
     iModel: IModelConnection;
     selectAll?: boolean;
     showSearchBox?: boolean;
@@ -3307,9 +3310,6 @@ export interface RotationData {
     label: string;
 }
 
-// @internal (undocumented)
-export const RULESET: Ruleset;
-
 // @alpha
 export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
 
@@ -3568,10 +3568,13 @@ export class SpatialContainmentTree extends React_2.Component<SpatialContainment
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
+    // @internal
+    static readonly RULESET: Ruleset;
     }
 
 // @alpha
 export interface SpatialContainmentTreeProps {
+    enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
 }
@@ -4624,10 +4627,21 @@ export class VisibilityComponent extends React_2.Component<VisibilityComponentPr
     render(): JSX.Element;
     }
 
+// @public
+export enum VisibilityComponentHierarchy {
+    // (undocumented)
+    Categories = "categories",
+    // (undocumented)
+    Models = "models",
+    // (undocumented)
+    SpatialContainment = "spatial-containment"
+}
+
 // @alpha
 export interface VisibilityComponentProps {
     activeTreeRef?: React_2.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
+    enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
 }
 
@@ -4675,6 +4689,8 @@ export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, V
     static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null;
     // (undocumented)
     render(): JSX.Element;
+    // @internal
+    static readonly RULESET: Ruleset;
     }
 
 // @public
@@ -4682,6 +4698,8 @@ export interface VisibilityTreeProps {
     activeView?: Viewport;
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @alpha
+    enablePreloading?: boolean;
     imodel: IModelConnection;
     // @alpha
     rootElementRef?: React_2.Ref<HTMLDivElement>;

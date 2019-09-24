@@ -8,6 +8,21 @@ import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 
 /**
+ * Enumeration of standard request priorities.
+ * @beta
+ */
+export enum RequestPriority {
+  /** Priority for pre-loading requests */
+  Preload = 0,
+
+  /** Priority for general requests */
+  Normal = 1000,
+
+  /** Max possible priority */
+  Max = Number.MAX_SAFE_INTEGER,
+}
+
+/**
  * A generic request options type used for both hierarchy and content requests
  * @public
  */
@@ -17,6 +32,14 @@ export interface RequestOptions<TIModel> {
 
   /** Optional locale to use when formatting / localizing data */
   locale?: string;
+
+  /**
+   * Optional request priority. Higher priority requests are handled first.
+   * Defaults to [[RequestPriority.Normal]]
+   *
+   * @beta
+   */
+  priority?: number;
 }
 
 /**

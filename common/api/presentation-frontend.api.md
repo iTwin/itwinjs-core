@@ -100,6 +100,8 @@ export class PresentationManager implements IDisposable {
         count: number;
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
+    // @beta
+    loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @internal (undocumented)
     readonly rpcRequestsHandler: RpcRequestsHandler;
     rulesets(): RulesetManager;

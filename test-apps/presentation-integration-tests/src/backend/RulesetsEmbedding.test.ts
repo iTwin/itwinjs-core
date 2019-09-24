@@ -40,7 +40,7 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     initialize();
-    nativePlatform = new (createDefaultNativePlatform())();
+    nativePlatform = new (createDefaultNativePlatform("", [], {}))();
     imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });

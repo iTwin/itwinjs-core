@@ -114,6 +114,10 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText);
   }
+  public async loadHierarchy(options: HierarchyRequestOptions<IModelToken>): Promise<void> {
+    return this.request<void, HierarchyRequestOptions<IModelToken>>(
+      this.rpcClient, this.rpcClient.loadHierarchy, this.createRequestOptions(options));
+  }
 
   public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined> {
     return this.request<DescriptorJSON | undefined, ContentRequestOptions<IModelToken>>(

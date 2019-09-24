@@ -186,4 +186,6 @@ export class ModelSelectorDataProvider
   ): TreeNodeArrayPromise => {
     return this._baseProvider.getNodes(parentNode, pageOptions);
   }
+
+  public async loadHierarchy() { return this._baseProvider.loadHierarchy(); }
 }
