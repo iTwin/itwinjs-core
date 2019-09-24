@@ -638,7 +638,7 @@ export interface BreadcrumbProps extends CommonProps {
 
 // @beta
 export class BreadcrumbTreeUtils {
-    static aliasNodeListToTableDataProvider: (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: import("../tree/TreeDataProvider").TreeDataProviderMethod | ImmediatelyLoadedTreeNodeItem[] | Promise<ImmediatelyLoadedTreeNodeItem[]> | import("../tree/TreeDataProvider").ITreeDataProvider | undefined) => TableDataProvider;
+    static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
     }
 
 // @beta

@@ -71,7 +71,7 @@ export class BreadcrumbTreeUtils {
    * @param columns An array of column descriptions to specify which columns to provide to the resulting [[TableDataProvider]].
    * @returns A [[TableDataProvider]] object that can be used to populate a Table component.
    */
-  public static aliasNodeListToTableDataProvider = (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider => {
+  public static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider {
     return {
       onColumnsChanged: new TableDataChangeEvent(),
       onRowsChanged: new TableDataChangeEvent(),

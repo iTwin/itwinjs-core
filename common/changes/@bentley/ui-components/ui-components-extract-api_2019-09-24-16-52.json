@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}
