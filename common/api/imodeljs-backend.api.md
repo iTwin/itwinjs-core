@@ -2194,7 +2194,7 @@ export class IModelTransformer {
     importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String, targetModeledElementId: Id64String): void;
+    importModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;

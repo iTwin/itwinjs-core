@@ -7,7 +7,7 @@ import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelDb, IModelJsFs, IModelTransformer, Subject } from "../../imodeljs-backend";
+import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelTransformerUtils, IModelTransformerWithAsserts, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -215,26 +215,27 @@ describe("IModelTransformer", () => {
 
   // WIP: Included as skipped until test file management strategy can be refined.
   it.skip("should successfully complete PlantSight workflow", async () => {
-    // source
-    const sourceFileName = "d:/data/dgndb/PlantSight/PlantSightSource.bim";
+    // Source IModelDb
+    const sourceFileName = "d:/data/DgnDb/PlantSight/PlantSightSource.bim";
     const sourceDb: IModelDb = IModelDb.openSnapshot(sourceFileName);
     const sourceModelId: Id64String = "0x20000000002";
-    assert.exists(sourceDb.elements.getElement(sourceModelId));
-    assert.exists(sourceDb.models.getModel(sourceModelId));
+    assert.doesNotThrow(() => sourceDb.elements.getElement<PhysicalPartition>(sourceModelId));
+    assert.doesNotThrow(() => sourceDb.models.getModel<PhysicalModel>(sourceModelId));
     assert.isAtLeast(countElementsInModel(sourceDb, sourceModelId), 1, "Source Model should contain Elements");
-    // target
+    // Target IModelDb
     const targetFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
-    IModelJsFs.copySync("d:/data/dgndb/PlantSight/PlantSightTarget.bim", targetFileName);
-    const targetDb: IModelDb = IModelDb.openSnapshot(targetFileName);
+    const targetDb: IModelDb = IModelDb.openSnapshot("d:/data/DgnDb/PlantSight/PlantSightTarget.bim").createSnapshot(targetFileName);
     const targetModelId: Id64String = "0x30000000002";
-    assert.exists(targetDb.elements.getElement(targetModelId));
-    assert.exists(targetDb.models.getModel(targetModelId));
+    assert.doesNotThrow(() => targetDb.elements.getElement<PhysicalPartition>(targetModelId));
+    assert.doesNotThrow(() => targetDb.models.getModel<PhysicalModel>(targetModelId));
     assert.equal(countElementsInModel(targetDb, targetModelId), 0, "Target Model should not contain Elements yet");
-    // import Model contents
+    // Import
     const transformer = new IModelTransformerWithAsserts(sourceDb, targetDb);
+    transformer.importModelContents(IModel.dictionaryId, IModel.dictionaryId, SpatialCategory.classFullName);
     transformer.importModelContents(sourceModelId, targetModelId);
+    transformer.importSkippedElements();
     transformer.dispose();
-    // close
+    // Close
     sourceDb.closeSnapshot();
     targetDb.closeSnapshot();
   });

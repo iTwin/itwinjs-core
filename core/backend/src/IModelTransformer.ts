@@ -559,15 +559,17 @@ export class IModelTransformer {
   }
 
   /** Import the model contents into the target IModelDb
-   * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
+   * @param sourceModelId Import the contents of this model from the source IModelDb.
+   * @param targetModelId Import into this model in the target IModelDb. The target model must exist prior to this call.
+   * @param elementClassFullName Optional classFullName of an element subclass to limit import query against the source model.
    */
-  public importModelContents(sourceModeledElementId: Id64String, targetModeledElementId: Id64String): void {
-    this.targetDb.models.getModel(targetModeledElementId); // throws if Model does not exist
-    this.context.remapElement(sourceModeledElementId, targetModeledElementId); // set remapping in case importModelContents is called directly
-    Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
-    const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", sourceModeledElementId);
+  public importModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+    this.targetDb.models.getModel(targetModelId); // throws if Model does not exist
+    this.context.remapElement(sourceModelId, targetModelId); // set remapping in case importModelContents is called directly
+    Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModelId)}, ${this.formatIdForLogger(targetModelId)}, ${elementClassFullName})`);
+    const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("modelId", sourceModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         this.importElement(statement.getValue(0).getId());
       }
@@ -579,7 +581,7 @@ export class IModelTransformer {
     const definitionModelIds: Id64String[] = [];
     const otherModelIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("parentModelId", sourceParentModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modelId: Id64String = statement.getValue(0).getId();
