@@ -17,7 +17,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { LineString3d } from "../curve/LineString3d";
 import { SweepContour } from "../solid/SweepContour";
-import { PolygonOps } from "../geometry3d/PolygonOps";
+import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 import { RangeSearch } from "./multiclip/RangeSearch";
@@ -174,7 +174,8 @@ export class PolyfaceClip {
         xyFrustum.polygonClip(visitorA.point, xyClip, workArray);
         // builderAOverB.addPolygonGrowableXYZArray(xyClip);
         if (xyClip.length > 0) {
-          planeOfFacet.convexPolygonSplitInsideOutsideGrowableArrays(xyClip, below, above, altitudeRange);
+          // planeOfFacet.convexPolygonSplitInsideOutsideGrowableArrays(xyClip, below, above, altitudeRange);
+          IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(planeOfFacet, xyClip, below, above, altitudeRange);
           if (below.length > 0 && builderAUnderB)
             builderAUnderB.addPolygonGrowableXYZArray(below);
           if (above.length > 0 && builderAOverB)

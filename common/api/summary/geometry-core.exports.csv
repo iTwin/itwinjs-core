@@ -25,6 +25,7 @@ public;AxisIndex
 public;AxisOrder
 public;AxisScaleSelect
 public;BagOfCurves 
+public;BarycentricTriangle
 public;BeJSONFunctions
 public;Bezier1dNd
 internal;class BezierCoffs
@@ -108,11 +109,14 @@ internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
+public;IndexedCollectionInterval
 public;IndexedPolyface 
 public;IndexedPolyfaceVisitor 
 public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
 public;class IndexedXYZCollection
+public;IndexedXYZCollectionInterval 
+public;IndexedXYZCollectionPolygonOps
 public;InverseMatrixState
 public;IStrokeHandler
 public;KnotVector
@@ -161,6 +165,7 @@ public;Point2dArrayCarrier
 public;Point3d 
 public;Point3dArray
 public;Point3dArrayCarrier 
+public;Point3dArrayPolygonOps
 public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]

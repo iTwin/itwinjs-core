@@ -39,6 +39,17 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     return undefined;
   }
   /**
+   * Access by index, returning strongly typed Point3d
+   * * This returns the xyz value but NOT reference to the point in the "carried" array.
+   * @param index index of point within the array
+   * @param result caller-allocated destination
+   * @returns undefined if the index is out of bounds
+   */
+  public getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined {
+    const source = this.data[index];
+    return Point3d.create(source.x, source.y, source.z, result);
+  }
+  /**
    * Access by index, returning strongly typed Vector3d
    * @param index index of point within the array
    * @param result caller-allocated destination
@@ -186,8 +197,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     this.data.length = 0;
   }
   /** Reverse the points in place */
-  public reverseInPlace (): void {
-    this.data.reverse ();
+  public reverseInPlace(): void {
+    this.data.reverse();
   }
   /**
    * Return distance squared between indicated points.

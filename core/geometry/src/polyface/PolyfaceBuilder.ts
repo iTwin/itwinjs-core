@@ -23,7 +23,7 @@ import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { Box } from "../solid/Box";
 import { RuledSweep } from "../solid/RuledSweep";
-import { AnyCurve } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveChain";
 import { Geometry, AxisOrder } from "../Geometry";
 import { LineString3d } from "../curve/LineString3d";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeToBooleanFunction } from "../topology/Graph";
@@ -42,6 +42,11 @@ import { BilinearPatch } from "../geometry3d/BilinearPatch";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { Triangulator } from "../topology/Triangulation";
 import { PolygonOps } from "../geometry3d/PolygonOps";
+import { SweepContour } from "../solid/SweepContour";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
+import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 
 /* tslint:disable:variable-name prefer-for-of*/
 /**
@@ -1048,6 +1053,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /**
+   * Construct facets for any planar region
+   */
+  public addTriangulatedRegion(region: AnyRegion) {
+    const contour = SweepContour.createForLinearSweep(region);
+    if (contour)
+      contour.emitFacets(this, true, undefined);
+  }
+
+  /**
    * * Recursively visit all children of data.
    * * At each primitive, invoke the computeStrokeCountForOptions method, with options from the builder.
    * @param data
@@ -1654,4 +1668,31 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       return PolyfaceBuilder.graphToPolyface(graph);
     return undefined;
   }
+  /** Create (and add to the builder) triangles that bridge the gap between two linestrings.
+   * * Each triangle will have 1 vertex on one of the linestrings and 2 on the other
+   * * Choice of triangles is heuristic, hence does not have a unique solution.
+   * * Logic to choice among the various possible triangle orders prefers
+   *    * Make near-coplanar facets
+   *    * make facets with good aspect ratio.
+   *    * This is exercised with a limited number of lookahead points, i.e. greedy to make first-available decision.
+   * @param pointsA points of first linestring.
+   * @param pointsB points of second linestring.
+   */
+  public addGreedyTriangulationBetweenLineStrings(pointsA: Point3d[] | LineString3d | IndexedXYZCollection, pointsB: Point3d[] | LineString3d | IndexedXYZCollection) {
+    const context = GreedyTriangulationBetweenLineStrings.createContext();
+    context.emitTriangles(
+      resolveToIndexedXYZCollectionOrCarrier(pointsA),
+      resolveToIndexedXYZCollectionOrCarrier(pointsB),
+      (triangle: BarycentricTriangle) => {
+        this.addTriangleFacet(triangle.points);
+      });
+  }
+}
+
+function resolveToIndexedXYZCollectionOrCarrier(points: Point3d[] | LineString3d | IndexedXYZCollection): IndexedXYZCollection {
+  if (Array.isArray(points))
+    return new Point3dArrayCarrier(points);
+  if (points instanceof LineString3d)
+    return points.packedPoints;
+  return points;
 }

@@ -2096,6 +2096,25 @@ export class Sample {
     return segments;
   }
   /**
+   * Create a regular polygon
+   * @param angle0 angle from x axis to first point.
+   * @param numPoint number of points
+   * @param close true to add closure edge.
+   */
+  public static createRegularPolygon(cx: number, cy: number, cz: number, angle0: Angle, r: number, numPoint: number, close: boolean): Point3d[] {
+    const points = [];
+    const angleStepRadians = 2.0 * Math.PI / numPoint;
+    let radians;
+    for (let i = 0; i < numPoint; i++) {
+      radians = angle0.radians + i * angleStepRadians;
+      points.push(Point3d.create(cx + r * Math.cos(radians), cy + r * Math.sin(radians), cz));
+    }
+    if (close)
+      points.push(points[0].clone());
+    return points;
+  }
+
+  /**
    * Create a star by alternating radii (with equal angular steps)
    * @param r0 first point radius
    * @param r1 second point radius

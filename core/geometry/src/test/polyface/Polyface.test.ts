@@ -810,17 +810,29 @@ it("facets from sweep contour with holes", () => {
     Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), 5, 5)),
     Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)),
     Loop.create(arc));
-  allGeometry.push(region);
+  const step = 10;
+  const x0 = 0;
+  const y0 = 0;
+  const y1 = step;
 
-  const sweepContour = SweepContour.createForLinearSweep(region);
+  GeometryCoreTestIO.captureGeometry(allGeometry, region, x0, y0);
+
+  let x1 = x0;
+
   const options = new StrokeOptions();
   options.needParams = false;
   options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
-  sweepContour!.emitFacets(builder, false);
-  const polyface = builder.claimPolyface(true);
-  polyface.tryTranslateInPlace(0, 10, 0);
-  allGeometry.push(polyface);
+  builder.addTriangulatedRegion(region);
+  GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x1, y1);
+  for (const e of [1, 0.5]) {
+    x1 += step;
+    options.maxEdgeLength = e;
+    const builder1 = PolyfaceBuilder.create(options);
+    builder1.addTriangulatedRegion(region);
+    GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
+  }
+
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ParityRegion");
   expect(ck.getNumErrors()).equals(0);
 

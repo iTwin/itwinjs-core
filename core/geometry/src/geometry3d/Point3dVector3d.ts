@@ -93,8 +93,10 @@ export class XYZ implements XYAndZ {
    * * Float64Array -- Copy from indices 0,1,2 to x,y,z
    * * XY -- copy the x, y parts and set z=0
    */
-  public setFrom(other: Float64Array | XAndY | XYAndZ) {
-    if (XYZ.isXAndY(other)) {
+  public setFrom(other: Float64Array | XAndY | XYAndZ | undefined) {
+    if (other === undefined) {
+      this.setZero();
+    } else if (XYZ.isXAndY(other)) {
       this.x = other.x;
       this.y = other.y;
       this.z = XYZ.hasZ(other) ? other.z : 0;
@@ -107,20 +109,29 @@ export class XYZ implements XYAndZ {
   /**
    * Set the x,y,z parts from a Point3d.
    * This is the same effect as `setFrom(other)` with no pretesting of variant input type
+   * * Set to zeros if `other` is undefined.
    */
-  public setFromPoint3d(other: XYAndZ) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+  public setFromPoint3d(other?: XYAndZ) {
+    if (other) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+    } else {
+      this.setZero();
+    }
   }
   /**
    * Set the x,y,z parts from a Vector3d
    * This is the same effect as `setFrom(other)` with no pretesting of variant input type
    */
   public setFromVector3d(other: Vector3d) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+    if (other) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+    } else {
+      this.setZero();
+    }
   }
 
   /** Returns true if this and other have equal x,y,z parts within Geometry.smallMetricDistance.
@@ -358,6 +369,12 @@ export class Point3d extends XYZ {
   public crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z, pointB.x - this.x, pointB.y - this.y, pointB.z - this.z, result);
   }
+  /** Return the magnitude of the cross product of the vectors from this to pointA and pointB
+   */
+  public crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number {
+    return Geometry.crossProductMagnitude(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z, pointB.x - this.x, pointB.y - this.y, pointB.z - this.z);
+  }
+
   /** Return the triple product of the vectors from this to pointA, pointB, pointC
    *
    * * This is a scalar (number)
@@ -1094,6 +1111,16 @@ export class Vector3d extends XYZ {
   public angleTo(vectorB: Vector3d): Angle {
     return Angle.createAtan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));
   }
+  /**
+   * Return the (Strongly typed) angle from this vector to the plane perpendicular to planeNormal.
+   * * The returned vector is signed
+   * * The returned vector is (as degrees) always less than or equal to 90 degrees.
+   * @param planeNormal a normal vector to the plane
+   */
+  public angleFromPerpendicular(vectorB: Vector3d): Angle {
+    return Angle.createAtan2(this.dotProduct(vectorB), this.crossProductMagnitude(vectorB));
+  }
+
   /**
    * Return the (Strongly typed) angle from this vector to vectorB,using only the xy parts.
    * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180 degrees (positive PI radians), not closed on the negative side.

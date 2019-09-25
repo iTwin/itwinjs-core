@@ -14,7 +14,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -35,6 +35,7 @@ import { prettyPrint } from "../testFunctions";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 /* tslint:disable:no-console no-trailing-whitespace */
+/* tslint:disable:no-console deprecation */
 
 Checker.noisy.clipPlane = false;
 /**
@@ -153,7 +154,7 @@ describe("ClipPlane", () => {
     const clipPlane = ClipPlane.createPlane(plane);
     ck.testCoordinate(clipPlane.evaluatePoint(pointA), plane.altitude(pointA));
     ck.testCoordinate(clipPlane.evaluatePoint(pointB), plane.altitude(pointB));
-    // announced fractions are stricly increasing pair within what we send as start end fractions, so relation to ends is known ...
+    // announced fractions are strictly increasing pair within what we send as start end fractions, so relation to ends is known ...
     clipPlane.announceClippedSegmentIntervals(0.2, 0.9, pointA, pointB,
       (f0: number, f1: number) => {
         const segmentPoint = pointA.interpolate((f0 + f1) * 0.5, pointB);
@@ -207,7 +208,8 @@ describe("ClipPlane", () => {
 
         lastSign = z;
         array.push(Point3d.create(x, 0, z));
-        clip.polygonCrossings(array, crossings);
+        clip.polygonCrossings (array, crossings);
+        // Point3dArrayPolygonOps.polygonPlaneCrossings(clip, array, crossings);
         if (Checker.noisy.clipPlane) {
           console.log("Points:");
           console.log(array);
@@ -224,14 +226,17 @@ describe("ClipPlane", () => {
           ck.testCoordinate(xCross, crossings[crossings.length - 1].x, "Expected and actual x location of crossing match");
         } else {
           const subArray: Point3d[] = array.slice(array.length - 2);
-          clip.polygonCrossings(subArray, crossings);
+          Point3dArrayPolygonOps.polygonPlaneCrossings(clip, subArray, crossings);
           ck.testCoordinate(crossings.length, 0, "Last two points did not cross plane");
         }
 
         if (toReduce) { numExpectedCrossings--; }
       }
     }
-    ck.checkpoint("PolygonInOutCross");
+    const triangleThrough11 = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0)];
+    const plane = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 1, 0, 0, 1, 0)!;
+    Point3dArrayPolygonOps.polygonPlaneCrossings(plane, triangleThrough11, crossings);
+    ck.testExactNumber(2, crossings.length, "2 crossings for plane with exact hit");
     expect(ck.getNumErrors()).equals(0);
   });
 });

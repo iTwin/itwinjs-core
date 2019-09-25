@@ -96,10 +96,17 @@ export interface TrigValues {
  */
 export interface PlaneAltitudeEvaluator {
   /**
-   * Return the altitude of the point from the plane.
-   * @param point point for evaluation
-   */
+ * Return the altitude of the point from the plane.
+ * @param point point for evaluation
+ */
   altitude(point: Point3d): number;
+  /**
+     * Return the altitude of the point from the plane, with the point supplied as simple x,y,z
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     */
+  altitudeXYZ(x: number, y: number, z: number): number;
   /**
    * Return the derivative of altitude wrt motion along a vector.
    * @param point point for evaluation
@@ -392,6 +399,12 @@ export class Geometry {
     return q;
   }
 
+  /** Return the smallest signed value among a, b */
+  public static minXY(a: number, b: number): number {
+    let q = a;
+    if (b < q) q = b;
+    return q;
+  }
   /** Return the hypotenuse `sqrt(x*x + y*y)`. This is much faster than `Math.hypot(x,y)`. */
   public static hypotenuseXY(x: number, y: number): number { return Math.sqrt(x * x + y * y); }
   /** Return the squared `hypotenuse (x*x + y*y)`. */

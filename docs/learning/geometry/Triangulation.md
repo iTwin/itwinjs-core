@@ -1,7 +1,7 @@
 
 # Examples of Triangulation
 
-## Triangulate points
+## Delauney triangulation of many points in xy plane
 
 |  |  |
 |---|---|
@@ -18,3 +18,20 @@ Unit Test
   * source: imodeljs\core\geometry\src\test\topology\InsertAndRetriangulateContext.test.ts
   * test name: "TriangulateInHull"
   * output: imodeljs\core\geometry\src\test\output\InsertAndRetriangulateContext\TriangulateInHull.imjs
+
+  ## Triangulate points "between linestrings"
+
+|  |  |
+|---|---|
+| 4 and 6 sided polygons | ![>](./figs/Triangulation/GreedyTriangulationBetweenLineStrings/QuadAndHex.png) |
+| Same polygons displayed with ` <br>`handles to indicate the two linestrings have edge subdivision mismatch ` <br>` in addition to the different cornering angles | ![>](./figs/Triangulation/GreedyTriangulationBetweenLineStrings/QuadAndHexWithHandlesA.png) |
+| triangles constructed "between" the polygons | ![>](./figs/Triangulation/GreedyTriangulationBetweenLineStrings/MeshA.png) |
+| Same polygons, another mix of points along edges | ![>](./figs/Triangulation/GreedyTriangulationBetweenLineStrings/QuadAndHexWithHandlesB.png) |
+| triangles constructed "between" the polygons | ![>](./figs/Triangulation/GreedyTriangulationBetweenLineStrings/MeshB.png) |
+
+
+Unit Test
+  * source: imodeljs\core\geometry\src\test\Polyface\GreedyTriangulationBetweenLineStrings.test.ts
+  * test set: `describe("GreedyTriangulationBetweenLineStrings"`
+  * test name: `quadStar`
+  * output: imodeljs\core\geometry\src\test\output\GreedyTriangulationBetweenLineStrings\quadStar.imjs

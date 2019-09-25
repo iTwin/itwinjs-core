@@ -214,7 +214,7 @@ describe("GeometryA", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
+// cspell:word kahan
   it("ErrorChecks", () => {
     const ck = new Checker();
     for (const multiplier of [0.5, 0.999999999]) { // multipliers are all LESS THAN 1
@@ -232,7 +232,7 @@ describe("GeometryA", () => {
       // modulo with negated period
       ck.testCoordinate(
         Geometry.modulo(a, 4),
-        -Geometry.modulo(-a, -4), "Moduluo with negative period");
+        -Geometry.modulo(-a, -4), "Modulo with negative period");
       ck.testExactNumber(a, Geometry.modulo(a, 0), "modulo with zero period");
     }
     const q: any[] = [1, 2, 3, 6, 9];
@@ -262,7 +262,7 @@ describe("GeometryA", () => {
     ck.testExactNumber(Geometry.stepCount(0, 100, 4, 30), 4, "stepSize 0 returns min");
     ck.testExactNumber(Geometry.stepCount(200, 100, 4, 30), 4, "stepSize huge returns min");
     ck.testExactNumber(Geometry.stepCount(0.5, 100, 1, 10), 10, "stepSize caps with max");
-    ck.testExactNumber(Geometry.stepCount(2, 10, 8, 10), 8, "stepSize undercaps with min");
+    ck.testExactNumber(Geometry.stepCount(2, 10, 8, 10), 8, "stepSize lower cap with min");
 
     for (const f of [-1, 0, 0.5, 1, 2])
       ck.testTrue(Geometry.isIn01(f, false), "isIn01 with test suppressed)");

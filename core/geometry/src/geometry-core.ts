@@ -20,36 +20,38 @@
  * @docs-group-description CartesianGeometry
  * Points, Vectors, Planes, and Transformations for x,y,z geometry.
  * * Fundamental cartesian geometry objects:
- * * * Point2d, Point3d -- points with x,y,z coordinates
- * * * Vector2d, Vector3d -- vectors with x,y,z coordinates
- * * * Matrix3d -- 3x3 matrix
- * * * * commonly used for pure rotations
- * * * * scale and skew entries are also allowed.
- * * * Transform -- an origin and axes.
- * * * Range1d, Range2d, Range3d -- subsets of 1d, 2d, and 3d space bounded by low and high values.
- * * * Ray3d -- a ray defined by origin and direction vector
- * * * Plane3dByOriginAndUnitNormal -- a plane defined by an origin and a single vector which is perpendicular to the plane
- * * * plane3dByOriginAndVectors -- a plane defined by an origin and two vectors in the plane.
+ *   * Point2d, Point3d -- points with x,y,z coordinates
+ *   * Vector2d, Vector3d -- vectors with x,y,z coordinates
+ *   * Matrix3d -- 3x3 matrix
+ *   * * commonly used for pure rotations
+ *   * * scale and skew entries are also allowed.
+ *   * Transform -- an origin and axes.
+ *   * Range1d, Range2d, Range3d -- subsets of 1d, 2d, and 3d space bounded by low and high values.
+ *   * Ray3d -- a ray defined by origin and direction vector
+ *   * Plane3dByOriginAndUnitNormal -- a plane defined by an origin and a single vector which is perpendicular to the plane
+ *   * plane3dByOriginAndVectors -- a plane defined by an origin and two vectors in the plane.
  * * Angles
- * * * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
- * * * AngleSweep -- an angular interval
- * * * YawPitchAndRollAngles -- 3 angles that define a rotated coordinate system.
+ *   * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
+ *   * AngleSweep -- an angular interval
+ *   * YawPitchAndRollAngles -- 3 angles that define a rotated coordinate system.
  * * Utility classes
- * * * FrameBuilder -- construction of coordinate frames from mixed data sources.
- * * * ClipPlane -- a single plane
- * * * ConvexClipPlaneSet -- an array of planes bounding a convex volume
- * * * ClipPlaneSet -- an array of ConvexClipPlaneSet, defining the union of their volumes
- * * * Constant -- various numeric values exported as readonly constants
+ *   * FrameBuilder -- construction of coordinate frames from mixed data sources.
+ *   * ClipPlane -- a single plane
+ *   * ConvexClipPlaneSet -- an array of planes bounding a convex volume
+ *   * ClipPlaneSet -- an array of ConvexClipPlaneSet, defining the union of their volumes
+ *   * BilinearPatch -- twisted quadrilateral defined by 4 points
+ *   * BarycentricTriangle -- triangle defined by 3 points.
+ *   * Constant -- various numeric values exported as readonly constants
  */
 // doc:export class CartesianGeometryDoc { }
 /**
  * @docs-group-description ArraysAndInterfaces
  * These classes support array operations and inheritance-based algorithms.
  * * Arrays
- * * * GrowableArray -- A carrier for a Float64Array, with methods that hide reallocation of the underlying array as contents are added.
- * * * Point2dArray, Point3dArray, Point4dArray, Vector3dArray -- miscellaneous operations on arrays of 2d and 3d points.
+ *   * GrowableArray -- A carrier for a Float64Array, with methods that hide reallocation of the underlying array as contents are added.
+ *   * Point2dArray, Point3dArray, Point4dArray, Vector3dArray -- miscellaneous operations on arrays of 2d and 3d points.
  * * Interfaces
- * * * GeometryHandler -- a double-dispatch protocol used for efficient implementation of algorithms that work on many geometry types.
+ *   * GeometryHandler -- a double-dispatch protocol used for efficient implementation of algorithms that work on many geometry types.
  *
  */
 // doc:export class ArraysAndInterfacesDoc { }
@@ -68,10 +70,10 @@
  * @docs-group-description Curve
  * Curves in the GeometryQuery hierarchy: LineSegment3d, LineString3d, Arc3d, TransitionSpiral3d
  * * CurvePrimitive -- base class for parametric curves
- * * * LineSegment3d -- a (bounded) portion of an unbounded line
- * * * Arc3d -- a circular or elliptic arc
- * * * LineString3d -- a sequence of points joined by line segments
- * * * TransitionSpiral -- controlled transition between curvatures
+ *   * LineSegment3d -- a (bounded) portion of an unbounded line
+ *   * Arc3d -- a circular or elliptic arc
+ *   * LineString3d -- a sequence of points joined by line segments
+ *   * TransitionSpiral -- controlled transition between curvatures
  * * Support classes
  * * PointString3d -- a sequence of isolated points
  * * StrokeOptions -- tolerances to describe stroking accuracy
@@ -114,13 +116,16 @@
 
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
+export * from "./geometry3d/BarycentricTriangle";
 export * from "./geometry3d/BilinearPatch";
 export * from "./geometry3d/FrameBuilder";
+export * from "./geometry3d/FrustumAnimation";
 export * from "./geometry3d/GeometryHandler";
 export * from "./geometry3d/GrowableBlockedArray";
 export * from "./geometry3d/GrowableFloat64Array";
 export * from "./geometry3d/GrowableXYArray";
 export * from "./geometry3d/GrowableXYZArray";
+export * from "./geometry3d/IndexedCollectionInterval";
 export * from "./geometry3d/IndexedXYCollection";
 export * from "./geometry3d/IndexedXYZCollection";
 export * from "./geometry3d/Matrix3d";
@@ -132,6 +137,7 @@ export * from "./geometry3d/Point2dVector2d";
 export * from "./geometry3d/Point3dVector3d";
 export * from "./geometry3d/PointHelpers";
 export * from "./geometry3d/Point3dArrayCarrier";
+export * from "./geometry3d/PolylineOps";
 export * from "./geometry3d/PolygonOps";
 export * from "./geometry3d/Range";
 export * from "./geometry3d/Ray3d";
@@ -139,8 +145,6 @@ export * from "./geometry3d/Segment1d";
 export * from "./geometry3d/Transform";
 export * from "./geometry3d/XYZProps";
 export * from "./geometry3d/YawPitchRollAngles";
-export * from "./geometry3d/FrustumAnimation";
-export * from "./geometry3d/PolylineOps";
 
 export * from "./Geometry";
 export * from "./Constant";

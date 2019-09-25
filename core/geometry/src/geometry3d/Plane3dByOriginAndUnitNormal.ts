@@ -6,7 +6,7 @@
 /** @module CartesianGeometry */
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-import { BeJSONFunctions, Geometry, AxisOrder } from "../Geometry";
+import { BeJSONFunctions, Geometry, AxisOrder, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -17,7 +17,7 @@ import { Matrix3d } from "./Matrix3d";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
+export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
@@ -83,7 +83,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
       result._normal.set(ux / magU, uy / magU, uz / magU);
       return result;
     }
-    return new Plane3dByOriginAndUnitNormal(Point3d.create(ax, ay, az), Vector3d.create (ux / magU, uy / magU, uz / magU));
+    return new Plane3dByOriginAndUnitNormal(Point3d.create(ax, ay, az), Vector3d.create(ux / magU, uy / magU, uz / magU));
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
@@ -177,8 +177,8 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
     transform.multiplyPoint3d(result._origin, result._origin);
-    transform.matrix.multiplyInverseTranspose(result._normal, result._normal);
-    if (result._normal.normalizeInPlace())
+    if (transform.matrix.multiplyInverseTranspose(result._normal, result._normal) !== undefined
+      && result._normal.normalizeInPlace())
       return result;
     return undefined;
   }

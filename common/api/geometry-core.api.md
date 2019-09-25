@@ -365,6 +365,28 @@ export class BagOfCurves extends CurveCollection {
 }
 
 // @public
+export class BarycentricTriangle {
+    protected constructor(point0: Point3d, point1: Point3d, point2: Point3d);
+    readonly area: number;
+    // (undocumented)
+    readonly aspectRatio: number;
+    centroid(result?: Point3d): Point3d;
+    // (undocumented)
+    clone(result?: BarycentricTriangle): BarycentricTriangle;
+    // (undocumented)
+    static create(point0: Point3d, point1: Point3d, point2: Point3d, result?: BarycentricTriangle): BarycentricTriangle;
+    static createXYZXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, result?: BarycentricTriangle): BarycentricTriangle;
+    dotProductOfCrossProductsFromOrigin(other: BarycentricTriangle): number;
+    fractionToPoint(a0: number, a1: number, a2: number, result?: Point3d): Point3d;
+    isAlmostEqual(other: BarycentricTriangle): boolean;
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined): void;
+    setFrom(other: BarycentricTriangle): void;
+    }
+
+// @public
 export interface BeJSONFunctions {
     setFromJSON(json: any): void;
     toJSON(): any;
@@ -859,15 +881,20 @@ export interface Clipper {
 }
 
 // @public
-export class ClipPlane implements Clipper {
+export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
+    altitude(point: Point3d): number;
+    altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
     clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): void;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
+    // @deprecated
     convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance?: number): void;
+    // @deprecated
     convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
+    // @deprecated
     convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d): void;
     static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle: Angle, result?: ClipPlane): ClipPlane | undefined;
     static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined;
@@ -877,7 +904,9 @@ export class ClipPlane implements Clipper {
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     readonly distance: number;
     dotProductPlaneNormalPoint(point: Point3d): number;
+    // @deprecated
     dotProductVector(vector: Vector3d): number;
+    // @deprecated
     evaluatePoint(point: Point3d): number;
     static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined;
     getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined;
@@ -896,13 +925,17 @@ export class ClipPlane implements Clipper {
     multiplyPlaneByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateInPlace(): void;
     offsetDistance(offset: number): void;
+    // @deprecated
     polygonCrossings(xyz: Point3d[], crossings: Point3d[]): void;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
     toJSON(): any;
     transformInPlace(transform: Transform): boolean;
-    }
+    velocity(vector: Vector3d): number;
+    velocityXYZ(x: number, y: number, z: number): number;
+    weightedAltitude(point: Point4d): number;
+}
 
 // @public
 export enum ClipPlaneContainment {
@@ -1633,6 +1666,7 @@ export class Geometry {
     static maxAbsXYZ(x: number, y: number, z: number): number;
     static maxXY(a: number, b: number): number;
     static maxXYZ(a: number, b: number, c: number): number;
+    static minXY(a: number, b: number): number;
     static modulo(a: number, period: number): number;
     static resolveNumber(value: number | undefined, defaultValue?: number): number;
     static restrictToInterval(x: number, a: number, b: number): number;
@@ -1833,6 +1867,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     distanceSquaredIndexIndex(i: number, j: number): number | undefined;
     ensureCapacity(pointCapacity: number): void;
     evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number;
+    evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined;
     float64Data(): Float64Array;
@@ -2214,6 +2249,31 @@ export namespace IModelJson {
 }
 
 // @public
+export class IndexedCollectionInterval<T extends CollectionWithLength> {
+    protected constructor(points: T, base: number, limit: number);
+    advanceBegin(): boolean;
+    advanceEnd(): boolean;
+    advanceToHead(other: IndexedCollectionInterval<T>): boolean;
+    advanceToTail(other: IndexedCollectionInterval<T>): boolean;
+    // (undocumented)
+    begin: number;
+    static createBeginEnd<T extends CollectionWithLength>(points: T, begin: number, end: number): IndexedCollectionInterval<T>;
+    static createBeginLength<T extends CollectionWithLength>(points: T, begin: number, length: number): IndexedCollectionInterval<T>;
+    static createComplete<T extends CollectionWithLength>(points: T): IndexedCollectionInterval<T>;
+    // (undocumented)
+    end: number;
+    readonly isNonEmpty: boolean;
+    readonly isSingleton: boolean;
+    readonly isValidSubset: boolean;
+    readonly length: number;
+    localIndexToParentIndex(localIndex: number): number | undefined;
+    // (undocumented)
+    points: T;
+    restrictEnd(): void;
+    setFrom(other: IndexedCollectionInterval<T>, base?: number, limit?: number): void;
+}
+
+// @public
 export class IndexedPolyface extends Polyface {
     protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]);
     addColor(color: number): number;
@@ -2313,6 +2373,7 @@ export abstract class IndexedXYZCollection {
     abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+    abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     abstract getXAtUncheckedPointIndex(pointIndex: number): number;
     abstract getYAtUncheckedPointIndex(pointIndex: number): number;
@@ -2321,6 +2382,17 @@ export abstract class IndexedXYZCollection {
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
 }
+
+// @public
+export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<IndexedXYZCollection> {
+}
+
+// @public
+export class IndexedXYZCollectionPolygonOps {
+    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): void;
+    static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
+    static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
+    }
 
 // @public
 export enum InverseMatrixState {
@@ -3096,7 +3168,7 @@ export class PathFragment {
 }
 
 // @public
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
+export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
     altitudeXYZ(x: number, y: number, z: number): number;
@@ -3153,6 +3225,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
 // @public
 export interface PlaneAltitudeEvaluator {
     altitude(point: Point3d): number;
+    altitudeXYZ(x: number, y: number, z: number): number;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
     weightedAltitude(point: Point4d): number;
@@ -3232,6 +3305,7 @@ export class Point3d extends XYZ {
     static createScale(source: XYAndZ, scale: number, result?: Point3d): Point3d;
     static createZero(result?: Point3d): Point3d;
     crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d;
+    crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number;
     crossProductToPointsXY(pointA: Point3d, pointB: Point3d): number;
     dotVectorsToTargets(targetA: Point3d, targetB: Point3d): number;
     fractionOfProjectionToLine(startPoint: Point3d, endPoint: Point3d, defaultFraction?: number): number;
@@ -3304,6 +3378,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
     front(result?: Point3d): Point3d | undefined;
     getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+    getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     getXAtUncheckedPointIndex(pointIndex: number): number;
     getYAtUncheckedPointIndex(pointIndex: number): number;
@@ -3319,9 +3394,17 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
 }
 
 // @public
+export class Point3dArrayPolygonOps {
+    static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance?: number): void;
+    static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
+    static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void;
+    }
+
+// @public
 export class Point4d implements BeJSONFunctions {
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
+    altitudeXYZ(x: number, y: number, z: number): number;
     clone(result?: Point4d): Point4d;
     static create(x?: number, y?: number, z?: number, w?: number, result?: Point4d): Point4d;
     static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
@@ -3470,6 +3553,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction?: HalfEdgeToBooleanFunction): void;
     // @internal
     addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]): void;
+    addGreedyTriangulationBetweenLineStrings(pointsA: Point3d[] | LineString3d | IndexedXYZCollection, pointsB: Point3d[] | LineString3d | IndexedXYZCollection): void;
     addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
@@ -3484,6 +3568,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
     addTriangleFan(conePoint: Point3d, ls: LineString3d, toggle: boolean): void;
     addTrianglesInUncheckedConvexPolygon(ls: LineString3d, toggle: boolean): void;
+    addTriangulatedRegion(region: AnyRegion): void;
     addUVGridBody(surface: UVSurface, numU: number, numV: number, uMap?: Segment1d, vMap?: Segment1d): void;
     applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void;
     claimPolyface(compress?: boolean): IndexedPolyface;
@@ -4169,6 +4254,7 @@ export class Sample {
     static createRectangleInRange2d(range: Range2d, z?: number, closed?: boolean): Point3d[];
     static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z?: number): Point3d[];
     static createRecursiveFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createRegularPolygon(cx: number, cy: number, cz: number, angle0: Angle, r: number, numPoint: number, close: boolean): Point3d[];
     static createRigidAxes(): Matrix3d[];
     static createRigidTransforms(): Transform[];
     static createRotationalSweepLineSegment3dArc3dLineString3d(capped: boolean): SolidPrimitive[];
@@ -4792,6 +4878,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
 export class Vector3d extends XYZ {
     constructor(x?: number, y?: number, z?: number);
     addCrossProductToTargetsInPlace(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number): void;
+    angleFromPerpendicular(vectorB: Vector3d): Angle;
     angleTo(vectorB: Vector3d): Angle;
     angleToXY(vectorB: Vector3d): Angle;
     clone(result?: Vector3d): Vector3d;
@@ -4979,9 +5066,9 @@ export class XYZ implements XYAndZ {
     scaledVectorTo(other: XYAndZ, scale: number, result?: Vector3d): Vector3d;
     scaleInPlace(scale: number): void;
     set(x?: number, y?: number, z?: number): void;
-    setFrom(other: Float64Array | XAndY | XYAndZ): void;
+    setFrom(other: Float64Array | XAndY | XYAndZ | undefined): void;
     setFromJSON(json?: XYZProps): void;
-    setFromPoint3d(other: XYAndZ): void;
+    setFromPoint3d(other?: XYAndZ): void;
     setFromVector3d(other: Vector3d): void;
     setZero(): void;
     subtractInPlace(other: XYAndZ): void;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Task#175760 and Task#175773",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}
