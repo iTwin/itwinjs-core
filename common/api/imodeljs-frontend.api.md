@@ -6603,7 +6603,7 @@ export class SpatialModelTileTrees {
     // (undocumented)
     protected _allLoaded: boolean;
     // (undocumented)
-    protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined;
+    protected createTileTreeReference(model: GeometricModel3dState): TileTree.Reference | undefined;
     // (undocumented)
     forEach(func: (treeRef: TileTree.Reference) => void): void;
     // (undocumented)

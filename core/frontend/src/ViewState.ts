@@ -28,7 +28,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, SpatialModelState, GeometricModel3dState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -1536,7 +1536,7 @@ export class SpatialModelTileTrees {
       }
 
       const model = this._iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asSpatialModel : undefined;
+      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
       if (undefined !== model3d) {
         const ref = this.createTileTreeReference(model3d);
         if (undefined !== ref)
@@ -1551,7 +1551,7 @@ export class SpatialModelTileTrees {
       func(value);
   }
 
-  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: GeometricModel3dState): TileTree.Reference | undefined {
     return model.createTileTreeReference(this._view);
   }
 

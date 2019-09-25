@@ -703,7 +703,7 @@ export namespace IModelConnection {
             this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
           }
         }
-      } catch (err) { }  // ignore error, we had nothing to do.
+      } catch (err) { } // ignore error, we had nothing to do.
     }
 
     /** Query for a set of model ranges by ModelIds. */
