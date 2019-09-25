@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Joe G required the tree (empty data) be more descriptive and generic.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "joe.zbuchalski@bentley.com"
+}
