@@ -32,7 +32,7 @@ import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -41,7 +41,7 @@ import {
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1860,5 +1860,32 @@ describe("iModel", () => {
       assert.equal(rowCount, 2);
     });
     iModel.closeSnapshot();
+  });
+
+  it("should import Analytical schema", async () => {
+    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
+    // import schemas
+    const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
+    const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
+    await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
+    iModelDb.saveChanges();
+    // insert partition
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: "TestAnalytical:Partition",
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Partition"),
+    };
+    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
+    assert.isTrue(Id64.isValidId64(partitionId));
+    // insert model
+    const modelProps: ModelProps = {
+      classFullName: "TestAnalytical:Model",
+      modeledElement: { id: partitionId },
+    };
+    const modelId: Id64String = iModelDb.models.insertModel(modelProps);
+    assert.isTrue(Id64.isValidId64(modelId));
+    iModelDb.saveChanges();
+    iModelDb.closeSnapshot();
   });
 });
