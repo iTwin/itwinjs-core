@@ -1,0 +1,13 @@
+{
+  "tools": {
+    "GeoTagTool": {
+      "keyin": "GeoPhoto",
+      "description": "Turns on and off display of GeoTagged photos from Project Share"
+    }
+  },
+  "messages": {
+    "RootFolderName": "Project Share Photos",
+    "PanoramaFile": "{{fileName}} (panorama)",
+    "PhotoFile": "{{fileName}} (photo)"
+  }
+}

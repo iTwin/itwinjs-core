@@ -12,7 +12,7 @@ import { ProgressInfo } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
-import { addSelectFileAccessKey, InstanceIdQuery } from "./Query";
+import { addSelectFileAccessKey, InstanceIdQuery } from "./HubQuery";
 import * as deepAssign from "deep-assign";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;

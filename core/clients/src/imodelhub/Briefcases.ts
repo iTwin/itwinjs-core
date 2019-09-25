@@ -10,9 +10,10 @@ import { FileHandler } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ProgressInfo } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { WsgQuery } from "../WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
-import { addSelectFileAccessKey, Query, addSelectApplicationData } from "./Query";
+import { addSelectFileAccessKey, addSelectApplicationData } from "./HubQuery";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -103,7 +104,7 @@ export class Briefcase extends WsgInstance {
  * Query object for getting [[Briefcase]]s. You can use this to modify the [[BriefcaseHandler.get]] results.
  * @internal
  */
-export class BriefcaseQuery extends Query {
+export class BriefcaseQuery extends WsgQuery {
   private _byId?: number;
   /**
    * Query single [[Briefcase]] by its id. If briefcase is not found, request will be rejected with a [[WsgError]] and status [WSStatus.InstanceNotFound]($bentley).

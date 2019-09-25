@@ -185,7 +185,7 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
+
     if (ElectronRpcConfiguration.isElectron) {
       // cSpell:disable
       let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
@@ -196,6 +196,8 @@ export class SampleAppIModelApp {
 
       if (Config.App.has("imjs_electron_test_redirect_uri"))
         redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
+
+      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
       oidcConfiguration = { clientId, redirectUri, scope };
     } else {
       let clientId = "imodeljs-spa-test-2686";
@@ -206,6 +208,8 @@ export class SampleAppIModelApp {
 
       if (Config.App.has("imjs_browser_test_redirect_uri"))
         redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+
+      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service projectwise-share";
       oidcConfiguration = { clientId, redirectUri, scope };
     }
 

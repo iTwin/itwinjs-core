@@ -32,6 +32,8 @@
     "Cloneable",
     "EPSG",
     "Elems",
+    "Exif",
+    "Flashpix",
     "Frenet",
     "Hilites",
     "Horz",

@@ -11,7 +11,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, RequestOptions } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./Query";
+import { InstanceIdQuery } from "./HubQuery";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 

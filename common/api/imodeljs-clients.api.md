@@ -163,7 +163,7 @@ export class BriefcaseHandler {
     }
 
 // @internal
-export class BriefcaseQuery extends Query {
+export class BriefcaseQuery extends WsgQuery {
     byId(id: number): this;
     getId(): number | undefined;
     ownedByMe(): this;
@@ -273,7 +273,7 @@ export class CheckpointHandler {
     }
 
 // @alpha
-export class CheckpointQuery extends Query {
+export class CheckpointQuery extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
@@ -350,7 +350,7 @@ export class CodeHandler {
     }
 
 // @alpha
-export class CodeQuery extends Query {
+export class CodeQuery extends WsgQuery {
     constructor();
     byBriefcaseId(briefcaseId: number): this;
     byCodes(codes: HubCode[]): this;
@@ -1100,7 +1100,7 @@ export enum InitializationState {
 }
 
 // @beta
-export class InstanceIdQuery extends Query {
+export class InstanceIdQuery extends WsgQuery {
     byId(id: GuidString): this;
     // @internal (undocumented)
     protected _byId?: GuidString;
@@ -1166,7 +1166,7 @@ export enum LockLevel {
 }
 
 // @alpha
-export class LockQuery extends Query {
+export class LockQuery extends WsgQuery {
     constructor();
     byBriefcaseId(briefcaseId: number): this;
     byLockLevel(lockLevel: LockLevel): this;
@@ -1316,24 +1316,88 @@ export class Project extends CommonContext {
     type?: string;
 }
 
-// @beta
-export class Query {
-    // @internal
-    protected addFilter(filter: string, operator?: "and" | "or"): void;
-    // @internal
-    protected addSelect(select: string): this;
-    filter(filter: string): this;
-    // @internal
-    getQueryOptions(): RequestQueryOptions;
-    orderBy(orderBy: string): this;
-    pageSize(n: number): this;
+// @alpha
+export class ProjectShareClient extends WsgClient {
+    constructor();
     // (undocumented)
-    protected _query: RequestQueryOptions;
-    // @internal
-    resetQueryOptions(): void;
-    select(select: string): this;
-    skip(n: number): this;
-    top(n: number): this;
+    static readonly configRegion = "imjs_project_share_client_region";
+    // (undocumented)
+    static readonly configRelyingPartyUri = "imjs_project_share_client_relying_party_uri";
+    // (undocumented)
+    static readonly configURL = "imjs_project_share_client_url";
+    downloadFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array>;
+    protected getDefaultUrl(): string;
+    getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]>;
+    getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]>;
+    // (undocumented)
+    protected getRegion(): number | undefined;
+    // (undocumented)
+    protected getRelyingPartyUrl(): string;
+    getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
+    protected getUrlSearchKey(): string;
+    // (undocumented)
+    static readonly searchKey: string;
+    updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, customProperties: Array<{
+        Name: string;
+        Value: string;
+    }>): Promise<ProjectShareFile>;
+}
+
+// @alpha
+export class ProjectShareFile extends WsgInstance {
+    accessUrl?: string;
+    // (undocumented)
+    contentType?: string;
+    // (undocumented)
+    createdBy?: string;
+    // (undocumented)
+    createdTimeStamp?: string;
+    // (undocumented)
+    customProperties?: any;
+    // (undocumented)
+    instanceId?: string;
+    // (undocumented)
+    modifiedBy?: string;
+    // (undocumented)
+    modifiedTimeStamp?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parentFolderWsgId?: string;
+    // (undocumented)
+    path?: string;
+    // (undocumented)
+    size?: number;
+}
+
+// @alpha
+export class ProjectShareFolder extends WsgInstance {
+    // (undocumented)
+    contentType?: string;
+    // (undocumented)
+    createdBy?: string;
+    // (undocumented)
+    createdTimeStamp?: string;
+    // (undocumented)
+    modifiedBy?: string;
+    // (undocumented)
+    modifiedTimeStamp?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parentFolderId?: string;
+    // (undocumented)
+    path?: string;
+    // (undocumented)
+    size?: number;
+}
+
+// @alpha
+export class ProjectShareQuery extends WsgQuery {
+    byWsgIds(...ids: GuidString[]): this;
+    inFolder(folderId: GuidString): this;
+    inPath(contextId: GuidString, path: string): this;
+    inRootFolder(contextId: GuidString): this;
 }
 
 // @internal
@@ -1683,7 +1747,7 @@ export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
 // @beta
-export class StringIdQuery extends Query {
+export class StringIdQuery extends WsgQuery {
     byId(id: string): this;
     // @internal (undocumented)
     protected _byId?: string;
@@ -1875,7 +1939,7 @@ export class UserInfoHandler {
 }
 
 // @alpha
-export class UserInfoQuery extends Query {
+export class UserInfoQuery extends WsgQuery {
     byId(id: string): this;
     // @internal (undocumented)
     protected _byId?: string;
@@ -1902,7 +1966,7 @@ export class UserStatisticsHandler {
     }
 
 // @alpha
-export class UserStatisticsQuery extends Query {
+export class UserStatisticsQuery extends WsgQuery {
     // @internal
     constructor();
     byId(id: string): this;
@@ -2002,6 +2066,26 @@ export abstract class WsgInstance extends ECInstance {
     eTag?: string;
     // (undocumented)
     wsgId: string;
+}
+
+// @beta
+export class WsgQuery {
+    // @internal
+    protected addFilter(filter: string, operator?: "and" | "or"): void;
+    // @internal
+    protected addSelect(select: string): this;
+    filter(filter: string): this;
+    // @internal
+    getQueryOptions(): RequestQueryOptions;
+    orderBy(orderBy: string): this;
+    pageSize(n: number): this;
+    // (undocumented)
+    protected _query: RequestQueryOptions;
+    // @internal
+    resetQueryOptions(): void;
+    select(select: string): this;
+    skip(n: number): this;
+    top(n: number): this;
 }
 
 // @beta

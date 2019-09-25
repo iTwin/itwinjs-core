@@ -10,7 +10,7 @@ import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./Query";
+import { InstanceIdQuery } from "./HubQuery";
 import { ThumbnailSize } from "./Thumbnails";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;

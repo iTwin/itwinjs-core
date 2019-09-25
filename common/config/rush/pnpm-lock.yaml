@@ -20,6 +20,7 @@ dependencies:
   '@rush-temp/export-obj': 'file:projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:projects/frontend-devtools.tgz'
+  '@rush-temp/geo-photo': 'file:projects/geo-photo.tgz'
   '@rush-temp/geometry-core': 'file:projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz_request@2.88.0'
   '@rush-temp/imodel-from-reality-model': 'file:projects/imodel-from-reality-model.tgz'
@@ -264,7 +265,7 @@ dependencies:
   svg-react-loader: 0.4.6
   svg-sprite-loader: 3.9.2
   sw-precache-webpack-plugin: 0.11.5_webpack@4.41.0
-  tar: 4.4.11
+  tar: 4.4.12
   tooltip.js: 1.3.2
   tree-kill: 1.2.1
   ts-key-enum: 2.0.0
@@ -4942,7 +4943,7 @@ packages:
       integrity: sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==
   /fs-minipass/1.2.7:
     dependencies:
-      minipass: 2.8.5
+      minipass: 2.8.6
     dev: false
     resolution:
       integrity: sha512-GWSSJGFy4e9GUeCcbIkED+bgAoFyj7XF1mV8rma3QW4NIqX9Kyx79N/PF61H5udOV3aY1IaMLs6pGbH71nlCTA==
@@ -7662,16 +7663,16 @@ packages:
     dev: false
     resolution:
       integrity: sha1-o1AIsg9BOD7sH7kU9M1d95omQoQ=
-  /minipass/2.8.5:
+  /minipass/2.8.6:
     dependencies:
       safe-buffer: 5.2.0
       yallist: 3.0.3
     dev: false
     resolution:
-      integrity: sha512-D5+szmZBoOAfbLjOXY4Ve5bWylyTdrUOmbJPgYmgTF5ovCnCFFTY+I16Ccm/UjSNNAekXtIEDvoCDioFzRz18Q==
+      integrity: sha512-lFG7d6g3+/UaFDCOtqPiKAC9zngWWsQZl1g5q6gaONqrjq61SX2xFqXMleQiFVyDpYwa018E9hmlAFY22PCb+A==
   /minizlib/1.2.2:
     dependencies:
-      minipass: 2.8.5
+      minipass: 2.8.6
     dev: false
     resolution:
       integrity: sha512-hR3At21uSrsjjDTWrbu0IMLTpnkpv8IIMFDFaoz43Tmu4LkmAXfH44vNNzpTnf+OAQQCHrb91y/wc2J4x5XgSQ==
@@ -11724,11 +11725,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-FCEhQ/4rE1zYv9rYXJw/msRqsnmlje5jHP6huWeBZ704jUTy02c5AZyWujpMR1ax6mVw9NyJMfuK2CMDWVIfgA==
-  /tar/4.4.11:
+  /tar/4.4.12:
     dependencies:
       chownr: 1.1.2
       fs-minipass: 1.2.7
-      minipass: 2.8.5
+      minipass: 2.8.6
       minizlib: 1.2.2
       mkdirp: 0.5.1
       safe-buffer: 5.2.0
@@ -11737,7 +11738,7 @@ packages:
     engines:
       node: '>=4.5'
     resolution:
-      integrity: sha512-iI4zh3ktLJKaDNZKZc+fUONiQrSn9HkCFzamtb7k8FFmVilHVob7QsLX/VySAW8lAviMzMbFw4QtFb4errwgYA==
+      integrity: sha512-4GwpJwdSjIHlUrWd/1yJrl63UqcqjJyVglgIwn4gcG+Lrp9TXpZ1ZRrGLIRBNqLTUvz6yoPJrX4B/MISxY/Ukg==
   /term-size/1.2.0:
     dependencies:
       execa: 0.7.0
@@ -13817,6 +13818,22 @@ packages:
       integrity: sha512-w1pKDJ10dZe7bruKG2o3rkUcYaC5VziC55opm3flliZFpT2UE64ubtifjdy93w8HN2OiyYYeXIC5Y4ETmHWwyg==
       tarball: 'file:projects/frontend-devtools.tgz'
     version: 0.0.0
+  'file:projects/geo-photo.tgz':
+    dependencies:
+      '@types/node': 10.14.1
+      rimraf: 2.7.1
+      tsconfig-paths: 3.9.0
+      tslint: 5.20.0_typescript@3.5.3
+      tslint-etc: 1.7.0_tslint@5.20.0+typescript@3.5.3
+      typescript: 3.5.3
+      webpack: 4.41.0_webpack@4.41.0
+      webpack-cli: 3.3.9_webpack@4.41.0
+    dev: false
+    name: '@rush-temp/geo-photo'
+    resolution:
+      integrity: sha512-ThaIlybh2hQ3e/WV6P+26FzgtnQ77sxVJivwH1vEcXHO3VXmrDoDokL+NW7mC5zHVF3ogMIyR5WDmRKTG7rTNw==
+      tarball: 'file:projects/geo-photo.tgz'
+    version: 0.0.0
   'file:projects/geometry-core.tgz':
     dependencies:
       '@types/chai': 4.2.3
@@ -14117,7 +14134,7 @@ packages:
       cors: 2.8.5
       express: 4.17.1
       rimraf: 2.7.1
-      tar: 4.4.11
+      tar: 4.4.12
       tree-kill: 1.2.1
       tslint: 5.20.0_typescript@3.5.3
       tslint-etc: 1.7.0_tslint@5.20.0+typescript@3.5.3
@@ -14914,7 +14931,7 @@ packages:
       style-loader: 0.21.0
       svg-sprite-loader: 3.9.2
       sw-precache-webpack-plugin: 0.11.5_webpack@4.41.0
-      tar: 4.4.11
+      tar: 4.4.12
       tree-kill: 1.2.1
       ts-loader: 6.1.2_typescript@3.5.3
       tslint: 5.20.0_typescript@3.5.3
@@ -14995,6 +15012,7 @@ specifiers:
   '@rush-temp/export-obj': 'file:./projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:./projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:./projects/frontend-devtools.tgz'
+  '@rush-temp/geo-photo': 'file:./projects/geo-photo.tgz'
   '@rush-temp/geometry-core': 'file:./projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:./projects/imodel-from-reality-model.tgz'

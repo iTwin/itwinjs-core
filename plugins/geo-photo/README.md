@@ -1,10 +1,10 @@
-# Test Tools Example Plugin
+# Geotag Photo Viewer Example Plugin
 
 Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
-An iModel.js example Plugin that adds some tools used for testing various WIP features in iModel.js.
+An iModel.js Plugin that interrogates Project Share for geoTagged jpeg files, displays markers at their position in the iModel, and opens them in another window when the marker is clicked.
 
-This plugin serves as an example of a plugin that can be added to iModel.js host applications.
+This plugin is an example of a plugin that can be added to iModel.js host applications.
 See http://imodeljs.org for comprehensive documentation on the iModel.js API and the various constructs used in this sample.
 
 ## Development Setup
@@ -19,7 +19,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_plugins/testTools directory in the web resources of the host application.
+4. Copy all the output files in the lib/build directory tree to imjs_plugins/geoPhoto directory in the web resources of the host application.
 
 5. Start the host application - go to its directory and run:
 
@@ -29,7 +29,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Start the plugin using the PluginTool - PluginTool.run("localhost:3000/testTools");
+7. Start the plugin using the PluginTool - PluginTool.run("localhost:3000/geoPhoto");
 
 ## Contributing
 

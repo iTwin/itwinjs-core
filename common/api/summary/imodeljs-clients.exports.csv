@@ -132,7 +132,10 @@ internal;Permission
 internal;ProductVersion
 beta;ProgressInfo
 beta;Project 
-beta;Query
+alpha;ProjectShareClient 
+alpha;ProjectShareFile 
+alpha;ProjectShareFolder 
+alpha;ProjectShareQuery 
 internal;RbacProject 
 internal;RbacRequestQueryOptions 
 internal;RbacUser 
@@ -182,4 +185,5 @@ beta;VersionQuery
 beta;class WsgClient 
 beta;WsgError 
 beta;class WsgInstance 
+beta;WsgQuery
 beta;WsgRequestOptions

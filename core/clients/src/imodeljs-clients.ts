@@ -15,11 +15,13 @@ export * from "./IModelClient";
 export * from "./ImsClients";
 export * from "./ClientsLoggerCategory";
 export * from "./Config";
+export * from "./projectshare/ProjectShareClient";
 export * from "./Request";
 export * from "./RealityDataServicesClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
 export * from "./AuthorizedClientRequestContext";
+export * from "./WsgQuery";
 
 export * from "./imodelbank/IModelBankClient";
 export * from "./imodelbank/IModelBankHandler";
@@ -27,7 +29,7 @@ export * from "./imodelbank/IModelBankFileSystemContextClient";
 
 export * from "./imodelhub/BaseHandler";
 export * from "./imodelhub/Client";
-export * from "./imodelhub/Query";
+export * from "./imodelhub/HubQuery";
 export * from "./imodelhub/Errors";
 export * from "./imodelhub/Briefcases";
 export * from "./imodelhub/ChangeSets";
