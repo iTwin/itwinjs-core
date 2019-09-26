@@ -3666,7 +3666,7 @@ export class QPoint3d {
 export class QPoint3dList {
     // (undocumented)
     [Symbol.iterator](): {
-        next: () => IteratorResult<QPoint3d>;
+        next: () => IteratorResult<QPoint3d, any>;
     };
     constructor(paramsIn?: QParams3d);
     add(pt: Point3d): void;

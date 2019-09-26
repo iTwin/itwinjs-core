@@ -1840,6 +1840,18 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithIsPressedProps, context?: any): {
         handleOnPointerDown: () => void;
@@ -1857,6 +1869,18 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
@@ -1886,6 +1910,16 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
         ref: HTMLDivElement | undefined;
@@ -1904,6 +1938,16 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
@@ -1932,6 +1976,15 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithTimeoutProps, context?: any): {
         timer: Timer;
@@ -1950,6 +2003,15 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };

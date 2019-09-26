@@ -94,9 +94,9 @@ export class KeyboardShortcut extends ItemDefBase {
 
     this._key = props.key;
 
-    if (Object.values(FunctionKey).includes(this._key))
+    if (this._key in FunctionKey)
       this._isFunctionKey = true;
-    if (Object.values(SpecialKey).includes(this._key))
+    if (this._key in SpecialKey)
       this._isSpecialKey = true;
 
     this._shortcuts = new KeyboardShortcutContainer();

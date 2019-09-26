@@ -3,6 +3,10 @@ ignore: true
 ---
 # NextVersion
 
+## Upgrade to TypeScript 3.6.2
+
+* This version now uses TypeScript version 3.6.2. It is recommended that consumers of iModel.js packages upgrade to that version too.
+
 ## Display system enhancements
 
 ### Performance enhancements
@@ -12,69 +16,8 @@ ignore: true
 
 ## Blank IModelConnections
 
-The new method `IModelConnection.createBlank` provides a way for applications to create an `IModelConnection` that is not connected to an iModel or a backend. This is useful for using iModel.js to show *just* Reality data (reality meshes, point clouds, terrain, etc.), background maps, and other non-iModel-based graphics without requiring a backend server. There is also a new convenience method `SpatialViewState.createBlank` to create a *blank* spatial view appropriate for these non-iModel based visualizations. See the BlankConnections learning article for further details.
-
-## Geometry
-
-* PolyfaceQuery method to partition by connectivity.  Delauney triangle performance is comparable to native.
-* Optimize triangle flipping
-* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
-* `PolyfaceBuilder` method to build triangles "between" loosely related linestrings.
-
-### Details
-
-* `PolyfaceQuery` methods
-  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has an edge in common with others in the same array.
-  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has (at least) a vertex in common with others in the same array.
-  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
-    * Return an array of polyfaces
-    * Each polyface has all the facets from one of the input facet index arrays.
-  * `PolyfaceVisitor`
-    * `myVisitor.setNumWrap (numWrap: number)`
-      * set numWrap for subsequent visits.
-  * `PolyfaceBuilder`
-    * `myBuilder.reversed: boolean`
-      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
-      * Carry `twoSided` flag through polyface builder actions.
-    * new method  [PolyfaceBuilder.addTriangulatedRegion]($geometry)
-    * new method  [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry)
-  * `PolyfaceQuery`
-    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-  * `UnionFindContext`
-    * New class to implement the UnionFind algorithm on a set of integers.
-  * `HalfEdge`
-    * [HalfEdge.setMaskAroundEdge]($geometry)
-    * [HalfEdge.clearMaskAroundEdge]($geometry)
-  * `HalfEdgeGraph`
-    * [HalfEdgeGraph.grabMask]($geometry)
-    * [HalfEdgeGraph.grabMask]($geometry)
-  * `Triangulation`
-    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
- * Classes for 2d range searching.
-    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
-    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
-    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
-    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
-  * Refactoring to make [ClipPlane]($geometry) less aware of collection APIs:
-    * Move polygon clip logic from `ClipPlane` to new classes [Point3dArrayPolygonOps]($geometry) and [IndexedXYZPolygonOps]($geometry).
-      * `ClipPlane`methods move to the static classes:
-        * `convexPolygonClipInPlace`
-        * `convexPolygonSplitInsideOutsideGrowableArrays`
-        * `convexPolygonSplitInsideOutsideGrowableArrays`
-    * Clip plane implements formal interface `PlaneAltitudeEvaluator`
-      * Preferred small method names:
-         * `altitude` instead of `evaluatePoint`
-         * `velocity` instead of `dotProductVector`
-  * Incidental methods
-    * (new method) [Point3d.crossProductToPointsMagnitude]($geometry)
-    * (new method) [Vector3d.angleFromPerpendicular]($geometry)
-    * (new class) BarycentricTriangle
-    * (new class) IndexedCollectionInterval
-
+* The new method [IModelConnection.createBlank]($frontend) provides a way for applications to create an `IModelConnection` that is not connected to an iModel or a backend. This is useful for using iModel.js to show *just* Reality data (reality meshes, point clouds, terrain, etc.), background maps, and other non-iModel-based graphics without requiring a backend server.
+* There is also a new convenience method [SpatialViewState.createBlank]($frontend) to create a *blank* spatial view appropriate for these non-iModel based visualizations. See the [Blank Connection]($docs/learning/frontend/BlankConnection.md) learning article for further details.
 
 ## Favorite Properties
 
@@ -142,6 +85,7 @@ private async buildContextMenu(args: PropertyGridContextMenuArgs) {
   }
 }
 ```
+
 ## Geometry
 
 ### Summary
@@ -186,4 +130,3 @@ private async buildContextMenu(args: PropertyGridContextMenuArgs) {
     * `LinearSearchRange2dArray` -- array of Range2d for linear search.
     * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
     * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
-

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "upgrade to TypeScript 3.6.2",
+      "packageName": "@bentley/certa",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "Keith.Bentley@bentley.com"
+}

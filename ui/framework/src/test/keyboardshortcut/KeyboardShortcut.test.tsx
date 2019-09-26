@@ -16,6 +16,7 @@ import {
   SpecialKey,
   KeyboardShortcutContainer,
   ConfigurableUiManager,
+  KeyboardShortcut,
 } from "../../ui-framework";
 
 import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -57,6 +58,18 @@ describe("KeyboardShortcut", () => {
   describe("KeyboardShortcut", () => {
     it("Providing no item or shortcuts should throw Error", () => {
       expect(() => KeyboardShortcutManager.loadKeyboardShortcut({ key: "a" })).to.throw(Error);
+    });
+
+    it("should support function keys", () => {
+      const keyboardShortcut = new KeyboardShortcut({ key: FunctionKey.F7, item: testCommand });
+      expect(keyboardShortcut.isFunctionKey).to.be.true;
+      expect(keyboardShortcut.isSpecialKey).to.be.false;
+    });
+
+    it("should support special keys", () => {
+      const keyboardShortcut = new KeyboardShortcut({ key: SpecialKey.ArrowDown, item: testCommand });
+      expect(keyboardShortcut.isSpecialKey).to.be.true;
+      expect(keyboardShortcut.isFunctionKey).to.be.false;
     });
 
     it("Should provide and execute item", async () => {

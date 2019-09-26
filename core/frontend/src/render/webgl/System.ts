@@ -587,7 +587,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
     let context = canvas.getContext("webgl", contextAttributes);
     if (null === context) {
-      context = canvas.getContext("experimental-webgl", contextAttributes); // IE, Edge...
+      context = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
       if (null === context) {
         return undefined;
       }

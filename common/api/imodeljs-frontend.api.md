@@ -1192,6 +1192,7 @@ export namespace Attachments {
         // (undocumented)
         readonly viewport: AttachmentViewport;
     }
+    {};
 }
 
 // @public
@@ -5701,6 +5702,7 @@ export namespace RenderScheduleState {
         // (undocumented)
         value: number;
     }
+    {};
 }
 
 // @internal
