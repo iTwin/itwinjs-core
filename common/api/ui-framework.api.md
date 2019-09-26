@@ -110,6 +110,7 @@ import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
+import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
@@ -1120,6 +1121,8 @@ export class ContentViewManager {
 // @public
 export class CoreTools {
     // (undocumented)
+    static readonly clearSelectionItemDef: CommandItemDef;
+    // (undocumented)
     static readonly fitViewCommand: ToolItemDef;
     // (undocumented)
     static readonly flyViewCommand: ToolItemDef;
@@ -1130,7 +1133,15 @@ export class CoreTools {
     // (undocumented)
     static readonly rotateViewCommand: ToolItemDef;
     // (undocumented)
-    static readonly sectionByPlaneCommand: ToolItemDef;
+    static readonly sectionByElementCommandItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly sectionByPlaneCommandItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly sectionByRangeCommandItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly sectionByShapeCommandItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly sectionToolGroup: GroupItemDef;
     // (undocumented)
     static readonly selectElementCommand: ToolItemDef;
     // (undocumented)
@@ -2375,6 +2386,13 @@ export interface IModelViewportControlOptions {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
+// @beta
+export class Indicator extends React_2.Component<IndicatorProps, any> {
+    constructor(props: IndicatorProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
 // @public
 export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
     // (undocumented)
@@ -3367,6 +3385,19 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     onAnimationFractionChanged: (animationFraction: number) => void;
     // (undocumented)
     onPlaybackSettingChanged: (settings: PlaybackSettings) => void;
+    }
+
+// @beta
+export class SectionsStatusField extends React_2.Component<any, any> {
+    constructor(props: any);
+    componentDidMount(): void;
+    componentWillUnmount(): void;
+    handleClear(): void;
+    handleClick(): void;
+    handleShowHideManipulators(_checked: boolean): void;
+    // (undocumented)
+    render(): JSX.Element;
+    renderContents(): JSX.Element;
     }
 
 // @public
@@ -4524,6 +4555,20 @@ export interface VersionInfo {
     smallThumbnail?: string;
     // (undocumented)
     userCreated?: string;
+}
+
+// @beta
+export class ViewAttributesStatusField extends React_2.Component<any, ViewAttributesStatusFieldState> {
+    constructor(props: any);
+    // (undocumented)
+    componentDidMount(): void;
+    handleClick(): void;
+    // (undocumented)
+    handleViewFlagClick: (flagName: string) => void;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    updateState(toggleOpened?: boolean): void;
 }
 
 // @beta

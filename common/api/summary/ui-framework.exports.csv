@@ -201,6 +201,7 @@ internal;IModelUserInfo
 beta;IModelViewportControl 
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
+beta;Indicator 
 public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
@@ -307,6 +308,7 @@ beta;SavedViewLayout
 beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
+beta;SectionsStatusField 
 public;SelectionInfoField: any
 public;SelectionScopeField: any
 public;SeparatorBackstageItem 
@@ -422,6 +424,7 @@ beta;UiVisibilityChangedEvent
 beta;UiVisibilityEventArgs
 alpha;ValidationTextbox 
 internal;VersionInfo
+beta;ViewAttributesStatusField 
 beta;ViewLayout
 public;ViewportContentControl 
 beta;ViewSelector 

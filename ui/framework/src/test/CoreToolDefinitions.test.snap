@@ -257,6 +257,81 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
               }
             }
           />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_tooltip": "",
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-element",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByElement",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_tooltip": "",
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-shape",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByShape",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_tooltip": "",
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-range",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByRange",
+              }
+            }
+          />
         </UNDEFINED>
       }
       panelAlignment={0}
@@ -309,7 +384,6 @@ exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
       />
     </WithOnOutsideClick>
   }
-  tooltip="keyinbrowser (tooltip)"
 >
   <Item
     badge={<BetaBadge />}

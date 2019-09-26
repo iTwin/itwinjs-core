@@ -34,7 +34,10 @@ describe("CoreToolDefinitions", () => {
             <ActionItemButton actionItem={CoreTools.walkViewCommand} />
             <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} />
             <ActionItemButton actionItem={CoreTools.flyViewCommand} />
-            <ActionItemButton actionItem={CoreTools.sectionByPlaneCommand} />
+            <ActionItemButton actionItem={CoreTools.sectionByPlaneCommandItemDef} />
+            <ActionItemButton actionItem={CoreTools.sectionByElementCommandItemDef} />
+            <ActionItemButton actionItem={CoreTools.sectionByShapeCommandItemDef} />
+            <ActionItemButton actionItem={CoreTools.sectionByRangeCommandItemDef} />
           </>
         }
       />;

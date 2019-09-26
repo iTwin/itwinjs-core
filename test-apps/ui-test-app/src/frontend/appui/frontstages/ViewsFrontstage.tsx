@@ -395,19 +395,6 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _clearSelectionItem() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
-      execute: () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (iModelConnection) {
-          iModelConnection.selectionSet.emptyAll();
-        }
-        IModelApp.toolAdmin.startDefaultTool();
-      },
-    });
-  }
-
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
@@ -673,7 +660,7 @@ class FrontstageToolWidget extends React.Component {
           groupId: "tool-formatting-setting",
           labelKey: "SampleApp:buttons.toolGroup",
           iconSpec: "icon-placeholder",
-          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
+          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, CoreTools.clearSelectionItemDef],
           itemsInColumn: 4,
         }),
       ],
@@ -777,7 +764,7 @@ class FrontstageNavigationWidget extends React.Component {
     CoreTools.windowAreaCommand,
     CoreTools.zoomViewCommand,
     CoreTools.panViewCommand,
-    CoreTools.sectionByPlaneCommand,
+    CoreTools.sectionToolGroup,
     this._rotateViewCommand,  /* Use an SVG icon  */
   ]);
 

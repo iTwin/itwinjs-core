@@ -126,7 +126,8 @@
   },
   "buttons": {
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "clearSelection": "Clear Selection"
   },
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
@@ -135,6 +136,9 @@
     "backToPreviousFrontstage": "Back to previous Frontstage"
   },
   "tools": {
+    "sectionTools": "Section Tools",
+    "sectionClear": "Clear Sections",
+    "sectionShowHandles": "Section Handles:",
     "View": {
       "Fly": {
         "description": "Fly in view",
@@ -162,7 +166,19 @@
   "listTools": {
     "searchViews": "Search Views...",
     "listView": "List",
-    "thumbnailView": "Thumbnails"
+    "thumbnailView": "Thumbnails",
+    "camera": "Camera",
+    "selectVersion": "Select Version",
+    "views": "Saved Views",
+    "viewAttributes": "View Attributes",
+    "constructions": "Constructions",
+    "acs": "ACS",
+    "grid": "Grid",
+    "visEdges": "Visible Edges",
+    "hidEdges": "Hidden Edges",
+    "monochrome": "Monochrome Display",
+    "ambientOcclusion": "Ambient Occlusion",
+    "shadows": "Shadows"
   },
   "visibilityWidget": {
     "modeltree": "Model Tree",
