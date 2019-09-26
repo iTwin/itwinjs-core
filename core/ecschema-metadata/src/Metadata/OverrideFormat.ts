@@ -91,7 +91,10 @@ export class OverrideFormat {
     if (undefined === unitAndLabels)
       return fullName;
     for (const [unit, unitLabel] of unitAndLabels)
-      fullName += `[${unit.fullName}|${unitLabel}]`;
+      if (undefined === unitLabel)
+        fullName += `[${unit.fullName}]`;
+      else
+        fullName += `[${unit.fullName}|${unitLabel}]`;
     return fullName;
   }
 }
