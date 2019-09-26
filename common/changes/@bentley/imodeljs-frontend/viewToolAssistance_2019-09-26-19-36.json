@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#168481 Tool assistance for viewing tools. Prompt punctuation consistency.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

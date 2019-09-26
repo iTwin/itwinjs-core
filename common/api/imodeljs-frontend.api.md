@@ -2735,6 +2735,8 @@ export class FitViewTool extends ViewTool {
     oneShot: boolean;
     // (undocumented)
     onPostInstall(): void;
+    // @beta (undocumented)
+    provideToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2784,6 +2786,8 @@ export class FlyViewTool extends ViewManip {
     static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
+    // @beta (undocumented)
+    provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
 }
@@ -6322,12 +6326,12 @@ export class SetupCameraTool extends PrimitiveTool {
     onRestartTool(): void;
     // (undocumented)
     onUnsuspend(): void;
+    // @beta (undocumented)
+    protected provideToolAssistance(): void;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
-    protected showPrompt(): void;
     // (undocumented)
     supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
     // (undocumented)
@@ -9013,6 +9017,8 @@ export abstract class ViewManip extends ViewTool {
     processFirstPoint(ev: BeButtonEvent): boolean;
     // (undocumented)
     processPoint(ev: BeButtonEvent, inDynamics: boolean): boolean;
+    // @beta (undocumented)
+    provideToolAssistance(mainInstrKey: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
     setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus;
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
@@ -9682,6 +9688,8 @@ export class WalkViewTool extends ViewManip {
     static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
+    // @beta (undocumented)
+    provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
 }
@@ -9798,6 +9806,8 @@ export class WindowAreaTool extends ViewTool {
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
+    // @beta (undocumented)
+    provideToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }

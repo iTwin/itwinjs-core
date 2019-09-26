@@ -23,6 +23,7 @@ import { PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properti
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { LengthDescription } from "../properties/LengthDescription";
 import { PrimitiveValue } from "../properties/Value";
+import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -398,6 +399,36 @@ export abstract class ViewManip extends ViewTool {
   public onPostInstall(): void {
     super.onPostInstall();
     this.onReinitialize(); // Call onReinitialize now that tool is installed.
+  }
+
+  /** @beta */
+  public provideToolAssistance(mainInstrKey: string, additionalInstr?: ToolAssistanceInstruction[]): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainInstrKey));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint");
+    const rejectMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit");
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    if (undefined !== additionalInstr) {
+      for (const instr of additionalInstr) {
+        if (ToolAssistanceInputMethod.Touch === instr.inputMethod)
+          touchInstructions.push(instr);
+        else
+          mouseInstructions.push(instr);
+      }
+    }
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 
   public onCleanup(): void {
@@ -829,7 +860,7 @@ class ViewPan extends HandleWithInertia {
     }
 
     this.viewTool.beginDynamicUpdate();
-    ViewTool.showPrompt("Pan.Prompts.NextPoint");
+    this.viewTool.provideToolAssistance("CoreTools:tools.View.Pan.Prompts.NextPoint");
     return true;
   }
 
@@ -897,7 +928,7 @@ class ViewRotate extends HandleWithInertia {
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
-    ViewTool.showPrompt("Rotate.Prompts.NextPoint");
+    this.viewTool.provideToolAssistance("CoreTools:tools.View.Rotate.Prompts.NextPoint");
     return true;
   }
 
@@ -999,7 +1030,7 @@ class ViewLook extends ViewingToolHandle {
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
-    ViewTool.showPrompt("Look.Prompts.NextPoint");
+    this.viewTool.provideToolAssistance("CoreTools:tools.View.Look.Prompts.NextPoint");
     return true;
   }
 
@@ -1101,7 +1132,7 @@ class ViewScroll extends ViewingToolHandle {
     this._anchorPtView.setFrom(ev.viewPoint);
     this._lastPtView.setFrom(ev.viewPoint);
     tool.beginDynamicUpdate();
-    ViewTool.showPrompt("Scroll.Prompts.NextPoint");
+    this.viewTool.provideToolAssistance("CoreTools:tools.View.Scroll.Prompts.NextPoint");
     return true;
   }
 
@@ -1215,7 +1246,7 @@ class ViewZoom extends ViewingToolHandle {
         this._lastPtView.setFrom(this._anchorPtView);
         tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
         tool.beginDynamicUpdate();
-        ViewTool.showPrompt("Zoom.Prompts.NextPoint");
+        this.viewTool.provideToolAssistance("CoreTools:tools.View.Zoom.Prompts.NextPoint");
         return true;
       }
     }
@@ -1227,7 +1258,7 @@ class ViewZoom extends ViewingToolHandle {
     this._lastPtView.setFrom(this._anchorPtView);
     tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
     tool.beginDynamicUpdate();
-    ViewTool.showPrompt("Zoom.Prompts.NextPoint");
+    this.viewTool.provideToolAssistance("CoreTools:tools.View.Zoom.Prompts.NextPoint");
     return true;
   }
 
@@ -1625,7 +1656,7 @@ class ViewWalk extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
-  public firstPoint(ev: BeButtonEvent): boolean { ViewTool.showPrompt("Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("CoreTools:tools.View.Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1662,7 +1693,7 @@ class ViewFly extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
-  public firstPoint(ev: BeButtonEvent): boolean { ViewTool.showPrompt("Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("CoreTools:tools.View.Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1701,7 +1732,7 @@ export class PanViewTool extends ViewManip {
   constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Pan.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Pan.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a Rotate view operation
@@ -1713,7 +1744,7 @@ export class RotateViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Rotate.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation
@@ -1725,7 +1756,7 @@ export class LookViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Look.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation
@@ -1737,7 +1768,7 @@ export class ScrollViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Scroll.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation
@@ -1749,7 +1780,7 @@ export class ZoomViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Zoom.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Zoom.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the walk operation
@@ -1761,7 +1792,15 @@ export class WalkViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Walk.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Walk.Prompts.FirstPoint"); }
+
+  /** @beta */
+  public provideToolAssistance(mainInstrKey: string): void {
+    const walkInstructions: ToolAssistanceInstruction[] = [];
+    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.View.Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.View.Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    super.provideToolAssistance(mainInstrKey, walkInstructions);
+  }
 }
 
 /** A tool that performs the fly operation
@@ -1773,7 +1812,15 @@ export class FlyViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Fly.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("CoreTools:tools.View.Fly.Prompts.FirstPoint"); }
+
+  /** @beta */
+  public provideToolAssistance(mainInstrKey: string): void {
+    const flyInstructions: ToolAssistanceInstruction[] = [];
+    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.View.Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.View.Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    super.provideToolAssistance(mainInstrKey, flyInstructions);
+  }
 }
 
 /** A tool that performs a fit view
@@ -1793,6 +1840,27 @@ export class FitViewTool extends ViewTool {
     this.isolatedOnly = isolatedOnly;
   }
 
+  /** @beta */
+  public provideToolAssistance(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.View.Fit.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Accept");
+    const rejectMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit");
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
+
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return await this.doFit(ev.viewport, this.oneShot, this.doAnimate, this.isolatedOnly) ? EventHandled.Yes : EventHandled.No;
@@ -1803,7 +1871,7 @@ export class FitViewTool extends ViewTool {
   public onPostInstall() {
     super.onPostInstall();
     if (undefined === this.viewport || !this.oneShot)
-      ViewTool.showPrompt("Fit.Prompts.FirstPoint");
+      this.provideToolAssistance();
 
     if (this.viewport)
       this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // tslint:disable-line:no-floating-promises
@@ -1862,9 +1930,31 @@ export class WindowAreaTool extends ViewTool {
   private _shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
   private _fillColor = ColorDef.from(0, 0, 255, 200);
 
-  public onPostInstall() { super.onPostInstall(); ViewTool.showPrompt("WindowArea.Prompts.FirstPoint"); }
-  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); ViewTool.showPrompt("WindowArea.Prompts.FirstPoint"); }
+  public onPostInstall() { super.onPostInstall(); this.provideToolAssistance(); }
+  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); this.provideToolAssistance(); }
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
+
+  /** @beta */
+  public provideToolAssistance(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(this._haveFirstPoint ? "CoreTools:tools.View.WindowArea.Prompts.NextPoint" : "CoreTools:tools.View.WindowArea.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint");
+    const restartMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart");
+    const exitMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit");
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, exitMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, this._haveFirstPoint ? restartMsg : exitMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) {
@@ -1890,7 +1980,7 @@ export class WindowAreaTool extends ViewTool {
       this._secondPtWorld.setFrom(this._firstPtWorld);
       this._haveFirstPoint = true;
       this._lastPtView = ev.viewPoint;
-      ViewTool.showPrompt("WindowArea.Prompts.NextPoint");
+      this.provideToolAssistance();
     }
 
     return EventHandled.Yes;
@@ -2367,9 +2457,9 @@ export class ViewToggleCameraTool extends ViewTool {
   }
 }
 
-/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool in order to allow the view to panned and rotated while defining the points.
- * To show tool settings in order to specify camera and target heights, make sure formatting and parsing data are cached before the tool starts
- * by calling IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats).
+/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to panned, zoomed, and rotated while defining the points.
+ * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
+ * by calling QuantityFormatter.onInitialized at app startup.
  * @alpha
  */
 export class SetupCameraTool extends PrimitiveTool {
@@ -2384,10 +2474,31 @@ export class SetupCameraTool extends PrimitiveTool {
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onUnsuspend(): void { this.showPrompt(); }
-  protected showPrompt(): void { ViewTool.showPrompt(this._haveEyePt ? "SetupCamera.Prompts.NextPoint" : "SetupCamera.Prompts.FirstPoint"); }
-  protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.showPrompt(); }
+  public onUnsuspend(): void { this.provideToolAssistance(); }
+  protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) this.onReinitialize(); else this.exitTool(); return EventHandled.Yes; }
+
+  /** @beta */
+  protected provideToolAssistance(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(this._haveEyePt ? "CoreTools:tools.View.SetupCamera.Prompts.NextPoint" : "CoreTools:tools.View.SetupCamera.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint");
+    const rejectMsg = IModelApp.i18n.translate(this._haveEyePt ? "CoreTools:tools.ElementSet.Inputs.Restart" : "CoreTools:tools.ElementSet.Inputs.Exit");
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   public onRestartTool(): void {
     const tool = new SetupCameraTool();
