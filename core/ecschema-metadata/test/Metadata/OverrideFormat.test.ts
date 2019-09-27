@@ -100,6 +100,7 @@ describe("OverrideFormat", () => {
     expect(overrideFormat.precision).eq(FractionalPrecision.Eight);
     expect(overrideFormat.parent.precision).eq(FractionalPrecision.Two);
     assert.equal(overrideFormat.fullName, "TestSchema.TestFormat(8)");
+    assert.equal(overrideFormat.name, "TestSchema.TestFormat(8)"); // name and full name are the same for override strings
   });
 
   it("with unit overrides", () => {
@@ -128,6 +129,7 @@ describe("OverrideFormat", () => {
     expect(overrideFormatMile.units!.length).eq(1);
     expect(overrideFormatMile.units![0][0]).eq(mileU);
     assert.equal(overrideFormatMile.fullName, "TestSchema.TestFormat[Formats.MILE]");
+    assert.equal(overrideFormatMile.name, "TestSchema.TestFormat[Formats.MILE]");
 
     const overrideFormatYrd = new OverrideFormat(format!, undefined, unitListYrd);
     assert.isDefined(overrideFormatYrd.units);
@@ -135,5 +137,6 @@ describe("OverrideFormat", () => {
     expect(overrideFormatYrd.units![0][0]).eq(yrdU);
     expect(overrideFormatYrd.units![0][1]).eq("yd");
     assert.equal(overrideFormatYrd.fullName, "TestSchema.TestFormat[Formats.YRD|yd]");
+    assert.equal(overrideFormatYrd.name, "TestSchema.TestFormat[Formats.YRD|yd]");
   });
 });
