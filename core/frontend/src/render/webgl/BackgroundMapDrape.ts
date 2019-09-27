@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 import { GL } from "./GL";
-import { dispose, BeTimePoint, assert } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderClipVolume, RenderGraphic } from "../System";
+import { RenderGraphic } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
-import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
-import { Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
+import { Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./DrawCommand";
@@ -22,36 +21,22 @@ import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
-
-class BackgroundMapDrapeDrawArgs extends Tile.DrawArgs {
-  constructor(private _drapePlanes: FrustumPlanes, private _terrainDrape: BackgroundMapDrape, private _worldToViewMap: Map4d, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-  }
-  public get frustumPlanes(): FrustumPlanes { return this._drapePlanes; }
-  public get worldToViewMap(): Map4d { return this._worldToViewMap; }
-  public drawGraphics(): void {
-    if (!this.graphics.isEmpty) {
-      this._terrainDrape.addGraphic(this.context.createBranch(this.graphics, this.location));
-    }
-  }
-
-  public static create(context: SceneContext, texture: BackgroundMapDrape, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new BackgroundMapDrapeDrawArgs(planes, texture, worldToViewMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
-  }
-}
+import { GraphicsCollectorDrawArgs } from "./PlanarClassifier";
 
 /** @internal */
 export class BackgroundMapDrape extends TextureDrape {
   private _fbo?: FrameBuffer;
-  private _graphics?: RenderGraphic[];
+  private readonly _graphics: RenderGraphic[] = [];
   private _frustum?: Frustum;
   private _width = 0;
   private _height = 0;
   private _mapTree: BackgroundMapTileTreeReference;
   private _drapedTree: TileTree;
-  private static _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
+  private static _postProjectionMatrix = Matrix4d.createRowValues(
+    0, 1, 0, 0,
+    0, 0, -1, 0,
+    1, 0, 0, 0,
+    0, 0, 0, 1);
 
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
@@ -64,14 +49,14 @@ export class BackgroundMapDrape extends TextureDrape {
     this._fbo = dispose(this._fbo);
   }
 
-  public addGraphic(graphic: RenderGraphic) { this._graphics!.push(graphic); }
+  public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
   public static create(draped: TileTree, map: BackgroundMapTileTreeReference): BackgroundMapDrape {
     return new BackgroundMapDrape(draped, map);
   }
 
   public collectGraphics(context: SceneContext) {
-    this._graphics = [];
+    this._graphics.length = 0;
     if (undefined === context.viewFrustum)
       return;
 
@@ -100,12 +85,12 @@ export class BackgroundMapDrape extends TextureDrape {
     this._frustum = projection.textureFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
-    const drawArgs = BackgroundMapDrapeDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
   }
 
   public draw(target: Target) {
-    if (undefined === this._frustum || undefined === this._graphics || this._graphics.length === 0)
+    if (undefined === this._frustum || this._graphics.length === 0)
       return;
 
     if (undefined === this._fbo) {

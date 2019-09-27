@@ -4767,8 +4767,6 @@ export namespace SpatialClassificationProps {
         // (undocumented)
         outside: Display;
         // (undocumented)
-        selected: Display;
-        // (undocumented)
         type: number;
     }
     export interface FlagsProps {
@@ -4776,8 +4774,6 @@ export namespace SpatialClassificationProps {
         inside: SpatialClassificationProps.Display;
         // (undocumented)
         outside: SpatialClassificationProps.Display;
-        // (undocumented)
-        selected: SpatialClassificationProps.Display;
         // (undocumented)
         type: number;
     }

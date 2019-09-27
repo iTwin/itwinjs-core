@@ -6,7 +6,7 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import {
   CanvasDecoration,
@@ -474,21 +474,48 @@ export class SceneContext extends RenderContext {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 
-  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined { return this.planarClassifiers.get(id); }
-  public setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier) { this.planarClassifiers.set(id, planarClassifier); }
+  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined {
+    // Have we already seen this classifier before?
+    const id = props.modelId;
+    let classifier = this.planarClassifiers.get(id);
+    if (undefined !== classifier)
+      return classifier;
+
+    // Target may have the classifier from a previous frame; if not we must create one.
+    classifier = this.viewport.target.getPlanarClassifier(id);
+    if (undefined === classifier)
+      classifier = this.viewport.target.createPlanarClassifier(props);
+
+    // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
+    if (undefined !== classifier) {
+      this.planarClassifiers.set(id, classifier);
+      classifier.collectGraphics(this, classifiedTree, tileTree);
+    }
+
+    return classifier;
+  }
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
-    return undefined === classifierId ? undefined : this.getPlanarClassifier(classifierId);
+    return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
-  public getTextureDrape(modelId: Id64String) { return this.textureDrapes.get(modelId); }
-  public setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape) { this.textureDrapes.set(modelId, textureDrape); }
   public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
-    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
+    const id = drapedTree.modelId;
+    let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
-      this.setTextureDrape(drapedTree.modelId, drape);
+      return drape;
+
+    drape = this.viewport.target.getTextureDrape(id);
+    if (undefined === drape)
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
+
+    if (undefined !== drape)
+      this.textureDrapes.set(id, drape);
 
     return drape;
+  }
+  public getTextureDrapeForModel(modelId: Id64String) {
+    return this.textureDrapes.get(modelId);
   }
 
   public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {

@@ -71,7 +71,6 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
-internal;CesiumWorldTerrainTileLoader 
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -152,7 +151,7 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
-internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
@@ -261,8 +260,7 @@ beta;PerModelCategoryVisibility
 public;PhysicalModelState 
 internal;PingTestResult
 beta;Pixel
-beta;PlanarClassifierMap = Map
-internal;PlanarClassifiers
+internal;PlanarClassifierMap = Map
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
@@ -290,7 +288,7 @@ internal;enum RenderDiagnostics
 public;class RenderGraphic 
 internal;RenderMemory
 internal;RenderPlan
-beta;class RenderPlanarClassifier 
+internal;class RenderPlanarClassifier 
 internal;RenderScheduleState
 internal;class RenderSolarShadowMap 
 public;class RenderSystem 
@@ -364,7 +362,6 @@ public;TentativePoint
 internal;class TerrainProvider 
 internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
-internal;TextureDrapes
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 

@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
+  ColorDef,
+  Hilite,
+} from "@bentley/imodeljs-common";
+import {
   IModelApp,
   Tile,
   Tool,
@@ -107,5 +111,89 @@ export class SetAspectRatioSkewTool extends Tool {
   public parseAndRun(...args: string[]): boolean {
     const skew = args.length > 0 ? parseFloat(args[0]) : 1.0;
     return !Number.isNaN(skew) && this.run(skew);
+  }
+}
+
+/** Changes the selected viewport's hilite settings, or resets to defaults.
+ * @beta
+ */
+export class ChangeHiliteSettingsTool extends Tool {
+  public static toolId = "ChangeHiliteSettings";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 6; }
+
+  public run(settings?: Hilite.Settings): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      vp.hilite = undefined !== settings ? settings : new Hilite.Settings();
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    if (0 === args.length)
+      return this.run();
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp)
+      return true;
+
+    const cur = vp.hilite;
+    const colors = vp.hilite.color.colors;
+    let visible = cur.visibleRatio;
+    let hidden = cur.hiddenRatio;
+    let silhouette = cur.silhouette;
+
+    const parseColorComponent = (x: string, c: "r" | "g" | "b") => {
+      const num = parseInt(x, 10);
+      if (!Number.isNaN(num))
+        colors[c] = Math.floor(Math.max(0, Math.min(255, num)));
+    };
+
+    for (const arg of args) {
+      const parts = arg.split("=");
+      if (2 !== parts.length)
+        return true;
+
+      const key = parts[0][0].toLowerCase();
+      const value = parts[1];
+      switch (key) {
+        case "r": parseColorComponent(value, "r"); break;
+        case "g": parseColorComponent(value, "g"); break;
+        case "b": parseColorComponent(value, "b"); break;
+        case "s": {
+          const n = parseInt(value, 10);
+          if (n >= Hilite.Silhouette.None && n <= Hilite.Silhouette.Thick)
+            silhouette = n;
+
+          break;
+        }
+        case "v":
+        case "h": {
+          const s = parseFloat(value);
+          if (s >= 0.0 && s <= 1.0) {
+            if ("v" === key)
+              visible = s;
+            else
+              hidden = s;
+          }
+
+          break;
+        }
+      }
+    }
+
+    if (undefined === silhouette) silhouette = cur.silhouette;
+    if (undefined === visible) visible = cur.visibleRatio;
+    if (undefined === hidden) hidden = cur.hiddenRatio;
+
+    const settings: Hilite.Settings = {
+      color: ColorDef.from(colors.r, colors.g, colors.b),
+      silhouette,
+      visibleRatio: visible,
+      hiddenRatio: hidden,
+    };
+
+    return this.run(settings);
   }
 }

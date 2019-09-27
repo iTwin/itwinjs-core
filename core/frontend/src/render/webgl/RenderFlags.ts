@@ -61,10 +61,12 @@ export enum TextureUnit {
   PickDepthAndOrder = Four,
 
   VertexLUT = Five,
+
+  // Texture unit 6 is overloaded. Therefore classification, hilite classification, and aux channel are all mutually exclusive.
   AuxChannelLUT = Six,
-  PlanarClassification = Six,               // classification or aux channel - not both.
-  PlanarClassificationHilite = Six,         // hilite or color, not both.
-  ShadowMap = Seven,                        // shadows or classification - not both.
+  PlanarClassification = Six,
+  PlanarClassificationHilite = Six,
+  ShadowMap = Seven,
 }
 
 /**

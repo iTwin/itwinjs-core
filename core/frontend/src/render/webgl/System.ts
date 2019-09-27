@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
@@ -18,7 +18,6 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
-  RenderPlanarClassifier,
   RenderSolarShadowMap,
   RenderSystem,
   RenderSystemDebugControl,
@@ -57,9 +56,7 @@ import { SolarShadowMap } from "./SolarShadowMap";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
-import { PlanarClassifier } from "./PlanarClassifier";
 import { TileTree } from "../../tile/TileTree";
-import { SceneContext } from "../../ViewContext";
 import { SpatialViewState } from "../../ViewState";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
@@ -810,9 +807,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
 
     return clipVolume;
   }
-  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedTree, sceneContext); }
-  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) { return BackgroundMapDrape.create(drapedTree, mapTree); }
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined { return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view); }
+  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
+    return BackgroundMapDrape.create(drapedTree, mapTree);
+  }
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined {
+    return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view);
+  }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
@@ -1057,6 +1057,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
 
   // RenderSystemDebugControl
+  public get debugControl(): RenderSystemDebugControl { return this; }
   private _drawSurfacesAsWiremesh = false;
   public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
   public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }

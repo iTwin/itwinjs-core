@@ -1603,27 +1603,6 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
-// @internal (undocumented)
-export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
-    constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, _requestContext: ClientRequestContext, _accessToken: string, _tileUrlTemplate: string, _maxDepth: number, heightRange: Range1d);
-    // (undocumented)
-    addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
-    // (undocumented)
-    readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
-    // (undocumented)
-    getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string;
-    getEstimatedLevelZeroGeometricErrorForAHeightmap(ellipsoidMaximumRadius?: number, tileImageWidth?: number, numberOfTilesAtLevelZero?: number): number;
-    // (undocumented)
-    getLevelMaximumGeometricError(level: number): number;
-    readonly heightmapTerrainQuality = 0.25;
-    // (undocumented)
-    loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
-    // (undocumented)
-    readonly maxDepth: number;
-    // (undocumented)
-    requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
-    }
-
 // @beta
 export enum ChangeFlag {
     // (undocumented)
@@ -2936,7 +2915,7 @@ export class GeoServices {
     }
 
 // @internal (undocumented)
-export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise<TerrainTileLoaderBase | undefined>;
+export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise<TerrainTileLoaderBase | undefined>;
 
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;
@@ -4958,20 +4937,8 @@ export namespace Pixel {
     }
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
-
-// @internal
-export class PlanarClassifiers {
-    // (undocumented)
-    readonly classifier: PlanarClassifier | undefined;
-    // (undocumented)
-    readonly isValid: boolean;
-    // (undocumented)
-    pop(): void;
-    // (undocumented)
-    push(texture: PlanarClassifier): void;
-}
 
 // @beta
 export abstract class Plugin {
@@ -5559,8 +5526,10 @@ export class RenderPlan {
     readonly viewFrustum: ViewFrustum;
 }
 
-// @beta
+// @internal
 export abstract class RenderPlanarClassifier implements IDisposable {
+    // (undocumented)
+    abstract collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree): void;
     // (undocumented)
     abstract dispose(): void;
 }
@@ -5742,8 +5711,6 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
-    createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
-    // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
     createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
@@ -5841,9 +5808,11 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void;
     // (undocumented)
-    changeTextureDrapes(_drapes: TextureDrapeMap): void;
+    changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
+    // (undocumented)
+    createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
     readonly debugControl: RenderTargetDebugControl | undefined;
     static depthFromDisplayPriority(priority: number): number;
@@ -5853,6 +5822,10 @@ export abstract class RenderTarget implements IDisposable {
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
     static readonly frustumDepth2d: number;
+    // (undocumented)
+    getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
+    // (undocumented)
+    getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     static readonly maxDisplayPriority: number;
     // (undocumented)
@@ -6003,13 +5976,13 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined;
     // (undocumented)
-    readonly backgroundGraphics: RenderGraphic[];
+    addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined;
     // (undocumented)
-    getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
+    readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
-    getTextureDrape(modelId: Id64String): RenderTextureDrape | undefined;
+    getTextureDrapeForModel(modelId: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     readonly graphics: RenderGraphic[];
     // (undocumented)
@@ -6028,10 +6001,6 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
-    // (undocumented)
-    setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier): void;
-    // (undocumented)
-    setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape): void;
     // (undocumented)
     solarShadowMap?: RenderSolarShadowMap;
     // (undocumented)
@@ -6895,10 +6864,6 @@ export class SyncFlags {
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
     protected constructor(rect?: ViewRect);
     // (undocumented)
-    readonly activePlanarClassifiers: PlanarClassifiers;
-    // (undocumented)
-    readonly activeTextureDrapes: TextureDrapes;
-    // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
@@ -6939,7 +6904,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
     // (undocumented)
-    changeTextureDrapes(textureDrapes: TextureDrapeMap): void;
+    changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
     readonly clipDef: ClipDef;
     // (undocumented)
@@ -6953,13 +6918,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
+    createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
+    // (undocumented)
     readonly currentBatchId: number;
     // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
     // (undocumented)
     currentOverrides: FeatureOverrides | undefined;
     // (undocumented)
+    readonly currentPlanarClassifier: PlanarClassifier | undefined;
+    // (undocumented)
+    readonly currentPlanarClassifierOrDrape: PlanarClassifier | TextureDrape | undefined;
+    // (undocumented)
     readonly currentShaderFlags: ShaderFlags;
+    // (undocumented)
+    readonly currentTextureDrape: TextureDrape | undefined;
     // (undocumented)
     readonly currentTransform: Transform;
     // (undocumented)
@@ -7012,6 +6985,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
     // (undocumented)
     getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number;
+    // (undocumented)
+    getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
+    // (undocumented)
+    getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
     // (undocumented)
@@ -7190,18 +7167,6 @@ export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
 
 // @internal (undocumented)
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
-
-// @internal
-export class TextureDrapes {
-    // (undocumented)
-    readonly drape: TextureDrape | undefined;
-    // (undocumented)
-    readonly isValid: boolean;
-    // (undocumented)
-    pop(): void;
-    // (undocumented)
-    push(texture: TextureDrape): void;
-}
 
 // @internal
 export interface TextureImage {

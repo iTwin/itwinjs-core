@@ -1317,7 +1317,7 @@ export abstract class Viewport implements IDisposable {
   public get hilite(): Hilite.Settings { return this._hilite; }
   public set hilite(hilite: Hilite.Settings) {
     this._hilite = hilite;
-    this._selectionSetDirty = true;
+    this.invalidateRenderPlan();
   }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.

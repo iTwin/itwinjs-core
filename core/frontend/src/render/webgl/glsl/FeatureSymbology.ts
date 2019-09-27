@@ -16,7 +16,7 @@ import {
 } from "../ShaderBuilder";
 import { Hilite, ColorDef } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
-import { FeatureMode, IsEdgeTestNeeded, IsClassified } from "../TechniqueFlags";
+import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
 import { extractNthBit, addEyeSpace, addUInt32s } from "./Common";
@@ -213,10 +213,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (wantColor) {
     vert.addFunction(getSecondFeatureRgba);
     if (wantAlpha) {
-      const minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
-      const maxAlpha = (255 - minTransparency) / 255;
-      vert.addConstant("s_maxAlpha", VariableType.Float, maxAlpha.toString());
-
+      addMaxAlpha(vert);
       addRenderPass(vert);
       addAlpha(vert);
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
@@ -224,6 +221,12 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   }
 
   return true;
+}
+
+export function addMaxAlpha(builder: ShaderBuilder): void {
+  const minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
+  const maxAlpha = (255 - minTransparency) / 255;
+  builder.addConstant("s_maxAlpha", VariableType.Float, maxAlpha.toString());
 }
 
 const scratchHiliteColor = FloatRgba.fromColorDef(ColorDef.white);
@@ -497,7 +500,12 @@ const isBelowTransparencyThreshold = `
 `;
 
 /** @internal */
-export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, isEdgeTestNeeded: IsEdgeTestNeeded, isClassified: IsClassified, computeIdInFrag: boolean) {
+export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags) {
+  const feat = flags.featureMode;
+  const isEdgeTestNeeded = flags.isEdgeTestNeeded;
+  const isClassified = flags.isClassified;
+  const computeIdInFrag = !flags.isTranslucent && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+
   const frag = builder.frag;
   const vert = builder.vert;
 
@@ -541,7 +549,9 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, is
     addFeatureIndex(vert);
     addEyeSpace(builder);
     addFeatureId(builder, computeIdInFrag);
-    addRenderOrder(frag);
+
+    if (!flags.isTranslucent)
+      addRenderOrder(frag);
   }
 }
 

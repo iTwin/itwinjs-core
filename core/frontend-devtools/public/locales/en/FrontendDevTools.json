@@ -65,6 +65,9 @@
     },
     "ToggleToolTips": {
       "keyin": "fdt tooltips"
+    },
+    "ChangeHiliteSettings": {
+      "keyin": "fdt hilite settings"
     }
   }
 }

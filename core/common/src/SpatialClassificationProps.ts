@@ -26,9 +26,9 @@ export namespace SpatialClassificationProps {
     On = 1,
     /** Dimmed geometry is darkened. */
     Dimmed = 2,
-    /** Display tinted to hilite color */
+    /** Display tinted to hilite color. Not applicable to unclassified geometry. */
     Hilite = 3,
-    /** Display with the classifier color */
+    /** Display with the classifier color. Not applicable to unclassified geometry. */
     ElementColor = 4,
   }
 
@@ -38,7 +38,6 @@ export namespace SpatialClassificationProps {
   export interface FlagsProps {
     inside: SpatialClassificationProps.Display;
     outside: SpatialClassificationProps.Display;
-    selected: SpatialClassificationProps.Display;
     type: number;         // Not currently implemented
   }
 
@@ -48,7 +47,6 @@ export namespace SpatialClassificationProps {
   export class Flags implements FlagsProps {
     public inside: Display = Display.ElementColor;
     public outside: Display = Display.Dimmed;
-    public selected: Display = Display.Hilite;
     public type: number = 0;         // Not currently implemented
 
     public constructor(inside = Display.ElementColor, outside = Display.Dimmed) { this.inside = inside; this.outside = outside; }
@@ -62,7 +60,7 @@ export namespace SpatialClassificationProps {
     modelId: Id64String;
     /** A distance in meters to expand the classification around the basic geometry. Curve geometry is expanded to regions; regions are expanded to volumes. */
     expand: number;
-    /** Flags controlling how geometry is displayed based on containment within classification and whether it is selected. */
+    /** Flags controlling how geometry is displayed based on containment within classification. */
     flags: FlagsProps;
     /** A user-friendly name for this classifier. */
     name: string;
@@ -82,7 +80,7 @@ export namespace SpatialClassificationProps {
     if (lhs === rhs)
       return true;
 
-    return lhs.inside === rhs.inside && lhs.outside === rhs.outside && lhs.selected === rhs.selected;
+    return lhs.inside === rhs.inside && lhs.outside === rhs.outside;
   }
 
   /** Returns true if two Classifiers are equivalent.

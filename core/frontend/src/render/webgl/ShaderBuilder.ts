@@ -970,14 +970,16 @@ export class ClippingShaders {
   public shaders: ShaderProgram[] = [];
   public maskShader?: ShaderProgram;
 
-  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
+  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext, wantMask: boolean) {
     this.builder = prog.clone();
     addClipping(this.builder, ClipDef.forPlanes(6));
 
-    const maskBuilder = prog.clone();
-    addClipping(maskBuilder, ClipDef.forMask());
-    this.maskShader = maskBuilder.buildProgram(context);
-    assert(this.maskShader !== undefined);
+    if (wantMask) {
+      const maskBuilder = prog.clone();
+      addClipping(maskBuilder, ClipDef.forMask());
+      this.maskShader = maskBuilder.buildProgram(context);
+      assert(this.maskShader !== undefined);
+    }
   }
 
   public compileShaders(): boolean {

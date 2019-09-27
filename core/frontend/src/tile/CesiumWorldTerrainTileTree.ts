@@ -30,7 +30,7 @@ enum QuantizedMeshExtensionIds {
 }
 
 /** @internal */
-export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise<TerrainTileLoaderBase | undefined> {
+export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise<TerrainTileLoaderBase | undefined> {
   const _requestContext = new ClientRequestContext("");
   const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
   // TBD... this key is generated for RBB personal account - change to enterprise license from Cesium.
@@ -73,7 +73,7 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange);
+  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange, wantSkirts);
 }
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
@@ -109,7 +109,7 @@ function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, i
 }
 
 /** @internal */
-export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
+class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private readonly _copyrightImagesByViewportId = new Map<number, HTMLImageElement>();
   private static _scratchRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
@@ -120,7 +120,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchTriangle = new Triangle();
   private static _scratchNormal = Vector3d.createZero();
 
-  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d) {
+  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d, private readonly _wantSkirts: boolean) {
     super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
   public getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string {
@@ -278,14 +278,17 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
         mesh.addVertex({ position: CesiumWorldTerrainTileLoader._scratchQPoint, fillColor });
       }
     }
-    westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-    eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-    northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-    southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-    this.generateSkirts(mesh, westIndices, skirtHeight);
-    this.generateSkirts(mesh, eastIndices, skirtHeight);
-    this.generateSkirts(mesh, southIndices, skirtHeight);
-    this.generateSkirts(mesh, northIndices, skirtHeight);
+
+    if (this._wantSkirts) {
+      westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+      eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+      northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+      southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+      this.generateSkirts(mesh, westIndices, skirtHeight);
+      this.generateSkirts(mesh, eastIndices, skirtHeight);
+      this.generateSkirts(mesh, southIndices, skirtHeight);
+      this.generateSkirts(mesh, northIndices, skirtHeight);
+    }
 
     CesiumWorldTerrainTileLoader._scratchMeshArgs.init(mesh);
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.featureID = 0;

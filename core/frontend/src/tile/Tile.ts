@@ -756,7 +756,7 @@ export namespace Tile {
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 
       this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
-      this.drape = context.getTextureDrape(root.modelId);
+      this.drape = context.getTextureDrapeForModel(root.modelId);
 
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
       if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)

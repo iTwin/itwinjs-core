@@ -31,6 +31,7 @@ import {
   ToggleSelectedViewFrustumTool,
 } from "./tools/FrustumDecoration";
 import {
+  ChangeHiliteSettingsTool,
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
@@ -88,6 +89,8 @@ export class FrontendDevTools {
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
+    ChangeHiliteSettingsTool.register(i18n);
+
     RealityTransitionTool.register(i18n);
 
     return i18n.readFinished;

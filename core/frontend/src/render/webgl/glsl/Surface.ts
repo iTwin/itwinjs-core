@@ -20,7 +20,7 @@ import { addAnimation } from "./Animation";
 import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
+import { addMaxAlpha, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, extractNthBit } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
@@ -34,6 +34,7 @@ import { ColorDef } from "@bentley/imodeljs-common";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unpackFloat } from "./Clipping";
+import { addRenderPass } from "./RenderPass";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -432,18 +433,29 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
 const scratchBgColor = FloatRgb.fromColorDef(ColorDef.white);
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
+const discardClassifiedByAlpha = `
+  if (u_no_classifier_discard)
+    return false;
+
+  bool hasAlpha = alpha <= s_maxAlpha;
+  bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
+  bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+  return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
+`;
+
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
-  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
-  const computeFeatureIdInFrag = 0 !== flags.isShadowable && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+  let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  if (flags.isClassified)
+    opts &= ~FeatureSymbologyOptions.Alpha;
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
-  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified, computeFeatureIdInFrag);
+  addSurfaceDiscard(builder, flags);
   addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
@@ -478,11 +490,12 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat) {
+  if (FeatureMode.None === feat || (flags.isTranslucent && flags.isClassified)) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
   } else {
     if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
+
     builder.frag.addFunction(decodeDepthRgb);
     if (flags.isEdgeTestNeeded || flags.isClassified)
       addPickBufferOutputs(builder.frag);
@@ -492,6 +505,24 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+
+  if (flags.isClassified) {
+    // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
+    // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
+    // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
+    // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
+    addMaxAlpha(builder.frag);
+    addRenderPass(builder.frag);
+
+    // Do not discard transparent classified geometry if we're trying to do a pick...
+    builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
+      prog.addGraphicUniform("u_no_classifier_discard", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    });
+
+    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
+  }
 
   return builder;
 }

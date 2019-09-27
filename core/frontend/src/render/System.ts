@@ -308,13 +308,14 @@ export abstract class RenderTextureDrape implements IDisposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
- * @beta
+ * @internal
  */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
+  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree): void;
 }
 
-/** @beta */
+/** @internal */
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 /** An array of [[RenderGraphic]]s.
@@ -797,6 +798,9 @@ export abstract class RenderTarget implements IDisposable {
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
   public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
+  public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
+  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
@@ -805,7 +809,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeScene(scene: GraphicList): void;
   public abstract changeBackgroundMap(_graphics: GraphicList): void;
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
-  public changeTextureDrapes(_drapes: TextureDrapeMap): void { }
+  public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
@@ -1005,8 +1009,6 @@ export abstract class RenderSystem implements IDisposable {
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
-  /** @internal */
-  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
