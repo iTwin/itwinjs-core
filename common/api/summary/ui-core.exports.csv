@@ -2,6 +2,9 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+alpha;AutoSuggest 
+alpha;AutoSuggestData
+alpha;AutoSuggestProps 
 public;BlockText: React.FunctionComponent
 public;BodyText: React.FunctionComponent
 alpha;BoundsFunctionProp = number | (() => number | undefined)
@@ -77,6 +80,8 @@ public;IconSpec = string | React.ReactNode
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
+public;InputLabel 
+public;InputLabelProps 
 public;InputProps 
 public;InputStatus
 internal;isPromiseLike(obj: unknown): obj is PromiseLike

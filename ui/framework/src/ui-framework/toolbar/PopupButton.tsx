@@ -23,7 +23,7 @@ import "./PopupButton.scss";
 // cSpell:ignore popupbutton
 
 // tslint:disable-next-line: variable-name
-const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
+const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, true);
 
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public

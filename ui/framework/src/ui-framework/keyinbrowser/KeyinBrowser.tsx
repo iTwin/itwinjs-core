@@ -6,8 +6,11 @@
 
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import { LabeledSelect, LabeledInput, Button, CommonProps } from "@bentley/ui-core";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import {
+  InputLabel, LabeledInput, Button, CommonProps,
+  AutoSuggest, AutoSuggestData,
+} from "@bentley/ui-core";
+import { IModelApp, Tool, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import "./KeyinBrowser.scss";
 
@@ -16,7 +19,7 @@ import "./KeyinBrowser.scss";
  * @alpha
  */
 interface KeyinBrowserState {
-  keyins: { [key: string]: string };
+  keyins: AutoSuggestData[];
   currentToolId: string | undefined;
   currentArgs: string;
 }
@@ -26,6 +29,7 @@ interface KeyinBrowserState {
  */
 export interface KeyinBrowserProps extends CommonProps {
   onExecute?: () => void;
+  onCancel?: () => void;
 }
 
 /**
@@ -37,7 +41,9 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   private _argsLabel = UiFramework.translate("keyinbrowser.args");
   private _argsTip = UiFramework.translate("keyinbrowser.argsTip");
   private _executeLabel = UiFramework.translate("keyinbrowser.execute");
+  private _suggestPlaceholder = UiFramework.translate("keyinbrowser.placeholder");
   private _toolIdKey = "keyinbrowser:keyin";
+  private _isMounted = false;
 
   /** @internal */
   constructor(props: any) {
@@ -46,10 +52,30 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     const currentArgs = this.getToolArgs(currentToolId);
 
     this.state = {
-      keyins: this.getToolKeyinMap(),
+      keyins: [],
       currentToolId,
       currentArgs,
     };
+  }
+
+  /** @internal */
+  public componentDidMount() {
+    this._isMounted = true;
+
+    let keyins = this.getToolKeyinMap();
+    this.setState({ keyins });
+
+    setTimeout(() => {
+      keyins = keyins.sort((a: AutoSuggestData, b: AutoSuggestData) => a.label.localeCompare(b.label));
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ keyins });
+    });
+  }
+
+  /** @internal */
+  public componentWillUnmount() {
+    this._isMounted = false;
   }
 
   private getArgsKey(toolId: string | undefined): string | undefined {
@@ -74,9 +100,10 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     return "";
   }
 
-  private getToolKeyinMap(): { [key: string]: string } {
-    const keyins: { [key: string]: string } = {};
-    IModelApp.tools.getToolList().sort((a: typeof Tool, b: typeof Tool) => a.keyin.localeCompare(b.keyin)).forEach((tool: typeof Tool) => keyins[tool.toolId] = tool.keyin);
+  private getToolKeyinMap(): AutoSuggestData[] {
+    const keyins: AutoSuggestData[] = [];
+    IModelApp.tools.getToolList()
+      .forEach((tool: typeof Tool) => keyins.push({ value: tool.toolId, label: tool.keyin }));
     return keyins;
   }
 
@@ -89,15 +116,26 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   }
 
   private _onClick = () => {
+    this._execute();
+  }
+
+  private _execute(): void {
     // istanbul ignore else
     if (this.state.currentToolId && this.state.currentToolId.length > 0) {
       const foundTool = IModelApp.tools.find(this.state.currentToolId);
       // istanbul ignore else
       if (foundTool) {
+        const args = this.getArgsArray();
+        const maxArgs = foundTool.maxArgs;
+
+        if (args.length < foundTool.minArgs || (undefined !== maxArgs && args.length > maxArgs)) {
+          this._outputMessage(UiFramework.translate("keyinbrowser.incorrectArgs"));
+          return;
+        }
+
         let key = "keyinbrowser:keyin";
         window.localStorage.setItem(key, foundTool.toolId);
 
-        const args = this.getArgsArray();
         // istanbul ignore else
         if (args && args.length > 0) {
           key = `keyinbrowser:${foundTool.toolId}`;
@@ -105,43 +143,136 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
           window.localStorage.setItem(key, objectAsString);
         }
 
-        IModelApp.tools.run(foundTool.toolId, args && args.length > 0 ? args : undefined); // ###TODO: This needs to call parseAndRun...at least stop passing empty arg array to constructors that expect other things...
+        const tool = new foundTool();
+        let runStatus = false;
+
+        try {
+          runStatus = args.length > 0 ? tool.parseAndRun(...args) : tool.run();
+
+          if (!runStatus) {
+            this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
+          } else {
+          }
+        } catch (e) {
+          this._outputMessage(UiFramework.translate("keyinbrowser.exceptionOccurred") + ": " + e);
+        }
       }
     }
-    this.props.onExecute && this.props.onExecute();
+
+    if (this.props.onExecute)
+      this.props.onExecute();
   }
 
-  private _onKeyinSelected = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    const currentToolId = event.target.value;
+  private _outputMessage = (msg: string) => {
+    const details = new NotifyMessageDetails(OutputMessagePriority.Error, msg, undefined, OutputMessageType.Alert);
+    IModelApp.notifications.outputMessage(details);
+  }
+
+  private _onKeyinSelected = (selected: AutoSuggestData): void => {
+    const currentToolId = selected.value;
     const currentArgs = this.getToolArgs(currentToolId);
-    this.setState({ currentToolId, currentArgs });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ currentToolId, currentArgs });
   }
 
   private _onArgumentsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    this.setState({ currentArgs: event.target.value });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ currentArgs: event.target.value });
   }
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-    // istanbul ignore else
     if ("Enter" === event.key) {
       event.stopPropagation();
-      this._onClick();
+      this._execute();
+      return;
+    }
+
+    // istanbul ignore else
+    if ("Escape" === event.key) {
+      // istanbul ignore else
+      if (this.props.onCancel)
+        this.props.onCancel();
+      return;
     }
   }
 
-  private _onArgsFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
+  private _onInputFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
     // istanbul ignore else
     if (event.target) {
       event.target.select();
     }
   }
 
+  private _onAutoSuggestEnter = (event: React.KeyboardEvent): void => {
+    event.stopPropagation();
+
+    const inputValue = (event.target as HTMLInputElement).value;
+    // istanbul ignore else
+    if (this._processInputValue(inputValue)) {
+      setTimeout(() => {
+        this._execute();
+      });
+    }
+  }
+
+  private _onAutoSuggestTab = (event: React.KeyboardEvent): void => {
+    event.stopPropagation();
+
+    const inputValue = (event.target as HTMLInputElement).value;
+    this._processInputValue(inputValue);
+  }
+
+  private _processInputValue(inputValue: string): boolean {
+    let currentKeyin = "";
+    let foundTool: typeof Tool | undefined;
+
+    if (this.state.currentToolId && this.state.currentToolId.length > 0) {
+      foundTool = IModelApp.tools.find(this.state.currentToolId);
+      // istanbul ignore else
+      if (foundTool)
+        currentKeyin = foundTool.keyin;
+    }
+
+    // istanbul ignore next
+    if (inputValue !== currentKeyin) {
+      foundTool = IModelApp.tools.getToolList().find((tool: typeof Tool) => tool.keyin === inputValue);
+      if (!foundTool) {
+        this._outputMessage(UiFramework.translate("keyinbrowser.couldNotFindTool"));
+        return false;
+      } else {
+        const currentToolId = foundTool.toolId;
+        // istanbul ignore else
+        if (this._isMounted)
+          this.setState({ currentToolId });
+      }
+    }
+
+    return true;
+  }
+
+  private _onAutoSuggestEscape = (event: React.KeyboardEvent): void => {
+    event.stopPropagation();
+    // istanbul ignore else
+    if (this.props.onCancel)
+      this.props.onCancel();
+  }
+
   /** @internal */
   public render(): React.ReactNode {
     return (
       <div className="uif-keyinbrowser-div">
-        <LabeledSelect label={this._toolIdLabel} data-testid="uif-keyin-select" id="uif-keyin-select" value={this.state.currentToolId} onChange={this._onKeyinSelected} options={this.state.keyins} />
-        <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs} data-testid="uif-keyin-arguments" id="uif-keyin-arguments" type="text" onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onArgsFocus} />
+        <InputLabel label={this._toolIdLabel}>
+          <AutoSuggest value={this.state.currentToolId} style={{ width: "250px" }}
+            placeholder={this._suggestPlaceholder} options={this.state.keyins}
+            onSuggestionSelected={this._onKeyinSelected} onPressEnter={this._onAutoSuggestEnter}
+            onPressTab={this._onAutoSuggestTab} onPressEscape={this._onAutoSuggestEscape} onInputFocus={this._onInputFocus}
+            data-testid="uif-keyin-autosuggest" />
+        </InputLabel>
+        <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs}
+          data-testid="uif-keyin-arguments" id="uif-keyin-arguments"
+          onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onInputFocus} />
         <Button data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
       </div>
     );

@@ -88,5 +88,17 @@
         pointer-events: none;
       }
     }
+
+    &:hover {
+      color: $buic-foreground-primary;
+
+      > .nz-container > .nz-balloon {
+        background-color: $buic-foreground-primary;
+
+        > .nz-arrow {
+          border-color: transparent $buic-foreground-primary;
+        }
+      }
+    }
   }
 }

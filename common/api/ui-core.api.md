@@ -50,6 +50,37 @@ export class Annulus {
     outer: Circle;
 }
 
+// @alpha
+export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
+    constructor(props: AutoSuggestProps);
+    // (undocumented)
+    componentDidUpdate(prevProps: AutoSuggestProps): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface AutoSuggestData {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    // @internal (undocumented)
+    alwaysRenderSuggestions?: boolean;
+    onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onSuggestionSelected: (selected: AutoSuggestData) => void;
+    options: AutoSuggestData[];
+    setFocus?: boolean;
+    value?: string;
+}
+
 // @public
 export const BlockText: React.FunctionComponent<TextProps>;
 
@@ -713,6 +744,18 @@ export class Input extends React.PureComponent<InputProps> {
     componentDidMount(): void;
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @public
+export class InputLabel extends React.PureComponent<InputLabelProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @public
+export interface InputLabelProps extends LabeledComponentProps, MessagedComponentProps, CommonProps {
+    // (undocumented)
+    disabled?: boolean;
 }
 
 // @public
@@ -1892,12 +1935,15 @@ export interface WithIsPressedProps {
 }
 
 // @public
-export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean) => {
+export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
         ref: HTMLDivElement | undefined;
+        isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
         handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => number | undefined;
         setRef: (element: HTMLDivElement) => void;
         render(): JSX.Element;
         context: any;
@@ -1923,9 +1969,12 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
         ref: HTMLDivElement | undefined;
+        isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
         handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => number | undefined;
         setRef: (element: HTMLDivElement) => void;
         render(): JSX.Element;
         context: any;

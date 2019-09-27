@@ -23,21 +23,32 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
   defaultOnOutsideClick?: (event: MouseEvent) => any,
   useCapture: boolean = true,
+  usePointerEvents: boolean = true,
 ) => {
   return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps> {
     public ref: HTMLDivElement | undefined;
+    public isDownOutside = false;
 
     public componentDidMount() {
-      document.addEventListener("click", this.handleDocumentClick, useCapture);
+      if (usePointerEvents) {
+        document.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+        document.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+      } else
+        document.addEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public componentWillUnmount() {
-      document.removeEventListener("click", this.handleDocumentClick, useCapture);
+      if (usePointerEvents) {
+        document.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+        document.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+      } else
+        document.removeEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public handleDocumentClick = (e: MouseEvent) => {
       if (!this.ref)
         return;
+
       const componentElement = ReactDOM.findDOMNode(this.ref);
       if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node)) {
         if (this.props.onOutsideClick)
@@ -45,6 +56,36 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
         else if (defaultOnOutsideClick)
           return defaultOnOutsideClick(e);
       }
+    }
+
+    public handleDocumentPointerDown = (e: PointerEvent) => {
+      // istanbul ignore next
+      if (!this.ref)
+        return;
+
+      const componentElement = ReactDOM.findDOMNode(this.ref);
+      if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node))
+        this.isDownOutside = true;
+      else
+        this.isDownOutside = false;
+    }
+
+    public handleDocumentPointerUp = (e: PointerEvent) => {
+      // istanbul ignore next
+      if (!this.ref)
+        return;
+
+      const componentElement = ReactDOM.findDOMNode(this.ref);
+      let returnValue = 0;
+      if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node) && this.isDownOutside) {
+        if (this.props.onOutsideClick)
+          returnValue = this.props.onOutsideClick(e);
+        else if (defaultOnOutsideClick)
+          returnValue = defaultOnOutsideClick(e);
+      }
+
+      this.isDownOutside = false;
+      return returnValue;
     }
 
     public setRef = (element: HTMLDivElement) => {

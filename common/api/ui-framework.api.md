@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
+import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
@@ -1285,6 +1286,8 @@ export interface CursorPopupFadeOutEventArgs {
 
 // @beta
 export class CursorPopupManager {
+    // @internal (undocumented)
+    static clearPopups(): void;
     static close(id: string, apply: boolean, fadeOut?: boolean): void;
     // @internal (undocumented)
     static readonly onCursorPopupFadeOutEvent: CursorPopupFadeOutEvent;
@@ -2611,11 +2614,17 @@ export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, Keyin
     // @internal
     constructor(props: any);
     // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
     render(): React_2.ReactNode;
     }
 
 // @alpha
 export interface KeyinBrowserProps extends CommonProps {
+    // (undocumented)
+    onCancel?: () => void;
     // (undocumented)
     onExecute?: () => void;
 }

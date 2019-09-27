@@ -7,36 +7,41 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { Textarea, TextareaProps } from "./Textarea";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import { CommonProps } from "../utils/Props";
 
-/** Properties for [[LabeledTextarea]] component
+/** Properties for [[InputLabel]] components
  * @public
  */
-export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps { }
+export interface InputLabelProps extends LabeledComponentProps, MessagedComponentProps, CommonProps {
+  disabled?: boolean;
+}
 
-/** Textarea wrapper that allows for additional styling and labelling
+/** Text input wrapper that provides additional styling and labeling
  * @public
  */
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
+export class InputLabel extends React.PureComponent<InputLabelProps> {
   public render(): JSX.Element {
     const { label, status, className, style,
-      inputClassName, inputStyle,
       labelClassName, labelStyle,
-      message, messageClassName, messageStyle,
-      ...props } = this.props;
+      message, messageClassName, messageStyle } = this.props;
 
     return (
-      <label style={this.props.style} className={classnames(
-        "uicore-inputs-labeled-textarea",
+      <label style={style} className={classnames(
+        "uicore-inputs-labeled-input",
         { disabled: this.props.disabled },
-        this.props.status,
-        this.props.className,
+        status,
+        className,
       )}>
         {label &&
           <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
         }
-        <Textarea disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
+        <div className={classnames("input", { "with-icon": !!status })}>
+          {this.props.children}
+          {status &&
+            <i className={classnames("icon", `icon-status-${status}`)} />
+          }
+        </div>
         {message &&
           <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
         }

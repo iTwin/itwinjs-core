@@ -10,7 +10,12 @@
     "keyin": "Key-in",
     "args": "Arguments",
     "argsTip": "'|' separated arguments",
-    "execute": "Execute"
+    "execute": "Execute",
+    "placeholder": "Type key-in",
+    "incorrectArgs": "Incorrect number of key-in arguments",
+    "failedToRun": "Key-in failed to run",
+    "exceptionOccurred": "Key-in caused the following exception to occur",
+    "couldNotFindTool": "Could not find a tool with the given key-in"
   },
   "general": {
     "sheet": "Sheet",

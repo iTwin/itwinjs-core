@@ -302,9 +302,8 @@ describe("ListPicker", () => {
       );
       component.setState({ expanded: true });
 
-      const click = document.createEvent("MouseEvent");
-      click.initEvent("click");
-      document.dispatchEvent(click);
+      document.dispatchEvent(new MouseEvent("pointerdown"));
+      document.dispatchEvent(new MouseEvent("pointerup"));
 
       component.state().expanded.should.false;
       spy.calledOnceWithExactly(false);

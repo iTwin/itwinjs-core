@@ -47,7 +47,7 @@ export class CoreTools {
 
   private static _renderKeyInBrowser = ({ closePanel }: PopupButtonChildrenRenderPropArgs) => {
     return (
-      <KeyinBrowser onExecute={closePanel} />
+      <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
     );
   }
 

@@ -26,7 +26,6 @@
     cursor: pointer;
 
     > .nz-icons {
-      color: $icon-color;
       font-size: $icon-size;
       filter: $icon-shadow;
       display: flex;
@@ -47,5 +46,14 @@
 
       @include triangle-bottom-right($width: $triangle-width, $color: $buic-foreground-body);
     }
+
+    &:hover {
+      color: $buic-foreground-primary;
+
+      > .nz-triangle {
+        @include triangle-bottom-right($width: $triangle-width, $color: $buic-foreground-primary);
+      }
+    }
+
   }
 }

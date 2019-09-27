@@ -380,6 +380,7 @@ exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
       onOutsideClick={[Function]}
     >
       <KeyinBrowser
+        onCancel={[Function]}
         onExecute={[Function]}
       />
     </WithOnOutsideClick>

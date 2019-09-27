@@ -78,6 +78,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/react": "^16.8.0",
+    "@types/react-autosuggest": "^9.3.11",
     "@types/react-dom": "^16.8.0",
     "@types/sinon": "^5.0.5",
     "@types/sinon-chai": "^3.2.0",
@@ -116,6 +117,7 @@
     "classnames": "^2.2.5",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
+    "react-autosuggest": "^9.4.3",
     "react-dom": "^16.8.0"
   },
   "nyc": {
@@ -127,9 +129,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 97.5,
-    "branches": 92.5,
-    "functions": 99,
-    "lines": 97.5
+    "statements": 97.6,
+    "branches": 92.4,
+    "functions": 98.3,
+    "lines": 97.7
   }
 }
