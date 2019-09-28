@@ -538,6 +538,7 @@ export class Table extends React.Component<TableProps, TableState> {
       key: columnDescription.key,
       name: columnDescription.label,
       icon: columnDescription.icon,
+      width: columnDescription.width,
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
       draggable: this.props.reorderableColumns || false,
