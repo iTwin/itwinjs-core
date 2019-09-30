@@ -5,7 +5,7 @@
 /** @module IModelConnection */
 
 import {
-  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Set,
+  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
@@ -953,6 +953,10 @@ export namespace IModelConnection {
 
     public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
       return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid);
+    }
+
+    public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
+      return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
     }
 
     public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {

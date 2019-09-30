@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { assert, BeDuration, ClientRequestContext, Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, ClientRequestContext, Id64Array, Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps, RpcInvocation } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -155,6 +155,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
     return RequestTileTreePropsMemoizer.perform({ requestContext, iModelToken, treeId });
+  }
+
+  public async purgeTileTrees(tokenProps: IModelTokenProps, modelIds: Id64Array | undefined): Promise<void> {
+    const token = IModelToken.fromJSON(tokenProps);
+    const db = IModelDb.find(token);
+    return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
