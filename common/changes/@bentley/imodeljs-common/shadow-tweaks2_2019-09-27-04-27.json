@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed multiple viewport shadows",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "David.Stradley@bentley.com"
+}

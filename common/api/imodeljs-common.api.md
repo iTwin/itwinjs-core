@@ -4733,8 +4733,10 @@ export namespace SolarShadows {
         constructor(props?: SolarShadowProps);
         bias: number;
         // (undocumented)
-        clone(): Settings;
+        clone(result?: SolarShadows.Settings): SolarShadows.Settings;
         color: ColorDef;
+        // (undocumented)
+        equals(other: SolarShadows.Settings): boolean;
         // (undocumented)
         static fromJSON(props?: Props): Settings;
         // (undocumented)

@@ -5686,6 +5686,8 @@ export abstract class RenderSolarShadowMap implements IDisposable {
     // (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
+    abstract disable(): void;
+    // (undocumented)
     abstract dispose(): void;
 }
 
@@ -5743,8 +5745,6 @@ export abstract class RenderSystem implements IDisposable {
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     // @beta
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
-    // @internal (undocumented)
-    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined;
     // @internal (undocumented)
     abstract readonly isValid: boolean;
     // @internal
@@ -5807,8 +5807,6 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     abstract changeScene(scene: GraphicList): void;
     // (undocumented)
-    changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void;
-    // (undocumented)
     changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
@@ -5825,6 +5823,8 @@ export abstract class RenderTarget implements IDisposable {
     static readonly frustumDepth2d: number;
     // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
+    // (undocumented)
+    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined;
     // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
@@ -6002,8 +6002,6 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
-    // (undocumented)
-    solarShadowMap?: RenderSolarShadowMap;
     // (undocumented)
     readonly textureDrapes: Map<string, RenderTextureDrape>;
     // (undocumented)
@@ -6903,8 +6901,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeScene(scene: GraphicList): void;
     // (undocumented)
-    changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
-    // (undocumented)
     changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
     readonly clipDef: ClipDef;
@@ -6988,6 +6984,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number;
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
+    // (undocumented)
+    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined;
     // (undocumented)
     getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)

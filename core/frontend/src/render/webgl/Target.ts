@@ -57,6 +57,7 @@ import {
   RenderTexture,
   SpatialClassificationProps,
   ViewFlags,
+  SolarShadows,
 } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -84,6 +85,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
+import { SpatialViewState } from "../../ViewState";
 
 // tslint:disable:no-const-enum
 
@@ -309,7 +311,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
-  private _solarShadowMap?: SolarShadowMap;
 
   // RenderTargetDebugControl
   public useLogZ = true;
@@ -360,7 +361,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
-  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
+  public get solarShadowMap(): SolarShadowMap | undefined { return this.compositor.solarShadowMap; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
@@ -546,6 +547,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._wantAmbientOcclusion;
   }
 
+  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined {
+    return this.compositor.getSolarShadowMap(_frustum, _direction, _settings, _view);
+  }
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -590,10 +595,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
-  }
 
-  public changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void {
-    this._solarShadowMap = solarShadowMap as SolarShadowMap;
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -1237,8 +1239,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
   }
   public drawSolarShadowMap() {
-    if (this._solarShadowMap)
-      (this._solarShadowMap as SolarShadowMap).draw(this);
+    if (this.solarShadowMap)
+      this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {
     if (this._textureDrapes)

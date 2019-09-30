@@ -114,19 +114,70 @@ class Bundle {
   }
 }
 
+/** Describes the set of parameters which, when they change, require us to recreate the shadow map. */
+class ShadowMapParams {
+  public readonly direction = new Vector3d();
+  public readonly treeRefs: TileTree.Reference[] = [];
+  public readonly viewFrustum = new Frustum();
+  public readonly settings: SolarShadows.Settings;
+  private _models: ModelSelectorState;
+  private _categories: CategorySelectorState;
+
+  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
+    direction.clone(this.direction);
+    this.viewFrustum.setFrom(viewFrustum);
+    this.settings = SolarShadows.Settings.fromJSON(settings);
+    this._models = view.modelSelector.clone();
+    this._categories = view.categorySelector.clone();
+
+    this.updateTreeRefs(view);
+  }
+
+  /** Returns true if the parameters have changed, requiring the shadow map to be recreated. */
+  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): boolean {
+    let changed = false;
+    if (!this.settings.equals(settings)) {
+      settings.clone(this.settings);
+      changed = true;
+    }
+
+    if (!this.viewFrustum.equals(viewFrustum)) {
+      changed = true;
+      this.viewFrustum.setFrom(viewFrustum);
+    }
+
+    if (!this.direction.isAlmostEqual(direction)) {
+      changed = true;
+      direction.clone(this.direction);
+    }
+
+    if (!this._models.equalState(view.modelSelector)) {
+      changed = true;
+      this._models = view.modelSelector.clone();
+      this.updateTreeRefs(view);
+    }
+
+    if (!this._categories.equalState(view.categorySelector)) {
+      changed = true;
+      this._categories = view.categorySelector.clone();
+    }
+
+    return changed;
+  }
+
+  private updateTreeRefs(view: SpatialViewState): void {
+    this.treeRefs.length = 0;
+    view.forEachModelTreeRef((ref) => this.treeRefs.push(ref));
+  }
+}
+
 export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory.Consumer {
   private _bundle?: Bundle;
-  private _doFitToFrustum = true;
-  private _direction?: Vector3d;
-  private _models?: ModelSelectorState;
-  private _categories?: CategorySelectorState;
   private _projectionMatrix = new Matrix4();
   private _graphics: RenderGraphic[] = [];
   private _shadowFrustum = new Frustum();
-  private _viewFrustum = new Frustum();
   private _status = Status.OutOfSynch;
-  private _settings = new SolarShadows.Settings();
-  private _treeRefs: TileTree.Reference[] = [];
+  private _params?: ShadowMapParams;
   private readonly _scratchRange = Range3d.createNull();
   private readonly _scratchTransform = Transform.createIdentity();
   private readonly _scratchFrustumPlanes = new FrustumPlanes();
@@ -149,8 +200,8 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
   public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
-  public get settings(): SolarShadows.Settings { return this._settings; }
-  public get direction(): Vector3d | undefined { return this._direction; }
+  public get settings(): SolarShadows.Settings | undefined { return undefined !== this._params ? this._params.settings : undefined; }
+  public get direction(): Vector3d | undefined { return undefined !== this._params ? this._params.direction : undefined; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
   public constructor() {
@@ -169,53 +220,43 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
 
   public get requiresSynch() { return this._status === Status.OutOfSynch; }
 
+  public disable() {
+    this._status = Status.OutOfSynch;
+    this._bundle = dispose(this._bundle);
+    this.clearGraphics();
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const bundle = this._bundle;
     if (undefined !== bundle)
       stats.addShadowMap(bundle.depthTexture.bytesUsed + bundle.shadowMapTexture.bytesUsed);
   }
+
   public dispose() {
     this._bundle = dispose(this._bundle);
     this.clearGraphics();
   }
+
   public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
     const minimumHorizonDirection = -.01;
-    this._settings = settings.clone();
     if (direction.z > minimumHorizonDirection) {
       this._status = Status.BelowHorizon;
       return;
     }
 
-    if (this._doFitToFrustum && !this._viewFrustum.equals(viewFrustum)) {
-      this._status = Status.OutOfSynch;
-      this._viewFrustum.setFrom(viewFrustum);
-    }
+    if (undefined === this._params)
+      this._params = new ShadowMapParams(viewFrustum, direction, settings, view);
+    else if (!this._params.update(viewFrustum, direction, settings, view))
+      return; // nothing changed.
 
-    // ###TODO: Scene does not get invalidated when only category selector changes...probably needs to when shadows are enabled - otherwise shadow map still shows shadows from invisible geometry
-    // until camera moves.
-    const models = view.modelSelector;
-    const categories = view.categorySelector;
-
-    if (undefined === this._direction ||
-      !this._direction.isAlmostEqual(direction) ||
-      undefined === this._models ||
-      !this._models!.equalState(models) ||
-      undefined === this._categories ||
-      !this._categories!.equalState(categories)) {
-      // The solar direction, models and categories have changed..
-      this._direction = direction.clone();
-      this._models = models.clone();
-      this._categories = categories.clone();
-
-      this._treeRefs.length = 0;
-      view.forEachModelTreeRef((treeRef) => this._treeRefs.push(treeRef));
-
-      this._status = Status.OutOfSynch;
-    }
+    this._status = Status.OutOfSynch;
   }
 
   private forEachTileTree(func: (tileTree: TileTree) => void) {
-    for (const treeRef of this._treeRefs) {
+    if (undefined === this._params)
+      return;
+
+    for (const treeRef of this._params.treeRefs) {
       const tree = treeRef.treeOwner.load();
       if (undefined !== tree)
         func(tree);
@@ -236,47 +277,41 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     const iModel = sceneContext.viewport.iModel;
     if (this._status === Status.BelowHorizon)
       return;
-    if (this._direction === undefined ||
-      this._models === undefined ||
-      this._categories === undefined) {
+
+    if (undefined === this._params) {
       assert(false);
       return;
     }
 
-    for (const treeRef of this._treeRefs) {
+    for (const treeRef of this._params.treeRefs) {
       if (treeRef.treeOwner.loadStatus < TileTree.LoadStatus.Loaded) {
         this._status = Status.WaitingForTiles;
         return;
       }
     }
 
-    const worldToMapTransform = Transform.createRefs(Point3d.createZero(), Matrix3d.createRigidHeadsUp(this._direction.negate()).inverse()!);
+    const worldToMapTransform = Transform.createRefs(Point3d.createZero(), Matrix3d.createRigidHeadsUp(this._params.direction.negate()).inverse()!);
     const worldToMap = Matrix4d.createTransform(worldToMapTransform);
     const mapToWorld = worldToMap.createInverse()!;
 
     const backgroundOn = sceneContext.viewFlags.backgroundMap;
-    let shadowRange;
-    if (this._doFitToFrustum) {
-      shadowRange = Range3d.createTransformedArray(worldToMapTransform, this._viewFrustum.points);
+    const shadowRange = Range3d.createTransformedArray(worldToMapTransform, this._params.viewFrustum.points);
 
-      // By fitting to the actual tiles we can reduce the shadowRange and make better use of the texture pixels.
-      if (!backgroundOn) {
-        const viewTileRange = Range3d.createNull();
-        this._scratchFrustumPlanes.init(this._viewFrustum);
-        this.forEachTileTree((tileTree) => tileTree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes));
-        if (!viewTileRange.isNull)
-          shadowRange.intersect(viewTileRange, shadowRange);
-      }
-
-      const projectRange = worldToMapTransform.multiplyRange(iModel.projectExtents, this._scratchRange);
-      shadowRange.low.x = Math.max(shadowRange.low.x, projectRange.low.x);
-      shadowRange.high.x = Math.min(shadowRange.high.x, projectRange.high.x);
-      shadowRange.low.y = Math.max(shadowRange.low.y, projectRange.low.y);
-      shadowRange.high.y = Math.min(shadowRange.high.y, projectRange.high.y);
-      shadowRange.high.z = projectRange.high.z;
-    } else {
-      shadowRange = worldToMapTransform.multiplyRange(iModel.projectExtents);
+    // By fitting to the actual tiles we can reduce the shadowRange and make better use of the texture pixels.
+    if (!backgroundOn) {
+      const viewTileRange = Range3d.createNull();
+      this._scratchFrustumPlanes.init(this._params.viewFrustum);
+      this.forEachTileTree((tileTree) => tileTree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes));
+      if (!viewTileRange.isNull)
+        shadowRange.intersect(viewTileRange, shadowRange);
     }
+
+    const projectRange = worldToMapTransform.multiplyRange(iModel.projectExtents, this._scratchRange);
+    shadowRange.low.x = Math.max(shadowRange.low.x, projectRange.low.x);
+    shadowRange.high.x = Math.min(shadowRange.high.x, projectRange.high.x);
+    shadowRange.low.y = Math.max(shadowRange.low.y, projectRange.low.y);
+    shadowRange.high.y = Math.min(shadowRange.high.y, projectRange.high.y);
+    shadowRange.high.z = projectRange.high.z;
 
     if (shadowRange.isNull) {
       return;

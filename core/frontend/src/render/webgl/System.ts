@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, Frustum, SolarShadows } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
 import {
   GraphicBranch,
@@ -18,7 +18,6 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
-  RenderSolarShadowMap,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
@@ -52,12 +51,10 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { SolarShadowMap } from "./SolarShadowMap";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { TileTree } from "../../tile/TileTree";
-import { SpatialViewState } from "../../ViewState";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
@@ -397,7 +394,6 @@ export class IdMap implements IDisposable {
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Solar shadow map (one for IModel) */
-  private _solarShadowMap?: RenderSolarShadowMap;
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
@@ -415,7 +411,6 @@ export class IdMap implements IDisposable {
 
     this.textures.clear();
     this.gradients.clear();
-    this._solarShadowMap = dispose(this._solarShadowMap);
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -513,16 +508,6 @@ export class IdMap implements IDisposable {
     const texture = new Texture(params, textureHandle);
     this.addGradient(grad, texture);
     return texture;
-  }
-
-  /** @internal */
-  /** Get solar shadow map */
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
-    if (undefined === this._solarShadowMap)
-      this._solarShadowMap = new SolarShadowMap();
-
-    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, view);
-    return this._solarShadowMap;
   }
 }
 
@@ -809,9 +794,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
   public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
-  }
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined {
-    return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view);
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {

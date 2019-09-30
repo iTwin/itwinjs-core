@@ -288,6 +288,9 @@ export abstract class RenderSolarShadowMap implements IDisposable {
   public abstract dispose(): void;
 
   /** @internal */
+  public abstract disable(): void;
+
+  /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
   /** @internal */
@@ -798,6 +801,7 @@ export abstract class RenderTarget implements IDisposable {
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
   public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
+  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
   public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
@@ -811,7 +815,6 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -1011,8 +1014,6 @@ export abstract class RenderSystem implements IDisposable {
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
-  /** @internal */
-  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();

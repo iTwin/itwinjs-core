@@ -17,7 +17,6 @@ import {
   RenderGraphic,
   RenderTarget,
   RenderPlanarClassifier,
-  RenderSolarShadowMap,
   RenderTextureDrape,
 } from "./render/System";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
@@ -434,7 +433,6 @@ export class SceneContext extends RenderContext {
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
-  public solarShadowMap?: RenderSolarShadowMap;
   private _viewFrustum?: ViewFrustum;
   private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
 

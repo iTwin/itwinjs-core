@@ -11,7 +11,7 @@ import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, Single
 import { Vector2d, Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { PackedFeatureTable, Pixel, GraphicList } from "../System";
+import { PackedFeatureTable, Pixel, GraphicList, RenderSolarShadowMap } from "../System";
 import { ViewRect } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
@@ -20,9 +20,11 @@ import { RenderCommands, DrawCommands, BatchPrimitiveCommand } from "./DrawComma
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { BatchState } from "./BranchState";
-import { Feature } from "@bentley/imodeljs-common";
+import { Feature, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import { Debug } from "./Diagnostics";
 import { getDrawParams } from "./ScratchDrawParams";
+import { SpatialViewState } from "../../ViewState";
+import { SolarShadowMap } from "./SolarShadowMap";
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements IDisposable {
@@ -392,9 +394,11 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
+  public abstract getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap;
 
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
+  public abstract get solarShadowMap(): SolarShadowMap | undefined;
 
   protected constructor(target: Target) { this.target = target; }
 
@@ -421,6 +425,7 @@ abstract class Compositor extends SceneCompositor {
   protected _classifyPickDataRenderState = new RenderState();
   protected _debugStencilRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
+  protected _solarShadowMap?: SolarShadowMap;
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -678,6 +683,16 @@ abstract class Compositor extends SceneCompositor {
     return result;
   }
 
+  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
+
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
+    if (undefined === this._solarShadowMap)
+      this._solarShadowMap = new SolarShadowMap();
+
+    this._solarShadowMap!.set(frustum, direction, settings, view);
+    return this._solarShadowMap;
+  }
+
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
     if (undefined === fbo || !Debug.isValidFrameBuffer)
       return undefined;
@@ -701,6 +716,7 @@ abstract class Compositor extends SceneCompositor {
   public dispose() {
     this._depth = dispose(this._depth);
     this._includeOcclusion = false;
+    this._solarShadowMap = dispose(this._solarShadowMap);
     dispose(this._textures);
     dispose(this._frameBuffers);
     dispose(this._geom);
