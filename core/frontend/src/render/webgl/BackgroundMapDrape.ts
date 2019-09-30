@@ -11,7 +11,7 @@ import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
-import { Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
@@ -37,7 +37,9 @@ export class BackgroundMapDrape extends TextureDrape {
     0, 0, -1, 0,
     1, 0, 0, 0,
     0, 0, 0, 1);
-
+  private _debugFrustum?: Frustum;
+  private _doDebugFrustum = false;
+  private _debugFrustumGrahic?: RenderGraphic = undefined;
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
@@ -49,7 +51,9 @@ export class BackgroundMapDrape extends TextureDrape {
     this._fbo = dispose(this._fbo);
   }
 
-  public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
+  public addGraphic(graphic: RenderGraphic) {
+    this._graphics.push(graphic);
+  }
 
   public static create(draped: TileTree, map: BackgroundMapTileTreeReference): BackgroundMapDrape {
     return new BackgroundMapDrape(draped, map);
@@ -83,10 +87,23 @@ export class BackgroundMapDrape extends TextureDrape {
       return;
 
     this._frustum = projection.textureFrustum;
+    this._debugFrustum = projection.debugFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
+
+    if (this._doDebugFrustum) {
+      this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
+      const builder = context.createSceneGraphicBuilder();
+      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.addFrustum(this._frustum);
+      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      builder.addFrustum(context.viewFrustum.getFrustum());
+      builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+      builder.addFrustum(this._debugFrustum!);
+      this._debugFrustumGrahic = builder.finish();
+    }
   }
 
   public draw(target: Target) {
@@ -106,6 +123,8 @@ export class BackgroundMapDrape extends TextureDrape {
       assert(false, "unable to create frame buffer object");
       return;
     }
+    if (undefined !== this._debugFrustumGrahic)
+      target.scene.push(this._debugFrustumGrahic);
 
     const prevState = System.instance.currentRenderState.clone();
     System.instance.context.viewport(0, 0, this._width, this._height);
