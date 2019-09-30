@@ -68,6 +68,9 @@
     },
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
+    },
+    "ChangeUnits": {
+      "keyin": "fdt metric"
     }
   }
 }

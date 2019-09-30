@@ -38,6 +38,7 @@ import {
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -92,6 +93,7 @@ export class FrontendDevTools {
     ChangeHiliteSettingsTool.register(i18n);
 
     RealityTransitionTool.register(i18n);
+    ChangeUnitsTool.register(i18n);
 
     return i18n.readFinished;
   }
