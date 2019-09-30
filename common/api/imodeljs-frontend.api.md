@@ -3448,6 +3448,8 @@ export class IModelConnection extends IModel {
     static createBlank(props: BlankConnectionProps): IModelConnection;
     // @internal
     detachChangeCache(): Promise<void>;
+    // @internal
+    readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
@@ -3469,9 +3471,9 @@ export class IModelConnection extends IModel {
     readonly models: IModelConnection.Models;
     // @internal
     protected _noGcsDefined?: boolean;
+    static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
-    static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
     readonly openMode: OpenMode;
     // @beta
