@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix inability to locate polylines and edges if their transparency was overridden.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

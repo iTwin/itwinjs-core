@@ -167,29 +167,26 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
 
     if (wantWeight) {
       replaceLineWeight(vert, computeLineWeight);
-      vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
-        prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
-          let flags = 0.0;
-          if (params.geometry.isEdge) {
-            const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
-            if (undefined !== edgeOvrs)
-              flags = edgeOvrs.computeOvrFlags();
-          }
-
-          uniform.setUniform1f(flags);
-        });
-      });
     }
-  } else {
-    vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
-      prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
-        // If transparency view flag is off, do not allow features to override transparency.
-        // This is particularly important for Target.readPixels(), which draws everything opaque - otherwise we cannot locate elements with transparent overrides.
-        const flags = params.target.currentViewFlags.transparency ? 0.0 : OvrFlags.Alpha;
-        uniform.setUniform1f(flags);
-      });
-    });
   }
+
+  vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
+      let flags = 0.0;
+      if (params.geometry.isEdge) {
+        const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
+        if (undefined !== edgeOvrs)
+          flags = edgeOvrs.computeOvrFlags();
+      }
+
+      // If transparency view flag is off, do not allow features to override transparency.
+      // This is particularly important for Target.readPixels(), which draws everything opaque - otherwise we cannot locate elements with transparent overrides.
+      if (!params.target.currentViewFlags.transparency)
+        flags |= OvrFlags.Alpha;
+
+      uniform.setUniform1f(flags);
+    });
+  });
 
   addLookupTable(vert, "feature", "2.0");
   vert.addGlobal("feature_texCoord", VariableType.Vec2);
