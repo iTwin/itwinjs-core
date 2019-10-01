@@ -33,6 +33,7 @@ import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCu
 import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { RuledSweep } from "../../solid/RuledSweep";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
@@ -113,7 +114,7 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
       const sC = s.clone();
       if (sC instanceof SolidPrimitive) {
         sC.capped = !sC.capped;
-        ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detectd cap change");
+        ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detected cap change");
       }
     }
   }
@@ -173,7 +174,7 @@ describe("Solids", () => {
     ck.testFalse(coneABCapped.isAlmostEqual(coneABOpen), "capping difference detected");
     ck.testFalse(coneACCapped.isAlmostEqual(coneABCapped), "cones with different axis");
     ck.testFalse(coneABCapped22.isAlmostEqual(coneABCapped), "cones with different radii");
-    ck.testFalse(coneABCapped.isAlmostEqual(LineSegment3d.createXYXY(1, 2, 3, 4)), "noncone other");
+    ck.testFalse(coneABCapped.isAlmostEqual(LineSegment3d.createXYXY(1, 2, 3, 4)), "non-cone other");
     // hm .. just make sure these default cases come back.
     ck.testPointer(coneABCapped.strokeConstantVSection(0.2, undefined, undefined));
     ck.testPointer(coneABCapped.strokeConstantVSection(0.2, undefined, StrokeOptions.createForFacets()));
@@ -210,11 +211,32 @@ describe("Solids", () => {
     ck.testUndefined(Sphere.createDgnSphere(origin, vectorX, vectorX, rA, rA, sweep, true));
     const northA = Sphere.createDgnSphere(origin, vectorX, vectorZ, rA, rA, northSweep, true)!;
     const northB = Sphere.createDgnSphere(origin, vectorX, vectorZ, rA, rA, northSweep, false)!;
-    ck.testFalse(northA.isAlmostEqual(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6)), "sphere.isAlmostEqual(nonSpere)");
+    ck.testFalse(northA.isAlmostEqual(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6)), "sphere.isAlmostEqual(nonSphere)");
     ck.testFalse(northA.isAlmostEqual(northB), "capping difference");
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("TransformedSpheres", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.createZero();
+    const radius = 2.0;
+    const spheres = [Sphere.createCenterRadius(origin, radius), Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, 45)), Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, -45))];
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = true;
+    let x0 = 0;
+    const y0 = 0;
+    for (const sphere of spheres) {
+      transformAndFacet(allGeometry, sphere, Transform.createIdentity(), options, x0, y0);
+      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(radius, 0, 0), Matrix3d.createDirectionalScale(Vector3d.unitX(), -1.0)), options, x0, y0);
+      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(0, radius, 0), Matrix3d.createDirectionalScale(Vector3d.unitY(), -1.0)), options, x0, y0);
+      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(0, 0, radius), Matrix3d.createDirectionalScale(Vector3d.unitZ(), -1.0)), options, x0, y0);
+      x0 += 5.0 * radius;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "TransformedSpheres");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("Boxes", () => {
     const ck = new Checker();
     const boxes = Sample.createBoxes();
@@ -225,7 +247,7 @@ describe("Solids", () => {
       const vectorZ = b.getVectorZ();
       // well defined box will have independent vectors .
       const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
-      ck.testTrue(matrix.inverse() !== undefined, "Expect smaple box to have good coordinate frame.");
+      ck.testTrue(matrix.inverse() !== undefined, "Expect sample box to have good coordinate frame.");
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -344,13 +366,13 @@ describe("Solids", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Ellipsoides", () => {
+  it("Ellipsoids", () => {
     const ck = new Checker();
     const ellipsoids = Sample.createEllipsoids();
     exerciseSolids(ck, ellipsoids, "Ellipsoids");
     for (const e of ellipsoids) {
       const radius = e.trueSphereRadius();
-      ck.testUndefined(radius, "Ellipsoid is nonsphereical");
+      ck.testUndefined(radius, "Ellipsoid is nonSpherical");
       const localToWorld = e.cloneLocalToWorld();
       ck.testPoint3d(localToWorld.getOrigin(), e.cloneCenter());
       expect(ck.getNumErrors()).equals(0);
@@ -399,3 +421,13 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+function transformAndFacet(allGeometry: GeometryQuery[], g: GeometryQuery, transform: Transform, options: StrokeOptions, x0: number, y0: number) {
+  const g1 = g.cloneTransformed(transform);
+  if (g1) {
+    const builder = PolyfaceBuilder.create(options);
+    builder.addGeometryQuery(g1);
+    const facets = builder.claimPolyface();
+    GeometryCoreTestIO.captureGeometry(allGeometry, facets, x0, y0);
+  }
+}

@@ -79,6 +79,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * @public
  */
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "bsplineCurve";
 
   /** The underlying blocked-pole spline, with simple x,y,z poles */

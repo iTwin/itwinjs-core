@@ -62,6 +62,7 @@ export interface ArcVectors {
  * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "arc";
 
   /**
@@ -93,6 +94,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * read property for (clone of!) matrix of vector0, vector90, unit normal
    */
   public get matrix(): Matrix3d { return this._matrix.clone(); }
+  /**
+   * read property for (reference to !!) matrix of vector0, vector90, unit normal
+   */
+  public get matrixRef(): Matrix3d { return this._matrix; }
   /** property getter for the angle sweep */
   public get sweep(): AngleSweep { return this._sweep; }
   /** property setter for angle sweep */
@@ -834,8 +839,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public cloneInRotatedBasis(theta: Angle): Arc3d {
     const c = theta.cos();
     const s = theta.sin();
-    const vector0 = this._matrix.multiplyXY(c, -s);
-    const vector90 = this.matrix.multiplyXY(s, c);
+    const vector0 = this._matrix.multiplyXY(c, s);
+    const vector90 = this.matrix.multiplyXY(-s, c);
 
     const newSweep = AngleSweep.createStartEndRadians(this._sweep.startRadians - theta.radians, this._sweep.endRadians - theta.radians);
     const arcB = Arc3d.create(this._center.clone(), vector0, vector90, newSweep);
@@ -910,7 +915,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         }
       }
     }
-    return {fraction10: 0.0, fraction12: 0.0, point: point1.clone()};
+    return { fraction10: 0.0, fraction12: 0.0, point: point1.clone() };
   }
 }
 /**

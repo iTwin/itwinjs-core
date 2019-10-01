@@ -42,7 +42,9 @@ export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSw
  * @public
  */
 export abstract class SolidPrimitive extends GeometryQuery {
+  /** String name for schema properties */
   public readonly geometryCategory = "solid";
+  /** String name for schema properties */
   public abstract readonly solidPrimitiveType: SolidPrimitiveType;
 
   /** flag indicating whether cap region is considered closed (i.e. a planar region, rather than just a wire in space) */
