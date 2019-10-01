@@ -182,6 +182,8 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
+internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React_2.FunctionComponent
@@ -207,6 +209,7 @@ public;InputFieldMessageAddedEvent
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
+internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
 public;ItemList 
 public;ItemMap 

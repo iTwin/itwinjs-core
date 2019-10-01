@@ -25,7 +25,7 @@ describe("<Backstage />", () => {
   });
 
   it("should set is-open class", () => {
-    shallow(<Backstage isOpen={true} />).should.matchSnapshot();
+    shallow(<Backstage isOpen />).should.matchSnapshot();
   });
 
   it("should render header", () => {
@@ -65,7 +65,7 @@ describe("<Backstage />", () => {
 
   it("should handle escape key down close event", () => {
     const handler = sinon.spy();
-    mount(<Backstage isOpen={true} onClose={handler} />);
+    mount(<Backstage isOpen onClose={handler} />);
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     handler.calledOnce.should.true;

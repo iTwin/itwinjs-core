@@ -101,6 +101,7 @@ import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
+import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeDataChangesListener } from '@bentley/ui-components';
@@ -2210,6 +2211,15 @@ export type FunctionType = (...args: any[]) => any;
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
 // @internal (undocumented)
+export const getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps;
+
+// @internal (undocumented)
+export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
+    zIndex: number;
+    position: "relative";
+} | undefined;
+
+// @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
 // @internal (undocumented)
@@ -2435,6 +2445,9 @@ export enum InputStatus {
     // (undocumented)
     Valid = 0
 }
+
+// @internal (undocumented)
+export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
 
 // @public
 export abstract class ItemDefBase {
@@ -4304,23 +4317,31 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
 export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
     // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
-}
+    }
 
 // @internal
 export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
-    bounds: RectangleProps;
+    dropTarget: ZoneTargetType | undefined;
+    // (undocumented)
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     isClosed: boolean;
     // (undocumented)
     isHidden: boolean;
+    // (undocumented)
+    lastPosition: PointProps | undefined;
+    // (undocumented)
+    targetChangeHandler: TargetChangeHandler;
+    // (undocumented)
+    targetedBounds: RectangleProps | undefined;
+    // (undocumented)
+    widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    zone: ZoneManagerProps;
 }
 
 // @public

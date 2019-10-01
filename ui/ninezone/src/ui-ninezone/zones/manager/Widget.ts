@@ -18,6 +18,21 @@ export interface WidgetManagerProps {
   readonly verticalAnchor: VerticalAnchor;
 }
 
+/** Available modes of tool settings widget.
+ * @beta
+ */
+export enum ToolSettingsWidgetMode {
+  Tab,
+  TitleBar,
+}
+
+/** Tool settings widget properties used in [[ZonesManagerProps]].
+ * @beta
+ */
+export interface ToolSettingsWidgetManagerProps extends WidgetManagerProps {
+  readonly mode: ToolSettingsWidgetMode;
+}
+
 /** Dragged widget properties used in [[ZonesManagerProps]].
  * @beta
  */
@@ -58,6 +73,12 @@ export const getDefaultWidgetManagerProps = (id: WidgetZoneId): WidgetManagerPro
   id,
   tabIndex: -2,  // a -2 means the tabIndex has not been initialized. A tabIndex of -1 means initialized and non-selected
   verticalAnchor: getDefaultWidgetVerticalAnchor(id),
+});
+
+/** @internal */
+export const getDefaultToolSettingsWidgetManagerProps = (): ToolSettingsWidgetManagerProps => ({
+  ...getDefaultWidgetManagerProps(2),
+  mode: ToolSettingsWidgetMode.TitleBar,
 });
 
 /** Class used to manage [[DraggedWidgetManagerProps]].

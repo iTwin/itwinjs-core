@@ -37,7 +37,7 @@ describe("<Item />", () => {
   });
 
   it("renders with badge correctly", () => {
-    const sut = mount(<Item badge={true} />);
+    const sut = mount(<Item badge />);
     const badge = sut.find("div.nz-badge");
     badge.length.should.eq(1);
   });

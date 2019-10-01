@@ -367,6 +367,9 @@ export const getDefaultStagePanelManagerProps: () => StagePanelManagerProps;
 export const getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps;
 
 // @internal (undocumented)
+export const getDefaultToolSettingsWidgetManagerProps: () => ToolSettingsWidgetManagerProps;
+
+// @internal (undocumented)
 export const getDefaultWidgetHorizontalAnchor: (id: WidgetZoneId) => HorizontalAnchor;
 
 // @internal (undocumented)
@@ -743,6 +746,8 @@ export interface NestedToolSettingsProps extends CommonProps {
 
 // @alpha
 export class NineZoneManager {
+    // @internal (undocumented)
+    getHiddenWidgets(): NineZoneManagerHiddenWidgets;
     // (undocumented)
     getNestedPanelsManager(): NineZoneNestedStagePanelsManager;
     // (undocumented)
@@ -758,10 +763,33 @@ export class NineZoneManager {
     // (undocumented)
     handleWidgetTabDragStart<TProps extends NineZoneManagerProps>(args: WidgetTabDragStartArguments, props: TProps): TProps;
     // (undocumented)
+    hideWidget<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps;
+    // @internal (undocumented)
+    setNested<TProps extends NineZoneManagerProps>(nested: TProps["nested"], props: TProps): TProps;
+    // (undocumented)
     setPanelTarget(target: NineZoneManagerPanelTarget | undefined): void;
     // (undocumented)
     setPaneTarget(target: NineZoneManagerPaneTarget | undefined): void;
+    // @internal (undocumented)
+    setProp<TProps extends NineZoneManagerProps, TKey extends keyof TProps>(value: TProps[TKey], key: TKey, props: TProps): TProps;
+    // @internal (undocumented)
+    setZones<TProps extends NineZoneManagerProps>(zones: TProps["zones"], props: TProps): TProps;
+    // (undocumented)
+    showWidget<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps;
     }
+
+// @internal (undocumented)
+export interface NineZoneManagerHiddenWidget {
+    // (undocumented)
+    panel?: {
+        key: NestedStagePanelKey<NestedStagePanelsManagerProps>;
+    };
+}
+
+// @internal (undocumented)
+export type NineZoneManagerHiddenWidgets = {
+    readonly [id in WidgetZoneId]: NineZoneManagerHiddenWidget;
+};
 
 // @alpha
 export interface NineZoneManagerPanelTarget {
@@ -972,9 +1000,11 @@ export class ResizeDirectionHelpers {
 }
 
 // @alpha
-export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
+export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
     // (undocumented)
     render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: ResizeGripState;
 }
 
 // @alpha
@@ -1612,8 +1642,10 @@ export class Tools extends React.PureComponent<ToolsProps> {
 // @beta
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     // (undocumented)
+    getBounds(): RectangleProps;
+    // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @beta
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
@@ -1639,8 +1671,15 @@ export interface ToolSettingsPopupProps extends CommonProps {
 export interface ToolSettingsProps extends CommonProps {
     buttons?: React.ReactNode;
     children?: React.ReactNode;
+    contentRef?: React.Ref<HTMLDivElement>;
+    fillZone?: boolean;
+    lastPosition?: PointProps;
+    onDrag?: (dragged: PointProps) => void;
+    onDragEnd?: () => void;
+    onDragStart?: (initialPosition: PointProps) => void;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onResize?: (resizeBy: number, handle: ResizeHandle) => void;
     title?: string;
 }
 
@@ -1658,6 +1697,20 @@ export interface ToolSettingsTabProps extends CommonProps {
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     title?: string;
+}
+
+// @beta
+export interface ToolSettingsWidgetManagerProps extends WidgetManagerProps {
+    // (undocumented)
+    readonly mode: ToolSettingsWidgetMode;
+}
+
+// @beta
+export enum ToolSettingsWidgetMode {
+    // (undocumented)
+    Tab = 0,
+    // (undocumented)
+    TitleBar = 1
 }
 
 // @alpha
@@ -1978,6 +2031,8 @@ export class ZonesManager {
     // (undocumented)
     setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
+    setToolSettingsWidgetMode<TProps extends ZonesManagerProps>(mode: ToolSettingsWidgetMode, props: TProps): TProps;
+    // @internal (undocumented)
     setWidgetHorizontalAnchor<TProps extends ZonesManagerProps>(widgetId: WidgetZoneId, horizontalAnchor: HorizontalAnchor, props: TProps): TProps;
     // @internal (undocumented)
     setWidgetTabIndex<TProps extends ZonesManagerProps>(widgetId: WidgetZoneId, tabIndex: number, props: TProps): TProps;
@@ -2045,7 +2100,9 @@ export interface ZonesManagerWidgetResizeArgs {
 
 // @beta
 export type ZonesManagerWidgetsProps = {
-    readonly [id in WidgetZoneId]: WidgetManagerProps;
+    readonly [id in Exclude<WidgetZoneId, 2>]: WidgetManagerProps;
+} & {
+    readonly [2]: ToolSettingsWidgetManagerProps;
 };
 
 // @beta

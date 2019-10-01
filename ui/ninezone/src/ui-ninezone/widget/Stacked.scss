@@ -135,6 +135,12 @@
     }
   }
 
+  &.nz-bottom-anchor, &.nz-middle-anchor {
+    > .nz-content-container {
+      min-height: $nz-widget-min-size;
+    }
+  }
+
   &.nz-dragged {
     @include uicore-z-index(dragged-widget);
   }

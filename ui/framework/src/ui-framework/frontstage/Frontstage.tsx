@@ -9,20 +9,21 @@ import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
-import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds } from "@bentley/ui-ninezone";
+import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
-import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation } from "../zones/Zone";
+import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation, isToolSettingsWidgetManagerProps } from "../zones/Zone";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps, getNestedStagePanelKey } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
 import { FrontstageManager } from "./FrontstageManager";
+import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
 
 /** Properties for a [[Frontstage]] component.
  * @public
@@ -404,6 +405,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         return prev;
 
       const widgetDefs = zoneDef.widgetDefs.filter((widgetDef: WidgetDef) => {
+        if (zoneId === 2)
+          return widgetDef.isVisible;
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
 
@@ -421,9 +424,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const nzWidget = runtimeProps.nineZone.zones.widgets[widget.id];
       return (
         <WidgetContentRenderer
+          anchor={nzWidget.horizontalAnchor}
           isHidden={nzWidget.tabIndex !== widget.tabIndex}
           key={`${widget.id}_${widget.tabIndex}`}
           renderTo={this.state.widgetIdToContent[widget.id]}
+          toolSettingsMode={isToolSettingsWidgetManagerProps(nzWidget) ? nzWidget.mode : undefined}
           widget={widget.def}
         />
       );
@@ -489,8 +494,10 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 }
 
 interface WidgetContentRendererProps {
+  anchor: HorizontalAnchor;
   isHidden: boolean;
   renderTo: HTMLDivElement | undefined;
+  toolSettingsMode: ToolSettingsWidgetMode | undefined;
   widget: WidgetDef;
 }
 
@@ -511,6 +518,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 
   public componentDidMount() {
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
     this._content.style.display = this.props.isHidden ? "none" : null;
     if (!this.props.renderTo)
@@ -535,22 +543,43 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 
   public componentWillUnmount() {
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public render() {
     if (this.props.widget.state === WidgetState.Unloaded)
       return null;
-    return ReactDOM.createPortal(
-      <React.Fragment
-        key={this.state.widgetKey}
-      >
-        {this.props.widget.reactElement}
-      </React.Fragment>, this._content,
-    );
+    let element;
+    if (this.props.toolSettingsMode !== undefined) {
+      element = (
+        <ToolSettingsContent
+          anchor={this.props.anchor}
+          key={this.state.widgetKey}
+          mode={this.props.toolSettingsMode}
+        >
+          {FrontstageManager.activeToolSettingsNode}
+        </ToolSettingsContent>
+      );
+    } else {
+      element = (
+        <React.Fragment
+          key={this.state.widgetKey}
+        >
+          {this.props.widget.reactElement}
+        </React.Fragment>
+      );
+    }
+    return ReactDOM.createPortal(element, this._content);
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
     if (this.props.widget !== args.widgetDef)
+      return;
+    this.forceUpdate();
+  }
+
+  private _handleToolActivatedEvent = () => {
+    if (this.props.toolSettingsMode === undefined)
       return;
     this.forceUpdate();
   }

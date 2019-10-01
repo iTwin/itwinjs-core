@@ -9,11 +9,11 @@ import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {
-    mount(<PointerCaptor />);
+    mount(<PointerCaptor isMouseDown={false} />);
   });
 
   it("renders correctly", () => {
-    shallow(<PointerCaptor />).should.matchSnapshot();
+    shallow(<PointerCaptor isMouseDown={false} />).should.matchSnapshot();
   });
 
   it("should respect isMouseDown prop over state", () => {
@@ -21,30 +21,21 @@ describe("<PointerCaptor />", () => {
   });
 
   it("should unmount", () => {
-    const sut = mount(<PointerCaptor />);
+    const sut = mount(<PointerCaptor isMouseDown={false} />);
     sut.unmount();
   });
 
   it("should call mouse down prop", () => {
     const spy = sinon.spy();
-    const sut = mount(<PointerCaptor onMouseDown={spy} />);
+    const sut = mount(<PointerCaptor isMouseDown={false} onMouseDown={spy} />);
     sut.simulate("mouseDown");
 
     spy.calledOnce.should.true;
   });
 
-  it("should set isMouseDown state", () => {
+  it("should call mouse up if mouse is down", () => {
     const spy = sinon.spy();
-    const sut = mount<PointerCaptor>(<PointerCaptor onMouseDown={spy} />);
-    sut.simulate("mouseDown");
-
-    sut.state().isMouseDown.should.eq(true);
-  });
-
-  it("should call mouse up after mouse down was called on captor", () => {
-    const spy = sinon.spy();
-    const sut = mount(<PointerCaptor onMouseUp={spy} />);
-    sut.simulate("mouseDown");
+    mount(<PointerCaptor isMouseDown onMouseUp={spy} />);
 
     const mouseUp = document.createEvent("HTMLEvents");
     mouseUp.initEvent("mouseup");
@@ -53,9 +44,9 @@ describe("<PointerCaptor />", () => {
     spy.calledOnce.should.true;
   });
 
-  it("should call mouse move after mouse down was called on captor", () => {
+  it("should call mouse move if mouse is down", () => {
     const spy = sinon.spy();
-    const sut = mount(<PointerCaptor onMouseMove={spy} />);
+    const sut = mount(<PointerCaptor isMouseDown onMouseMove={spy} />);
     sut.simulate("mouseDown");
 
     const mouseMove = document.createEvent("HTMLEvents");

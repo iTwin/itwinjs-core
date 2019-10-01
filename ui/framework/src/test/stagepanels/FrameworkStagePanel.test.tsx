@@ -233,6 +233,6 @@ describe("FrameworkStagePanel", () => {
       {...props}
       location={StagePanelLocation.Top}
       panel={panel}
-    />).dive().should.matchSnapshot(true);
+    />).dive().should.matchSnapshot();
   });
 });

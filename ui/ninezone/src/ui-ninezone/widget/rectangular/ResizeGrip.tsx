@@ -74,30 +74,38 @@ export interface ResizeGripProps extends CommonProps {
   direction: ResizeDirection;
 }
 
+interface ResizeGripState {
+  isMouseDown: boolean;
+}
+
 /** Resize grip used by [[Stacked]] component.
  * @alpha
  */
-export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
+export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
   private _grip = React.createRef<HTMLDivElement>();
   private _isResizing = false;
   private _movedBy = 0;
   private _lastPosition = new Point();
 
-  public render() {
-    const { className, onClick, ...props } = this.props;
+  /** @internal */
+  public readonly state: ResizeGripState = {
+    isMouseDown: false,
+  };
 
-    const pointerCaptorClassName = classnames(
+  public render() {
+    const className = classnames(
       "nz-widget-rectangular-resizeGrip",
       ResizeDirectionHelpers.getCssClassName(this.props.direction),
       this.props.className);
 
     return (
       <PointerCaptor
-        className={pointerCaptorClassName}
+        className={className}
+        isMouseDown={this.state.isMouseDown}
         onMouseDown={this._handleMouseDown}
         onMouseUp={this._handleMouseUp}
         onMouseMove={this._handleMouseMove}
-        {...props}
+        style={this.props.style}
       >
         <div
           className="nz-grip"
@@ -115,6 +123,9 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   }
 
   private _handleMouseDown = (e: MouseEvent) => {
+    this.setState(() => ({
+      isMouseDown: true,
+    }));
     const grip = this._grip.current;
     if (!grip)
       return;
@@ -136,6 +147,9 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   }
 
   private _handleMouseUp = (e: MouseEvent) => {
+    this.setState(() => ({
+      isMouseDown: false,
+    }));
     const grip = this._grip.current;
     if (!this._isResizing || !grip)
       return;

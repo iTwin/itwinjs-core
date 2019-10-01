@@ -8,6 +8,8 @@
 @import "../widgetopacity";
 
 .nz-widget-toolSettings {
+  $grip-offset: $nz-resize-grip-size / 2;
+
   border: {
     color: $nz-widget-border-color;
     radius: $nz-widget-border-radius;
@@ -26,8 +28,10 @@
 
   @include nz-widget-opacity;
 
-  > .nz-title {
-    min-height: $nz-tool-settings-title-bar-min-height;
+  > .nz-handle {
+    > .nz-title {
+      min-height: $nz-tool-settings-title-bar-min-height;
+    }
   }
 
   > .nz-content {
@@ -40,5 +44,36 @@
       width: fit-content;
       height: fit-content;
     }
+  }
+
+  > .nz-left-grip {
+    top: 0;
+    left: -$grip-offset;
+  }
+
+  > .nz-top-grip {
+    left: 0;
+    top: -$grip-offset;
+  }
+
+  > .nz-right-grip {
+    top: 0;
+    right: -$grip-offset;
+  }
+
+  > .nz-bottom-grip {
+    left: 0;
+    bottom: -$grip-offset;
+  }
+
+  &.nz-draggable {
+    > .nz-handle {
+      cursor: pointer;
+    }
+  }
+
+  &.nz-fill {
+    height: 100%;
+    width: 100%;
   }
 }
