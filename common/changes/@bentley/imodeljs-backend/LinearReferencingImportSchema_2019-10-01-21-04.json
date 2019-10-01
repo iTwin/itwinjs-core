@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Deprecating importSchema on the LinearReferencing domain in favor of its bulk-version.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "diego.diaz@bentley.com"
+}

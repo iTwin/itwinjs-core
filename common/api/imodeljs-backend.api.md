@@ -2496,10 +2496,12 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 
 // @beta
 export class LinearReferencingSchema extends Schema {
-    // (undocumented)
+    // @deprecated (undocumented)
     static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }

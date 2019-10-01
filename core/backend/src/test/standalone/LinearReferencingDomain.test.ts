@@ -10,7 +10,7 @@ import {
   LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, BriefcaseManager, LinearReferencingSchema,
+  BackendRequestContext, LinearReferencingSchema,
   PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -29,12 +29,8 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await LinearReferencingSchema.importSchema(requestContext, iModelDb);
+    await iModelDb.importSchemas(requestContext, [LinearReferencingSchema.schemaFilePath, path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
     LinearReferencingSchema.registerSchema();
-
-    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchemas below will fail if this is not called to flush local changes
-
-    await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory
