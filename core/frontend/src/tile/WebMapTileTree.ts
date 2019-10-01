@@ -687,7 +687,8 @@ class BingImageryProvider extends ImageryProvider {
     try {
       const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
-      this._logoUrl = replaceHttpWithHttps(bingResponseProps.brandLogoUri);
+      // this._logoUrl = replaceHttpWithHttps(bingResponseProps.brandLogoUri); // toDataUrl throws tainted canvas exception...
+      this._logoUrl = "images/logo_powered_by.png";
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];
       const thisResourceProps = thisResourceSetProps.resources[0];

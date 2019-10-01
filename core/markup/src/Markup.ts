@@ -6,11 +6,12 @@
 
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { imageElementFromImageSource, IModelApp, ScreenViewport, FrontendLoggerCategory } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import { UndoManager } from "./Undo";
+import { Logger } from "@bentley/bentleyjs-core";
 
 import * as textTool from "./TextEdit";
 import * as redlineTool from "./RedlineTool";
@@ -264,6 +265,10 @@ export class MarkupApp {
     markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
     IModelApp.toolAdmin.startDefaultTool();
+    if (!markup.svgContainer.attr("width") || !markup.svgContainer.attr("height")) {
+      markup.svgContainer.attr({ width: markup.svgContainer.viewbox().width }); // Firefox requires width and height on top-level svg or drawImage does nothing...
+      markup.svgContainer.attr({ height: markup.svgContainer.viewbox().height });
+    }
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
 
@@ -271,26 +276,30 @@ export class MarkupApp {
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
     let canvas = this.markup!.vp.readImageToCanvas();
-    const svg = this.readMarkupSvg(); // read the current svg data for the markup
-    if (svg && result.imprintSvgOnImage) {
-      try {
+    let svg, image;
+    try {
+      svg = this.readMarkupSvg(); // read the current svg data for the markup
+      if (svg && result.imprintSvgOnImage) {
         const svgImage = await imageElementFromImageSource(new ImageSource(svg, ImageSourceFormat.Svg));
         canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
-      } catch (e) { }
-    }
+      }
 
-    // is the source view too wide? If so, we need to scale the image down.
-    if (canvas.width > result.maxWidth) {
-      // yes, we have to scale it down, create a new canvas and set the new canvas' size
-      const newCanvas = document.createElement("canvas");
-      newCanvas.width = result.maxWidth;
-      newCanvas.height = canvas.height * (result.maxWidth / canvas.width);
-      newCanvas.getContext("2d")!.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
-      canvas = newCanvas; // return the image from adjusted canvas, not view canvas.
-    }
+      // is the source view too wide? If so, we need to scale the image down.
+      if (canvas.width > result.maxWidth) {
+        // yes, we have to scale it down, create a new canvas and set the new canvas' size
+        const newCanvas = document.createElement("canvas");
+        newCanvas.width = result.maxWidth;
+        newCanvas.height = canvas.height * (result.maxWidth / canvas.width);
+        newCanvas.getContext("2d")!.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
+        canvas = newCanvas; // return the image from adjusted canvas, not view canvas.
+      }
 
-    // return the markup data to be saved by the application.
-    return { rect: { width: canvas.width, height: canvas.height }, svg, image: !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat) };
+      // return the markup data to be saved by the application.
+      image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
+    } catch (e) {
+      Logger.logError(FrontendLoggerCategory.Package + ".markup", "Error creating image from svg", () => ({ message: e.message }));
+    }
+    return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }
 
   /** @internal */

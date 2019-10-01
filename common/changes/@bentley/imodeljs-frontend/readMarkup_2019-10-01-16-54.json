@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
