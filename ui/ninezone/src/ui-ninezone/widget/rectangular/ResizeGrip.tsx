@@ -123,9 +123,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
   }
 
   private _handleMouseDown = (e: MouseEvent) => {
-    this.setState(() => ({
-      isMouseDown: true,
-    }));
+    this.setState({ isMouseDown: true });
     const grip = this._grip.current;
     if (!grip)
       return;
@@ -147,9 +145,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
   }
 
   private _handleMouseUp = (e: MouseEvent) => {
-    this.setState(() => ({
-      isMouseDown: false,
-    }));
+    this.setState({ isMouseDown: false });
     const grip = this._grip.current;
     if (!this._isResizing || !grip)
       return;

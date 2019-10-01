@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change prop type from RefObject<T> to T.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

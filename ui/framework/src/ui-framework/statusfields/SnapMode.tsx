@@ -29,11 +29,15 @@ interface SnapModeFieldEntry {
   iconName: string;
 }
 
+interface SnapModeFieldState {
+  target: HTMLElement | null;
+}
+
 /**
  * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  */
-class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
+class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapModeFieldState> {
   private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [
     { label: UiFramework.translate("snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
@@ -44,8 +48,11 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
     { label: UiFramework.translate("snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
     { label: UiFramework.translate("snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
-  private _target = React.createRef<HTMLDivElement>();
   private _indicator = React.createRef<HTMLDivElement>();
+
+  public readonly state: SnapModeFieldState = {
+    target: null,
+  };
 
   constructor(props: SnapModeFieldProps) {
     super(props);
@@ -73,7 +80,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   public render(): React.ReactNode {
     return (
       <>
-        <div ref={this._target}
+        <div ref={this._handleTargetRef}
           className={this.props.className}
           style={this.props.style}
         >
@@ -93,7 +100,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
-          target={this._target}
+          target={this.state.target}
         >
           <SnapModePanel
             title={UiFramework.translate("snapModeField.snapMode")}
@@ -103,6 +110,10 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
         </FooterPopup>
       </>
     );
+  }
+
+  private _handleTargetRef = (target: HTMLElement | null) => {
+    this.setState({ target });
   }
 
   private _handleClose = () => {

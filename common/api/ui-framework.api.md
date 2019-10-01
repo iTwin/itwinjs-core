@@ -2874,7 +2874,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
-    }
+}
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -3861,7 +3861,6 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 
 // @public
 export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> {
-    constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3872,7 +3871,7 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     static severityToStatus(severity: MessageSeverity): Status;
     // @internal (undocumented)
     readonly state: Readonly<StatusBarState>;
-    }
+}
 
 // @beta
 export const StatusBarCenterSection: React_2.FunctionComponent<CommonDivProps>;

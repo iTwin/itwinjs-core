@@ -270,7 +270,7 @@ class ActivityMessage extends React.PureComponent<MessageProps> {
 }
 
 interface ToastMessageProps extends MessageProps {
-  animateOutTo: React.RefObject<HTMLElement>;
+  animateOutTo: HTMLElement | null;
 }
 
 class ToastMessageExample extends React.PureComponent<ToastMessageProps> {
@@ -297,7 +297,7 @@ class ToastMessageExample extends React.PureComponent<ToastMessageProps> {
 interface FooterMessageExampleProps {
   toastMessageKey: React.Key;
   message: VisibleMessage;
-  animateToastMessageTo: React.RefObject<HTMLElement>;
+  animateToastMessageTo: HTMLElement | null;
   onHideMessage: () => void;
 }
 
@@ -342,19 +342,22 @@ interface StatusZoneExampleProps extends MessageProps {
 
 interface StatusZoneExampleState {
   messageCenterTab: MessageCenterActiveTab;
+  messageCenterTarget: HTMLElement | null;
+  snapModeTarget: HTMLElement | null;
+  toolAssistanceTarget: HTMLElement | null;
 }
 
 class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, StatusZoneExampleState> {
   public readonly state: StatusZoneExampleState = {
     messageCenterTab: MessageCenterActiveTab.AllMessages,
+    messageCenterTarget: null,
+    snapModeTarget: null,
+    toolAssistanceTarget: null,
   };
 
   private _messageCenterIndicator = React.createRef<HTMLDivElement>();
-  private _messageCenterTarget = React.createRef<HTMLDivElement>();
   private _snapModeIndicator = React.createRef<HTMLDivElement>();
-  private _snapModeTarget = React.createRef<HTMLDivElement>();
   private _toolAssistanceIndicator = React.createRef<HTMLDivElement>();
-  private _toolAssistanceTarget = React.createRef<HTMLDivElement>();
 
   public render() {
     return (
@@ -370,14 +373,14 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
             messages={
               <FooterMessageExample
                 toastMessageKey={this.props.toastMessageKey}
-                animateToastMessageTo={this._messageCenterTarget}
+                animateToastMessageTo={this.state.messageCenterTarget}
                 onHideMessage={this.props.onHideMessage}
                 message={this.props.message}
               />
             }
             safeAreaInsets={this.props.safeAreaInsets}
           >
-            <div ref={this._toolAssistanceTarget}>
+            <div ref={this._handleToolAssistanceTarget}>
               <ToolAssistance
                 icons={
                   <>
@@ -397,7 +400,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
               isOpen={this.props.openWidget === FooterWidget.Messages}
               onClose={this._handlePopupClose}
               onOutsideClick={this._handleMessageCenterOutsideClick}
-              target={this._messageCenterTarget}
+              target={this.state.messageCenterTarget}
             >
               <MessageCenterDialog
                 buttons={
@@ -474,12 +477,12 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
               indicatorRef={this._messageCenterIndicator}
               isInFooterMode={this.props.isInFooterMode}
               label={this.props.isInFooterMode ? "Message(s):" : undefined}
-              targetRef={this._messageCenterTarget}
+              targetRef={this._handleMessageCenterTarget}
             >
               9+
             </MessageCenter>
             {this.props.isInFooterMode && <FooterSeparator />}
-            <div ref={this._snapModeTarget}>
+            <div ref={this._handleSnapModeTarget}>
               <SnapMode
                 icon="k"
                 indicatorRef={this._snapModeIndicator}
@@ -506,7 +509,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
           isOpen={this.props.openWidget === FooterWidget.ToolAssistance}
           onClose={this._handlePopupClose}
           onOutsideClick={this._handleToolAssistanceOutsideClick}
-          target={this._toolAssistanceTarget}
+          target={this.state.toolAssistanceTarget}
         >
           <ToolAssistanceDialog
             title="Trim Multiple - Tool Assistance"
@@ -536,7 +539,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
           isOpen={this.props.openWidget === FooterWidget.SnapMode}
           onClose={this._handlePopupClose}
           onOutsideClick={this._handleSnapModeOutsideClick}
-          target={this._snapModeTarget}
+          target={this.state.snapModeTarget}
         >
           <SnapModePanel
             title="Snap Mode"
@@ -549,6 +552,18 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
         </FooterPopup>
       </>
     );
+  }
+
+  private _handleMessageCenterTarget = (messageCenterTarget: HTMLElement | null) => {
+    this.setState({ messageCenterTarget });
+  }
+
+  private _handleToolAssistanceTarget = (toolAssistanceTarget: HTMLElement | null) => {
+    this.setState({ toolAssistanceTarget });
+  }
+
+  private _handleSnapModeTarget = (snapModeTarget: HTMLElement | null) => {
+    this.setState({ snapModeTarget });
   }
 
   private _handleMessageCenterOutsideClick = (e: MouseEvent) => {
@@ -582,15 +597,11 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   }
 
   private _handleAllMessagesTabClick = () => {
-    this.setState(() => ({
-      messageCenterTab: MessageCenterActiveTab.AllMessages,
-    }));
+    this.setState({ messageCenterTab: MessageCenterActiveTab.AllMessages });
   }
 
   private _handleProblemsTabClick = () => {
-    this.setState(() => ({
-      messageCenterTab: MessageCenterActiveTab.Problems,
-    }));
+    this.setState({ messageCenterTab: MessageCenterActiveTab.Problems });
   }
 
   private _handlePopupClose = () => {
@@ -839,7 +850,7 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
         onDragEnd={this.props.onTabDragEnd}
         onDrag={this.props.onTabDrag}
         tabIndex={tabIndex}
-        tab={tabIndex === 0 ? this._firstTab : undefined}
+        tabRef={tabIndex === 0 ? this._firstTab : undefined}
         verticalAnchor={this.props.verticalAnchor}
         widgetId={this.props.widgetId}
       />
@@ -898,7 +909,7 @@ interface FloatingZoneWidgetTabProps {
   onDragEnd: () => void;
   onDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps) => void;
   tabIndex: number;
-  tab?: React.RefObject<Tab>;
+  tabRef?: React.Ref<Tab>;
   verticalAnchor: VerticalAnchor;
   widgetId: WidgetZoneId;
 }
@@ -916,7 +927,7 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
         onDragStart={this._handleDragStart}
         onDragEnd={this.props.onDragEnd}
         onDrag={this.props.onDrag}
-        ref={this.props.tab}
+        ref={this.props.tabRef}
         verticalAnchor={this.props.verticalAnchor}
       >
         {placeholderIcon}
@@ -997,10 +1008,25 @@ interface ToolSettingsWidgetProps {
   onTabClick: () => void;
 }
 
-class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
+interface ToolSettingsWidgetState {
+  isNestedPopupOpen: boolean;
+  isPopupOpen: boolean;
+  nestedToggle: HTMLElement | null;
+  toggle: HTMLElement | null;
+}
+
+class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps, ToolSettingsWidgetState> {
   private _widget = React.createRef<ToolSettings>();
+
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
+  };
+
+  public readonly state: ToolSettingsWidgetState = {
+    isNestedPopupOpen: false,
+    isPopupOpen: false,
+    nestedToggle: null,
+    toggle: null,
   };
 
   public render() {
@@ -1182,15 +1208,16 @@ class Content extends React.PureComponent {
 interface Widget2Tab1ContentState {
   isNestedPopupOpen: boolean;
   isPopupOpen: boolean;
+  nestedToggle: HTMLElement | null;
+  toggle: HTMLElement | null;
 }
 
 class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState> {
-  private _toggle = React.createRef<HTMLButtonElement>();
-  private _nestedToggle = React.createRef<HTMLButtonElement>();
-
   public readonly state: Widget2Tab1ContentState = {
     isNestedPopupOpen: false,
     isPopupOpen: false,
+    nestedToggle: null,
+    toggle: null,
   };
 
   public render() {
@@ -1198,18 +1225,18 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
       <>
         <button
           onClick={this._handleToggleClick}
-          ref={this._toggle}
+          ref={this._handleToggleRef}
         >
           Toggle
         </button>
         <ToolSettingsPopup
           isOpen={this.state.isPopupOpen}
           onClose={this._handleCloseTogglePopup}
-          target={this._toggle}
+          target={this.state.toggle}
         >
           <button
             onClick={this._handleNestedToggleClick}
-            ref={this._nestedToggle}
+            ref={this._handleNestedToggleRef}
           >
             Nested Toggle
           </button>
@@ -1217,7 +1244,7 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
         <ToolSettingsPopup
           isOpen={this.state.isNestedPopupOpen}
           onClose={this._handleCloseNestedTogglePopup}
-          target={this._nestedToggle}
+          target={this.state.nestedToggle}
         >
           <NestedToolSettings
             title="Nested"
@@ -1257,6 +1284,14 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
     );
   }
 
+  private _handleNestedToggleRef = (nestedToggle: HTMLElement | null) => {
+    this.setState({ nestedToggle });
+  }
+
+  private _handleToggleRef = (toggle: HTMLElement | null) => {
+    this.setState({ toggle });
+  }
+
   private _handleToggleClick = () => {
     this.setState((prevState) => ({
       isNestedPopupOpen: false,
@@ -1265,10 +1300,10 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
   }
 
   private _handleCloseTogglePopup = () => {
-    this.setState(() => ({
+    this.setState({
       isNestedPopupOpen: false,
       isPopupOpen: false,
-    }));
+    });
   }
 
   private _handleNestedToggleClick = () => {
@@ -1278,15 +1313,11 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
   }
 
   private _handleCloseNestedTogglePopup = () => {
-    this.setState(() => ({
-      isNestedPopupOpen: false,
-    }));
+    this.setState({ isNestedPopupOpen: false });
   }
 
   private _handleBackClick = () => {
-    this.setState(() => ({
-      isNestedPopupOpen: false,
-    }));
+    this.setState({ isNestedPopupOpen: false });
   }
 }
 
@@ -2699,7 +2730,7 @@ interface ZonesExampleProps {
   toastMessageKey: number;
   tools: ZoneTools | HiddenZoneTools;
   zones: ZonesManagerProps;
-  zonesMeasurer: React.Ref<HTMLDivElement>;
+  zonesMeasurerRef: React.Ref<HTMLDivElement>;
 }
 
 interface ZonesExampleState {
@@ -2743,7 +2774,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
             topPanel={this.renderStagePanel(ExampleStagePanelType.Top)}
           >
             <div
-              ref={this.props.zonesMeasurer}
+              ref={this.props.zonesMeasurerRef}
               style={{
                 height: "100%",
                 position: "relative",
@@ -3191,7 +3222,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           stagePanels={this.state.nineZone.nested}
           toastMessageKey={this.state.toastMessageKey}
           tools={this.state.tools}
-          zonesMeasurer={this._zonesMeasurer}
+          zonesMeasurerRef={this._zonesMeasurer}
         />
         {tabs.map((tab) => {
           const toolSettingsWidgetProps = tab.widget.id === 2 ? tab.widget as ToolSettingsWidgetManagerProps : undefined;
@@ -3752,11 +3783,11 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   private _handleBackstageClose = () => {
-    this.setState(() => ({ isBackstageOpen: false }));
+    this.setState({ isBackstageOpen: false });
   }
 
   private _handleAppButtonClick = () => {
-    this.setState(() => ({ isBackstageOpen: true }));
+    this.setState({ isBackstageOpen: true });
   }
 
   private _handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
@@ -3905,15 +3936,11 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   private _handleShowTooltip = () => {
-    this.setState(() => ({
-      isTooltipVisible: true,
-    }));
+    this.setState({ isTooltipVisible: true });
   }
 
   private _handleOpenActivityMessage = () => {
-    this.setState(() => ({
-      message: VisibleMessage.Activity,
-    }));
+    this.setState({ message: VisibleMessage.Activity });
   }
 
   private _handleOpenToastMessage = () => {
@@ -3924,21 +3951,15 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   private _handleTooltipTimeout = () => {
-    this.setState(() => ({
-      isTooltipVisible: false,
-    }));
+    this.setState({ isTooltipVisible: false });
   }
 
   private _handleOpenWidgetChange = (openWidget: FooterWidget) => {
-    this.setState(() => ({
-      openWidget,
-    }));
+    this.setState({ openWidget });
   }
 
   private _handleHideMessage = () => {
-    this.setState(() => ({
-      message: VisibleMessage.None,
-    }));
+    this.setState({ message: VisibleMessage.None });
   }
 
   private _handleStagePanelInitialize = (size: number, type: ExampleStagePanelType) => {

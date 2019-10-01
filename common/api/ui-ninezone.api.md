@@ -294,15 +294,11 @@ export interface FooterIndicatorProps extends CommonProps {
 }
 
 // @beta
-export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPopupState> {
-    // (undocumented)
-    componentDidMount(): void;
+export class FooterPopup extends React.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
     // (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: FooterPopupState;
 }
 
 // @beta
@@ -322,7 +318,7 @@ export interface FooterPopupProps extends CommonProps {
     isPinned?: boolean;
     onClose?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
-    target?: React.RefObject<HTMLElement>;
+    target?: HTMLElement | null;
 }
 
 // @beta
@@ -966,9 +962,9 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 // @alpha
 export interface PanelsProviderProps {
     children?: (items: React.ReactNode) => React.ReactNode;
-    histories: React.RefObject<HTMLElement>;
+    histories: HTMLElement | null;
     items?: React.ReactNode;
-    panels: React.RefObject<HTMLElement>;
+    panels: HTMLElement | null;
 }
 
 // @beta
@@ -1491,7 +1487,7 @@ export type ToastDefaultProps = Pick<ToastProps, "timeout">;
 
 // @alpha
 export interface ToastProps extends CommonProps, NoChildrenProps {
-    animateOutTo?: React.RefObject<HTMLElement>;
+    animateOutTo?: HTMLElement | null;
     content?: React.ReactNode;
     onAnimatedOut?: () => void;
     timeout: number;
@@ -1563,7 +1559,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
 }
 
 // @beta
-export class Toolbar extends React.PureComponent<ToolbarProps> {
+export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     // (undocumented)
     static readonly defaultProps: {
         expandsTo: Direction;
@@ -1571,7 +1567,12 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
     };
     // (undocumented)
     render(): JSX.Element;
-    }
+    // @internal (undocumented)
+    readonly state: {
+        histories: null;
+        panels: null;
+    };
+}
 
 // @alpha
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
@@ -1648,15 +1649,9 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     }
 
 // @beta
-export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(): void;
+export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps> {
     // (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: ToolSettingsPopupState;
 }
 
 // @beta
@@ -1664,7 +1659,7 @@ export interface ToolSettingsPopupProps extends CommonProps {
     children?: React.ReactNode;
     isOpen?: boolean;
     onClose?: () => void;
-    target?: React.RefObject<HTMLElement>;
+    target?: HTMLElement | null;
 }
 
 // @beta
@@ -1891,7 +1886,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
 
 // @alpha
 export interface WithContainInProps {
-    container?: React.RefObject<HTMLElement>;
+    container?: HTMLElement | null;
     containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 }
 

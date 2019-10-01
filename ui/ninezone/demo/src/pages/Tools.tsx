@@ -171,7 +171,7 @@ export default class Tools extends React.PureComponent<{}, State> {
   }
 
   private _handleExpandableButtonRef = (expandableButton: HTMLDivElement | null) => {
-    this.setState(() => ({ expandableButton }));
+    this.setState({ expandableButton });
   }
 
   private getItems1(direction: Direction) {

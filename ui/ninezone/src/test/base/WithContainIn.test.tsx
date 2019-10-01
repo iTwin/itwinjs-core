@@ -51,7 +51,6 @@ describe("<WithContainIn />", () => {
       return 222;
     });
 
-    const ref = React.createRef<HTMLElement>();
     const spy = sinon.spy((_: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
       containerBounds.right.should.eq(333);
       containerBounds.bottom.should.eq(222);
@@ -63,20 +62,16 @@ describe("<WithContainIn />", () => {
       };
     });
 
-    mount(
-      <ContainedComponent
-        container={ref}
-        containFn={spy}
-      />,
-    );
+    mount(<ContainedComponent
+      containFn={spy}
+    />);
 
     spy.calledOnce.should.true;
   });
 
   it("should use container bounds", () => {
-    const container: React.MutableRefObject<HTMLDivElement | null> = {
-      current: null,
-    };
+    const container = document.createElement("div");
+    sinon.stub(container, "getBoundingClientRect").returns(createRect(50, 100, 200, 400));
     const containFnSpy = sinon.spy((_: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
       containerBounds.left.should.eq(50);
       containerBounds.top.should.eq(100);
@@ -85,24 +80,10 @@ describe("<WithContainIn />", () => {
       return new Rectangle();
     });
 
-    mount(
-      <div>
-        <div
-          ref={(instance) => {
-            container.current = instance;
-
-            if (!instance)
-              return;
-            sinon.stub(instance, "getBoundingClientRect").returns(createRect(50, 100, 200, 400));
-          }}
-        >
-        </div>
-        <ContainedComponent
-          container={container}
-          containFn={containFnSpy}
-        />
-      </div>,
-    );
+    mount(<ContainedComponent
+      container={container}
+      containFn={containFnSpy}
+    />);
 
     containFnSpy.calledOnce.should.true;
   });

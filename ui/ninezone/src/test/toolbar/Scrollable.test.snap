@@ -2,16 +2,8 @@
 
 exports[`<Scrollable /> renders correctly 1`] = `
 <PanelsProvider
-  histories={
-    Object {
-      "current": null,
-    }
-  }
-  panels={
-    Object {
-      "current": null,
-    }
-  }
+  histories={null}
+  panels={null}
 >
   <Component />
 </PanelsProvider>

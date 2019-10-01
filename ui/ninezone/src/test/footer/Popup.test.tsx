@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { expect } from "chai";
 import { FooterPopup } from "../../ui-ninezone";
 
 describe("<FooterPopup />", () => {
@@ -14,14 +13,5 @@ describe("<FooterPopup />", () => {
 
   it("renders correctly", () => {
     shallow(<FooterPopup />).should.matchSnapshot();
-  });
-
-  it("should set target state", () => {
-    const target = document.createElement("div");
-    const targetRef: React.RefObject<HTMLElement> = {
-      current: target,
-    };
-    const sut = mount<FooterPopup>(<FooterPopup target={targetRef} />);
-    expect(sut.state().target).eq(target);
   });
 });

@@ -20,32 +20,15 @@ export interface ToolSettingsPopupProps extends CommonProps {
   /** Function called when the popup is closed. */
   onClose?: () => void;
   /** Popup target. */
-  target?: React.RefObject<HTMLElement>;
-}
-
-/** State of [[ToolSettingsPopup]] component. */
-interface ToolSettingsPopupState {
-  target: HTMLElement | null;
+  target?: HTMLElement | null;
 }
 
 /** Popup component used in [[ToolSettings]] component.
  * @beta
  */
-export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
-  public readonly state: ToolSettingsPopupState = {
-    target: null,
-  };
-
-  public componentDidMount() {
-    this.setState((_, props) => ({ target: props.target ? props.target.current : null }));
-  }
-
-  public componentDidUpdate() {
-    this.setState((_, props) => ({ target: props.target ? props.target.current : null }));
-  }
-
+export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps> {
   public render() {
-    const { className, target, ...props } = this.props;
+    const { className, ...props } = this.props;
     return (
       <Popup
         className={classnames(
@@ -55,7 +38,6 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
         position={Position.Bottom}
         showArrow
         showShadow={false}
-        target={this.state.target}
         {...props}
       >
         <div className="nz-content">

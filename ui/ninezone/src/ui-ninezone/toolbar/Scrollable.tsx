@@ -25,6 +25,10 @@ export interface ScrollableProps extends ToolbarProps {
 
 /** State of [[Scrollable]] component. */
 interface ScrollableState {
+  /** Histories container. */
+  histories: HTMLElement | null;
+  /** Panels container. */
+  panels: HTMLElement | null;
   /** Describes component scroll offset. */
   scrollOffset: number;
 }
@@ -48,15 +52,14 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   private static readonly _DESKTOP_SEPARATOR_SIZE = 1;
   private static readonly _BORDER_WIDTH = 1;
 
-  private _histories = React.createRef<HTMLDivElement>();
-  private _panels = React.createRef<HTMLDivElement>();
-
   public static readonly defaultProps: ScrollableDefaultProps = {
     ...Toolbar.defaultProps,
     visibleItemThreshold: 5,
   };
 
   public readonly state: Readonly<ScrollableState> = {
+    histories: null,
+    panels: null,
     scrollOffset: 0,
   };
 
@@ -64,15 +67,15 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
     const prevCount = getItemCount(prevProps);
     const count = getItemCount(this.props);
     if (prevCount !== count)
-      this.setState(() => ({ scrollOffset: 0 }));
+      this.setState({ scrollOffset: 0 });
   }
 
   public render() {
     return (
       <PanelsProvider
-        histories={this._histories}
+        histories={this.state.histories}
         items={this.props.items}
-        panels={this._panels}
+        panels={this.state.panels}
       >
         {this._renderItems}
       </PanelsProvider>
@@ -292,7 +295,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
             <div
               className="nz-container"
               style={this.getHistoryScrolledStyle(direction)}
-              ref={this._histories}
+              ref={this._handleHistoriesRef}
             >
             </div>
           </div>
@@ -300,7 +303,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
         <div
           className="nz-expanded nz-panels"
           style={scrolledStyle}
-          ref={this._panels}
+          ref={this._handlePanelsRef}
         >
         </div>
         <div
@@ -327,5 +330,13 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
         </div>
       </div >
     );
+  }
+
+  private _handleHistoriesRef = (histories: HTMLElement | null) => {
+    this.setState({ histories });
+  }
+
+  private _handlePanelsRef = (panels: HTMLElement | null) => {
+    this.setState({ panels });
   }
 }

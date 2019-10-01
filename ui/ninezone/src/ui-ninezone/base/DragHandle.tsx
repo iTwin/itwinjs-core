@@ -57,9 +57,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
   }
 
   private _handleMouseDown = (e: MouseEvent) => {
-    this.setState(() => ({
-      isMouseDown: true,
-    }));
+    this.setState({ isMouseDown: true });
 
     e.preventDefault();
     this._isDragged = false;
@@ -81,9 +79,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
   }
 
   private _handleMouseUp = () => {
-    this.setState(() => ({
-      isMouseDown: false,
-    }));
+    this.setState({ isMouseDown: false });
     this._initial = undefined;
     if (this.props.lastPosition) {
       this.props.onDragEnd && this.props.onDragEnd();
