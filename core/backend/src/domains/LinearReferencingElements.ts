@@ -415,7 +415,7 @@ class QueryLinearLocationsECSQLGen {
         where += "meta.ECSchemaDef.Name ='" + schemaNameClassName[0] + "' AND meta.ECClassDef.Name = '" + schemaNameClassName[1] + "' ";
       } else if (1 < this._params.linearlyLocatedClassFullNames.length) {
         where += "(";
-        for (const classFullName in this._params.linearlyLocatedClassFullNames) {
+        for (const classFullName of this._params.linearlyLocatedClassFullNames) {
           if (classFullName === undefined)
             continue;
 
