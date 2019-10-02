@@ -28,6 +28,13 @@ export abstract class IndexedXYZCollection {
    */
   public abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
   /**
+   * Return the point at `index` as a strongly typed Point3d, without checking the point index validity.
+   * @param index index of point within the array
+   * @param result caller-allocated destination
+   * @returns undefined if the index is out of bounds
+   */
+  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+  /**
    * Get from `index` as a strongly typed Vector3d.
    * @param index index of point within the array
    * @param result caller-allocated destination

@@ -111,6 +111,7 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with merged inside nested content value 1`] = `
 PropertyRecord {
+  "autoExpand": true,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "payment Unbranded revolutionary",
@@ -279,6 +280,7 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with multiple nested content values which have links in them 1`] = `
 PropertyRecord {
+  "autoExpand": true,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Congolese Franc Wooden synthesizing",
@@ -356,11 +358,10 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with only properties in field path 1`] = `
 PropertyRecord {
-  "isReadonly": true,
   "property": Object {
-    "displayLabel": "backing up orchestration",
-    "name": "Supervisor",
-    "typename": "geometry",
+    "displayLabel": "digital Tasty Grocery",
+    "name": "Cambridgeshire",
+    "typename": "binary",
   },
   "value": Object {
     "members": Object {

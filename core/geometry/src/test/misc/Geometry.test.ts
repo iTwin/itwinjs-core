@@ -93,7 +93,7 @@ class GeometryCheck {
       }
     } else {
       // no roots. expect trig condition ....
-      this.ck.testCoordinateOrder(Math.hypot(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
+      this.ck.testCoordinateOrder(Geometry.hypotenuseXY(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
     }
 
   }
@@ -214,7 +214,7 @@ describe("GeometryA", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
+// cspell:word kahan
   it("ErrorChecks", () => {
     const ck = new Checker();
     for (const multiplier of [0.5, 0.999999999]) { // multipliers are all LESS THAN 1
@@ -232,7 +232,7 @@ describe("GeometryA", () => {
       // modulo with negated period
       ck.testCoordinate(
         Geometry.modulo(a, 4),
-        -Geometry.modulo(-a, -4), "Moduluo with negative period");
+        -Geometry.modulo(-a, -4), "Modulo with negative period");
       ck.testExactNumber(a, Geometry.modulo(a, 0), "modulo with zero period");
     }
     const q: any[] = [1, 2, 3, 6, 9];
@@ -262,10 +262,27 @@ describe("GeometryA", () => {
     ck.testExactNumber(Geometry.stepCount(0, 100, 4, 30), 4, "stepSize 0 returns min");
     ck.testExactNumber(Geometry.stepCount(200, 100, 4, 30), 4, "stepSize huge returns min");
     ck.testExactNumber(Geometry.stepCount(0.5, 100, 1, 10), 10, "stepSize caps with max");
-    ck.testExactNumber(Geometry.stepCount(2, 10, 8, 10), 8, "stepSize undercaps with min");
+    ck.testExactNumber(Geometry.stepCount(2, 10, 8, 10), 8, "stepSize lower cap with min");
 
     for (const f of [-1, 0, 0.5, 1, 2])
       ck.testTrue(Geometry.isIn01(f, false), "isIn01 with test suppressed)");
     expect(ck.getNumErrors()).equals(0);
   });
+  /*
+    it.only("Hypot", () => {
+      for (const outerMultiplier of [1, 0.12312, 1.3284723423489789789789789, -0.892734238742384723, 1.23218987987929232323423e10]) {
+        console.log();
+        console.log("Outer multiplier", outerMultiplier);
+        for (const multiplier of [1, 10, 100, 1000.0, 10000.0, 1.0 - 6, 1.0e10, 0.1232131231, 1.3423423e12, 5.23423989081213887821238823712e12]) {
+          const a = 3.0 * multiplier * outerMultiplier;
+          const b = 4.0 * multiplier * outerMultiplier;
+          const c = Math.abs(5.0 * multiplier * outerMultiplier);
+          const q = Math.hypot(a, b);
+          const r = Geometry.hypotenuseXY(a, b);
+          console.log(a, b, c, "(KAHAN " + q + "  error " + (q - c) / c + ")", "(BSI " + r + "  error  " + (r - c) / c + ")");
+        }
+      }
+    });
+  */
+
 });

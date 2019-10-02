@@ -31,6 +31,7 @@ export interface PresentationRpcRequestOptions {
   /**
    * Client state identifier. Backend requests client to synchronize state
    * if client state ID doesn't match what's stored on the backend.
+   * @deprecated Will be dropped in 2.0.0
    */
   clientStateId?: string;
 }
@@ -76,6 +77,7 @@ export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions & {
 /**
  * Data structure for synchronizing backend with frontend state.
  * @internal Sync is done by presentation framework - no need to expose that
+ * @deprecated Will be dropped in 2.0.0
  */
 export type ClientStateSyncRequestOptions = PresentationRpcRequestOptions & { state: { [id: string]: unknown } };
 
@@ -89,7 +91,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.0.0";
+  public static interfaceVersion = "1.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -101,6 +103,8 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getNodesCount(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number> { return this.forward(arguments); }
   public async getNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
   public async getFilteredNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
+  /** @beta */
+  public async loadHierarchy(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void> { return this.forward(arguments); }
 
   public async getContentDescriptor(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> { return this.forward(arguments); }
   public async getContentSetSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number> { return this.forward(arguments); }
@@ -114,6 +118,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 
-  /** @internal Used internally to sync backend with frontend state */
+  /**
+   * @internal Used internally to sync backend with frontend state
+   * @deprecated Will be dropped in 2.0.0
+   */
   public async syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse { return this.forward(arguments); }
 }

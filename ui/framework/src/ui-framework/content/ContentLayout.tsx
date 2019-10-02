@@ -44,7 +44,10 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   constructor(props: ContentWrapperProps) {
     super(props);
 
-    this.state = { content: this.props.content, isActive: this.props.content === ContentViewManager.getActiveContent() };
+    this.state = {
+      content: this.props.content,
+      isActive: this.props.content === ContentViewManager.getActiveContent(),
+    };
   }
 
   public render(): React.ReactNode {
@@ -168,6 +171,7 @@ interface SingleContentProps extends CommonProps {
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
+
     return (
       <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
         onMouseMove={UiShowHideManager.handleContentMouseMove}

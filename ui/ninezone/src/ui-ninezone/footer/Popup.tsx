@@ -27,7 +27,7 @@ export interface FooterPopupProps extends CommonProps {
   children?: React.ReactNode;
   /** Describes content type. */
   contentType: FooterPopupContentType;
-  /** Describes if the popup is open. */
+  /** Indicates if the popup is open. */
   isOpen?: boolean;
   /** Function called when the popup is closed. */
   onClose?: () => void;
@@ -35,6 +35,8 @@ export interface FooterPopupProps extends CommonProps {
   onOutsideClick?: (e: MouseEvent) => void;
   /** Popup target. */
   target?: React.RefObject<HTMLElement>;
+  /** Indicates if the popup is pinned. */
+  isPinned?: boolean;
 }
 
 /** Default properties of [[FooterPopup]] component.

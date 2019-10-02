@@ -214,11 +214,15 @@ index.html
       height: 100%;
     }
   </style>
+  <!-- check the browser to verify it is supported. -->
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
+
   <!-- use the webpack-generated runtime.js to get our modules to share dependencies. -->
-  <script type="text/javascript" src="runtime.js"></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
   <!-- Use the IModelJs loader to load the system modules in the correct order -->
-  <!-- The lodash template in the next line is replaced by webpack with the name and versions of imodeljs frontend packages -->
-  <script type="text/javascript" src="IModelJsLoader.js" data-imjsversions= '<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+  <!-- The lodash templates in the next line are replaced by webpack with the name and versions of imodeljs packages -->
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
+    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 
 <body>

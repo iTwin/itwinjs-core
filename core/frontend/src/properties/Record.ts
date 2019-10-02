@@ -33,6 +33,7 @@ export class PropertyRecord {
   public isReadonly?: boolean;
   public isDisabled?: boolean;
   public isMerged?: boolean;
+  public autoExpand?: boolean;
   public extendedData?: { [key: string]: any };
 
   /** Properties for link logic */

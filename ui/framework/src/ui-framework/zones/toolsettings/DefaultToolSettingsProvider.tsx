@@ -259,11 +259,9 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     if (!rows) {
       return null;
     } else {
-      const autoColArray = new Array<string>(this.state.numCols);
-      autoColArray.fill("auto");
       const gridStyle: React.CSSProperties = {
         display: "grid",
-        gridTemplateColumns: autoColArray.join(" "),
+        gridTemplateColumns: `repeat(${this.state.numCols}, minmax(min-content, auto))`,
         gridRowGap: "4px",
         gridColumnGap: "6px",
       };

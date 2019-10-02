@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
- * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Picker */
 
 import * as React from "react";
@@ -36,6 +36,7 @@ import "./ModelSelector.scss";
  * Model Selector [[WidgetControl]]
  * @internal
  */
+// istanbul ignore next
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -52,6 +53,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
  * @internal
  * @deprecated - Use [[VisibilityTree]] instead
  */
+// istanbul ignore next
 export class ModelSelectorWidget extends React.Component<
   ModelSelectorWidgetProps,
   ModelSelectorWidgetState
@@ -65,12 +67,12 @@ export class ModelSelectorWidget extends React.Component<
   constructor(props: ModelSelectorWidgetProps) {
     super(props);
     this._initState();
-    this._initialize(); // tslint:disable-line:no-floating-promises
   }
 
   /** @internal */
-  public componentDidMount() {
+  public async componentDidMount() {
     this._isMounted = true;
+    await this.initialize();
   }
 
   /** @internal */
@@ -78,7 +80,7 @@ export class ModelSelectorWidget extends React.Component<
     this._isMounted = false;
   }
 
-  private _initialize = async () => {
+  private async initialize() {
     await this._initModelState();
     await this._initCategoryState();
     this._initGroups();

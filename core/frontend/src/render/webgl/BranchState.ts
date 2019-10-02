@@ -33,7 +33,10 @@ export class BranchState {
     const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
     const iModel = undefined !== branch.iModel ? branch.iModel : prev.iModel;
-    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier, branch.textureDrape, iModel);
+    const planarClassifier = undefined !== branch.planarClassifier ? branch.planarClassifier : prev.planarClassifier;
+    const textureDrape = undefined !== branch.textureDrape ? branch.textureDrape : prev.textureDrape;
+    const clip = undefined !== branch.clips ? branch.clips : prev.clipVolume;
+    return new BranchState(vf, transform, ovrs, clip, planarClassifier, textureDrape, iModel);
   }
 
   public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume, planarClassifier?: PlanarClassifier, iModel?: IModelConnection) {

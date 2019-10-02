@@ -67,6 +67,7 @@ export class ContentDataProvider implements IContentDataProvider {
     getContentDescriptor: (() => Promise<Descriptor | undefined>) & _.MemoizedFunction;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
+    getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>;
     imodel: IModelConnection;
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
@@ -127,6 +128,14 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
+    // @alpha
+    loadHierarchy(): Promise<void>;
+}
+
+// @public
+export interface IUnifiedSelectionComponent extends IPresentationDataProvider {
+    // (undocumented)
+    selectionHandler?: SelectionHandler;
 }
 
 // @public
@@ -141,13 +150,13 @@ export class LabelsProvider implements IPresentationLabelsProvider {
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
     constructor(imodel: IModelConnection, rulesetId: string);
+    dispose(): void;
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
     includeFieldsWithNoValues: boolean;
-    // (undocumented)
     protected invalidateCache(props: CacheInvalidationProps): void;
-    protected isFieldFavorite(_field: Field): boolean;
+    protected isFieldFavorite(field: Field): boolean;
     protected isFieldHidden(field: Field): boolean;
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
@@ -195,6 +204,8 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     readonly imodel: IModelConnection;
+    // @alpha
+    loadHierarchy(): Promise<void>;
     pagingSize: number | undefined;
     readonly rulesetId: string;
     }

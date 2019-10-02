@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "_variables";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "../safearea";
 @import "../widgetopacity";
+@import "variables";
 
 .nz-footer-footer {
   position: relative;
-  height: 100%;
 
   > div {
     background-color: $buic-background-statusbar;
@@ -20,10 +20,8 @@
       style: solid;
     }
     box-sizing: border-box;
-    position: absolute;
     bottom: 0;
     width: 100%;
-    height: $footer-height;
     pointer-events: auto;
 
     > .nz-messages {
@@ -38,14 +36,40 @@
     > .nz-indicators {
       display: flex;
       flex-direction: row;
-      height: 100%;
+      height: $footer-height;
     }
   }
 
   &:not(.nz-footer-mode) {
+    height: 100%;
+
     > div {
+      position: absolute;
       @include nz-widget-opacity;
     }
   }
 
+  &.nz-safe-area-left {
+    &.nz-footer-mode {
+      > div {
+        @include nz-safe-area-left;
+      }
+    }
+  }
+
+  &.nz-safe-area-right {
+    &.nz-footer-mode {
+      > div {
+        @include nz-safe-area-right;
+      }
+    }
+  }
+
+  &.nz-safe-area-bottom {
+    &.nz-footer-mode {
+      > div {
+        @include nz-safe-area-bottom;
+      }
+    }
+  }
 }

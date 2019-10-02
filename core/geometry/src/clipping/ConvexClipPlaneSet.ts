@@ -195,6 +195,8 @@ export class ConvexClipPlaneSet implements Clipper {
   }
   /**
    * (re)set a plane and ConvexClipPlaneSet for a convex array, such as a convex facet used for xy clip.
+   * * The planeOfPolygon is (re)initialized with the normal from 3 points, but not otherwise referenced.
+   * * The ConvexClipPlaneSet is filled with outward normals of the facet edges as viewed to xy plane.
    * @param points
    * @param result
    */
@@ -248,8 +250,8 @@ export class ConvexClipPlaneSet implements Clipper {
     if (result)
       result.setNull();
     for (const plane of this._planes) {
-      const vD = plane.dotProductVector(ray.direction);
-      const vN = plane.evaluatePoint(ray.origin);
+      const vD = plane.velocity(ray.direction);
+      const vN = plane.altitude(ray.origin);
 
       if (vD === 0.0) {
         // Ray is parallel... No need to continue testing if outside halfspace.
@@ -346,8 +348,8 @@ export class ConvexClipPlaneSet implements Clipper {
     if (f1 < f0)
       return false;
     for (const plane of this._planes) {
-      const hA = - plane.evaluatePoint(pointA);
-      const hB = - plane.evaluatePoint(pointB);
+      const hA = - plane.altitude(pointA);
+      const hB = - plane.altitude(pointB);
       fraction = Geometry.safeDivideFraction(-hA, (hB - hA), 0.0);
       if (fraction === undefined) {
         // LIne parallel to the plane.  If positive, it is all OUT
@@ -439,7 +441,7 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const plane of this._planes) {
       let nOutside = 0;
       for (const point of points) {
-        if (plane.evaluatePoint(point) < (plane.interior ? interiorTolerance : onTolerance)) {
+        if (plane.altitude(point) < (plane.interior ? interiorTolerance : onTolerance)) {
           nOutside++;
           allInside = false;
         }

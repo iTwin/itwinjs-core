@@ -1,11 +1,11 @@
 {
   "name": "@bentley/build-tools",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/build"
   },
   "scripts": {
     "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src",
@@ -63,7 +63,7 @@
     "typedoc": "^0.14.2",
     "typedoc-plugin-external-module-name": "2.0.0",
     "typedoc-plugin-internal-external": "2.0.1",
-    "typescript": "~3.5.2",
+    "typescript": "~3.6.2",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^1.0.1",
     "webpack-node-externals": "^1.7.2",

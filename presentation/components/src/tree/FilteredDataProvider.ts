@@ -110,4 +110,10 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
     return this._parentDataProvider.getNodeKey(node);
   }
 
+  /** @alpha */
+  // istanbul ignore next
+  public async loadHierarchy() {
+    // the hierarchy is already loaded when this provider is created
+  }
+
 }

@@ -1,6 +1,19 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Add `PresentationStatus.Canceled` member
+- Add ability to force-load all hierarchy with the given imodel and ruleset
+- Added autoExpand property to RelatedPropertiesSpecification and NestedContentField
+- Add module descriptions
+- Added Ruleset and Ruleset variables to request options to support stateless presentation backend
+- Store navigation property classes separate from related property paths
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

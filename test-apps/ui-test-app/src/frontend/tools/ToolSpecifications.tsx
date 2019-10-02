@@ -28,7 +28,7 @@ export class AppTools {
       toolId: Tool1.toolId,
       iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
-      tooltip: () => Tool1.description,
+      description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
       },
@@ -52,8 +52,10 @@ export class AppTools {
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
       execute: async () => {
+        // ==== The following is no longer required since the default specs will be loaded when the QuantityFormatters onInitialized method is processed
+        // as the ImodelApp starts. =====
         // make sure formatting and parsing data are cached before the tool starts.
-        await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
+        // await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
         IModelApp.tools.run(ToolWithSettings.toolId);
       },
     });
@@ -64,7 +66,7 @@ export class AppTools {
       toolId: AnalysisAnimationTool.toolId,
       iconSpec: "icon-camera-animation",
       label: () => AnalysisAnimationTool.flyover,
-      tooltip: () => AnalysisAnimationTool.description,
+      description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
       isVisible: false, // default to not show and then allow stateFunc to redefine.
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
@@ -445,6 +447,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOpen",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openPropertyGrid",
+      tooltip: "Open Vertical PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
@@ -462,6 +465,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.closePropertyGrid",
+      tooltip: "Close PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {

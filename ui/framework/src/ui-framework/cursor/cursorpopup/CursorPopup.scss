@@ -3,35 +3,29 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
-
-$uifw-cursorpopup-border-color: $buic-foreground-disabled;
-$uifw-cursorpopup-border-width: 1px;
-$uifw-cursorpopup-border-radius: 3px;
-$uifw-cursorpopup-content-padding: 5px;
-$uifw-cursorpopup-title-bar-min-height: 24px;
-$uifw-cursorpopup-opacity: 0.80;
+@import "../../variables";
 
 .uifw-cursorpopup {
   border: {
-    color: $uifw-cursorpopup-border-color;
-    radius: $uifw-cursorpopup-border-radius;
+    color: $uifw-popup-border-color;
+    radius: $uifw-popup-border-radius;
     style: solid;
-    width: $uifw-cursorpopup-border-width;
+    width: $uifw-popup-border-width;
   }
 
-  background-color: rgba(var(--buic-background-2-rgb), $uifw-cursorpopup-opacity);
+  background-color: rgba(var(--buic-background-2-rgb), $uifw-popup-opacity);
   position: fixed;
   height: fit-content;
   width: fit-content;
   transition: opacity 500ms;
 
   >.uifw-cursorpopup-title {
-    min-height: $uifw-cursorpopup-title-bar-min-height;
-    opacity: $uifw-cursorpopup-opacity;
+    min-height: $uifw-popup-title-bar-min-height;
+    opacity: $uifw-popup-opacity;
   }
 
   >.uifw-cursorpopup-content {
-    padding: $uifw-cursorpopup-content-padding;
+    padding: $uifw-popup-content-padding;
   }
 
   &.uifw-cursorpopup-fadeOut {

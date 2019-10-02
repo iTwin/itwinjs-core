@@ -5,12 +5,13 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { SelectionTool } from "@bentley/imodeljs-frontend";
+import { SelectionTool, IModelApp } from "@bentley/imodeljs-frontend";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
 import { ItemProps } from "../../ui-framework/shared/ItemProps";
 import { Orientation, Size } from "@bentley/ui-core";
+import { Tool1 } from "../tools/Tool1";
 
 describe("Item", () => {
 
@@ -84,6 +85,16 @@ describe("Item", () => {
     expect(toolItem.execute).not.to.be.undefined;
   });
 
+  it("ToolItemDef helper function with default args", () => {
+    const toolItem = ToolItemDef.getItemDefForTool(Tool1);
+    expect(toolItem.iconSpec).to.be.eq("icon-placeholder");
+
+    const spyMethod = sinon.spy(IModelApp.tools, "run");
+    toolItem.execute();
+    spyMethod.calledOnce.should.true;
+    (IModelApp.tools.run as any).restore();
+  });
+
   class TestItemDef extends ActionButtonItemDef {
     public toolId: string = "";
 
@@ -114,11 +125,11 @@ describe("Item", () => {
     expect(numericKey).to.eq(100);
   });
 
-  it("ActionButtonItemDef with no size returns dimension of 0", () => {
+  it("ActionButtonItemDef with no size returns default dimension of 42", () => {
     const testItem = new TestItemDef({
       iconSpec: "icon-placeholder",
     });
-    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(0);
+    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(ActionButtonItemDef.defaultButtonSize);
   });
 
   it("ActionButtonItemDef with size returns correct dimension", () => {

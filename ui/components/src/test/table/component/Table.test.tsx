@@ -1254,4 +1254,25 @@ describe("Table", () => {
 
   });
 
+  describe("scrollToRow", async () => {
+    const onScrollToRow = sinon.spy();
+
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onScrollToRow={onScrollToRow}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+    });
+
+    it("should scroll to a specific row", () => {
+      table.setProps({ scrollToRow: 50 });
+      table.update();
+      expect(onScrollToRow.calledOnceWith(50)).to.be.true;
+    });
+
+  });
+
 });

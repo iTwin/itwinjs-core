@@ -75,6 +75,7 @@ export interface BackstageItemProps extends CommonProps {
     isActive?: boolean;
     isDisabled?: boolean;
     onClick?: () => void;
+    safeAreaInsets?: SafeAreaInsets;
     subtitle?: string;
 }
 
@@ -85,6 +86,7 @@ export interface BackstageProps extends CommonProps {
     header?: React.ReactNode;
     isOpen?: boolean;
     onClose?: () => void;
+    safeAreaInsets?: SafeAreaInsets;
     showOverlay: boolean;
 }
 
@@ -279,9 +281,6 @@ export class Footer extends React.PureComponent<FooterProps> {
     render(): JSX.Element;
 }
 
-// @internal (undocumented)
-export const FOOTER_HEIGHT = 40;
-
 // @beta
 export class FooterIndicator extends React.PureComponent<FooterIndicatorProps> {
     // (undocumented)
@@ -320,6 +319,7 @@ export interface FooterPopupProps extends CommonProps {
     children?: React.ReactNode;
     contentType: FooterPopupContentType;
     isOpen?: boolean;
+    isPinned?: boolean;
     onClose?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     target?: React.RefObject<HTMLElement>;
@@ -332,6 +332,7 @@ export interface FooterProps extends CommonProps {
     messages?: React.ReactNode;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    safeAreaInsets?: SafeAreaInsets;
 }
 
 // @beta
@@ -1003,6 +1004,41 @@ export enum ResizeHandle {
     Top = 1
 }
 
+// @beta
+export enum SafeAreaInsets {
+    // (undocumented)
+    All = 15,
+    // (undocumented)
+    Bottom = 1,
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 4,
+    // (undocumented)
+    Top = 8
+}
+
+// @internal (undocumented)
+export class SafeAreaInsetsHelpers {
+    // (undocumented)
+    static getCssClassNames: (flags: SafeAreaInsets) => {
+        "nz-safe-area-bottom": boolean;
+        "nz-safe-area-left": boolean;
+        "nz-safe-area-right": boolean;
+        "nz-safe-area-top": boolean;
+    };
+    // (undocumented)
+    static isBottom(flags: SafeAreaInsets): boolean;
+    // (undocumented)
+    static isLeft(flags: SafeAreaInsets): boolean;
+    // (undocumented)
+    static isRight(flags: SafeAreaInsets): boolean;
+    // (undocumented)
+    static isTop(flags: SafeAreaInsets): boolean;
+}
+
 // @alpha
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
     // (undocumented)
@@ -1188,6 +1224,7 @@ export interface StagePanelProps extends CommonProps {
     children?: React.ReactNode;
     onResize?: (resizeBy: number) => void;
     onToggleCollapse?: () => void;
+    safeAreaInsets?: SafeAreaInsets;
     size?: number;
     type: StagePanelType;
 }
@@ -1245,6 +1282,7 @@ export class StagePanelTarget extends React.PureComponent<StagePanelTargetProps>
 
 // @beta
 export interface StagePanelTargetProps extends MergeTargetProps {
+    safeAreaInsets?: SafeAreaInsets;
     type: StagePanelType;
 }
 
@@ -1446,6 +1484,7 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
 
 // @beta
 export interface ToolAssistanceDialogProps extends CommonProps {
+    buttons?: React.ReactNode;
     children?: React.ReactNode;
     title?: string;
 }
@@ -1667,6 +1706,7 @@ export interface UserProfileProps extends CommonProps {
     color?: string;
     initials?: string;
     onClick?: () => void;
+    safeAreaInsets?: SafeAreaInsets;
 }
 
 // @beta
@@ -1752,6 +1792,17 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithContainInProps, context?: any): {
         ref: React.RefObject<HTMLDivElement>;
@@ -1770,6 +1821,17 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
@@ -1831,9 +1893,11 @@ export interface ZoneManagerProps {
 export interface ZoneProps extends CommonProps {
     bounds?: RectangleProps;
     children?: React.ReactNode;
+    id: WidgetZoneId;
     isFloating?: boolean;
     isHidden?: boolean;
     isInFooterMode?: boolean;
+    safeAreaInsets?: SafeAreaInsets;
 }
 
 // @beta

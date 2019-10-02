@@ -6,7 +6,71 @@
 
 import * as React from "react";
 
+import { ToolSettingsPropertyItem } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
+
+/** Interface used by UiDataProvider class to send property value changes to UI.
+ * @alpha
+ */
+export interface SyncPropertiesChangeEventArgs {
+  properties: ToolSettingsPropertyItem[];
+}
+
+/** Status of Proposed property changes from UI to UiDataProvider
+ * @alpha
+ */
+export enum PropertyChangeStatus {
+  // Property Change(s) Succeeded
+  Success = 0,
+  // Error Processing Property Change(s)
+  Error = 2,
+}
+
+/** Interface used by UiDataProvider to report change status (validation) to UI.
+ * @alpha
+ */
+export interface PropertyChangeResult {
+  errorMsg?: string;
+  status: PropertyChangeStatus;
+}
+
+/** Sync Properties Change Event class. Defines event that is subscribed to by UI component to get property updates from API.
+ * @alpha
+ */
+// istanbul ignore next
+export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> { }
+
+/** Abstract class that allow property values to be passed between hosting API and UI
+ * @alpha
+ */
+// istanbul ignore next
+export abstract class UiDataProvider {
+  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+
+  /** Called to send property updates to UI
+   * @internal
+   */
+  public syncPropertiesInUi(properties: ToolSettingsPropertyItem[]): void {
+    this.onSyncPropertiesChangeEvent.emit({ properties });
+  }
+
+  /** Called by UI to inform data provider of changes. If used by modal dialog then this is typically only called
+   * when "OK" or "Apply" button is selected.
+   */
+  public processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult {
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Called by UI to request available properties. */
+  public supplyAvailableProperties(): ToolSettingsPropertyItem[] {
+    return [];
+  }
+
+  /** Called by UI to validate a property value */
+  public validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult {
+    return { status: PropertyChangeStatus.Success };
+  }
+}
 
 /** Dialog Stack Changed Event Args class.
  * @public
@@ -94,7 +158,6 @@ export class DialogManagerBase {
   public get dialogCount(): number {
     return this._dialogs.length;
   }
-
 }
 
 /** Properties for the [[DialogRendererBase]] component

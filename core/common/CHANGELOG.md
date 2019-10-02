@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Add DisplayStyleSettings.subCategoryOverrides
+- Make ExternalSourceAspectProps.checksum optional
+- Added geometry primitive typing and geometry summary types
+- Support animation of models within RenderSchedule.
+- Refine planar projection frustum calculation
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

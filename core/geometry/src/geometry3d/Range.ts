@@ -843,6 +843,18 @@ export class Range1d extends RangeBase {
     return result;
   }
 
+  /** create a range with `delta` added to low and high
+   * * If `this` is a null range, return a null range.
+   */
+  public cloneTranslated(delta: number, result?: Range1d): Range1d {
+    result = result ? result : this.clone();
+    if (!result.isNull) {
+      result.low += delta;
+      result.high += delta;
+    }
+    return result;
+  }
+
   /**
    * Set this range to be a single value.
    * @param x value to use as both low and high.

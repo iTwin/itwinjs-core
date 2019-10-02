@@ -29,6 +29,7 @@ alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
+beta;DiagnosticsPanelProps
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
 beta;FpsTracker
@@ -36,6 +37,7 @@ beta;FrontendDevTools
 beta;FrustumDecorator 
 beta;IsolateSelectedElementsTool 
 beta;KeyinField
+beta;KeyinFieldProps
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
 beta;LoseWebGLContextTool 
@@ -59,7 +61,7 @@ beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
-alpha;TextBox
+beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
@@ -70,6 +72,7 @@ beta;TogglePrimitiveVisibilityTool
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
+beta;ToggleSelectedViewFrustumTool 
 alpha;ToggleSkyboxTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

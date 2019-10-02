@@ -31,6 +31,7 @@ interface TileLoadingIndicatorState {
 /** TileLoadingIndicator React component
  * @internal
  */
+// istanbul ignore next
 export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
   constructor(props: CommonProps) {
     super(props);

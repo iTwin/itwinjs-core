@@ -12,8 +12,9 @@ import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } 
 import {
   CategoryDescription, Descriptor, DescriptorOverrides,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
-  PresentationError, PresentationStatus, ContentFlags,
+  PresentationError, PresentationStatus, ContentFlags, Value,
 } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { prioritySortFunction, translate } from "../common/Utils";
@@ -97,7 +98,7 @@ class PropertyDataBuilder {
     };
     const includeFields = (fields: Field[], onlyIfFavorite: boolean) => {
       fields.forEach((field) => {
-        if (favoritesCategoryName !== field.category.name && this._callbacks.isFavorite(field))
+        if (favoritesCategoryName !== field.category.name && !field.isNestedContentField() && this._callbacks.isFavorite(field))
           includeField(favoritesCategory, field, false);
         includeField(field.category, field, onlyIfFavorite);
       });
@@ -117,19 +118,40 @@ class PropertyDataBuilder {
     } as CategorizedFields;
   }
 
-  private createRecord(field: Field): PropertyRecord {
-    let pathToRootField: Field[] | undefined;
-    if (field.parent) {
-      pathToRootField = [field];
-      let parentField = field.parent;
-      while (parentField.parent) {
-        pathToRootField.push(parentField);
-        parentField = parentField.parent;
-      }
-      field = parentField;
-      pathToRootField.reverse();
+  private createRecord(field: Field, createStruct: boolean): PropertyRecord {
+    const pathToRootField: Field[] = [field];
+    let currField = field;
+    while (currField.parent) {
+      currField = currField.parent;
+      pathToRootField.push(currField);
     }
-    return ContentBuilder.createPropertyRecord(field, this._contentItem, pathToRootField);
+    pathToRootField.reverse();
+
+    if (createStruct) {
+      // need to remove the first element because the Field information is in [currField]
+      const pathToFieldFromRoot = pathToRootField.slice(1);
+      return ContentBuilder.createPropertyRecord(currField, this._contentItem, pathToFieldFromRoot);
+    }
+
+    let item = this._contentItem;
+    // need to remove the last element because the Field information is in [field]
+    const pathUpToField = pathToRootField.slice(undefined, -1);
+    for (const parentField of pathUpToField) {
+      if (item.isFieldMerged(parentField.name))
+        return this.createRecord(field, true);
+
+      const nestedContentValues = item.values[parentField.name];
+      if (!Value.isNestedContent(nestedContentValues))
+        throw new PresentationError(PresentationStatus.Error, "value should be nested content");
+
+      if (nestedContentValues.length !== 1)
+        throw new PresentationError(PresentationStatus.Error, "nested content should have a single element");
+      const nestedContentValue = nestedContentValues[0];
+
+      item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
+        nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
+    }
+    return ContentBuilder.createPropertyRecord(field, item, undefined);
   }
 
   private createCategorizedRecords(fields: CategorizedFields): CategorizedRecords {
@@ -147,6 +169,8 @@ class PropertyDataBuilder {
           if (!this._includeWithNoValues && !record.isMerged && isValueEmpty(record.value))
             return;
         }
+        if (records.some((r) => r.property.name === record.property.name))
+          return;
         records.push(record);
       };
       const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {
@@ -168,7 +192,9 @@ class PropertyDataBuilder {
 
       // create/add records for each field
       for (const field of fields.fields[category.name]) {
-        const record = this.createRecord(field);
+        // do not want to see structs in favorite category
+        // if we create everything with struct and multiple property fields share the same parent, then two records would show the same path
+        const record = category.name === favoritesCategoryName ? this.createRecord(field, false) : this.createRecord(field, true);
         if (field.isNestedContentField())
           handleNestedContentRecord(field, record);
         else
@@ -212,15 +238,28 @@ export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContent
  * @public
  */
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
-  private _includeFieldsWithNoValues: boolean;
   public onDataChanged = new PropertyDataChangeEvent();
+  private _includeFieldsWithNoValues: boolean;
+  private _onFavoritesChangedRemoveListener: () => void;
 
   /** Constructor. */
   constructor(imodel: IModelConnection, rulesetId: string) {
     super(imodel, rulesetId, DefaultContentDisplayTypes.PropertyPane);
     this._includeFieldsWithNoValues = true;
+    this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
   }
 
+  /**
+   * Dispose the presentation property data provider.
+   */
+  public dispose() {
+    super.dispose();
+    this._onFavoritesChangedRemoveListener();
+  }
+
+  /**
+   * Invalidates cached content and clears categorized data.
+   */
   protected invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
     if (this.getMemoizedData)
@@ -267,7 +306,9 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /** Should the specified field be included in the favorites category. */
-  protected isFieldFavorite(_field: Field): boolean { return false; }
+  protected isFieldFavorite(field: Field): boolean {
+    return Presentation.favoriteProperties.has(field);
+  }
 
   /**
    * Sorts the specified list of categories by priority. May be overriden

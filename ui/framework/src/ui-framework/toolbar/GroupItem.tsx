@@ -7,7 +7,8 @@
 import * as React from "react";
 import classnames = require("classnames");
 
-import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
@@ -15,13 +16,13 @@ import {
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemProps, AnyItemDef } from "../shared/ItemProps";
-import { Icon, IconSpec } from "../shared/IconComponent";
+import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { BetaBadge } from "../betabadge/BetaBadge";
+import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -47,6 +48,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
+  private _panelLabel: string | StringGetter = "";
 
   constructor(groupItemProps: GroupItemProps) {
     super(groupItemProps);
@@ -55,12 +57,24 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
     this.items = groupItemProps.items;
   }
 
   public get id(): string {
     return this.groupId;
+  }
+
+  /** Get the panelLabel string */
+  public get panelLabel(): string {
+    return PropsHelper.getStringFromSpec(this._panelLabel);
+  }
+
+  /** Set the panelLabel.
+   * @param v A string or a function to get the string.
+   */
+  public setPanelLabel(v: string | StringGetter) {
+    this._panelLabel = v;
   }
 
   public resolveItems(force?: boolean): void {
@@ -168,7 +182,6 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
     this._loadChildSyncIds(props);
     this.state = this.getGroupItemState(this.props.groupItemDef);
   }
-
   private _loadChildSyncIds(props: GroupItemComponentProps) {
     // istanbul ignore else
     if (props.groupItemDef && props.groupItemDef.items.length > 0) {
@@ -182,27 +195,20 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
       });
     }
   }
-
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore next
     if (this._componentUnmounting) return;
-
     let refreshState = false;
-
     // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)
       if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
         this._childRefreshRequired = true;  // this is cleared when render occurs
-
     let newState: GroupItemState = { ...this.state };
-
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
       refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
-
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc)
         newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState;
-
       // istanbul ignore else
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
         || this._childRefreshRequired) {
@@ -210,11 +216,9 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
       }
     }
   }
-
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
-
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
@@ -302,17 +306,18 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
 
     trays.set(trayId, {
       columns,
-      title: groupItemDef.tooltip,
+      title: groupItemDef.panelLabel ? groupItemDef.panelLabel : groupItemDef.tooltip, // we fallback to use tooltip since tooltip was originally (and confusingly) used as a panelLabel
       groupItemDef,
     });
   }
 
   public componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
     if (this.props !== prevProps) {
+      if (this.props.groupItemDef !== prevProps.groupItemDef)
+        Logger.logTrace(UiFramework.loggerCategory(this), `Different GroupItemDef for same groupId of ${this.state.groupItemDef.groupId}`);
       this.setState(this.getGroupItemState(this.props.groupItemDef));
     }
   }
-
   private get _tray() {
     const tray = this.state.trays.get(this.state.trayId);
     // istanbul ignore next

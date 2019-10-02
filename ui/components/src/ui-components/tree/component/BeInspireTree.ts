@@ -210,7 +210,7 @@ export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, rema
 
 interface DeferredLoadingHandler<TPayload> {
   requestNodeLoad(parent: BeInspireTreeNode<TPayload> | undefined, index: number): Promise<void>;
-  disposeNodeCaches(parent: BeInspireTreeNode<TPayload>): void;
+  disposeNodeCaches(parent?: BeInspireTreeNode<TPayload>): void;
 }
 
 /**
@@ -464,6 +464,8 @@ export class BeInspireTree<TNodePayload> {
 
   /** Reload the tree */
   public async reload() {
+    if (this._deferredLoadingHandler)
+      this._deferredLoadingHandler.disposeNodeCaches(undefined);
     await using(this.pauseRendering(), async (_r) => {
       const rootNodes = await this._tree.reload();
       rootNodes.forEach((n) => toNode(n).setDirty(true));
@@ -884,11 +886,17 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     await this._paginationHelper.request(parent ? parent.id : undefined, index);
   }
 
-  public disposeNodeCaches(node: BeInspireTreeNode<TPayload>) {
-    node.getChildren().forEach((c) => this.disposeNodeCaches(toNode(c)));
-    this._stashedPages.delete(node.id);
-    if (this._paginationHelper)
-      this._paginationHelper.disposeCaches(node.id);
+  public disposeNodeCaches(node?: BeInspireTreeNode<TPayload>) {
+    if (!node) {
+      this._stashedPages.clear();
+      if (this._paginationHelper)
+        this._paginationHelper.disposeCaches(undefined);
+    } else {
+      node.getChildren().forEach((c) => this.disposeNodeCaches(toNode(c)));
+      this._stashedPages.delete(node.id);
+      if (this._paginationHelper)
+        this._paginationHelper.disposeCaches(node.id);
+    }
   }
 
   /** Called by PaginationHelper to load a page */
@@ -1065,8 +1073,13 @@ class PaginationHelper<TPageLoadResult> {
   }
 
   public disposeCaches(parentId: string | undefined) {
-    this._loadedPages.delete(parentId);
-    this._requestedPages.delete(parentId);
+    if (!parentId) {
+      this._loadedPages.clear();
+      this._requestedPages.clear();
+    } else {
+      this._loadedPages.delete(parentId);
+      this._requestedPages.delete(parentId);
+    }
   }
 
   public async request(parentId: string | undefined, index: number): Promise<void> {

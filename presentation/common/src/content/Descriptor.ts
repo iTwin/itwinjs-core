@@ -6,7 +6,7 @@
 
 import {
   ClassInfo, ClassInfoJSON,
-  RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
+  RelatedClassInfo, RelationshipPath, RelationshipPathJSON, RelatedClassInfoJSON,
 } from "../EC";
 import { Field, FieldJSON } from "./Fields";
 
@@ -23,6 +23,10 @@ export interface SelectClassInfo {
   pathToPrimaryClass: RelationshipPath;
   /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths: RelationshipPath[];
+  /** Relationship paths to navigation property classes */
+  navigationPropertyClasses: RelatedClassInfo[];
+  /** Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes */
+  relatedInstanceClasses: RelatedClassInfo[];
 }
 
 /**
@@ -34,6 +38,8 @@ export interface SelectClassInfoJSON {
   isSelectPolymorphic: boolean;
   pathToPrimaryClass: RelationshipPathJSON;
   relatedPropertyPaths: RelationshipPathJSON[];
+  navigationPropertyClasses: RelatedClassInfoJSON[];
+  relatedInstanceClasses: RelatedClassInfoJSON[];
 }
 
 const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => {
@@ -42,6 +48,8 @@ const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => 
     selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
     pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
     relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
+    navigationPropertyClasses: json.navigationPropertyClasses.map((p) => RelatedClassInfo.fromJSON(p)),
+    relatedInstanceClasses: json.relatedInstanceClasses.map((p) => RelatedClassInfo.fromJSON(p)),
   };
 };
 

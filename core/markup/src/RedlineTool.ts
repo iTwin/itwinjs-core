@@ -220,7 +220,7 @@ export class CloudTool extends RedlineTool {
  */
 export class CircleTool extends RedlineTool {
   public static toolId = "Markup.Circle";
-  public static iconSpec = "icon-ellipse";
+  public static iconSpec = "icon-circle";
 
   protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Circle.Prompts.FirstPoint" : "Circle.Prompts.NextPoint"); }
 

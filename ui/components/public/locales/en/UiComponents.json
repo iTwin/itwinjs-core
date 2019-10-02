@@ -3,7 +3,7 @@
     "true": "true",
     "false": "false",
     "loading": "loading",
-    "noData": "No data",
+    "noData": "The data required for this tree layout is not available in this iModel.",
     "length": "Length",
     "label": "Label"
   },

@@ -11,19 +11,22 @@ import classnames from "classnames";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
   PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes,
-  InputEditorSizeParams, CustomFormattedNumberParams, IModelApp, NotifyMessageDetails, OutputMessagePriority,
+  InputEditorSizeParams, CustomFormattedNumberParams, IModelApp, NotifyMessageDetails, OutputMessagePriority, IconEditorParams,
 } from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { UiComponents } from "../UiComponents";
 
 import "./CustomNumberEditor.scss";
+import ReactDOM from "react-dom";
+import { Input, IconInput, Icon, InputProps } from "@bentley/ui-core";
 
 /** @internal */
 interface CustomNumberEditorState {
   inputValue: string;
   size?: number;
   maxLength?: number;
+  iconSpec?: string;
 }
 
 /** CustomNumberEditor is a React component that is a property editor for numbers that specify custom formatting and parsing functions.
@@ -31,7 +34,6 @@ interface CustomNumberEditorState {
  * @alpha
  */
 export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
-  private _input: HTMLInputElement | null = null;
   private _isMounted = false;
   private _formatParams: CustomFormattedNumberParams | undefined;
 
@@ -69,7 +71,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         }
       } else {
         const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : UiComponents.translate("errors.unable-to-parse-quantity"));
-        msg.setInputFieldTypeDetails(this._input as HTMLElement);
+        msg.setInputFieldTypeDetails(ReactDOM.findDOMNode(this) as HTMLElement);
         // istanbul ignore next
         if (IModelApp.notifications)
           IModelApp.notifications.outputMessage(msg);
@@ -84,16 +86,15 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     return propertyValue;
   }
 
-  private setFocus(): void {
+  private shouldSetFocus(): boolean {
+    if (!this.props.setFocus)
+      return false;
+
     const record = this.props.propertyRecord as PropertyRecord;
     const disabled = (record && !record.isDisabled) ? false : true;
     const readonly = (record && !record.isReadonly) ? false : true;
 
-    // istanbul ignore else
-    if (this._input && !disabled && !readonly) {
-      this._input.focus();
-      this._input.select();
-    }
+    return (!disabled && !readonly);
   }
 
   private _applyUpdatedValue(userInput: string) {
@@ -169,6 +170,8 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     let size: number | undefined;
     let maxLength: number | undefined;
+    let iconSpec: string | undefined;
+
     // istanbul ignore else
     if (record.property && record.property.editor && record.property.editor.params) {
       const editorSizeParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.InputEditorSize) as InputEditorSizeParams;
@@ -181,28 +184,25 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         if (editorSizeParams.maxLength)
           maxLength = editorSizeParams.maxLength;
       }
+
+      const iconParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.Icon) as IconEditorParams;
+      if (iconParams) {
+        iconSpec = iconParams.definition.iconSpec;
+      }
     }
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState(
-        { inputValue: initialDisplayValue, size, maxLength },
-        () => {
-          if (this.props.setFocus) {
-            this.setFocus();
-            // istanbul ignore else
-            if (this._input)
-              this._input.select();
-          }
-        },
-      );
+      this.setState({ inputValue: initialDisplayValue, size, maxLength, iconSpec });
   }
 
   private _resetToOriginalValue() {
     const record = this.props.propertyRecord;
     let initialDisplayValue = "";
     let numberValue = 0;
+    // istanbul ignore else
     if (record) {
+      // istanbul ignore else
       if (record.value.valueFormat === PropertyValueFormat.Primitive) {
         const primitiveValue = (record.value as PrimitiveValue);
         numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
@@ -236,32 +236,51 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   /** @internal */
-  public render() {
+  public render(): React.ReactNode {
     const record = this.props.propertyRecord as PropertyRecord;
     if (!record || !this._formatParams)
       return null;
 
-    const readonly = !record.isReadonly ? false : true;
-    const isDisabled = !record.isDisabled ? false : true;
+    const readOnly = !record.isReadonly ? false : true;
+    const disabled = !record.isDisabled ? false : true;
 
     const className = classnames("cell", "components-cell-editor", "components-customnumber-editor", this.props.className);
-    return (
-      <input
-        ref={(node) => this._input = node}
-        type="text"
-        className={className}
-        style={this.props.style}
-        readOnly={readonly}
-        disabled={isDisabled}
-        size={this.state.size}
-        maxLength={this.state.maxLength}
-        value={this.state.inputValue}
-        onChange={this._updateInputValue}
-        onKeyDown={this._onKeyPress}
-        onFocus={this._onFocus}
-        data-testid="components-customnumber-editor"
-      />
-    );
+
+    const inputProps: InputProps = {
+      type: "text",
+      className,
+      style: this.props.style,
+      readOnly,
+      disabled,
+      size: this.state.size,
+      maxLength: this.state.maxLength,
+      value: this.state.inputValue,
+      onChange: this._updateInputValue,
+      onKeyDown: this._onKeyPress,
+      onFocus: this._onFocus,
+      setFocus: this.shouldSetFocus(),
+    };
+
+    let reactNode: React.ReactNode;
+    if (this.state.iconSpec) {
+      const icon = <Icon iconSpec={this.state.iconSpec} />;
+      reactNode = (
+        <IconInput
+          {...inputProps}
+          icon={icon}
+          data-testid="components-customnumber-editor"
+        />
+      );
+    } else {
+      reactNode = (
+        <Input
+          {...inputProps}
+          data-testid="components-customnumber-editor"
+        />
+      );
+    }
+
+    return reactNode;
   }
 }
 // onKeyPress={this._onKeyPress}

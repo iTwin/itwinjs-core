@@ -9,8 +9,10 @@ import {
   PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
   IPresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
-import { GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { Field } from "@bentley/presentation-common";
+import { GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
 import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs } from "@bentley/ui-components";
+import { Presentation } from "@bentley/presentation-frontend";
 import "./PropertiesWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -21,9 +23,13 @@ export interface Props {
   rulesetId: string;
   onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
 }
+
+type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
+
 export interface State {
   dataProvider: PresentationPropertyDataProvider;
   contextMenu?: PropertyGridContextMenuArgs;
+  contextMenuItemInfos?: ContextMenuItemInfo[];
 }
 export default class PropertiesWidget extends React.Component<Props, State> {
   constructor(props: Props, context?: any) {
@@ -42,9 +48,19 @@ export default class PropertiesWidget extends React.Component<Props, State> {
       this.props.onFindSimilar(this.state.dataProvider, property);
     this.setState({ contextMenu: undefined });
   }
+  private _onAddFavorite = async (propertyField: Field) => {
+    Presentation.favoriteProperties.add(propertyField);
+    this.setState({ contextMenu: undefined });
+  }
+  private _onRemoveFavorite = async (propertyField: Field) => {
+    Presentation.favoriteProperties.remove(propertyField);
+    this.setState({ contextMenu: undefined });
+  }
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
     args.event.persist();
     this.setState({ contextMenu: args });
+    // tslint:disable-next-line: no-floating-promises
+    this.buildContextMenu(args);
   }
   private _onContextMenuOutsideClick = () => {
     this.setState({ contextMenu: undefined });
@@ -52,21 +68,54 @@ export default class PropertiesWidget extends React.Component<Props, State> {
   private _onContextMenuEsc = () => {
     this.setState({ contextMenu: undefined });
   }
-  private buildContextMenu(args: PropertyGridContextMenuArgs) {
-    const items = new Array<React.ReactNode>();
+  private async buildContextMenu(args: PropertyGridContextMenuArgs) {
+    const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
+    const items: ContextMenuItemInfo[] = [];
+    if (field !== undefined) {
+      if (Presentation.favoriteProperties.has(field)) {
+        items.push({
+          key: "remove-favorite",
+          onSelect: () => this._onRemoveFavorite(field),
+          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.description"),
+          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.label"),
+        });
+      } else {
+        items.push({
+          key: "add-favorite",
+          onSelect: () => this._onAddFavorite(field),
+          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.description"),
+          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.label"),
+        });
+      }
+    }
+
     if (this.props.onFindSimilar) {
+      items.push({
+        key: "find-similar",
+        onSelect: () => this._onFindSimilar(args.propertyRecord),
+        title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.description"),
+        label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.label"),
+      });
+    }
+    this.setState({ contextMenuItemInfos: items.length > 0 ? items : undefined });
+  }
+
+  private renderContextMenu() {
+    if (!this.state.contextMenu || !this.state.contextMenuItemInfos)
+      return undefined;
+
+    const items: React.ReactNode[] = [];
+    this.state.contextMenuItemInfos.forEach((info: ContextMenuItemInfo) => (
       items.push(
         <ContextMenuItem
-          key="find-similar"
-          onSelect={() => this._onFindSimilar(args.propertyRecord)}
-          title={IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.description")}
+          key={info.key}
+          onSelect={info.onSelect}
+          title={info.title}
         >
-          {IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.label")}
+          {info.label}
         </ContextMenuItem>,
-      );
-    }
-    if (items.length === 0)
-      return undefined;
+      )
+    ));
 
     return (
       <GlobalContextMenu
@@ -74,18 +123,14 @@ export default class PropertiesWidget extends React.Component<Props, State> {
         onOutsideClick={this._onContextMenuOutsideClick}
         onEsc={this._onContextMenuEsc}
         identifier="PropertiesWidget"
-        x={args.event.clientX}
-        y={args.event.clientY}
+        x={this.state.contextMenu!.event.clientX}
+        y={this.state.contextMenu!.event.clientY}
       >
         {items}
       </GlobalContextMenu>
     );
   }
   public render() {
-    let contextMenu: React.ReactNode;
-    if (this.state.contextMenu)
-      contextMenu = this.buildContextMenu(this.state.contextMenu);
-
     return (
       <div className="PropertiesWidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
@@ -96,7 +141,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
             onPropertyContextMenu={this._onPropertyContextMenu}
           />
         </div>
-        {contextMenu}
+        {this.renderContextMenu()}
       </div>
     );
   }

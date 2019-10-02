@@ -75,6 +75,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   opened: boolean;
   /** Default alignment of dialog. Default: DialogAlignment.Center */
   alignment?: DialogAlignment;
+  /** Whether the hide the header. Default: false */
+  hideHeader?: boolean;
+  /** Override for the header */
+  header?: React.ReactNode;
   /** Title to show in title bar of dialog */
   title?: string | JSX.Element;
   /** Footer to show at bottom of dialog. Note: will override buttonCluster */
@@ -154,6 +158,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     minWidth: 400,
     minHeight: 400,
     width: "50%",
+    hideHeader: false,
     resizable: false,
     movable: false,
     modal: true,
@@ -178,7 +183,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle, style, contentStyle, contentClassName,
-      modal, resizable, movable, className, alignment, inset, modelessId, onModelessPointerDown, ...props } = this.props;
+      modal, resizable, movable, className, alignment, inset, modelessId, onModelessPointerDown,
+      hideHeader, header, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
       margin: "",
@@ -213,12 +219,27 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const buttons = this.getFooterButtons(this.props);
 
-    const footerElement = footer || (buttons.length > 0 && <div className={"core-dialog-buttons"}>{buttons}</div>);
+    const footerElement: React.ReactNode = footer || (buttons.length > 0 && <div className={"core-dialog-buttons"}>{buttons}</div>);
 
     const divStyle: React.CSSProperties = {
       ...backgroundStyle,
       ...style,
     };
+
+    const headerElement = header || (
+      <div className={classnames(
+        "core-dialog-head",
+        { "core-dialog-movable": movable })}
+        data-testid="core-dialog-head"
+        onPointerDown={this._handleStartMove}>
+        <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>
+        <span
+          className={"core-dialog-close icon icon-close"}
+          data-testid="core-dialog-close"
+          onClick={onClose}
+        />
+      </div>
+    );
 
     return (
       <div
@@ -241,18 +262,9 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
               onPointerDown={this._handleContainerPointerDown}
             >
               <div className={"core-dialog-area"} ref={this._containerRef}>
-                <div className={classnames(
-                  "core-dialog-head",
-                  { "core-dialog-movable": movable })}
-                  data-testid="core-dialog-head"
-                  onPointerDown={this._handleStartMove}>
-                  <div className={"core-dialog-title"}>{title}</div>
-                  <span
-                    className={"core-dialog-close icon icon-close"}
-                    data-testid="core-dialog-close"
-                    onClick={onClose}
-                  />
-                </div>
+                {!hideHeader &&
+                  headerElement
+                }
                 <div className={classnames(
                   "core-dialog-content",
                   { "core-dialog-content-no-inset": !inset },

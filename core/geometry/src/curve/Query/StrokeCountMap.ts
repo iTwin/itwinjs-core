@@ -15,7 +15,7 @@ import { Geometry } from "../../Geometry";
  *   * `a1` = external mapped coordinate for fraction 1 on this primitive or component
  *
  * * For linestring and bspline curve, those numbers are totals for the overall curve, and breakdown within
- *     the components (line segments or bezier spans) is recoreded on the optional array `componentData[]`
+ *     the components (line segments or bezier spans) is recorded on the optional array `componentData[]`
  *   * Members of the array are annotated with componentIndex within the linestring or bspline curve
  * @public
  */
@@ -52,7 +52,7 @@ export class StrokeCountMap {
     this.componentData = componentData;
   }
   /**
-   * Create a `StrokeCountMap` with curve primitive and optional compontnData array.
+   * Create a `StrokeCountMap` with curve primitive and optional componentData array.
    * @param primitive
    * @param numStroke
    * @param curveLength
@@ -111,7 +111,7 @@ export class StrokeCountMap {
     this.a1 = a2;
   }
   /** return true if `other` has the same component structure as `this`
-   * * testing recursives through corresponding members of cmomponentData arrays.
+   * * testing recurses through corresponding members of componentData arrays.
    */
   public isCompatibleComponentStructure(other: StrokeCountMap, enforceCounts: boolean): boolean {
     if (enforceCounts && this.numStroke !== other.numStroke)

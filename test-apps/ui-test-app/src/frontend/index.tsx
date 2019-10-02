@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool,
+  IModelAppOptions, SelectionTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
@@ -28,6 +28,7 @@ import {
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
   BackstageItemManager,
   FrontstageDef,
+  SafeAreaContext,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -47,6 +48,7 @@ import { configure as mobxConfigure } from "mobx";
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -183,7 +185,7 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
+
     if (ElectronRpcConfiguration.isElectron) {
       // cSpell:disable
       let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
@@ -194,6 +196,8 @@ export class SampleAppIModelApp {
 
       if (Config.App.has("imjs_electron_test_redirect_uri"))
         redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
+
+      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
       oidcConfiguration = { clientId, redirectUri, scope };
     } else {
       let clientId = "imodeljs-spa-test-2686";
@@ -204,6 +208,8 @@ export class SampleAppIModelApp {
 
       if (Config.App.has("imjs_browser_test_redirect_uri"))
         redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+
+      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service projectwise-share";
       oidcConfiguration = { clientId, redirectUri, scope };
     }
 
@@ -275,10 +281,22 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
+    const viewStates: ViewState[] = [];
+    let defaultViewState: ViewState | undefined;
 
     // store the first selected viewId as default - mostly used by frontstages defined in plugins that want to open a IModelViewport
-    if (viewIdsSelected && viewIdsSelected.length > 0)
-      UiFramework.setDefaultViewId(viewIdsSelected[0]);
+    if (viewIdsSelected && viewIdsSelected.length > 0) {
+      for (const viewId of viewIdsSelected) {
+        const viewState = await iModelConnection.views.load(viewId);
+        if (viewState) {
+          if (!defaultViewState)
+            defaultViewState = viewState;
+          viewStates.push(viewState);
+        }
+      }
+      if (defaultViewState)
+        UiFramework.setDefaultViewState(defaultViewState);
+    }
 
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
@@ -291,7 +309,7 @@ export class SampleAppIModelApp {
 
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === viewsFrontstage) {
-      const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+      const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       frontstageDef = frontstageProvider.frontstageDef;
     } else {
@@ -470,7 +488,9 @@ export class SampleAppViewer extends React.Component<any> {
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
           <BeDragDropContext>
-            <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+              <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+            </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

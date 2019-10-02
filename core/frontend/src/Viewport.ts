@@ -525,27 +525,9 @@ export class ViewFrustum {
    *  modifies the point and vector given
    *  @internal
    */
-  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
-    if (this._aspectRatioLocked)
-      return;
-
-    const windowAspect = this._viewRect.aspect * this.view.getAspectRatioSkew();
-    const viewAspect = delta.x / delta.y;
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = delta.clone();
-    if (viewAspect > windowAspect)
-      delta.y = delta.x / windowAspect;
-    else
-      delta.x = delta.y * windowAspect;
-
-    const newOrigin = origin.clone();
-    this.toView(newOrigin);
-    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
-    this.fromView(newOrigin, origin);
+  protected adjustAspectRatio(origin: Point3d, extent: Vector3d) {
+    if (!this._aspectRatioLocked)
+      this.view.adjustAspectRatio(origin, extent, this._viewRect.aspect);
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
@@ -967,6 +949,11 @@ export namespace PerModelCategoryVisibility {
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
+    /** Iterates each override.
+     * @param func Accepts the model and category Ids and a boolean indicating if the category is visible. Returns `false` to terminate iteration or `true` to continue.
+     * @returns `true` if iteration completed; `false` if the callback requested early termination.
+     */
+    forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
   }
 }
 
@@ -1112,6 +1099,14 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         }
       }
     }
+  }
+
+  public forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean {
+    for (const entry of this)
+      if (!func(entry.modelId, entry.categoryId, entry.visible))
+        return false;
+
+    return true;
   }
 }
 
@@ -2200,7 +2195,8 @@ export abstract class Viewport implements IDisposable {
       delta.y *= factor;
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+        return;
 
       const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 
@@ -2693,10 +2689,17 @@ export abstract class Viewport implements IDisposable {
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
-   * @note By default the image is returned upside-down. Pass `true` for `flipVertically` to flip it along the x-axis.
+   * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     return this.target.readImage(rect, targetSize, flipVertically);
+  }
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+   * @internal
+   */
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this.target.readImageToCanvas();
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
@@ -2787,6 +2790,7 @@ export class ScreenViewport extends Viewport {
   private readonly _forwardStack: ViewStateUndo[] = [];
   private readonly _backStack: ViewStateUndo[] = [];
   private _currentBaseline?: ViewStateUndo;
+  private _webglCanvas?: HTMLCanvasElement;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2837,7 +2841,14 @@ export class ScreenViewport extends Viewport {
   private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
     // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(this.vpDiv).zIndex || "0", 10);
+    let parentZ = 0;
+    const styleZ = window.getComputedStyle(this.vpDiv).zIndex;
+    if (null !== styleZ) {
+      parentZ = parseInt(styleZ, 10);
+      if (Number.isNaN(parentZ))
+        parentZ = 0;
+    }
+
     element.style.zIndex = (parentZ + zIndex).toString();
     parent.appendChild(element);
   }
@@ -3147,6 +3158,35 @@ export class ScreenViewport extends Viewport {
       context.addCanvasDecoration({ position, drawDecoration }, true);
     }
   }
+
+  /** By default, a Viewport's webgl content is rendered to an off-screen canvas owned by the RenderSystem, then the resultant image is copied to the 2d rendering context
+   * belonging to the Viewport's own canvas. However, on non-chromium-based browsers this copying incurs a significant performance penalty. So, when only one Viewport
+   * needs to be drawn, we can switch to rendering the webgl content directly to the screen to improve performance in those browsers.
+   * ViewManager takes care of toggling this behavior.
+   * @internal
+   */
+  public get rendersToScreen(): boolean { return undefined !== this._webglCanvas; }
+  public set rendersToScreen(toScreen: boolean) {
+    if (toScreen === this.rendersToScreen)
+      return;
+
+    // Returns a webgl canvas if we're rendering webgl directly to the screen.
+    const webglCanvas = this.target.setRenderToScreen(toScreen);
+    if (undefined === webglCanvas) {
+      assert(undefined !== this._webglCanvas); // see getter...
+      this.vpDiv.removeChild(this._webglCanvas!);
+      this._webglCanvas = undefined;
+    } else {
+      assert(undefined === this._webglCanvas); // see getter...
+      this._webglCanvas = webglCanvas;
+
+      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
+      this.addChildDiv(this.vpDiv, webglCanvas, 5);
+    }
+
+    this.target.updateViewRect();
+    this.invalidateRenderPlan();
+  }
 }
 
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
@@ -3222,4 +3262,21 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
   }
 
   outP.setFrom(temp.plus(linePt));
+}
+
+/** Two views are considered compatible if they are from the same imodel, are both spatial views, or share a model in common.
+ * Useful for implementing tools and decorators when multiple views are open.
+ * @returns true if views are compatible.
+ * @internal
+ */
+export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean {
+  if (vp === targetVp)
+    return true;
+  if (vp.view.iModel !== targetVp.view.iModel)
+    return false;
+  if (vp.view.isSpatialView() && targetVp.view.isSpatialView())
+    return true;
+  let allowView = false;
+  vp.view.forEachModel((model) => { if (!allowView && targetVp.view.viewsModel(model.id)) allowView = true; });
+  return allowView; // Accept if this view shares a model in common with target.
 }

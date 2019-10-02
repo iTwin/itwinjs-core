@@ -35,7 +35,7 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -192,6 +192,7 @@ export class IModelDb extends IModel {
     super(iModelToken);
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
+    this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
   }
 
@@ -208,8 +209,8 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** @internal */
-  public static performUpgrade(pathname: string) {
+  /** @deprecated @internal */
+  public static performUpgrade(pathname: string): DbResult {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
     if (DbResult.BE_SQLITE_OK === res)
@@ -348,6 +349,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
+    imodelDb.setDefaultConcurrentControlAndPolicy();
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
     perfLogger.dispose();
@@ -880,7 +882,7 @@ export class IModelDb extends IModel {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -895,7 +897,7 @@ export class IModelDb extends IModel {
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -959,8 +961,11 @@ export class IModelDb extends IModel {
     requestContext.enter();
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
+      if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
       return;
     }
 
@@ -973,6 +978,9 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
 
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
@@ -1014,7 +1022,16 @@ export class IModelDb extends IModel {
   /** Get the ConcurrencyControl for this IModel.
    * @beta
    */
-  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
+  public get concurrencyControl(): ConcurrencyControl {
+    if (this._concurrency === undefined)
+      this.setDefaultConcurrentControlAndPolicy();
+    return this._concurrency!;
+  }
+
+  private setDefaultConcurrentControlAndPolicy() {
+    this._concurrency = new ConcurrencyControl(this);
+    this._concurrency!.setPolicy(ConcurrencyControl.PessimisticPolicy);
+  }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -1304,8 +1321,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<T>(this.getModelProps(modelId));
     }
 
-    /**
-     * Read the properties for a Model as a json string.
+    /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @return a json string with the properties of the model.
      */
@@ -1406,7 +1422,7 @@ export namespace IModelDb {
       const val = this._iModel.nativeDb.getElement(elementIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
-      return val.result! as T;
+      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1492,8 +1508,8 @@ export namespace IModelDb {
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(elProps, iModel);
-
-      const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
+      const valJson = JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false));
+      const val = iModel.nativeDb.insertElement(valJson);
       if (val.error)
         throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
@@ -1511,7 +1527,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(elProps, iModel);
 
-      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps));
+      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (stat !== IModelStatus.Success)
         throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
@@ -1546,11 +1562,30 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
-      const childIds: Id64String[] = [];
-      for (const row of rows)
-        childIds.push(Id64.fromJSON(row.id));
-      return childIds;
+      const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
+        statement.bindId("elementId", elementId);
+        const childIds: Id64String[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          childIds.push(statement.getValue(0).getId());
+        }
+        return childIds;
+      });
+    }
+
+    /** Returns true if the specified Element has a sub-model.
+     * @see [[IModelDb.Models.getSubModel]]
+     */
+    public hasSubModel(elementId: Id64String): boolean {
+      if (IModel.rootSubjectId === elementId) {
+        return false; // Special case since the RepositoryModel does not sub-model the root Subject
+      }
+      // A sub-model will have the same Id value as the element it is describing
+      const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ECInstanceId=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", elementId);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
     }
 
     /** Get the root subject element. */
@@ -1952,7 +1987,11 @@ export class TxnManager {
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus { return this._nativeDb.reverseTxns(numOperations); }
+  public reverseTxns(numOperations: number): IModelStatus {
+    const status = this._nativeDb.reverseTxns(numOperations);
+    this._iModel.concurrencyControl.onUndoRedo();
+    return status;
+  }
 
   /** Reverse the most recent operation. */
   public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }

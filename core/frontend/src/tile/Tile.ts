@@ -762,6 +762,7 @@ export namespace Tile {
       if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
         this.viewClip = context.viewport.view.getViewClip();
 
+      this.graphics.animationId = root.modelId;
       this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     }
 

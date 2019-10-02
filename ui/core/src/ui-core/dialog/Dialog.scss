@@ -4,12 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../index.scss";
 
-@mixin firefox-only {
-  @supports (-moz-appearance: none) {
-    @content;
-  }
-}
-
 .core-dialog {
   @include uicore-font-family;
 

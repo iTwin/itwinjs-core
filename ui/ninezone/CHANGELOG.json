@@ -2,6 +2,39 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-ninezone_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "copyright headers"
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Tool Assistance for Ctrl+Z and other chars"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Prevent BackstageItem label overflow."
+          },
+          {
+            "comment": "Make components aware of safe area insets."
+          },
+          {
+            "comment": "Enable backstage scrolling."
+          },
+          {
+            "comment": "Scrollable tool settings content."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/ui-ninezone_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

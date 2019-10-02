@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem renders correctly 1`] = `
-<BackstageItem
+<Component
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -13,5 +13,5 @@ exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem ren
   onClick={[Function]}
 >
   tests.label
-</BackstageItem>
+</Component>
 `;

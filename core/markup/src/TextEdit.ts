@@ -146,7 +146,7 @@ export class EditTextTool extends MarkupTool {
       const fontSize = text.getFontSize();
       newText.createMarkup(newVal, fontSize);
       if (this.boxed) {
-        newText = this.createBoxedText(original.parent() as G, newText);
+        newText = this.createBoxedText((original as G).parent() as G, newText);
         newText.matrix(original.matrix());
       }
       original.replace(newText);

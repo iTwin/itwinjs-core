@@ -115,4 +115,22 @@ describe("NonPrimitivePropertyRenderer", () => {
 
     expect(rendererMount.find(PropertyRenderer).at(0).key()).to.be.eq("unique_key_array_length");
   });
+
+  it("renders as expanded if property should be automatically expanded", () => {
+    const structProperty = TestUtils.createStructProperty(
+      "House", {
+        building: TestUtils.createPrimitiveStringProperty("Building", "Residential"),
+        street: TestUtils.createPrimitiveStringProperty("Street", "Glass st."),
+      });
+    structProperty.autoExpand = true;
+
+    const rendererMount = mount(
+      <NonPrimitivePropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={structProperty}
+        isCollapsible={true}
+      />);
+
+    expect(rendererMount.find(PropertyRenderer).length).to.be.be.eq(2);
+  });
 });

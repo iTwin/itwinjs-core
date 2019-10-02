@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
+import { Viewport } from "@bentley/imodeljs-frontend";
 
 export interface ToolButtonProps {
   className: string;
@@ -75,17 +76,20 @@ export interface ToolBarDropDownProps {
   className: string;
   createDropDown: CreateToolBarDropDown;
   tooltip?: string;
+  only3d?: boolean;
 }
 
 class DropDown {
-  private readonly _element: HTMLDivElement;
+  public readonly element: HTMLDivElement;
   private readonly _createDropDown: CreateToolBarDropDown;
   public dropDown?: ToolBarDropDown;
+  public readonly only3d: boolean;
 
   public constructor(toolBar: ToolBar, index: number, props: ToolBarDropDownProps) {
-    this._element = document.createElement("div");
-    this._element.className = "simpleicon";
+    this.element = document.createElement("div");
+    this.element.className = "simpleicon";
     this._createDropDown = props.createDropDown;
+    this.only3d = true === props.only3d;
 
     const image = document.createElement("i");
     image.className = props.className;
@@ -94,14 +98,14 @@ class DropDown {
     });
 
     if (undefined !== props.tooltip)
-      this._element.title = props.tooltip;
+      this.element.title = props.tooltip;
 
-    this._element.appendChild(image);
-    toolBar.element.appendChild(this._element);
+    this.element.appendChild(image);
+    toolBar.element.appendChild(this.element);
   }
 
   public async createDropDown(): Promise<ToolBarDropDown> {
-    return this._createDropDown(this._element);
+    return this._createDropDown(this.element);
   }
 }
 
@@ -160,9 +164,14 @@ export class ToolBar {
     return Promise.resolve();
   }
 
-  public async onViewChanged(): Promise<void> {
+  public async onViewChanged(vp: Viewport): Promise<void> {
+    this.close();
+
     const promises: Array<Promise<void>> = [];
     for (const item of this._dropDowns) {
+      if (item.only3d)
+        item.element.style.display = vp.view.is3d() ? "block" : "none";
+
       if (undefined !== item.dropDown) {
         const promise = item.dropDown.onViewChanged;
         if (undefined !== promise)

@@ -58,6 +58,16 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
+/** An object which customizes the locate tooltip.
+ * @internal
+ */
+export interface ToolTipProvider {
+  /** Augment or replace tooltip for the specified HitDetail.
+   * To cooperate with other tooltip providers, replacing the input tooltip instead of appending information is discouraged.
+   */
+  augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
+}
+
 /** The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
@@ -74,6 +84,8 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  /** @internal */
+  public readonly toolTipProviders: ToolTipProvider[] = [];
 
   /** @internal */
   public onInitialized() {
@@ -88,6 +100,7 @@ export class ViewManager {
   public onShutDown() {
     this._viewports.length = 0;
     this.decorators.length = 0;
+    this.toolTipProviders.length = 0;
     this._selectedView = undefined;
   }
 
@@ -193,6 +206,16 @@ export class ViewManager {
   /** Get the first opened view. */
   public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
+  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
+  private updateRenderToScreen() {
+    // Feature gate.
+    if (!IModelApp.renderSystem.options.directScreenRendering)
+      return;
+
+    const renderToScreen = 1 === this._viewports.length;
+    this.forEachViewport((vp) => vp.rendersToScreen = renderToScreen);
+  }
+
   /** Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
    * @returns SUCCESS if vp was successfully added, ERROR if it was already present.
@@ -204,7 +227,7 @@ export class ViewManager {
 
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
-
+    this.updateRenderToScreen();
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
@@ -243,6 +266,9 @@ export class ViewManager {
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
+
+    vp.rendersToScreen = false;
+    this.updateRenderToScreen();
 
     if (disposeOfViewport)
       vp.dispose();
@@ -322,6 +348,46 @@ export class ViewManager {
       const iModel = entry[0];
       iModel.tiles.purge(olderThan, entry[1]);
     }
+  }
+
+  /** Get the tooltip for a persistent element.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * @beta
+   */
+  public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
+    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
+    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
+    let out = "";
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
+  }
+
+  /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
+   * @internal
+   * @param provider The new tooltip provider to add.
+   * @throws Error if provider is already active.
+   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropToolTipProvider]].)
+   * @see [[dropToolTipOverrideProvider]]
+   */
+  public addToolTipProvider(provider: ToolTipProvider): () => void {
+    if (this.toolTipProviders.includes(provider))
+      throw new Error("tooltip provider already registered");
+    this.toolTipProviders.push(provider);
+    return () => { this.dropToolTipProvider(provider); };
+  }
+
+  /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
+   * @internal
+   * @param provider The tooltip to drop.
+   * @note Does nothing if decorator is not currently active.
+   */
+  public dropToolTipProvider(provider: ToolTipProvider) {
+    const index = this.toolTipProviders.indexOf(provider);
+    if (index >= 0)
+      this.toolTipProviders.splice(index, 1);
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.

@@ -12,7 +12,7 @@ import { ViewRect, Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** The types that may be used for Markers
@@ -320,11 +320,28 @@ export abstract class MarkerSet<T extends Marker> {
   protected readonly _worldToViewMap = Matrix4d.createZero();
   /** @internal */
   protected _minScaleViewW?: number;
+  private readonly _markers = new ObservableSet<T>();
 
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
-  public readonly markers = new Set<T>();
+  public get markers(): Set<T> { return this._markers; }
+
+  public constructor() {
+    const markDirty = () => this.markDirty();
+    this._markers.onAdded.addListener(markDirty);
+    this._markers.onDeleted.addListener(markDirty);
+    this._markers.onCleared.addListener(markDirty);
+  }
+
+  /** [[addDecoration]] does not recreate the set of decoration graphics if it can detect that the previously-created set remains valid.
+   * The set becomes invalid when the view frustum changes, or the contents of [[markers]] changes.
+   * If some other criterion affecting the graphics changes, invoke this method. This should not be necessary for most use cases.
+   * @public
+   */
+  public markDirty(): void {
+    this._worldToViewMap.setZero();
+  }
 
   /** Implement this method to create a new Marker that is shown as a *stand-in* for a Cluster of Markers that overlap one another.
    * @param cluster The [[Cluster]] that the new Marker will represent.

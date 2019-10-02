@@ -13,7 +13,7 @@ import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
-import { Transform, Matrix4d, Map4d, Range1d } from "@bentley/geometry-core";
+import { Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./DrawCommand";
@@ -51,14 +51,12 @@ export class BackgroundMapDrape extends TextureDrape {
   private _height = 0;
   private _mapTree: BackgroundMapTileTreeReference;
   private _drapedTree: TileTree;
-  private _heightRange?: Range1d;
   private static _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference, heightRange?: Range1d) {
+  private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
     this._mapTree = mapTree;
-    this._heightRange = heightRange === undefined ? undefined : heightRange.clone();
   }
 
   public dispose() {
@@ -68,8 +66,8 @@ export class BackgroundMapDrape extends TextureDrape {
 
   public addGraphic(graphic: RenderGraphic) { this._graphics!.push(graphic); }
 
-  public static create(draped: TileTree, map: BackgroundMapTileTreeReference, heightRange?: Range1d): BackgroundMapDrape {
-    return new BackgroundMapDrape(draped, map, heightRange);
+  public static create(draped: TileTree, map: BackgroundMapTileTreeReference): BackgroundMapDrape {
+    return new BackgroundMapDrape(draped, map);
   }
 
   public collectGraphics(context: SceneContext) {
@@ -95,7 +93,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._height = requiredHeight;
 
     const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, viewState, this._width, this._height, this._heightRange);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

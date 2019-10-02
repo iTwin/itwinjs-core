@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore safearea
+
 export * from "./ui-framework/UiFramework";
 
 export * from "./ui-framework/SessionState";
@@ -32,6 +35,8 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/safearea/SafeAreaContext";
+
 export * from "./ui-framework/configurableui/ConfigurableUiContent";
 export * from "./ui-framework/configurableui/ConfigurableUiControl";
 export * from "./ui-framework/configurableui/ConfigurableUiManager";
@@ -46,6 +51,8 @@ export * from "./ui-framework/content/ContentViewManager";
 export * from "./ui-framework/content/SavedView";
 export * from "./ui-framework/content/SavedViewLayout";
 export * from "./ui-framework/content/ViewportContentControl";
+export * from "./ui-framework/content/IModelViewport";
+export * from "./ui-framework/content/DefaultViewOverlay";
 
 export * from "./ui-framework/dialog/DialogManagerBase";
 export * from "./ui-framework/dialog/ModalDialogManager";
@@ -75,6 +82,7 @@ export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/ConditionalItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/ToolItemDef";
+export * from "./ui-framework/shared/MenuItem";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -112,6 +120,7 @@ export * from "./ui-framework/zones/ZoneDef";
 export * from "./ui-framework/stagepanels/FrameworkStagePanel";
 export * from "./ui-framework/stagepanels/StagePanel";
 export * from "./ui-framework/stagepanels/StagePanelDef";
+export * from "./ui-framework/stagepanels/StagePanelHeader";
 
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/GroupItem";
@@ -152,6 +161,9 @@ export * from "./ui-framework/statusfields/SelectionInfo";
 export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/SelectionScope";
 export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
+export * from "./ui-framework/statusfields/Indicator";
+export * from "./ui-framework/statusfields/SectionsField";
+export * from "./ui-framework/statusfields/ViewAttributes";
 
 export * from "./ui-framework/theme/ThemeManager";
 
@@ -164,7 +176,10 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
 
-export * from "./ui-framework/theme/ThemeManager";
+export * from "./ui-framework/accudraw/AccuDrawPopupManager";
+export * from "./ui-framework/accudraw/Calculator";
+export * from "./ui-framework/accudraw/CalculatorEngine";
+export * from "./ui-framework/accudraw/MenuButton";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

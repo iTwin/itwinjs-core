@@ -7,15 +7,13 @@
 import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { UiCore } from "@bentley/ui-core";
 
 import { UiFramework } from "../UiFramework";
 
 import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
 import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog,
-  TitleBarButton, FooterPopup,
+  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
 } from "@bentley/ui-ninezone";
 import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
@@ -86,16 +84,6 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
           target={this._target}
         >
           <MessageCenterDialog
-            buttons={
-              <>
-                <TitleBarButton title={UiFramework.translate("messageCenter.export")}>
-                  <i className={"icon icon-export"} />
-                </TitleBarButton>
-                <TitleBarButton onClick={this._handleCloseMessageIndicatorClick} title={UiCore.translate("dialog.close")}>
-                  <i className={"icon icon-close"} />
-                </TitleBarButton>
-              </>
-            }
             prompt={UiFramework.translate("messageCenter.prompt")}
             tabs={
               <>
@@ -151,10 +139,6 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
-
-  private _handleCloseMessageIndicatorClick = () => {
-    this.setOpenWidget(null);
   }
 
   private _changeActiveTab = (tab: MessageCenterActiveTab) => {

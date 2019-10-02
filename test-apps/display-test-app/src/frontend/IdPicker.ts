@@ -92,7 +92,7 @@ export abstract class IdPicker extends ToolBarDropDown {
       inline: true,
     }).textbox;
     textbox.onkeyup = (e) => {
-      if (e.keyCode === 13) // enter key
+      if (e.code === "Enter") // enter key
         this.enableById(textbox.value);
     };
 
@@ -232,6 +232,9 @@ export class CategoryPicker extends IdPicker {
 
   protected async _populate(): Promise<void> {
     const view = this._vp.view;
+    if (!view.iModel.isOpen)
+      return;
+
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];

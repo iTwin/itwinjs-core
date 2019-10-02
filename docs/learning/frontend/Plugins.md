@@ -60,3 +60,24 @@ class MeasurePointsPlugin extends Plugin {
 ```
 
 The Plugin subclass' onExecute method is called immediately after the call to `onLoad`. The difference between `onLoad` and `onExecute` is that `onExecute` is called each time [PluginAdmin]($frontend).loadPlugin is called for the same plugin. Therefore, anything that need be done only once (such as registering a Tool), should go into the `onLoad` method and everything that should be done each time the Plugin is loaded (in this case, starting the registered Tool), should be done in the `onExecute` method.
+
+## Loading Plugins on Application Startup
+
+When an application opens the first view of an iModel, the Plugin Administrator examines user settings, application settings, and the application's Config.App to assemble a list of plugins that should be loaded automatically. The plugin lists from user and application settings are retrieved by the [SettingsAdmin]($client). The [PluginAdmin]($frontend) class includes two methods, ```addSavedPlugins``` and ```removeSavedPlugins``` to manipulate that list for either the user or the application settings. The methods should be called with the ```settingName``` argument of "StartViewPlugins" to manipulate the startup plugins. Any user can save plugin specifications for his or her personal use, but saving plugin specifications to be processed for all users of the application requires administrative privileges.
+
+In addition to plugin lists stored in ```SettingsAdmin``` settings, the application's configuration can specify such a list. The ```PluginAdmin``` calls ```Config.App.get("SavedPlugins.StartViewPlugins")```, and if it returns a string, it is interpreted as a list of plugins separated by semicolons. To pass arguments  to the plugins as they are loaded, separate the arguments from the plugin name and each other using the pipe "|" character. For example, the following entry in the applications config.json file starts the "safety" plugin with arguments "zone1" and "zone2", and the "visualize" plugin with no arguments:
+
+```json
+config.json
+{
+    "imjs_oidc_redirecturi": "/signin-oidc",
+    "imjs_oidc_responsetype": "id_token token",
+    "imjs_oidc_scope": "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service",
+    ...
+    "SavedPlugins": {
+      "StartViewPlugins": "safety|zone1|zone2;visualize"
+    }
+}
+```
+
+PluginAdmin attempts to load all plugins in the union of the three plugin lists. Successful and failed loads are reported through the [NotificationManager]($frontend).

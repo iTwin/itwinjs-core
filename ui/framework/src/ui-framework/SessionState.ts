@@ -5,7 +5,7 @@
 /** @module State */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
-// import { IModelConnection } from "@bentley/imodeljs-frontend";
+// import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 // import { AccessToken } from "@bentley/imodeljs-clients";
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
@@ -33,6 +33,7 @@ export enum SessionStateActionId {
   SetAccessToken = "sessionstate:set-access-token",
   SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
   SetDefaultViewId = "sessionstate:set-default-viewid",
+  SetDefaultViewState = "sessionstate:set-default-view-state",
   SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
 }
 
@@ -46,6 +47,7 @@ export interface SessionState {
   iModelId: string;
   defaultIModelViewportControlId: string | undefined;
   defaultViewId: string | undefined;
+  defaultViewState: any | undefined;
   defaultRulesetId: string | undefined;
   iModelConnection: any | undefined;
   accessToken: any | undefined;
@@ -65,6 +67,7 @@ const initialState: SessionState = {
   iModelId: "",
   defaultIModelViewportControlId: undefined,
   defaultViewId: undefined,
+  defaultViewState: undefined,
   defaultRulesetId: undefined,
   iModelConnection: undefined,
   accessToken: undefined,
@@ -80,6 +83,7 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
   setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
+  setDefaultViewState: (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
   setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
   setIModelConnection: (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
   setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
@@ -130,6 +134,9 @@ export function SessionStateReducer(state: SessionState = initialState, _action:
     }
     case SessionStateActionId.SetDefaultViewId: {
       return { ...state, defaultViewId: _action.payload };
+    }
+    case SessionStateActionId.SetDefaultViewState: {
+      return { ...state, defaultViewState: _action.payload };
     }
     case SessionStateActionId.SetDefaultRulesetId: {
       return { ...state, defaultRulesetId: _action.payload };

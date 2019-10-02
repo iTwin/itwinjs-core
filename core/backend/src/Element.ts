@@ -13,6 +13,7 @@ import {
   InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
@@ -66,34 +67,51 @@ export class Element extends Entity implements ElementProps {
 
   /** Called before a new Element is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInsert(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDelete(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
+   * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
+   * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.
+   * @param _context The context that persists any remapping between the source iModel and target iModel.
+   * @param _sourceProps The ElementProps for the source Element that was cloned.
+   * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
+   * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
+   * @alpha
+   */
+  protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
   /** @beta */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
@@ -173,7 +191,7 @@ export class Element extends Entity implements ElementProps {
     const display = this.getDisplayLabel();
     msg.push(display ? display : addKey("Id") + this.id + ", " + addKey("Type") + this.className);
 
-    if (this.category)
+    if (this instanceof GeometricElement)
       msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
 
     msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
@@ -203,6 +221,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
+  /** The origin, orientation, and bounding box of this GeometricElement. */
+  public abstract get placement(): Placement2d | Placement3d;
 
   /** @internal */
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
@@ -216,7 +236,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   /** Type guard for instanceof [[GeometricElement2d]] */
   public is2d(): this is GeometricElement2d { return this instanceof GeometricElement2d; }
   /** Get the [Transform]($geometry) from the Placement of this GeometricElement */
-  public getPlacementTransform(): Transform { return this.placement.getTransform(); }
+  public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   /** @internal */

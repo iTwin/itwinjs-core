@@ -1637,7 +1637,8 @@ export namespace IModelJson {
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
-
+      if (pf.twoSided)
+        contents.twoSided = true;
       if (pf.data.auxData)
         contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 

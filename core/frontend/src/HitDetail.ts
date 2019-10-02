@@ -140,10 +140,7 @@ export class HitDetail {
   public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean {
-    if (undefined !== this.modelId && this.sourceId === this.modelId)
-      return true;
-
-    return this.iModel.models.getLoaded(this.sourceId) !== undefined;
+    return this.modelId === this.sourceId;
   }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -154,21 +151,12 @@ export class HitDetail {
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
-  /** Get the tooltip content for this HitDetail.
-   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
-   */
+  /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    if (!this.isElementHit)
-      return IModelApp.viewManager.getDecorationToolTip(this);
-
-    const msg: string[] = await this.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
-    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
-    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
-    let out = "";
-    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
-    const div = document.createElement("div");
-    div.innerHTML = out;
-    return div;
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
+      toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
+    return toolTipPromise;
   }
 
   /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.

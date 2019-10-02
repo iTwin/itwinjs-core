@@ -223,15 +223,16 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       this._hasPendingDataRequest = false;
       return this.gatherData();
     }
+
     const categories = new Array<PropertyGridCategory>();
-    propertyData.categories.map((category: PropertyCategory, _index: number) => {
-      const gridCategory: PropertyGridCategory = {
+    propertyData.categories.forEach((category: PropertyCategory) => {
+      categories.push({
         propertyCategory: { ...category, expand: this._shouldExpandCategory(category) },
         propertyCount: propertyData.records[category.name].length,
         properties: propertyData.records[category.name],
-      };
+      });
+
       this.assignRecordClickHandlers(propertyData.records[category.name]);
-      categories.push(gridCategory);
     });
     this.setState({ categories, loadStart: undefined });
   }

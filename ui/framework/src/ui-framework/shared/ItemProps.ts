@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { IconProps } from "./IconComponent";
+import { IconProps } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ToolItemDef } from "./ToolItemDef";
@@ -62,7 +62,7 @@ export interface TooltipProps {
 /** Definition that specifies properties shared between many ConfigurableUi components.
  * @public
  */
-export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
+export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
   /** if set, component will be visible - defaults to true */
   isVisible?: boolean;
   /** if set, component will be enabled - defaults to true */
@@ -113,6 +113,10 @@ export interface GroupItemProps extends ItemProps {
   items: AnyItemDef[];
   direction?: Direction;
   itemsInColumn?: number;
+  /** if set, it is used to explicitly set a label at top of open group component. */
+  panelLabel?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if panelLabel is not explicitly set. */
+  paneLabelKey?: string;
 }
 
 /** Definition for a Conditional item that conditionally renders other items based on UiSync events.
@@ -131,15 +135,15 @@ export interface CustomItemProps extends ItemProps {
   reactElement: React.ReactNode;
 }
 
-/** Union of all Item properties.
- * @beta
+/** Properties for a Menu item
+ * @alpha
  */
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
+export interface MenuItemProps extends ItemProps {
+  /** The id for the menu item. */
+  id: string;
 
-/** Definition for a list of AnyItemProps.
- * @public
- */
-export interface ItemPropsList {
-  /** @beta */
-  items?: AnyItemProps[];
+  /** The item to execute when this item is invoked. Either 'item' or 'submenu' must be specified. */
+  item?: CommandItemProps;
+  /** Nested array of item props. Either 'item' or 'submenu' must be specified. */
+  submenu?: MenuItemProps[];
 }

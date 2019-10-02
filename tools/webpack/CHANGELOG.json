@@ -2,6 +2,24 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "1.5.0",
+      "tag": "@bentley/webpack-tools_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove unexecuted code from BuildIModelJsModule"
+          },
+          {
+            "comment": "Do not separate .css files when building plugins in prod mode."
+          },
+          {
+            "comment": "Ensure presentation-components.css is loaded"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/webpack-tools_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

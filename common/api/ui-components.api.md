@@ -638,7 +638,7 @@ export interface BreadcrumbProps extends CommonProps {
 
 // @beta
 export class BreadcrumbTreeUtils {
-    static aliasNodeListToTableDataProvider: (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: import("../tree/TreeDataProvider").TreeDataProviderMethod | ImmediatelyLoadedTreeNodeItem[] | Promise<ImmediatelyLoadedTreeNodeItem[]> | import("../tree/TreeDataProvider").ITreeDataProvider | undefined) => TableDataProvider;
+    static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
     }
 
 // @beta
@@ -869,7 +869,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
-    render(): JSX.Element | null;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<CustomNumberEditorState>;
     }
@@ -2593,11 +2593,14 @@ export interface TableProps extends CommonProps {
     onRowsDeselected?: (rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>;
     onRowsLoaded?: (firstRowIndex: number, lastRowIndex: number) => void;
     onRowsSelected?: (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>;
+    // @internal (undocumented)
+    onScrollToRow?: (rowIndex: number) => void;
     pageAmount?: number;
     propertyValueRendererManager?: PropertyValueRendererManager;
     // @internal (undocumented)
     renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
     reorderableColumns?: boolean;
+    scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
     showHideColumns?: boolean;
@@ -2659,7 +2662,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     // (undocumented)
     getValue(): string;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<TextEditorState>;
     }

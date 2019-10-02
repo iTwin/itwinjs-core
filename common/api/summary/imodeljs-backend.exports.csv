@@ -153,6 +153,7 @@ beta;ILinearElementProvidedBySource
 beta;ILinearLocationLocatesElement 
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
+alpha;IModelCloneContext
 public;IModelDb 
 public;IModelDb
 internal;TileContentState

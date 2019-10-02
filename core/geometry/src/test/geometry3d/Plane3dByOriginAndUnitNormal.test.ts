@@ -8,6 +8,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Angle } from "../../geometry3d/Angle";
+import { Transform } from "../../geometry3d/Transform";
 
 /** Exercise two planes expected to be parallel. */
 function testParallelPair(ck: Checker,
@@ -91,6 +93,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const a = 1.4;
     const pointB = planeAU.altitudeToPoint(a);
     ck.testCoordinate(a, planeAU.altitude(pointB), "altitude match");
+    ck.testUndefined(Plane3dByOriginAndUnitNormal.createXYZUVW(3, 2, 1, 0, 0, 0));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -99,6 +102,34 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const pointA = Point3d.create(3, 2, 9);
     const failPlane = Plane3dByOriginAndUnitNormal.create(pointA, Vector3d.createZero());
     ck.testUndefined(failPlane, "plane with null normal");
+    const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const plane1 = plane.cloneTransformed(Transform.createRowValues(
+      1, 0, 0, 1,
+      0, 1, 0, 3,
+      0, 0, 0, 1));
+    ck.testUndefined(plane1, "singular transform of plane");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("assortedCreate", () => {
+    const ck = new Checker();
+    const origin = Point3d.create(1, 2, 2.23);
+    const normal = Vector3d.create(0.3, 0.4, 0.5).normalize()!;
+    const planeA = Plane3dByOriginAndUnitNormal.createXYZUVW(origin.x, origin.y, origin.z, normal.x, normal.y, normal.z)!;
+    const planeB = Plane3dByOriginAndUnitNormal.createXYPlane();
+    ck.testFalse(planeA.isAlmostEqual(planeB));
+    Plane3dByOriginAndUnitNormal.createXYZUVW(origin.x, origin.y, origin.z, normal.x, normal.y, normal.z, planeB);
+    ck.testTrue(planeA.isAlmostEqual(planeB));
+
+    const transform = planeB.getLocalToWorld();
+    ck.testPoint3d(origin, transform.getOrigin());
+    ck.testCoordinate(0, transform.matrix.columnX().dotProduct(normal));
+    ck.testCoordinate(0, transform.matrix.columnY().dotProduct(normal));
+
+    const angle = Angle.createDegrees(20);
+    const planeP = Plane3dByOriginAndUnitNormal.createXYAngle(1, 2, angle);
+    Plane3dByOriginAndUnitNormal.createXYAngle(1, 2, angle, planeB);
+    ck.testTrue(planeP.isAlmostEqual(planeB), "createXYAngle into result");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

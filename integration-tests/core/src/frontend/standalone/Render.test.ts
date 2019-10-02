@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { testViewports, comparePixelData, Color } from "../TestViewport";
+import { testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
-import { RenderMemory, Pixel, RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderMemory, Pixel, RenderSystem, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   IModelApp,
   IModelConnection,
@@ -16,8 +16,10 @@ import {
   SpatialViewState,
   Viewport,
   ViewRect,
+  Decorator,
+  DecorateContext,
 } from "@bentley/imodeljs-frontend";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d, Point3d } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("Test VAO creation", () => {
@@ -119,6 +121,74 @@ describe("Render mirukuru with VAOs disabled", () => {
       expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
       expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
     });
+  });
+});
+
+describe("Properly create on-screen viewport with directScreenRendering enabled", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.directScreenRendering = true;
+
+    IModelApp.startup({ renderSys: renderSysOpts });
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    IModelApp.shutdown();
+  });
+
+  it("single viewport should render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      expect(vp.rendersToScreen).to.be.true;
+    });
+  });
+
+  it("neither of dual viewports should render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
+    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.false;
+    expect(vp1.rendersToScreen).to.be.false;
+  });
+});
+
+describe("Properly create on-screen viewport with directScreenRendering disabled", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.directScreenRendering = false;
+
+    IModelApp.startup({ renderSys: renderSysOpts });
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    IModelApp.shutdown();
+  });
+
+  it("single viewport should not render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      expect(vp.rendersToScreen).to.be.false;
+    });
+  });
+
+  it("neither of dual viewports should render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.false; // even single viewport should not render using system canvas - it has been disabled!
+    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.false;
+    expect(vp1.rendersToScreen).to.be.false;
   });
 });
 
@@ -428,6 +498,38 @@ describe("Render mirukuru", () => {
           }
         }
       }
+    });
+  });
+
+  it("should show transparency for polylines", async () => {
+    const rect = new ViewRect(0, 0, 200, 150);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+
+      class TestPolylineDecorator implements Decorator {
+        public decorate(context: DecorateContext) {
+          expect(context.viewport === vp);
+          // draw semi-transparent polyline from top left to bottom right of vp
+          const overlayBuilder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+          const polylineColor = ColorDef.from(0, 255, 0, 128);
+          overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
+          overlayBuilder.addLineString([
+            new Point3d(0, 0, 0),
+            new Point3d(rect.width - 1, rect.height - 1, 0),
+          ]);
+          context.addDecorationFromBuilder(overlayBuilder);
+        }
+      }
+
+      const decorator = new TestPolylineDecorator();
+      IModelApp.viewManager.addDecorator(decorator);
+      await vp.drawFrame();
+      IModelApp.viewManager.dropDecorator(decorator);
+
+      // expect green blended with black background
+      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      expect(testColor.r).equals(0);
+      expect(testColor.g).approximately(128, 3);
+      expect(testColor.b).equals(0);
     });
   });
 

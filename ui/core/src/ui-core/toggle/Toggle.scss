@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index.scss";
 
-//$toggle-handle-inset: 2px;
+$toggle-height-small: $uicore-font-size * 1.5;
+$toggle-width-small:  $toggle-height-small * 2;
+
+$toggle-height-large: 32px;
+$toggle-width-large:  $toggle-height-large * 2;
 
 .core-toggle {
-  width: 64px;
-  height: 34px;
+  width:  $toggle-width-small;
+  height: $toggle-height-small;
   position: relative;
   display: inline-block;
   border-radius: 3px;
@@ -19,6 +23,11 @@
   cursor: pointer;
 }
 
+.core-toggle-large {
+  height:             $toggle-height-large;
+  width:              $toggle-width-large;
+}
+
 .core-toggle-input {
   position: absolute;
   top: 0;
@@ -26,7 +35,7 @@
   opacity: 0;
 }
 
-.core-toggle-label {
+.core-toggle-background {
   position: relative;
   display: block;
   height: inherit;
@@ -36,12 +45,12 @@
 }
 
 /* Blue (default) */
-.core-toggle-input:checked+.core-toggle-label {
+.core-toggle-input:checked+.core-toggle-background {
   background: $uicore-blue;
 }
 
 /* Green (primary) */
-.core-toggle-primary> .core-toggle-input:checked~.core-toggle-label {
+.core-toggle-primary> .core-toggle-input:checked~.core-toggle-background {
   background: $uicore-green;
 }
 

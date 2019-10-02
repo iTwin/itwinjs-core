@@ -71,7 +71,7 @@ describe("PerformanceElementsTests", () => {
     return elementProps;
   }
 
-  function verifyProps(testElement: Element) {
+  function verifyProps(testElement: any) {
     assert.equal(testElement.baseStr, values.baseStr, `${testElement.classFullName}`);
     assert.equal(testElement.baseLong, values.baseLong, `${testElement.classFullName}`);
     assert.equal(testElement.baseDouble, values.baseDouble, `${testElement.classFullName}`);
@@ -274,7 +274,7 @@ describe("PerformanceElementsTests", () => {
           for (let i = 0; i < opCount; ++i) {
             const elId = stat.minId + elementIdIncrement * i;
             const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            editElem.baseStr = "PerfElement - UpdatedValue";
+            (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
               perfimodel.elements.updateElement(editElem);
@@ -288,7 +288,7 @@ describe("PerformanceElementsTests", () => {
           for (let i = 0; i < opCount; ++i) {
             const elId = stat.minId + elementIdIncrement * i;
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
+            assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });

@@ -18,9 +18,15 @@ import "./VisibilityWidget.scss";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg";
 
-const visibilityKey = "0";
-const categoryKey = "1";
-const spatialKey = "2";
+/**
+ * Types of hierarchies displayed in the `VisibilityComponent`
+ * @public
+ */
+export enum VisibilityComponentHierarchy {
+  Models = "models",
+  Categories = "categories",
+  SpatialContainment = "spatial-containment",
+}
 
 /**
  * Props for `VisibilityComponent`
@@ -33,11 +39,13 @@ export interface VisibilityComponentProps {
   activeViewport?: Viewport;
   /** `React.Ref` to the root HTML element  */
   activeTreeRef?: React.Ref<HTMLDivElement>;
+  /** Start pre-loading specified hierarchies as soon as user picks one for display. */
+  enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
 }
 
 interface VisibilityTreeState {
   initialized: boolean;
-  activeTree: string;
+  activeTree: VisibilityComponentHierarchy;
   showOptions: boolean;
   showSearchBox: boolean;
   viewport?: Viewport;
@@ -55,7 +63,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   constructor(props: any) {
     super(props);
     this.state = {
-      initialized: false, activeTree: visibilityKey, showOptions: false, showSearchBox: false,
+      initialized: false, activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
       viewport: this.props.activeViewport, selectAll: false, clearAll: false,
     };
   }
@@ -101,14 +109,21 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     this.setState({ showSearchBox: !this.state.showSearchBox });
   }
 
+  private shouldEnablePreloading(hierarchy: VisibilityComponentHierarchy) {
+    return this.props.enableHierarchiesPreloading
+      && - 1 !== this.props.enableHierarchiesPreloading.indexOf(hierarchy);
+  }
+
   private _renderTree() {
     const { iModelConnection } = this.props;
     const { activeTree, showSearchBox, viewport, selectAll, clearAll } = this.state;
     return (<div className="uifw-visibility-tree-wrapper">
-      {activeTree === visibilityKey && <VisibilityTree imodel={iModelConnection} activeView={viewport} selectionMode={SelectionMode.None} rootElementRef={this.props.activeTreeRef} />}
-      {activeTree === categoryKey && <CategoryTree iModel={iModelConnection} activeView={viewport} showSearchBox={showSearchBox}
-        selectAll={selectAll} clearAll={clearAll} />}
-      {activeTree === spatialKey && <SpatialContainmentTree iModel={iModelConnection} />}
+      {activeTree === VisibilityComponentHierarchy.Models && <VisibilityTree imodel={iModelConnection} activeView={viewport} selectionMode={SelectionMode.None}
+        rootElementRef={this.props.activeTreeRef} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Models)} />}
+      {activeTree === VisibilityComponentHierarchy.Categories && <CategoryTree iModel={iModelConnection} activeView={viewport} showSearchBox={showSearchBox}
+        selectAll={selectAll} clearAll={clearAll} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Categories)} />}
+      {activeTree === VisibilityComponentHierarchy.SpatialContainment && <SpatialContainmentTree iModel={iModelConnection}
+        enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)} />}
     </div>);
   }
 
@@ -117,15 +132,15 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     const showCategories = true;
     const showContainment = true;
     const searchStyle: React.CSSProperties = {
-      opacity: (activeTree === categoryKey) ? 1 : 0,
-      visibility: (activeTree === categoryKey) ? "visible" : "hidden",
+      opacity: (activeTree === VisibilityComponentHierarchy.Categories) ? 1 : 0,
+      visibility: (activeTree === VisibilityComponentHierarchy.Categories) ? "visible" : "hidden",
     };
     return (<div className="uifw-visibility-tree">
       <div className="uifw-visibility-tree-header">
         <select className="uifw-visibility-tree-select" onChange={this._onShowTree.bind(this)}>
-          <option value={visibilityKey}>{UiFramework.translate("visibilityWidget.modeltree")}</option>
-          {showCategories && <option value={categoryKey}>{UiFramework.translate("visibilityWidget.categories")}</option>}
-          {showContainment && <option value={spatialKey}>{UiFramework.translate("visibilityWidget.containment")}</option>}
+          <option value={VisibilityComponentHierarchy.Models}>{UiFramework.translate("visibilityWidget.modeltree")}</option>
+          {showCategories && <option value={VisibilityComponentHierarchy.Categories}>{UiFramework.translate("visibilityWidget.categories")}</option>}
+          {showContainment && <option value={VisibilityComponentHierarchy.SpatialContainment}>{UiFramework.translate("visibilityWidget.containment")}</option>}
         </select>
         <span className="icon icon-search" style={searchStyle} onClick={this._onToggleSearchBox} />
         <span className="uifw-visibility-tree-options icon icon-more-vertical-2" style={searchStyle} title={UiFramework.translate("visibilityWidget.options")} ref={(element) => { this._optionsElement = element; }} onClick={this._onShowOptions.bind(this)}></span>
@@ -158,7 +173,7 @@ export class VisibilityWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     if (options && options.iModelConnection)
-      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} />;
+      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} />;
     else
       this.reactElement = "no imodel";
   }

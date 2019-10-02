@@ -39,7 +39,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
   /** @internal */
   public readonly state: NonPrimitivePropertyRendererState = {
     /** If it's not collapsible, that means it's expanded by default and can't be collapsed */
-    isExpanded: !this.props.isCollapsible,
+    isExpanded: !this.props.isCollapsible || this.props.propertyRecord.autoExpand,
   };
 
   constructor(props: NonPrimitivePropertyRendererProps) {

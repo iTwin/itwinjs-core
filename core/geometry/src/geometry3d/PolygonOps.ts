@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
@@ -14,7 +14,9 @@ import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXY
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Range3d } from "./Range";
+import { Range3d, Range1d } from "./Range";
+import { Point4d } from "../geometry4d/Point4d";
+
 /** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
  * Various (static method) computations for arrays of points interpreted as a polygon.
@@ -485,7 +487,6 @@ export class PolygonOps {
    *    * all subsequent loops are holes
    *    * The outer loop is CCW
    *    * The holes are CW.
-   *
    * @param loops multiple loops to sort and reverse.
    */
   public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
@@ -495,7 +496,261 @@ export class PolygonOps {
     }
     return SortablePolygon.assignParentsAndDepth(loopAndArea);
   }
+}
+/**
+ *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
+ * @public
+ */
+export class IndexedXYZCollectionPolygonOps {
+  private static _xyz0Work: Point3d = Point3d.create();
+  private static _xyz1Work: Point3d = Point3d.create();
+  private static _xyz2Work: Point3d = Point3d.create();
+  /**
+   * Split a (convex) polygon into 2 parts based on altitude evaluations.
+   * * POSITIVE ALTITUDE IS IN
+   * @param plane any `PlaneAltitudeEvaluator` object that can evaluate `plane.altitude(xyz)` for distance from the plane.
+   * @param xyz original polygon
+   * @param xyzPositive array to receive inside part (altitude > 0)
+   * @param xyzNegative array to receive outside part
+   * @param altitudeRange min and max altitudes encountered.
+   */
+  public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
+    xyz: IndexedReadWriteXYZCollection,
+    xyzPositive: IndexedReadWriteXYZCollection,
+    xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
+    const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;
+    const xyz1 = IndexedXYZCollectionPolygonOps._xyz1Work;
+    const xyzInterpolated = IndexedXYZCollectionPolygonOps._xyz2Work;
+    const n = xyz.length;
+    xyzPositive.clear();
+    xyzNegative.clear();
+    // let numSplit = 0;
+    const fractionTol = 1.0e-8;
+    if (n > 2) {
+      xyz.back(xyz0);
+      altitudeRange.setNull();
+      let a0 = plane.altitude(xyz0);
+      altitudeRange.extendX(a0);
+      //    if (a0 >= 0.0)
+      //      work.push_back (xyz0);
+      for (let i1 = 0; i1 < n; i1++) {
+        xyz.getPoint3dAtUncheckedPointIndex(i1, xyz1);
+        const a1 = plane.altitude(xyz1);
+        altitudeRange.extendX(a1);
+        let nearZero = false;
+        if (a0 * a1 < 0.0) {
+          // simple crossing. . .
+          const f = - a0 / (a1 - a0);
+          if (f > 1.0 - fractionTol && a1 >= 0.0) {
+            // the endpoint will be saved -- avoid the duplicate
+            nearZero = true;
+          } else {
+            xyz0.interpolate(f, xyz1, xyzInterpolated);
+            xyzPositive.push(xyzInterpolated);
+            xyzNegative.push(xyzInterpolated);
+          }
+          // numSplit++;
+        }
+        if (a1 >= 0.0 || nearZero)
+          xyzPositive.push(xyz1);
+        if (a1 <= 0.0 || nearZero)
+          xyzNegative.push(xyz1);
+        xyz0.setFromPoint3d(xyz1);
+        a0 = a1;
+      }
+    }
+  }
+  /**
+   * Clip a polygon to one side of a plane.
+   * * Results with 2 or fewer points are ignored.
+   * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * * plane is passed as unrolled Point4d (ax,ay,az,aw) point (x,y,z) acts as homogeneous (x,y,z,1)
+   *   * `keepPositive === true` selects positive altitudes.
+   * @param plane any type that has `plane.altitude`
+   * @param xyz input points.
+   * @param work work buffer
+   * @param tolerance tolerance for "on plane" decision.
+   */
+  public static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive: boolean = true, tolerance: number = Geometry.smallMetricDistance) {
+    work.clear();
+    const s = keepPositive ? 1.0 : -1.0;
+    const n = xyz.length;
+    let numNegative = 0;
+    const fractionTol = 1.0e-8;
+    const b = -tolerance;
+    if (xyz.length > 1) {
+      let a1;
+      let index0 = xyz.length - 1;
+      let a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index0, plane);
+      //    if (a0 >= 0.0)
+      //      work.push_back (xyz0);
+      for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
+        a1 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index1, plane);
+        if (a1 < 0)
+          numNegative++;
+        if (a0 * a1 < 0.0) {
+          // simple crossing . . .
+          const f = - a0 / (a1 - a0);
+          if (f > 1.0 - fractionTol && a1 >= 0.0) {
+            // the endpoint will be saved -- avoid the duplicate
+          } else {
+            work.pushInterpolatedFromGrowableXYZArray(xyz, index0, f, index1);
+          }
+        }
+        if (a1 >= b)
+          work.pushFromGrowableXYZArray(xyz, index1);
+        index0 = index1;
+        a0 = a1;
+      }
+    }
 
+    if (work.length <= 2) {
+      xyz.clear();
+    } else if (numNegative > 0) {
+      xyz.clear();
+      xyz.pushFromGrowableXYZArray(work);
+    }
+    work.clear();
+  }
+  /**
+   * Return the intersection of the plane with a range cube.
+   * @param range
+   * @param xyzOut intersection polygon.  This is convex.
+   * @return reference to xyz if the polygon still has points; undefined if all points are clipped away.
+   */
+  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray) {
+    if (range.isNull)
+      return undefined;
+    const work = new GrowableXYZArray();
+    const plane = Point4d.create();
+    plane.set(0, 0, -1, range.high.z);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+      return undefined;
+
+    plane.set(0, 0, -1, -range.low.z);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+
+      plane.set(0, -1, 0, -range.high.y);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+      return undefined;
+
+    plane.set(0, 1, 0, range.low.y);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+      return undefined;
+
+    plane.set(-1, 0, 0, range.high.x);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+      return undefined;
+
+    plane.set(1, 0, 0, -range.low.x);
+    this.clipConvexPolygonInPlace(plane, xyz, work, true);
+    if (xyz.length === 0)
+      return undefined;
+
+    return xyz;
+  }
+}
+/**
+ * `Point3dArrayPolygonOps` class contains _static_ methods for typical operations on polygons carried as `Point3d[]`
+ * @public
+ */
+export class Point3dArrayPolygonOps {
+  private static _xyz0Work: Point3d = Point3d.create();
+  //  private static _xyz1Work: Point3d = Point3d.create();
+  //  private static _xyz2Work: Point3d = Point3d.create();
+  /**
+   * Split a (convex) polygon into 2 parts.
+   * @param xyz original polygon
+   * @param xyzIn array to receive inside part
+   * @param xyzOut array to receive outside part
+   * @param altitudeRange min and max altitudes encountered.
+   */
+  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
+    const xyzCarrier = new Point3dArrayCarrier(xyz);
+    const xyzInCarrier = new Point3dArrayCarrier(xyzIn);
+    const xyzOutCarrier = new Point3dArrayCarrier(xyzOut);
+    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, xyzCarrier, xyzInCarrier, xyzOutCarrier, altitudeRange);
+
+  }
+
+  /** Return an array containing
+   * * All points that are exactly on the plane.
+   * * Crossing points between adjacent points that are (strictly) on opposite sides.
+   */
+  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]) {
+    crossings.length = 0;
+    if (xyz.length >= 2) {
+      const xyz0 = this._xyz0Work;
+      xyz0.setFromPoint3d(xyz[xyz.length - 1]);
+      let a0 = plane.altitude(xyz0);
+      for (const xyz1 of xyz) {
+        const a1 = plane.altitude(xyz1);
+        if (a0 * a1 < 0.0) {
+          // simple crossing. . .
+          const f = - a0 / (a1 - a0);
+          crossings.push(xyz0.interpolate(f, xyz1));
+        }
+        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
+          crossings.push(xyz1.clone());
+        }
+        xyz0.setFromPoint3d(xyz1);
+        a0 = a1;
+      }
+    }
+  }
+  /**
+   * Clip a polygon, returning the clip result in the same object.
+   * @param xyz input/output polygon
+   * @param work scratch object
+   * @param tolerance tolerance for on-plane decision.
+   */
+  public static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance: number = Geometry.smallMetricDistance) {
+    if (work === undefined)
+      work = [];
+    work.length = 0;
+    let numNegative = 0;
+    const fractionTol = 1.0e-8;
+    const b = -tolerance;
+    if (xyz.length > 2) {
+      let xyz0 = xyz[xyz.length - 1];
+      let a0 = plane.altitude(xyz0);
+      //    if (a0 >= 0.0)
+      //      work.push_back (xyz0);
+      for (const xyz1 of xyz) {
+        const a1 = plane.altitude(xyz1);
+        if (a1 < 0)
+          numNegative++;
+        if (a0 * a1 < 0.0) {
+          // simple crossing . . .
+          const f = - a0 / (a1 - a0);
+          if (f > 1.0 - fractionTol && a1 >= 0.0) {
+            // the endpoint will be saved -- avoid the duplicate
+          } else {
+            work.push(xyz0.interpolate(f, xyz1));
+          }
+        }
+        if (a1 >= b)
+          work.push(xyz1);
+        xyz0 = Point3d.createFrom(xyz1);
+        a0 = a1;
+      }
+    }
+
+    if (work.length <= 2) {
+      xyz.length = 0;
+    } else if (numNegative > 0) {
+      xyz.length = 0;
+      for (const xyzI of work) {
+        xyz.push(xyzI);
+      }
+      work.length = 0;
+    }
+  }
 }
 /**
  * A `SortablePolygon` carries a (single) loop with data useful for sorting for inner-outer structure.

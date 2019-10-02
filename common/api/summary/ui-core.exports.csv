@@ -69,6 +69,11 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
+public;Icon: React.FunctionComponent
+alpha;IconInput 
+alpha;IconInputProps 
+public;IconProps
+public;IconSpec = string | React.ReactNode
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -82,6 +87,8 @@ public;LabeledSelect
 public;LabeledSelectProps 
 public;LabeledTextarea 
 public;LabeledTextareaProps 
+public;LabeledToggle 
+public;LabeledToggleProps 
 public;LeadingText: React.FunctionComponent
 public;LeadingText2: React.FunctionComponent
 internal;Line

@@ -1089,7 +1089,7 @@ export class TrigPolynomial {
     const Coffs = new Float64Array(5);
     PowerPolynomial.zero(Coffs);
     let degree = 2;
-    if (Math.hypot(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Math.hypot(ax, ay, a1)) {
+    if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a1)) {
       PowerPolynomial.accumulate(Coffs, this.CW, ax);
       PowerPolynomial.accumulate(Coffs, this.SW, ay);
       PowerPolynomial.accumulate(Coffs, this.WW, a1);

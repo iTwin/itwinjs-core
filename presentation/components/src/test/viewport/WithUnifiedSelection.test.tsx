@@ -33,9 +33,12 @@ const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
 describe("Viewport withUnifiedSelection", () => {
 
   before(() => {
+    if (IModelApp.initialized)
+      IModelApp.shutdown();
     NoRenderApp.startup();
     classNameGenerator = () => faker.random.word();
   });
+
   after(() => {
     IModelApp.shutdown();
   });

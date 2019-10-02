@@ -5,42 +5,27 @@
 /** @module Item */
 
 import * as React from "react";
-import { SvgSprite } from "@bentley/ui-core";
+
+import { IconSpec as Core_IconSpec, IconProps as Core_IconProps, Icon as Core_Icon } from "@bentley/ui-core";
 
 /** Prototype for an IconSpec which can be a string or a ReactNode.
  * @public
+ * @deprecated Use IconSpec in bentley/ui-core instead
  */
-export type IconSpec = string | React.ReactNode;
+export type IconSpec = Core_IconSpec;
 
 /** Properties for the [[Icon]] React component
  * @public
+ * @deprecated Use IconProps in bentley/ui-core instead
  */
-export interface IconProps {
-  /** CSS class name or SvgSprite for icon */
-  iconSpec?: IconSpec;
-}
+
+export interface IconProps extends Core_IconProps { }   // tslint:disable-line: no-empty-interface
 
 /** Icon Functional component
  * @public
+ * @deprecated Use the Icon component in bentley/ui-core instead
  */
-export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:disable-line:variable-name
-  if (!props.iconSpec) return null;
+export const Icon = Core_Icon;    // tslint:disable-line: variable-name
 
-  if (typeof props.iconSpec === "string") {
-    // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
-    if (props.iconSpec.startsWith("svg:") && props.iconSpec.length > 4)
-      return (
-        <i className="icon uifw-item-svg-icon">
-          <SvgSprite src={props.iconSpec.slice(4)} />
-        </i>
-      );
-
-    const className = "icon " + props.iconSpec;
-    return (<i className={className} />);
-  }
-  return (
-    <i className="icon uifw-item-svg-icon">
-      {props.iconSpec}
-    </i>
-  );
-};
+/** @internal */
+export type dummy_node = React.ReactNode;

@@ -7,7 +7,7 @@
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { KeySet, Ruleset, NodeKey, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
+import { KeySet, Ruleset, NodeKey, InstanceKey, ContentFlags, DescriptorOverrides, RegisteredRuleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
   IPresentationTreeDataProvider, PresentationTreeDataProvider,
@@ -20,14 +20,9 @@ import { Tree as BasicTree, SelectionMode, TreeNodeItem } from "@bentley/ui-comp
 import { UiFramework } from "../../UiFramework";
 import "./VisibilityTree.scss";
 
-// tslint:disable-next-line:variable-name naming-convention
-const Tree = treeWithUnifiedSelection(BasicTree);
-
+const Tree = treeWithUnifiedSelection(BasicTree); // tslint:disable-line:variable-name naming-convention
 const pageSize = 20;
-
-/** @internal */
-export const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
-let rulesetRegistered = 0;
+const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
 
 /** Props for [[VisibilityTree]] component
  * @public
@@ -54,6 +49,11 @@ export interface VisibilityTreeProps {
    * @alpha
    */
   rootElementRef?: React.Ref<HTMLDivElement>;
+  /**
+   * Start loading hierarchy as soon as the component is created
+   * @alpha
+   */
+  enablePreloading?: boolean;
 }
 
 /** State for [[VisibilityTree]] component
@@ -78,12 +78,18 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   private _visibilityHandler?: VisibilityHandler;
   private _rulesetRegistration?: RegisteredRuleset;
 
+  /**
+   * Presentation rules used by this component
+   * @internal
+   */
+  public static readonly RULESET: Ruleset = RULESET;
+
   public constructor(props: VisibilityTreeProps) {
     super(props);
     this.state = {
       prevProps: props,
       ruleset: RULESET,
-      dataProvider: props.dataProvider ? props.dataProvider : createDataProvider(props.imodel),
+      dataProvider: createDataProvider(props),
       checkboxInfo: this.createCheckBoxInfoCallback(),
     };
     this._treeRef = React.createRef();
@@ -98,14 +104,14 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
   public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null {
     const base = { ...state, prevProps: nextProps };
-    // stanbul ignore next
+    // istanbul ignore next
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.dataProvider !== state.prevProps.dataProvider)
-      return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : createDataProvider(nextProps.imodel) };
+      return { ...base, dataProvider: createDataProvider(nextProps) };
     return base;
   }
 
   public componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState) {
-    // stanbul ignore next
+    // istanbul ignore next
     if (!this.props.visibilityHandler && this.props.activeView !== prevProps.activeView) {
       if (this._visibilityHandler) {
         this._visibilityHandler.dispose();
@@ -135,21 +141,12 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   }
 
   private async registerRuleset() {
-    if (rulesetRegistered++ === 0 && !this.props.dataProvider) {
-      const result = await Presentation.presentation.rulesets().add(RULESET);
-      // istanbul ignore else
-      if (rulesetRegistered > 0) {
-        // still more than 0, save the registration
-        this._rulesetRegistration = result;
-      } else {
-        // registrations count already 0 - registration is no more relevant
-        await Presentation.presentation.rulesets().remove(result);
-      }
-    }
+    if (!this.props.dataProvider)
+      this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
   }
 
   private async unregisterRuleset() {
-    if (--rulesetRegistered === 0 && this._rulesetRegistration) {
+    if (this._rulesetRegistration) {
       await Presentation.presentation.rulesets().remove(this._rulesetRegistration);
     }
   }
@@ -224,10 +221,20 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   }
 }
 
-const createDataProvider = (imodel: IModelConnection): IPresentationTreeDataProvider => {
-  const provider = new PresentationTreeDataProvider(imodel, RULESET.id);
-  provider.pagingSize = pageSize;
-  return provider;
+const createDataProvider = (props: VisibilityTreeProps): IPresentationTreeDataProvider => {
+  let dataProvider: IPresentationTreeDataProvider;
+  if (props.dataProvider) {
+    dataProvider = props.dataProvider;
+  } else {
+    const provider = new PresentationTreeDataProvider(props.imodel, RULESET.id);
+    provider.pagingSize = pageSize;
+    dataProvider = provider;
+  }
+  if (props.enablePreloading) {
+    // tslint:disable-next-line: no-floating-promises
+    dataProvider.loadHierarchy();
+  }
+  return dataProvider;
 };
 
 const createCheckBoxInfo = (status: VisibilityStatus): CheckBoxInfo => ({

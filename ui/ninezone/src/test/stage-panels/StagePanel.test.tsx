@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle, Point } from "@bentley/ui-core";
-import { StagePanel, StagePanelType, ResizeGrip } from "../../ui-ninezone";
+import { StagePanel, StagePanelType, ResizeGrip, SafeAreaInsets } from "../../ui-ninezone";
 import { StagePanelTypeHelpers } from "../../ui-ninezone/stage-panels/StagePanel";
 
 describe("<StagePanel />", () => {
@@ -28,6 +28,13 @@ describe("<StagePanel />", () => {
 
   it("renders horizontally with size correctly", () => {
     shallow(<StagePanel type={StagePanelType.Top} size={1000} />).should.matchSnapshot();
+  });
+
+  it("renders safe area aware correctly", () => {
+    shallow(<StagePanel
+      safeAreaInsets={SafeAreaInsets.All}
+      type={StagePanelType.Left}
+    />).should.matchSnapshot();
   });
 
   it("should invoke onResize handler", () => {

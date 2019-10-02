@@ -230,7 +230,7 @@ export class GeoServices {
     this._iModel = iModel;
   }
 
-  public getConverter(datum?: string): GeoConverter {
-    return new GeoConverter(this._iModel, datum ? datum : "");
+  public getConverter(datum?: string): GeoConverter | undefined {
+    return this._iModel.isOpen ? new GeoConverter(this._iModel, datum ? datum : "") : undefined;
   }
 }

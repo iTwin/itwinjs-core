@@ -19,7 +19,7 @@ describe("Rulesets roundtrip", () => {
   before(() => {
     initialize();
 
-    const TNativePlatform = createDefaultNativePlatform(); // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform("", [], {}); // tslint:disable-line: variable-name naming-convention
     nativePlatform = new TNativePlatform();
 
     rulesets = new RulesetManagerImpl(() => nativePlatform);

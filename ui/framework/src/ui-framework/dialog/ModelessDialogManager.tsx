@@ -12,6 +12,8 @@ import { CommonProps } from "@bentley/ui-core";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 import { UiFramework } from "../UiFramework";
 
+// cSpell:ignore ZINDEX modeless
+
 /** Modeless Dialog Changed Event class.
  * @public
  */
@@ -22,8 +24,6 @@ interface ModelessDialogInfo {
   reactNode: React.ReactNode;
   zIndex: number;
 }
-
-// cSpell:ignore ZINDEX
 
 /** TODO: Need to synch up with _z-index.scss in ui-core */
 const ZINDEX_DEFAULT = 13000;
@@ -123,6 +123,10 @@ export class ModelessDialogManager {
     if (dialogInfo)
       zIndex = dialogInfo.zIndex;
     return zIndex;
+  }
+
+  public static getDialogInfo(id: string): ModelessDialogInfo | undefined {
+    return ModelessDialogManager._dialogMap.get(id);
   }
 }
 

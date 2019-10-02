@@ -404,7 +404,7 @@ export class ColorDef {
 
     if (val && val.length > 0) {   // ColorRgb value
       Object.entries(ColorByName).some((v) => {
-        if (v[1].toLowerCase() !== val)
+        if (typeof v[1] !== "string" || v[1].toLowerCase() !== val)
           return false;
         this._tbgr = Number(v[0]);
         return true;

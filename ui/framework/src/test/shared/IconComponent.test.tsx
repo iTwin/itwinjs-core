@@ -16,8 +16,8 @@ describe("IconComponent", () => {
     shallow(<Icon iconSpec={<span>Test</span>} />).should.matchSnapshot();
   });
 
-  it("should render correctly with icon src string", () => {
-    shallow(<Icon iconSpec="src:test.svg" />).should.matchSnapshot();
+  it("should render correctly with icon svg string", () => {
+    shallow(<Icon iconSpec="svg:test.svg" />).should.matchSnapshot();
   });
 
   it("should render correctly with icon class string", () => {

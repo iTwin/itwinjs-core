@@ -11,18 +11,17 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator, areViewportsCompatible } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
 import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, ParseResults } from "../properties/EditorParams";
+import { PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
-import { QuantityType } from "../QuantityFormatter";
+import { LengthDescription } from "../properties/LengthDescription";
 import { PrimitiveValue } from "../properties/Value";
 
 /** @internal */
@@ -1722,6 +1721,7 @@ export class RotateViewTool extends ViewManip {
  */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
+  public static iconSpec = "icon-view-navigation";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
@@ -1733,6 +1733,7 @@ export class LookViewTool extends ViewManip {
  */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
+  public static iconSpec = "icon-move";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
@@ -1822,6 +1823,7 @@ export class FitViewTool extends ViewTool {
  */
 export class StandardViewTool extends ViewTool {
   public static toolId = "View.Standard";
+  public static iconSpec = "icon-cube-faces-top";
   constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
 
   public onPostInstall() {
@@ -1869,7 +1871,7 @@ export class WindowAreaTool extends ViewTool {
       return EventHandled.Yes;
     } else if (undefined === this.viewport) {
       this.viewport = ev.viewport;
-    } else if (this.viewport.view.iModel !== ev.viewport.view.iModel) {
+    } else if (!areViewportsCompatible(ev.viewport, this.viewport)) {
       if (this._haveFirstPoint)
         return EventHandled.Yes;
       this.viewport = ev.viewport;
@@ -1939,7 +1941,7 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    if (undefined === this.viewport || this.viewport.view.iModel !== context.viewport.view.iModel)
+    if (undefined === this.viewport || !areViewportsCompatible(context.viewport, this.viewport))
       return;
     const vp = this.viewport;
     const color = vp.getContrastToBackgroundColor();
@@ -1971,8 +1973,8 @@ export class WindowAreaTool extends ViewTool {
       return;
     }
 
-    if (undefined === this._lastPtView)
-      return;
+    if (undefined === this._lastPtView || context.viewport !== IModelApp.toolAdmin.cursorView)
+      return; // Full screen cross-hair only displays in cursor view...
 
     const cursorPt = this._lastPtView.clone(); cursorPt.x = Math.floor(cursorPt.x) + 0.5; cursorPt.y = Math.floor(cursorPt.y) + 0.5;
     const viewRect = vp.viewRect;
@@ -1993,7 +1995,7 @@ export class WindowAreaTool extends ViewTool {
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
     this._secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
-      if (undefined !== this.viewport && undefined !== ev.viewport && this.viewport.view.iModel !== ev.viewport.view.iModel) {
+      if (undefined !== this.viewport && undefined !== ev.viewport && !areViewportsCompatible(ev.viewport, this.viewport)) {
         this._lastPtView = undefined;
         return;
       }
@@ -2003,27 +2005,26 @@ export class WindowAreaTool extends ViewTool {
     }
 
     const corners = this.computeWindowCorners();
-    if (!corners)
+    if (undefined === corners)
       return;
 
     let delta: Vector3d;
     const vp = this.viewport!;
+    const view = vp.view;
     const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
-    if (vp.view.is3d() && vp.view.isCameraOn) {
-      const cameraView = vp.view as ViewState3d;
-
+    if (view.is3d() && view.isCameraOn) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
       const windowRange = new ViewRect(windowArray[0].x, windowArray[0].y, windowArray[1].x, windowArray[1].y);
 
       let npcZValues = vp.determineVisibleDepthRange(windowRange);
-      if (!npcZValues)
+      if (undefined === npcZValues)
         npcZValues = { minimum: 0, maximum: ViewManip.getFocusPlaneNpc(vp) };
 
-      const lensAngle = cameraView.getLensAngle();
+      const lensAngle = view.getLensAngle();
 
       vp.worldToNpcArray(corners);
       corners[0].z = corners[1].z = npcZValues.maximum;
@@ -2038,9 +2039,9 @@ export class WindowAreaTool extends ViewTool {
       const focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2));
 
       const newTarget = corners[0].interpolate(.5, corners[1]);
-      const newEye = newTarget.plusScaled(cameraView.getZVector(), focusDist);
+      const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle) !== ViewStatus.Success)
+      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
         return;
     } else {
       vp.rotation.multiplyVectorArrayInPlace(corners);
@@ -2048,15 +2049,16 @@ export class WindowAreaTool extends ViewTool {
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
       // get the view extents
-      delta.z = vp.view.getExtents().z;
+      delta.z = view.getExtents().z;
 
       // make sure its not too big or too small
-      vp.view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+        return;
 
-      vp.view.setExtents(delta);
+      view.setExtents(delta);
 
       const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
-      vp.view.setOrigin(Point3d.createFrom(originVec));
+      view.setOrigin(Point3d.createFrom(originVec));
     }
 
     vp.synchWithView(true);
@@ -2078,6 +2080,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _singleTouch = false;
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
+  private _hasZoom = false;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -2112,7 +2115,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   public onStart(ev: BeTouchEvent): void {
     const vp = this.viewport!;
     vp.getWorldFrustum(this._frustum);
-    this._inertiaVec = undefined;
 
     const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
     if (undefined !== visiblePoint) {
@@ -2130,15 +2132,17 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeZoomRatio(ev?: BeTouchEvent): number {
+    this._hasZoom = false;
     if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
     const vp = this.viewport!;
     const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
 
-    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
+    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(ToolSettings.touchZoomChangeThresholdInches))
       return 1.0;
 
+    this._hasZoom = true;
     return Geometry.clamp(this._startDistance / distance, .1, 10);
   }
 
@@ -2261,14 +2265,18 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport;
     const thisPt = ev.viewPoint;
     const smallDistance = vp.pixelsFromInches(0.05);
-    if (this._lastPtView.isAlmostEqualXY(thisPt, smallDistance))
-      return;
+    const samePoint = this._lastPtView.isAlmostEqualXY(thisPt, smallDistance);
+    if (1 === ev.touchCount && samePoint)
+      return; // Don't early return if multi-touch, center doesn't have to move for zoom...
 
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      this._inertiaVec = this._lastPtView.vectorTo(thisPt);
-      this._inertiaVec.z = 0;
+      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate...
+      if (!samePoint && !this._hasZoom) {
+        this._inertiaVec = this._lastPtView.vectorTo(thisPt);
+        this._inertiaVec.z = 0;
+      }
       this._singleTouch = ev.isSingleTouch;
       this._lastPtView.setFrom(thisPt);
       this._lastPtView.z = this._startPtView.z;
@@ -2311,6 +2319,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
  */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
+  public static iconSpec = "icon-window-backward";
 
   public onPostInstall() {
     if (this.viewport)
@@ -2324,6 +2333,7 @@ export class ViewUndoTool extends ViewTool {
  */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
+  public static iconSpec = "icon-window-forward";
 
   public onPostInstall() {
     if (this.viewport)
@@ -2529,40 +2539,11 @@ export class SetupCameraTool extends PrimitiveTool {
     vp.animateToCurrent(startFrust, BeDuration.fromMilliseconds(500));
   }
 
-  private _lengthFormatterSpec?: FormatterSpec;
-  private _lengthParserSpec?: ParserSpec;
-
-  public get lengthFormatterSpec(): FormatterSpec | undefined {
-    if (undefined === this._lengthFormatterSpec)
-      this._lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-    return this._lengthFormatterSpec;
-  }
-
-  public get lengthParserSpec(): ParserSpec | undefined {
-    if (undefined === this._lengthParserSpec)
-      this._lengthParserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
-    return this._lengthParserSpec;
-  }
-
-  private _formatLength = (numberValue: number): string => {
-    if (this.lengthFormatterSpec)
-      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.lengthFormatterSpec);
-    return numberValue.toFixed(2);
-  }
-
-  private _parseLength = (userInput: string): ParseResults => {
-    if (this.lengthParserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.lengthParserSpec);
-      return (QuantityStatus.Success === parseResult.status ? { value: parseResult.value } : {});
-    }
-    const rtnValue = Number.parseFloat(userInput);
-    return (Number.isNaN(rtnValue) ? {} : { value: rtnValue });
-  }
-
   private _useCameraHeightValue = new ToolSettingsValue(false);
   public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
   public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
   private static _useCameraHeightName = "useCameraHeight";
+
   private static _getUseCameraHeightDescription = (): PropertyDescription => {
     return {
       name: SetupCameraTool._useCameraHeightName,
@@ -2573,7 +2554,7 @@ export class SetupCameraTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
     };
@@ -2593,7 +2574,7 @@ export class SetupCameraTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.SuppressEditorLabel,
             suppressLabelPlaceholder: true,
-          },
+          } as SuppressLabelEditorParams,
         ],
       },
     };
@@ -2603,56 +2584,34 @@ export class SetupCameraTool extends PrimitiveTool {
   public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
   public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
   private static _cameraHeightName = "cameraHeight";
+  private static _cameraHeightDescription?: LengthDescription;
   private _getCameraHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._cameraHeightName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.CameraHeight"),
-      typename: "number",
-      editor: {
-        name: "number-custom",
-        params: [
-          {
-            type: PropertyEditorParamTypes.CustomFormattedNumber,
-            formatFunction: this._formatLength,
-            parseFunction: this._parseLength,
-          },
-        ],
-      },
-    };
+    if (!SetupCameraTool._cameraHeightDescription)
+      SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.CameraHeight"));
+    return SetupCameraTool._cameraHeightDescription;
   }
 
   private _targetHeightValue = new ToolSettingsValue(0.0);
   public get targetHeight(): number { return this._targetHeightValue.value as number; }
   public set targetHeight(option: number) { this._targetHeightValue.value = option; }
   private static _targetHeightName = "targetHeight";
+  private static _targetHeightDescription?: LengthDescription;
   private _getTargetHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._targetHeightName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.TargetHeight"),
-      typename: "number",
-      editor: {
-        name: "number-custom",
-        params: [
-          {
-            type: PropertyEditorParamTypes.CustomFormattedNumber,
-            formatFunction: this._formatLength,
-            parseFunction: this._parseLength,
-          },
-        ],
-      },
-    };
+    if (!SetupCameraTool._targetHeightDescription)
+      SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.TargetHeight"));
+    return SetupCameraTool._targetHeightDescription;
   }
 
   private syncCameraHeightState(): void {
     const cameraHeightValue = new ToolSettingsValue(this.cameraHeight);
-    cameraHeightValue.displayValue = this._formatLength(cameraHeightValue.value as number);
+    cameraHeightValue.displayValue = SetupCameraTool._cameraHeightDescription!.format(cameraHeightValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   private syncTargetHeightState(): void {
     const targetHeightValue = new ToolSettingsValue(this.targetHeight);
-    targetHeightValue.displayValue = this._formatLength(targetHeightValue.value as number);
+    targetHeightValue.displayValue = SetupCameraTool._targetHeightDescription!.format(targetHeightValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
     this.syncToolSettingsProperties([syncItem]);
   }

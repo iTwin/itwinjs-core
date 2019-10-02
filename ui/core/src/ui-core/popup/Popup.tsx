@@ -66,6 +66,8 @@ export interface PopupProps extends CommonProps {
   moveFocus?: boolean;
   /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
   focusTarget?: React.RefObject<HTMLElement> | string;
+  /** Indicates if the popup is pinned. */
+  isPinned?: boolean;
 }
 
 /** @internal */
@@ -203,7 +205,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _onClose() {
-    if (!this.state.isOpen) {
+    if (!this.state.isOpen || this.props.isPinned) {
       return;
     }
 

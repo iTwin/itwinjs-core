@@ -185,6 +185,8 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
     record.isMerged = true;
   if (field.isReadonly || isMerged)
     record.isReadonly = true;
+  if (field.autoExpand)
+    record.autoExpand = true;
   if (item.extendedData)
     record.extendedData = item.extendedData;
   return record;

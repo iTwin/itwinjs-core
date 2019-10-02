@@ -5,14 +5,13 @@
 /** @module StatusBar */
 
 import * as React from "react";
-
 import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ZoneManagerProps, ZoneTargetType, Zone, Outline } from "@bentley/ui-ninezone";
-
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
 
 /** Properties for the [[StatusBarZone]] component
  * @internal
@@ -35,34 +34,40 @@ export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
   public render(): React.ReactNode {
     const bounds = Rectangle.create(this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds);
     return (
-      <>
-        <Zone
-          bounds={this.props.isInFooterMode ? undefined : bounds}
-          className={this.props.className}
-          isHidden={this.props.isHidden}
-          isInFooterMode={this.props.isInFooterMode}
-          style={{
-            ...this.props.style,
-            ...this.props.isInFooterMode ? { height: `${bounds.getHeight()}px` } : {},
-          }}
-        >
-          {
-            this.props.widgetControl &&
-            <StatusBar
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <>
+            <Zone
+              bounds={this.props.isInFooterMode ? undefined : bounds}
+              className={this.props.className}
+              id={this.props.zoneProps.id}
+              isHidden={this.props.isHidden}
               isInFooterMode={this.props.isInFooterMode}
-              widgetControl={this.props.widgetControl}
-            />
-          }
-        </Zone>
-        <Zone bounds={this.props.zoneProps.bounds}>
-          <ZoneTargets
-            zoneId={this.props.zoneProps.id}
-            dropTarget={this.props.dropTarget}
-            targetChangeHandler={this.props.targetChangeHandler}
-          />
-        </Zone>
-        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
-      </>
+              safeAreaInsets={safeAreaInsets}
+            >
+              {
+                this.props.widgetControl &&
+                <StatusBar
+                  isInFooterMode={this.props.isInFooterMode}
+                  widgetControl={this.props.widgetControl}
+                />
+              }
+            </Zone>
+            <Zone
+              bounds={this.props.zoneProps.bounds}
+              id={this.props.zoneProps.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              <ZoneTargets
+                zoneId={this.props.zoneProps.id}
+                dropTarget={this.props.dropTarget}
+                targetChangeHandler={this.props.targetChangeHandler}
+              />
+            </Zone>
+            {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
+          </>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 }

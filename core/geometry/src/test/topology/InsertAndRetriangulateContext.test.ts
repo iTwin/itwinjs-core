@@ -217,8 +217,10 @@ describe("InsertAndRetriangulateContext", () => {
       y0 += 2 * yStep;
       const polyfaceC = PolyfaceBuilder.graphToPolyface(context.graph!);
       GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceC, x0 + xStep, y0);
-      for (let flip = 0; flip < 3; flip++) {
-        Triangulator.flipTriangles(context.graph);
+      for (let flip = 0; flip < 1; flip++) {
+        const numFlip = Triangulator.flipTriangles(context.graph);
+        ck.testExactNumber(0, numFlip, "Expect no flips from global sweep after incremental flips during insert.");
+        // console.log("numFlip " + numFlip);
         const polyfaceB = PolyfaceBuilder.graphToPolyface(context.graph!);
         GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceB, x0 + (2 + flip) * xStep, y0);
       }
@@ -238,7 +240,7 @@ describe("InsertAndRetriangulateContext", () => {
     // nonzero yShift gradually makes points move upward
     // (nb the hull process makes points mostly move left to right)
     for (const yShiftStep of [0.0, 0.01, 0.05]) {
-      for (const numPoints of [9, 25, 1024 /* , 4096 */]) {
+      for (const numPoints of [9, 25, 1024, 4096 /* , 16982, 16982, 16982 */]) {
         let y0 = 0;
         // console.log("Triangulate", numPoints);
         const points: Point3d[] = [];

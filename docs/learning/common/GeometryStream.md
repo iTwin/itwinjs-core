@@ -2,7 +2,7 @@
 
 The [GeometryStreamProps]($common) wire format describes how the graphics and appearance information for [GeometricElement]($backend) and [GeometryPart]($backend) is serialized to JSON. A GeometryStreamProps is an array of [GeometryStreamEntryProps]($common) entries.
 
-Appearance related entries are all completely optional. The recommended approach to establish graphical appearance is through [SubCategoryAppearance]($common). A GeometricElement's [Category]($backend) determines the default appearance for any graphics in it's GeometryStream, which is the SubCategoryAppearance of the default [SubCategory]($backend), see [Category.myDefaultSubCategoryId]($backend). For a GeometryPart, it inherits the appearance established by the GeometricElement's GeometryStream through which it is instanced.
+Appearance related entries are all completely optional. The recommended approach to establish graphical appearance is through [SubCategoryAppearance]($common). A GeometricElement's [Category]($backend) determines the default appearance for any graphics in its GeometryStream, which is the SubCategoryAppearance of the default [SubCategory]($backend), see [Category.myDefaultSubCategoryId]($backend). For a GeometryPart, it inherits the appearance established by the GeometricElement's GeometryStream through which it is instanced.
 
 Some appearance entries override the default SubCategoryAppearance, while others are for supplying additional appearance information that is not generally applicable to all geometry types and isn't represented in SubCategoryAppearance. The following entries are specific to setting the appearance of graphics in the GeometryStream:
 
@@ -40,7 +40,7 @@ Geometry entries should *always* be inserted into the GeometryStreamProps array 
 
 ![Correct Example](./placement_good.png "Example of correctly defined GeometryStream")
 
-> A GeometricElement can be translated and rotated by just updating it's placement, the geometry is *not* transformed.
+> A GeometricElement can be translated and rotated by just updating its placement, the geometry is *not* transformed.
 
 The element aligned bounding box that is part of the placement is computed automatically based on the local coordinate geometry. An application should leave [Placement3dProps.bbox]($common) and [Placement2dProps.bbox]($common) undefined when inserting a new GeometricElement or updating an existing element's GeometryStream; any defined value will be ignored.
 
@@ -54,7 +54,7 @@ The element aligned bounding box that is part of the placement is computed autom
     * The [GeometryPartInstanceProps.origin]($common) and [GeometryPartInstanceProps.rotation]($common) specify the relative location from the basis point (typically 0,0,0) used for the GeometricElement's geometry.
     ![Geometry](./part_refs.png "Example of GeometricElement with GeometryPart references")
     * Not valid when creating a [GeometryPart]($backend), nesting of GeometryParts is not supported.
-    * As the GeometryPart does not specify a Category, and it's GeometryStream does not support SubCategory changes; Category and SubCategory is established by the GeometricElement prior to adding a GeometryPartInstanceProps to the GeometryStreamProps array.
+    * As the GeometryPart does not specify a Category, and its GeometryStream does not support SubCategory changes; Category and SubCategory is established by the GeometricElement prior to adding a GeometryPartInstanceProps to the GeometryStreamProps array.
   * [TextStringProps]($common)
     * Add a single line of text to the GeometryStream for a GeometricElement or GeometryPart.
     * The [TextStringProps.origin]($common) and [TextStringProps.rotation]($common) specify the relative location from the basis point (typically 0,0,0) used for the GeometricElement's geometry.

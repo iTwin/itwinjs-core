@@ -2284,14 +2284,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined]): {
+        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+            messageArgs?: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -2447,14 +2447,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat]): {
+        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [Format | OverrideFormat] | undefined;
+            messageArgs?: [OverrideFormat | Format] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };

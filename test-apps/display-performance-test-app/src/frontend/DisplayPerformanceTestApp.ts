@@ -504,7 +504,7 @@ class DefaultConfigs {
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
-  public renderOptions?: RenderSystem.Options;
+  public renderOptions: RenderSystem.Options = { directScreenRendering: true };
   public tileProps?: TileAdmin.Props;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {

@@ -152,6 +152,8 @@ describe("ModelessDialogManager", () => {
 
     ModelessDialogManager.openDialog(reactNode1, dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
+    expect(ModelessDialogManager.getDialogInfo(dialogId1)).not.to.be.undefined;
+
     wrapper.update();
     expect(wrapper.find(ModelessDialog).length).to.eq(1);
 

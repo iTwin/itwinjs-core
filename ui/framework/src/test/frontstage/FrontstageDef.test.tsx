@@ -67,5 +67,4 @@ describe("FrontstageDef", () => {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error);
   });
-
 });

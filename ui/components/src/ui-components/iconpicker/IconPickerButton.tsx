@@ -22,7 +22,7 @@ interface IconItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, C
 /** IconItem Functional component
  * @alpha
  */
-// tslint:disable-next-line:variable-name
+// istanbul ignore next
 class IconItem extends React.PureComponent<IconItemProps> {
   /** @internal */
   constructor(props: IconItemProps) {

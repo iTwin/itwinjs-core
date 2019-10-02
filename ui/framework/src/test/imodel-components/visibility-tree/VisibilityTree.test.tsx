@@ -18,7 +18,7 @@ import { initialize as initializePresentationTesting, terminate as terminatePres
 import { isPromiseLike } from "@bentley/ui-core";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { VisibilityTree } from "../../../ui-framework";
-import { VisibilityHandler, RULESET, VisibilityHandlerProps } from "../../../ui-framework/imodel-components/visibility-tree/VisibilityTree";
+import { VisibilityHandler, VisibilityHandlerProps } from "../../../ui-framework/imodel-components/visibility-tree/VisibilityTree";
 
 describe("VisibilityTree", () => {
 
@@ -56,6 +56,7 @@ describe("VisibilityTree", () => {
         getNodeKey: (node: TreeNodeItem) => (node as any).__key,
         getNodesCount: async () => 0,
         getNodes: async () => [],
+        loadHierarchy: async () => { },
       };
 
       const selectionChangeEvent = new SelectionChangeEvent();
@@ -156,6 +157,13 @@ describe("VisibilityTree", () => {
         const result = render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider} visibilityHandler={visibilityHandlerMock.object} />);
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
+      });
+
+      it("requests data provider to load the hierarchy if `enablePreloading` is set in props", async () => {
+        const spy = sinon.spy(dataProvider, "loadHierarchy");
+        render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider}
+          visibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
+        expect(spy).to.be.calledOnce;
       });
 
       it("renders nodes without checkboxes when they're not instance-based", async () => {
@@ -1323,7 +1331,7 @@ describe("VisibilityTree", () => {
 
     it("shows correct hierarchy", async () => {
       const hierarchyBuilder = new HierarchyBuilder(imodel);
-      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET);
+      const hierarchy = await hierarchyBuilder.createHierarchy(VisibilityTree.RULESET);
       expect(hierarchy).to.matchSnapshot();
     });
 

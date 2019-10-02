@@ -1069,4 +1069,44 @@ describe("Per-model category visibility overrides", () => {
     ovrs.expectSubCategoryAppearance("0x1c", "0x2e", true, ColorDef.blue);
     ovrs.expectSubCategoryAppearance("0x1c", "0x33", true, ColorDef.white);
   });
+
+  it("supports iteration", () => {
+    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const pmcv = vp.perModelCategoryVisibility;
+    pmcv.setOverride("0x1c", ["0x2f", "0x31"], show);
+    pmcv.setOverride("0x1c", ["0x2d"], hide);
+    pmcv.setOverride("0x1d", ["0x2d"], show);
+    pmcv.setOverride("0x1d", ["0x2f", "0x2e"], hide);
+
+    let nIterations = 0;
+    let completed = pmcv.forEachOverride((_modelId, _categoryId, _visible) => ++nIterations < 3);
+    expect(completed).to.be.false;
+    expect(nIterations).to.equal(3);
+
+    nIterations = 0;
+    const cats1c = [ new Set<string>(), new Set<string>() ];
+    const cats1d = [ new Set<string>(), new Set<string>() ];
+
+    completed = pmcv.forEachOverride((modelId, catId, vis) => {
+      expect(modelId === "0x1c" || modelId === "0x1d").to.be.true;
+      const arr = modelId === "0x1c" ? cats1c : cats1d;
+      const set = vis ? arr[0] : arr[1];
+      set.add(catId);
+      ++nIterations;
+      return true;
+    });
+
+    expect(completed).to.be.true;
+    expect(nIterations).to.equal(6);
+
+    expect(cats1c[0].size).to.equal(2);
+    expect(cats1c[1].size).to.equal(1);
+    expect(cats1d[0].size).to.equal(1);
+    expect(cats1d[1].size).to.equal(2);
+
+    expect(Array.from(cats1c[0]).join()).to.equal("0x2f,0x31");
+    expect(Array.from(cats1c[1]).join()).to.equal("0x2d");
+    expect(Array.from(cats1d[0]).join()).to.equal("0x2d");
+    expect(Array.from(cats1d[1]).join()).to.equal("0x2e,0x2f");
+  });
 });

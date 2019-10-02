@@ -42,4 +42,17 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
 /** @internal */
 export function addInstanceColor(vert: VertexShaderBuilder): void {
   addInstanceOverrides(vert);
+
+  vert.addUniform("u_applyInstanceColor", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_applyInstanceColor", (uniform, params) => {
+      let val = 1.0;
+      if (params.geometry.isEdge) {
+        const ovrs = params.target.getEdgeOverrides(params.renderPass);
+        if (undefined !== ovrs && ovrs.overridesColor)
+          val = 0.0;
+      }
+
+      uniform.setUniform1f(val);
+    });
+  });
 }

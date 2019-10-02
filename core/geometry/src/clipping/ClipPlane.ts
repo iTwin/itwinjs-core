@@ -12,7 +12,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Geometry, AxisOrder } from "../Geometry";
+import { Geometry, AxisOrder, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { AnalyticRoots } from "../numerics/Polynomials";
@@ -20,6 +20,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { Point3dArrayPolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -34,9 +35,7 @@ import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
  * * Given a point and inward normal, the signedDistance is (point DOT normal)
  * @public
  */
-export class ClipPlane implements Clipper {
-  // Static variable from original native c++ function ConvexPolygonClipInPlace
-  private static _fractionTol = 1.0e-8;
+export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
   private _inwardNormal: Vector3d;
   /** Construct a parallel plane through the origin.
    * * Move it to the actual position.
@@ -265,16 +264,53 @@ export class ClipPlane implements Clipper {
   /**
    * Evaluate the distance from the plane to a point in space, i.e. (dot product with inward normal) minus distance
    * @param point space point to test
+   * @deprecated Instead of `clipPlane.evaluatePoint(spacePoint)` use `clipPlane.altitude(spacePoint)` (for compatibility with interface `PlaneAltitudeEvaluator`)
    */
   public evaluatePoint(point: Point3d): number {
     return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - this._distanceFromOrigin;
   }
 
+  /**
+   * Evaluate the altitude in weighted space, i.e. (dot product with inward normal) minus distance, with point.w scale applied to distance)
+   * @param point space point to test
+   */
+  public weightedAltitude(point: Point4d): number {
+    return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - point.w * this._distanceFromOrigin;
+  }
+
+  /**
+   * Evaluate the distance from the plane to a point in space, i.e. (dot product with inward normal) minus distance
+   * @param point space point to test
+   */
+  public altitude(point: Point3d): number {
+    return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - this._distanceFromOrigin;
+  }
+
+  /**
+   * Evaluate the distance from the plane to a point in space with point given as x,y,z, i.e. (dot product with inward normal) minus distance
+   * @param point space point to test
+   */
+  public altitudeXYZ(x: number, y: number, z: number): number {
+    return x * this._inwardNormal.x + y * this._inwardNormal.y + z * this._inwardNormal.z - this._distanceFromOrigin;
+  }
   /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
+   * @deprecated Instead of `clipPlane.dotProduct (vector)` use `clipPlane.velocity(vector)` for compatibility with interface `PlaneAltitudeEvaluator`
    */
   public dotProductVector(vector: Vector3d): number {
     return vector.x * this._inwardNormal.x + vector.y * this._inwardNormal.y + vector.z * this._inwardNormal.z;
   }
+  /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
+   */
+  public velocity(vector: Vector3d): number {
+    return vector.x * this._inwardNormal.x + vector.y * this._inwardNormal.y + vector.z * this._inwardNormal.z;
+  }
+
+  /** Return the dot product of the plane normal with the x,yz, vector components (NOT using the plane's distanceFromOrigin).
+   */
+  public velocityXYZ(x: number, y: number, z: number): number {
+    return x * this._inwardNormal.x + y * this._inwardNormal.y + z * this._inwardNormal.z;
+  }
+
   /** Return the dot product of the plane normal with the point (treating the point xyz as a vector, and NOT using the plane's distanceFromOrigin).
    */
   public dotProductPlaneNormalPoint(point: Point3d): number {
@@ -286,7 +322,7 @@ export class ClipPlane implements Clipper {
    * @param tolerance tolerance for considering "near plane" to be "on plane"
    */
   public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
-    let value = this.evaluatePoint(spacePoint);
+    let value = this.altitude(spacePoint);
     if (tolerance) { value += tolerance; }
     return value >= 0.0;
   }
@@ -297,7 +333,7 @@ export class ClipPlane implements Clipper {
    * @param tolerance tolerance for considering "near plane" to be "on plane"
    */
   public isPointInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
-    let value = this.evaluatePoint(point);
+    let value = this.altitude(point);
     if (tolerance) { value -= tolerance; }
     return value > 0.0;
   }
@@ -308,7 +344,7 @@ export class ClipPlane implements Clipper {
    * @param tolerance tolerance for considering "near plane" to be "on plane"
    */
   public isPointOn(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
-    return Math.abs(this.evaluatePoint(point)) <= tolerance;
+    return Math.abs(this.altitude(point)) <= tolerance;
   }
   /**
    * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
@@ -317,9 +353,9 @@ export class ClipPlane implements Clipper {
    */
   public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array) {
     const arcVectors = arc.toVectors();
-    const alpha = this.evaluatePoint(arc.center);
-    const beta = this.dotProductVector(arcVectors.vector0);
-    const gamma = this.dotProductVector(arcVectors.vector90);
+    const alpha = this.altitude(arc.center);
+    const beta = this.velocity(arcVectors.vector0);
+    const gamma = this.velocity(arcVectors.vector90);
     AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, undefined, undefined, intersectionRadians);
   }
 
@@ -341,8 +377,8 @@ export class ClipPlane implements Clipper {
    * * If both ends are on, return undefined.
    */
   public getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined {
-    const h0 = this.evaluatePoint(pointA);
-    const h1 = this.evaluatePoint(pointB);
+    const h0 = this.altitude(pointA);
+    const h1 = this.altitude(pointB);
     if (h0 * h1 > 0.0)
       return undefined;
     if (h0 === 0.0 && h1 === 0.0) {
@@ -392,46 +428,10 @@ export class ClipPlane implements Clipper {
    * @param xyz input/output polygon
    * @param work scratch object
    * @param tolerance tolerance for on-plane decision.
+   * @deprecated Instead of `clipPlane.convexPolygonClipInPlace (xyz, work, tolerance)` use `PolygonOps.clipConvexPoint3dPolygonInPlace (clipPlane, xyz, work, tolerance)`
    */
   public convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance: number = Geometry.smallMetricDistance) {
-    work.length = 0;
-    let numNegative = 0;
-    ClipPlane._fractionTol = 1.0e-8;
-    const b = -tolerance;
-    if (xyz.length > 2) {
-      let xyz0 = xyz[xyz.length - 1];
-      let a0 = this.evaluatePoint(xyz0);
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
-      for (const xyz1 of xyz) {
-        const a1 = this.evaluatePoint(xyz1);
-        if (a1 < 0)
-          numNegative++;
-        if (a0 * a1 < 0.0) {
-          // simple crossing . . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - ClipPlane._fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-          } else {
-            work.push(xyz0.interpolate(f, xyz1));
-          }
-        }
-        if (a1 >= b)
-          work.push(xyz1);
-        xyz0 = Point3d.createFrom(xyz1);
-        a0 = a1;
-      }
-    }
-
-    if (work.length <= 2) {
-      xyz.length = 0;
-    } else if (numNegative > 0) {
-      xyz.length = 0;
-      for (const xyzI of work) {
-        xyz.push(xyzI);
-      }
-      work.length = 0;
-    }
+    return Point3dArrayPolygonOps.convexPolygonClipInPlace(this, xyz, work, tolerance);
   }
   /**
    * Clip a polygon to the inside or outside of the plane.
@@ -442,73 +442,7 @@ export class ClipPlane implements Clipper {
    * @param tolerance tolerance for "on plane" decision.
    */
   public clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside: boolean = true, tolerance: number = Geometry.smallMetricDistance) {
-    work.clear();
-    const n = xyz.length;
-    let numNegative = 0;
-    ClipPlane._fractionTol = 1.0e-8;
-    const b = -tolerance;
-    const s = inside ? 1.0 : -1.0;
-    const nx = s * this._inwardNormal.x;
-    const ny = s * this._inwardNormal.y;
-    const nz = s * this._inwardNormal.z;
-    const d = s * this._distanceFromOrigin;
-    if (xyz.length > 1) {
-      let a1;
-      let index0 = xyz.length - 1;
-      let a0 = xyz.evaluateUncheckedIndexDotProductXYZ(index0, nx, ny, nz) - d;
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
-      for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
-        a1 = xyz.evaluateUncheckedIndexDotProductXYZ(index1, nx, ny, nz) - d;
-        if (a1 < 0)
-          numNegative++;
-        if (a0 * a1 < 0.0) {
-          // simple crossing . . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - ClipPlane._fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-          } else {
-            work.pushInterpolatedFromGrowableXYZArray(xyz, index0, f, index1);
-          }
-        }
-        if (a1 >= b)
-          work.pushFromGrowableXYZArray(xyz, index1);
-        index0 = index1;
-        a0 = a1;
-      }
-    }
-
-    if (work.length <= 2) {
-      xyz.clear();
-    } else if (numNegative > 0) {
-      xyz.clear();
-      xyz.pushFromGrowableXYZArray(work);
-    }
-    work.clear();
-  }
-  /** Return an array containing
-   * * All points that are exactly on the plane.
-   * * Crossing points between adjacent points that are (strictly) on opposite sides.
-   */
-  public polygonCrossings(xyz: Point3d[], crossings: Point3d[]) {
-    crossings.length = 0;
-    if (xyz.length >= 2) {
-      let xyz0 = xyz[xyz.length - 1];
-      let a0 = this.evaluatePoint(xyz0);
-      for (const xyz1 of xyz) {
-        const a1 = this.evaluatePoint(xyz1);
-        if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          crossings.push(xyz0.interpolate(f, xyz1));
-        }
-        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
-          crossings.push(xyz1);
-        }
-        xyz0 = Point3d.createFrom(xyz1);
-        a0 = a1;
-      }
-    }
+    return IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(this, xyz, work, inside, tolerance);
   }
   /**
    * Split a (convex) polygon into 2 parts.
@@ -516,49 +450,12 @@ export class ClipPlane implements Clipper {
    * @param xyzIn array to receive inside part
    * @param xyzOut array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
+   * @deprecated instead of `plane.convexPolygonSplitInsideOutside (xyz, xyzIn, xyzOut, altitudeRange)` use `PolygonOops.splitConvexPolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange)`
    */
   public convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
-    xyzOut.length = 0;
-    xyzIn.length = 0;
-    // let numSplit = 0;
-    ClipPlane._fractionTol = 1.0e-8;
-    if (xyz.length > 2) {
-      let xyz0 = xyz[xyz.length - 1];
-      altitudeRange.setNull();
-      let a0 = this.evaluatePoint(xyz0);
-      altitudeRange.extendX(a0);
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
-      for (const xyz1 of xyz) {
-        const a1 = this.evaluatePoint(xyz1);
-        altitudeRange.extendX(a1);
-        let nearZero = false;
-        if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - ClipPlane._fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-            nearZero = true;
-          } else {
-            const xyzA = xyz0.interpolate(f, xyz1);
-            xyzIn.push(xyzA);
-            xyzOut.push(xyzA);
-          }
-          // numSplit++;
-        }
-        if (a1 >= 0.0 || nearZero)
-          xyzIn.push(xyz1);
-        if (a1 <= 0.0 || nearZero)
-          xyzOut.push(xyz1);
-        xyz0 = Point3d.createFrom(xyz1);
-        a0 = a1;
-      }
-    }
-  }
+    Point3dArrayPolygonOps.convexPolygonSplitInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange);
 
-  private static _xyz0Work: Point3d = Point3d.create();
-  private static _xyz1Work: Point3d = Point3d.create();
-  private static _xyz2Work: Point3d = Point3d.create();
+  }
 
   /**
    * Split a (convex) polygon into 2 parts.
@@ -566,51 +463,10 @@ export class ClipPlane implements Clipper {
    * @param xyzIn array to receive inside part
    * @param xyzOut array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
+   * @deprecated instead of `plane.convexPolygonSplitInsideOutsideGrowableArrays (xyz, xyzIn, xyzOut, altitudeRange)` use `PolygonOops.splitConvexPoint3dArrayolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange)`
    */
   public convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d) {
-    const xyz0 = ClipPlane._xyz0Work;
-    const xyz1 = ClipPlane._xyz1Work;
-    const xyz2 = ClipPlane._xyz2Work;
-    const n = xyz.length;
-    xyzOut.length = 0;
-    xyzIn.length = 0;
-    xyzIn.clear();
-    xyzOut.clear();
-    // let numSplit = 0;
-    ClipPlane._fractionTol = 1.0e-8;
-    if (n > 2) {
-      xyz.back(xyz0);
-      altitudeRange.setNull();
-      let a0 = this.evaluatePoint(xyz0);
-      altitudeRange.extendX(a0);
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
-      for (let i1 = 0; i1 < n; i1++) {
-        xyz.getPoint3dAtUncheckedPointIndex(i1, xyz1);
-        const a1 = this.evaluatePoint(xyz1);
-        altitudeRange.extendX(a1);
-        let nearZero = false;
-        if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - ClipPlane._fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-            nearZero = true;
-          } else {
-            xyz0.interpolate(f, xyz1, xyz2);
-            xyzIn.push(xyz2);
-            xyzOut.push(xyz2);
-          }
-          // numSplit++;
-        }
-        if (a1 >= 0.0 || nearZero)
-          xyzIn.push(xyz1);
-        if (a1 <= 0.0 || nearZero)
-          xyzOut.push(xyz1);
-        xyz0.setFromPoint3d(xyz1);
-        a0 = a1;
-      }
-    }
+    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange);
   }
 
   /**
@@ -639,13 +495,21 @@ export class ClipPlane implements Clipper {
     this.setPlane4d(plane);
     return true;
   }
+  /** Return an array containing
+   * * All points that are exactly on the plane.
+   * * Crossing points between adjacent points that are (strictly) on opposite sides.
+   * @deprecated ClipPlane method `clipPlane.polygonCrossings(polygonPoints, crossings)` is deprecated.  Use Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
+   */
+  public polygonCrossings( xyz: Point3d[], crossings: Point3d[]) {
+    return Point3dArrayPolygonOps.polygonPlaneCrossings (this, xyz, crossings);
+  }
 
   /** announce the interval (if any) where a line is within the clip plane half space. */
   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean {
     if (f1 < f0)
       return false;
-    const h0 = - this.evaluatePoint(pointA);
-    const h1 = - this.evaluatePoint(pointB);
+    const h0 = - this.altitude(pointA);
+    const h1 = - this.altitude(pointB);
     const delta = h1 - h0;
     const f = Geometry.conditionalDivideFraction(-h0, delta);
     if (f === undefined) { // The segment is parallel to the plane.

@@ -934,7 +934,16 @@ export class AccuSnap implements Decorator {
       return this.touchCursor.doTouchTap(ev);
     if (!this._doSnapping)
       return false;
-    return (undefined !== (this.touchCursor = TouchCursor.createFromTouchTap(ev)));
+    this.touchCursor = TouchCursor.createFromTouchTap(ev);
+    if (undefined === this.touchCursor)
+      return false;
+    // Give active tool an opportunity to update it's tool assistance since event won't be passed along...
+    const tool = IModelApp.toolAdmin.activeTool;
+    if (undefined === tool)
+      return true;
+    tool.onSuspend();
+    tool.onUnsuspend();
+    return true;
   }
 
   private flashElements(context: DecorateContext): void {

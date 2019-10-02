@@ -5,13 +5,12 @@
 /** @module Backstage */
 
 import * as React from "react";
-
-import { SignOutModalFrontstage } from "../oidc/SignOut";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { SignOutModalFrontstage } from "../oidc/SignOut";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { Backstage } from "./Backstage";
 
 /** Properties for the [[Backstage]] React component.
@@ -48,13 +47,19 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
       const lastName = userInfo.profile ? userInfo.profile.lastName : "";
 
       content = (
-        <NZ_UserProfile
-          color={getUserColor(emailId)}
-          initials={this._getInitials(firstName, lastName)}
-          onClick={this._onOpenSignOut}
-        >
-          {this._getFullName(firstName, lastName)}
-        </NZ_UserProfile>
+        <SafeAreaContext.Consumer>
+          {(safeAreaInsets) => (
+            <NZ_UserProfile
+              color={getUserColor(emailId)}
+              initials={this._getInitials(firstName, lastName)}
+              onClick={this._onOpenSignOut}
+              safeAreaInsets={safeAreaInsets}
+            >
+              {this._getFullName(firstName, lastName)}
+            </NZ_UserProfile>
+          )}
+        </SafeAreaContext.Consumer>
+
       );
     }
 

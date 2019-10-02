@@ -122,6 +122,7 @@
     "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
+    "openCalculator": "Open Calculator",
     "outputMessage": "Call outputMessage",
     "openCloseProperties": "Open/Close Property Grid",
     "openPropertyGrid": "Open Property Grid",
@@ -139,7 +140,6 @@
     "openNestedAnimationStage": "Open Stage to Play Animations",
     "reduceWidgetOpacity": "Reduce Widget Opacity",
     "defaultWidgetOpacity": "Default Widget Opacity",
-    "clearSelection": "Clear Selection",
     "saveContentLayout": "Save Content Layout",
     "restoreContentLayout": "Restore Content Layout",
     "startCursorPopup": "Start Cursor Popup",
@@ -147,7 +147,14 @@
     "moreCursorPopups": "More Cursor Popups",
     "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
-    "opencmdKeyinDialog": "Open command key-in dialog"
+    "opencmdKeyinDialog": "Open command key-in dialog",
+    "accudrawSubMenu": "Accudraw Demos",
+    "addMenuButton": "Add Menu Button",
+    "hideMenuButton": "Hide Menu Button",
+    "showCalculator": "Show Calculator",
+    "showAngleEditor": "Show Angle Editor",
+    "showLengthEditor": "Show Length Editor",
+    "showHeightEditor": "Show Height Editor"
   },
   "tools": {
     "ToolWithSettings": {
@@ -162,6 +169,7 @@
         "Color": "Color",
         "Weight": "Weight",
         "State": "State",
+        "Station": "Station",
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle"
@@ -253,5 +261,9 @@
   "localFileStage": {
     "localFile": "Local File",
     "selectFile": "Select Local File"
+  },
+  "statusFields": {
+    "displayStyle": "Display Style",
+    "unnamedDisplayStyle": "unnamed"
   }
 }

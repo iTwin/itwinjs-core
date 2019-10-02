@@ -70,11 +70,8 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
-const scratchRTC = new Float32Array(3);
-
 const computeInstancedModelMatrix = `
-  g_instancedModelMatrix = g_modelMatrixRTC;
-  g_instancedModelMatrix[3].xyz = u_instancedRTC;
+  g_instancedModelMatrix = u_instanced_model * g_modelMatrixRTC;
 `;
 
 /** @internal */
@@ -82,16 +79,12 @@ export function addModelMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
     assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
     if (undefined === vert.find("g_instancedModelMatrix")) {
-      vert.addUniform("u_instancedRTC", VariableType.Vec3, (prog) => {
-        prog.addGraphicUniform("u_instancedRTC", (uniform, params) => {
-          const rtc = params.geometry.asInstanced!.rtcCenter;
-          scratchRTC[0] = rtc.x;
-          scratchRTC[1] = rtc.y;
-          scratchRTC[2] = rtc.z;
-          uniform.setUniform3fv(scratchRTC);
+      vert.addUniform("u_instanced_model", VariableType.Mat4, (prog) => {
+        prog.addGraphicUniform("u_instanced_model", (uniform, params) => {
+          const modelt = params.geometry.asInstanced!.getRtcTransform(params.target.currentTransform);
+          uniform.setMatrix4(Matrix4.fromTransform(modelt));
         });
       });
-
       vert.addGlobal("g_instancedModelMatrix", VariableType.Mat4);
       vert.addInitializer(computeInstancedModelMatrix);
     }

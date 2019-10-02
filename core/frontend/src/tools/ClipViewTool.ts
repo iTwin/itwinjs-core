@@ -24,7 +24,7 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
-import { AuthorizedFrontendRequestContext } from "../imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "../imodeljs-frontend";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
 /** @alpha The orientation to use to define the view clip volume */
@@ -84,7 +84,6 @@ export class ViewClipTool extends PrimitiveTool {
   public onUnsuspend(): void { this.showPrompt(); }
   public onRestartTool(): void { this.exitTool(); }
 
-  protected outputPrompt(prompt: string) { IModelApp.notifications.outputPromptByKey("CoreTools:tools.ViewClip." + prompt); }
   protected showPrompt(): void { }
   protected setupAndPromptForNextAction(): void { this.showPrompt(); }
 
@@ -348,9 +347,13 @@ export class ViewClipTool extends PrimitiveTool {
 /** @alpha A tool to remove a clip volume for a view */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
+  public static iconSpec = "icon-section-tool";
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && ViewClipTool.hasClip(vp)); }
 
-  protected showPrompt(): void { this.outputPrompt("Clear.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.Clear.Prompts.FirstPoint"));
+    IModelApp.notifications.setToolAssistance(ToolAssistance.createInstructions(mainInstruction));
+  }
 
   protected doClipClear(viewport: Viewport): boolean {
     if (!ViewClipTool.doClipClear(viewport))
@@ -377,7 +380,7 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
-  public static iconSpec = "icon-plane";
+  public static iconSpec = "icon-section-plane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
@@ -401,11 +404,29 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     return false;
   }
 
-  protected showPrompt(): void { this.outputPrompt("ByPlane.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.ByPlane.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -427,6 +448,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
+  public static iconSpec = "icon-section-shape";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
@@ -458,25 +480,48 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 
   protected showPrompt(): void {
+    let mainMsg = "CoreTools:tools.ViewClip.ByShape.Prompts.";
     switch (this._points.length) {
       case 0:
-        this.outputPrompt("ByShape.Prompts.FirstPoint");
+        mainMsg += "FirstPoint";
         break;
       case 1:
-        this.outputPrompt("ByShape.Prompts.SecondPoint");
+        mainMsg += "SecondPoint";
         break;
       case 2:
-        this.outputPrompt("ByShape.Prompts.ThirdPoint");
+        mainMsg += "ThirdPoint";
         break;
       default:
-        this.outputPrompt("ByShape.Prompts.NextPoint");
+        mainMsg += "NextPoint";
         break;
     }
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainMsg));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    if (this._points.length > 1)
+      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
+    if (0 !== this._points.length)
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
     if (0 === this._points.length)
       return;
 
@@ -595,10 +640,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return false;
 
     this._points.pop();
-    if (0 === this._points.length)
-      this.onReinitialize();
-    else
-      this.setupAndPromptForNextAction();
+    this.setupAndPromptForNextAction();
     return true;
   }
 
@@ -612,13 +654,33 @@ export class ViewClipByShapeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying range corners */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
+  public static iconSpec = "icon-section-range";
   protected _corner?: Point3d;
 
-  protected showPrompt(): void { this.outputPrompt(undefined === this._corner ? "ByRange.Prompts.FirstPoint" : "ByRange.Prompts.NextPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(undefined === this._corner ? "CoreTools:tools.ViewClip.ByRange.Prompts.FirstPoint" : "CoreTools:tools.ViewClip.ByRange.Prompts.NextPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+    if (undefined !== this._corner)
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
     IModelApp.accuSnap.enableSnap(true);
+    super.setupAndPromptForNextAction();
   }
 
   protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean {
@@ -691,7 +753,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
   public async onUndoPreviousStep(): Promise<boolean> {
     if (undefined === this._corner)
       return false;
-    this.onReinitialize();
+    this._corner = undefined;
+    this.setupAndPromptForNextAction();
     return true;
   }
 }
@@ -699,9 +762,27 @@ export class ViewClipByRangeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by element(s) */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
+  public static iconSpec = "icon-section-element";
   constructor(clipEventHandler?: ViewClipEventHandler, protected _alwaysUseRange: boolean = false) { super(clipEventHandler); }
 
-  protected showPrompt(): void { this.outputPrompt("ByElement.Prompts.FirstPoint"); }
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.ViewClip.ByElement.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   public onPostInstall(): void {
     super.onPostInstall();
@@ -1456,19 +1537,25 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         continue;
 
       // For single plane clip, choose location for handle that's visible in the current view...
-      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops) {
+      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops && this._clipPlanesLoops.length > 0) {
         if (!EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].origin, vp, 0.05)) {
-          const work = new GrowableXYZArray();
-          const finalPoints = new GrowableXYZArray();
-          const lineString = ((this._clipPlanesLoops[0] as Loop).getChild(0) as LineString3d).points;
-          const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
-          convexSet.polygonClip(lineString, finalPoints, work);
-          if (finalPoints.length > 0) {
-            const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
-            if (undefined !== loopArea) {
-              if (undefined === this._controls[iFace].floatingOrigin)
-                this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
-              this._controls[iFace].origin.setFrom(loopArea.origin);
+          const geom = this._clipPlanesLoops[0];
+          if (geom instanceof Loop && geom.children.length > 0) {
+            const child = geom.getChild(0);
+            if (child instanceof LineString3d) {
+              const work = new GrowableXYZArray();
+              const finalPoints = new GrowableXYZArray();
+              const lineString = child.points;
+              const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
+              convexSet.polygonClip(lineString, finalPoints, work);
+              if (finalPoints.length > 0) {
+                const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
+                if (undefined !== loopArea) {
+                  if (undefined === this._controls[iFace].floatingOrigin)
+                    this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
+                  this._controls[iFace].origin.setFrom(loopArea.origin);
+                }
+              }
             }
           }
         } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {

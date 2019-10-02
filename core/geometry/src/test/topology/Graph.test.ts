@@ -139,8 +139,8 @@ export class GraphChecker {
     graph.clearMask(myMask);
     let numSet = 0;
     // do some tedious stuff at "a few" nodes .. 0,3,9,21....
-    const mask1 = HalfEdgeMask.WORK_MASK0; // ignore the name -- it is a mask to work with
-    const mask2 = HalfEdgeMask.WORK_MASK1; // ignore the name -- it is a mask to work with.
+    const mask1 = graph.grabMask();
+    const mask2 = graph.grabMask();
     let numMask2InSet = 0;
     graph.clearMask(mask1);
     ck.testExactNumber(0, graph.countMask(mask1), "clear mask " + mask1);
@@ -178,6 +178,8 @@ export class GraphChecker {
     ck.testExactNumber(numSet, graph.countMask(myMask), " count mask after various testAndSet");
     graph.reverseMask(myMask);
     ck.testExactNumber(numNode - numSet, graph.countMask(myMask), "count mask after reverse");
+    graph.dropMask(mask1);
+    graph.dropMask(mask2);
   }
 
   public static validateCleanLoopsAndCoordinates(ck: Checker, graph: HalfEdgeGraph) {

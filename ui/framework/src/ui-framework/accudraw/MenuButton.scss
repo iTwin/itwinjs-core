@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-menu-button {
+  position: absolute;
+  pointer-events: auto;
+
+  .icon {
+    line-height: 2.0;
+  }
+
+  > .context-menu {
+    top: $uicore-inputs-padding-bordered;
+  }
+
+}

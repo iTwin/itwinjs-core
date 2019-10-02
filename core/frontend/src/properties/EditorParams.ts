@@ -6,23 +6,23 @@
 import { QuantityType } from "../QuantityFormatter";
 
 /**
- * Enumeration for Property Editor Param Types
+ * Enum for Property Editor Param Types
  * @beta
  */
 export enum PropertyEditorParamTypes {
-  ButtonGroupData,
-  CheckBoxIcons,
-  Icon,
-  InputEditorSize,
-  JSON,
-  MultilineText,
-  Range,
-  Slider,
-  SuppressUnitLabel,
-  SuppressEditorLabel,
-  ColorData,
-  CustomFormattedNumber,
-  IconListData,
+  ButtonGroupData = "ButtonGroupData",
+  CheckBoxIcons = "CheckBoxIcons",
+  Icon = "Icon",
+  InputEditorSize = "InputEditorSize",
+  JSON = "JSON",
+  MultilineText = "MultilineText",
+  Range = "Range",
+  Slider = "Slider",
+  SuppressUnitLabel = "SuppressUnitLabel",
+  SuppressEditorLabel = "SuppressEditorLabel",
+  ColorData = "ColorData",
+  CustomFormattedNumber = "CustomFormattedNumber",
+  IconListData = "IconListData",
 }
 
 /**
@@ -30,7 +30,7 @@ export enum PropertyEditorParamTypes {
  * @beta
  */
 export interface BasePropertyEditorParams {
-  type: PropertyEditorParamTypes;
+  type: string;
 }
 
 /**
@@ -77,8 +77,9 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
  * @beta
  */
 export interface IconDefinition {
-  /** icon class name. */
-  iconClass: string;
+  /** Icon specification. The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix. */
+  iconSpec: string;
+  /** Function to determine if the item is enabled. */
   isEnabledFunction?: () => boolean;
 }
 
@@ -200,11 +201,7 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 }
 
 /**
- * Type definition for all Property Editor params
+ * Type definition for Property Editor params
  * @beta
  */
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams;
-/*  Not yet supported
-  |  JsonEditorParams | RangeEditorParams | SliderEditorParams |
-  | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams
-*/
+export type PropertyEditorParams = BasePropertyEditorParams;

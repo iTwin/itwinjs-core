@@ -22,13 +22,13 @@ function createSchemaJson(format: any) {
       ...format,
     },
   }, {
-      references: [
-        {
-          name: "Formats",
-          version: "1.0.0",
-        },
-      ],
-    });
+    references: [
+      {
+        name: "Formats",
+        version: "1.0.0",
+      },
+    ],
+  });
 }
 
 describe("OverrideFormat", () => {
@@ -99,6 +99,7 @@ describe("OverrideFormat", () => {
     const overrideFormat = new OverrideFormat(format!, FractionalPrecision.Eight);
     expect(overrideFormat.precision).eq(FractionalPrecision.Eight);
     expect(overrideFormat.parent.precision).eq(FractionalPrecision.Two);
+    assert.equal(overrideFormat.fullName, "TestSchema.TestFormat(8)");
   });
 
   it("with unit overrides", () => {
@@ -111,15 +112,28 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync<Format>("TestFormat");
     assert.isDefined(format);
 
-    const unit = schema.lookupItemSync<Unit>("Formats.MILE");
-    assert.isDefined(unit);
+    const mileU = schema.lookupItemSync<Unit>("Formats.MILE");
+    assert.isDefined(mileU);
 
-    const unitList = new Array<[Unit | InvertedUnit, string | undefined]>();
-    unitList.push([unit!, undefined]);
+    const yrdU = schema.lookupItemSync<Unit>("Formats.YRD");
+    assert.isDefined(yrdU);
 
-    const overrideFormat = new OverrideFormat(format!, undefined, unitList);
-    assert.isDefined(overrideFormat.units);
-    expect(overrideFormat.units!.length).eq(1);
-    expect(overrideFormat.units![0][0]).eq(unit);
+    const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
+    unitListMile.push([mileU!, undefined]);
+    const unitListYrd = new Array<[Unit | InvertedUnit, string | undefined]>();
+    unitListYrd.push([yrdU!, "yd"]);
+
+    const overrideFormatMile = new OverrideFormat(format!, undefined, unitListMile);
+    assert.isDefined(overrideFormatMile.units);
+    expect(overrideFormatMile.units!.length).eq(1);
+    expect(overrideFormatMile.units![0][0]).eq(mileU);
+    assert.equal(overrideFormatMile.fullName, "TestSchema.TestFormat[Formats.MILE]");
+
+    const overrideFormatYrd = new OverrideFormat(format!, undefined, unitListYrd);
+    assert.isDefined(overrideFormatYrd.units);
+    expect(overrideFormatYrd.units!.length).eq(1);
+    expect(overrideFormatYrd.units![0][0]).eq(yrdU);
+    expect(overrideFormatYrd.units![0][1]).eq("yd");
+    assert.equal(overrideFormatYrd.fullName, "TestSchema.TestFormat[Formats.YRD|yd]");
   });
 });

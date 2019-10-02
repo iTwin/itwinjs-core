@@ -263,7 +263,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     });
   }
 
-  public renderHorizontalToolbar = (): React.ReactNode | null => {
+  public renderHorizontalToolbar(): React.ReactNode {
     const toolbarItems = this._cachedHorizontalItems ? this._cachedHorizontalItems : this.horizontalItems;
     if (toolbarItems && toolbarItems.items.length) {
       return (
@@ -280,7 +280,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return null;
   }
 
-  public renderVerticalToolbar = (): React.ReactNode | null => {
+  public renderVerticalToolbar(): React.ReactNode {
     const toolbarItems = this._cachedVerticalItems ? this._cachedVerticalItems : this.verticalItems;
     if (toolbarItems && toolbarItems.items.length) {
       return (

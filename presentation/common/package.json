@@ -1,11 +1,11 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/presentation/common"
   },
   "keywords": [
     "Bentley",
@@ -48,14 +48,14 @@
     }
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.4.0",
-    "@bentley/imodeljs-common": "^1.4.0"
+    "@bentley/bentleyjs-core": "^1.5.0",
+    "@bentley/imodeljs-common": "^1.5.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.4.0",
-    "@bentley/bentleyjs-core": "1.4.0",
-    "@bentley/imodeljs-common": "1.4.0",
-    "@bentley/webpack-tools": "1.4.0",
+    "@bentley/build-tools": "1.5.0",
+    "@bentley/bentleyjs-core": "1.5.0",
+    "@bentley/imodeljs-common": "1.5.0",
+    "@bentley/webpack-tools": "1.5.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -82,7 +82,7 @@
     "tslint-consistent-codestyle": "^1.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.5.2",
+    "typescript": "~3.6.2",
     "typescript-json-schema": "^0.28.0",
     "yargs": "^12.0.0"
   },

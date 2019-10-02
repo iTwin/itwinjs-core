@@ -6,7 +6,7 @@
 import { GL } from "./GL";
 import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderSolarShadowMap, RenderGraphic, RenderClipVolume } from "../System";
-import { Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d, Geometry } from "@bentley/geometry-core";
 import { ModelSelectorState } from "../../ModelSelectorState";
 import { CategorySelectorState } from "../../CategorySelectorState";
 import { SpatialViewState } from "../../ViewState";
@@ -46,8 +46,10 @@ class SolarShadowMapDrawArgs extends Tile.DrawArgs {
 
 const enum Status { BelowHorizon, OutOfSynch, WaitingForTiles, GraphicsReady, TextureReady }
 
-const shadowMapWidth = 4096;
+const shadowMapWidth = 4096;  // size of original depth buffer map
 const shadowMapHeight = shadowMapWidth; // TBD - Adjust for aspect ratio.
+const evsmWidth = shadowMapWidth / 2;  // EVSM buffer is 1/2 size each direction
+const evsmHeight = shadowMapHeight / 2;
 
 // Bundles up the disposable, create-once-and-reuse members of a SolarShadowMap.
 class Bundle {
@@ -84,7 +86,8 @@ class Bundle {
         return undefined;
     }
 
-    const shadowMapTextureHandle = TextureHandle.createForAttachment(shadowMapWidth, shadowMapHeight, GL.Texture.Format.Rgba, pixelDataType);
+    // shadowMap texture is 1/4 size the depth texture (and averaged down when converting)
+    const shadowMapTextureHandle = TextureHandle.createForAttachment(evsmWidth, evsmHeight, GL.Texture.Format.Rgba, pixelDataType);
     if (undefined === shadowMapTextureHandle)
       return undefined;
 
@@ -306,6 +309,14 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       this._status = Status.GraphicsReady;
       if (!backgroundOn) {
         shadowRange.intersect(tileRange, shadowRange);
+        if (Geometry.isAlmostEqualNumber(shadowRange.low.x, shadowRange.high.x) ||
+          Geometry.isAlmostEqualNumber(shadowRange.low.y, shadowRange.high.y) ||
+          Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
+          this._status = Status.WaitingForTiles;
+          this.clearGraphics();
+          return;
+        }
+
         this._shadowFrustum.initFromRange(shadowRange);
         mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
       }
@@ -329,7 +340,8 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       return;
 
     const prevState = System.instance.currentRenderState.clone();
-    System.instance.context.viewport(0, 0, shadowMapWidth, shadowMapHeight);
+    const gl = System.instance.context;
+    gl.viewport(0, 0, shadowMapWidth, shadowMapHeight);
 
     const viewFlags = target.currentViewFlags.clone(this._scratchViewFlags);
     viewFlags.renderMode = RenderMode.SmoothShade;
@@ -360,7 +372,8 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
-    // copy depth buffer to EVSM shadow buffer
+    // copy depth buffer to EVSM shadow buffer and average down for AA effect
+    gl.viewport(0, 0, evsmWidth, evsmHeight);
     System.instance.frameBufferStack.execute(bundle.fboSM, true, () => {
       System.instance.applyRenderState(this._noZRenderState);
       const params = getDrawParams(target, bundle.evsmGeom);
@@ -368,7 +381,6 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     });
 
     // mipmap resulting EVSM texture and set filtering options
-    const gl = System.instance.context;
     gl.activeTexture(TextureUnit.ShadowMap);
     gl.bindTexture(gl.TEXTURE_2D, bundle.shadowMapTexture.texture.getHandle()!);
     gl.generateMipmap(gl.TEXTURE_2D);

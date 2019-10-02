@@ -278,7 +278,8 @@
                 ]
               },
               "requiredDirection": "Forward",
-              "isPolymorphic": true
+              "isPolymorphic": true,
+              "autoExpand": true
             }
           ]
         }

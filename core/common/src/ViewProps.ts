@@ -140,13 +140,13 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
  */
 export type TerrainProviderName = "CesiumWorldTerrain";
 
-/**  JSON represenation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
+/**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @see [[BackgroundMapProps]]
  * @alpha
  */
 export interface TerrainProps {
-  /** Indentifies the provider currently only CesiumWorldTerrain is supported. */
+  /** Identifies the provider currently only CesiumWorldTerrain is supported. */
   providerName?: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration. Default value: 1.0 */
   exaggeration?: number;
@@ -163,8 +163,8 @@ export interface TerrainProps {
  * @see [[TerrainProps]]
  */
 export enum TerrainHeightOriginMode {
-  Geodetic = 0,   // Height value indicates the geodetic height of the IModel origin (also refered to as ellipsoidal or GPS height)
-  Geoid = 1,      // Height value indicates the geoidal height of the IModel origin (commonly refered toas sea level).
+  Geodetic = 0,   // Height value indicates the geodetic height of the IModel origin (also referred to as ellipsoidal or GPS height)
+  Geoid = 1,      // Height value indicates the geoidal height of the IModel origin (commonly referred to as sea level).
   Ground = 2,     // Height value indicates the height of the IModel origin relative to ground level at project center.
 }
 
@@ -172,7 +172,7 @@ export enum TerrainHeightOriginMode {
  * @alpha
  */
 export class TerrainSettings {
-  /** Indentifies the provider currently only CesiumWorldTerrain supported. */
+  /** Identifies the provider currently only CesiumWorldTerrain supported. */
   public readonly providerName: TerrainProviderName;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration.  Default value: 1.0 */
   public readonly exaggeration: number;
@@ -197,11 +197,11 @@ export class TerrainSettings {
     const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
     return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
   }
-  public toJSON() {
+  public toJSON(): TerrainProps {
     return {
       providerName: this.providerName,
       exaggeration: this.exaggeration,
-      applyLightng: this.applyLighting,
+      applyLighting: this.applyLighting,
       heightOrigin: this.heightOrigin,
       heightOriginMode: this.heightOriginMode,
     };
@@ -283,7 +283,7 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 export class BackgroundMapSettings {
   /** Elevation in meters, relative to sea level. */
   public readonly groundBias: number;
-  /** Identifies the provider from which map imagert will be obtained. */
+  /** Identifies the provider from which map image will be obtained. */
   public readonly providerName: BackgroundMapProviderName;
   /** The type of map graphics to be drawn. */
   public readonly mapType: BackgroundMapType;
@@ -503,7 +503,7 @@ export interface DisplayStyleSettingsProps {
   /** Schedule script
    * @beta
    */
-  scheduleScript?: RenderSchedule.ElementTimelineProps[];
+  scheduleScript?: RenderSchedule.ModelTimelineProps[];
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */
@@ -647,7 +647,7 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
-  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
 
@@ -748,7 +748,10 @@ export class DisplayStyleSettings {
    */
   public dropSubCategoryOverride(id: Id64String): void { this.changeSubCategoryOverride(id, true); }
 
-  /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
+  /** The overrides applied by this style. */
+  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> { return this._subCategoryOverrides; }
+
+  /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
@@ -917,7 +920,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     this._sunDir = dir.clone(this._sunDir);
     if (undefined === this._json3d.sceneLights)
-      this._json3d.sceneLights = { };
+      this._json3d.sceneLights = {};
 
     this._json3d.sceneLights.sunDir = dir.toJSON();
   }

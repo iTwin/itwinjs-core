@@ -24,7 +24,7 @@ describe("<EditorContainer />", () => {
   it("renders editor for 'text' type using TextEditor", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
-    expect(wrapper.find(".components-text-editor").length).to.eq(1);
+    expect(wrapper.find("input.components-text-editor").length).to.eq(1);
   });
 
   it("calls onCommit for Enter", async () => {
@@ -44,13 +44,13 @@ describe("<EditorContainer />", () => {
 
   it("calls onCancel for Escape", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
-    const spyonCancel = sinon.spy();
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyonCancel} />);
+    const spyOnCancel = sinon.spy();
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Escape" });
-    expect(spyonCancel.calledOnce).to.be.true;
+    expect(spyOnCancel.calledOnce).to.be.true;
   });
 
   it("calls onCommit for Tab", async () => {

@@ -17,6 +17,7 @@ import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
+import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 
 /** State for the ToolSettingsZone content.
  */
@@ -71,28 +72,25 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   }
 
   public render(): React.ReactNode {
-    if (FrontstageManager.activeToolSettingsNode) {
-      const divStyle: React.CSSProperties = {
-        display: "grid",
-        justifyItems: "center",
-        gridAutoRows: "min-content auto",
-      };
+    if (!FrontstageManager.activeToolSettingsNode)
+      return null;
 
-      return (
-        <Zone
-          className={this.props.className}
-          style={this.props.style}
-          bounds={this.props.bounds}
-          isHidden={this.props.isHidden}
-        >
-          <div style={divStyle} >
+    return (
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <Zone
+            bounds={this.props.bounds}
+            className={this.props.className}
+            id={2}
+            isHidden={this.props.isHidden}
+            safeAreaInsets={safeAreaInsets}
+            style={this.props.style}
+          >
             {this.getToolSettingsWidget()}
-          </div>
-        </Zone>
-      );
-    }
-
-    return null;
+          </Zone>
+        )}
+      </SafeAreaContext.Consumer>
+    );
   }
 
   private _processClick = () => {
@@ -125,7 +123,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
           title={tooltip}
           onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >
-          {this.getToolSettingsButton()}
+          <i className="icon icon-settings" />
         </ToolSettingsTab>
       );
     }
@@ -143,18 +141,5 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
         {FrontstageManager.activeToolSettingsNode}
       </ToolSettings>
     );
-  }
-
-  private getToolSettingsButton(): React.ReactNode {
-    let button: React.ReactNode;
-
-    // istanbul ignore else
-    if (FrontstageManager.activeToolSettingsNode) {
-      button = (
-        <i className="icon icon-settings" />
-      );
-    }
-
-    return button;
   }
 }

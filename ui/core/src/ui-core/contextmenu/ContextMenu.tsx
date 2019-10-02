@@ -597,6 +597,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
+
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.keyCode === 13 && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
@@ -706,6 +707,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
+          className="core-context-submenu-popup"
           opened={this.state.opened}
           selectedIndex={0}
           direction={renderDirection}

@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d, Range1d } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
@@ -820,6 +820,13 @@ export abstract class RenderTarget implements IDisposable {
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
+
+  /** Specify whether webgl content should be rendered directly to the screen.
+   * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
+   * Returns undefined if rendering to screen becomes disabled, or is not supported by this RenderTarget.
+   */
+  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined { return undefined; }
 
   public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
 }
@@ -1001,7 +1008,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference, _heightRange?: Range1d): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
@@ -1213,6 +1220,18 @@ export namespace RenderSystem {
      * @beta
      */
     logarithmicDepthBuffer?: boolean;
+
+    /** By default, all [[ScreenViewports]] render their webgl content to a single, shared, off-screen canvas, then copy the resultant image to the 2d rendering context of
+     * their own on-screen canvases. This allows webgl resources to be shared amongst all viewports because they all use the same webgl context. However, the copy operation
+     * incurs a significant performance penalty on non-chromium-based browsers. When only one ScreenViewport is actually rendering webgl content, we can avoid that copy operation
+     * and therefore improve performance by rendering the webgl content directly to the screen, by adding the shared webgl canvas to the document as a child of that one-and-only
+     * viewport. We will only do that if this option is defined to `true`.
+     *
+     * Default value: false
+     *
+     * @internal
+     */
+    directScreenRendering?: boolean;
   }
 }
 

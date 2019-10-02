@@ -54,7 +54,7 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
 
   if (path3) {
     const length3 = path3.sumLengths();
-    ck.testCoordinate(length1, length3, "length of clone(transfom), transformInPlace");
+    ck.testCoordinate(length1, length3, "length of clone(transform), transformInPlace");
     const path5 = collection.cloneTransformed(scaleTransform)!;
     path5.sumLengths();
 
@@ -74,7 +74,7 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
     let i = 0;
     for (const child of collection.children) {
       const child1 = collection.getChild(i++);
-      ck.testTrue(child === child1, "collection.getChild matcehs iterator ");
+      ck.testTrue(child === child1, "collection.getChild matches iterator ");
     }
   }
 

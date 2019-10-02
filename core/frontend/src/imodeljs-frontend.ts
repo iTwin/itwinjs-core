@@ -66,6 +66,7 @@ export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
+export * from "./RenderCompatibility";
 export * from "./oidc/OidcBrowserClient";
 export * from "./TerrainProvider";
 export * from "./properties/Description";
@@ -74,6 +75,9 @@ export * from "./properties/Record";
 export * from "./properties/Value";
 export * from "./properties/ToolSettingsValue";
 export * from "./properties/PrimitiveTypes";
+export * from "./properties/BaseQuantityDescription";
+export * from "./properties/AngleDescription";
+export * from "./properties/LengthDescription";
 export * from "./SolarCalculate";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

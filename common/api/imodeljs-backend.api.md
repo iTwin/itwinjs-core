@@ -672,6 +672,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     onSavedChanges(): void;
     // @internal (undocumented)
+    onUndoRedo(): void;
+    // @internal (undocumented)
     readonly pendingRequest: ConcurrencyControl.Request;
     // (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
@@ -838,7 +840,11 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract readonly settings: DisplayStyleSettings;
 }
@@ -1227,6 +1233,8 @@ export class Element extends Entity implements ElementProps {
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta (undocumented)
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @alpha
+    protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
     protected static onDelete(_props: ElementProps, _iModel: IModelDb): void;
     // @beta
@@ -1378,17 +1386,16 @@ export class EmbeddedFileLink extends LinkElement {
 export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
-    // (undocumented)
-    [propName: string]: any;
+    // @internal
+    readonly asAny: any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
     readonly classFullName: string;
     static readonly classFullName: string;
     static readonly className: string;
     readonly className: string;
+    // @internal @deprecated
     clone(): this;
-    // @alpha
-    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1526,12 +1533,10 @@ export interface ExportPartLinesInfo {
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
-    checksum: string;
+    checksum?: string;
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    // @alpha
-    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };
@@ -1650,6 +1655,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
+    abstract readonly placement: Placement2d | Placement3d;
     // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
@@ -1687,7 +1693,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 }
 
 // @public
-export class GeometricModel extends Model {
+export class GeometricModel extends Model implements GeometricModelProps {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1836,6 +1842,26 @@ export class ILinearlyLocatedAttributesElement extends RelatedElement {
     static classFullName: string;
 }
 
+// @alpha
+export class IModelCloneContext {
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
+    // @internal
+    cloneElement(sourceElement: Element): ElementProps;
+    dispose(): void;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
+    // @internal
+    importCodeSpec(sourceCodeSpecId: Id64String): void;
+    // @internal
+    importFont(sourceFontNumber: number): void;
+    readonly isBetweenIModels: boolean;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+}
+
 // @public
 export class IModelDb extends IModel {
     abandonChanges(): void;
@@ -1915,8 +1941,8 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
-    // @internal (undocumented)
-    static performUpgrade(pathname: string): any;
+    // @internal @deprecated (undocumented)
+    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -1972,6 +1998,7 @@ export namespace IModelDb {
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
+        hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
         queryChildren(elementId: Id64String): Id64String[];
@@ -2135,6 +2162,7 @@ export class IModelJsFsStats {
 // @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
+    readonly context: IModelCloneContext;
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     detectElementDeletes(): void;
@@ -2153,8 +2181,6 @@ export class IModelTransformer {
     excludeRelationshipClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
     findMissingPredecessors(sourceElement: Element): Id64Set;
-    findTargetCodeSpecId(sourceId: Id64String): Id64String;
-    findTargetElementId(sourceElementId: Id64String): Id64String;
     protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string;
     protected formatElementForLogger(elementProps: ElementProps): string;
     protected formatIdForLogger(id: Id64String): string;
@@ -2168,11 +2194,12 @@ export class IModelTransformer {
     importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModels(modeledElementClass: string): void;
+    importModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    importSkippedElements(): void;
+    importSkippedElements(numRetries?: number): void;
+    importSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
@@ -2194,9 +2221,6 @@ export class IModelTransformer {
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
-    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
-    remapElement(sourceId: Id64String, targetId: Id64String): void;
-    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldDeleteElement(_targetElement: Element): boolean;
     protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
@@ -2205,9 +2229,9 @@ export class IModelTransformer {
     protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
-    protected _sourceDb: IModelDb;
-    protected _targetDb: IModelDb;
-    protected _targetScopeElementId: Id64String;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+    readonly targetScopeElementId: Id64String;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;

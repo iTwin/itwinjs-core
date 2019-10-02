@@ -6,8 +6,9 @@
 
 import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, BackgroundMapProps } from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
@@ -34,6 +35,33 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    for (const [id] of this.settings.subCategoryOverrides) {
+      predecessorIds.add(id);
+    }
+    this.settings.excludedElements.forEach((id: Id64String) => predecessorIds.add(id));
+  }
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+    super.onCloned(context, sourceElementProps, targetElementProps);
+    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.styles) {
+      const subCategoryOverrides = JsonUtils.asArray(targetElementProps.jsonProperties.styles.subCategoryOvr);
+      if (undefined !== subCategoryOverrides) {
+        for (const subCategoryOverride of subCategoryOverrides) {
+          subCategoryOverride.subCategory = context.findTargetElementId(Id64.fromJSON(subCategoryOverride.subCategory));
+        }
+      }
+      const excludedElements = JsonUtils.asArray(targetElementProps.jsonProperties.styles.excludedElements);
+      if (undefined !== excludedElements) {
+        const targetExcludedElementIds: Id64String[] = [];
+        excludedElements.forEach((sourceId: Id64String) => targetExcludedElementIds.push(context.findTargetElementId(sourceId)));
+        targetElementProps.jsonProperties.styles.excludedElements = targetExcludedElementIds;
+      }
+    }
+  }
 }
 
 /** A DisplayStyle for 2d views.
@@ -51,8 +79,7 @@ export class DisplayStyle2d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
-  /**
-   * Create a DisplayStyle2d for use by a ViewDefinition.
+  /** Create a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the DisplayStyle2d
@@ -71,8 +98,7 @@ export class DisplayStyle2d extends DisplayStyle {
     };
     return new DisplayStyle2d(displayStyleProps, iModelDb);
   }
-  /**
-   * Insert a DisplayStyle2d for use by a ViewDefinition.
+  /** Insert a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
    * @param name The name of the DisplayStyle2d

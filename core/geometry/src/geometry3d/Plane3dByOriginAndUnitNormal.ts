@@ -6,9 +6,10 @@
 /** @module CartesianGeometry */
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, AxisOrder, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
+import { Matrix3d } from "./Matrix3d";
 /**
  * A plane defined by
  *
@@ -16,7 +17,7 @@ import { Angle } from "./Angle";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
+export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
@@ -56,6 +57,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
   }
   /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
+   * * The inputs are NOT captured.
    * * Returns undefined if the normal vector is all zeros.
    */
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
@@ -68,6 +70,22 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     }
     return new Plane3dByOriginAndUnitNormal(origin.clone(), normalized);
   }
+  /** create a new  Plane3dByOriginAndUnitNormal with direct coordinates of origin and normal.
+   * * Returns undefined if the normal vector is all zeros.
+   * * If unable to normalize return undefined. (And if result is given it is left unchanged)
+   */
+  public static createXYZUVW(ax: number, ay: number, az: number, ux: number, uy: number, uz: number, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
+    const magU = Geometry.hypotenuseXYZ(ux, uy, uz);
+    if (magU < Geometry.smallMetricDistance)
+      return undefined;
+    if (result) {
+      result._origin.set(ax, ay, az);
+      result._normal.set(ux / magU, uy / magU, uz / magU);
+      return result;
+    }
+    return new Plane3dByOriginAndUnitNormal(Point3d.create(ax, ay, az), Vector3d.create(ux / magU, uy / magU, uz / magU));
+  }
+
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
    * * Returns undefined if the normal vector is all zeros.
    */
@@ -123,6 +141,25 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public getOriginRef(): Point3d { return this._origin; }
   /** Return a reference to the unit normal. */
   public getNormalRef(): Vector3d { return this._normal; }
+
+  /** Return coordinate axes (as a transform) with
+   * * origin at plane origin
+   * * z axis in direction of plane normal.
+   * * x,y axes in plane.
+   */
+  public getLocalToWorld(): Transform {
+    const axes = Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZXY);
+    return Transform.createRefs(this._origin.clone(), axes);
+  }
+  /** Return a (singular) transform which projects points to this plane.
+   */
+  public getProjectionToPlane(): Transform {
+    const axes = Matrix3d.createIdentity();
+    axes.addScaledOuterProductInPlace(this._normal, this._normal, -1.0);
+    axes.markSingular();
+    return Transform.createFixedPointAndMatrix(this._origin, axes);
+  }
+
   /** Copy coordinates from the given origin and normal. */
   public set(origin: Point3d, normal: Vector3d): void {
     this._origin.setFrom(origin);
@@ -140,8 +177,8 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
     transform.multiplyPoint3d(result._origin, result._origin);
-    transform.matrix.multiplyInverseTranspose(result._normal, result._normal);
-    if (result._normal.normalizeInPlace())
+    if (transform.matrix.multiplyInverseTranspose(result._normal, result._normal) !== undefined
+      && result._normal.normalizeInPlace())
       return result;
     return undefined;
   }

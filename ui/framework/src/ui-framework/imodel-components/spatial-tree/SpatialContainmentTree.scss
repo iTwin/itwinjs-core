@@ -2,13 +2,22 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .uifw-spatial-tree {
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
 
   .components-tree-errormessage {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    width: 75%;
     text-align: center;
+    transform: translate(-50%,-50%);
+    font-style: italic;
+    color: $buic-foreground-muted;
   }
 };

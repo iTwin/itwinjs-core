@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   IModelConnection,
@@ -15,6 +15,7 @@ import {
   OutputMessagePriority,
   OutputMessageType,
   RelativePosition,
+  ViewState,
 } from "@bentley/imodeljs-frontend";
 
 import {
@@ -58,11 +59,15 @@ import {
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
+  VisibilityComponentHierarchy,
   ZoneLocation,
+  StagePanelHeader,
+  StagePanelLocation,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
@@ -87,41 +92,43 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 
 import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
+import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
   private _leftPanel = {
-    widgets: [<Widget
-      iconSpec="icon-placeholder"
-      labelKey="SampleApp:widgets.VisibilityTree"
-      control={VisibilityTreeWidgetControl}
-      applicationData={{ iModelConnection: this.iModelConnection }}
-    />],
+    widgets: [
+      <Widget
+        iconSpec="icon-placeholder"
+        labelKey="SampleApp:widgets.VisibilityTree"
+        control={VisibilityTreeWidgetControl}
+        applicationData={{ iModelConnection: this.iModelConnection }}
+      />],
   };
 
   private _rightPanel = {
     allowedZones: [6, 9],
   };
 
-  constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
+  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
   }
 
   public get frontstage() {
     // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewIds.length);
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps from number of viewIds: " + this.viewIds.length));
+      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
 
-    // create the content props.
+    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
-    for (const viewId of this.viewIds) {
+    for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewId, iModelConnection: this.iModelConnection, rulesetId: "Items" },
+        applicationData: { viewState, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
     }
@@ -180,7 +187,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories] }} fillZone={true} />,
               <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
@@ -223,6 +230,12 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         leftPanel={
           <StagePanel
+            header={<StagePanelHeader
+              collapseButton
+              collapseButtonTitle="Collapse"
+              location={StagePanelLocation.Left}
+              title="Visibility tree"
+            />}
             size={280}
             widgets={this._leftPanel.widgets}
           />
@@ -240,48 +253,50 @@ export class ViewsFrontstage extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
+  private _nestedGroup = new GroupItemDef({
+    groupId: "nested-group",
+    labelKey: "SampleApp:buttons.toolGroup",
+    iconSpec: "icon-placeholder",
+    items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+    AppTools.item6, AppTools.item7, AppTools.item8],
+    // direction: Direction.Bottom,
+    itemsInColumn: 7,
+  });
 
   private get _groupItemDef(): GroupItemDef {
-    return new GroupItemDef({
-      groupId: "nested-group",
-      labelKey: "SampleApp:buttons.toolGroup",
-      iconSpec: "icon-placeholder",
-      items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-      AppTools.item6, AppTools.item7, AppTools.item8],
-      // direction: Direction.Bottom,
-      itemsInColumn: 7,
-    });
+    return this._nestedGroup;
   }
+
+  private _openNestedAnimationStageDef = new CommandItemDef({
+    iconSpec: "icon-camera-animation",
+    labelKey: "SampleApp:buttons.openNestedAnimationStage",
+    execute: async () => {
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      if (activeContentControl && activeContentControl.viewport &&
+        (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
+        const frontstageProvider = new NestedAnimationStage();
+        const frontstageDef = frontstageProvider.initializeDef();
+        SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+        await FrontstageManager.openNestedFrontstage(frontstageDef);
+      }
+    },
+    isVisible: false, // default to not show and then allow stateFunc to redefine.
+    stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+    stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+      const returnState: BaseItemState = { ...currentState };
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      if (activeContentControl && activeContentControl.viewport &&
+        (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+        returnState.isVisible = true;
+      else
+        returnState.isVisible = false;
+      return returnState;
+    },
+  });
 
   /** Command that opens a nested Frontstage */
   private get _openNestedAnimationStage() {
-    return new CommandItemDef({
-      iconSpec: "icon-camera-animation",
-      labelKey: "SampleApp:buttons.openNestedAnimationStage",
-      execute: async () => {
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport &&
-          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
-          const frontstageProvider = new NestedAnimationStage();
-          const frontstageDef = frontstageProvider.initializeDef();
-          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-          await FrontstageManager.openNestedFrontstage(frontstageDef);
-        }
-      },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport &&
-          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
-
-    });
+    return this._openNestedAnimationStageDef;
   }
 
   /** Tool that will start a sample activity and display ActivityMessage.
@@ -380,19 +395,6 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _clearSelectionItem() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
-      execute: () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (iModelConnection) {
-          iModelConnection.selectionSet.emptyAll();
-        }
-        IModelApp.toolAdmin.startDefaultTool();
-      },
-    });
-  }
-
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
@@ -410,6 +412,12 @@ class FrontstageToolWidget extends React.Component {
     return (
       <TestRadialMenu opened={true} />
     );
+  }
+
+  private get _openCalculatorItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { ModalDialogManager.openDialog(<CalculatorDialog opened={true} />); },
+    });
   }
 
   private get _viewportDialogItem() {
@@ -518,21 +526,6 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _moreCursorPopups() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.moreCursorPopups", execute: async () => {
-        CursorPopupManager.open("testTR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 11);
-        CursorPopupManager.open("testR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 11);
-        CursorPopupManager.open("testBR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 11);
-        CursorPopupManager.open("testB2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 11);
-        CursorPopupManager.open("testBL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 11);
-        CursorPopupManager.open("testL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 11);
-        CursorPopupManager.open("testTL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 11);
-        CursorPopupManager.open("testT2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 11);
-      },
-    });
-  }
-
   private get _endCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
@@ -556,21 +549,13 @@ class FrontstageToolWidget extends React.Component {
 
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
-    CursorPopupManager.close("testTR2", false);
     CursorPopupManager.close("testR1", false);
-    CursorPopupManager.close("testR2", false);
     CursorPopupManager.close("testBR1", false);
-    CursorPopupManager.close("testBR2", false);
     CursorPopupManager.close("testB1", false);
-    CursorPopupManager.close("testB2", false);
     CursorPopupManager.close("testBL1", false);
-    CursorPopupManager.close("testBL2", false);
     CursorPopupManager.close("testL1", false);
-    CursorPopupManager.close("testL2", false);
     CursorPopupManager.close("testTL1", false);
-    CursorPopupManager.close("testTL2", false);
     CursorPopupManager.close("testT1", false);
-    CursorPopupManager.close("testT2", false);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
@@ -649,77 +634,77 @@ class FrontstageToolWidget extends React.Component {
 
   // cSpell:enable
 
-  private get _horizontalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.selectElementCommand,
-      this._openNestedAnimationStage,
-      new ToolItemDef({
-        toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
-        execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
-        betaBadge: true,
-      }),
-      CoreTools.keyinBrowserButtonItemDef,
-      AppTools.tool1,
-      new ConditionalItemDef({
-        conditionalId: "Conditional-tool-2",
-        items: [AppTools.tool2, this._viewportPopupButtonItemDef],
-        stateSyncIds: [SampleAppUiActionId.setTestProperty],
-        stateFunc: this._enabledTestStateFunc,
-        betaBadge: true,
-      }),
-      AppTools.toolWithSettings,
-      AppTools.toggleHideShowItemsCommand,
-      new ConditionalItemDef({
-        conditionalId: "Conditional-formatting",
-        items: [
-          new GroupItemDef({
-            groupId: "tool-formatting-setting",
-            labelKey: "SampleApp:buttons.toolGroup",
-            iconSpec: "icon-placeholder",
-            items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
-            itemsInColumn: 4,
-          }),
-        ],
-        stateSyncIds: [SampleAppUiActionId.setTestProperty],
-        stateFunc: this._visibleTestStateFunc,
-        betaBadge: true,
-      }),
-    ]);
-    return items;
-  }
+  private _horizontalToolbarItems = new ItemList([
+    CoreTools.selectElementCommand,
+    this._openNestedAnimationStage,
+    new ToolItemDef({
+      toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
+      execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
+      betaBadge: true,
+    }),
+    CoreTools.keyinBrowserButtonItemDef,
+    AppTools.tool1,
+    new ConditionalItemDef({
+      conditionalId: "Conditional-tool-2",
+      items: [AppTools.tool2, this._viewportPopupButtonItemDef],
+      stateSyncIds: [SampleAppUiActionId.setTestProperty],
+      stateFunc: this._enabledTestStateFunc,
+      betaBadge: true,
+    }),
+    AppTools.toolWithSettings,
+    AppTools.toggleHideShowItemsCommand,
+    new ConditionalItemDef({
+      conditionalId: "Conditional-formatting",
+      items: [
+        new GroupItemDef({
+          groupId: "tool-formatting-setting",
+          labelKey: "SampleApp:buttons.toolGroup",
+          iconSpec: "icon-placeholder",
+          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, CoreTools.clearSelectionItemDef],
+          itemsInColumn: 4,
+        }),
+      ],
+      stateSyncIds: [SampleAppUiActionId.setTestProperty],
+      stateFunc: this._visibleTestStateFunc,
+      betaBadge: true,
+    }),
+  ]);
 
-  private get _verticalToolbarItems(): ItemList {
-    const items = new ItemList([
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.openCloseProperties",
-        iconSpec: "icon-placeholder",
-        items: [AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.messageDemos",
-        iconSpec: "icon-placeholder",
-        items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.dialogDemos",
-        iconSpec: "icon-placeholder",
-        items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity],
-      }),
-      new GroupItemDef({
-        labelKey: "SampleApp:buttons.anotherGroup",
-        iconSpec: "icon-placeholder",
-        items: [
-          AppTools.tool1, AppTools.tool2, this._groupItemDef,
-          this._saveContentLayout, this._restoreContentLayout,
-          this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
-        ],
-        stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-        stateFunc: this._anotherGroupStateFunc,
-        betaBadge: true,
-      }),
-    ]);
-    return items;
-  }
+  private _verticalToolbarItems = new ItemList([
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.openCloseProperties",
+      panelLabel: "Open Close Properties",
+      iconSpec: "icon-placeholder",
+      items: [AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.messageDemos",
+      // deprecated way of using tooltip to specify panelLabel
+      tooltip: "Message Demos (Tooltip)",
+      iconSpec: "icon-placeholder",
+      items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.dialogDemos",
+      panelLabel: "Dialog Demos",
+      iconSpec: "icon-placeholder",
+      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+    }),
+    new GroupItemDef({
+      labelKey: "SampleApp:buttons.anotherGroup",
+      iconSpec: "icon-placeholder",
+      items: [
+        AppTools.tool1, AppTools.tool2, this._groupItemDef,
+        this._saveContentLayout, this._restoreContentLayout,
+        this._startCursorPopup, this._addCursorPopups, this._endCursorPopup,
+        AccuDrawPopupTools.addMenuButton, AccuDrawPopupTools.hideMenuButton, AccuDrawPopupTools.showCalculator,
+        AccuDrawPopupTools.showAngleEditor, AccuDrawPopupTools.showLengthEditor, AccuDrawPopupTools.showHeightEditor,
+      ],
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: this._anotherGroupStateFunc,
+      betaBadge: true,
+    }),
+  ]);
 
   public render() {
     return (
@@ -774,27 +759,21 @@ class FrontstageNavigationWidget extends React.Component {
     });
   }
 
-  private get _horizontalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.fitViewCommand,
-      CoreTools.windowAreaCommand,
-      CoreTools.zoomViewCommand,
-      CoreTools.panViewCommand,
-      CoreTools.sectionByPlaneCommand,
-      this._rotateViewCommand,  /* Use an SVG icon  */
-    ]);
-    return items;
-  }
+  private _horizontalToolbarItems = new ItemList([
+    CoreTools.fitViewCommand,
+    CoreTools.windowAreaCommand,
+    CoreTools.zoomViewCommand,
+    CoreTools.panViewCommand,
+    CoreTools.sectionToolGroup,
+    this._rotateViewCommand,  /* Use an SVG icon  */
+  ]);
 
-  private get _verticalToolbarItems(): ItemList {
-    const items = new ItemList([
-      CoreTools.walkViewCommand,
-      CoreTools.flyViewCommand,
-      CoreTools.toggleCameraViewCommand,
-      this._viewSelectorItemDef,
-    ]);
-    return items;
-  }
+  private _verticalToolbarItems = new ItemList([
+    CoreTools.walkViewCommand,
+    CoreTools.flyViewCommand,
+    CoreTools.toggleCameraViewCommand,
+    this._viewSelectorItemDef,
+  ]);
 
   public render() {
     return (

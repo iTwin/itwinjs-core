@@ -406,4 +406,54 @@ describe("<TimelineComponent showDuration={true} />", () => {
     act(() => settingMenuSpan.focus());
     // expect(dataProvider.duration).to.be.equal(66000);
   });
+  it("open/close timeline settings - always minimized", async () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={true}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+
+    const expandItem = renderedComponent.getByText("timeline.expand");
+    expect(expandItem).not.to.be.null;
+
+    renderedComponent.rerender(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={true}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={true}
+      />,
+    );
+
+    const nullExpandItem = renderedComponent.queryByText("timeline.expand");
+    expect(nullExpandItem).to.be.null;
+  });
 });

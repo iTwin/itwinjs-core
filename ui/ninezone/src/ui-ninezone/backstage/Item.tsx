@@ -7,6 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 import "./Item.scss";
 
 /** Properties of [[BackstageItem]] component.
@@ -23,6 +24,8 @@ export interface BackstageItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when item is clicked. */
   onClick?: () => void;
+  /** Describes respected safe area insets. */
+  safeAreaInsets?: SafeAreaInsets;
   /** Backstage item subtitle. */
   subtitle?: string;
 }
@@ -36,6 +39,7 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
       "nz-backstage-item",
       this.props.isActive && "nz-active",
       this.props.isDisabled && "nz-disabled",
+      this.props.safeAreaInsets && SafeAreaInsetsHelpers.getCssClassNames(this.props.safeAreaInsets),
       this.props.className);
 
     return (

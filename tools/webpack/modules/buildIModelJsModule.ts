@@ -473,14 +473,7 @@ class DependentTracker {
           }
           const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
           Utils.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath, this._alwaysCopy, this._detail);
-
-          // copy/symlink the iModelJsLoader.js file into the same directory as imodeljs-frontend
-          if (dependent.name === "imodeljs-frontend") {
-            const imjsLoaderSourceFile = moduleSourceFile.replace("imodeljs-frontend", "IModelJsLoader");
-            const imjsLoaderPath = path.resolve(outFilePath, "IModelJsLoader.js");
-            Utils.symlinkOrCopyModuleFile(imjsLoaderSourceFile, imjsLoaderPath, this._alwaysCopy, this._detail);
-          }
-
+          
           // symlink any subModules in the build.
           const packageFileContents: any = Utils.readPackageFileContents(dependent.packageRoot);
           if (packageFileContents.iModelJs && packageFileContents.iModelJs.buildModule && packageFileContents.iModelJs.buildModule.subModules && Array.isArray(packageFileContents.iModelJs.buildModule.subModules)) {
@@ -1088,7 +1081,7 @@ class IModelJsModuleBuilder {
     if (!webpack.dest || !webpack.entry || !webpack.bundleName) {
       return Promise.resolve(new Result("Webpack", 1, undefined, undefined, 'IModelJs.buildModule.webpack must have "dest", "entry", and "bundleName" properties'));
     }
-    
+
     const styleSheets: boolean = webpack.styleSheets ? true : false;
     let outputPath = path.resolve(process.cwd(), webpack.dest);
 
