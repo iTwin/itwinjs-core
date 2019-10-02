@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, assert } from "@bentley/bentleyjs-core";
+import { Id64String, assert, DbResult } from "@bentley/bentleyjs-core";
 import {
   ElementProps, GeometricElement3dProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
   LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationProps, LinearlyReferencedFromToLocationAspectProps,
@@ -16,6 +16,7 @@ import {
   ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, ILinearLocationLocatesElement,
   IReferentReferencesElement,
 } from "./LinearReferencingRelationships";
+import { ECSqlStatement } from "../ECSqlStatement";
 
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
@@ -624,16 +625,22 @@ export class LinearElement {
     const ecSqlGen = new QueryLinearLocationsECSQLGen(queryParams);
     const ecsqlAndBindVals = ecSqlGen.generate(linearElementId);
 
-    const rows = iModel.executeQuery(ecsqlAndBindVals[0], ecsqlAndBindVals[1]);
-    if (rows.length === 0) {
-      return [];
-    }
-
     const linearLocationRefs: LinearLocationReference[] = [];
-    for (const row of rows) {
-      const linearLocationRef: LinearLocationReference = row;
-      linearLocationRefs.push(linearLocationRef);
-    }
+    iModel.withPreparedStatement(ecsqlAndBindVals[0], (stmt: ECSqlStatement) => {
+      stmt.bindValues(ecsqlAndBindVals[1]);
+
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const linearLocationRef: LinearLocationReference = {
+          linearlyLocatedId: stmt.getValue(0).getId(),
+          linearlyLocatedClassFullName: stmt.getValue(1).getString(),
+          startDistanceAlong: stmt.getValue(2).getDouble(),
+          stopDistanceAlong: stmt.getValue(3).getDouble(),
+          locationAspectId: stmt.getValue(4).getId(),
+        };
+
+        linearLocationRefs.push(linearLocationRef);
+      }
+    });
 
     return linearLocationRefs;
   }
