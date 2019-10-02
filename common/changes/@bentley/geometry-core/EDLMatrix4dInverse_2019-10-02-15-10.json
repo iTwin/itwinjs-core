@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "BUG#184729 General matrix4d inverse",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

@@ -465,6 +465,18 @@ export class Geometry {
       + uy * (vz * wx - vx * wz)
       + uz * (vx * wy - vy * wx);
   }
+  /** Returns the determinant of the 4x4 matrix unrolled as the 16 parameters.
+   */
+  public static determinant4x4(
+    xx: number, xy: number, xz: number, xw: number,
+    yx: number, yy: number, yz: number, yw: number,
+    zx: number, zy: number, zz: number, zw: number,
+    wx: number, wy: number, wz: number, ww: number): number {
+    return xx * this.tripleProduct(yy, yz, yw, zy, zz, zw, wy, wz, ww)
+      - yx * this.tripleProduct(xy, xz, xw, zy, zz, zw, wy, wz, ww)
+      + zx * this.tripleProduct(xy, xz, xw, yy, yz, yw, wy, wz, ww)
+      - wx * this.tripleProduct(xy, xz, xw, yy, yz, yw, zy, zz, zw);
+  }
 
   /**
  * Returns curvature magnitude from a first and second derivative vector.

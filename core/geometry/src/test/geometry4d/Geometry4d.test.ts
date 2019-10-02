@@ -457,48 +457,43 @@ describe("Matrix4d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
   it("Inverse", () => {
     const ck = new bsiChecker.Checker();
-    const identity = Matrix4d.createIdentity();
     const matrixA = Matrix4d.createRowValues(
       10, 2, 3, 4,
       5, 20, 2, 1,
       4, 6, 30, 2,
       3, 2, 1, 30);
-    const inverse = matrixA.createInverse();
-    if (ck.testPointer(inverse) && inverse) {
-      // console.log(prettyPrint(inverse.rowArrays()));
-      const product = inverse.multiplyMatrixMatrix(matrixA);
-      // console.log(prettyPrint(product.rowArrays()));
-      const e = product.maxDiff(Matrix4d.createIdentity());
-      const p1 = product.clone();
-      p1.setIdentity();
-      ck.testTrue(p1.isAlmostEqual(identity), "identity by create versus set");
-      ck.testCoordinate(0, e, "A*AInverse error");
-      // console.log("  max error in A*AInverse - I: " + e);
-      Matrix4d.createZero(p1);
+    verifyInverse(ck, matrixA, "diagonally dominant");
 
-      for (const singularMatrix of [
-        Matrix4d.createRowValues(     // row 1,2 match
-          10, 2, 3, 4,
-          5, 20, 2, 1,
-          5, 20, 2, 1,
-          3, 2, 1, 30),
-        Matrix4d.createRowValues(   // column 2,3 match
-          10, 2, 4, 4,
-          5, 20, 2, 2,
-          4, 6, 2, 2,
-          3, 2, 30, 30),
-        Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
-          10, 2, 3, 4,
-          5, 20, 2, 1,
-          5, 20, 2, 1,
-          20, 42, 7, 6),
-      ]) {
-        ck.testUndefined(singularMatrix.createInverse());
-      }
-      ck.testExactNumber(p1.maxAbs(), 0);
+    for (const a33 of [1, 10, 100]) {
+      verifyInverse(ck,
+        Matrix4d.createRowValues(
+          0, 1, 0, 0,
+          - 0.6643638388299198, 0, 0.7474093186836596, 0,
+          0.7474093186836597, 0, 0.6643638388299198, 0,
+          0, 0, 0, a33), "David S example");
+    }
+    // console.log("  max error in A*AInverse - I: " + e);
+
+    for (const singularMatrix of [
+      Matrix4d.createRowValues(     // row 1,2 match
+        10, 2, 3, 4,
+        5, 20, 2, 1,
+        5, 20, 2, 1,
+        3, 2, 1, 30),
+      Matrix4d.createRowValues(   // column 2,3 match
+        10, 2, 4, 4,
+        5, 20, 2, 2,
+        4, 6, 2, 2,
+        3, 2, 30, 30),
+      Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
+        10, 2, 3, 4,
+        5, 20, 2, 1,
+        5, 20, 2, 1,
+        20, 42, 7, 6),
+    ]) {
+      ck.testUndefined(singularMatrix.createInverse());
     }
 
     const matrixB = Matrix4d.createRowValues(
@@ -537,6 +532,11 @@ describe("Matrix4d", () => {
     ck.checkpoint("Matrix4d.Inverse");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ExerciseNearInverse", () => {
+    const ck = new bsiChecker.Checker();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 /* verify that 3d and 4d planes match.  This only makes sense if
@@ -832,3 +832,59 @@ describe("Map4d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+function verifyInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, name: string): boolean {
+  const inverse = matrixA.createInverse();
+  if (ck.testPointer(inverse, "Expect inverse ", name, matrixA) && inverse) {
+    const product = matrixA.multiplyMatrixMatrix(inverse);
+    ck.testTrue(product.isIdentity(), "Expect A*inverse = I", name, matrixA, inverse);
+
+    const matrixB = matrixA.clone();
+    const detA = matrixA.determinant();
+    for (const ij of [[0, 1], [0, 2], [3, 1]]) {
+      matrixB.rowOperation(ij[0], ij[1], 0, 2.0);
+      const detB = matrixB.determinant();
+      ck.testCoordinate(detA, detB, "row operation does not change determinant");
+    }
+    exerciseNearInverse(ck, matrixA, 0, 1, name);
+    exerciseNearInverse(ck, matrixA, 1, 2, name);
+    exerciseNearInverse(ck, matrixA, 2, 3, name);
+    exerciseNearInverse(ck, matrixA, 3, 1, name);
+    return true;
+  }
+  return false;
+}
+/**
+ * * Input a nonsingular matrix.
+ * * make a sequence of "near singular" matrices
+ * * repeat for k = each column index
+ *   * COPY row i to row j.  Now it is singular.
+ *   * Add small value e to [j][k].
+ *   * increase e until the matrix becomes nonsingular
+ */
+function exerciseNearInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, i: number, j: number, name: string) {
+  const inverse = matrixA.createInverse();
+  const aMax = matrixA.maxAbs();
+  if (ck.testDefined(inverse) && inverse !== undefined) {
+    let e;
+    let ok = false;
+    // copying row i to row j makes it singular.
+    // We expect that adding modest sized e "somewhere along row j" will make it nonsingular
+    for (e = 1.0e-15 * aMax; !ok && e < aMax; e *= 10) {
+      for (let k = 0; k < 4 && !ok; k++) {
+        const matrixB = matrixA.clone();
+        for (let m = 0; m < 4; m++)
+          matrixB.setAtIJ(j, m, matrixB.atIJ(i, m));
+        const b0 = matrixB.atIJ(j, k);
+        ck.testUndefined(matrixB.createInverse());
+        matrixB.setAtIJ(j, k, b0 + e);
+        const inverseB = matrixB.createInverse();
+        if (inverseB !== undefined) {
+          ok = true;
+        }
+      }
+    }
+    if (!ck.testTrue(ok, "unable to make step in invertible", name, i, j, matrixA))
+      console.log("matrixA " + prettyPrint(matrixA));
+  }
+}

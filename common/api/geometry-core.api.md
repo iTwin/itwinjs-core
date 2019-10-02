@@ -1607,6 +1607,7 @@ export class Geometry {
     static curvatureMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static cyclic3dAxis(axis: number): number;
     static defined01(value: any): number;
+    static determinant4x4(xx: number, xy: number, xz: number, xw: number, yx: number, yy: number, yz: number, yw: number, zx: number, zy: number, zz: number, zw: number, wx: number, wy: number, wz: number, ww: number): number;
     static distanceXYXY(x0: number, y0: number, x1: number, y1: number): number;
     static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number;
     static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
@@ -2814,12 +2815,14 @@ export class Matrix4d implements BeJSONFunctions {
     columnZ(): Point4d;
     static createBoxToBox(lowA: Point3d, highA: Point3d, lowB: Point3d, highB: Point3d, result?: Matrix4d): Matrix4d | undefined;
     static createIdentity(result?: Matrix4d): Matrix4d;
-    createInverse(): Matrix4d | undefined;
+    createInverse(result?: Matrix4d): Matrix4d | undefined;
+    static createRows(rowX: Point4d, rowY: Point4d, rowZ: Point4d, rowW: Point4d, result?: Matrix4d): Matrix4d;
     static createRowValues(cxx: number, cxy: number, cxz: number, cxw: number, cyx: number, cyy: number, cyz: number, cyw: number, czx: number, czy: number, czz: number, czw: number, cwx: number, cwy: number, cwz: number, cww: number, result?: Matrix4d): Matrix4d;
     static createTransform(source: Transform, result?: Matrix4d): Matrix4d;
     static createTranslationAndScaleXYZ(tx: number, ty: number, tz: number, scaleX: number, scaleY: number, scaleZ: number, result?: Matrix4d): Matrix4d;
     static createTranslationXYZ(x: number, y: number, z: number, result?: Matrix4d): Matrix4d;
     static createZero(result?: Matrix4d): Matrix4d;
+    determinant(): number;
     diagonal(): Point4d;
     static fromJSON(json?: Matrix4dProps): Matrix4d;
     getSteppedPoint(i0: number, step: number, result?: Point4d): Point4d;
@@ -3429,6 +3432,7 @@ export class Point4d implements BeJSONFunctions {
     safeDivideOrNull(denominator: number, result?: Point4d): Point4d | undefined;
     scale(scale: number, result?: Point4d): Point4d;
     set(x?: number, y?: number, z?: number, w?: number): Point4d;
+    setComponent(index: number, value: number): void;
     setFrom(other: Point4d): Point4d;
     setFromJSON(json?: Point4dProps): void;
     toJSON(): Point4dProps;
