@@ -1131,6 +1131,12 @@ export class CoreTools {
     // @beta
     static readonly keyinBrowserButtonItemDef: CustomItemDef;
     // (undocumented)
+    static readonly measureDistanceToolItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly measureLocationToolItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly measureToolGroup: GroupItemDef;
+    // (undocumented)
     static readonly panViewCommand: ToolItemDef;
     // (undocumented)
     static readonly rotateViewCommand: ToolItemDef;

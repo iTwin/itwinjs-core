@@ -12,7 +12,7 @@ import {
   WindowAreaTool, ZoomViewTool, ViewUndoTool, ViewRedoTool,
   ViewClipDecorationProvider,
   ViewClipByShapeTool, ViewClipByRangeTool, ViewClipByElementTool, ViewClipByPlaneTool,
-
+  MeasureDistanceTool, MeasureLocationTool,
 } from "@bentley/imodeljs-frontend";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
 import { GroupItemDef } from "./toolbar/GroupItem";
@@ -277,4 +277,44 @@ export class CoreTools {
       itemsInColumn: 4,
     });
   }
+
+  // note current MeasureDistanceTool is not automatically registered so the app must call MeasureDistanceTool.register();
+  public static get measureDistanceToolItemDef() {
+    return new ToolItemDef({
+      toolId: MeasureDistanceTool.toolId,
+      iconSpec: MeasureDistanceTool.iconSpec,
+      label: () => MeasureDistanceTool.flyover,
+      description: () => MeasureDistanceTool.description,
+      execute: () => {
+        IModelApp.tools.run(MeasureDistanceTool.toolId);
+      },
+    });
+  }
+
+  // note current MeasureLocationTool is not automatically registered so the app must call MeasureLocationTool.register();
+  public static get measureLocationToolItemDef() {
+    return new ToolItemDef({
+      toolId: MeasureLocationTool.toolId,
+      iconSpec: MeasureLocationTool.iconSpec,
+      label: () => MeasureLocationTool.flyover,
+      description: () => MeasureLocationTool.description,
+      execute: () => {
+        IModelApp.tools.run(MeasureLocationTool.toolId);
+      },
+    });
+  }
+
+  public static get measureToolGroup() {
+    MeasureDistanceTool.register();
+    MeasureLocationTool.register();
+
+    return new GroupItemDef({
+      groupId: "measureTools-group",
+      labelKey: "UiFramework:tools.measureTools",
+      iconSpec: "icon-measure",
+      items: [this.measureDistanceToolItemDef, this.measureLocationToolItemDef],
+      itemsInColumn: 2,
+    });
+  }
+
 }

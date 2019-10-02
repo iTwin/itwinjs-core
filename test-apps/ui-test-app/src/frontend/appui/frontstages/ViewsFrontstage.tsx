@@ -686,6 +686,7 @@ class FrontstageToolWidget extends React.Component {
   ]);
 
   private _verticalToolbarItems = new ItemList([
+    CoreTools.measureToolGroup,
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
       panelLabel: "Open Close Properties",

@@ -143,6 +143,7 @@
   "tools": {
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
+    "measureTools": "Measure Tools",
     "sectionShowHandles": "Section Handles:",
     "View": {
       "Fly": {
