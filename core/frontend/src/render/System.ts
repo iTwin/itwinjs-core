@@ -7,7 +7,7 @@
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
-  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
   QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
@@ -186,14 +186,13 @@ export class RenderPlan {
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
-  public readonly aaLines: AntiAliasPref;
-  public readonly aaText: AntiAliasPref;
+  public readonly emphasisSettings: Hilite.Settings;
   public readonly activeVolume?: ClipVector;
   public readonly hline?: HiddenLine.Settings;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
-  public analysisTexture?: RenderTexture;
+  public readonly analysisTexture?: RenderTexture;
   public classificationTextures?: Map<Id64String, RenderTexture>;
   private _curFrustum: ViewFrustum;
 
@@ -202,34 +201,29 @@ export class RenderPlan {
 
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, activeVolume?: ClipVector, hline?: HiddenLine.Settings, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
-    this.is3d = is3d;
-    this.viewFlags = viewFlags;
-    this.bgColor = bgColor;
-    this.monoColor = monoColor;
-    this.hiliteSettings = hiliteSettings;
-    this.aaLines = aaLines;
-    this.aaText = aaText;
-    this.activeVolume = activeVolume;
-    this.hline = hline;
-    this._curFrustum = this.viewFrustum = viewFrustum;
-    this.analysisStyle = analysisStyle;
-    this.ao = ao;
-    this.isFadeOutActive = isFadeOutActive;
+  public static createFromViewport(vp: Viewport): RenderPlan {
+    return new RenderPlan(vp);
   }
 
-  public static createFromViewport(vp: Viewport): RenderPlan {
+  private constructor(vp: Viewport) {
     const view = vp.view;
     const style = view.displayStyle;
 
-    const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-    const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-    const clipVec = view.getViewClip();
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, clipVec, hline, style.analysisStyle, ao);
-    if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
-      rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
+    this.is3d = view.is3d();
+    this.viewFlags = style.viewFlags;
+    this.bgColor = view.backgroundColor;
+    this.monoColor = style.monochromeColor;
+    this.hiliteSettings = vp.hilite;
+    this.emphasisSettings = vp.emphasisSettings;
+    this._curFrustum = this.viewFrustum = vp.viewFrustum;
+    this.isFadeOutActive = vp.isFadeOutActive;
+    this.activeVolume = view.getViewClip();
+    this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+    this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
+    this.analysisStyle = style.analysisStyle;
 
-    return rp;
+    if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
+      this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
   }
 }
 

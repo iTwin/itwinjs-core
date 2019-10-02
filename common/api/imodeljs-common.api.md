@@ -1096,6 +1096,7 @@ export class ColorDef {
     getAbgr(): number;
     getAlpha(): number;
     getRgb(): number;
+    getTransparency(): number;
     static readonly green: ColorDef;
     invert(): ColorDef;
     readonly isOpaque: boolean;

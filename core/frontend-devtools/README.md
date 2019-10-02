@@ -54,6 +54,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.
 * `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
+* `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
 
 ### Other key-ins
 
@@ -83,6 +84,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "r", "g", or "b": An integer in [0..255] specifying the red, green, or blue component of the hilite color.
   * "v", "h": The visible or hidden ratio in [0..1].
   * "s": The silhouette as an integer in [0..2] (see Hilite.Silhouette enum).
+* `fdt emphasis settings` - Modifies the hilite settings used for emphasized elements in the selected viewport. If no arguments are specified, it does nothing. See `fdt hilite settings` for supported arguments.
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:

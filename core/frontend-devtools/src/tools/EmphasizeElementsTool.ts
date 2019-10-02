@@ -39,14 +39,25 @@ export abstract class EmphasizeElementsTool extends Tool {
  */
 export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   public static toolId = "EmphasizeSelectedElements";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+  private _wantEmphasis = false;
+
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
-    if (emph.overrideSelectedElements(vp, new ColorDef(ColorByName.orange), undefined, true, false) // replace existing; don't clear selection set...
+    if (emph.overrideSelectedElements(vp, new ColorDef(ColorByName.white), undefined, true, false) // replace existing; don't clear selection set...
       && emph.emphasizeSelectedElements(vp, undefined, true)) { // ...replace existing; now clear selection set
+      emph.wantEmphasis = this._wantEmphasis;
       vp.isFadeOutActive = true;
     } else {
       EmphasizeElements.clear(vp); // clear any previous overrides
+      emph.wantEmphasis = false;
       vp.isFadeOutActive = false;
     }
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    this._wantEmphasis = "1" === args[0];
+    return this.run(args);
   }
 }
 

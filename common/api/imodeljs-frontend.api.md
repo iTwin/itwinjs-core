@@ -8,7 +8,6 @@ import { AccessToken } from '@bentley/imodeljs-clients';
 import { AmbientOcclusion } from '@bentley/imodeljs-common';
 import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
-import { AntiAliasPref } from '@bentley/imodeljs-common';
 import { Arc3d } from '@bentley/geometry-core';
 import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
@@ -2450,6 +2449,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     toJSON(vp: Viewport): EmphasizeElementsProps;
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+    wantEmphasis: boolean;
 }
 
 // @beta (undocumented)
@@ -2466,6 +2466,8 @@ export interface EmphasizeElementsProps {
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
     neverDrawn?: Id64Set;
+    // (undocumented)
+    wantEmphasis?: boolean;
 }
 
 // @public
@@ -2570,6 +2572,8 @@ export enum FeatureOverrideType {
 export namespace FeatureSymbology {
     export class Appearance implements AppearanceProps {
         static readonly defaults: Appearance;
+        // @beta
+        readonly emphasized?: true | undefined;
         // (undocumented)
         equals(other: Appearance): boolean;
         extendAppearance(base: Appearance): Appearance;
@@ -2601,6 +2605,8 @@ export namespace FeatureSymbology {
         readonly weight?: number;
     }
     export interface AppearanceProps {
+        // @beta
+        emphasized?: true | undefined;
         ignoresMaterial?: true | undefined;
         linePixels?: LinePixels;
         nonLocatable?: true | undefined;
@@ -5490,15 +5496,11 @@ export namespace RenderMemory {
 // @internal
 export class RenderPlan {
     // (undocumented)
-    readonly aaLines: AntiAliasPref;
-    // (undocumented)
-    readonly aaText: AntiAliasPref;
-    // (undocumented)
     readonly activeVolume?: ClipVector;
     // (undocumented)
     readonly analysisStyle?: AnalysisStyle;
     // (undocumented)
-    analysisTexture?: RenderTexture;
+    readonly analysisTexture?: RenderTexture;
     // (undocumented)
     readonly ao?: AmbientOcclusion.Settings;
     // (undocumented)
@@ -5507,6 +5509,8 @@ export class RenderPlan {
     classificationTextures?: Map<Id64String, RenderTexture>;
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
+    // (undocumented)
+    readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
     readonly fraction: number;
     // (undocumented)
@@ -6964,6 +6968,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly dynamics: GraphicList | undefined;
     // (undocumented)
     readonly edgeColor: ColorInfo;
+    // (undocumented)
+    emphasisColor: FloatRgba;
+    // (undocumented)
+    emphasisSettings: Hilite.Settings;
     // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
@@ -9067,6 +9075,8 @@ export abstract class Viewport implements IDisposable {
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
+    // @beta
+    emphasisSettings: Hilite.Settings;
     featureOverrideProvider: FeatureOverrideProvider | undefined;
     // (undocumented)
     protected finishViewChange(_startFrust: Frustum, options?: ViewChangeOptions): void;
@@ -9229,10 +9239,6 @@ export abstract class Viewport implements IDisposable {
     viewToNpcArray(pts: Point3d[]): void;
     viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
     viewToWorldArray(pts: Point3d[]): void;
-    // @internal (undocumented)
-    readonly wantAntiAliasLines: AntiAliasPref;
-    // @internal (undocumented)
-    readonly wantAntiAliasText: AntiAliasPref;
     worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
     worldToNpcArray(pts: Point3d[]): void;
     worldToView(input: XYAndZ, out?: Point3d): Point3d;

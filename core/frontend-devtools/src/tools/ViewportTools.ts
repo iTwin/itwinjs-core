@@ -11,6 +11,7 @@ import {
   IModelApp,
   Tile,
   Tool,
+  Viewport,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
@@ -114,21 +115,23 @@ export class SetAspectRatioSkewTool extends Tool {
   }
 }
 
-/** Changes the selected viewport's hilite settings, or resets to defaults.
+/** Changes the selected viewport's hilite or emphasis settings.
  * @beta
  */
-export class ChangeHiliteSettingsTool extends Tool {
-  public static toolId = "ChangeHiliteSettings";
+export abstract class ChangeHiliteTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 6; }
 
   public run(settings?: Hilite.Settings): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      vp.hilite = undefined !== settings ? settings : new Hilite.Settings();
+      this.apply(vp, settings);
 
     return true;
   }
+
+  protected abstract apply(vp: Viewport, settings: Hilite.Settings | undefined): void;
+  protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
 
   public parseAndRun(...args: string[]): boolean {
     if (0 === args.length)
@@ -138,8 +141,8 @@ export class ChangeHiliteSettingsTool extends Tool {
     if (undefined === vp)
       return true;
 
-    const cur = vp.hilite;
-    const colors = vp.hilite.color.colors;
+    const cur = this.getCurrentSettings(vp);
+    const colors = cur.color.colors;
     let visible = cur.visibleRatio;
     let hidden = cur.hiddenRatio;
     let silhouette = cur.silhouette;
@@ -195,5 +198,55 @@ export class ChangeHiliteSettingsTool extends Tool {
     };
 
     return this.run(settings);
+  }
+}
+
+/** Changes the selected viewport's hilite settings, or resets to defaults.
+ * @beta
+ */
+export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
+  public static toolId = "ChangeHiliteSettings";
+
+  protected getCurrentSettings(vp: Viewport) { return vp.hilite; }
+  protected apply(vp: Viewport, settings?: Hilite.Settings): void {
+    vp.hilite = undefined !== settings ? settings : new Hilite.Settings();
+  }
+}
+
+/** Changes the selected viewport's emphasis settings.
+ * @beta
+ */
+export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
+  public static toolId = "ChangeEmphasisSettings";
+
+  protected getCurrentSettings(vp: Viewport) { return vp.emphasisSettings; }
+  protected apply(vp: Viewport, settings?: Hilite.Settings): void {
+    if (undefined !== settings)
+      vp.emphasisSettings = settings;
+  }
+}
+
+/** Enables or disables fade-out transparency mode for the selected viewport.
+ * @beta
+ */
+export class FadeOutTool extends Tool {
+  public static toolId = "FadeOut";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(enable?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && (undefined === enable || enable !== vp.isFadeOutActive))
+      vp.isFadeOutActive = !vp.isFadeOutActive;
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+
+    return true;
   }
 }

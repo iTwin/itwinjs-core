@@ -501,13 +501,18 @@ export class Texture2DDataUpdater {
       this.modified = true;
     }
   }
+
   public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
-    assert(index < this.data.length);
-    if (value !== this.data[index]) {
-      this.data[index] = value;
-      this.modified = true;
-    }
+    assert(index < this.data.length - 1);
+    assert(value < 0xffff);
+    this.setByteAtIndex(index, value & 0xff);
+    this.setByteAtIndex(index + 1, (value & 0xff00) >> 8);
   }
+
   public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
-  public getFlagsAtIndex(index: number): OvrFlags { return this.getByteAtIndex(index); }
+  public getOvrFlagsAtIndex(index: number): OvrFlags {
+    const lo = this.getByteAtIndex(index);
+    const hi = this.getByteAtIndex(index + 1);
+    return lo | (hi << 8);
+  }
 }

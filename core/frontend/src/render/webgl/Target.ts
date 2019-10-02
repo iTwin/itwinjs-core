@@ -291,6 +291,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readonly monoColor = FloatRgba.fromColorDef(ColorDef.white);
   public hiliteSettings = new Hilite.Settings();
   public hiliteColor = FloatRgba.fromColorDef(this.hiliteSettings.color);
+  public emphasisSettings = new Hilite.Settings();
+  public emphasisColor = FloatRgba.fromColorDef(this.emphasisSettings.color);
   public readonly planFrustum = new Frustum();
   public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
@@ -720,6 +722,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.monoColor.setColorDef(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
     this.hiliteColor.setColorDef(this.hiliteSettings.color);
+    this.emphasisSettings = plan.emphasisSettings;
+    this.emphasisColor.setColorDef(this.emphasisSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();

@@ -33,7 +33,7 @@ const applyPlanarClassificationColor = `
   else if (0.0 == isClassified || kClassifierDisplay_Dimmed == param)
     return vec4(baseColor.rgb * dimScale, 1.0);
   else if (kClassifierDisplay_Hilite == param)
-    return vec4(mix(baseColor.rgb, u_hilite_color.rgb, u_hilite_settings.x), 1.0);
+    return vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
 
   // black indicates discard (clip masking).
   if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b)
@@ -54,18 +54,16 @@ const overrideFeatureId = `
   `;
 
 const computeClassifiedSurfaceHiliteColor = `
+  if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
+    return vec4(0.0);
+
   vec2 classPos = v_pClassPos.xy / v_pClassPosW;
-  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, classPos);
-  if (hiliteTexel.a > 0.5 && isSurfaceBitSet(kSurfaceBit_HasTexture))
-    return vec4(TEXTURE(s_texture, v_texCoord).a > 0.15 ? 1.0 : 0.0);
-  else
-  return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
+  return TEXTURE(s_pClassHiliteSampler, classPos);
 `;
 
 const computeClassifiedSurfaceHiliteColorNoTexture = `
   vec2 classPos = v_pClassPos.xy / v_pClassPosW;
-  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, classPos.xy);
-  return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
+  return TEXTURE(s_pClassHiliteSampler, classPos.xy);
 `;
 
 const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos.xy = classProj.xy;";

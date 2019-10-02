@@ -82,7 +82,7 @@ export interface KeyinFieldProps {
   /** Default: false. */
   wantLabel?: boolean;
   /** The maximum number of submitted key-ins to store in the history.
-   * If greater than zero, pressing ctrl-P/N while the KeyinField has focus will move backwards/forwards through the history.
+   * If greater than zero, pressing up/down while the KeyinField has focus will move backwards/forwards through the history.
    * Default: zero;
    */
   historyLength?: number;
@@ -133,7 +133,7 @@ export class KeyinField {
     }
 
     if (undefined !== props.historyLength && props.historyLength > 0) {
-      this.textBox.textbox.onkeyup = (ev) => this.handleKeyUp(ev);
+      this.textBox.textbox.onkeydown = (ev) => this.handleKeyDown(ev);
       this._historyLength = props.historyLength;
       this._history = [];
     }
@@ -151,16 +151,14 @@ export class KeyinField {
       await this.submitKeyin();
   }
 
-  private async handleKeyUp(ev: KeyboardEvent): Promise<void> {
-    if (undefined === this._history || 0 === this._history.length || !ev.ctrlKey)
+  private async handleKeyDown(ev: KeyboardEvent): Promise<void> {
+    if (undefined === this._history || 0 === this._history.length)
       return Promise.resolve();
 
-    // Finding a key combination that would actually make it to our handler without also interacting with
-    // the auto-complete list was quite frustrating. Settled on ctrl-n/p.
-    // Note the keyPRESS event (in chromium, at least) gets ev.key = an un-printable control character, hence
-    // we use keydown (which is preferable anyway given keypress is deprecated).
     // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
-    const direction = ev.key === "n" ? -1 : (ev.key === "p" ? 1 : 0);
+    const upArrow = 38;
+    const downArrow = 40;
+    const direction = ev.keyCode === downArrow ? 1 : (ev.keyCode === upArrow ? 1 : 0);
     if (0 === direction)
       return Promise.resolve();
 

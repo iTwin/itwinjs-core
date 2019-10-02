@@ -69,8 +69,14 @@
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
     },
+    "ChangeEmphasisSettings": {
+      "keyin": "fdt emphasis settings"
+    },
     "ChangeUnits": {
       "keyin": "fdt metric"
+    },
+    "FadeOut": {
+      "keyin": "fdt fadeout"
     }
   }
 }

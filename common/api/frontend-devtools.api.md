@@ -269,8 +269,14 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     execute(emph: EmphasizeElements, vp: ScreenViewport): void;
     // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
     static toolId: string;
-}
+    }
 
 // @beta
 export class FpsTracker {

@@ -10,7 +10,7 @@ import {
   Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
   Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1268,6 +1268,7 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
+  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
 
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -1317,6 +1318,16 @@ export abstract class Viewport implements IDisposable {
   public get hilite(): Hilite.Settings { return this._hilite; }
   public set hilite(hilite: Hilite.Settings) {
     this._hilite = hilite;
+    this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
+   * @see [FeatureSymbology.Appearance.emphasized].
+   * @beta
+   */
+  public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
+  public set emphasisSettings(settings: Hilite.Settings) {
+    this._emphasis = settings;
     this.invalidateRenderPlan();
   }
 
@@ -1602,11 +1613,6 @@ export abstract class Viewport implements IDisposable {
         this.view.markModelSelectorChanged();
     });
   }
-
-  /** @internal */
-  public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
-  /** @internal */
-  public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
    * @see [[Tile.DebugBoundingBoxes]]
