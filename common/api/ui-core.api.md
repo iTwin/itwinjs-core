@@ -1937,14 +1937,14 @@ export interface WithIsPressedProps {
 // @public
 export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
-        ref: HTMLDivElement | undefined;
+        ref: React.RefObject<HTMLDivElement>;
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => number | undefined;
-        setRef: (element: HTMLDivElement) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -1968,14 +1968,14 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
-        ref: HTMLDivElement | undefined;
+        ref: React.RefObject<HTMLDivElement>;
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => number | undefined;
-        setRef: (element: HTMLDivElement) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
