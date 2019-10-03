@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Add hilite rules for Functional schema",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    },
+    {
+      "comment": "Add 'functional' selection scope",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}
