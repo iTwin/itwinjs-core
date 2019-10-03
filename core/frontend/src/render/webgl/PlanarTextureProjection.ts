@@ -13,21 +13,40 @@ import { ViewFrustum } from "../../Viewport";
 import { Matrix4 } from "./Matrix";
 
 export class PlanarTextureProjection {
+  private static _rayScratch = Ray3d.createXAxis();
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  private static getFrustumPlaneIntersection(intersectPoints: Point3d[], plane: Plane3dByOriginAndUnitNormal, frustum: Frustum, singleSided: boolean) {
-    const intersect = new Point3d();
-
-    for (let i = 0; i < 4; i++) {
-      const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
-      const intersectDistance = frustumRay.intersectionWithPlane(plane, intersect);
-      if (intersectDistance !== undefined && intersectDistance >= 0.0 && intersectDistance <= 1.0)
-        intersectPoints.push(intersect.clone());
+  private static getFrustumPlaneIntersection(intersectPoints: Point3d[], plane: Plane3dByOriginAndUnitNormal, frustum: Frustum, heightRange?: Range1d) {
+    const isSinglePlane = heightRange === undefined || (heightRange.high - heightRange.low) < 1.0E-4;
+    const lowHeight = heightRange !== undefined ? heightRange.low : 0.0;
+    const normal = plane.getNormalRef();
+    const lowPlane = plane.clone();
+    lowPlane.getOriginRef().addScaledInPlace(normal, lowHeight);
+    let highPlane;
+    if (isSinglePlane) {
+      highPlane = lowPlane;
+    } else {
+      highPlane = lowPlane.clone();
+      highPlane.getOriginRef().addScaledInPlace(normal, heightRange!.high - heightRange!.low);
     }
-    if (singleSided) {
-      for (const frustumPoint of frustum.points) {
-        if (plane.altitude(frustumPoint) >= 0.0)
-          intersectPoints.push(frustumPoint.clone());
+
+    const intersectRange = Range1d.createNull(), paramRange = Range1d.createXX(0.0, 1.0);
+    for (let i = 0; i < 4; i++) {
+      intersectRange.setNull();
+      const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i], PlanarTextureProjection._rayScratch);
+      const lowDistance = frustumRay.intersectionWithPlane(lowPlane);
+      if (lowDistance !== undefined)
+        intersectRange.extendX(lowDistance);
+      if (lowPlane !== highPlane) {
+        const highDistance = frustumRay.intersectionWithPlane(highPlane);
+        if (highDistance !== undefined)
+          intersectRange.extendX(highDistance);
+      }
+      intersectRange.intersect(paramRange, intersectRange);
+      if (!intersectRange.isNull) {
+        intersectPoints.push(frustumRay.fractionToPoint(intersectRange.low));
+        if (intersectRange.high > intersectRange.low)
+          intersectPoints.push(frustumRay.fractionToPoint(intersectRange.high));
       }
     }
   }
@@ -67,17 +86,9 @@ export class PlanarTextureProjection {
     heightRange = Range1d.createXX(tileRange.xLow, tileRange.xHigh);
 
     const rangePoints = new Array<Point3d>();
-    const doVolume = heightRange !== undefined && (heightRange.high - heightRange.low) > 1.0E-4;
-    const baseHeight = heightRange !== undefined ? heightRange.low : 0.0;
-    const normal = texturePlane.getNormalRef();
-    const intersectPlane = texturePlane.clone();
-    intersectPlane.getOriginRef().addScaledInPlace(normal, baseHeight);
-    PlanarTextureProjection.getFrustumPlaneIntersection(rangePoints, intersectPlane, frustum, doVolume);
-    if (doVolume) {
-      intersectPlane.getOriginRef().addScaledInPlace(normal, heightRange.high - heightRange.low);
-      intersectPlane.getNormalRef().negate(intersectPlane.getNormalRef());
-      PlanarTextureProjection.getFrustumPlaneIntersection(rangePoints, texturePlane, frustum, true);
-    }
+
+    PlanarTextureProjection.getFrustumPlaneIntersection(rangePoints, texturePlane, frustum, heightRange);
+
     textureTransform.multiplyPoint3dArrayInPlace(rangePoints);
     const range = Range3d.createArray(rangePoints);
 

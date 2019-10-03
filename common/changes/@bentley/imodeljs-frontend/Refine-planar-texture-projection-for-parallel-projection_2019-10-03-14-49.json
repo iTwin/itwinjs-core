@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refine planar texture frustum calculation to handle parallel views.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}
