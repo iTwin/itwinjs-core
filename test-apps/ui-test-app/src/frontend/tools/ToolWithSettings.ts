@@ -15,6 +15,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
+import { UiFramework, CursorInformation, MenuItemProps } from "@bentley/ui-framework";
 
 const enum ToolOptions {
   Red,
@@ -349,13 +350,30 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
+  private showInfoFromCursorMenu(label: string) {
+    const msg = `Context Menu selection - ${label}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  }
+
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    // Used to test Cursor Menu
+    if (ev.isAltKey) {
+      const menuItems: MenuItemProps[] = [];
+      menuItems.push({ id: "entry1", item: { label: "Label1", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry1"); } } });
+      menuItems.push({ id: "entry2", item: { label: "Label2", execute: () => { this.showInfoFromCursorMenu("hello from entry2"); } } });
+      menuItems.push({ id: "entry3", item: { label: "Label3", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry3"); } } });
+
+      UiFramework.openCursorMenu({ items: menuItems, position: { x: CursorInformation.cursorX, y: CursorInformation.cursorY } });
+      return EventHandled.No;
+    }
+
     if (this.points.length < 2)
       this.points.push(ev.point.clone());
     else
       this.points[1] = ev.point.clone();
     this.toggleCoordinateUpdate();
     this.setupAndPromptForNextAction();
+
     return EventHandled.No;
   }
 

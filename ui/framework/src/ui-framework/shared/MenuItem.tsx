@@ -22,13 +22,15 @@ export class MenuItem extends ItemDefBase {
   private _id = "";
   private _actionItem?: ActionButtonItemDef;
   private _submenu: MenuItem[];
+  private _onSelection?: () => void;
 
-  constructor(props: MenuItemProps) {
+  /** onSelection is an optional parameter typically supplied to allow menu parent to close context menu when a menu item is selected. */
+  constructor(props: MenuItemProps, onSelection?: () => void) {
     super(props);
 
     this._id = props.id;
     this._submenu = new Array<MenuItem>();
-
+    this._onSelection = onSelection;
     if (props.item) {
       this._actionItem = new CommandItemDef(props.item);
 
@@ -63,6 +65,8 @@ export class MenuItem extends ItemDefBase {
       if (this._actionItem)
         this._actionItem.execute();
     });
+    if (this._onSelection)
+      this._onSelection();
   }
 
 }
@@ -72,10 +76,10 @@ export class MenuItem extends ItemDefBase {
  */
 export class MenuItemHelpers {
 
-  public static createMenuItems(itemPropsList: MenuItemProps[]): MenuItem[] {
+  public static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[] {
     const menuItems = new Array<MenuItem>();
     itemPropsList.forEach((itemProps: MenuItemProps) => {
-      menuItems.push(new MenuItem(itemProps));
+      menuItems.push(new MenuItem(itemProps, onSelection));
     });
     return menuItems;
   }

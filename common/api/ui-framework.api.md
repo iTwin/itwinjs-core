@@ -1263,6 +1263,17 @@ export class CursorInformation {
 }
 
 // @beta
+export interface CursorMenuData {
+    // (undocumented)
+    items: any[];
+    // (undocumented)
+    position: {
+        x: number;
+        y: number;
+    };
+}
+
+// @beta
 export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
@@ -1310,6 +1321,18 @@ export class CursorPopupManager {
     static update(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number): void;
     static updatePosition(pt: PointProps): void;
     }
+
+// @alpha
+export class CursorPopupMenu extends React_2.PureComponent<CommonProps, CursorPopupMenuState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // @internal (undocumented)
+    readonly state: CursorPopupMenuState;
+}
 
 // @beta
 export interface CursorPopupOptions {
@@ -1775,7 +1798,7 @@ export interface FilterInfo {
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2837,7 +2860,7 @@ export interface MenuButtonProps extends SquareButtonProps {
 
 // @alpha
 export class MenuItem extends ItemDefBase {
-    constructor(props: MenuItemProps);
+    constructor(props: MenuItemProps, onSelection?: () => void);
     // (undocumented)
     readonly actionItem: ActionButtonItemDef | undefined;
     // (undocumented)
@@ -2853,7 +2876,7 @@ export class MenuItemHelpers {
     // (undocumented)
     static createMenuItemNodes(itemList: MenuItem[]): React_2.ReactNode[];
     // (undocumented)
-    static createMenuItems(itemPropsList: MenuItemProps[]): MenuItem[];
+    static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[];
 }
 
 // @alpha
@@ -3426,7 +3449,7 @@ export class SectionsStatusField extends React_2.Component<any, any> {
     // (undocumented)
     render(): JSX.Element;
     renderContents(): JSX.Element;
-    }
+}
 
 // @public
 export const SelectionInfoField: any;
@@ -3449,6 +3472,8 @@ export interface SessionState {
     activeSelectionScope: string;
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
+    // (undocumented)
+    cursorMenuData: CursorMenuData | undefined;
     // (undocumented)
     defaultIModelViewportControlId: string | undefined;
     // (undocumented)
@@ -3486,7 +3511,9 @@ export enum SessionStateActionId {
     // (undocumented)
     SetNumItemsSelected = "sessionstate:set-num-items-selected",
     // (undocumented)
-    SetSelectionScope = "sessionstate:set-selection-scope"
+    SetSelectionScope = "sessionstate:set-selection-scope",
+    // (undocumented)
+    UpdateCursorMenu = "sessionstate:update-cursor-menu"
 }
 
 // @beta
@@ -3501,6 +3528,7 @@ export const SessionStateActions: {
     setDefaultRulesetId: (rulesetid: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
     setIModelConnection: (iModelConnection: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
     setAccessToken: (accessToken: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    updateCursorMenu: (cursorMenuData: CursorMenuData) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<CursorMenuData>>;
 };
 
 // @beta
@@ -4456,6 +4484,8 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiFramework {
+    // @beta (undocumented)
+    static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
     // @beta
@@ -4474,6 +4504,8 @@ export class UiFramework {
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
+    // @beta (undocumented)
+    static getCursorMenuData(): CursorMenuData | undefined;
     // (undocumented)
     static getDefaultIModelViewportControlId(): string | undefined;
     // (undocumented)
@@ -4503,6 +4535,8 @@ export class UiFramework {
     static readonly oidcClient: IOidcFrontendClient;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
+    // @beta (undocumented)
+    static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static readonly packageName: string;
     // @internal (undocumented)

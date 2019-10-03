@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop
 
 export * from "./ui-framework/UiFramework";
 
@@ -132,6 +132,7 @@ export * from "./ui-framework/cursor/CursorInformation";
 export * from "./ui-framework/cursor/cursorprompt/CursorPrompt";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopupManager";
+export * from "./ui-framework/cursor/cursormenu/CursorMenu";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";

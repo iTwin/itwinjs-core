@@ -110,11 +110,13 @@ alpha;CubeNavigationAidProps
 beta;CursorDirection
 beta;CursorDirectionParts
 beta;CursorInformation
+beta;CursorMenuData
 beta;CursorPopup 
 beta;CursorPopupContent: React_2.FunctionComponent
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
 beta;CursorPopupManager
+alpha;CursorPopupMenu 
 beta;CursorPopupOptions
 beta;CursorPopupProps 
 beta;CursorPopupRenderer 

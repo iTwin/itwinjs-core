@@ -20,7 +20,7 @@ import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
-import { SessionStateActionId, PresentationSelectionScope } from "./SessionState";
+import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./SessionState";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 
@@ -213,6 +213,21 @@ export class UiFramework {
         Presentation.selection.scopes.activeScope = scope.id;
       }
     }
+  }
+
+  /** @beta */
+  public static openCursorMenu(menuData: CursorMenuData | undefined): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, menuData);
+  }
+
+  /** @beta */
+  public static closeCursorMenu(): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, undefined);
+  }
+
+  /** @beta */
+  public static getCursorMenuData(): CursorMenuData | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : undefined;
   }
 
   public static getActiveIModelId(): string {
