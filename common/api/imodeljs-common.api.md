@@ -16,6 +16,7 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
@@ -1854,13 +1855,18 @@ export interface GeometricElementProps extends ElementProps {
 
 // @public
 export interface GeometricModel2dProps extends GeometricModelProps {
-    // (undocumented)
     globalOrigin?: XYProps;
 }
 
 // @public
+export interface GeometricModel3dProps extends GeometricModelProps {
+    isNotSpatiallyLocated?: boolean;
+    isPlanProjection?: boolean;
+}
+
+// @public
 export interface GeometricModelProps extends ModelProps {
-    geometryGuid?: string;
+    geometryGuid?: GuidString;
 }
 
 // @public
@@ -4531,6 +4537,26 @@ export namespace RpcSerializedValue {
 export interface SceneLightsProps {
     // (undocumented)
     sunDir?: XYZProps;
+}
+
+// @beta
+export interface SectionLocationProps extends GeometricElement3dProps {
+    categorySelectorId?: Id64String;
+    clipGeometry?: ClipVector;
+    modelSelectorId?: Id64String;
+    sectionType?: SectionType;
+}
+
+// @public
+export enum SectionType {
+    // (undocumented)
+    Detail = 4,
+    // (undocumented)
+    Elevation = 5,
+    // (undocumented)
+    Plan = 6,
+    // (undocumented)
+    Section = 3
 }
 
 // @public

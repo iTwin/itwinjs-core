@@ -27,6 +27,7 @@ import { ChangeSet } from '@bentley/imodeljs-clients';
 import { ChangeSetApplyOption } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -65,6 +66,7 @@ import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
@@ -121,6 +123,8 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { SectionLocationProps } from '@bentley/imodeljs-common';
+import { SectionType } from '@bentley/imodeljs-common';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -1699,22 +1703,32 @@ export class GeometricModel extends Model implements GeometricModelProps {
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    geometryGuid?: string;
+    geometryGuid?: GuidString;
     queryExtents(): AxisAlignedBox3d;
 }
 
 // @public
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+    // @internal
+    constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
     globalOrigin?: Point2d;
+    // @internal (undocumented)
+    toJSON(): GeometricModel2dProps;
 }
 
 // @public
 export abstract class GeometricModel3d extends GeometricModel {
+    // @internal
+    constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    readonly isNotSpatiallyLocated: boolean;
+    readonly iSpatiallyLocated: boolean;
+    readonly isPlanProjection: boolean;
+    // @internal (undocumented)
+    toJSON(): GeometricModel3dProps;
 }
 
 // @public
@@ -1770,6 +1784,18 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
 
 // @public
 export abstract class GraphicalModel2d extends GeometricModel2d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
+export abstract class GraphicalModel3d extends GeometricModel3d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
+export class GraphicalPartition3d extends InformationPartitionElement {
     // @internal (undocumented)
     static readonly className: string;
 }
@@ -3059,6 +3085,20 @@ export class SectionDrawing extends Drawing {
 export class SectionDrawingModel extends DrawingModel {
     // @internal (undocumented)
     static readonly className: string;
+}
+
+// @beta
+export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
+    // @internal
+    constructor(props: SectionLocationProps, iModel: IModelDb);
+    categorySelectorId: Id64String;
+    // @internal (undocumented)
+    static readonly className: string;
+    clipGeometry?: ClipVector;
+    modelSelectorId: Id64String;
+    sectionType: SectionType;
+    // @internal (undocumented)
+    toJSON(): SectionLocationProps;
 }
 
 // @public

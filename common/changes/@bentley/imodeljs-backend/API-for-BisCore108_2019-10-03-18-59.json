@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add isNotSpatiallyLocated and isPlanProjection to GeometricModel3d",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Shaun.Sewall@bentley.com"
+}

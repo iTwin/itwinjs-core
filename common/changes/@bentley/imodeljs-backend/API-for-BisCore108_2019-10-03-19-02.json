@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add SectionLocation",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Shaun.Sewall@bentley.com"
+}
