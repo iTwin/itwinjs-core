@@ -124,11 +124,11 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   return record;
 };
 
-const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, path?: Field[]): PropertyRecord => {
-  path = path ? [...path] : undefined;
-  let pathField: Field | undefined;
-  if (path && 0 !== path.length) {
-    pathField = path.shift();
+const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps): PropertyRecord => {
+  const exclusiveIncludePath = props.exclusiveIncludePath ? [...props.exclusiveIncludePath] : undefined;
+  let exclusiveIncludePathField: Field | undefined;
+  if (exclusiveIncludePath && 0 !== exclusiveIncludePath.length) {
+    exclusiveIncludePathField = exclusiveIncludePath.shift();
   }
 
   const item = new Item(nestedContent.primaryKeys, "", "",
@@ -136,9 +136,20 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
 
   const members: { [name: string]: PropertyRecord } = {};
   for (const nestedField of field.nestedFields) {
-    if (pathField && pathField !== nestedField)
+    if (exclusiveIncludePathField && exclusiveIncludePathField !== nestedField) {
+      // we know specific field that we want - skip if the current field doesn't match
       continue;
-    members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, path);
+    }
+    let hiddenFieldPaths = props.hiddenFieldPaths;
+    if (hiddenFieldPaths) {
+      if (hiddenFieldPaths.some((path) => path.length === 1 && path[0] === nestedField)) {
+        // we know paths of fields that we want hidden - skip if the current field matches any of those paths
+        continue;
+      }
+      // pick all paths that start with current field
+      hiddenFieldPaths = filterMatchingFieldPaths(hiddenFieldPaths, nestedField);
+    }
+    members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, { exclusiveIncludePath, hiddenFieldPaths });
   }
   const value: StructValue = {
     valueFormat: UiPropertyValueFormat.Struct,
@@ -150,7 +161,7 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
   return record;
 };
 
-const createNestedContentRecord = (field: NestedContentField, item: Item, path?: Field[]): PropertyRecord => {
+const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps): PropertyRecord => {
   const isMerged = item.isFieldMerged(field.name);
   let value: PropertyValue;
 
@@ -172,7 +183,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
     const nestedContentArray: NestedContentValue[] = dictionaryValue;
     value = {
       valueFormat: UiPropertyValueFormat.Array,
-      items: nestedContentArray.map((r) => createNestedStructRecord(field, r, path)),
+      items: nestedContentArray.map((r) => createNestedStructRecord(field, r, props)),
       itemsTypeName: field.type.typeName,
     };
     // if array contains just one value, replace it with the value
@@ -192,6 +203,20 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
   return record;
 };
 
+/** @internal */
+export interface NestedContentCreationProps {
+  /**
+   * A path of fields to be exclusively included in the record. Should not include the
+   * field the record is being created for.
+   */
+  exclusiveIncludePath?: Field[];
+
+  /**
+   * Paths of fields which should be omitted from the nested content
+   */
+  hiddenFieldPaths?: Field[][];
+}
+
 /**
  * A helper class which creates `ui-components` objects from `presentation` objects.
  * @internal
@@ -201,13 +226,11 @@ export class ContentBuilder {
    * Create a property record for specified field and item
    * @param field Content field to create the record for
    * @param item Content item containing the values for `field`
-   * @param path Optional path that specifies a path of fields to be
-   * included in the record. Only makes sense if `field` is `NestedContentField`.
-   * Should start from the first nested field inside `field`.
+   * @param props Parameters for creating nested content record. Only makes sense if `field` is `NestedContentField`
    */
-  public static createPropertyRecord(field: Field, item: Item, path?: Field[]): PropertyRecord {
+  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps): PropertyRecord {
     if (field.isNestedContentField())
-      return createNestedContentRecord(field, item, path);
+      return createNestedContentRecord(field, item, props ? props : {});
 
     const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
     return createRecord(ContentBuilder.createPropertyDescription(field), field.type,
@@ -228,8 +251,8 @@ export class ContentBuilder {
     if (field.editor) {
       descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
     }
-    if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField()) {
-      const enumInfo = field.properties[0].property.enumerationInfo!;
+    if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
+      const enumInfo = field.properties[0].property.enumerationInfo;
       descr.enum = {
         choices: enumInfo.choices,
         isStrict: enumInfo.isStrict,
@@ -238,3 +261,8 @@ export class ContentBuilder {
     return descr;
   }
 }
+
+/** @internal */
+export const filterMatchingFieldPaths = (paths: Field[][], start: Field) => paths
+  .filter((path) => path.length > 1 && path[0] === start)
+  .map((path) => path.slice(1));

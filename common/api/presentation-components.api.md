@@ -54,7 +54,7 @@ export interface CacheInvalidationProps {
 // @internal
 export class ContentBuilder {
     static createPropertyDescription(field: Field): PropertyDescription;
-    static createPropertyRecord(field: Field, item: Item, path?: Field[]): PropertyRecord;
+    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps): PropertyRecord;
 }
 
 // @public

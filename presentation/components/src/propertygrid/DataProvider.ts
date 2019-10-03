@@ -16,7 +16,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
-import { ContentBuilder } from "../common/ContentBuilder";
+import { ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
 import { prioritySortFunction, translate } from "../common/Utils";
 
 const favoritesCategoryName = "Favorite";
@@ -47,6 +47,8 @@ interface PropertyPaneCallbacks {
 interface CategorizedFields {
   categories: CategoryDescription[];
   fields: { [categoryName: string]: Field[] };
+  hiddenFieldPaths: Field[][];
+  hiddenAncestorsFieldPaths: Field[][];
 }
 
 interface CategorizedRecords {
@@ -84,26 +86,47 @@ class PropertyDataBuilder {
     const favoritesCategory = await getFavoritesCategory();
     const categories = new Array<CategoryDescription>();
     const categoryFields: { [categoryName: string]: Field[] } = {};
-    const includeField = (category: CategoryDescription, field: Field, onlyIfFavorite: boolean) => {
-      if (field.isNestedContentField()) {
-        includeFields(field.nestedFields, true);
-      }
-      if (onlyIfFavorite && favoritesCategoryName !== field.category.name)
-        return;
+    const hiddenFieldPaths = new Array<Field[]>();
+    const hiddenAncestorsFieldPaths = new Array<Field[]>();
+    const includeField = (category: CategoryDescription, field: Field) => {
       if (!categoryFields.hasOwnProperty(category.name)) {
         categories.push(category);
         categoryFields[category.name] = new Array<Field>();
       }
       categoryFields[category.name].push(field);
     };
-    const includeFields = (fields: Field[], onlyIfFavorite: boolean) => {
+    const visitField = (category: CategoryDescription, field: Field, isNested: boolean) => {
+      if (field.isNestedContentField()) {
+        // visit all nested fields
+        visitFields(field.nestedFields, true);
+      }
+      if (isNested) {
+        if (field.category.name === "") {
+          // don't include nested fields which have no category - they
+          // will be included as part of the nesting field
+          return;
+        }
+        // if we're including a nested field as a top-level field, we have to exclude
+        // it from it's nesting field
+        const path = createFieldPath(field);
+        hiddenFieldPaths.push(path);
+        hiddenAncestorsFieldPaths.push(path);
+      }
+      includeField(category, field);
+    };
+    const visitFields = (fields: Field[], isNested: boolean) => {
       fields.forEach((field) => {
-        if (favoritesCategoryName !== field.category.name && !field.isNestedContentField() && this._callbacks.isFavorite(field))
-          includeField(favoritesCategory, field, false);
-        includeField(field.category, field, onlyIfFavorite);
+        if (favoritesCategoryName !== field.category.name && this._callbacks.isFavorite(field)) {
+          // if the field is not already in favorites group and we want to make it favorite, visit it
+          // with the favorites category as a top level (isNested = false) field
+          visitField(favoritesCategory, field, false);
+          hiddenAncestorsFieldPaths.push(createFieldPath(field));
+        }
+        // show field as a top-level field even if it's nested if it has a valid category
+        visitField(field.category, field, isNested);
       });
     };
-    includeFields(this._descriptor.fields, false);
+    visitFields(this._descriptor.fields, false);
 
     // sort categories
     this._callbacks.sortCategories(categories);
@@ -115,30 +138,29 @@ class PropertyDataBuilder {
     return {
       categories,
       fields: categoryFields,
-    } as CategorizedFields;
+      hiddenFieldPaths,
+      hiddenAncestorsFieldPaths,
+    };
   }
 
-  private createRecord(field: Field, createStruct: boolean): PropertyRecord {
-    const pathToRootField: Field[] = [field];
-    let currField = field;
-    while (currField.parent) {
-      currField = currField.parent;
-      pathToRootField.push(currField);
-    }
-    pathToRootField.reverse();
+  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): PropertyRecord {
+    const pathToRootField = createFieldPath(field);
 
     if (createStruct) {
-      // need to remove the first element because the Field information is in [currField]
+      const rootField = pathToRootField[0];
       const pathToFieldFromRoot = pathToRootField.slice(1);
-      return ContentBuilder.createPropertyRecord(currField, this._contentItem, pathToFieldFromRoot);
+      return ContentBuilder.createPropertyRecord(rootField, this._contentItem, {
+        exclusiveIncludePath: pathToFieldFromRoot,
+        hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, rootField),
+      });
     }
 
     let item = this._contentItem;
-    // need to remove the last element because the Field information is in [field]
+    // need to remove the last element because the Field information is in `field`
     const pathUpToField = pathToRootField.slice(undefined, -1);
     for (const parentField of pathUpToField) {
       if (item.isFieldMerged(parentField.name))
-        return this.createRecord(field, true);
+        return this.createRecord(field, true, hiddenFieldPaths);
 
       const nestedContentValues = item.values[parentField.name];
       if (!Value.isNestedContent(nestedContentValues))
@@ -182,19 +204,28 @@ class PropertyDataBuilder {
           }
           if (record.value.valueFormat === PropertyValueFormat.Struct) {
             // for structs just include all their members
-            for (const nestedField of field.nestedFields)
+            for (const nestedField of field.nestedFields) {
+              if (!record.value.members[nestedField.name]) {
+                // it is possible that struct specifies a property and record doesn't have this member
+                // due to that property being in `hiddenFieldPaths` when creating the record
+                continue;
+              }
               addRecord(nestedField, record.value.members[nestedField.name]);
+            }
             return;
           }
+        }
+        if (record.value.valueFormat === PropertyValueFormat.Struct && Object.keys(record.value.members).length === 0) {
+          // don't include struct properties with no members
+          return;
         }
         addRecord(field, record);
       };
 
       // create/add records for each field
       for (const field of fields.fields[category.name]) {
-        // do not want to see structs in favorite category
-        // if we create everything with struct and multiple property fields share the same parent, then two records would show the same path
-        const record = category.name === favoritesCategoryName ? this.createRecord(field, false) : this.createRecord(field, true);
+        const shouldCreateAncestorsStructure = !containsFieldPath(fields.hiddenAncestorsFieldPaths, createFieldPath(field));
+        const record = this.createRecord(field, shouldCreateAncestorsStructure, fields.hiddenFieldPaths);
         if (field.isNestedContentField())
           handleNestedContentRecord(field, record);
         else
@@ -360,3 +391,28 @@ const createDefaultPropertyData = (): PropertyData => ({
   categories: [],
   records: {},
 });
+
+const createFieldPath = (field: Field): Field[] => {
+  const path = [field];
+  let currField = field;
+  while (currField.parent) {
+    currField = currField.parent;
+    path.push(currField);
+  }
+  path.reverse();
+  return path;
+};
+
+const fieldPathsMatch = (lhs: Field[], rhs: Field[]): boolean => {
+  if (lhs.length !== rhs.length)
+    return false;
+  for (let i = 0; i < lhs.length; ++i) {
+    if (lhs[i] !== rhs[i])
+      return false;
+  }
+  return true;
+};
+
+const containsFieldPath = (container: Field[][], path: Field[]): boolean => {
+  return container.some((candidate) => fieldPathsMatch(candidate, path));
+};
