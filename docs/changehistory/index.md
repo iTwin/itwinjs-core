@@ -1,63 +1,121 @@
-# 1.4.0 Change Notes
+# 1.5.0 Change Notes
+
+## Upgrade to TypeScript 3.6.2
+
+* This version now uses TypeScript version 3.6.2. It is recommended that consumers of iModel.js packages upgrade to that version too.
+
+## Display system enhancements
+
+### Performance enhancements
+
+* Made display system enhancement for rendering directly to screen. This significantly improves performance on iOS and some non-Chrome browsers. For models that aren't bound by primitive count, this can be a more than doubling of FPS.
+  * To enable this enhancement, see `RenderSystem.Options.directScreenRendering`.
+
+## Blank IModelConnections
+
+* The new method [IModelConnection.createBlank]($frontend) provides a way for applications to create an `IModelConnection` that is not connected to an iModel or a backend. This is useful for using iModel.js to show *just* Reality data (reality meshes, point clouds, terrain, etc.), background maps, and other non-iModel-based graphics without requiring a backend server.
+* There is also a new convenience method [SpatialViewState.createBlank]($frontend) to create a *blank* spatial view appropriate for these non-iModel based visualizations. See the [Blank Connection]($docs/learning/frontend/BlankConnection.md) learning article for further details.
+
+## Favorite Properties
+
+### Summary
+
+* Favorite properties manager stores favorite properties and determines whether a given field should be displayed as favorite.
+* `PresentationPropertyDataProvider` puts all favorite properties into an additional 'Favorite' category that's displayed
+at the top and is auto-expanded.
+
+### Details
+
+* `FavoritePropertyManager` (accessed through singleton `Presentation.favoriteProperties`) in `@bentley/presentation-frontend`
+  * `add(field: Field): void`
+    * For `PropertiesField` and `NestedContentField` - marks all properties in the field as favorite.
+    * For other types of fields - marks the field as favorite by its name.
+  * `remove(field: Field): void`
+    * For `PropertiesField` and `NestedContentField` - removes all properties in the field from favorites list.
+    * For other types of fields - removes the field from favorites list.
+  * `has(field: Field): boolean`
+    * For `PropertiesField` and `NestedContentField` - returns true if field contains at least one favorite property.
+    * For other types of fields - returns true if field's name is in the favorites list.
+  * `onFavoritesChanged: BeEvent<() => void>`
+    * Event that's raised when favorite properties change.
+
+* `ContentDataProvider` (base of `PresentationPropertyDataProvider` and `PresentationTableDataProvider`) in `@bentley/presentation-components`
+  * `getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>`
+    * Returns a field object that was used to create the given `PropertyRecord`. The field contains meta-data about the properties whose values are stored in the `PropertyRecord`.
+
+### Usage example
+
+```ts
+// needs to be called once before working with `Presentation` API
+Presentation.initialize();
+
+<...>
+
+private _onAddFavorite = (propertyField: Field) => {
+  Presentation.favoriteProperties.add(propertyField);
+  this.setState({ contextMenu: undefined });
+}
+private _onRemoveFavorite = (propertyField: Field) => {
+  Presentation.favoriteProperties.remove(propertyField);
+  this.setState({ contextMenu: undefined });
+}
+
+private async buildContextMenu(args: PropertyGridContextMenuArgs) {
+  const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
+  const items: ContextMenuItemInfo[] = [];
+  if (field !== undefined) {
+    if (Presentation.favoriteProperties.has(field)) {
+      items.push({
+        key: "remove-favorite",
+        onSelect: () => this._onRemoveFavorite(field),
+        title: "Add this property to Favorite category",
+        label: "Add to Favorite",
+      });
+    } else {
+      items.push({
+        key: "add-favorite",
+        onSelect: () => this._onAddFavorite(field),
+        title: "Remove this property from Favorite category",
+        label: "Remove from Favorite",
+      });
+    }
+  }
+}
+```
 
 ## Geometry
 
 ### Summary
-  * New class `CurveFactory` to hold future static methods that construct multi-component curves.
-     * First method: CurveFactory.createFilletsInLineString
-  * `PolyfaceBuilder` static method to build xy triangulation of array of points.
-  * `PolyfaceClip` static method to compute cut-fill between 2.5D meshes.
+
+* PolyfaceQuery method to partition by connectivity
+* Optimize triangle flipping
+* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
+
 ### Details
-  * `Arc3d`
-    * (static) `Arc3d.createFilletArc(point0: Point3d, point1: Point3d, point2: Point3d, radius: number): ArcBlendData;`
-      * Create (if possible) a single arc that is a fillet between line segment from `point0` to `point` and `point1` to `point`.
-      * Annotated return with fractional position of tangent, fractions from middle point outward along segments.
-      * `point1` (middle points) is commonly called the PI (point of inflection) for the linestring being filleted.
-      * See new support interface `ArcBlendData`
-  * `CurveFactory`
-    * (static) `CurveFactory.createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge?: boolean): Path | undefined;`
-      * Create a path with alternating lines and tangent arcs.
-  * `CurveCollection`
-    * (static) `static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;`
-      * Find any curve primitive in the collection.  Evaluate it at a fractional position.
-  * `CurveCurve`
-    * (static) `CurveCurve.intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[]`
-      * Same as existing (deprecated) `CurveCurve.intersectionXY`, but bundles pairs of `CurveLocationDetailPair` in single array more useful for processing.
-  * `Point3dArray`
-    * (static) `Point3dArray.static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;`
-      * Return `hullPoints` in CCW order around the hull
-      * Return all non-hull points in `insidePoints`
+
+* `PolyfaceQuery` methods
+  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has an edge in common with others in the same array.
+  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has (at least) a vertex in common with others in the same array.
+  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
+    * Return an array of polyfaces
+    * Each polyface has all the facets from one of the input facet index arrays.
+  * `PolyfaceVisitor`
+    * `myVisitor.setNumWrap (numWrap: number)`
+      * set numWrap for subsequent visits.
   * `PolyfaceBuilder`
-    * (static) `PolyfaceBuilder.pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;`
-      * Return triangulated mesh within the convex hull around the points.
-  * `PolyfaceClip`
-    * (static)
-  * `ClipPlane` and `ConvexClipPlaneSet` support
-    * `myClipPlane.convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d): void;`
-       * Split a polygon across a plane; optimized for `GrowableXYZArray` storage.
-    * (static) `ClipPlane.createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;`
-       * (preexisting) added optional `result` parameter
-  * `Ray3d`
-    * `interval = myRay.intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d`
-      * return fractions (along the ray `myRay`) where the `myRay` enters and exits a `Range3d`, or null `Range1d` if no in intersection.
-
-## Enhancements to IModelDb.exportGraphics
-
-  * IModelDb.exportGraphics and associated functions are now out of beta and tagged as public.
-  * Added [ExportGraphicsOptions.minBRepFeatureSize]($backend) to improve performance when exporting graphics for breps.
-
-## Authorization Changes
-
-### Changes to Agent authorization
-
-[OidcAgentClient]($clients-backend) now implements [IAuthorizationClient]($clients). The following methods are now marked deprecated -
-* [OidcAgentClient.getToken]($clients-backend)
-* [OidcAgentClient.refreshToken]($clients-backend)
-
-The access token is now stored in the client, and can be accessed by calling [OidcAgentClient.getAccessToken]($clients-backend). This method
-validates and refreshes the token as necessary.
-
-### Swapping backend authorization to use agents
-
-The API now allows swapping the authorization client used for backend operations like downloading a briefcase or change sets of an iModel.
-Set [IModelHost.authorizationClient]($backend) to the required authorization client - e.g., an instance of [OidcAgentClient]($clients-backend).
+    * `myBuilder.reversed: boolean`
+      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
+      * Carry `twoSided` flag through polyface builder actions.
+  * `PolyfaceQuery`
+    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+  * `UnionFindContext`
+    * New class to implement the UnionFind algorithm on a set of integers.
+  * Classes for 2d range searching.
+    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
+    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
+    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
+    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.

@@ -1,6 +1,56 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
+- Support animation and classification in same tiles.
+- Always adjust y dimension for aspectRatioSkew
+- added support for blank IModelConnections
+- Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled.
+- add checkbrowser.js, refine i18n in Tool
+- #168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
+- Refine frustum calculation for planar projection to create a tighter fit. 
+- #136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip.
+- Various EVSM shadow tweaks
+- Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue.
+- Fixed elements failing to draw if transparency was overridden to be exactly 15.
+- Fix marker decorations not updating when markers are added or deleted; fix canvas decorations sometimes failing to display in Firefox.
+- Fix a problem with direct-screen rendering (black viewport in certain situations).
+- Fix edges of instanced geometry failing to respect edge color override defined by display style.
+- Fix transparency for some shaders
+- Added Viewport.readImageToCanvas() to obtain viewport image as a HTMLCanvasElement with a 2d rendering context.
+- Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails.
+- Fix failure to locate an element if it also serves as a modeled element for a sub-model.
+- #168481 Added missing iconSpec to measure and clipping tools.
+- Correct ViewClipByPlaneTool icon.
+- Add minArgs, maxArgs, and parseAndRun to PluginTool
+- Added ToolTipProvider interface to augment tool tips.
+- Fix tool tip formatting for terrain.
+- Enable display of non-spatial, spatially-located models in spatial views.
+- Add public Tool method translateWithNamespace to allow plugins to supply their own localization.
+- Support animation of models within RenderSchedule.
+- Added support for iterating a Viewport's per-model category visibility overrides.
+- Refine planar projection frustum
+- Added autoExpand property to PropertyRecord
+- Add QuantityFormatter.onInitialized method to set up default formatting and parsing Specs. Update SetupCameraTool to use new LengthDescription (PropertyDescription)
+- Only apply pseudo-rtc workaround if no true RTC exist in GLTF
+- Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport.
+- #168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs.
+- Fix for pinch zoom not being smooth.
+- Added facility to load plugins specified in settings at startup
+- Add ability for QuantityFormatter to generate station formatting.
+- Allow cached tiles to be used across revisions as long as the model geometry has not changed.
+- Tool Assistance changes per UX Design
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- Added touch entries to ToolAssistanceImage
+- Only force update of tool assistance for touch tap that creates the touch cursor.
+- upgrade to TypeScript 3.6.2
+- Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

@@ -2,6 +2,30 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "1.5.0",
+      "tag": "@bentley/presentation-backend_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix handling of requests that throw, including canceled requests"
+          },
+          {
+            "comment": "Add ability to force-load all hierarchy with the given imodel and ruleset"
+          },
+          {
+            "comment": "Add module descriptions"
+          },
+          {
+            "comment": "Added Ruleset and Ruleset variables to request options to make presentation backend stateless"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/presentation-backend_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

@@ -1,6 +1,22 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- Improved configurability of KeyinField.
+- DiagnosticsPanel can now be configured to exclude specific components.
+- Added tool to get geometry summary
+- Added ability to cycle through previously-entered key-ins in KeyinField.
+- Add tool to transition between reality and BIM models (demonstrate model animation).
+- Added key-in to toggle debugging tooltips.
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- upgrade to TypeScript 3.6.2
+- Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

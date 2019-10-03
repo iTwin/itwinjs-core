@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- 170215: Setup a way to supply authorization through the backend for frontend requests. 
+- 174346: Error log when downloading change sets should include iModelId for context. 
+- Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. 
+- Add IModelDb.Elements.hasSubModel
+- Make ExternalSourceAspect.checksum optional
+- Clear statement cache after schema import
+- Added utility to summarize geometry
+- filter redundant hub requests
+- Removed the `[propName: string]: any` indexed from Entity. It prevented the compiler from catching many basic errors.
+- briefcase editing and undo/redo
+- api
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

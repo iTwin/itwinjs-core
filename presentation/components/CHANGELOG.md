@@ -1,6 +1,17 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Implemented favorite properties logic in PresentationPropertyDataProvider
+- Add a helper method `IPresentationTreeDataProvider.loadHierarchy()`
+- Added autoExpand property to RelatedPropertiesSpecification and NestedContentField
+- Add module descriptions
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

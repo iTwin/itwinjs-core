@@ -1,6 +1,15 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- remove unexecuted code from BuildIModelJsModule
+- Do not separate .css files when building plugins in prod mode.
+- Ensure presentation-components.css is loaded
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

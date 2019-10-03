@@ -1,6 +1,20 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Eliminate use of Math.hypot
+- add copyright headers to recent new files
+- Task#175760 and Task#175773
+- Polyface mesh "split to components"
+- Fast range filtering for cutFill (and other) searches
+- Incremental Edge Flipping, optimize Delauney circle test
+- Explicit undefined initialization for HalfEdge
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

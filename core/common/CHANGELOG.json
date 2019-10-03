@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-common_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added support for blank IModelConnections"
+          },
+          {
+            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend. "
+          },
+          {
+            "comment": "Add DisplayStyleSettings.subCategoryOverrides"
+          },
+          {
+            "comment": "Make ExternalSourceAspectProps.checksum optional"
+          },
+          {
+            "comment": "Added geometry primitive typing and geometry summary types"
+          },
+          {
+            "comment": "Support animation of models within RenderSchedule."
+          },
+          {
+            "comment": "Refine planar projection frustum calculation"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/imodeljs-common_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",
