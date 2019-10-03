@@ -552,10 +552,18 @@ export class Matrix4d implements BeJSONFunctions {
    * @returns undefined if dividing by the determinant looks unsafe.
    */
   public createInverse(result?: Matrix4d): Matrix4d | undefined {
+    const maxAbs0 = this.maxAbs();
+    if (maxAbs0 === 0.0)
+      return undefined;
+    const divMaxAbs = 1.0 / maxAbs0;
     const columnA = this.columnX();
     const columnB = this.columnY();
     const columnC = this.columnZ();
     const columnD = this.columnW();
+    columnA.scale(divMaxAbs, columnA);
+    columnB.scale(divMaxAbs, columnB);
+    columnC.scale(divMaxAbs, columnC);
+    columnD.scale(divMaxAbs, columnD);
     const rowBCD = Point4d.perpendicularPoint4dPlane(columnB, columnC, columnD);
     const rowCDA = Point4d.perpendicularPoint4dPlane(columnA, columnD, columnC);  // order for negation !
     const rowDAB = Point4d.perpendicularPoint4dPlane(columnD, columnA, columnB);
@@ -572,13 +580,14 @@ export class Matrix4d implements BeJSONFunctions {
     const determinantB = rowCDA.dotProduct(columnB);
     const determinantC = rowDAB.dotProduct(columnC);
     const determinantD = rowABC.dotProduct(columnD);
-    const maxValue = result.maxAbs();
+    const maxAbs1 = result.maxAbs();
     if (determinantA * determinantB > 0.0
       && determinantA * determinantC > 0.0
       && determinantA * determinantD > 0.0) {
-      const a = Geometry.conditionalDivideCoordinate(1.0, determinantA);
-      if (a !== undefined && Geometry.conditionalDivideCoordinate(maxValue, determinantA)) {
-        result.scaleRowsInPlace(a, a, a, a);
+      const divisionTest = Geometry.conditionalDivideCoordinate(maxAbs1, determinantA);
+      if (divisionTest !== undefined) {
+        const b = divMaxAbs / determinantA;
+        result.scaleRowsInPlace(b, b, b, b);
         return result;
       }
     } else {

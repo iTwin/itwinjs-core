@@ -4236,7 +4236,7 @@ export class Sample {
     static createRecursiveFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[];
     static createRegularPolygon(cx: number, cy: number, cz: number, angle0: Angle, r: number, numPoint: number, close: boolean): Point3d[];
     static createRigidAxes(): Matrix3d[];
-    static createRigidTransforms(): Transform[];
+    static createRigidTransforms(distanceScale?: number): Transform[];
     static createRotationalSweepLineSegment3dArc3dLineString3d(capped: boolean): SolidPrimitive[];
     static createRuledSweeps(includeParityRegion?: boolean, includeBagOfCurves?: boolean): RuledSweep[];
     static createScaleSkewMatrix3d(): Matrix3d[];
@@ -4914,6 +4914,8 @@ export class Vector3d extends XYZ {
     signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle;
     signedRadiansTo(vector1: Vector3d, vectorW: Vector3d): number;
     sizedCrossProduct(vectorB: Vector3d, productLength: number, result?: Vector3d): Vector3d | undefined;
+    smallerUnorientedAngleTo(vectorB: Vector3d): Angle;
+    smallerUnorientedRadiansTo(vectorB: Vector3d): number;
     tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number;
     tryNormalizeInPlace(smallestMagnitude?: number): boolean;
     unitCrossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d | undefined;

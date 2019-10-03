@@ -571,24 +571,31 @@ export class Sample {
   }
 
   /**
-   * Return an array of rigid transforms.  This includes (at least)
-   * * Identity
-   * * translation with identity matrix
-   * * rotation around origin and arbitrary vector
-   * * rotation around space point and arbitrary vector
+   * * Return an array of rigid transforms.  This includes (at least)
+   *   * Identity
+   *   * translation with identity matrix
+   *   * rotation around origin and arbitrary vector
+   *   * rotation around space point and arbitrary vector
+   * * use given refDistance is crude distance of translation and distance to fixed point.
    */
-  public static createRigidTransforms(): Transform[] {
+  public static createRigidTransforms(distanceScale: number = 4.0): Transform[] {
+    const distanceScale3 = distanceScale / 3.0;
+    const distanceScale4 = distanceScale / 4.0;
     return [
       Transform.createIdentity(),
-      Transform.createTranslationXYZ(1, 2, 3),
+      Transform.createTranslationXYZ(distanceScale3 * 1, distanceScale3 * 2, distanceScale3 * 3),
       Transform.createFixedPointAndMatrix(
         Point3d.create(0, 0, 0),
         Matrix3d.createRotationAroundVector(
           Vector3d.unitY(), Angle.createDegrees(10)) as Matrix3d),
       Transform.createFixedPointAndMatrix(
-        Point3d.create(4, 1, -2),
+        Point3d.create(distanceScale4 * 4, distanceScale4 * 1, -distanceScale4 * 2),
         Matrix3d.createRotationAroundVector(
-          Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d)];
+          Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d),
+      Transform.createFixedPointAndMatrix(
+        Point3d.create(distanceScale4 * 4, distanceScale4 * 1, -distanceScale4 * 2),
+        Matrix3d.createRotationAroundVector(
+          Vector3d.create(-2, 1, 4), Angle.createDegrees(35)) as Matrix3d)];
   }
   /**
    * Return a single rigid transform with all terms nonzero.
