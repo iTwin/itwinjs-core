@@ -531,6 +531,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
+  private _removeEventListener?: () => void;
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
   private readonly _curVertexAttribStates: VertexAttribState[] = [
@@ -650,7 +651,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     });
 
     this.resourceCache.clear();
-    IModelConnection.onClose.removeListener(this.removeIModelMap);
+    if (undefined !== this._removeEventListener) {
+      this._removeEventListener();
+      this._removeEventListener = undefined;
+    }
   }
 
   public onInitialized(): void {
@@ -806,7 +810,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     this.resourceCache = new Map<IModelConnection, IdMap>();
 
     // Make this System a subscriber to the the IModelConnection onClose event
-    IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+    this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
     canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
   }

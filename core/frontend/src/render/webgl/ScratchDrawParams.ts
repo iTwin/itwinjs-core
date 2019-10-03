@@ -20,3 +20,9 @@ export function getDrawParams(target: Target, geometry: CachedGeometry): DrawPar
   drawParams!.init(progParams, geometry);
   return drawParams!;
 }
+
+/** @internal */
+export function freeDrawParams(): void {
+  progParams = undefined;
+  drawParams = undefined;
+}

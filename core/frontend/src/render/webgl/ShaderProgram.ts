@@ -298,8 +298,15 @@ export class ShaderProgramExecutor {
     this.changeProgram(program);
   }
 
+  public static freeParams(): void {
+    this._params = undefined;
+  }
+
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
-  public dispose() { this.changeProgram(undefined); }
+  public dispose() {
+    this.changeProgram(undefined);
+    ShaderProgramExecutor.freeParams();
+  }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
   public get isValid() { return undefined !== this._program; }

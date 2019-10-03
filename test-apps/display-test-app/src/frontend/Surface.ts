@@ -347,6 +347,12 @@ export class Surface {
       this.forceClose(window);
   }
 
+  public closeAllViewers(): void {
+    const viewers = this._windows.filter((x) => x instanceof Viewer);
+    for (const viewer of viewers)
+      this.forceClose(viewer);
+  }
+
   private forceClose(window: Window): void {
     // NB: Must do this before computing index, because closing a Viewer changes the selected viewport which changes focus which changes order of windows in array.
     window.onClosing();

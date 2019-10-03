@@ -59,6 +59,8 @@ import {
   ViewFlags,
   SolarShadows,
 } from "@bentley/imodeljs-common";
+import { freeDrawParams } from "./ScratchDrawParams";
+import { Primitive } from "./Primitive";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -836,6 +838,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._batches = [];
 
     this._activeClipVolume = dispose(this._activeClipVolume);
+
+    freeDrawParams();
+    ShaderProgramExecutor.freeParams();
+    Primitive.freeParams();
   }
 
   public get wantInvertBlackBackground(): boolean { return false; }
@@ -1294,6 +1300,8 @@ export class OnScreenTarget extends Target {
   private _usingWebGLCanvas = false;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private _animationFraction: number = 0;
+  private _scratchProgParams?: ShaderProgramParams;
+  private _scratchDrawParams?: DrawParams;
 
   private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
@@ -1306,6 +1314,9 @@ export class OnScreenTarget extends Target {
   public dispose() {
     this._fbo = dispose(this._fbo);
     this._blitGeom = dispose(this._blitGeom);
+    this._scratchProgParams = undefined;
+    this._scratchDrawParams = undefined;
+
     super.dispose();
   }
 
@@ -1366,17 +1377,15 @@ export class OnScreenTarget extends Target {
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
-  private static _progParams?: ShaderProgramParams;
-  private static _drawParams?: DrawParams;
-  private static getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
-    if (undefined === this._progParams) {
-      this._progParams = new ShaderProgramParams();
-      this._drawParams = new DrawParams();
+  private getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
+    if (undefined === this._scratchProgParams) {
+      this._scratchProgParams = new ShaderProgramParams();
+      this._scratchDrawParams = new DrawParams();
     }
 
-    this._progParams.init(target);
-    this._drawParams!.init(this._progParams, geom);
-    return this._drawParams!;
+    this._scratchProgParams.init(target);
+    this._scratchDrawParams!.init(this._scratchProgParams, geom);
+    return this._scratchDrawParams!;
   }
 
   protected _endPaint(): void {
@@ -1384,7 +1393,7 @@ export class OnScreenTarget extends Target {
       return;
 
     const system = System.instance;
-    const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
+    const drawParams = this.getDrawParams(this, this._blitGeom);
 
     system.frameBufferStack.pop();
     system.applyRenderState(RenderState.defaults);
