@@ -125,9 +125,11 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
     this.contentRange = props.contentRange;
-    const worldContentRange = this.rootTile.computeWorldContentRange();
-    if (!worldContentRange.isNull)
-      this.iModel.displayedExtents.extendRange(worldContentRange);
+    if (!this.loader.isContentUnbounded) {
+      const worldContentRange = this.rootTile.computeWorldContentRange();
+      if (!worldContentRange.isNull)
+        this.iModel.displayedExtents.extendRange(worldContentRange);
+    }
 
     const admin = IModelApp.tileAdmin;
     this.expirationTime = Tile.LoadPriority.Context === this.loader.priority ? admin.realityTileExpirationTime : admin.tileExpirationTime;
