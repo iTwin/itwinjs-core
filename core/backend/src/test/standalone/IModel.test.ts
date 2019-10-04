@@ -75,7 +75,7 @@ function exerciseGc() {
   }
 }
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   let imodel1: IModelDb;
   let imodel2: IModelDb;
   let imodel3: IModelDb;
@@ -1420,7 +1420,7 @@ describe.only("iModel", () => {
 
   });
 
-  it.only("EDE crash", () => {
+  it("EDE crash", () => {
     const db = IModelDb.createSnapshot(__dirname + "test.bim", { rootSubject: { name: "Test" } });
     const categoryId = SpatialCategory.insert(db, "0x10", "category", SubCategoryAppearance.defaults);
     const modelId = PhysicalModel.insert(db, IModelDb.rootSubjectId, "model");
