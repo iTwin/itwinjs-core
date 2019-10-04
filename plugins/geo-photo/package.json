@@ -1,6 +1,6 @@
 {
-  "name": "geo-photo",
-  "version": "1.0.0",
+  "name": "@bentley/geo-photo-plugin",
+  "version": "1.6.0-dev.7",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {

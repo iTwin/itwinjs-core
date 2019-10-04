@@ -6,7 +6,7 @@ dependencies:
   '@microsoft/api-extractor': 7.1.5
   '@openid/appauth': 1.2.6
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
-  '@rush-temp/build-tools': 'file:projects/build-tools.tgz_b746e4b92f2e8b004a19c04edb854443'
+  '@rush-temp/build-tools': 'file:projects/build-tools.tgz_353c3f99096f00020341ec95a9703f35'
   '@rush-temp/certa': 'file:projects/certa.tgz'
   '@rush-temp/config-loader': 'file:projects/config-loader.tgz'
   '@rush-temp/core-integration-tests': 'file:projects/core-integration-tests.tgz'
@@ -20,7 +20,7 @@ dependencies:
   '@rush-temp/export-obj': 'file:projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:projects/frontend-devtools.tgz'
-  '@rush-temp/geo-photo': 'file:projects/geo-photo.tgz'
+  '@rush-temp/geo-photo-plugin': 'file:projects/geo-photo-plugin.tgz'
   '@rush-temp/geometry-core': 'file:projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz_request@2.88.0'
   '@rush-temp/imodel-from-reality-model': 'file:projects/imodel-from-reality-model.tgz'
@@ -58,7 +58,7 @@ dependencies:
   '@rush-temp/wms-plugin-example': 'file:projects/wms-plugin-example.tgz'
   '@svgdotjs/svg.js': 3.0.13
   '@testing-library/dom': 5.6.1
-  '@testing-library/react': 8.0.9_react-dom@16.10.1+react@16.10.1
+  '@testing-library/react': 8.0.9_react-dom@16.10.2+react@16.10.2
   '@types/body-parser': 1.17.1
   '@types/bunyan': 1.8.6
   '@types/bunyan-seq': 0.2.2
@@ -75,7 +75,7 @@ dependencies:
   '@types/detect-port': 1.1.0
   '@types/enzyme': 3.9.3
   '@types/express': 4.17.1
-  '@types/faker': 4.1.5
+  '@types/faker': 4.1.6
   '@types/file-saver': 2.0.1
   '@types/formidable': 1.0.31
   '@types/fs-extra': 4.0.9
@@ -98,7 +98,7 @@ dependencies:
   '@types/object-hash': 1.3.0
   '@types/puppeteer': 1.12.4
   '@types/qs': 6.5.3
-  '@types/react': 16.9.4
+  '@types/react': 16.9.5
   '@types/react-autosuggest': 9.3.11
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': 16.9.1
@@ -158,7 +158,7 @@ dependencies:
   electron: 4.2.11
   electron-chromedriver: 2.0.0
   enzyme: 3.10.0
-  enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+  enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
   enzyme-to-json: 3.4.2_enzyme@3.10.0
   escape-string-regexp: 1.0.5
   event-stream: 4.0.1
@@ -200,7 +200,7 @@ dependencies:
   merge-json: 0.1.0-b.3
   mini-css-extract-plugin: 0.6.0_webpack@4.41.0
   mobx: 5.14.0
-  mobx-react: 5.4.4_mobx@5.14.0+react@16.10.1
+  mobx-react: 5.4.4_mobx@5.14.0+react@16.10.2
   mocha: 5.2.0
   mocha-junit-reporter: 1.23.1_mocha@5.2.0
   mocha-webpack: 2.0.0-beta.0_mocha@5.2.0+webpack@4.41.0
@@ -227,23 +227,23 @@ dependencies:
   raf: 3.4.1
   raf-schd: 4.0.2
   raw-loader: 0.5.1
-  react: 16.10.1
-  react-autosuggest: 9.4.3_react@16.10.1
-  react-compound-slider: 1.2.2_react@16.10.1
-  react-data-grid: 6.0.1_react-dom@16.10.1+react@16.10.1
+  react: 16.10.2
+  react-autosuggest: 9.4.3_react@16.10.2
+  react-compound-slider: 1.2.2_react@16.10.2
+  react-data-grid: 6.0.1_react-dom@16.10.2+react@16.10.2
   react-dev-utils: 6.1.1
-  react-dnd: 5.0.0_react@16.10.1
+  react-dnd: 5.0.0_react@16.10.2
   react-dnd-html5-backend: 5.0.1
   react-dnd-test-backend: 5.0.1
-  react-dom: 16.10.1_react@16.10.1
-  react-highlight-words: 0.14.0_react@16.10.1
-  react-markdown: 3.6.0_react@16.10.1
-  react-redux: 5.1.1_react@16.10.1+redux@4.0.4
-  react-resize-detector: 3.4.0_react@16.10.1
-  react-router-dom: 4.3.1_react@16.10.1
+  react-dom: 16.10.2_react@16.10.2
+  react-highlight-words: 0.14.0_react@16.10.2
+  react-markdown: 3.6.0_react@16.10.2
+  react-redux: 5.1.1_react@16.10.2+redux@4.0.4
+  react-resize-detector: 3.4.0_react@16.10.2
+  react-router-dom: 4.3.1_react@16.10.2
   react-split-pane: 0.1.77
-  react-test-renderer: 16.10.1_react@16.10.1
-  react-virtualized: 9.21.1_react-dom@16.10.1+react@16.10.1
+  react-test-renderer: 16.10.2_react@16.10.2
+  react-virtualized: 9.21.1_react-dom@16.10.2+react@16.10.2
   readline: 1.3.0
   recursive-readdir: 2.2.2
   redux: 4.0.4
@@ -611,12 +611,12 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-Y1T2bjtvQMewffn1CJ28kpgnuvPYKsBcZMagEH0ppfEMZPDc8AkkEnTk4smrGZKw0cblNB3lhM2FMnpfLExlHg==
-  /@testing-library/react/8.0.9_react-dom@16.10.1+react@16.10.1:
+  /@testing-library/react/8.0.9_react-dom@16.10.2+react@16.10.2:
     dependencies:
       '@babel/runtime': 7.6.2
       '@testing-library/dom': 5.6.1
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
     dev: false
     engines:
       node: '>=8'
@@ -733,7 +733,7 @@ packages:
   /@types/enzyme/3.9.3:
     dependencies:
       '@types/cheerio': 0.22.13
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==
@@ -756,10 +756,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-VfH/XCP0QbQk5B5puLqTLEeFgR8lfCJHZJKkInZ9mkYd+u8byX0kztXEQxEk4wZXJs8HI+7km2ALXjn4YKcX9w==
-  /@types/faker/4.1.5:
+  /@types/faker/4.1.6:
     dev: false
     resolution:
-      integrity: sha512-YSDqoBEWYGdNk53xSkkb6REaUaVSlIjxIAGjj/nbLzlZOit7kUU+nA2zC2qQkIVO4MQ+3zl4Sz7aw+kbpHHHUQ==
+      integrity: sha512-Tp4xHecf4UX8VOvSfsL1QlMbOfukGbbAhQbHvPIcX56NmNql4MAamV7E/K5zdYfxlk8FTcxwsaCZTxM79zJzPQ==
   /@types/file-saver/2.0.1:
     dev: false
     resolution:
@@ -822,7 +822,7 @@ packages:
       integrity: sha512-cS5owqtwzLN5kY+l+KgKdRJ/Cee8tlmQoGQuIE9tWnSmS3JMKzmxo2HIAk2wODMifGwO20d62xZQLYz+RLfXmw==
   /@types/hoist-non-react-statics/3.3.1:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       hoist-non-react-statics: 3.3.0
     dev: false
     resolution:
@@ -982,32 +982,32 @@ packages:
       integrity: sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
   /@types/react-autosuggest/9.3.11:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-OY0N0BZ2MiD4W3oTquRvpqYucExiLNgXgu4JkXZ2gKs4lONiS7B+fSotiQnjLdGIy+4sW3tzTvfbQfPgTZGInA==
   /@types/react-data-grid/4.0.2:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==
   /@types/react-dom/16.9.1:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-1S/akvkKr63qIUWVu5IKYou2P9fHLb/P2VAwyxVV85JGaGZTcUniMiTuIqM3lXFB25ej6h+CYEQ27ERVwi6eGA==
   /@types/react-highlight-words/0.11.1:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-zBrtCb0qhn6XqmkIPZhDzLjZ41k4ppeGoC5iaZotAwBEThGO0BrcpRTLWX69oWplnuBsbiNFvHj0IcT6gl9mdg==
   /@types/react-redux/7.1.4:
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       hoist-non-react-statics: 3.3.0
       redux: 4.0.4
     dev: false
@@ -1015,14 +1015,14 @@ packages:
       integrity: sha512-SUV/7d+4L7C1Db/D4pqASgN1V1U2HnDEhEol9lYpPSguS76xFboZzf5ha2hTz6v31cUewyC7WksMh1q8JxhebQ==
   /@types/react-resize-detector/3.1.1:
     dependencies:
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-3FVExywb3kC0p+dKRd2IC6wmUlfurx/9J0b1mtHd0rigwZWNJC79fnbTJaMmLNM8PhhgqDwaNOhFdv0u9YGAzA==
   /@types/react-router-dom/4.3.5:
     dependencies:
       '@types/history': 4.7.3
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-router': 5.1.1
     dev: false
     resolution:
@@ -1030,24 +1030,24 @@ packages:
   /@types/react-router/5.1.1:
     dependencies:
       '@types/history': 4.7.3
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-S7SlFAPb7ZKr6HHMW0kLHGcz8pyJSL0UdM+JtlWthDqKUWwr7E6oPXuHgkofDI8dKCm16slg8K8VCf5pZJquaA==
   /@types/react-virtualized/9.21.4:
     dependencies:
       '@types/prop-types': 15.7.3
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
     dev: false
     resolution:
       integrity: sha512-bvyAp67FNvFIz1GPaonAx6c6Ll8Cr9mVRgUTn5HHSKw5zmqTaxB7qnIl3is+fp7xwXDNBSw191pxpy3ACtTbyw==
-  /@types/react/16.9.4:
+  /@types/react/16.9.5:
     dependencies:
       '@types/prop-types': 15.7.3
       csstype: 2.6.6
     dev: false
     resolution:
-      integrity: sha512-ItGNmJvQ0IvWt8rbk5PLdpdQhvBVxAaXI9hDlx7UMd8Ie1iMIuwMNiKeTfmVN517CdplpyXvA22X4zm4jGGZnw==
+      integrity: sha512-jQ12VMiFOWYlp+j66dghOWcmDDwhca0bnlcTxS4Qz/fh5gi6wpaZDthPEu/Gc/YlAuO87vbiUXL8qKstFvuOaA==
   /@types/request-promise-native/1.0.17:
     dependencies:
       '@types/request': 2.48.3
@@ -1411,7 +1411,7 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-iINE2tAiCnLjr1CQYRf0h3GSX6w=
-  /airbnb-prop-types/2.15.0_react@16.10.1:
+  /airbnb-prop-types/2.15.0_react@16.10.2:
     dependencies:
       array.prototype.find: 2.1.0
       function.prototype.name: 1.1.1
@@ -1422,8 +1422,8 @@ packages:
       object.entries: 1.1.0
       prop-types: 15.7.2
       prop-types-exact: 1.2.0
-      react: 16.10.1
-      react-is: 16.10.1
+      react: 16.10.2
+      react-is: 16.10.2
     dev: false
     peerDependencies:
       react: ^0.14 || ^15.0.0 || ^16.0.0-alpha
@@ -4056,17 +4056,17 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-QWgTO0K7BcOKNbGuQ5fIKYqzaeA=
-  /enzyme-adapter-react-16/1.12.1_fcacae8c3ba232c227fa8df750feb4ab:
+  /enzyme-adapter-react-16/1.12.1_43241304e96b402ec68e34a9f9e057e2:
     dependencies:
       enzyme: 3.10.0
-      enzyme-adapter-utils: 1.12.0_react@16.10.1
+      enzyme-adapter-utils: 1.12.0_react@16.10.2
       object.assign: 4.1.0
       object.values: 1.1.0
       prop-types: 15.7.2
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
-      react-is: 16.10.1
-      react-test-renderer: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
+      react-is: 16.10.2
+      react-test-renderer: 16.10.2_react@16.10.2
       semver: 5.7.1
     dev: false
     peerDependencies:
@@ -4075,14 +4075,14 @@ packages:
       react-dom: ^16.0.0-0
     resolution:
       integrity: sha512-GB61gvY97XvrA6qljExGY+lgI6BBwz+ASLaRKct9VQ3ozu0EraqcNn3CcrUckSGIqFGa1+CxO5gj5is5t3lwrw==
-  /enzyme-adapter-utils/1.12.0_react@16.10.1:
+  /enzyme-adapter-utils/1.12.0_react@16.10.2:
     dependencies:
-      airbnb-prop-types: 2.15.0_react@16.10.1
+      airbnb-prop-types: 2.15.0_react@16.10.2
       function.prototype.name: 1.1.1
       object.assign: 4.1.0
-      object.fromentries: 2.0.0
+      object.fromentries: 2.0.1
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       semver: 5.7.1
     dev: false
     peerDependencies:
@@ -5534,7 +5534,7 @@ packages:
       integrity: sha512-rqcy4pJo55FTTLWt+bU8ukscqHeE/e9KWvsOW2b/a3afxQZhwkQdT1rPPCJ0rYXdj4vNcasY8zHTH+jF/qStxw==
   /hoist-non-react-statics/3.3.0:
     dependencies:
-      react-is: 16.10.1
+      react-is: 16.10.2
     dev: false
     resolution:
       integrity: sha512-0XsbTXxgiaCDYDIWFcwkmerZPSwywfUqYmwT4jzewKTQSWoE6FCMoUVOeBJWK3E/CrWbxRG3m5GzY4lnIwGRBA==
@@ -7738,11 +7738,11 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
-  /mobx-react/5.4.4_mobx@5.14.0+react@16.10.1:
+  /mobx-react/5.4.4_mobx@5.14.0+react@16.10.2:
     dependencies:
       hoist-non-react-statics: 3.3.0
       mobx: 5.14.0
-      react: 16.10.1
+      react: 16.10.2
       react-lifecycles-compat: 3.0.4
     dev: false
     peerDependencies:
@@ -8414,7 +8414,7 @@ packages:
       node: '>= 0.4'
     resolution:
       integrity: sha512-l+H6EQ8qzGRxbkHOd5I/aHRhHDKoQXQ8g0BYt4uSweQU1/J6dZUOyWh9a2Vky35YCKjzmgxOzta2hH6kf9HuXA==
-  /object.fromentries/2.0.0:
+  /object.fromentries/2.0.1:
     dependencies:
       define-properties: 1.1.3
       es-abstract: 1.15.0
@@ -8424,7 +8424,7 @@ packages:
     engines:
       node: '>= 0.4'
     resolution:
-      integrity: sha512-9iLiI6H083uiqUuvzyY6qrlmc/Gz8hLQFOcb/Ri/0xXFkSNS3ctV+CbE6yM2+AnkYfOB3dGjdzC0wrMLIhQICA==
+      integrity: sha512-PUQv8Hbg3j2QX0IQYv3iAGCbGcu4yY4KQ92/dhA4sFSixBmSmp13UpDLs6jGK8rBtbmhNNIK99LD2k293jpiGA==
   /object.getownpropertydescriptors/2.0.3:
     dependencies:
       define-properties: 1.1.3
@@ -9614,7 +9614,7 @@ packages:
       '@jest/types': 24.9.0
       ansi-regex: 4.1.0
       ansi-styles: 3.2.1
-      react-is: 16.10.1
+      react-is: 16.10.2
     dev: false
     engines:
       node: '>= 6'
@@ -9677,7 +9677,7 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      react-is: 16.10.1
+      react-is: 16.10.2
     dev: false
     resolution:
       integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -9935,21 +9935,21 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==
-  /react-autosuggest/9.4.3_react@16.10.1:
+  /react-autosuggest/9.4.3_react@16.10.2:
     dependencies:
       prop-types: 15.7.2
-      react: 16.10.1
-      react-autowhatever: 10.2.0_react@16.10.1
+      react: 16.10.2
+      react-autowhatever: 10.2.0_react@16.10.2
       shallow-equal: 1.2.0
     dev: false
     peerDependencies:
       react: '>=0.14.7'
     resolution:
       integrity: sha512-wFbp5QpgFQRfw9cwKvcgLR8theikOUkv8PFsuLYqI2PUgVlx186Cz8MYt5bLxculi+jxGGUUVt+h0esaBZZouw==
-  /react-autowhatever/10.2.0_react@16.10.1:
+  /react-autowhatever/10.2.0_react@16.10.2:
     dependencies:
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       react-themeable: 1.1.0
       section-iterator: 2.0.0
     dev: false
@@ -9957,22 +9957,22 @@ packages:
       react: '>=0.14.7'
     resolution:
       integrity: sha512-dqHH4uqiJldPMbL8hl/i2HV4E8FMTDEdVlOIbRqYnJi0kTpWseF9fJslk/KS9pGDnm80JkYzVI+nzFjnOG/u+g==
-  /react-compound-slider/1.2.2_react@16.10.1:
+  /react-compound-slider/1.2.2_react@16.10.2:
     dependencies:
       '@babel/runtime': 7.6.2
       d3-array: 1.2.4
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       warning: 3.0.0
     dev: false
     peerDependencies:
       react: ^16.3.0
     resolution:
       integrity: sha512-G2wD5CTjAOTjCnslpfjopB5qU6Kg0//3ChPifezSGtMali/1M/CRDCJAh6SQOgyDaQlNi/QV1Noo8Tvnjy2gcg==
-  /react-data-grid/6.0.1_react-dom@16.10.1+react@16.10.1:
+  /react-data-grid/6.0.1_react-dom@16.10.2+react@16.10.2:
     dependencies:
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
     dev: false
     peerDependencies:
       react: ^16.0.0
@@ -10026,60 +10026,60 @@ packages:
     dev: false
     resolution:
       integrity: sha1-ABl5UOYedl75pEvRcenKyFFqc9c=
-  /react-dnd/5.0.0_react@16.10.1:
+  /react-dnd/5.0.0_react@16.10.2:
     dependencies:
       dnd-core: 4.0.5
       hoist-non-react-statics: 2.5.5
       invariant: 2.2.4
       lodash: 4.17.15
-      react: 16.10.1
-      recompose: 0.27.1_react@16.10.1
+      react: 16.10.2
+      recompose: 0.27.1_react@16.10.2
       shallowequal: 1.1.0
     dev: false
     peerDependencies:
       react: '>= 16.3'
     resolution:
       integrity: sha1-xKF8cBCeRW2tiQa+g45u6PMrBrU=
-  /react-dom/16.10.1_react@16.10.1:
+  /react-dom/16.10.2_react@16.10.2:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       prop-types: 15.7.2
-      react: 16.10.1
-      scheduler: 0.16.1
+      react: 16.10.2
+      scheduler: 0.16.2
     dev: false
     peerDependencies:
       react: ^16.0.0
     resolution:
-      integrity: sha512-SmM4ZW0uug0rn95U8uqr52I7UdNf6wdGLeXDmNLfg3y5q5H9eAbdjF5ubQc3bjDyRrvdAB2IKG7X0GzSpnn5Mg==
+      integrity: sha512-kWGDcH3ItJK4+6Pl9DZB16BXYAZyrYQItU4OMy0jAkv5aNqc+mAKb4TpFtAteI6TJZu+9ZlNhaeNQSVQDHJzkw==
   /react-error-overlay/5.1.6:
     dev: false
     resolution:
       integrity: sha512-X1Y+0jR47ImDVr54Ab6V9eGk0Hnu7fVWGeHQSOXHf/C2pF9c6uy3gef8QUeuUiWlNb0i08InPSE5a/KJzNzw1Q==
-  /react-highlight-words/0.14.0_react@16.10.1:
+  /react-highlight-words/0.14.0_react@16.10.2:
     dependencies:
       highlight-words-core: 1.2.2
       memoize-one: 4.0.3
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
     dev: false
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0-0
     resolution:
       integrity: sha512-DNp1zAIiNqs1nunFv5K67ca0KVSKihbmpZLNwqQj61yMK6zf8YHoGrpLlEt7WEqj1227FOm41FuXiv9KZgcwdA==
-  /react-is/16.10.1:
+  /react-is/16.10.2:
     dev: false
     resolution:
-      integrity: sha512-BXUMf9sIOPXXZWqr7+c5SeOKJykyVr2u0UDzEf4LNGc6taGkQe1A9DFD07umCIXz45RLr9oAAwZbAJ0Pkknfaw==
+      integrity: sha512-INBT1QEgtcCCgvccr5/86CfD71fw9EPmDxgiJX4I2Ddr6ZsV6iFXsuby+qWJPtmNuMY0zByTsG4468P7nHuNWA==
   /react-lifecycles-compat/3.0.4:
     dev: false
     resolution:
       integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
-  /react-markdown/3.6.0_react@16.10.1:
+  /react-markdown/3.6.0_react@16.10.2:
     dependencies:
       mdast-add-list-metadata: 1.0.1
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       remark-parse: 5.0.0
       unified: 6.2.0
       unist-util-visit: 1.4.1
@@ -10089,15 +10089,15 @@ packages:
       react: ^15.0.0 || ^16.0.0
     resolution:
       integrity: sha512-TV0wQDHHPCEeKJHWXFfEAKJ8uSEsJ9LgrMERkXx05WV/3q6Ig+59KDNaTmjcoqlCpE/sH5PqqLMh4t0QWKrJ8Q==
-  /react-redux/5.1.1_react@16.10.1+redux@4.0.4:
+  /react-redux/5.1.1_react@16.10.2+redux@4.0.4:
     dependencies:
       '@babel/runtime': 7.6.2
       hoist-non-react-statics: 3.3.0
       invariant: 2.2.4
       loose-envify: 1.4.0
       prop-types: 15.7.2
-      react: 16.10.1
-      react-is: 16.10.1
+      react: 16.10.2
+      react-is: 16.10.2
       react-lifecycles-compat: 3.0.4
       redux: 4.0.4
     dev: false
@@ -10106,33 +10106,33 @@ packages:
       redux: ^2.0.0 || ^3.0.0 || ^4.0.0-0
     resolution:
       integrity: sha512-LE7Ned+cv5qe7tMV5BPYkGQ5Lpg8gzgItK07c67yHvJ8t0iaD9kPFPAli/mYkiyJYrs2pJgExR2ZgsGqlrOApg==
-  /react-resize-detector/3.4.0_react@16.10.1:
+  /react-resize-detector/3.4.0_react@16.10.2:
     dependencies:
       lodash: 4.17.15
       lodash-es: 4.17.15
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       resize-observer-polyfill: 1.5.1
     dev: false
     peerDependencies:
       react: ^16.0.0
     resolution:
       integrity: sha512-T96I8Iqa1hGWyooeFA2Sl6FdPoMhXWINfEKg2/EJLxhP37+/94VNuyuyz9CRqpmApD83IWRR+lbB3r0ADMoKJg==
-  /react-router-dom/4.3.1_react@16.10.1:
+  /react-router-dom/4.3.1_react@16.10.2:
     dependencies:
       history: 4.10.1
       invariant: 2.2.4
       loose-envify: 1.4.0
       prop-types: 15.7.2
-      react: 16.10.1
-      react-router: 4.3.1_react@16.10.1
+      react: 16.10.2
+      react-router: 4.3.1_react@16.10.2
       warning: 4.0.3
     dev: false
     peerDependencies:
       react: '>=15'
     resolution:
       integrity: sha512-c/MlywfxDdCp7EnB7YfPMOfMD3tOtIjrQlj/CKfNMBxdmpJP8xcz5P/UAFn3JbnQCNUxsHyVVqllF9LhgVyFCA==
-  /react-router/4.3.1_react@16.10.1:
+  /react-router/4.3.1_react@16.10.2:
     dependencies:
       history: 4.10.1
       hoist-non-react-statics: 2.5.5
@@ -10140,7 +10140,7 @@ packages:
       loose-envify: 1.4.0
       path-to-regexp: 1.7.0
       prop-types: 15.7.2
-      react: 16.10.1
+      react: 16.10.2
       warning: 4.0.3
     dev: false
     peerDependencies:
@@ -10161,25 +10161,25 @@ packages:
     dev: false
     resolution:
       integrity: sha512-ywYLSjNkxKHiZOqNlso9PZByNEY+FTyh3C+7uuziK0xFXu9xzdyfHwg4S9iyiRRoPCR4k2LqaBBsWVmSBwCWYQ==
-  /react-test-renderer/16.10.1_react@16.10.1:
+  /react-test-renderer/16.10.2_react@16.10.2:
     dependencies:
       object-assign: 4.1.1
       prop-types: 15.7.2
-      react: 16.10.1
-      react-is: 16.10.1
-      scheduler: 0.16.1
+      react: 16.10.2
+      react-is: 16.10.2
+      scheduler: 0.16.2
     dev: false
     peerDependencies:
       react: ^16.0.0
     resolution:
-      integrity: sha512-VT8nd7XrrUV7MQPxeIuH7WstfrK2A8kgcMwGUtVXa0ja+CiYkxdmLYNjwX1L7irRF7ydzJJWiSLsQf2xBj4Xaw==
+      integrity: sha512-k9Qzyev6cTIcIfrhgrFlYQAFxh5EEDO6ALNqYqmKsWVA7Q/rUMTay5nD3nthi6COmYsd4ghVYyi8U86aoeMqYQ==
   /react-themeable/1.1.0:
     dependencies:
       object-assign: 3.0.0
     dev: false
     resolution:
       integrity: sha1-fURm3ZsrX6dQWHJ4JenxUro3mg4=
-  /react-virtualized/9.21.1_react-dom@16.10.1+react@16.10.1:
+  /react-virtualized/9.21.1_react-dom@16.10.2+react@16.10.2:
     dependencies:
       babel-runtime: 6.26.0
       clsx: 1.0.4
@@ -10187,8 +10187,8 @@ packages:
       linear-layout-vector: 0.0.1
       loose-envify: 1.4.0
       prop-types: 15.7.2
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
       react-lifecycles-compat: 3.0.4
     dev: false
     peerDependencies:
@@ -10196,7 +10196,7 @@ packages:
       react-dom: ^15.3.0 || ^16.0.0-alpha
     resolution:
       integrity: sha512-E53vFjRRMCyUTEKuDLuGH1ld/9TFzjf/fFW816PE4HFXWZorESbSTYtiZz1oAjra0MminaUU1EnvUxoGuEFFPA==
-  /react/16.10.1:
+  /react/16.10.2:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
@@ -10205,7 +10205,7 @@ packages:
     engines:
       node: '>=0.10.0'
     resolution:
-      integrity: sha512-2bisHwMhxQ3XQz4LiJJwG3360pY965pTl/MRrZYxIBKVj4fOHoDs5aZAkYXGxDRO1Li+SyjTAilQEbOmtQJHzA==
+      integrity: sha512-MFVIq0DpIhrHFyqLU0S3+4dIcBhhOvBE8bJ/5kHPVOVaGdo0KuiQzpcjCPsf585WvhypqtrMILyoE2th6dT+Lw==
   /read-chunk/1.0.1:
     dev: false
     engines:
@@ -10303,13 +10303,13 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha1-hSBLVNuoLVdC4oyWdW70OvUOM4Q=
-  /recompose/0.27.1_react@16.10.1:
+  /recompose/0.27.1_react@16.10.2:
     dependencies:
       babel-runtime: 6.26.0
       change-emitter: 0.1.6
       fbjs: 0.8.17
       hoist-non-react-statics: 2.5.5
-      react: 16.10.1
+      react: 16.10.2
       react-lifecycles-compat: 3.0.4
       symbol-observable: 1.2.0
     dev: false
@@ -10782,13 +10782,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
-  /scheduler/0.16.1:
+  /scheduler/0.16.2:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
     dev: false
     resolution:
-      integrity: sha512-MIuie7SgsqMYOdCXVFZa8SKoNorJZUWHW8dPgto7uEHn1lX3fg2Gu0TzgK8USj76uxV7vB5eRMnZs/cdEHg+cg==
+      integrity: sha512-BqYVWqwz6s1wZMhjFvLfVR5WXP7ZY32M/wYPo04CcuPM7XZEbV2TBNW7Z0UkguPTl0dWMA59VbNXxK6q+pHItg==
   /schema-utils/0.3.0:
     dependencies:
       ajv: 5.5.2
@@ -13507,7 +13507,7 @@ packages:
       integrity: sha512-MCEnghN+fTjvZbKkSaEuYn7LUM6xhfQYtamgNluIG4dgkH5u/3/nQVeBO0VhHKWsEfaFKNIkZ+Xw8w/ilrS0lw==
       tarball: 'file:projects/bentleyjs-core.tgz'
     version: 0.0.0
-  'file:projects/build-tools.tgz_b746e4b92f2e8b004a19c04edb854443':
+  'file:projects/build-tools.tgz_353c3f99096f00020341ec95a9703f35':
     dependencies:
       '@microsoft/api-extractor': 7.1.5
       cache-require-paths: 0.3.0
@@ -13519,7 +13519,7 @@ packages:
       cpx: 1.5.0
       cross-spawn: 6.0.5
       css-loader: 2.1.1_webpack@4.41.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       file-loader: 1.1.11_webpack@4.41.0
       fs-extra: 6.0.1
@@ -13870,7 +13870,7 @@ packages:
       integrity: sha512-5qQ1/8forDPVUPTeQ21qn2tigZlfr5RZdC6x6QblPwp8+fyGMhN8n5jjIJENkjS+aqOMkYVBQOktcC+nAWA9+A==
       tarball: 'file:projects/frontend-devtools.tgz'
     version: 0.0.0
-  'file:projects/geo-photo.tgz':
+  'file:projects/geo-photo-plugin.tgz':
     dependencies:
       '@types/node': 10.14.1
       rimraf: 2.7.1
@@ -13881,10 +13881,10 @@ packages:
       webpack: 4.41.0_webpack@4.41.0
       webpack-cli: 3.3.9_webpack@4.41.0
     dev: false
-    name: '@rush-temp/geo-photo'
+    name: '@rush-temp/geo-photo-plugin'
     resolution:
-      integrity: sha512-UsM45odjCZWouPFaSqSJksggHlOD5muiFDhVyU4+Dr1W1NjLVsprwHtxEHONNDT5AZE6tPJI8NnOUWNdEBsENg==
-      tarball: 'file:projects/geo-photo.tgz'
+      integrity: sha512-EHbrjQ0zgV4QedOcJkHX136dovw023V6x8QpBOfM4wrzf0cPIfHu0+jfWBut7snIxE8TsKuKSJqAH74dyT1Nvw==
+      tarball: 'file:projects/geo-photo-plugin.tgz'
     version: 0.0.0
   'file:projects/geometry-core.tgz':
     dependencies:
@@ -14202,13 +14202,13 @@ packages:
     dependencies:
       '@types/classnames': 2.2.9
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/react-redux': 7.1.4
       classnames: 2.2.6
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
-      react-redux: 5.1.1_react@16.10.1+redux@4.0.4
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
+      react-redux: 5.1.1_react@16.10.2+redux@4.0.4
       redux: 4.0.4
       rimraf: 2.7.1
       svg-baker-runtime: 1.4.3
@@ -14290,7 +14290,7 @@ packages:
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
       '@types/deep-equal': 1.0.1
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/lolex': 2.1.3
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
@@ -14327,7 +14327,7 @@ packages:
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
       '@types/deep-equal': 1.0.1
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/mocha': 5.2.7
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.3
@@ -14364,10 +14364,10 @@ packages:
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
       '@types/enzyme': 3.9.3
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/lodash': 4.14.141
       '@types/mocha': 5.2.7
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.3
@@ -14377,15 +14377,15 @@ packages:
       cpx: 1.5.0
       cross-env: 5.2.1
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       faker: 4.1.0
       ignore-styles: 5.0.1
       lodash: 4.17.15
       mocha: 5.2.0
       nyc: 14.1.1
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
       rimraf: 2.7.1
       sinon: 7.5.0
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
@@ -14406,7 +14406,7 @@ packages:
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
       '@types/deep-equal': 1.0.1
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/lodash': 4.14.141
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
@@ -14447,7 +14447,7 @@ packages:
       '@types/chai-jest-snapshot': 1.3.5
       '@types/cpx': 1.5.0
       '@types/deep-equal': 1.0.1
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
       '@types/rimraf': 2.0.2
@@ -14486,7 +14486,7 @@ packages:
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.31
       '@types/bunyan': 1.8.6
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       autoprefixer: 8.6.5
       electron: 4.2.11
@@ -14495,8 +14495,8 @@ packages:
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 3.3.1
       postcss-loader: 2.1.6
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
       rimraf: 2.7.1
       semver: 5.7.1
       tslint: 5.20.0_typescript@3.6.3
@@ -14628,7 +14628,7 @@ packages:
   'file:projects/ui-components.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.31
-      '@testing-library/react': 8.0.9_react-dom@16.10.1+react@16.10.1
+      '@testing-library/react': 8.0.9_react-dom@16.10.2+react@16.10.2
       '@types/chai': 4.2.3
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
@@ -14636,11 +14636,11 @@ packages:
       '@types/chai-string': 1.4.2
       '@types/classnames': 2.2.9
       '@types/enzyme': 3.9.3
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/linkify-it': 2.1.0
       '@types/lodash': 4.14.141
       '@types/mocha': 5.2.7
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': 16.9.1
       '@types/react-highlight-words': 0.11.1
@@ -14657,7 +14657,7 @@ packages:
       classnames: 2.2.6
       cross-env: 5.2.1
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       eventemitter2: 5.0.1
       faker: 4.1.0
@@ -14670,16 +14670,16 @@ packages:
       mocha: 5.2.0
       nyc: 14.1.1
       raf: 3.4.1
-      react: 16.10.1
-      react-compound-slider: 1.2.2_react@16.10.1
-      react-data-grid: 6.0.1_react-dom@16.10.1+react@16.10.1
-      react-dnd: 5.0.0_react@16.10.1
+      react: 16.10.2
+      react-compound-slider: 1.2.2_react@16.10.2
+      react-data-grid: 6.0.1_react-dom@16.10.2+react@16.10.2
+      react-dnd: 5.0.0_react@16.10.2
       react-dnd-html5-backend: 5.0.1
       react-dnd-test-backend: 5.0.1
-      react-dom: 16.10.1_react@16.10.1
-      react-highlight-words: 0.14.0_react@16.10.1
-      react-resize-detector: 3.4.0_react@16.10.1
-      react-virtualized: 9.21.1_react-dom@16.10.1+react@16.10.1
+      react-dom: 16.10.2_react@16.10.2
+      react-highlight-words: 0.14.0_react@16.10.2
+      react-resize-detector: 3.4.0_react@16.10.2
+      react-virtualized: 9.21.1_react-dom@16.10.2+react@16.10.2
       resize-observer-polyfill: 1.5.1
       rimraf: 2.7.1
       rxjs: 6.5.3
@@ -14702,7 +14702,7 @@ packages:
   'file:projects/ui-core.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.31
-      '@testing-library/react': 8.0.9_react-dom@16.10.1+react@16.10.1
+      '@testing-library/react': 8.0.9_react-dom@16.10.2+react@16.10.2
       '@types/chai': 4.2.3
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
@@ -14711,7 +14711,7 @@ packages:
       '@types/enzyme': 3.9.3
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-autosuggest': 9.3.11
       '@types/react-dom': 16.9.1
       '@types/sinon': 5.0.7
@@ -14724,7 +14724,7 @@ packages:
       cross-env: 5.2.1
       csstype: 2.6.6
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       ignore-styles: 5.0.1
       jsdom: 11.12.0
@@ -14733,9 +14733,9 @@ packages:
       nyc: 14.1.1
       prop-types: 15.7.2
       raf: 3.4.1
-      react: 16.10.1
-      react-autosuggest: 9.4.3_react@16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-autosuggest: 9.4.3_react@16.10.2
+      react-dom: 16.10.2_react@16.10.2
       rimraf: 2.7.1
       sinon: 7.5.0
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
@@ -14756,18 +14756,18 @@ packages:
       '@bentley/icons-generic': 0.0.31
       '@bentley/icons-generic-webfont': 0.0.31
       '@testing-library/dom': 5.6.1
-      '@testing-library/react': 8.0.9_react-dom@16.10.1+react@16.10.1
+      '@testing-library/react': 8.0.9_react-dom@16.10.2+react@16.10.2
       '@types/chai': 4.2.3
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
       '@types/chai-spies': 1.0.1
       '@types/classnames': 2.2.9
       '@types/enzyme': 3.9.3
-      '@types/faker': 4.1.5
+      '@types/faker': 4.1.6
       '@types/lodash': 4.14.141
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/react-redux': 7.1.4
       '@types/react-resize-detector': 3.1.1
@@ -14781,7 +14781,7 @@ packages:
       classnames: 2.2.6
       cross-env: 5.2.1
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -14793,12 +14793,12 @@ packages:
       nyc: 14.1.1
       oidc-client: 1.7.1
       raf: 3.4.1
-      react: 16.10.1
-      react-dnd: 5.0.0_react@16.10.1
+      react: 16.10.2
+      react-dnd: 5.0.0_react@16.10.2
       react-dnd-html5-backend: 5.0.1
-      react-dom: 16.10.1_react@16.10.1
-      react-redux: 5.1.1_react@16.10.1+redux@4.0.4
-      react-resize-detector: 3.4.0_react@16.10.1
+      react-dom: 16.10.2_react@16.10.2
+      react-redux: 5.1.1_react@16.10.2+redux@4.0.4
+      react-resize-detector: 3.4.0_react@16.10.2
       react-split-pane: 0.1.77
       redux: 4.0.4
       rimraf: 2.7.1
@@ -14831,7 +14831,7 @@ packages:
       '@types/highlight.js': 9.12.3
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/react-router-dom': 4.3.5
       '@types/sinon': 5.0.7
@@ -14843,7 +14843,7 @@ packages:
       cross-env: 5.2.1
       css-loader: 2.1.1_webpack@4.41.0
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       highlight.js: 9.14.2
       html-webpack-plugin: 4.0.0-alpha.2_webpack@4.41.0
@@ -14855,10 +14855,10 @@ packages:
       raf: 3.4.1
       raf-schd: 4.0.2
       raw-loader: 0.5.1
-      react: 16.10.1
-      react-dom: 16.10.1_react@16.10.1
-      react-markdown: 3.6.0_react@16.10.1
-      react-router-dom: 4.3.1_react@16.10.1
+      react: 16.10.2
+      react-dom: 16.10.2_react@16.10.2
+      react-markdown: 3.6.0_react@16.10.2
+      react-router-dom: 4.3.1_react@16.10.2
       rimraf: 2.7.1
       sass-loader: 7.3.1_webpack@4.41.0
       sinon: 7.5.0
@@ -14890,7 +14890,7 @@ packages:
       '@bentley/icons-generic-webfont': 0.0.31
       '@types/classnames': 2.2.9
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/react-redux': 7.1.4
       '@types/semver': 5.5.0
@@ -14900,11 +14900,11 @@ packages:
       electron-chromedriver: 2.0.0
       immutable: 3.8.2
       mobx: 5.14.0
-      mobx-react: 5.4.4_mobx@5.14.0+react@16.10.1
+      mobx-react: 5.4.4_mobx@5.14.0+react@16.10.2
       npm-run-all: 4.1.5
-      react: 16.10.1
-      react-compound-slider: 1.2.2_react@16.10.1
-      react-dom: 16.10.1_react@16.10.1
+      react: 16.10.2
+      react-compound-slider: 1.2.2_react@16.10.2
+      react-dom: 16.10.2_react@16.10.2
       redux: 4.0.4
       rimraf: 2.7.1
       semver: 5.7.1
@@ -14927,7 +14927,7 @@ packages:
       '@types/glob': 5.0.36
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.4
+      '@types/react': 16.9.5
       '@types/react-dom': 16.9.1
       '@types/sinon': 5.0.7
       '@types/tar': 4.0.3
@@ -14946,7 +14946,7 @@ packages:
       cssnano: 4.1.10
       dotenv: 6.2.0
       enzyme: 3.10.0
-      enzyme-adapter-react-16: 1.12.1_fcacae8c3ba232c227fa8df750feb4ab
+      enzyme-adapter-react-16: 1.12.1_43241304e96b402ec68e34a9f9e057e2
       enzyme-to-json: 3.4.2_enzyme@3.10.0
       escape-string-regexp: 1.0.5
       exports-loader: 0.7.0
@@ -14973,10 +14973,10 @@ packages:
       postcss-flexbugs-fixes: 3.3.1
       postcss-loader: 2.1.6
       promise: 8.0.3
-      react: 16.10.1
+      react: 16.10.2
       react-dev-utils: 6.1.1
-      react-dom: 16.10.1_react@16.10.1
-      react-test-renderer: 16.10.1_react@16.10.1
+      react-dom: 16.10.2_react@16.10.2
+      react-test-renderer: 16.10.2_react@16.10.2
       readline: 1.3.0
       rimraf: 2.7.1
       sass-loader: 7.3.1_webpack@4.41.0
@@ -15066,7 +15066,7 @@ specifiers:
   '@rush-temp/export-obj': 'file:./projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:./projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:./projects/frontend-devtools.tgz'
-  '@rush-temp/geo-photo': 'file:./projects/geo-photo.tgz'
+  '@rush-temp/geo-photo-plugin': 'file:./projects/geo-photo-plugin.tgz'
   '@rush-temp/geometry-core': 'file:./projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:./projects/imodel-from-reality-model.tgz'

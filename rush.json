@@ -10,7 +10,8 @@
       "backend",
       "common",
       "tools",
-      "internal"
+      "internal",
+      "plugins"
     ],
     "ignoredNpmScopes": [
       "@types"
@@ -228,6 +229,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/geo-photo-plugin",
+      "projectFolder": "plugins/geo-photo",
+      "reviewCategory": "plugins",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
@@ -284,12 +292,6 @@
     {
       "packageName": "test-tools",
       "projectFolder": "plugins/test-tools",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "geo-photo",
-      "projectFolder": "plugins/geo-photo",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
