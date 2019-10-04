@@ -15,6 +15,13 @@ These options will work for running with electron or for a browser (though speci
 * To specify an output path, simply add the output path to the command. For example, run the command "npm run start:web C:\\\\output\\\\performanceData\\\\" to use this as the base path for where the output will be stored. Keep in mind that any outputPath variable specified in your json config file will be assumed to be a subdirectory of the output path specified when you called your command unless it starts with the name of a drive (i.e. C:\\\\, D:\\\\, etc.).
 * To specify a particular browser that you wish to run in, you can add the option "chrome", "edge", or "firefox" to your command. If you are running intending to use a browser for the frontend, this will cause a new browser window to open to http:\\\\localhost:3000 and begin running the performance test once the backend has finished getting started. However, this option will have no effect if you are running in electron.
 
+## Performance tests on iOS (backend running locally)
+Performance tests on iOS have more restrictions than performance tests run on other platforms:
+* Arguments to the app will be ignored.
+* Results (csv and png files) will be sent to the Documents directory of the iPad. Any path specified in the configuration file will be ignored.
+* The json configuration file used by the app must be present in the Documents directory of the iPad. It must be named MobilePerformanceConfig.json.
+* All bim files referenced by the json configuration file must be present in the Documents directory of the iPad.
+
 ## Configuration json file
 The default configuration file allows you to specify the following:
 * where you want to output the files created by the test program
