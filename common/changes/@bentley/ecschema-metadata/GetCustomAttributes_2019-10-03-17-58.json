@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to get inherited custom attributes from base properties",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Colin.Kerr@bentley.com"
+}
