@@ -8,11 +8,11 @@
     },
     {
       "name": "@bentley/bentleyjs-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/certa",
@@ -36,7 +36,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/imodeljs-clients",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
@@ -60,15 +60,15 @@
     },
     {
       "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -80,7 +80,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-webserver",
@@ -132,7 +132,7 @@
     },
     {
       "name": "@bentley/webpack-tools",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -668,7 +668,7 @@
     },
     {
       "name": "rimraf",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "rxjs",
@@ -756,7 +756,7 @@
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslib",
@@ -764,7 +764,7 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",
@@ -772,7 +772,7 @@
     },
     {
       "name": "tslint-etc",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslint-loader",
@@ -800,7 +800,7 @@
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "typescript-json-schema",
@@ -852,11 +852,11 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "webpack-dev-server",

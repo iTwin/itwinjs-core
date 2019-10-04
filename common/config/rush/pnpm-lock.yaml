@@ -20,7 +20,7 @@ dependencies:
   '@rush-temp/export-obj': 'file:projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:projects/frontend-devtools.tgz'
-  '@rush-temp/geo-photo': 'file:projects/geo-photo.tgz'
+  '@rush-temp/geo-photo-plugin': 'file:projects/geo-photo-plugin.tgz'
   '@rush-temp/geometry-core': 'file:projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz_request@2.88.0'
   '@rush-temp/imodel-from-reality-model': 'file:projects/imodel-from-reality-model.tgz'
@@ -13870,7 +13870,7 @@ packages:
       integrity: sha512-JeDF+/yySgkUbfzrISA3PuWAVLqZzuz36ig9Q6WT/riCAzKxg+cIqG9GoRUKwRwg9GOdr3DDf8lPzU54eakK/A==
       tarball: 'file:projects/frontend-devtools.tgz'
     version: 0.0.0
-  'file:projects/geo-photo.tgz':
+  'file:projects/geo-photo-plugin.tgz':
     dependencies:
       '@types/node': 10.14.1
       rimraf: 2.7.1
@@ -13881,10 +13881,10 @@ packages:
       webpack: 4.41.0_webpack@4.41.0
       webpack-cli: 3.3.9_webpack@4.41.0
     dev: false
-    name: '@rush-temp/geo-photo'
+    name: '@rush-temp/geo-photo-plugin'
     resolution:
-      integrity: sha512-GH4Gs+xDOL63AxPd40MxjcqB6a/ihDvTj1u0/h8veJOcAVQ9RNu+UA+h7iRm6rPGShPFpKkanQNW7bGuqjLgPA==
-      tarball: 'file:projects/geo-photo.tgz'
+      integrity: sha512-GtkgdgOC56qKxgMNOlmI3GLV+Jujcw5XcXkgLvvmVNuGvUJLndWgdsIVfe19Z1KiTRiD6WVKwG9JIxRVltmxvQ==
+      tarball: 'file:projects/geo-photo-plugin.tgz'
     version: 0.0.0
   'file:projects/geometry-core.tgz':
     dependencies:
@@ -15066,7 +15066,7 @@ specifiers:
   '@rush-temp/export-obj': 'file:./projects/export-obj.tgz'
   '@rush-temp/express-server': 'file:./projects/express-server.tgz'
   '@rush-temp/frontend-devtools': 'file:./projects/frontend-devtools.tgz'
-  '@rush-temp/geo-photo': 'file:./projects/geo-photo.tgz'
+  '@rush-temp/geo-photo-plugin': 'file:./projects/geo-photo-plugin.tgz'
   '@rush-temp/geometry-core': 'file:./projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:./projects/imodel-from-reality-model.tgz'
