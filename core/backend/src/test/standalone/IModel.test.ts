@@ -41,7 +41,7 @@ import {
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements, GenericSchema,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1418,28 +1418,6 @@ describe("iModel", () => {
     ede1.delete();
     testImodel.saveChanges("step 4");
 
-  });
-
-  it("EDE crash", () => {
-    const db = IModelDb.createSnapshot(__dirname + "test.bim", { rootSubject: { name: "Test" } });
-    const categoryId = SpatialCategory.insert(db, "0x10", "category", SubCategoryAppearance.defaults);
-    const modelId = PhysicalModel.insert(db, IModelDb.rootSubjectId, "model");
-
-    GenericSchema.registerSchema();
-    const elementProps: GeometricElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      category: categoryId,
-      model: modelId,
-      code: Code.createEmpty(),
-    };
-
-    const aId = db.elements.insertElement(elementProps);
-    const bId = db.elements.insertElement(elementProps);
-    ElementDrivesElement.create(db, aId, bId).insert();
-
-    db.saveChanges();
-    db.elements.deleteElement(aId); // Doesn’t matter which element gets deleted
-    db.saveChanges(); // was crashing the platform (native side)
   });
 
   it("should set EC properties of various types", async () => {
