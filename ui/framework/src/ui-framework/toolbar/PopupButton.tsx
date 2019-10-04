@@ -60,6 +60,7 @@ const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): nod
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
   private _label: string | StringGetter = "";
   private _componentUnmounting = false;
+  private _ref = React.createRef<HTMLDivElement>();
 
   constructor(props: PopupButtonProps) {
     super(props);
@@ -162,14 +163,16 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       <ExpandableItem
         {...this.props}
         panel={this.getExpandedContent()}>
-        <Item
-          title={this.label}
-          onClick={this._toggleIsExpanded}
-          onKeyDown={this._handleKeyDown}
-          icon={icon}
-          onSizeKnown={this.props.onSizeKnown}
-          badge={this.props.betaBadge && <BetaBadge />}
-        />
+        <div ref={this._ref}>
+          <Item
+            title={this.label}
+            onClick={this._toggleIsExpanded}
+            onKeyDown={this._handleKeyDown}
+            icon={icon}
+            onSizeKnown={this.props.onSizeKnown}
+            badge={this.props.betaBadge && <BetaBadge />}
+          />
+        </div>
       </ExpandableItem>
     );
   }
@@ -187,12 +190,18 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     return (
       <DivWithOnOutsideClick
         className={classNames}
-        onOutsideClick={this.minimize}
+        onOutsideClick={this._handleOutsideClick}
       >
         {isFunction<PopupButtonChildrenRenderProp>(this.props.children) ? this.props.children({
           closePanel: this.minimize,
         }) : this.props.children}
       </DivWithOnOutsideClick>
     );
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
+      return;
+    this.minimize();
   }
 }

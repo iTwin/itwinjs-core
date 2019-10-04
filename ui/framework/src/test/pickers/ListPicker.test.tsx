@@ -17,6 +17,7 @@ import {
   ListPickerPropsExtended,
 } from "../../ui-framework";
 import { Item, Group } from "@bentley/ui-ninezone";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -431,6 +432,47 @@ describe("ListPicker", () => {
 
       wrapper1.unmount();
       wrapper2.unmount();
+    });
+  });
+
+  describe("onOutsideClick", () => {
+    it("should minimize on outside click", () => {
+      const spy = sinon.spy();
+      const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
+        title={title}
+        items={listItems}
+        setEnabled={setEnabled}
+        onExpanded={spy}
+      />);
+      sut.setState({ expanded: true });
+      const containedGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      sinon.stub(event, "target").get(() => document.createElement("div"));
+      containedGroup.prop("onOutsideClick")!(event);
+
+      expect(spy.calledOnce).to.be.true;
+    });
+
+    it("should not minimize on outside click", () => {
+      const spy = sinon.spy();
+      const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
+        title={title}
+        items={listItems}
+        setEnabled={setEnabled}
+        onExpanded={spy}
+      />);
+      sut.setState({ expanded: true });
+      const containedGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      containedGroup.prop("onOutsideClick")!(event);
+
+      expect(spy.called).to.be.false;
     });
   });
 

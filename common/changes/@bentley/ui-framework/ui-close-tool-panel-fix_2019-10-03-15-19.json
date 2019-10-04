@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Close tool group panel on toolbar item click.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "gerardas.butkevicius@bentley.com"
+}

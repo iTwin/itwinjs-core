@@ -1541,6 +1541,7 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
 
 interface ToolbarItemProps {
   history: React.ReactNode | undefined;
+  itemRef: React.Ref<HTMLDivElement>;
   onClick: (toolId: string) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   panel: React.ReactNode | undefined;
@@ -1549,26 +1550,37 @@ interface ToolbarItemProps {
 
 class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
   public render() {
-    const { onIsHistoryExtendedChange, tool, ...props } = this.props;
+    const { itemRef, onIsHistoryExtendedChange, tool, ...props } = this.props;
     if (!isToolGroup(tool))
       return (
-        <Item
-          {...props}
-          icon={placeholderIcon}
-          isActive={tool.isActive}
-          isDisabled={tool.isDisabled}
-          onClick={this._handleClick}
-        />
+        <div
+          className="nzdemo-item"
+          ref={itemRef}
+        >
+          <Item
+            {...props}
+            icon={placeholderIcon}
+            isActive={tool.isActive}
+            isDisabled={tool.isDisabled}
+            onClick={this._handleClick}
+          />
+        </div>
       );
 
     if (tool.isOverflow)
       return (
-        <Overflow
-          {...props}
-          isActive={tool.isActive}
-          isDisabled={tool.isDisabled}
-          onClick={this._handleClick}
-        />
+        <div
+          className="nzdemo-item"
+          ref={itemRef}
+        >
+          <Overflow
+            {...props}
+            className="nzdemo-overflow"
+            isActive={tool.isActive}
+            isDisabled={tool.isDisabled}
+            onClick={this._handleClick}
+          />
+        </div>
       );
 
     return (
@@ -1578,12 +1590,17 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
         isDisabled={tool.isDisabled}
         onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
       >
-        <Item
-          icon={placeholderIcon}
-          isActive={tool.isActive}
-          isDisabled={tool.isDisabled}
-          onClick={this._handleClick}
-        />
+        <div
+          className="nzdemo-item"
+          ref={itemRef}
+        >
+          <Item
+            icon={placeholderIcon}
+            isActive={tool.isActive}
+            isDisabled={tool.isDisabled}
+            onClick={this._handleClick}
+          />
+        </div>
       </ExpandableItem>
     );
   }
@@ -1657,7 +1674,7 @@ class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemP
 
 interface ToolbarItemPanelProps {
   onExpandGroup: (toolId: string, trayId: string | undefined) => void;
-  onOutsideClick: (toolId: string) => void;
+  onOutsideClick: (toolId: string, e: MouseEvent) => void;
   onToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onBack: (toolId: string) => void;
   tool: ToolGroup;
@@ -1735,8 +1752,8 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
     this.props.onExpandGroup(this.props.tool.id, trayId);
   }
 
-  private _handleOutsideClick = () => {
-    this.props.onOutsideClick(this.props.tool.id);
+  private _handleOutsideClick = (e: MouseEvent) => {
+    this.props.onOutsideClick(this.props.tool.id, e);
   }
 }
 
@@ -1951,6 +1968,18 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
     },
   };
 
+  private _itemRefs = new Map<string, React.RefObject<HTMLDivElement>>();
+
+  private _getItemRef = (itemId: string) => {
+    const ref = this._itemRefs.get(itemId);
+    if (ref)
+      return ref;
+
+    const newRef = React.createRef<HTMLDivElement>();
+    this._itemRefs.set(itemId, newRef);
+    return newRef;
+  }
+
   public render() {
     const items = Object.keys(this.props.tools).reduce((acc, toolId) => {
       const tool = this.props.tools[toolId];
@@ -1962,7 +1991,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
           key={tool.id}
           onBack={this.props.onPanelBack}
           onExpandGroup={this.props.onOpenPanelGroup}
-          onOutsideClick={this.props.onPanelOutsideClick}
+          onOutsideClick={this._handleOutsideClick}
           onToolClick={this.props.onPanelToolClick}
           tool={tool}
         />
@@ -1982,6 +2011,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
       const item = (
         <ToolbarItem
           history={history}
+          itemRef={this._getItemRef(tool.id)}
           key={tool.id}
           onClick={this.props.onToolClick}
           onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
@@ -1994,6 +2024,15 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
       return acc;
     }, new Array<React.ReactNode>());
     return this.props.children(items);
+  }
+
+  private _handleOutsideClick = (toolId: string, e: MouseEvent) => {
+    const ref = this._getItemRef(toolId);
+    if (!ref.current || !(e.target instanceof Node))
+      return;
+    if (ref.current.contains(e.target))
+      return;
+    this.props.onPanelOutsideClick(toolId);
   }
 }
 

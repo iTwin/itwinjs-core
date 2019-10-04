@@ -386,16 +386,18 @@ exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
     </WithOnOutsideClick>
   }
 >
-  <Item
-    badge={<BetaBadge />}
-    icon={
-      <Unknown
-        iconSpec="icon-process"
-      />
-    }
-    onClick={[Function]}
-    onKeyDown={[Function]}
-    title="keyinbrowser.label"
-  />
+  <div>
+    <Item
+      badge={<BetaBadge />}
+      icon={
+        <Unknown
+          iconSpec="icon-process"
+        />
+      }
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      title="keyinbrowser.label"
+    />
+  </div>
 </ExpandableItem>
 `;

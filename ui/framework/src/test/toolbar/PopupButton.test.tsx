@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { mount, shallow } from "enzyme";
+import { mount, shallow, ReactWrapper } from "enzyme";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -13,6 +13,7 @@ import {
   SyncUiEventDispatcher,
   BaseItemState,
 } from "../../ui-framework";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
 
 describe("<PopupButton />", async () => {
   before(async () => {
@@ -151,5 +152,38 @@ describe("<PopupButton />", async () => {
     </PopupButton>);
     sut.setState({ isPressed: true });
     sut.should.matchSnapshot();
+  });
+
+  it("should minimize on outside click", () => {
+    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    const spy = sinon.spy(sut.instance(), "minimize");
+    const divWithOnOutsideClick = sut.findWhere((w) => {
+      return w.name() === "WithOnOutsideClick";
+    }) as ReactWrapper<WithOnOutsideClickProps>;
+
+    const event = new MouseEvent("");
+    sinon.stub(event, "target").get(() => document.createElement("div"));
+    divWithOnOutsideClick.prop("onOutsideClick")!(event);
+
+    expect(spy.calledOnceWithExactly()).to.be.true;
+  });
+
+  it("should not minimize on outside click", () => {
+    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    const spy = sinon.spy(sut.instance(), "minimize");
+    const divWithOnOutsideClick = sut.findWhere((w) => {
+      return w.name() === "WithOnOutsideClick";
+    }) as ReactWrapper<WithOnOutsideClickProps>;
+
+    const event = new MouseEvent("");
+    divWithOnOutsideClick.prop("onOutsideClick")!(event);
+
+    expect(spy.called).to.be.false;
   });
 });

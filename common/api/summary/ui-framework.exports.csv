@@ -190,6 +190,7 @@ internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePa
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React_2.FunctionComponent
 public;GroupButtonProps 
+internal;GroupItem 
 public;GroupItemDef 
 public;GroupItemProps 
 internal;HitBoxX

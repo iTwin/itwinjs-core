@@ -5,11 +5,12 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { mount, shallow } from "enzyme";
+import { mount, shallow, ReactWrapper } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher } from "../../ui-framework";
+import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem } from "../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
@@ -286,6 +287,41 @@ describe("GroupItem", () => {
       wrapper.update();
 
       wrapper.unmount();
+    });
+
+    it("should minimize on outside click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1, tool2, group1],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      sut.setState({ isPressed: true });
+      const toolGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      sinon.stub(event, "target").get(() => document.createElement("div"));
+      toolGroup.prop("onOutsideClick")!(event);
+
+      expect(sut.state().isPressed).to.be.false;
+    });
+
+    it("should not minimize on outside click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1, tool2, group1],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      sut.setState({ isPressed: true });
+      const toolGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      toolGroup.prop("onOutsideClick")!(event);
+
+      expect(sut.state().isPressed).to.be.true;
     });
   });
 

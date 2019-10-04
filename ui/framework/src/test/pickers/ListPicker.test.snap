@@ -34,15 +34,17 @@ exports[`ListPicker ListPickerBase should render correctly 1`] = `
   setEnabled={[Function]}
   title="Test"
 >
-  <Item
-    icon={
-      <i
-        className="icon icon-list"
-      />
-    }
-    onClick={[Function]}
-    title="Test"
-  />
+  <div>
+    <Item
+      icon={
+        <i
+          className="icon icon-list"
+        />
+      }
+      onClick={[Function]}
+      title="Test"
+    />
+  </div>
 </ExpandableItem>
 `;
 

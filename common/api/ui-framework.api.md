@@ -31,6 +31,7 @@ import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
+import { History } from '@bentley/ui-ninezone';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps as IconProps_2 } from '@bentley/ui-core';
@@ -2260,6 +2261,23 @@ export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
 // @public
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
+
+// @internal
+export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupItemState> {
+    constructor(props: GroupItemComponentProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState): boolean;
+    // (undocumented)
+    readonly state: Readonly<GroupItemState>;
+    }
 
 // @public
 export class GroupItemDef extends ActionButtonItemDef {
