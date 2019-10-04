@@ -16,11 +16,11 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/config-loader",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -188,7 +188,7 @@
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "chai-as-promised",
@@ -472,7 +472,7 @@
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "mocha-junit-reporter",
@@ -696,7 +696,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -852,7 +852,7 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "frontend", "internal", "plugins", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "webpack-cli",

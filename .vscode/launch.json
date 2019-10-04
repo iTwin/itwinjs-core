@@ -93,20 +93,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Clients Tests (Integration)",
-      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/clients",
-      "args": [
-        "--testDir=${workspaceFolder}/core/clients/lib/test",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Clients-Backend Tests (Offline)",
       "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients-backend",
@@ -569,6 +555,43 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "⚠️Clients Tests (Integration - Certa/Backend)",
+      "cwd": "${workspaceRoot}/core/clients/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000"
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "⚠️Clients Tests (Integration - Chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "⚠️Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
@@ -770,6 +793,13 @@
       "configurations": [
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
+      ]
+    },
+    {
+      "name": "✔️Clients Tests (Integration)",
+      "configurations": [
+        "⚠️Clients Tests (Integration - Certa/Backend)",
+        "⚠️Clients Tests (Integration - Chrome)"
       ]
     }
   ],

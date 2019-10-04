@@ -237,7 +237,7 @@ export class ProjectShareClient extends WsgClient {
 
   /**
    * Get folders that meet the specified query
-   * @param requestContext The client request context
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Context Id (e.g., projectId or assetId)
    * @param query ProjectShareQuery
    */
@@ -248,7 +248,7 @@ export class ProjectShareClient extends WsgClient {
 
   /**
    * Get files as specified by the query
-   * @param requestContext The client request context
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Context Id (e.g., projectId or assetId)
    * @param query ProjectShareQuery
    * @note The accessUrl in a ProjectShareFile is only valid for one hour after it has been initialized by the server.
@@ -259,12 +259,15 @@ export class ProjectShareClient extends WsgClient {
   }
 
   /**
-   * Downloads a file given the access url
-   * @param requestContext The client request context
+   * Reads a file as a byte array
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param file ProjectShare file (should include the accessUrl property pointing to the download URL)
+   * @note For use only in node.js. @see readFile for use in the browser
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array> {
+  public async readFileNodeJs(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array> {
     requestContext.enter();
+    if (typeof window !== "undefined")
+      throw new BentleyError(BentleyStatus.ERROR, "Method meant for node.js. For browser use readFile()");
     if (!file.accessUrl)
       throw new BentleyError(BentleyStatus.ERROR, "Supplied file must have an accessUrl", Logger.logError, loggerCategory, () => ({ ...file }));
 
@@ -285,11 +288,57 @@ export class ProjectShareClient extends WsgClient {
   }
 
   /**
+   * Reads a file as a byte array
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param file ProjectShare file (should include the accessUrl property pointing to the download URL)
+   * @param maxByteCount If specified the maximum number of bytes to copy from the file
+   * @note For use only in the browser. @see readFileNodeJs for use in node.js
+   */
+  public async readFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile, maxByteCount?: number): Promise<Uint8Array> {
+    requestContext.enter();
+    if (typeof window === "undefined")
+      throw new BentleyError(BentleyStatus.ERROR, "Method meant only for browser use. For node.js use call readFileNodeJs()", Logger.logError, loggerCategory);
+    if (!file.accessUrl)
+      throw new BentleyError(BentleyStatus.ERROR, "Supplied file must have an accessUrl", Logger.logError, loggerCategory, () => ({ ...file }));
+
+    const response: Response = await fetch(file.accessUrl);
+    if (!response.body)
+      throw new BentleyError(BentleyStatus.ERROR, "Empty file", Logger.logError, loggerCategory, () => ({ ...file }));
+
+    const reader = response.body.getReader();
+
+    // Determine size of stream from "Content-Length" in headers, or meta data on file
+    const contentLengthStr = response.headers.get("Content-Length");
+    const totalByteCount = contentLengthStr ? +contentLengthStr : file.size;
+    if (totalByteCount === undefined)
+      throw new BentleyError(BentleyStatus.ERROR, "Could not determine size of file", Logger.logError, loggerCategory, () => ({ ...file }));
+
+    const copyByteCount = maxByteCount ? Math.min(totalByteCount, maxByteCount) : totalByteCount;
+    const retArray = new Uint8Array(copyByteCount);
+    let offset = 0;
+    while (offset < copyByteCount) {
+      const { done, value: chunk } = await reader.read();
+      if (done)
+        break;
+
+      const byteLengthToCopy = Math.min(chunk.byteLength, copyByteCount - offset);
+      const srcView = new Uint8Array(chunk.buffer, 0, byteLengthToCopy);
+      retArray.set(srcView, offset);
+
+      offset = offset + byteLengthToCopy;
+    }
+
+    if (offset < copyByteCount)
+      throw new BentleyError(BentleyStatus.ERROR, "Error reading file", Logger.logError, loggerCategory, () => ({ ...file, expectedByteCount: copyByteCount, actualByteCount: offset }));
+
+    return retArray;
+  }
+
+  /**
    * Create, update or delete custom properties in a file, and return the new state of the file.
-   * @param requestContext The client request context
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param file ProjectShareFile
-   * @param customProperties Array of Name-Value pairs describing creates and updates to custom properties.
-   * deletes as shown below.
+   * @param updateProperties Array of Name-Value pairs describing creates and updates
    * <pre><code>
    * e.g.,
    * [{
@@ -301,13 +350,26 @@ export class ProjectShareClient extends WsgClient {
    *      "Value": "2.0"
    *  }]
    * </code></pre>
-   * @param Array of custom property names to delete
+   * @param deleteProperties Array of names of custom properties to delete
+   * @return The instance after the changes
    */
-  public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, customProperties: Array<{ Name: string, Value: string }>): Promise<ProjectShareFile> {
+  public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{ Name: string, Value: string }>, deleteProperties?: string[]): Promise<ProjectShareFile> {
+    let customProperties: any = updateProperties;
+    if (deleteProperties) {
+      customProperties = new Array(updateProperties);
+      deleteProperties.forEach((value: string) => customProperties.push({
+        Name: value,
+        IsDeleted: true,
+      }));
+    }
+
+    if (customProperties === undefined)
+      throw new BentleyError(BentleyStatus.ERROR, "No updates or deletes specified", Logger.logError, loggerCategory, () => ({ ...file }));
+
     const updateInstance = new ProjectShareFile();
     updateInstance.wsgId = file.wsgId;
     updateInstance.changeState = "modified"; // TBD: Not sure why we need this to be setup.
-    updateInstance.customProperties = customProperties;
+    updateInstance.customProperties = updateProperties;
 
     const projectShareRequestOptions = {
       CustomOptions: {

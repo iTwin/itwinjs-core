@@ -8,7 +8,8 @@ import {
   BeButton, BeButtonEvent, Cluster, Decorator, DecorateContext, GraphicType, imageElementFromUrl,
   IModelApp, Marker, MarkerImage, MarkerSet, Plugin,
 } from "@bentley/imodeljs-frontend";
-import { GeoPhotos, PhotoFile, PhotoTraverseFunction } from "./geoPhoto";
+import { PhotoFile, PhotoTraverseFunction } from "./PhotoTree";
+import { GeoPhotos } from "./geoPhoto";
 
 /** Marker positioned where there is a geotagged photograph. */
 class GeoPhotoMarker extends Marker {

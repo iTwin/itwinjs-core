@@ -4,7 +4,7 @@
 
 import { Logger, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
-const loggerCategory = "ExifExtractor";
+const loggerCategory = "Plugins.GeoPhoto";
 
 interface TagDefinitions {
   [index: number]: string;
@@ -19,7 +19,7 @@ export type ImageTags = Map<string, ImageTagValue>;
 export interface ImageTagsMap extends ImageTags { } // tslint:disable-line:no-empty-interface
 // Note: Interface to allow circular declaration of TagValue - see https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
 
-export class ExifExtractor {
+export class JpegTagReader {
 
   private static readonly _ExifTagDefinitions: TagDefinitions = {
 
@@ -329,7 +329,7 @@ export class ExifExtractor {
     },
   };
 
-  public static extractFromJpeg(arrayBuffer: ArrayBuffer): ImageTags {
+  public static readTags(arrayBuffer: ArrayBuffer): ImageTags {
     const dataView = new DataView(arrayBuffer);
 
     if ((dataView.getUint8(0) !== 0xFF) || (dataView.getUint8(1) !== 0xD8))
@@ -363,7 +363,7 @@ export class ExifExtractor {
     return outStr;
   }
 
-  private static readTags(file: DataView, tiffStart: number, dirStart: number, strings: TagDefinitions, bigEnd: boolean): ImageTags {
+  private static readTagsAtOffset(file: DataView, tiffStart: number, dirStart: number, strings: TagDefinitions, bigEnd: boolean): ImageTags {
     const entries = file.getUint16(dirStart, !bigEnd);
     const tags = new Map<string, any>();
 
@@ -374,12 +374,12 @@ export class ExifExtractor {
         Logger.logWarning(loggerCategory, "Unknown tag", () => ({ tag: file.getUint16(entryOffset, !bigEnd) }));
         continue;
       }
-      tags.set(tag, this.readTagValue(file, entryOffset, tiffStart, dirStart, bigEnd));
+      tags.set(tag, this.readTagValueAtOffset(file, entryOffset, tiffStart, dirStart, bigEnd));
     }
     return tags;
   }
 
-  private static readTagValue(file: DataView, entryOffset: number, tiffStart: number, _dirStart: number, bigEnd: boolean): ImageTagValue {
+  private static readTagValueAtOffset(file: DataView, entryOffset: number, tiffStart: number, _dirStart: number, bigEnd: boolean): ImageTagValue {
     const type = file.getUint16(entryOffset + 2, !bigEnd),
       numValues = file.getUint32(entryOffset + 4, !bigEnd),
       valueOffset = file.getUint32(entryOffset + 8, !bigEnd) + tiffStart;
@@ -496,7 +496,7 @@ export class ExifExtractor {
     }
     // console.log('*******  thumbnail IFD offset (IFD1) is: %s', IFD1OffsetPointer);
 
-    const thumbTags = this.readTags(dataView, tiffStart, tiffStart + ifd1OffsetPointer, this._IFD1TagDefinitions, bigEnd);
+    const thumbTags = this.readTagsAtOffset(dataView, tiffStart, tiffStart + ifd1OffsetPointer, this._IFD1TagDefinitions, bigEnd);
 
     // EXIF 2.3 specification for JPEG format thumbnail
 
@@ -555,10 +555,10 @@ export class ExifExtractor {
     if (firstIFDOffset < 0x00000008)
       throw new BentleyError(BentleyStatus.ERROR, "Not valid TIFF data! (First offset less than 8) " + file.getUint32(tiffOffset + 4, !bigEnd));
 
-    const tags: ImageTags = this.readTags(file, tiffOffset, tiffOffset + firstIFDOffset, this._TiffTagDefinitions, bigEnd);
+    const tags: ImageTags = this.readTagsAtOffset(file, tiffOffset, tiffOffset + firstIFDOffset, this._TiffTagDefinitions, bigEnd);
 
     if (tags.has("ExifIFDPointer")) {
-      const exifData: ImageTags = this.readTags(file, tiffOffset, tiffOffset + (tags.get("ExifIFDPointer") as number), this._ExifTagDefinitions, bigEnd);
+      const exifData: ImageTags = this.readTagsAtOffset(file, tiffOffset, tiffOffset + (tags.get("ExifIFDPointer") as number), this._ExifTagDefinitions, bigEnd);
       for (const tag of exifData.keys()) {
         switch (tag) {
           case "LightSource":
@@ -600,7 +600,7 @@ export class ExifExtractor {
     }
 
     if (tags.has("GPSInfoIFDPointer")) {
-      const gpsData: ImageTags = this.readTags(file, tiffOffset, tiffOffset + (tags.get("GPSInfoIFDPointer") as number), this._GPSTagDefinitions, bigEnd);
+      const gpsData: ImageTags = this.readTagsAtOffset(file, tiffOffset, tiffOffset + (tags.get("GPSInfoIFDPointer") as number), this._GPSTagDefinitions, bigEnd);
       for (const tag of gpsData.keys()) {
         const vals3: number[] = gpsData.get(tag) as number[];
         switch (tag) {

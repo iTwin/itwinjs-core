@@ -20,6 +20,12 @@ describe("BIMReviewShareClient", () => {
     if (TestConfig.enableMocks)
       return;
 
+    if (typeof window !== undefined) {
+      console.log("BimReviewShareClient has not been setup to work in browser environments");
+      this.skip(); // This client has not been setup to work in browsers
+      return;
+    }
+
     const authToken: AuthorizationToken = await TestConfig.login();
     const accessToken = await bimReviewShareClient.getAccessToken(new ClientRequestContext(), authToken);
     requestContext = new AuthorizedClientRequestContext(accessToken);
