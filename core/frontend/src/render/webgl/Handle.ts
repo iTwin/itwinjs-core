@@ -428,12 +428,10 @@ export class UniformHandle {
 
   private constructor(location: WebGLUniformLocation) { this._location = location; }
 
-  public static create(program: WebGLProgram, name: string, required: boolean = true): UniformHandle | undefined {
+  public static create(program: WebGLProgram, name: string): UniformHandle {
     const location = System.instance.context.getUniformLocation(program, name);
-    if (null === location) {
-      assert(!required, "getUniformLocation failed for " + name);
-      return undefined;
-    }
+    if (null === location)
+      throw new Error("uniform " + name + " not found.");
 
     return new UniformHandle(location);
   }

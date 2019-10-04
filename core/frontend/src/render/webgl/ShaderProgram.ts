@@ -41,7 +41,7 @@ export class Uniform {
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = UniformHandle.create(prog.glProgram, this._name, true);
+      this._handle = UniformHandle.create(prog.glProgram, this._name);
     }
 
     return this.isValid;
@@ -159,24 +159,24 @@ export class ShaderProgram implements IDisposable {
     const gl: WebGLRenderingContext = System.instance.context;
 
     const shader = gl.createShader(type);
-    if (null === shader) {
+    if (null === shader)
       return undefined;
-    }
 
     const src = GL.ShaderType.Vertex === type ? this.vertSource : this.fragSource;
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
-    const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
+    if (!succeeded) {
+      const compileLog = (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " shader failed to compile. Errors: " + gl.getShaderInfoLog(shader) + " Program description: " + this._description;
+      throw new Error(compileLog);
+    }
 
-    assert(succeeded, compileLog);
-    return succeeded ? shader : undefined;
+    return shader;
   }
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
     assert(undefined !== this.glProgram);
-    if (undefined === this._glProgram || null === this._glProgram) { // because WebGL APIs used Thing|null, not Thing|undefined...
+    if (undefined === this._glProgram || null === this._glProgram) // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
-    }
 
     const gl: WebGLRenderingContext = System.instance.context;
     gl.attachShader(this._glProgram, vert);
@@ -193,13 +193,15 @@ export class ShaderProgram implements IDisposable {
 
     const linkLog = gl.getProgramInfoLog(this._glProgram);
     gl.validateProgram(this._glProgram);
-    const validateLog = gl.getProgramInfoLog(this._glProgram);
 
     const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
-    if (!succeeded)
-      assert(succeeded, "Link errors: " + linkLog + " Validate errors: " + validateLog);
+    if (!succeeded) {
+      const validateLog = gl.getProgramInfoLog(this._glProgram);
+      const msg = "Shader program failed to link. Link errors: " + linkLog + " Validation errors: " + validateLog + " Program description: " + this._description;
+      throw new Error(msg);
+    }
 
-    return succeeded;
+    return true;
   }
   public compile(): boolean {
     switch (this._status) {
@@ -218,11 +220,9 @@ export class ShaderProgram implements IDisposable {
 
     const vert = this.compileShader(GL.ShaderType.Vertex);
     const frag = this.compileShader(GL.ShaderType.Fragment);
-    if (undefined !== vert && undefined !== frag) {
-      if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms)) {
+    if (undefined !== vert && undefined !== frag)
+      if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms))
         this._status = CompileStatus.Success;
-      }
-    }
 
     if (true !== System.instance.options.preserveShaderSourceCode)
       this.vertSource = this.fragSource = "";
