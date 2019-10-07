@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added licensing notice. ",
+      "packageName": "@bentley/geo-photo-plugin",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "Ramanujam.Raman@bentley.com"
+}
