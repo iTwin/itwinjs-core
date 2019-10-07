@@ -65,6 +65,7 @@ float pack2Bytes(vec2 v) {
  */
 export const unpack2Bytes = `
 vec2 unpack2Bytes(float f) {
+  f = floor(f + 0.5);
   vec2 v;
   v.y = floor(f / 256.0);
   v.x = floor(f - v.y * 256.0);
