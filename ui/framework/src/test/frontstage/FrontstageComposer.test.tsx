@@ -40,6 +40,10 @@ describe("FrontstageComposer", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  beforeEach(() => {
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
   afterEach(() => {
     sandbox.restore();
   });

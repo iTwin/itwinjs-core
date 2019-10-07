@@ -547,11 +547,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public render() {
-    if (this.props.widget.state === WidgetState.Unloaded)
-      return null;
-    let element;
     if (this.props.toolSettingsMode !== undefined) {
-      element = (
+      return ReactDOM.createPortal((
         <ToolSettingsContent
           anchor={this.props.anchor}
           key={this.state.widgetKey}
@@ -559,17 +556,18 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
         >
           {FrontstageManager.activeToolSettingsNode}
         </ToolSettingsContent>
-      );
-    } else {
-      element = (
-        <React.Fragment
-          key={this.state.widgetKey}
-        >
-          {this.props.widget.reactElement}
-        </React.Fragment>
-      );
+      ), this._content);
     }
-    return ReactDOM.createPortal(element, this._content);
+
+    if (this.props.widget.state === WidgetState.Unloaded)
+      return null;
+    return ReactDOM.createPortal((
+      <React.Fragment
+        key={this.state.widgetKey}
+      >
+        {this.props.widget.reactElement}
+      </React.Fragment>
+    ), this._content);
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {

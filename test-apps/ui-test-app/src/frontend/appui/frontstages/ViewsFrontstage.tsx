@@ -156,7 +156,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             allowsMerging
             widgets={[
               <Widget
-                defaultState={WidgetState.Open}
                 iconSpec="icon-placeholder"
                 isToolSettings={true}
               />,

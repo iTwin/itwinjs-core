@@ -19,10 +19,16 @@ import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 
 describe("Frontstage", () => {
   let widgetElementComponentDidMountSpy: sinon.SinonSpy | undefined;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  after(() => {
+    sandbox.restore();
   });
 
   beforeEach(() => {
