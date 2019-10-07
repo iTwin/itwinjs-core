@@ -149,7 +149,7 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
     this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
     const dataProvider = new PresentationTreeDataProvider(this.props.iModel, RULESET.id);
     await this._setViewType();
-    if (this.props.enablePreloading)
+    if (this.props.enablePreloading && dataProvider.loadHierarchy)
       await dataProvider.loadHierarchy();
 
     await this._loadCategoriesFromViewport(this.state.activeView);

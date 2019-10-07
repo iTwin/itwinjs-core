@@ -72,7 +72,7 @@ export class SpatialContainmentTree extends React.Component<SpatialContainmentTr
   private _initialize = async () => {
     this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
     const dataProvider = new PresentationTreeDataProvider(this.props.iModel, RULESET.id);
-    if (this.props.enablePreloading)
+    if (this.props.enablePreloading && dataProvider.loadHierarchy)
       await dataProvider.loadHierarchy();
     this.setState({ dataProvider });
   }

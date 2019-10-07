@@ -129,7 +129,7 @@ export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPrese
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
     // @alpha
-    loadHierarchy(): Promise<void>;
+    loadHierarchy?(): Promise<void>;
 }
 
 // @public

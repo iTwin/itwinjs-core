@@ -230,7 +230,7 @@ const createDataProvider = (props: VisibilityTreeProps): IPresentationTreeDataPr
     provider.pagingSize = pageSize;
     dataProvider = provider;
   }
-  if (props.enablePreloading) {
+  if (props.enablePreloading && dataProvider.loadHierarchy) {
     // tslint:disable-next-line: no-floating-promises
     dataProvider.loadHierarchy();
   }
