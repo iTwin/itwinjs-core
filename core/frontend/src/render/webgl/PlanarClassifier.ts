@@ -13,7 +13,7 @@ import { Matrix4 } from "./Matrix";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
 import { System } from "./System";
@@ -250,6 +250,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     0, 0, -1, 0,
     1, 0, 0, 0,
     0, 0, 0, 1);
+  private _debugFrustum?: Frustum;
+  private _doDebugFrustum = false;
+  private _debugFrustumGrahic?: RenderGraphic = undefined;
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -331,15 +334,29 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, tileTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
+    this._debugFrustum = projection.debugFrustum;
 
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
+
+    if (this._doDebugFrustum) {
+      this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
+      const builder = context.createSceneGraphicBuilder();
+
+      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      builder.addFrustum(context.viewFrustum.getFrustum());
+      builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+      builder.addFrustum(this._debugFrustum!);
+      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.addFrustum(this._frustum);
+      this._debugFrustumGrahic = builder.finish();
+    }
   }
 
   public draw(target: Target) {
@@ -351,6 +368,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       if (undefined === this._buffers)
         return;
     }
+
+    if (undefined !== this._debugFrustumGrahic)
+      target.scene.push(this._debugFrustumGrahic);
 
     // Temporarily override the Target's state.
     const system = System.instance;

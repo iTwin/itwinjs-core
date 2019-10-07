@@ -82,7 +82,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._height = requiredHeight;
 
     const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, tileTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -96,7 +96,7 @@ export class BackgroundMapDrape extends TextureDrape {
     if (this._doDebugFrustum) {
       this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
       const builder = context.createSceneGraphicBuilder();
-      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.setSymbology(ColorDef.white, ColorDef.blue, 1);
       builder.addFrustum(this._frustum);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addFrustum(context.viewFrustum.getFrustum());
@@ -107,6 +107,9 @@ export class BackgroundMapDrape extends TextureDrape {
   }
 
   public draw(target: Target) {
+    if (undefined !== this._debugFrustumGrahic)
+      target.scene.push(this._debugFrustumGrahic);
+
     if (undefined === this._frustum || this._graphics.length === 0)
       return;
 
@@ -123,8 +126,6 @@ export class BackgroundMapDrape extends TextureDrape {
       assert(false, "unable to create frame buffer object");
       return;
     }
-    if (undefined !== this._debugFrustumGrahic)
-      target.scene.push(this._debugFrustumGrahic);
 
     System.instance.glTimer.beginOperation("Terrain Projection");
 
