@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add GPU timing queries for devtools.",
+      "packageName": "@bentley/frontend-devtools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Matt.Gooding@bentley.com"
+}

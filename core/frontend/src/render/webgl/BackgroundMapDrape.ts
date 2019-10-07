@@ -126,6 +126,8 @@ export class BackgroundMapDrape extends TextureDrape {
     if (undefined !== this._debugFrustumGrahic)
       target.scene.push(this._debugFrustumGrahic);
 
+    System.instance.glTimer.beginOperation("Terrain Projection");
+
     const prevState = System.instance.currentRenderState.clone();
     System.instance.context.viewport(0, 0, this._width, this._height);
 
@@ -162,5 +164,6 @@ export class BackgroundMapDrape extends TextureDrape {
 
     system.applyRenderState(prevState);
     gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
+    system.glTimer.endOperation();
   }
 }

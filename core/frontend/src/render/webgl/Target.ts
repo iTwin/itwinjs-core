@@ -894,6 +894,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
     }
 
+    const glTimer = System.instance.glTimer;
+    glTimer.beginFrame();
     if (this.performanceMetrics) this.performanceMetrics.startNewFrame(sceneMilSecElapsed);
     this._beginPaint();
 
@@ -925,20 +927,32 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.compositor.preDraw();
 
       this.recordPerformanceMetric("Begin Draw Planar Classifiers");
+      glTimer.beginOperation("Planar Classifiers");
       this.drawPlanarClassifiers();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Draw Shadow Maps");
+      glTimer.beginOperation("Shadow Maps");
       this.drawSolarShadowMap();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Draw Texture Drapes");
+      glTimer.beginOperation("Texture Drapes");
       this.drawTextureDrapes();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Paint");
+      glTimer.beginOperation("Init Commands");
       this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
+      glTimer.endOperation();
 
       this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this._stack.pushState(this.decorationState);
+      glTimer.beginOperation("World Overlays");
       this.drawPass(RenderPass.WorldOverlay);
+      glTimer.endOperation();
+      glTimer.beginOperation("View Overlays");
       this.drawPass(RenderPass.ViewOverlay);
+      glTimer.endOperation();
       this._stack.pop();
 
       this.recordPerformanceMetric("Overlay Draws");
@@ -949,6 +963,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this._endPaint();
     this.recordPerformanceMetric("End Paint");
+    glTimer.endFrame();
 
     if (this.performanceMetrics) {
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {

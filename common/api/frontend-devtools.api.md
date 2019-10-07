@@ -250,6 +250,7 @@ export interface DiagnosticsPanelProps {
         fps?: boolean;
         tileStats?: boolean;
         memory?: boolean;
+        gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
 }
