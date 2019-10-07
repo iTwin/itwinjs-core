@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "update node-gyp dependency to 5.0.3",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Ashar.Ghani@bentley.com"
+}
