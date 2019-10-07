@@ -4368,6 +4368,10 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
 export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
