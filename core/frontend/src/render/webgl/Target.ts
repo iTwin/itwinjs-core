@@ -315,6 +315,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
+  private _currentlyDrawingClassifier?: PlanarClassifier;
 
   // RenderTargetDebugControl
   public useLogZ = true;
@@ -398,6 +399,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
   public get currentPlanarClassifier(): PlanarClassifier | undefined { return this._stack.top.planarClassifier; }
+  public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
   public get currentTextureDrape(): TextureDrape | undefined {
     const drape = this._stack.top.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
@@ -1245,8 +1247,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public drawPlanarClassifiers() {
-    if (this._planarClassifiers)
-      this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
+    if (this._planarClassifiers) {
+      this._planarClassifiers.forEach((classifier) => {
+        this._currentlyDrawingClassifier = classifier as PlanarClassifier;
+        this._currentlyDrawingClassifier.draw(this);
+        this._currentlyDrawingClassifier = undefined;
+      });
+    }
   }
   public drawSolarShadowMap() {
     if (this.solarShadowMap)

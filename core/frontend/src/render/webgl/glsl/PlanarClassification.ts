@@ -8,13 +8,15 @@ import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
 import { addModelMatrix } from "./Vertex";
-import { addHiliteSettings } from "./FeatureSymbology";
+import { addClassifierFlash, addHiliteSettings } from "./FeatureSymbology";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 
+// ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
+// Change it so that fully-transparent classifiers do the clipping.
 const applyPlanarClassificationColor = `
   const float dimScale = .7;
   const float colorMix = .65;
-  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec2 classPos = v_pClassPos / v_pClassPosW;
   if (s_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
     if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
       discard;
@@ -28,27 +30,42 @@ const applyPlanarClassificationColor = `
   float param = mix(s_pClassColorParams.y, s_pClassColorParams.x, isClassified);
   if (kClassifierDisplay_Off == param)
     return vec4(0.0);
-  else if (kClassifierDisplay_On == param)
-    return baseColor;
+
+  vec4 classColor;
+  if (kClassifierDisplay_On == param)
+    classColor = baseColor;
   else if (0.0 == isClassified || kClassifierDisplay_Dimmed == param)
-    return vec4(baseColor.rgb * dimScale, 1.0);
+    classColor = vec4(baseColor.rgb * dimScale, 1.0);
   else if (kClassifierDisplay_Hilite == param)
-    return vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+    classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+  else {
+    // black indicates discard (clip masking).
+    if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b) {
+      discard;
+      return vec4(0.0);
+    }
 
-  // black indicates discard (clip masking).
-  if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b)
-    discard;
+    // NB: colorTexel contains pre-multiplied alpha. We know it is greater than zero from above.
+    float alpha = colorTexel.a;
+    vec3 rgb = colorTexel.rgb / alpha;
+    rgb = mix(baseColor.rgb, rgb * baseColor.rgb, colorMix);
+    classColor = vec4(rgb, alpha);
+  }
 
-  // NB: colorTexel contains pre-multiplied alpha. We know it is greater than zero from above.
-  float alpha = colorTexel.a;
-  vec3 rgb = colorTexel.rgb / alpha;
-  rgb = mix(baseColor.rgb, rgb * baseColor.rgb, colorMix);
-  return vec4(rgb, alpha);
+  if (kClassifierDisplay_Element != param && 0.0 != isClassified) {
+    if (colorTexel.r > colorTexel.a && kClassifierDisplay_Hilite != param)
+      classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+
+    if (colorTexel.g > colorTexel.a)
+      classColor = applyClassifierFlash(classColor);
+  }
+
+  return classColor;
 `;
 
 const overrideFeatureId = `
   if (s_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
-  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec2 classPos = v_pClassPos / v_pClassPosW;
   vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / 2.0));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
@@ -57,16 +74,16 @@ const computeClassifiedSurfaceHiliteColor = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
     return vec4(0.0);
 
-  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec2 classPos = v_pClassPos / v_pClassPosW;
   return TEXTURE(s_pClassHiliteSampler, classPos);
 `;
 
 const computeClassifiedSurfaceHiliteColorNoTexture = `
-  vec2 classPos = v_pClassPos.xy / v_pClassPosW;
+  vec2 classPos = v_pClassPos / v_pClassPosW;
   return TEXTURE(s_pClassHiliteSampler, classPos.xy);
 `;
 
-const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos.xy = classProj.xy;";
+const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = classProj.xy;";
 const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 
 const scratchBytes = new Uint8Array(4);
@@ -120,6 +137,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
   });
 
   addHiliteSettings(frag);
+  addClassifierFlash(frag);
   frag.set(FragmentShaderComponent.ApplyPlanarClassifier, applyPlanarClassificationColor);
 }
 
@@ -155,4 +173,56 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
   });
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedSurfaceHiliteColorNoTexture);
+}
+
+const overrideClassifierColorPrelude = `
+  if (!u_overrideClassifierColor)
+    return currentColor;
+
+  if (0.0 == currentColor.a)
+    return vec4(0.0, 0.0, 1.0, 0.5);
+`;
+
+const overrideClassifierEmphasis = `
+  float emph = floor(v_feature_emphasis + 0.5);
+  if (0.0 != emph)
+    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, 0.5);
+`;
+
+const overrideClassifierColorPostlude = `
+  return currentColor;
+`;
+
+const overrideClassifierWithFeatures = overrideClassifierColorPrelude + overrideClassifierEmphasis + overrideClassifierColorPostlude;
+const overrideClassifierForClip = overrideClassifierColorPrelude + overrideClassifierColorPostlude;
+
+/** The classified geometry needs some information about the classifier geometry. The classified fragment shader outputs special values that do not represent valid RGB+A combinations when using
+ * pre-multiplied alpha. The alpha channel will be 0.5, and the red, green, and/or blue channels will be 1.0:
+ * - Red: hilited.
+ * - Blue: flashed.
+ * - Green: fully-transparent. Indicates clipping mask (discard the classified pixel).
+ * @internal
+ */
+export function addOverrideClassifierColor(builder: ProgramBuilder): void {
+  builder.frag.addUniform("u_overrideClassifierColor", VariableType.Boolean, (prog) => {
+    prog.addGraphicUniform("u_overrideClassifierColor", (uniform, params) => {
+      let override = false;
+      const classifier = params.target.currentlyDrawingClassifier;
+      if (undefined !== classifier) {
+        switch (classifier.properties.flags.inside) {
+          case SpatialClassificationProps.Display.On:
+          case SpatialClassificationProps.Display.Dimmed:
+          case SpatialClassificationProps.Display.Hilite:
+            override = true;
+            break;
+        }
+      }
+
+      uniform.setUniform1i(override ? 1 : 0);
+    });
+  });
+
+  const haveOverrides = undefined !== builder.frag.find("v_feature_emphasis");
+  const glsl = haveOverrides ? overrideClassifierWithFeatures : overrideClassifierForClip;
+  builder.frag.set(FragmentShaderComponent.OverrideColor, glsl);
 }

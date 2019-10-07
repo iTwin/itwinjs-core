@@ -6927,6 +6927,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
     // (undocumented)
+    readonly currentlyDrawingClassifier: PlanarClassifier | undefined;
+    // (undocumented)
     currentOverrides: FeatureOverrides | undefined;
     // (undocumented)
     readonly currentPlanarClassifier: PlanarClassifier | undefined;

@@ -800,7 +800,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment depth
   // float finalizeDepth()
   FinalizeDepth,
-
+  // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
+  // vec4 overrideColor(vec4 currentColor)
+  OverrideColor,
   COUNT,
 }
 

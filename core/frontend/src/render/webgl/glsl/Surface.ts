@@ -6,7 +6,6 @@
 
 import {
   ProgramBuilder,
-  FragmentShaderBuilder,
   VariableType,
   FragmentShaderComponent,
   VertexShaderComponent,
@@ -14,7 +13,7 @@ import {
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
 import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
-import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
+import { assignFragColor, addFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Decode";
@@ -27,7 +26,7 @@ import { Texture } from "../Texture";
 import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
-import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { addOverrideClassifierColor, addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -35,6 +34,8 @@ import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
+import { addTranslucency } from "./Translucency";
+import { addMonochrome } from "./Monochrome";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -118,8 +119,7 @@ void readMaterialAtlas() {
 }`;
 const getAtlasMaterialParams = `vec4 getMaterialParams() { return g_materialParams; }`;
 
-/** @internal */
-export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
+function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
   const frag = builder.frag;
   assert(undefined !== frag.find("v_surfaceFlags"));
 
@@ -443,6 +443,11 @@ const discardClassifiedByAlpha = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
+// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
+// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
+// non-transparent pixel of it.
+const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
+
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
@@ -490,8 +495,16 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
+  if (flags.isTranslucent) {
+    addTranslucency(builder);
+  } else {
+    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+    if (!flags.isClassified)
+      addOverrideClassifierColor(builder);
+  }
+
   if (FeatureMode.None === feat || (flags.isTranslucent && flags.isClassified)) {
-    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
+    addFragColorWithPreMultipliedAlpha(builder.frag);
   } else {
     if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
@@ -524,15 +537,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
   }
 
+  addMonochrome(builder.frag);
+  addMaterial(builder, flags.hasMaterialAtlas);
+
   return builder;
-}
-
-// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
-// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
-// non-transparent pixel of it.
-const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
-
-/** @internal */
-export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
-  frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
 }

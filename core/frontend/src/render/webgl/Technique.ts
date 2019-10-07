@@ -22,7 +22,7 @@ import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
+import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
@@ -231,21 +231,17 @@ class SurfaceTechnique extends VariedTechnique {
           for (let hasMaterialAtlas = HasMaterialAtlas.No; hasMaterialAtlas <= HasMaterialAtlas.Yes; hasMaterialAtlas++) {
             for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
               for (const featureMode of featureModes) {
-                if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-                  flags.reset(featureMode, instanced, shadowable);
-                  flags.isAnimated = iAnimate;
-                  flags.isEdgeTestNeeded = edgeTestNeeded;
-                  flags.hasMaterialAtlas = hasMaterialAtlas;
+                for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+                  if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                    flags.reset(featureMode, instanced, shadowable);
+                    flags.isAnimated = iAnimate;
+                    flags.isEdgeTestNeeded = edgeTestNeeded;
+                    flags.hasMaterialAtlas = hasMaterialAtlas;
+                    flags.isTranslucent = 1 === iTranslucent;
 
-                  const builder = createSurfaceBuilder(flags);
-                  addMonochrome(builder.frag);
-                  addMaterial(builder, hasMaterialAtlas);
-
-                  addSurfaceDiscardByAlpha(builder.frag);
-                  this.addShader(builder, flags, gl);
-
-                  builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-                  this.addTranslucentShader(builder, flags, gl);
+                    const builder = createSurfaceBuilder(flags);
+                    this.addShader(builder, flags, gl);
+                  }
                 }
               }
             }
@@ -263,8 +259,6 @@ class SurfaceTechnique extends VariedTechnique {
           flags.isTranslucent = (0 !== translucent);
 
           const builder = createSurfaceBuilder(flags);
-          addMonochrome(builder.frag);
-          addMaterial(builder, HasMaterialAtlas.No);
           if (flags.isTranslucent)
             addTranslucency(builder);
 

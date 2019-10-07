@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode, Frustum, Npc } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
 import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters } from "./Handle";
 import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
+import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -113,17 +113,17 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     return weight;
   }
 
-  // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
-  public wantMixHiliteColorForFlash(vf: ViewFlags, target: Target): boolean {
+  public getFlashMode(params: DrawParams): FlashMode {
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
-    if (this.hasBakedLighting || RenderPass.Classification === this.getRenderPass(target))
-      return true;
-    else if (!this.isLitSurface)
-      return false;
-    else if (RenderMode.SmoothShade !== vf.renderMode)
-      return false;
-    else
-      return vf.lighting;
+    // NB: If the reality model is classified, the classifiers are drawn without lighting, therefore we mix the hilite color.
+    if (this.hasBakedLighting)
+      return FlashMode.MixHiliteColor;
+
+    const vf = params.target.currentViewFlags;
+    if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode)
+      return FlashMode.MixHiliteColor;
+
+    return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
