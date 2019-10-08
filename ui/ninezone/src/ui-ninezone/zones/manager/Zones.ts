@@ -7,9 +7,9 @@
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
 import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager, ToolSettingsWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "./Widget";
-import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager } from "./Zone";
+import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager, getWindowResizeSettings } from "./Zone";
 import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
-import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy } from "./ResizeStrategy";
+import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy, UpdateWindowResizeSettings } from "./ResizeStrategy";
 import { LeftZones, TopZones, RightZones, BottomZones } from "./AdjacentZones";
 
 /** Widget zone id.
@@ -144,6 +144,24 @@ export const getDefaultZonesManagerWidgetsProps = (): ZonesManagerWidgetsProps =
 export const getZoneCell = (id: ZoneId) => new Cell(Math.floor((id - 1) / 3), (id - 1) % 3);
 
 /** @internal */
+export const getColumnZones = (id: WidgetZoneId) => {
+  const cell = getZoneCell(id);
+  const zones: WidgetZoneId[] = [];
+  for (let i = 0; i < 3; i++) {
+    if (cell.col === 1 && i === 1)
+      continue;
+    zones.push(getZoneIdFromCell({
+      col: cell.col,
+      row: i,
+    }));
+  }
+  return zones;
+};
+
+/** @internal */
+export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId> = [1, 2, 3];
+
+/** @internal */
 export const getZoneIdFromCell = (cell: CellProps): WidgetZoneId => {
   const id = cell.row * 3 + cell.col + 1;
   return id as WidgetZoneId;
@@ -169,25 +187,25 @@ export const getClosedWidgetTabIndex = (tabIndex: number) => {
  */
 export class ZonesManager {
   private _lastStackId = 1;
-  private _zoneManager?: ZoneManager;
+  private _zoneManagers?: Map<WidgetZoneId, ZoneManager>;
   private _draggedWidgetManager?: DraggedWidgetManager;
 
   /** @internal */
-  public readonly growTop = new GrowTop(this);
+  public readonly growTop = new UpdateWindowResizeSettings(this, new GrowTop(this));
   /** @internal */
-  public readonly shrinkTop = new ShrinkTop(this);
+  public readonly shrinkTop = new UpdateWindowResizeSettings(this, new ShrinkTop(this));
   /** @internal */
-  public readonly growBottom = new GrowBottom(this);
+  public readonly growBottom = new UpdateWindowResizeSettings(this, new GrowBottom(this));
   /** @internal */
-  public readonly shrinkBottom = new ShrinkBottom(this);
+  public readonly shrinkBottom = new UpdateWindowResizeSettings(this, new ShrinkBottom(this));
   /** @internal */
-  public readonly growLeft = new GrowLeft(this);
+  public readonly growLeft = new UpdateWindowResizeSettings(this, new GrowLeft(this));
   /** @internal */
-  public readonly shrinkLeft = new ShrinkLeft(this);
+  public readonly shrinkLeft = new UpdateWindowResizeSettings(this, new ShrinkLeft(this));
   /** @internal */
-  public readonly growRight = new GrowRight(this);
+  public readonly growRight = new UpdateWindowResizeSettings(this, new GrowRight(this));
   /** @internal */
-  public readonly shrinkRight = new ShrinkRight(this);
+  public readonly shrinkRight = new UpdateWindowResizeSettings(this, new ShrinkRight(this));
   /** @internal */
   public readonly leftZones = new LeftZones(this);
   /** @internal */
@@ -302,6 +320,7 @@ export class ZonesManager {
     }
 
     for (const ub of unmergeBounds) {
+      this.saveWindowSettings(ub.id, newProps);
       if (ub.id === widgetId)
         continue;
       const anchor = getDefaultWidgetHorizontalAnchor(ub.id);
@@ -404,6 +423,8 @@ export class ZonesManager {
             continue;
           newProps = this.setWidgetTabIndex(widget, -1, newProps);
         }
+
+        this.saveWindowSettings(targetZone.id, newProps);
         return newProps;
       }
       case ZoneTargetType.Back: {
@@ -430,29 +451,171 @@ export class ZonesManager {
     }
   }
 
-  public setZonesBounds(bounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps {
-    const zonesBounds = Rectangle.create(props.zonesBounds);
-    if (zonesBounds.equals(bounds))
+  public setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps {
+    const newBounds = Rectangle.create(zonesBounds);
+    if (newBounds.equals(props.zonesBounds))
       return props;
 
-    const newBounds = Rectangle.create(bounds);
     const offset = newBounds.topLeft().getOffsetTo(Rectangle.create(props.zonesBounds).topLeft());
     props = {
       ...props,
-      zonesBounds: newBounds.toProps(),
+      zonesBounds,
     };
 
-    props = this.restoreLayout(props);
+    const resizeBounds = this.getWindowResizeBounds(props);
     for (const zId of widgetZoneIds) {
-      const zoneProps = props.zones[zId];
-      const floating = zoneProps.floating;
+      props = this.setZoneBounds(zId, resizeBounds[zId], props);
+
+      const zone = props.zones[zId];
+      const floating = zone.floating;
       if (!floating)
         continue;
 
       const floatingBounds = Rectangle.create(floating.bounds).offset(offset).toProps();
       props = this.setZoneFloatingBounds(zId, floatingBounds, props);
     }
+
     return props;
+  }
+
+  /** @internal */
+  public getWindowResizeBounds(props: ZonesManagerProps): { [id in WidgetZoneId]: RectangleProps } {
+    let resizeBounds: { [id in WidgetZoneId]: RectangleProps } = {
+      1: props.zones[1].bounds,
+      2: props.zones[2].bounds,
+      3: props.zones[3].bounds,
+      4: props.zones[4].bounds,
+      6: props.zones[6].bounds,
+      7: props.zones[7].bounds,
+      8: props.zones[8].bounds,
+      9: props.zones[9].bounds,
+    };
+
+    const zonesBounds = Rectangle.create(props.zonesBounds);
+    const zonesWidth = zonesBounds.getWidth();
+    resizeBounds = widgetZoneIds.reduce((acc, zoneId) => {
+      const manager = this.getZoneManager(zoneId);
+      const initialBounds = Rectangle.create(this.getInitialBounds(zoneId, props));
+      const initialWidth = initialBounds.getWidth();
+      const minWidth = Math.min(initialWidth, manager.windowResize.minWidth);
+
+      let width = minWidth;
+      switch (manager.windowResize.hMode) {
+        case "Minimum": {
+          width = minWidth;
+          break;
+        }
+        case "Percentage": {
+          const left = zonesWidth * manager.windowResize.hStart;
+          const right = zonesWidth * manager.windowResize.hEnd;
+          width = Math.max(minWidth, right - left);
+          break;
+        }
+      }
+
+      let bounds = initialBounds;
+      const horizontalAnchor = getDefaultWidgetHorizontalAnchor(zoneId);
+      switch (horizontalAnchor) {
+        case HorizontalAnchor.Left: {
+          bounds = bounds.setWidth(width);
+          break;
+        }
+        case HorizontalAnchor.Right: {
+          const offsetX = Math.max(initialWidth - width, 0);
+          bounds = bounds.setWidth(width);
+          bounds = bounds.offsetX(offsetX);
+          break;
+        }
+      }
+      acc = {
+        ...acc,
+        [zoneId]: bounds,
+      };
+      return acc;
+    }, resizeBounds);
+
+    const zonesBoundsHeight = zonesBounds.getHeight();
+
+    for (const columnZoneId of widgetZoneColumnIds) {
+      let zones = getColumnZones(columnZoneId);
+      zones = zones.filter((zoneId) => {
+        const zone = props.zones[zoneId];
+        return zone.widgets.length !== 0;
+      });
+
+      const minZoneHeights = zones.map((zoneId) => {
+        const manager = this.getZoneManager(zoneId);
+        return manager.windowResize.minHeight;
+      });
+      const totalMinZonesHeight = minZoneHeights.reduce((acc, h) => acc + h, 0);
+
+      const zoneHeights = zones.map((zoneId) => {
+        const manager = this.getZoneManager(zoneId);
+        const top = manager.windowResize.vStart * zonesBoundsHeight;
+        const bottom = manager.windowResize.vEnd * zonesBoundsHeight;
+        let zoneHeight = bottom - top;
+        const minHeight = manager.windowResize.minHeight;
+        if (manager.windowResize.vMode === "Minimum")
+          zoneHeight = minHeight;
+        const height = Math.max(zoneHeight, minHeight);
+        return height;
+      });
+      const totalZonesHeight = zoneHeights.reduce((acc, h) => acc + h, 0);
+
+      // Spacing ratio to top zone.
+      const zoneSpacingRatios = zones.map((zoneId, index) => {
+        if (index === 0)
+          return 0;
+        const manager = this.getZoneManager(zoneId);
+        const to = manager.windowResize.vStart;
+
+        const topZoneId = zones[index - 1];
+        const topManager = this.getZoneManager(topZoneId);
+        const from = topManager.windowResize.vEnd;
+        return to - from;
+      });
+      const lastZoneId = zones[zones.length - 1];
+      const lastZoneManager = this.getZoneManager(lastZoneId);
+      const lastZoneBottomSpacing = 1 - lastZoneManager.windowResize.vEnd;
+      const totalZoneSpacingRatios = zoneSpacingRatios.reduce((acc, zoneSpacingRatio) => acc + zoneSpacingRatio, 0) + lastZoneBottomSpacing;
+
+      // Fallback to initial layout when not enough space.
+      if (zonesBoundsHeight < totalMinZonesHeight)
+        return resizeBounds;
+
+      // Shrink some zones (expect those that are already at minimum height)
+      const shrinkZonesBy = Math.max(totalZonesHeight - zonesBoundsHeight, 0);
+      const availableShrinkBy = zones.map((_, index) => {
+        const height = zoneHeights[index];
+        const minHeight = minZoneHeights[index];
+        return height - minHeight;
+      });
+      const totalAvailableShrinkBy = availableShrinkBy.reduce((acc, shrinkBy) => acc + shrinkBy, 0);
+
+      const totalSpacing = Math.max(zonesBoundsHeight - totalZonesHeight, 0);
+      let lastBottom = 0;
+      for (let i = 0; i < zones.length; i++) {
+        const zoneId = zones[i];
+        const zoneHeight = zoneHeights[i];
+        const spacing = totalZoneSpacingRatios > 0 ? zoneSpacingRatios[i] / totalZoneSpacingRatios : 0;
+        const offset = spacing * totalSpacing;
+        const top = lastBottom + offset;
+
+        const shrinkBy = totalAvailableShrinkBy > 0 ? availableShrinkBy[i] * shrinkZonesBy / totalAvailableShrinkBy : 0;
+        const bottom = top + zoneHeight - shrinkBy;
+        lastBottom = bottom;
+        resizeBounds = {
+          ...resizeBounds,
+          [zoneId]: {
+            ...resizeBounds[zoneId],
+            top,
+            bottom,
+          },
+        };
+      }
+    }
+
+    return resizeBounds;
   }
 
   public restoreLayout(props: ZonesManagerProps): ZonesManagerProps {
@@ -460,6 +623,9 @@ export class ZonesManager {
       const bounds = this.getInitialBounds(zId, props);
       props = this.setZoneBounds(zId, bounds, props);
       props = this.setZoneIsLayoutChanged(zId, false, props);
+
+      const manager = this.getZoneManager(zId);
+      manager.windowResize = getWindowResizeSettings(zId);
     }
     return props;
   }
@@ -505,7 +671,8 @@ export class ZonesManager {
 
   public setAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean, props: ZonesManagerProps): ZonesManagerProps {
     const zone = props.zones[zoneId];
-    const zoneProps = this.zoneManager.setAllowsMerging(allowsMerging, zone);
+    const manager = this.getZoneManager(zoneId);
+    const zoneProps = manager.setAllowsMerging(allowsMerging, zone);
     return this.setZoneProps(zoneProps, props);
   }
 
@@ -565,10 +732,15 @@ export class ZonesManager {
   }
 
   /** @internal */
-  public get zoneManager(): ZoneManager {
-    if (!this._zoneManager)
-      this._zoneManager = new ZoneManager();
-    return this._zoneManager;
+  public getZoneManager(id: WidgetZoneId): ZoneManager {
+    if (!this._zoneManagers)
+      this._zoneManagers = new Map();
+    let manager = this._zoneManagers.get(id);
+    if (!manager) {
+      manager = new ZoneManager(getWindowResizeSettings(id));
+      this._zoneManagers.set(id, manager);
+    }
+    return manager;
   }
 
   /** @internal */
@@ -908,21 +1080,39 @@ export class ZonesManager {
   /** @internal */
   public setZoneFloatingBounds(zoneId: WidgetZoneId, bounds: RectangleProps, props: ZonesManagerProps) {
     const zone = props.zones[zoneId];
-    const zoneProps = this.zoneManager.setFloatingBounds(bounds, zone);
+    const manager = this.getZoneManager(zoneId);
+    const zoneProps = manager.setFloatingBounds(bounds, zone);
     return this.setZoneProps(zoneProps, props);
   }
 
   /** @internal */
   public setZoneBounds(zoneId: WidgetZoneId, bounds: RectangleProps, props: ZonesManagerProps) {
     const zone = props.zones[zoneId];
-    const zoneProps = this.zoneManager.setBounds(bounds, zone);
+    const manager = this.getZoneManager(zoneId);
+    const zoneProps = manager.setBounds(bounds, zone);
     return this.setZoneProps(zoneProps, props);
   }
 
   /** @internal */
   public setZoneIsLayoutChanged(zoneId: WidgetZoneId, isLayoutChanged: boolean, props: ZonesManagerProps) {
     const zone = props.zones[zoneId];
-    const zoneProps = this.zoneManager.setIsLayoutChanged(isLayoutChanged, zone);
+    const manager = this.getZoneManager(zoneId);
+    const zoneProps = manager.setIsLayoutChanged(isLayoutChanged, zone);
     return this.setZoneProps(zoneProps, props);
+  }
+
+  /** @internal */
+  public saveWindowSettings(id: WidgetZoneId, props: ZonesManagerProps) {
+    const zone = props.zones[id];
+    const zonesBounds = Rectangle.create(props.zonesBounds);
+    const zonesHeight = zonesBounds.getHeight();
+    const zonesWidth = zonesBounds.getWidth();
+    const manager = this.getZoneManager(id);
+    manager.windowResize.vMode = "Percentage";
+    manager.windowResize.vStart = zone.bounds.top / zonesHeight;
+    manager.windowResize.vEnd = zone.bounds.bottom / zonesHeight;
+    manager.windowResize.hMode = "Percentage";
+    manager.windowResize.hStart = zone.bounds.left / zonesWidth;
+    manager.windowResize.hEnd = zone.bounds.right / zonesWidth;
   }
 }

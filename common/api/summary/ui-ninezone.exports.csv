@@ -48,6 +48,7 @@ beta;FooterProps
 beta;FooterSeparator 
 beta;FooterSeparatorProps 
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
+internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
 internal;getDefaultAllowsMerging: (id: WidgetZoneId) => boolean
 alpha;getDefaultNineZoneStagePanelManagerProps: () => NineZoneStagePanelManagerProps
 alpha;getDefaultNineZoneStagePanelPaneManagerProps: () => NineZoneStagePanelPaneManagerProps
@@ -64,6 +65,7 @@ internal;getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps
 internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
 alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;getToolbarItemProps: 
+internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
 internal;getZoneCell: (id: ZoneId) => Cell
 internal;getZoneIdFromCell: (cell: CellProps) => WidgetZoneId
 alpha;Group 
@@ -244,6 +246,7 @@ alpha;WidgetContent
 alpha;WidgetContentProps 
 beta;WidgetManagerProps
 alpha;WidgetTabDragStartArguments
+internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray
 alpha;withContainIn: 
@@ -263,3 +266,4 @@ beta;ZonesManagerWidgetsProps =
 beta;ZonesManagerZonesProps =
 beta;ZonesProps 
 beta;ZoneTargetType
+internal;ZoneWindowResizeSettings

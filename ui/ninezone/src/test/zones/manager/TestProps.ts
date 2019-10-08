@@ -325,6 +325,38 @@ export namespace TestProps {
     },
   };
 
+  export const merged7To4: ZonesManagerProps = {
+    ...defaultProps,
+    widgets: {
+      ...defaultProps.widgets,
+      4: {
+        ...defaultProps.widgets[4],
+        tabIndex: -1,
+      },
+      7: {
+        ...defaultProps.widgets[7],
+        tabIndex: 1,
+      },
+    },
+    zones: {
+      ...defaultProps.zones,
+      4: {
+        ...defaultProps.zones[4],
+        bounds: {
+          left: 5,
+          top: 20,
+          right: 125,
+          bottom: 30,
+        },
+        widgets: [4, 7],
+      },
+      7: {
+        ...defaultProps.zones[7],
+        widgets: [],
+      },
+    },
+  };
+
   export const merged9To7: ZonesManagerProps = {
     ...defaultProps,
     widgets: {
