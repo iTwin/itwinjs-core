@@ -8,12 +8,13 @@ import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matri
 import { imageElementFromUrl } from "./ImageUtil";
 import { DecorateContext } from "./ViewContext";
 import { CanvasDecoration } from "./render/System";
-import { ViewRect, Viewport } from "./Viewport";
+import { ViewRect, Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { IModelApp } from "./IModelApp";
 
 /** The types that may be used for Markers
  * @public
@@ -314,6 +315,8 @@ export class Cluster<T extends Marker> {
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
+  private _viewport?: ScreenViewport;
+
   /** @internal */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
   /** @internal */
@@ -327,7 +330,11 @@ export abstract class MarkerSet<T extends Marker> {
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public get markers(): Set<T> { return this._markers; }
 
-  public constructor() {
+  /** Construct a new MarkerSet for a specific ScreenViewport.
+   * @param viewport the ScreenViewport for this MarkerSet. If undefined, use [[IModelApp.viewManager.selectedView]]
+   */
+  public constructor(viewport?: ScreenViewport) {
+    this._viewport = undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
     const markDirty = () => this.markDirty();
     this._markers.onAdded.addListener(markDirty);
     this._markers.onDeleted.addListener(markDirty);
@@ -361,8 +368,11 @@ export abstract class MarkerSet<T extends Marker> {
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
    */
-  public addDecoration(context: DecorateContext) {
+  public addDecoration(context: DecorateContext): void {
     const vp = context.viewport;
+    if (vp !== this._viewport)
+      return; // not viewport of this MarkerSet, ignore it
+
     const entries = this._entries;
 
     // Don't recreate the entries array if the view hasn't changed. This is important for performance, but also necessary for hilite of

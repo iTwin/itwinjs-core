@@ -4021,7 +4021,7 @@ export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElemen
 
 // @public
 export abstract class MarkerSet<T extends Marker> {
-    constructor();
+    constructor(viewport?: ScreenViewport);
     addDecoration(context: DecorateContext): void;
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
