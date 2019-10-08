@@ -6,7 +6,7 @@
 import { Target } from "./Target";
 import { TileTree } from "../../tile/TileTree";
 import { Frustum, RenderMode, FrustumPlanes, Npc } from "@bentley/imodeljs-common";
-import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d, Range2d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d, Range2d, ConvexClipPlaneSet, ClipUtilities } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
 import { ViewState3d } from "../../ViewState";
 import { ViewFrustum } from "../../Viewport";
@@ -87,6 +87,11 @@ export class PlanarTextureProjection {
     const matrix = Matrix4d.createTransform(textureTransform);
     const viewPlanes = new FrustumPlanes(viewFrustum.getFrustum());
     drapedTileTree.accumulateTransformedRange(tileRange, matrix, viewPlanes);
+
+    // The tile range here may further reduced by interesecting with the frustum planes.
+    const convexClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
+    convexClipPlanes.transformInPlace(textureTransform);
+    tileRange = ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexClipPlanes, tileRange);
 
     if (drapedTileTree.loader.isContentUnbounded) {
       heightRange = Range1d.createXX(tileRange.xLow, tileRange.xHigh);

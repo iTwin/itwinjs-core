@@ -1768,6 +1768,8 @@ export class FrustumPlanes {
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
     readonly isValid: boolean;
+    // (undocumented)
+    readonly planes: ClipPlane[] | undefined;
     }
 
 // @internal (undocumented)
