@@ -177,6 +177,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   private _graphics: RenderGraphic[] = [];
   private _shadowFrustum = new Frustum();
   private _status = Status.OutOfSynch;
+  private _enabled = false;
   private _params?: ShadowMapParams;
   private readonly _scratchRange = Range3d.createNull();
   private readonly _scratchTransform = Transform.createIdentity();
@@ -197,6 +198,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   }
 
   public get isReady() { return this._status === Status.TextureReady; }
+  public get isEnabled() { return this._enabled; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
   public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
@@ -221,6 +223,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   public get requiresSynch() { return this._status === Status.OutOfSynch; }
 
   public disable() {
+    this._enabled = false;
     this._status = Status.OutOfSynch;
     this._bundle = dispose(this._bundle);
     this.clearGraphics();
@@ -243,7 +246,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       this._status = Status.BelowHorizon;
       return;
     }
-
+    this._enabled = true;
     if (undefined === this._params)
       this._params = new ShadowMapParams(viewFrustum, direction, settings, view);
     else if (!this._params.update(viewFrustum, direction, settings, view))
