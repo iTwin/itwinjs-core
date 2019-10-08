@@ -708,6 +708,47 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
 
   });
 
+  it("should be able to retrieve more than 20 IModel Shared settings by Namespace (Application independent)", async () => {
+    // start by deleting the settings we are going to create.
+    for (let iSetting = 0; iSetting < 42; ++iSetting) {
+      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
+      chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
+    }
+
+    // now create many settings.
+    for (let iSetting = 0; iSetting < 40; ++iSetting) {
+      const newSetting: any = { testString: `Setting${iSetting}`, value: iSetting };
+      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, newSetting, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
+      chai.assert((SettingsStatus.Success === saveResult.status), `Save of ManySettings${iSetting} should work`);
+    }
+
+    // now read back the (hopefully 40) settings by namespace and check them.
+    let readResult: SettingsMapResult = await settingsClient.getSharedSettingsByNamespace(requestContext, "NamespaceTest", false, projectId, iModelId);
+    chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
+    chai.assert(((undefined !== readResult.settingsMap) && (40 === readResult.settingsMap.size)), "NamespaceTest should contain 40 settings");
+    for (let iSetting = 0; iSetting < 40; iSetting++) {
+      const returnedValue: any = readResult.settingsMap!.get(`ManySettings${iSetting}`);
+      chai.assert (((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
+    }
+
+    // add two more and read again.
+    for (let iSetting = 40; iSetting < 42; ++iSetting) {
+      const newSetting: any = { testString: `Setting${iSetting}`, value: iSetting };
+      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, newSetting, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
+      chai.assert((SettingsStatus.Success === saveResult.status), `Save of ManySettings${iSetting} should work`);
+    }
+
+    // now read back the now (hopefully 42) settings by namespace and check them again/
+    readResult = await settingsClient.getSharedSettingsByNamespace(requestContext, "NamespaceTest", false, projectId, iModelId);
+    chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
+    chai.assert(((undefined !== readResult.settingsMap) && (42 === readResult.settingsMap.size)), "NamespaceTest should contain 40 settings");
+    for (let iSetting = 0; iSetting < 42; iSetting++) {
+      const returnedValue: any = readResult.settingsMap!.get(`ManySettings${iSetting}`);
+      chai.assert (((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
+    }
+
+  });
+
 });
 
 describe("ConnectSettingsClient-User (#integration)", () => {
@@ -729,7 +770,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
 
   // Application User Setting
   it("should still retrieve a user setting after an App setting with the same name is stored. (#integration)", async () => {
-    const appUserSettings = {appString: "application User String 1", appNumber: 7, appArray: [20, 30, 40, 50] };
+    const appUserSettings = { appString: "application User String 1", appNumber: 7, appArray: [20, 30, 40, 50] };
 
     // read back the AppUser results.
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
