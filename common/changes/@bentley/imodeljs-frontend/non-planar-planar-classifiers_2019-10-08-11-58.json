@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Geometry of planar classifier models is not required to itself be planar.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

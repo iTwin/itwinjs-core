@@ -404,6 +404,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     // in a different pass - or both passes - depending on the transparency of the classifiers.
     // NB: "Outside" geometry by definition cannot take color/transparency from element...
     const cmds = renderCommands.getCommands(RenderPass.OpaquePlanar);
+
+    // NB: We don't strictly require the classifier geometry to be planar, and sometimes (e.g., "planar" polyface/bspsurf) we do not detect planarity.
+    cmds.push(...renderCommands.getCommands(RenderPass.OpaqueGeneral));
     this._anyOpaque = cmds.length > 0;
     const transCmds = renderCommands.getCommands(RenderPass.Translucent);
     if (transCmds.length > 0) {
