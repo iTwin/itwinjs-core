@@ -498,22 +498,21 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   if (flags.isTranslucent) {
     addTranslucency(builder);
   } else {
-    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
-    if (!flags.isClassified)
-      addOverrideClassifierColor(builder);
-  }
+    if (FeatureMode.None === feat) {
+      addFragColorWithPreMultipliedAlpha(builder.frag);
+    } else {
+      builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+      if (!flags.isClassified)
+        addOverrideClassifierColor(builder);
+      else
+        addFeaturePlanarClassifier(builder);
 
-  if (FeatureMode.None === feat || (flags.isTranslucent && flags.isClassified)) {
-    addFragColorWithPreMultipliedAlpha(builder.frag);
-  } else {
-    if (flags.isClassified)
-      addFeaturePlanarClassifier(builder);
-
-    builder.frag.addFunction(decodeDepthRgb);
-    if (flags.isEdgeTestNeeded || flags.isClassified)
-      addPickBufferOutputs(builder.frag);
-    else
-      addAltPickBufferOutputs(builder.frag);
+      builder.frag.addFunction(decodeDepthRgb);
+      if (flags.isEdgeTestNeeded || flags.isClassified)
+        addPickBufferOutputs(builder.frag);
+      else
+        addAltPickBufferOutputs(builder.frag);
+    }
   }
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);

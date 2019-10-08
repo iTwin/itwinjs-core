@@ -85,10 +85,23 @@ describe("Techniques", () => {
 
   // NB: this can potentially take a long time, especially on our mac build machines.
   it("should successfully compile all shader programs", () => {
-    if (IModelApp.initialized) {
+    const haveMRT = System.instance.capabilities.supportsDrawBuffers;
+    expect(System.instance.techniques.compileShaders()).to.be.true;
+
+    if (haveMRT) {
+      // Compile the multi-pass versions of the shaders too.
+      IModelApp.shutdown();
+      IModelApp.startup({
+        renderSys: {
+          disabledExtensions: ["WEBGL_draw_buffers"],
+        },
+      });
+
       expect(System.instance.techniques.compileShaders()).to.be.true;
+      IModelApp.shutdown();
+      IModelApp.startup();
     }
-  }).timeout("80000");
+  }).timeout("160000");
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
