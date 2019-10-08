@@ -252,7 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
   private _doDebugFrustum = false;
-  private _debugFrustumGrahic?: RenderGraphic = undefined;
+  private _debugFrustumGraphic?: RenderGraphic = undefined;
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -300,11 +300,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private pushBatches(batchState: BatchState, graphics: RenderGraphic[]) {
     graphics.forEach((graphic) => {
       if (graphic instanceof Batch) {
-        batchState.push(graphic as Batch, true);
+        batchState.push(graphic, true);
         batchState.pop();
       } else if (graphic instanceof Branch) {
-        const branch = graphic as Branch;
-        this.pushBatches(batchState, branch.branch.entries);
+        this.pushBatches(batchState, graphic.branch.entries);
       }
     });
   }
@@ -346,7 +345,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     tileTree.draw(drawArgs);
 
     if (this._doDebugFrustum) {
-      this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
+      this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
 
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
@@ -355,7 +354,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);
       builder.addFrustum(this._frustum);
-      this._debugFrustumGrahic = builder.finish();
+      this._debugFrustumGraphic = builder.finish();
     }
   }
 
@@ -369,8 +368,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         return;
     }
 
-    if (undefined !== this._debugFrustumGrahic)
-      target.scene.push(this._debugFrustumGrahic);
+    if (undefined !== this._debugFrustumGraphic)
+      target.scene.push(this._debugFrustumGraphic);
 
     // Temporarily override the Target's state.
     const system = System.instance;
