@@ -117,13 +117,19 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
 
   private populateRealityModelList(): void {
-    // assemble list of Spatial Classifiers (should usually be one)
-    const realityModels: Array<{spatialClassifers: SpatialClassifiers, modelName: string}> = [];
+    // assemble list of Spatial Classifiers for context reality models (should usually be at most one)
+    const realityModels: Array<{spatialClassifiers: SpatialClassifiers, modelName: string}> = [];
     (this._vp.view.displayStyle as DisplayStyle3dState).forEachRealityModel((contextModel: ContextRealityModelState) => {
       const classifiers = contextModel.classifiers;
       if (undefined !== classifiers)
-        realityModels.push({spatialClassifers: classifiers, modelName: contextModel.name});
+        realityModels.push({spatialClassifiers: classifiers, modelName: contextModel.name});
     });
+
+    // include any attached reality models (may be any number; must be loaded already)
+    for (const loaded of this._vp.iModel.models.loaded.values())
+      if (loaded instanceof SpatialModelState && undefined !== loaded.classifiers)
+        realityModels.push({ spatialClassifiers: loaded.classifiers, modelName: loaded.name + " (attached)" });
+
     // create list of entries for Classifier in the spatial Classifiers
     const entries = realityModels.map((spatialClassifier, i) => {
       return({ name: spatialClassifier.modelName , value: i } as ComboBoxEntry);
@@ -139,14 +145,14 @@ export class ClassificationsPanel extends ToolBarDropDown {
       handler: (select) => {
         const valueIndex = Number.parseInt(select.value, 10);
         this._selectedSpatialClassifiersIndex = valueIndex;
-        const spatialClassifier = valueIndex >= 0 ? realityModels[valueIndex].spatialClassifers : undefined;
+        const spatialClassifier = valueIndex >= 0 ? realityModels[valueIndex].spatialClassifiers : undefined;
         this.setSelectedClassification(spatialClassifier);
       },
       entries,
     });
 
     if (undefined !== realityModels[activeIndex])
-      this.setSelectedClassification(realityModels[activeIndex].spatialClassifers);
+      this.setSelectedClassification(realityModels[activeIndex].spatialClassifiers);
     else
       this.setSelectedClassification(undefined);
   }
@@ -258,10 +264,14 @@ export class ClassificationsPanel extends ToolBarDropDown {
     if (undefined === classifier)
       return;
 
-    const displayEntires: ComboBoxEntry[] = [
+    const outsideEntries: ComboBoxEntry[] = [
       { name: "Off", value: SpatialClassificationProps.Display.Off },
       { name: "On", value: SpatialClassificationProps.Display.On },
       { name: "Dimmed", value: SpatialClassificationProps.Display.Dimmed },
+    ];
+
+    const insideEntries: ComboBoxEntry[] = [
+      ...outsideEntries,
       { name: "Hilite", value: SpatialClassificationProps.Display.Hilite },
       { name: "Element Color", value: SpatialClassificationProps.Display.ElementColor },
     ];
@@ -270,7 +280,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       name: "Inside: ",
       id: "InsideComboBox",
       parent,
-      entries: displayEntires,
+      entries: insideEntries,
       handler: (select) => {
         const newValue = Number.parseInt(select.value, 10) as SpatialClassificationProps.Display;
         this._selectedClassifier!.flags.inside = newValue;
@@ -283,7 +293,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       name: "Outside: ",
       id: "OutsideComboBox",
       parent,
-      entries: displayEntires,
+      entries: outsideEntries,
       handler: (select) => {
         const newValue = Number.parseInt(select.value, 10) as SpatialClassificationProps.Display;
         this._selectedClassifier!.flags.outside = newValue;
