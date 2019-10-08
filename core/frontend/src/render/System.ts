@@ -901,7 +901,9 @@ export interface GraphicBranchOptions {
 export interface GLTimerResult {
   /** Label from GLTimer.beginOperation */
   label: string;
-  /** Time elapsed in nanoseconds; no-op queries seem to have 32ns of noise */
+  /** Time elapsed in nanoseconds, inclusive of child result times.
+   *  @note no-op queries seem to have 32ns of noise.
+   */
   nanoseconds: number;
   /** Child results if GLTimer.beginOperation calls were nested */
   children?: GLTimerResult[];

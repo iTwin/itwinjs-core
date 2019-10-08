@@ -3,19 +3,25 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Capabilities } from "./System";
+import { System } from "./System";
 import { GLTimerResult, GLTimerResultCallback } from "./../System";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 
 class DisjointTimerExtension {
   private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts
+  private _context: WebGLRenderingContext;
 
-  public constructor(capabilities: Capabilities) {
-    this._e = capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
+  public constructor(system: System) {
+    this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
+    this._context = system.context;
   }
 
   public get isSupported(): boolean { return this._e !== undefined; }
+
+  public didDisjointEventHappen(): boolean {
+    return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
+  }
 
   public createQuery() { return this._e.createQueryEXT() as WebGLObject; }
   public deleteQuery(q: WebGLObject) { this._e.deleteQueryEXT(q); }
@@ -56,16 +62,16 @@ export class GLTimer {
   private _queryStack: QueryEntry[];
   private _resultsCallback?: GLTimerResultCallback;
 
-  private constructor(capabilities: Capabilities) {
-    this._extension = new DisjointTimerExtension(capabilities);
+  private constructor(system: System) {
+    this._extension = new DisjointTimerExtension(system);
     this._queryStack = [];
     this._resultsCallback = undefined;
   }
 
   // This class is necessarily a singleton per context because of the underlying extension it wraps.
   // System is expected to call create in its constructor.
-  public static create(capabilities: Capabilities): GLTimer {
-    return new GLTimer(capabilities);
+  public static create(system: System): GLTimer {
+    return new GLTimer(system);
   }
 
   public get isSupported(): boolean { return this._extension.isSupported; }
@@ -112,21 +118,25 @@ export class GLTimer {
 
     this._extension.endQuery();
     const root = this._queryStack.pop()!;
-
     const userCallback = this._resultsCallback;
-    const extension = this._extension;
 
     const queryCallback = () => {
+      if (this._extension.didDisjointEventHappen()) {
+        // Have to throw away results for this frame after disjoint event occurs.
+        this.cleanupAfterDisjointEvent(root);
+        return;
+      }
+
       // It takes more one or more frames for results to become available.
       // Only checking time for root since it will always be the last query completed.
-      if (!extension.isResultAvailable(root.query)) {
+      if (!this._extension.isResultAvailable(root.query)) {
         setTimeout(queryCallback, 0);
         return;
       }
 
       const processQueryEntry = (queryEntry: QueryEntry): GLTimerResult => {
-        const time = extension.getResult(queryEntry.query);
-        extension.deleteQuery(queryEntry.query);
+        const time = this._extension.getResult(queryEntry.query);
+        this._extension.deleteQuery(queryEntry.query);
 
         const result: GLTimerResult = { label: queryEntry.label, nanoseconds: time };
         if (queryEntry.children === undefined)
@@ -144,6 +154,14 @@ export class GLTimer {
       userCallback(processQueryEntry(root));
     };
     setTimeout(queryCallback, 0);
+  }
+
+  private cleanupAfterDisjointEvent(queryEntry: QueryEntry) {
+    this._extension.deleteQuery(queryEntry.query);
+    if (!queryEntry.children)
+      return;
+    for (const child of queryEntry.children)
+      this.cleanupAfterDisjointEvent(child);
   }
 
   private pushQuery(label: string) {

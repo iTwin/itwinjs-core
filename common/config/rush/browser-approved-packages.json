@@ -339,6 +339,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "file-saver",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
