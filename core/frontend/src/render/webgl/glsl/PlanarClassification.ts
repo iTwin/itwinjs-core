@@ -7,9 +7,11 @@ import { VariableType, ProgramBuilder, FragmentShaderComponent } from "../Shader
 import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
-import { addModelMatrix } from "./Vertex";
 import { addClassifierFlash, addHiliteSettings } from "./FeatureSymbology";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Matrix4d } from "@bentley/geometry-core";
+import { Matrix4 } from "../Matrix";
+import { addInstancedRtcMatrix } from "./Vertex";
 
 // ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
 // Change it so that fully-transparent classifiers do the clipping.
@@ -83,13 +85,17 @@ const computeClassifiedSurfaceHiliteColorNoTexture = `
   return TEXTURE(s_pClassHiliteSampler, classPos.xy);
 `;
 
-const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = classProj.xy;";
+const computeClassifierPos = "vec4 classProj = u_pClassProj * rawPosition; v_pClassPos = classProj.xy;";
+const computeInstancedClassifierPos = "vec4 classProj = u_pClassProj * g_instancedRtcMatrix * rawPosition; v_pClassPos = classProj.xy;";
 const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
 const scratchColorParams = new Float32Array(2);      // Unclassified scale, classified base scale, classified classifier scale.
+const scratchModel = Matrix4d.createIdentity();
+const scratchModelProjection = Matrix4d.createIdentity();
+const scratchMatrix = new Matrix4();
 
 function addPlanarClassifierCommon(builder: ProgramBuilder) {
   const vert = builder.vert;
@@ -97,12 +103,16 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
     prog.addGraphicUniform("u_pClassProj", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape!;
       assert(undefined !== source);
-      uniform.setMatrix4(source.projectionMatrix);
+      source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
+      scratchMatrix.initFromMatrix4d(scratchModelProjection);
+      uniform.setMatrix4(scratchMatrix);
     });
   });
 
-  addModelMatrix(vert);
-  builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, computeClassifierPos);
+  if (vert.usesInstancedGeometry)
+    addInstancedRtcMatrix(vert);
+
+  builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, vert.usesInstancedGeometry ? computeInstancedClassifierPos : computeClassifierPos);
   builder.addInlineComputedVarying("v_pClassPosW", VariableType.Float, computeClassifierPosW);
 
   const frag = builder.frag;
@@ -116,9 +126,6 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
 /** @internal */
 export function addColorPlanarClassifier(builder: ProgramBuilder) {
   addPlanarClassifierCommon(builder);
-  const vert = builder.vert;
-  addModelMatrix(vert);
-
   const frag = builder.frag;
   frag.addUniform("s_pClassSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassSampler", (uniform, params) => {

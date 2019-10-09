@@ -10,7 +10,6 @@ import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Ma
 import { RenderState } from "./RenderState";
 import { ViewState3d } from "../../ViewState";
 import { ViewFrustum } from "../../Viewport";
-import { Matrix4 } from "./Matrix";
 
 export class PlanarTextureProjection {
   private static _rayScratch = Ray3d.createXAxis();
@@ -56,7 +55,7 @@ export class PlanarTextureProjection {
     }
   }
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, drapedTileTree: TileTree, drapeTileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, drapedTileTree: TileTree, drapeTileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     // const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -168,8 +167,6 @@ export class PlanarTextureProjection {
       return {};
     }
     const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
-    const projectionMatrix = new Matrix4();
-    projectionMatrix.initFromMatrix4d(worldToNpc);
     const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1))!;
     const npcToWorld = worldToNpc.createInverse();
     if (undefined === npcToWorld) {
@@ -178,7 +175,7 @@ export class PlanarTextureProjection {
     const worldToNpcMap = Map4d.createRefs(worldToNpc, npcToWorld);
     const worldToViewMap = npcToView.multiplyMapMap(worldToNpcMap);
 
-    return { textureFrustum, projectionMatrix, worldToViewMap, debugFrustum };
+    return { textureFrustum, projectionMatrix: worldToNpc, worldToViewMap, debugFrustum };
   }
 
   public static getTextureDrawingParams(target: Target) {

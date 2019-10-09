@@ -9,7 +9,6 @@ import { FrameBuffer } from "./FrameBuffer";
 import { RenderClipVolume, RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { Matrix4 } from "./Matrix";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
@@ -230,7 +229,7 @@ const scratchViewFlags = new ViewFlags();
 /** @internal */
 export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer {
   private _buffers?: FrameBuffers;
-  private _projectionMatrix = new Matrix4();
+  private _projectionMatrix = Matrix4d.createIdentity();
   private readonly _graphics: RenderGraphic[] = [];
   private _frustum?: Frustum;
   private _width = 0;
@@ -272,7 +271,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.hilite : undefined; }
   public get texture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.combined : undefined; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }

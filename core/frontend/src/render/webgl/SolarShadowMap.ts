@@ -10,7 +10,6 @@ import { Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d, Geometry } f
 import { ModelSelectorState } from "../../ModelSelectorState";
 import { CategorySelectorState } from "../../CategorySelectorState";
 import { SpatialViewState } from "../../ViewState";
-import { Matrix4 } from "./Matrix";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
@@ -173,7 +172,7 @@ class ShadowMapParams {
 
 export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory.Consumer {
   private _bundle?: Bundle;
-  private _projectionMatrix = new Matrix4();
+  private _projectionMatrix = Matrix4d.createIdentity();
   private _graphics: RenderGraphic[] = [];
   private _shadowFrustum = new Frustum();
   private _status = Status.OutOfSynch;
@@ -199,7 +198,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
 
   public get isReady() { return this._status === Status.TextureReady; }
   public get isEnabled() { return this._enabled; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
   public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
   public get settings(): SolarShadows.Settings | undefined { return undefined !== this._params ? this._params.settings : undefined; }
@@ -365,7 +364,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
         return;
       }
 
-      this._projectionMatrix.initFromMatrix4d(frustumMap.transform0);
+      this._projectionMatrix = frustumMap.transform0.clone();
     }
   }
 

@@ -70,31 +70,24 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
-const computeInstancedModelMatrix = `
-  g_instancedModelMatrix = u_instanced_model * g_modelMatrixRTC;
+const computeInstancedRtcMatrix = `
+  g_instancedRtcMatrix = u_instanced_rtc * g_modelMatrixRTC;
 `;
 
 /** @internal */
-export function addModelMatrix(vert: VertexShaderBuilder): void {
+export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
     assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
     if (undefined === vert.find("g_instancedModelMatrix")) {
-      vert.addUniform("u_instanced_model", VariableType.Mat4, (prog) => {
-        prog.addGraphicUniform("u_instanced_model", (uniform, params) => {
-          const modelt = params.geometry.asInstanced!.getRtcTransform(params.target.currentTransform);
+      vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
+        prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
+          const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
           uniform.setMatrix4(Matrix4.fromTransform(modelt));
         });
       });
-      vert.addGlobal("g_instancedModelMatrix", VariableType.Mat4);
-      vert.addInitializer(computeInstancedModelMatrix);
+      vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
+      vert.addInitializer(computeInstancedRtcMatrix);
     }
-  } else if (undefined === vert.find("u_modelMatrix")) {
-    vert.addUniform("u_modelMatrix", VariableType.Mat4, (prog) => {
-      // ###TODO: We only need 3 rows, not 4...
-      prog.addGraphicUniform("u_modelMatrix", (uniform, params) => {
-        uniform.setMatrix4(params.modelMatrix);
-      });
-    });
   }
 }
 

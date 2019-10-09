@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Concatenate projection and model matrix to avoid jitter.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

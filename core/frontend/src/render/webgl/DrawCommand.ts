@@ -98,7 +98,7 @@ export class DrawParams {
       // Shader will compute final model-view matrix based on this and the per-instance transform.
       const instancedGeom = geometry.asInstanced;
       if (undefined !== instancedGeom) {
-        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcTransform(modelMatrix), modelViewMatrix);
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), modelViewMatrix);
       } else {
         Matrix4.fromTransform(modelMatrix, this._modelMatrix);
         modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
