@@ -397,8 +397,8 @@ describe("KindOfQuantity", () => {
       expect(serialized.nodeName).to.eq("KindOfQuantity");
       expect(serialized.getAttribute("typeName")).to.eq("TestKindOfQuantity");
       expect(serialized.getAttribute("relativeError")).to.eq("1.234");
-      expect(serialized.getAttribute("persistenceUnit")).to.eq("Formats:DefaultReal");
-      expect(serialized.getAttribute("presentationUnits")).to.eq("Formats:DoubleUnitFormat;Formats:QuadUnitFormat");
+      expect(serialized.getAttribute("persistenceUnit")).to.eq("f:DefaultReal");
+      expect(serialized.getAttribute("presentationUnits")).to.eq("f:DoubleUnitFormat;f:QuadUnitFormat");
     });
   });
 });

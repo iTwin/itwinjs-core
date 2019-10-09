@@ -722,6 +722,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     InvalidRelationshipEnd = 35068,
     // (undocumented)
+    InvalidSchemaAlias = 35078,
+    // (undocumented)
     InvalidSchemaComparisonArgument = 35077,
     // (undocumented)
     InvalidSchemaItemType = 35065,
