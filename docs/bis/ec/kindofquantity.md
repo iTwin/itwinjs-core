@@ -14,7 +14,7 @@ Describes a strongly typed *kind* for a property. This kind identifies what is b
 
 **persistenceUnit** The unit values of this kind will be stored in.
 
-**relativeError** The number of significant digits values of this kind have. Zero means none set.
+**relativeError** The ratio of the absolute error and the actual value persisted as a fractional value (not a percentage).  For example if a pipes diameter is measured +/- 1 mm at a diameter of 2 meters the relative error would be 1/2000 => 5e-4.
 
 **presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.
 
@@ -83,8 +83,8 @@ The below represents the string literal syntax. All italicized values are to be 
 
 - For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
 
-| Intention               | Invalid way          | Valid way                  |
-|-------------------------|----------------------|----------------------------|
-| Override second Label   | f:AmerFI[u:IN&#124;inches] | f:AmerFI[u:FT][u:IN&#124;inches] |
-| Override first Label    | f:AmerFI[u:FT&#124;feet] | f:AmerFI[u:FT&#124;feet][u:IN] |
-| Change units            | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid |
+| Intention             | Invalid way                        | Valid way                        |
+|-----------------------|------------------------------------|----------------------------------|
+| Override second Label | f:AmerFI[u:IN&#124;inches]         | f:AmerFI[u:FT][u:IN&#124;inches] |
+| Override first Label  | f:AmerFI[u:FT&#124;feet]           | f:AmerFI[u:FT&#124;feet][u:IN]   |
+| Change units          | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid                      |
