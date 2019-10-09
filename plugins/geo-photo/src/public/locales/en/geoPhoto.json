@@ -7,7 +7,19 @@
   },
   "messages": {
     "RootFolderName": "Project Share Photos",
-    "PanoramaFile": "{{fileName}} (panorama)",
-    "PhotoFile": "{{fileName}} (photo)"
+    "PanoramaFile": "<b>{{fileName}} (panorama)</b>",
+    "PhotoFile": "<b>{{fileName}} (photo)</b>",
+    "NotGeolocated": "The iModel is not Geolocated, so photo locations can not be computed.",
+    "ShowingMarkers": "Displaying Geolocated Photo Markers",
+    "ToolTip": "<b>{{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}, {{formattedHeight}}</b>"
+  },
+  "pannellum": {
+    "loadButtonLabel": "Click to<br>Load<br>Panorama",
+    "loadingLabel": "Loading...",
+    "bylineLabel": "by {{author}}",
+    "noPanoramaError": "No panorama image was specified.",
+    "genericWebGLError": "Your browser does not have the necessary WebGL support to display this panorama.",
+    "textureSizeError": "This panorama is too big for your device! It's {{panWidth}} wide, but your but your device only supports images up to {{deviceWidth}} wide. Try another device or scale down the image.",
+    "unknownError": "Unknown error. Check developer console."
   }
 }

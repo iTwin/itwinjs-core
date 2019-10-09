@@ -7,7 +7,7 @@ import { Logger, BentleyError, BentleyStatus, GuidString } from "@bentley/bentle
 import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry } from "./PhotoTree";
+import { PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
 import { JpegTagReader, ImageTags, ImageTagValue } from "./JpegTagReader";
 
 const loggerCategory = "Plugins.GeoPhoto";
@@ -17,14 +17,14 @@ const loggerCategory = "Plugins.GeoPhoto";
 /** Subclass of PhotoFolder created by ProjectShareHandler */
 class PSPhotoFolder extends PhotoFolder {
 
-  constructor(treeHandler: PhotoTreeHandler, private _i18N: I18N, private _psFolder: ProjectShareFolder | undefined) {
+  constructor(treeHandler: PhotoTreeHandler, private _i18n: I18N, private _psFolder: ProjectShareFolder | undefined) {
     super(treeHandler);
   }
 
   public get name(): string {
     if (this._psFolder)
       return this._psFolder.name!;
-    return this._i18N.translate("geoPhoto:messages.RootFolderName");
+    return this._i18n.translate("geoPhoto:messages.RootFolderName");
   }
 
   public get folderId(): string | undefined {
@@ -40,8 +40,8 @@ class FoundProperty {
 class PSPhotoFile extends PhotoFile {
   public geoLocation: Cartographic | undefined;
 
-  constructor(treeHandler: PhotoTreeHandler, private _i18N: I18N, public psFile: ProjectShareFile) {
-    super(treeHandler);
+  constructor(treeHandler: PhotoTreeHandler, i18n: I18N, public psFile: ProjectShareFile) {
+    super(treeHandler, i18n);
   }
 
   public get name(): string {
@@ -64,14 +64,6 @@ class PSPhotoFile extends PhotoFile {
     return this.psFile.accessUrl!;
   }
 
-  public get isPanorama(): boolean {
-    return this.probablyPano ? this.probablyPano : false;
-  }
-
-  public get toolTip(): string {
-    return this._i18N.translate(this.isPanorama ? "geoPhoto:messages.PanoramaFile" : "geoPhoto:messages.PhotoFile", { fileName: this.name });
-  }
-
   public findCustomProperty(propertyName: string): FoundProperty | undefined {
     for (let iProperty = 0; iProperty < this.psFile.customProperties.length; ++iProperty) {
       const thisProperty = this.psFile.customProperties[iProperty];
@@ -92,18 +84,19 @@ export class GeoPhotoTags {
 }
 
 /** The TreeHandler subclass that reads from Project Share. */
-export class ProjectShareHandler implements PhotoTreeHandler {
+export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTreeHandler {
   private _projectShareClient: ProjectShareClient;
   private _rootFolder: PSPhotoFolder | undefined;
   private static readonly _customPropertyName = "JpegFileInfo";
 
-  constructor(private _context: AuthorizedFrontendRequestContext, private _i18N: I18N, private _iModelConnection: IModelConnection) {
+  constructor(private _context: AuthorizedFrontendRequestContext, private _i18n: I18N, iModel: IModelConnection) {
+    super(iModel);
     this._projectShareClient = new ProjectShareClient();
   }
 
   /** Create the root folder for a Project Share file repository */
   public async createRootFolder(): Promise<PhotoFolder> {
-    this._rootFolder = new PSPhotoFolder(this, this._i18N, undefined);
+    this._rootFolder = new PSPhotoFolder(this, this._i18n, undefined);
 
     // Always get the contents of the root folder. (ends up back at our readFolderContents method)
     await this._rootFolder.getFolderContents(true);
@@ -255,7 +248,7 @@ export class ProjectShareHandler implements PhotoTreeHandler {
 
     let tags = this.readTags(psFile);
     if (tags === undefined || !this.validateTags(psFile, tags))
-      tags = await this.updateTags(this._context, this._iModelConnection.iModelToken.contextId!, psFile);
+      tags = await this.updateTags(this._context, this._iModel.iModelToken.contextId!, psFile);
 
     if (!tags) {
       // tslint:disable-next-line:no-console
@@ -267,16 +260,6 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     psFile.probablyPano = tags.probablyPano;
   }
 
-  /** Gets the Spatial (x,y,z) coordinates for the photoFile. */
-  private async getPhotoFileSpatial(file: PhotoFile, _folder: PhotoFolder): Promise<void> {
-    const psFile: PSPhotoFile = file as PSPhotoFile;
-    const geoLocation: Cartographic | undefined = psFile.geoLocation;
-    if (geoLocation) {
-      const cartographic = Cartographic.fromDegrees(geoLocation.longitude, geoLocation.latitude, geoLocation.height);
-      psFile.spatial = await this._iModelConnection.cartographicToSpatial(cartographic);
-    }
-  }
-
   /** Traverses the files to get their Cartographic positions. This is set up as a separate pass to facility
    *  future optimization. Currently, it just does the files one by one.
    */
@@ -284,18 +267,10 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     await folder.traversePhotos(this.getPhotoFileCartographic.bind(this), subFolders, false);
   }
 
-  /** Traverses the files to get their Spatial positions. This is set up as a separate pass to facility
-   *  future optimization. Currently, it just does the files one by one. Batching up the lat/long
-   *  values to calculate their spatial coordinates would improve efficiency.
-   */
-  public async getSpatialPositions(folder: PhotoFolder, subFolders: boolean): Promise<void> {
-    await folder.traversePhotos(this.getPhotoFileSpatial.bind(this), subFolders, false);
-  }
-
   /** Reads the contents (both folders and files) in specified folder */
   public async readFolderContents(folder: PhotoFolder, subFolders: boolean): Promise<FolderEntry[]> {
     const entries: FolderEntry[] = [];
-    const projectId = this._iModelConnection.iModelToken.contextId;
+    const projectId = this._iModel.iModelToken.contextId;
     if (!projectId)
       return entries;
 
@@ -306,7 +281,7 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     const projectShareQuery = new ProjectShareQuery().inFolder(folderId!);
     const folders: ProjectShareFolder[] = await this._projectShareClient.getFolders(this._context, projectId, projectShareQuery);
     for (const thisFolder of folders) {
-      entries.push(new PSPhotoFolder(this, this._i18N, thisFolder));
+      entries.push(new PSPhotoFolder(this, this._i18n, thisFolder));
     }
 
     const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, projectShareQuery);
@@ -315,7 +290,7 @@ export class ProjectShareHandler implements PhotoTreeHandler {
       if (undefined !== thisFile.name) {
         const lcName: string = thisFile.name.toLowerCase();
         if (lcName.endsWith("jpg") || lcName.endsWith("jpeg")) {
-          entries.push(new PSPhotoFile(this, this._i18N, thisFile));
+          entries.push(new PSPhotoFile(this, this._i18n, thisFile));
         }
       }
     }

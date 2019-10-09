@@ -424,6 +424,19 @@ function getConfig(env) {
           }
         },
         {
+          test: [/\.svg$/],
+          issuer: {
+            include: /\.css$/
+          },
+          use: {
+            loader: require.resolve("url-loader"),
+            options: {
+              limit: 10000,
+              name: "static/media/[name].[hash:8].[ext]",
+            },
+          }
+        },
+        {
           test: /\.svg$/,
           issuer: {
             exclude: /\.css$/

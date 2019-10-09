@@ -6,18 +6,21 @@ import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geo
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, Decorator, DecorateContext, GraphicType, imageElementFromUrl,
-  IModelApp, Marker, MarkerImage, MarkerSet, Plugin,
+  IModelApp, Marker, MarkerImage, MarkerSet,
 } from "@bentley/imodeljs-frontend";
 import { PhotoFile, PhotoTraverseFunction } from "./PhotoTree";
-import { GeoPhotos } from "./geoPhoto";
+import { GeoPhotos, GeoPhotoPlugin } from "./geoPhoto";
+import { PannellumFrontstage } from "./PannellumFrontStage";
 
 /** Marker positioned where there is a geotagged photograph. */
 class GeoPhotoMarker extends Marker {
+  private static _oldWay = true;
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
   private static _amber = new ColorDef(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
+  private _plugin: GeoPhotoPlugin;
   private _color: ColorDef;
   private _photoFile: PhotoFile;
 
@@ -25,11 +28,22 @@ class GeoPhotoMarker extends Marker {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
         if (this._photoFile.isPanorama) {
-          // this opens the pannellum viewer in a separate tab (on Chrome)
-          const encodedURL = encodeURIComponent(this._photoFile.accessUrl);
-          const title = this._photoFile.name;
-          const pannellumURL = `http://cdn.pannellum.org/2.5/pannellum.htm#panorama=${encodedURL}&autoLoad=true&title=${title}`;
-          window.open(pannellumURL);
+          if (GeoPhotoMarker._oldWay) {
+            // this opens the pannellum viewer in a separate tab (on Chrome)
+            const encodedURL = encodeURIComponent(this._photoFile.accessUrl);
+            const title = this._photoFile.name;
+            const pannellumURL = `http://cdn.pannellum.org/2.5/pannellum.htm#panorama=${encodedURL}&autoLoad=true&title=${title}`;
+            window.open(pannellumURL);
+          } else {
+            // open the Pannellum frontstage.
+            this._photoFile.getFileContents().then((contents: ArrayBuffer) => {
+              const blob: Blob = new Blob([contents], { type: "image/jpeg" });
+              PannellumFrontstage.open(blob, this._photoFile, this._plugin).then(() => { }).catch((_err) => { });
+            }).catch((error) => {
+              // tslint:disable-next-line:no-console
+              console.log(`Error attempting to display photo file ${this._photoFile.name}: ${error}`);
+            });
+          }
         } else {
           this._photoFile.getFileContents().then((contents: ArrayBuffer) => {
             const blob: Blob = new Blob([contents], { type: "image/jpeg" });
@@ -50,15 +64,17 @@ class GeoPhotoMarker extends Marker {
   public static get amber() { return GeoPhotoMarker._amber; }
 
   /** Create a new GeoPhotoMarker */
-  constructor(location: XYAndZ, photoFile: PhotoFile, icon: HTMLImageElement) {
+  constructor(location: XYAndZ, photoFile: PhotoFile, icon: HTMLImageElement, plugin: GeoPhotoPlugin) {
     super(location, GeoPhotoMarker._size);
     this._color = GeoPhotoMarker._amber;
     this.setImage(icon); // save icon
     this.imageOffset = GeoPhotoMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = GeoPhotoMarker._imageSize; // 40x40
     this._photoFile = photoFile;
-    this.title = photoFile.toolTip; // tooltip
+    // set the tooltip when promise resolves. We won't need it for a while anyway.
+    this._photoFile.getToolTip().then((toolTip) => { this.title = toolTip; }).catch((_err) => { });
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+    this._plugin = plugin;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     this.htmlElement = document.createElement("div");
@@ -134,7 +150,7 @@ class GeoPhotoMarkerSet extends MarkerSet<GeoPhotoMarker> {
     if (undefined !== photoFile.spatial) {
       const location = Point3d.fromJSON(photoFile.spatial);
       const icon = await this._markerManager.getMarkerImage(photoFile.isPanorama);
-      this.markers.add(new GeoPhotoMarker(location, photoFile, icon!));
+      this.markers.add(new GeoPhotoMarker(location, photoFile, icon!, this._markerManager.plugin));
     }
   }
 
@@ -150,9 +166,9 @@ export class GeoPhotoMarkerManager implements Decorator {
   private _markerSet: GeoPhotoMarkerSet | undefined;
   private _decorating: boolean;
 
-  constructor(private _plugin: Plugin, private _geoPhotos: GeoPhotos) {
-    this._jpgImage = imageElementFromUrl(this._plugin.resolveResourceUrl("jpeg_pin.svg"));
-    this._panoImage = imageElementFromUrl(this._plugin.resolveResourceUrl("pano_pin.svg"));
+  constructor(public plugin: GeoPhotoPlugin, private _geoPhotos: GeoPhotos) {
+    this._jpgImage = imageElementFromUrl(this.plugin.resolveResourceUrl("jpeg_pin.svg"));
+    this._panoImage = imageElementFromUrl(this.plugin.resolveResourceUrl("pano_pin.svg"));
     this._markerSet = undefined;
     this._decorating = false;
   }

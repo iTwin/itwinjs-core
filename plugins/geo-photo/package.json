@@ -33,12 +33,17 @@
         {
           "source": "./src/public/**/*",
           "dest": "./lib/build"
+        },
+        {
+          "source": "./src/pannellum/css/**/*",
+          "dest": "./lib/pannellum/css"
         }
       ],
       "webpack": {
         "build": "./lib/build",
         "dest": "./lib/plugin",
         "entry": "./lib/geoPhoto.js",
+        "styleSheets": true,
         "bundleName": "geoPhoto"
       },
       "pseudoLocalize": {
@@ -55,6 +60,7 @@
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
+    "@types/react": "^16.8.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
@@ -73,6 +79,11 @@
     "@bentley/imodeljs-common": "1.7.0-dev.1",
     "@bentley/imodeljs-i18n": "1.7.0-dev.1",
     "@bentley/imodeljs-frontend": "1.7.0-dev.1",
-    "@bentley/imodeljs-quantity": "1.7.0-dev.1"
+    "@bentley/imodeljs-quantity": "1.7.0-dev.1",
+    "@bentley/ui-core": "1.7.0-dev.1",
+    "@bentley/ui-components": "1.7.0-dev.1",
+    "@bentley/ui-ninezone": "1.7.0-dev.1",
+    "@bentley/ui-framework": "1.7.0-dev.1",
+    "react": "^16.8.0"
   }
 }

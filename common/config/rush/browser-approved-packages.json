@@ -116,19 +116,19 @@
     },
     {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/webpack-tools",
@@ -584,7 +584,7 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "react-autosuggest",

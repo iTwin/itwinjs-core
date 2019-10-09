@@ -3,7 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IModelConnection, Plugin, ScreenViewport, Tool, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  Plugin, ScreenViewport, Tool, AuthorizedFrontendRequestContext,
+} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
 import { PhotoTreeHandler, PhotoFolder, PhotoTraverseFunction } from "./PhotoTree";
@@ -110,11 +113,18 @@ const enum Operation {
 }
 
 /** The plugin class that is instantiated when the plugin is loaded, and executes the operations */
-class GeoPhotoPlugin extends Plugin {
+export class GeoPhotoPlugin extends Plugin {
   private _i18NNamespace?: I18NNamespace;
 
   // displays the GeoPhoto markers for the specified iModel.
   public async showGeoPhotoMarkers(iModel: IModelConnection): Promise<void> {
+    if (!iModel.isGeoLocated) {
+      const errMsg: string = this.i18n.translate("geoPhoto:messages.notGeolocated");
+      const errDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, errMsg, undefined, OutputMessageType.Sticky);
+      IModelApp.notifications.outputMessage(errDetails);
+      return;
+    }
+
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
     if (undefined === geoPhotos) {
       const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -122,6 +132,9 @@ class GeoPhotoPlugin extends Plugin {
       geoPhotos = new GeoPhotos(this, treeHandler!, iModel);
       await geoPhotos.readTreeContents();
     }
+    const message: string = this.i18n.translate("geoPhoto:messages.ShowingMarkers");
+    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+    IModelApp.notifications.outputMessage(msgDetails);
     geoPhotos.showMarkers();
   }
 
