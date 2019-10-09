@@ -54,10 +54,9 @@
     }
 
     &.core-dialog-center {
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%)
     }
 
     &.core-dialog-right {
@@ -88,10 +87,6 @@
     flex-direction: column;
     height: fit-content;
 
-    @include firefox-only {
-      max-height: 75%;
-    }
-
     .core-dialog-area {
       display: flex;
       flex-grow: 1;
@@ -101,10 +96,6 @@
       background-color: $buic-background-dialog;
       color: $buic-text-color;
       padding: 0;
-
-      @include firefox-only {
-        flex-grow: 0;
-      }
 
       > .core-dialog-head {
         flex-shrink: 0;
