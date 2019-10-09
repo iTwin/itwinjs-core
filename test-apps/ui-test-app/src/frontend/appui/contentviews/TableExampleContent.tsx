@@ -7,11 +7,12 @@ import * as React from "react";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/imodeljs-frontend";
 import {
-  Table, ColumnDescription, RowItem, TableDataProvider,
+  Table, ColumnDescription, RowItem, TableDataProvider, FilterRenderer,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
 import { BodyText } from "@bentley/ui-core";
+import { LoremIpsum } from "lorem-ipsum";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -68,6 +69,24 @@ const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) =
   return enumPropertyRecord;
 };
 
+const createLoremPropertyRecord = (column: ColumnDescription) => {
+  const lorem = new LoremIpsum();
+  const value = lorem.generateWords(5);
+
+  const v: PropertyValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+    value,
+    displayValue: value,
+  };
+  const pd: PropertyDescription = {
+    typename: "text",
+    name: column.key,
+    displayLabel: column.label,
+  };
+  column.propertyDescription = pd;
+  return new PropertyRecord(v, pd);
+};
+
 class TableExampleContent extends React.Component<{}, TableExampleState>  {
   public readonly state: Readonly<TableExampleState>;
 
@@ -81,6 +100,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         resizable: true,
         sortable: true,
         width: 90,
+        filterable: true,
+        filterRenderer: FilterRenderer.Numeric,
       },
       {
         key: "title",
@@ -88,6 +109,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         sortable: true,
         resizable: true,
         editable: true,
+        filterable: true,
+        filterRenderer: FilterRenderer.MultiSelect,
       },
       {
         key: "color",
@@ -96,6 +119,15 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         resizable: false,
         editable: true,
         width: 180,
+        filterable: true,
+        filterRenderer: FilterRenderer.SingleSelect,
+      },
+      {
+        key: "lorem",
+        label: "Lorem",
+        resizable: true,
+        filterable: true,
+        filterRenderer: FilterRenderer.Text,
       },
     ];
 
@@ -103,16 +135,20 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     for (let i = 1; i <= 100000; i++) {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
-        key: "id",
+        key: columns[0].key,
         record: createPropertyRecord(i, columns[0], "int"),
       });
       row.cells.push({
-        key: "title",
+        key: columns[1].key,
         record: createPropertyRecord("Title " + i, columns[1], "text"),
       });
       row.cells.push({
-        key: "color",
+        key: columns[2].key,
         record: createEnumPropertyRecord(i, columns[2]),
+      });
+      row.cells.push({
+        key: columns[3].key,
+        record: createLoremPropertyRecord(columns[3]),
       });
       rows.push(row);
     }

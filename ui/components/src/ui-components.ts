@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore iconpicker lineweight
+
 export { UiComponents } from "./ui-components/UiComponents";
 
 export * from "./ui-components/breadcrumb/Breadcrumb";
@@ -105,7 +108,9 @@ export * from "./ui-components/lineweight/WeightPickerButton";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
+export * from "./ui-components/table/columnfiltering/ColumnFiltering";
 export * from "./ui-components/table/component/Table";
+export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/tree/TreeDataProvider";

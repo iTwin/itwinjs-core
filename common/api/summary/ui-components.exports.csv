@@ -58,6 +58,9 @@ beta;ColorPropertyEditor
 beta;ColorSwatch: React.FunctionComponent
 beta;ColorSwatchProps 
 public;ColumnDescription
+alpha;ColumnFilterDescriptor 
+alpha;CompositeFilterDescriptor 
+alpha;CompositeFilterDescriptorCollection
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 
@@ -73,6 +76,8 @@ public;DateTimeTypeConverter
 public;class DateTimeTypeConverterBase 
 alpha;DayPicker 
 public;DelayLoadedTreeNodeItem 
+alpha;DistinctValueCollection
+alpha;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
@@ -95,8 +100,17 @@ beta;EnumPropertyButtonGroupEditor
 beta;EnumPropertyEditor 
 public;EnumTypeConverter 
 public;EventsMuteContext 
+alpha;FieldFilterDescriptor 
+alpha;FilterableColumn
+alpha;FilterableTable
+alpha;FilterCompositionLogicalOperator
+alpha;FilterDescriptor
+alpha;FilterDescriptorCollection 
+alpha;class FilterDescriptorCollectionBase
 public;FilteringInput 
 public;FilteringInputProps 
+alpha;FilterOperator
+alpha;FilterRenderer
 public;FloatTypeConverter 
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 public;hasChildren: (node: TreeNodeItem) => boolean
@@ -156,11 +170,14 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
+alpha;NumericRangeData
 public;class NumericTypeConverterBase 
 public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
+alpha;OperatorValueFilterDescriptor 
+alpha;OperatorValueFilterDescriptorCollection 
 public;PageOptions
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -243,9 +260,11 @@ public;Table
 public;TableArrayValueRenderer 
 public;TableCellEditorState
 public;TableCellUpdatedArgs
+internal;TableColumn 
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
+alpha;TableDistinctValue
 beta;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider
 beta;TableDropTargetProps

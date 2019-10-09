@@ -450,8 +450,14 @@ export class BooleanTypeConverter extends TypeConverter {
     convertFromString(value: string): boolean;
     // (undocumented)
     convertToString(value?: Primitives.Boolean): string;
+    // @internal (undocumented)
+    static getLocalizedTrueFalse(): void;
     // (undocumented)
     readonly isBooleanType: boolean;
+    // @internal (undocumented)
+    static sl10nFalse: string;
+    // @internal (undocumented)
+    static sl10nTrue: string;
     // (undocumented)
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
@@ -777,6 +783,8 @@ export interface ColumnDescription {
     filterable?: boolean;
     // (undocumented)
     filterCaseSensitive?: boolean;
+    // @alpha (undocumented)
+    filterRenderer?: FilterRenderer;
     // (undocumented)
     groupable?: boolean;
     // (undocumented)
@@ -805,6 +813,30 @@ export interface ColumnDescription {
     titleAlignment?: HorizontalAlignment;
     // (undocumented)
     width?: number;
+}
+
+// @alpha
+export interface ColumnFilterDescriptor extends FilterDescriptor {
+    distinctFilter: DistinctValuesFilterDescriptor;
+    fieldFilter: FieldFilterDescriptor;
+}
+
+// @alpha
+export interface CompositeFilterDescriptor extends FilterDescriptor {
+    filterDescriptorCollection: FilterDescriptorCollection;
+    logicalOperator: FilterCompositionLogicalOperator;
+}
+
+// @alpha
+export interface CompositeFilterDescriptorCollection {
+    add(item: FilterDescriptor): void;
+    clear(): void;
+    count: number;
+    evaluateRow(row: RowItem): boolean;
+    getColumnFilterDescriptor(columnKey: string): ColumnFilterDescriptor | undefined;
+    getFilterExpression(): string;
+    isColumnFilterActive(columnKey: string): boolean;
+    logicalOperator: FilterCompositionLogicalOperator;
 }
 
 // @internal
@@ -969,6 +1001,23 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     // (undocumented)
     hasChildren?: boolean;
+}
+
+// @alpha
+export class DistinctValueCollection {
+    constructor();
+    // (undocumented)
+    values: any[];
+    }
+
+// @alpha
+export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
+    addDistinctValue(distinctValue: any): void;
+    distinctValues: DistinctValueCollection;
+    distinctValuesComparisonOperator: FilterOperator;
+    filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
+    removeDistinctValue(distinctValue: any): boolean;
+    tryFindDescriptor(distinctValue: any): FilterDescriptor | undefined;
 }
 
 // @public
@@ -1175,7 +1224,7 @@ export class EnumTypeConverter extends TypeConverter {
     // (undocumented)
     convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Enum): string | Promise<string>;
     // (undocumented)
-    sortCompare(a: Primitives.Enum, b: Primitives.Enum, _ignoreCase?: boolean): number;
+    sortCompare(a: Primitives.Enum, b: Primitives.Enum, ignoreCase?: boolean): number;
 }
 
 // @public
@@ -1184,6 +1233,67 @@ export class EventsMuteContext implements IDisposable {
     // (undocumented)
     dispose(): void;
     }
+
+// @alpha
+export interface FieldFilterDescriptor extends FilterDescriptor {
+    addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
+    filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
+    logicalOperator: FilterCompositionLogicalOperator;
+    removeFieldValue(fieldValue: any, operator: FilterOperator): boolean;
+    tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
+}
+
+// @alpha
+export interface FilterableColumn {
+    columnFilterDescriptor: ColumnFilterDescriptor;
+    createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
+    filterableTable: FilterableTable;
+    filterMemberKey: string;
+    filterMemberType: string;
+    getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
+    isFilterActive: boolean;
+    showDistinctValueFilters: boolean;
+    showFieldFilters: boolean;
+}
+
+// @alpha
+export interface FilterableTable {
+    filterDescriptors: CompositeFilterDescriptorCollection;
+    getPropertyDisplayValueExpression(property: string): string;
+}
+
+// @alpha
+export enum FilterCompositionLogicalOperator {
+    // (undocumented)
+    And = 0,
+    // (undocumented)
+    Or = 1
+}
+
+// @alpha
+export interface FilterDescriptor {
+    clear(): void;
+    evaluateRow(row: RowItem): boolean;
+    getFilterExpression(): string;
+    isActive: boolean;
+    isFilterForColumn(columnKey: string): boolean;
+}
+
+// @alpha
+export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
+}
+
+// @alpha
+export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
+    constructor();
+    add(item: TDescriptor): void;
+    clear(): void;
+    readonly count: number;
+    // (undocumented)
+    readonly descriptors: TDescriptor[];
+    readonly isActive: boolean;
+    remove(item: TDescriptor): boolean;
+}
 
 // @public
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
@@ -1204,6 +1314,56 @@ export interface FilteringInputProps extends CommonProps {
     onFilterClear: () => void;
     onFilterStart: (searchText: string) => void;
     resultSelectorProps?: ResultSelectorProps;
+}
+
+// @alpha
+export enum FilterOperator {
+    // (undocumented)
+    Contains = 9,
+    // (undocumented)
+    DoesNotContain = 10,
+    // (undocumented)
+    EndsWith = 8,
+    // (undocumented)
+    IsContainedIn = 11,
+    // (undocumented)
+    IsEmpty = 13,
+    // (undocumented)
+    IsEqualTo = 0,
+    // (undocumented)
+    IsGreaterThan = 4,
+    // (undocumented)
+    IsGreaterThanOrEqualTo = 5,
+    // (undocumented)
+    IsLessThan = 2,
+    // (undocumented)
+    IsLessThanOrEqualTo = 3,
+    // (undocumented)
+    IsNotContainedIn = 12,
+    // (undocumented)
+    IsNotEmpty = 14,
+    // (undocumented)
+    IsNotEqualTo = 1,
+    // (undocumented)
+    IsNotNull = 16,
+    // (undocumented)
+    IsNull = 15,
+    // (undocumented)
+    Range = 6,
+    // (undocumented)
+    StartsWith = 7
+}
+
+// @alpha
+export enum FilterRenderer {
+    // (undocumented)
+    MultiSelect = 2,
+    // (undocumented)
+    Numeric = 1,
+    // (undocumented)
+    SingleSelect = 3,
+    // (undocumented)
+    Text = 4
 }
 
 // @public
@@ -1651,6 +1811,16 @@ export interface NullableOperatorProcessor {
     isNull(value: Primitives.Value): boolean;
 }
 
+// @alpha
+export interface NumericRangeData {
+    // (undocumented)
+    begin: number;
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    type: number;
+}
+
 // @public
 export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
     // (undocumented)
@@ -1682,6 +1852,19 @@ export interface OperatorProcessor {
     isEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
     // (undocumented)
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
+}
+
+// @alpha
+export interface OperatorValueFilterDescriptor extends FilterDescriptor {
+    isCaseSensitive: boolean;
+    memberKey: string;
+    memberType: string;
+    operator: FilterOperator;
+    value: any;
+}
+
+// @alpha
+export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
 // @public
@@ -2071,6 +2254,7 @@ export interface RowItem {
     extendedData?: {
         [key: string]: any;
     };
+    getValueFromCell?: (columnKey: string) => any;
     // (undocumented)
     isDisabled?: boolean;
     key: string;
@@ -2304,10 +2488,14 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     // (undocumented)
     addRow(rowItem: RowItem): number;
+    // @alpha (undocumented)
+    applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void>;
     // (undocumented)
     deleteRow(rowItem: RowItem, raiseRowsChangedEvent?: boolean): void;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
+    // @alpha (undocumented)
+    getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection>;
     // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
     // (undocumented)
@@ -2397,15 +2585,27 @@ export interface StandardRotationChangeEventArgs {
 // @beta
 export enum StandardTypeConverterTypeNames {
     // (undocumented)
+    Bool = "bool",
+    // (undocumented)
     Boolean = "boolean",
+    // (undocumented)
+    DateTime = "dateTime",
+    // (undocumented)
+    Double = "double",
     // (undocumented)
     Enum = "enum",
     // (undocumented)
     Float = "float",
     // (undocumented)
+    Hex = "hex",
+    // (undocumented)
     Hexadecimal = "hexadecimal",
     // (undocumented)
     Int = "int",
+    // (undocumented)
+    Integer = "integer",
+    // (undocumented)
+    Navigation = "navigation",
     // (undocumented)
     Point2d = "point2d",
     // (undocumented)
@@ -2482,6 +2682,10 @@ export class Table extends React.Component<TableProps, TableState> {
     componentDidUpdate(previousProps: TableProps): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
+    // @internal
+    readonly filterDescriptors: CompositeFilterDescriptorCollection;
+    // @internal
+    getPropertyDisplayValueExpression(property: string): string;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2524,6 +2728,20 @@ export interface TableCellUpdatedArgs {
     rowIndex: number;
 }
 
+// @internal
+export class TableColumn extends FilterableColumnBase {
+    constructor(filterableTable: FilterableTable, columnDescription: ColumnDescription, reactDataGridColumn: ReactDataGridColumn);
+    // (undocumented)
+    dataProvider?: TableDataProvider;
+    // (undocumented)
+    distinctValueCollection?: DistinctValueCollection;
+    getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly reactDataGridColumn: ReactDataGridColumn;
+}
+
 // @public
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> {
 }
@@ -2533,8 +2751,14 @@ export type TableDataChangesListener = () => void;
 
 // @public
 export interface TableDataProvider {
+    // @alpha
+    applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
+    // @alpha
+    getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
+    // @alpha
+    getPropertyDisplayValueExpression?: (property: string) => string;
     // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
     // (undocumented)
@@ -2545,6 +2769,14 @@ export interface TableDataProvider {
     onRowsChanged: TableDataChangeEvent;
     // (undocumented)
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
+}
+
+// @alpha (undocumented)
+export interface TableDistinctValue {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: Primitives.Value;
 }
 
 // @beta
@@ -2582,6 +2814,8 @@ export interface TableProps extends CommonProps {
     hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
+    // @internal (undocumented)
+    onApplyFilter?: () => void;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
     onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
     // @beta
@@ -2935,6 +3169,10 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor {
     readonly isLessGreaterType: boolean;
     // (undocumented)
     isNotEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
+    // (undocumented)
+    isNotNull(value: Primitives.Value): boolean;
+    // (undocumented)
+    isNull(value: Primitives.Value): boolean;
     // (undocumented)
     readonly isNullableType: boolean;
     // (undocumented)

@@ -455,6 +455,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "lorem-ipsum",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "make-dir",
       "allowedCategories": [ "tools" ]
     },
@@ -592,6 +596,10 @@
     },
     {
       "name": "react-data-grid",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-data-grid-addons",
       "allowedCategories": [ "frontend" ]
     },
     {

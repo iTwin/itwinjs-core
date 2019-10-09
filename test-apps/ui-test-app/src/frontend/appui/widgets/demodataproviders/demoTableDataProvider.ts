@@ -120,7 +120,7 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
   }
   public getRow = async (rowIndex: number, unfiltered?: boolean): Promise<RowItem> => {
     if (rowIndex > this._data.length || this._data[rowIndex] === undefined) return { key: "", cells: [] };
-    if (unfiltered && !unfiltered) // surpress warning, unfiltered unused
+    if (unfiltered && !unfiltered) // suppress warning, unfiltered unused
       return { key: "", cells: [] };
     return mutableRowToRowItem(this._data[rowIndex], this);
   }
@@ -207,10 +207,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: label,
             }, {
-              name: "label",
-              displayLabel: "label",
-              typename: "text",
-            }),
+            name: "label",
+            displayLabel: "label",
+            typename: "text",
+          }),
         },
         {
           key: "type", record: new PropertyRecord(
@@ -219,10 +219,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: type,
             }, {
-              name: "type",
-              displayLabel: "type",
-              typename: "text",
-            }),
+            name: "type",
+            displayLabel: "type",
+            typename: "text",
+          }),
         },
         {
           key: "description", record: new PropertyRecord(
@@ -231,10 +231,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: description,
             }, {
-              name: "description",
-              displayLabel: "description",
-              typename: "text",
-            }),
+            name: "description",
+            displayLabel: "description",
+            typename: "text",
+          }),
         },
       ],
     };

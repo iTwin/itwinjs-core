@@ -5,41 +5,44 @@
 /** @module TypeConverters */
 
 import { UiComponents } from "../UiComponents";
-import { TypeConverter } from "./TypeConverter";
+import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
-
-let sl10nTrue: string = "";
-let sl10nFalse: string = "";
 
 /** Boolean Type Converter.
  * @public
  */
 export class BooleanTypeConverter extends TypeConverter {
-  private getLocalizedTrueFalse() {
-    if (!sl10nTrue)
-      sl10nTrue = UiComponents.translate("general.true");
-    if (!sl10nFalse)
-      sl10nFalse = UiComponents.translate("general.false");
+  /** @internal */
+  public static sl10nTrue: string = "";
+  /** @internal */
+  public static sl10nFalse: string = "";
+
+  /** @internal */
+  public static getLocalizedTrueFalse() {
+    if (!BooleanTypeConverter.sl10nTrue)
+      BooleanTypeConverter.sl10nTrue = UiComponents.translate("general.true");
+    if (!BooleanTypeConverter.sl10nFalse)
+      BooleanTypeConverter.sl10nFalse = UiComponents.translate("general.false");
   }
 
   public convertToString(value?: Primitives.Boolean) {
     if (value === undefined)
       return "";
 
-    this.getLocalizedTrueFalse();
+    BooleanTypeConverter.getLocalizedTrueFalse();
 
-    if (value === sl10nTrue || value === sl10nFalse)
+    if (value === BooleanTypeConverter.sl10nTrue || value === BooleanTypeConverter.sl10nFalse)
       return value as string;
 
-    return value ? sl10nTrue : sl10nFalse;
+    return value ? BooleanTypeConverter.sl10nTrue : BooleanTypeConverter.sl10nFalse;
   }
 
   public convertFromString(value: string) {
-    this.getLocalizedTrueFalse();
+    BooleanTypeConverter.getLocalizedTrueFalse();
 
     let booleanValue: boolean;
-    booleanValue = (0 === value.toLocaleLowerCase().localeCompare(sl10nTrue.toLocaleLowerCase()));
+    booleanValue = (0 === value.toLocaleLowerCase().localeCompare(BooleanTypeConverter.sl10nTrue.toLocaleLowerCase()));
     return booleanValue;
   }
 
@@ -54,5 +57,5 @@ export class BooleanTypeConverter extends TypeConverter {
   public get isBooleanType(): boolean { return true; }
 }
 
-TypeConverterManager.registerConverter("boolean", BooleanTypeConverter);
-TypeConverterManager.registerConverter("bool", BooleanTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Boolean, BooleanTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Bool, BooleanTypeConverter);
