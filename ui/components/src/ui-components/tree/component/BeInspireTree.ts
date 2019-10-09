@@ -254,9 +254,12 @@ export class BeInspireTree<TNodePayload> {
     };
     this._tree = new InspireTree(config);
 
-    // make sure model is dirty when it's loaded
+    // make sure nodes are dirty when they're loaded
     this.on(BeInspireTreeEvent.ModelLoaded, (model: BeInspireTreeNodes<TNodePayload>) => {
       model.forEach((n) => n.markDirty());
+    });
+    this.on(BeInspireTreeEvent.ChildrenLoaded, (parent: BeInspireTreeNode<TNodePayload>) => {
+      parent.getChildren().forEach((n) => n.markDirty());
     });
 
     // dispose `visible` cache when data is loaded or nodes are expanded or collapsed
@@ -272,6 +275,8 @@ export class BeInspireTree<TNodePayload> {
       this._suspendedRendering = this.pauseRendering();
     });
     this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
+      // NODES_LOADED_LAST_LISTENER: this listener must be executed last of all ModelLoaded and ChildrenLoaded
+      // listeners to avoid excessive re-renders
       if (this._suspendedRendering) {
         this._suspendedRendering.dispose();
         this._suspendedRendering = undefined;
@@ -392,9 +397,10 @@ export class BeInspireTree<TNodePayload> {
   public on(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
     const events = Array.isArray(event) ? event : [event];
     events.forEach((e) => {
-      const shouldInsertBeforeLast = ((e === BeInspireTreeEvent.DataLoaded && this._tree.listeners(e).length >= 2)
-        || (e === BeInspireTreeEvent.ModelLoaded && this._tree.listeners(e).length >= 2)
-        || (e === BeInspireTreeEvent.ChildrenLoaded && this._tree.listeners(e).length >= 1));
+      // note: we want our specific listener to be executed last, so have to make sure no other listeners
+      // are appended to the listeners list (see NODES_LOADED_LAST_LISTENER)
+      const shouldInsertBeforeLast = ((e === BeInspireTreeEvent.ModelLoaded && this._tree.listeners(e).length >= 2)
+        || (e === BeInspireTreeEvent.ChildrenLoaded && this._tree.listeners(e).length >= 2));
       if (shouldInsertBeforeLast)
         this._tree.listeners(e).splice(this._tree.listeners(e).length - 1, 0, listener);
       else

@@ -16,6 +16,13 @@ describe("HighlightingEngine", () => {
 
   describe("renderNodeLabel", () => {
 
+    it("just returns text if searchText is empty", () => {
+      const text = "This is a test";
+      const searchText = "";
+      const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText })}</div>);
+      expect(treeComponent.render().html()).to.equal(text);
+    });
+
     it("wraps highlighted word in <mark> tag", () => {
       const text = "This is a test";
       const searchText = "test";
