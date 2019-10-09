@@ -3095,6 +3095,8 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     // @internal (undocumented)
     static readonly className: string;
     clipGeometry?: ClipVector;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     modelSelectorId: Id64String;
     sectionType: SectionType;
     // @internal (undocumented)
@@ -3107,6 +3109,8 @@ export class Sheet extends Document implements SheetProps {
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     height: number;
@@ -3144,6 +3148,8 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
     border?: Id64String;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -3531,6 +3537,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     recipe?: RelatedElement;
 }
@@ -3559,6 +3567,8 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     view: RelatedElement;
 }

@@ -796,6 +796,11 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     this.view = new RelatedElement(props.view);
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in jsonProperties...
   }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.view.id);
+  }
 }
 
 /** The position in space of a Light.

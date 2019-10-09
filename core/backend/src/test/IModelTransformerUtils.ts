@@ -734,8 +734,9 @@ export namespace IModelTransformerUtils {
   }
 }
 
+/** Debugging aid that asserts valid Ids before native code is called */
 export class IModelTransformerWithAsserts extends IModelTransformer {
-  // Debugging aid that asserts valid Ids before native code is called
+  /** Override of insertElement that asserts valid Ids */
   protected insertElement(targetElementProps: ElementProps): Id64String {
     assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.model));
     assert.doesNotThrow(() => this.targetDb.models.getModel(targetElementProps.model));

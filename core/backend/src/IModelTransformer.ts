@@ -58,6 +58,7 @@ export class IModelTransformer {
     this.context = new IModelCloneContext(sourceDb, targetDb);
     if (undefined !== targetScopeElementId) this.targetScopeElementId = targetScopeElementId;
     this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
+    this.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
   }
 
   /** Dispose any native resources associated with this IModelTransformer. */
@@ -832,6 +833,7 @@ export class IModelTransformer {
     const sourceUniqueAspects: ElementAspect[] = this.sourceDb.elements.getAspects(sourceElementId, ElementUniqueAspect.classFullName);
     const targetUniqueAspectClasses = new Set<string>();
     sourceUniqueAspects.forEach((sourceUniqueAspect: ElementAspect) => {
+      Logger.logTrace(loggerCategory, `[Source] importUniqueAspects() for ${this.formatElementAspectForLogger(sourceUniqueAspect)})`);
       if (this.shouldExcludeElementAspect(sourceUniqueAspect)) {
         this.onElementAspectExcluded(sourceUniqueAspect);
       } else {
@@ -842,6 +844,7 @@ export class IModelTransformer {
           this.insertElementAspect(targetUniqueAspectProps);
           this.onElementAspectInserted(targetUniqueAspectProps);
         } else if (this.hasElementAspectChanged(targetAspects[0], targetUniqueAspectProps)) {
+          targetUniqueAspectProps.id = targetAspects[0].id;
           this.updateElementAspect(targetUniqueAspectProps);
           this.onElementAspectUpdated(targetUniqueAspectProps);
         }
@@ -956,7 +959,7 @@ export class IModelTransformer {
    */
   protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
     const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();
-    targetElementAspectProps.id = Id64.invalid;
+    targetElementAspectProps.id = undefined;
     targetElementAspectProps.element.id = targetElementId;
     sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
