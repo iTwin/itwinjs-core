@@ -17,9 +17,9 @@ import { addInstancedRtcMatrix } from "./Vertex";
 // Change it so that fully-transparent classifiers do the clipping.
 const applyPlanarClassificationColor = `
   const float dimScale = .7;
-  const float colorMix = .65;
+  float colorMix = u_pClassPointCloud ? .65 : .35;
   vec2 classPos = v_pClassPos / v_pClassPosW;
-  if (s_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+  if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
     if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
       discard;
 
@@ -29,7 +29,7 @@ const applyPlanarClassificationColor = `
 
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
   float isClassified = ceil(colorTexel.a);
-  float param = mix(s_pClassColorParams.y, s_pClassColorParams.x, isClassified);
+  float param = mix(u_pClassColorParams.y, u_pClassColorParams.x, isClassified);
   if (kClassifierDisplay_Off == param)
     return vec4(0.0);
 
@@ -50,7 +50,7 @@ const applyPlanarClassificationColor = `
     // NB: colorTexel contains pre-multiplied alpha. We know it is greater than zero from above.
     float alpha = colorTexel.a;
     vec3 rgb = colorTexel.rgb / alpha;
-    rgb = mix(baseColor.rgb, rgb * baseColor.rgb, colorMix);
+    rgb = mix(baseColor.rgb, rgb, colorMix);
     classColor = vec4(rgb, alpha);
   }
 
@@ -66,24 +66,20 @@ const applyPlanarClassificationColor = `
 `;
 
 const overrideFeatureId = `
-  if (s_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
+  if (u_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
   vec2 classPos = v_pClassPos / v_pClassPosW;
   vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / 2.0));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
 
-const computeClassifiedSurfaceHiliteColor = `
-  if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
-    return vec4(0.0);
-
+const computeClassifiedHiliteColor = `
   vec2 classPos = v_pClassPos / v_pClassPosW;
   return TEXTURE(s_pClassHiliteSampler, classPos);
 `;
-
-const computeClassifiedSurfaceHiliteColorNoTexture = `
-  vec2 classPos = v_pClassPos / v_pClassPosW;
-  return TEXTURE(s_pClassHiliteSampler, classPos.xy);
-`;
+const computeClassifiedSurfaceHiliteColor = `
+  if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
+    return vec4(0.0);
+` + computeClassifiedHiliteColor;
 
 const computeClassifierPos = "vec4 classProj = u_pClassProj * rawPosition; v_pClassPos = classProj.xy;";
 const computeInstancedClassifierPos = "vec4 classProj = u_pClassProj * g_instancedRtcMatrix * rawPosition; v_pClassPos = classProj.xy;";
@@ -135,11 +131,19 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
     });
   });
 
-  frag.addUniform("s_pClassColorParams", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("s_pClassColorParams", (uniform, params) => {
+  frag.addUniform("u_pClassColorParams", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_pClassColorParams", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape!;
       source.getParams(scratchColorParams);
       uniform.setUniform2fv(scratchColorParams);
+    });
+  });
+
+  frag.addUniform("u_pClassPointCloud", VariableType.Boolean, (prog) => {
+    prog.addGraphicUniform("u_pClassPointCloud", (uniform, params) => {
+      const classifier = params.target.currentPlanarClassifier;
+      const isPointCloud = undefined !== classifier && classifier.isClassifyingPointCloud;
+      uniform.setUniform1i(isPointCloud ? 1 : 0);
     });
   });
 
@@ -170,6 +174,7 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
 
 /** @internal */
 export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextures = true) {
+  addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassHiliteSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassHiliteSampler", (uniform, params) => {
@@ -179,7 +184,7 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
     });
   });
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedSurfaceHiliteColorNoTexture);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedHiliteColor);
 }
 
 const overrideClassifierColorPrelude = `

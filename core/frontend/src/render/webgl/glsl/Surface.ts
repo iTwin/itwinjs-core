@@ -192,15 +192,14 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified, shadowable: IsShadowable): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
   const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)
     addAnimation(vert, true);
-  if (classified)
-    addColorPlanarClassifier(builder);
+
   if (shadowable)
     addSolarShadowMap(builder);
 
@@ -214,7 +213,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No);
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No);
@@ -222,8 +221,9 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
     builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-  } else
+  } else {
     addSurfaceHiliter(builder);
+  }
 
   return builder;
 }
@@ -450,13 +450,15 @@ const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) 
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
-  if (flags.isClassified)
+  if (flags.isClassified) {
     opts &= ~FeatureSymbologyOptions.Alpha;
+    addColorPlanarClassifier(builder);
+  }
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);

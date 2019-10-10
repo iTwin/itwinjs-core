@@ -252,6 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _debugFrustum?: Frustum;
   private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
+  private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -279,6 +280,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get anyTranslucent(): boolean { return this._anyTranslucent; }
   public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.inside; }
   public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.outside; }
+  public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
+
   public addGraphic(graphic: RenderGraphic) {
     this._graphics.push(graphic);
   }
@@ -343,6 +346,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
 
+    // Shader behaves slightly differently when classifying surfaces vs point clouds.
+    this._isClassifyingPointCloud = classifiedTree.loader.containsPointClouds;
+
     if (this._doDebugFrustum) {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
@@ -377,7 +383,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const vf = target.currentViewFlags.clone(scratchViewFlags);
     vf.renderMode = RenderMode.SmoothShade;
-    vf.transparency = true;
+    vf.transparency = !this.isClassifyingPointCloud; // point clouds don't support transparency.
     vf.noGeometryMap = true;
     vf.textures = vf.lighting = vf.shadows = false;
     vf.monochrome = vf.materials = vf.ambientOcclusion = false;

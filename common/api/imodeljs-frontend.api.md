@@ -7571,6 +7571,8 @@ export abstract class TileLoader {
     // (undocumented)
     computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)
+    readonly containsPointClouds: boolean;
+    // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;

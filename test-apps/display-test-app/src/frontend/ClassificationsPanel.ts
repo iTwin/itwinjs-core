@@ -53,7 +53,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
         // If one does not exist, create a new classifier using model id
         classifier = {
           modelId,
-          expand: 1,
+          expand: 0,
           name: modelProps.name!,
           flags: new SpatialClassificationProps.Flags(),
         };
@@ -188,9 +188,6 @@ export class ClassificationsPanel extends ToolBarDropDown {
         this._vp.invalidateScene();
       },
     });
-
-    if (undefined === this._selectedClassifier)
-      this.disableModelComboBox(true);
   }
 
   public async populate(): Promise<void> {
@@ -210,11 +207,6 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
   protected _close(): void { this._element.style.display = "none"; }
   public get onViewChanged(): Promise<void> { return this.populate(); }
-
-  private disableModelComboBox(disable: boolean): void {
-    if (undefined !== this._modelComboBox)
-      this._modelComboBox.select.disabled = disable;
-  }
 
   private updateModelComboBox(modelId: string): void {
     if (undefined !== this._modelComboBox)
@@ -237,14 +229,12 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._selectedSpatialClassifiers = spatialClassifiers;
     if (undefined === spatialClassifiers) {
       this.updateModelComboBox(NO_MODEL_ID);
-      this.disableModelComboBox(true);
       this.populateClassifierProperties();
       return;
     }
 
     const classifier = spatialClassifiers.active;
 
-    this.disableModelComboBox(false);
     if (undefined === classifier) {
       this.updateModelComboBox(NO_MODEL_ID);
       this.populateClassifierProperties();

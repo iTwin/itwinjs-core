@@ -974,10 +974,6 @@ abstract class Compositor extends SceneCompositor {
     if (0 !== planarClassifierCmds.length) {
       system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, () => {
         system.applyRenderState(this._opaqueRenderState);
-        system.context.clearDepth(1.0);
-        system.context.clear(GL.BufferBit.Depth);
-        system.context.clearColor(0, 0, 0, 0);
-        system.context.clear(GL.BufferBit.Color);
         this.target.techniques.execute(this.target, planarClassifierCmds, RenderPass.HilitePlanarClassification);
       });
     }

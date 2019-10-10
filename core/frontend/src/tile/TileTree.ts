@@ -222,6 +222,8 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
  * @internal
  */
 export abstract class TileLoader {
+  private _containsPointClouds = false;
+
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
@@ -231,6 +233,7 @@ export abstract class TileLoader {
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
   public get isContentUnbounded(): boolean { return false; }
+  public get containsPointClouds(): boolean { return this._containsPointClouds; }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;
@@ -259,6 +262,7 @@ export abstract class TileLoader {
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:
+        this._containsPointClouds = true;
         return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:

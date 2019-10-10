@@ -740,6 +740,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+    if (!plan.is3d)
+      vf.renderMode = RenderMode.Wireframe;
+
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
