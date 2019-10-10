@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
+// cSpell:Ignore configurableui
+
 import * as React from "react";
 
-// cSpell:Ignore configurableui
+import { Icon } from "@bentley/ui-core";
+import { UiFramework, ContentViewManager, ToolUiProvider, ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
-
-import {
-  Icon, UiFramework, ContentViewManager, ToolUiProvider, ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
 
 import "./AnalysisAnimationToolSettings.scss";
 

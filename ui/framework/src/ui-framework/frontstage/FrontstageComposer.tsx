@@ -20,6 +20,7 @@ import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, M
 import { ModalFrontstage } from "./ModalFrontstage";
 import { WidgetTabs, WidgetTab } from "../widgets/WidgetStack";
 import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -160,8 +161,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       const visibleWidgetDefs = zoneDef.widgetDefs.filter((widgetDef: WidgetDef) => {
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
-      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef) => ({
-        betaBadge: widgetDef.betaBadge === undefined ? false : widgetDef.betaBadge,
+      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef: WidgetDef) => ({
+        badgeType: BadgeUtilities.determineBadgeType(widgetDef.badgeType, widgetDef.betaBadge), // tslint:disable-line: deprecation
         iconSpec: widgetDef.iconSpec,
         title: widgetDef.label,
         widgetName: widgetDef.id,
@@ -612,21 +613,23 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleToolActivatedEvent = () => {
-    this.setState((prevState) => {
-      const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
-      const manager = FrontstageManager.NineZoneManager;
-      let nineZone = prevState.nineZone;
-      if (activeToolSettingsNode) {
-        nineZone = manager.showWidget(2, prevState.nineZone);
-      } else {
-        nineZone = manager.hideWidget(2, prevState.nineZone);
-      }
-      if (nineZone === prevState.nineZone)
-        return null;
-      return {
-        nineZone,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+        const manager = FrontstageManager.NineZoneManager;
+        let nineZone = prevState.nineZone;
+        if (activeToolSettingsNode) {
+          nineZone = manager.showWidget(2, prevState.nineZone);
+        } else {
+          nineZone = manager.hideWidget(2, prevState.nineZone);
+        }
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
   }
 
   private setPanelState(location: StagePanelLocation, panelState: StagePanelState) {

@@ -7,6 +7,7 @@
 import * as React from "react";
 import classnames = require("classnames");
 
+import { BadgeType } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
 import {
@@ -21,8 +22,8 @@ import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BetaBadge } from "../betabadge/BetaBadge";
 import { UiFramework } from "../UiFramework";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -135,7 +136,7 @@ interface ToolGroupItem {
   iconSpec?: IconSpec;
   label: string;
   trayId?: string;
-  betaBadge?: boolean;
+  badgeType?: BadgeType;
 }
 type ColumnItemMap = Map<string, ToolGroupItem>;
 
@@ -293,7 +294,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
             this._trayIndex++;
             const itemTrayId = this.generateTrayId();
-            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId, betaBadge: item.betaBadge };
+            const groupItem: ToolGroupItem = {
+              iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
+              badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
+            };
 
             columnItems.set(item.id, groupItem);
             this.processGroupItemDef(item, itemTrayId, trays);
@@ -358,6 +362,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       className,
       groupItemDef.overflow && "nz-toolbar-item-overflow",
     );
+    const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
 
     return (
       <ExpandableItem
@@ -377,7 +382,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             onKeyDown={this._handleKeyDown}
             icon={icon}
             onSizeKnown={this.props.onSizeKnown}
-            badge={groupItemDef.betaBadge && <BetaBadge />}
+            badge={badge}
           />
         </div>
       </ExpandableItem>
@@ -528,6 +533,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             let isVisible = true;
             let isActive = false;
             let isEnabled = true;
+            const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
             if (item instanceof ItemDefBase) {
               isVisible = item.isVisible;
@@ -570,7 +576,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
-                badge={item.betaBadge && <BetaBadge />}
+                badge={badge}
               />
             );
           })}

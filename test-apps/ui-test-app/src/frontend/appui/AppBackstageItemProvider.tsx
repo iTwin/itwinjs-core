@@ -7,12 +7,12 @@ import * as React from "react";
 import { SettingsModalFrontstage } from "./frontstages/Settings";
 import {
   FrontstageManager, BackstageItemManager, BackstageItemProvider, BackstageItemSpec,
-  ConditionalDisplayType, CustomItemSpec, CommandLaunchBackstageItem,
+  CustomItemSpec, CommandLaunchBackstageItem,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import { LocalFileOpenFrontstage } from "./frontstages/LocalFileStage";
 import {
-  IModelApp, MessageBoxType, MessageBoxIconType,
+  IModelApp, MessageBoxType, MessageBoxIconType, ConditionalDisplayType,
 } from "@bentley/imodeljs-frontend";
 
 export class AppBackstageItemProvider implements BackstageItemProvider {

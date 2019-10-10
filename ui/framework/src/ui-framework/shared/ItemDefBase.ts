@@ -6,6 +6,7 @@
 
 import { ItemProps, StringGetter } from "./ItemProps";
 import { PropsHelper } from "../utils/PropsHelper";
+import { BadgeType } from "@bentley/imodeljs-frontend";
 
 /** Base state for any 'stateful' React component
  * @public
@@ -29,8 +30,11 @@ export abstract class ItemDefBase {
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   public isActive: boolean = false;
-  public betaBadge: boolean = false;
   public applicationData?: any;
+
+  /** @deprecated - use badgeType instead */
+  public betaBadge: boolean = false;
+  public badgeType?: BadgeType;
 
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   public stateSyncIds: string[] = [];
@@ -44,7 +48,9 @@ export abstract class ItemDefBase {
     me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
-    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;
+
+    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;   // tslint:disable-line: deprecation
+    me.badgeType = itemProps.badgeType;
 
     if (itemProps.applicationData !== undefined)
       me.applicationData = itemProps.applicationData;

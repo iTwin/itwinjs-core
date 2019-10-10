@@ -15,6 +15,7 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { BadgeType } from "@bentley/imodeljs-frontend";
 
 describe("ActionItemButton", () => {
 
@@ -166,5 +167,21 @@ it("should render with betaBadge", () => {
   const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
   const badge = wrapper.find("div.nz-badge");
   badge.length.should.eq(1);
+  wrapper.unmount();
+});
+
+it("should render with badgeType", () => {
+  const myCommand =
+    new CommandItemDef({
+      commandId: "command",
+      iconSpec: "icon-placeholder",
+      badgeType: BadgeType.New,
+    });
+
+  const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
+  const badge = wrapper.find("div.nz-badge");
+  badge.length.should.eq(1);
+  const newBadge = wrapper.find("div.uifw-new-badge");
+  newBadge.length.should.eq(1);
   wrapper.unmount();
 });

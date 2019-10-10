@@ -1323,6 +1323,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
 
 // @alpha
 export enum BadgeType {
+    New = 2,
     None = 0,
     TechnicalPreview = 1
 }

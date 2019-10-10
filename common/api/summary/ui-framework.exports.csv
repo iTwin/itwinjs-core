@@ -36,7 +36,6 @@ beta;BackstageItemSpec
 public;BackstageItemState
 beta;BackstageItemType
 public;BackstageProps 
-beta;BadgeType
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -67,7 +66,6 @@ public;CommandItemProps
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
 beta;ConditionalDisplaySpecification
-beta;ConditionalDisplayType
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 

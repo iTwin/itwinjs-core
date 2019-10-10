@@ -53,7 +53,7 @@ exports[`ToolSettingsZone should fill zone 1`] = `
       onDragStart={[Function]}
       onMouseEnter={[Function]}
       onResize={[Function]}
-      title=" - general.settings"
+      title=""
     />
   </Zone>
   <Zone
@@ -130,7 +130,7 @@ exports[`ToolSettingsZone should hide title bar buttons when floating 1`] = `
       onDragStart={[Function]}
       onMouseEnter={[Function]}
       onResize={[Function]}
-      title=" - general.settings"
+      title=""
     />
   </Zone>
   <Zone

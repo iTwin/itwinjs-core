@@ -11,11 +11,13 @@ import TestUtils from "../TestUtils";
 import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem } from "../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { BadgeType } from "@bentley/imodeljs-frontend";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
   label: "Tool 1",
   iconSpec: "icon-placeholder",
+  badgeType: BadgeType.New,
 });
 
 const toolItemEventId = "test-button-state";
@@ -349,6 +351,22 @@ describe("GroupItem", () => {
 
       reactNode = groupItemDef.toolbarReactNode();
       expect(reactNode).to.not.be.undefined;
+    });
+
+    it("setPanelLabel sets panel label correctly", () => {
+      const panelLabel = "panel-label";
+      const groupItemDef = new GroupItemDef({
+        groupId: "my-group1",
+        panelLabel,
+        iconSpec: "icon-placeholder",
+        items: [tool1, tool2],
+      });
+
+      expect(groupItemDef.panelLabel).to.eq(panelLabel);
+
+      const newPanelLabel = "New Panel Label";
+      groupItemDef.setPanelLabel(newPanelLabel);
+      expect(groupItemDef.panelLabel).to.eq(newPanelLabel);
     });
 
   });

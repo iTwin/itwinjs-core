@@ -16,7 +16,7 @@ import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { CommonProps, Icon } from "@bentley/ui-core";
-import { BetaBadge } from "../betabadge/BetaBadge";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
@@ -115,6 +115,8 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
     const toolbarItemProps = getToolbarItemProps(this.props);
+    const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
+
     return (
       <Item
         {...toolbarItemProps}
@@ -127,7 +129,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}
-        badge={this.props.betaBadge && <BetaBadge />}
+        badge={badge}
       />
     );
   }

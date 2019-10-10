@@ -9,6 +9,9 @@ import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId } from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { BadgeType } from "@bentley/imodeljs-frontend";
+
+// cSpell:ignore widgetstate
 
 describe("WidgetDef", () => {
 
@@ -47,6 +50,7 @@ describe("WidgetDef", () => {
       syncEventIds: [SyncUiEventId.FrontstageReady],
       stateFunc: sinon.spy(),
       betaBadge: true,
+      badgeType: BadgeType.TechnicalPreview,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
@@ -65,7 +69,9 @@ describe("WidgetDef", () => {
     expect(widgetDef.label).to.eq("label");
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
-    expect(widgetDef.betaBadge).to.eq(true);
+
+    expect(widgetDef.betaBadge).to.eq(true);    // tslint:disable-line: deprecation
+    expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
   });
 
   it("registerControl & widgetControl using same classId", () => {

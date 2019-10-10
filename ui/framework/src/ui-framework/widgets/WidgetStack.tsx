@@ -5,22 +5,27 @@
 /** @module Widget */
 
 import * as React from "react";
+
+import { BadgeType } from "@bentley/imodeljs-frontend";
 import { CommonProps, PointProps, RectangleProps, Rectangle, Icon } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
   WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers,
 } from "@bentley/ui-ninezone";
-import { BetaBadge } from "../betabadge/BetaBadge";
+
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
+
+// cSpell:ignore Timedout
 
 /** Properties for a [[WidgetStack]] Tab.
  * @internal
  */
 export interface WidgetTab {
-  readonly betaBadge: boolean;
   readonly iconSpec?: string | React.ReactNode;
   readonly title: string;
+  readonly badgeType?: BadgeType;
 }
 
 /** Properties for a Widget in a [[WidgetStack]].
@@ -223,7 +228,7 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
           horizontalAnchor={this.props.horizontalAnchor}
           iconSpec={tab.iconSpec}
           index={index}
-          isBetaBadgeVisible={tab.betaBadge}
+          badgeType={tab.badgeType}
           isCollapsed={this.props.isCollapsed}
           isProtruding={this.props.isProtruding}
           key={`${this.props.widgetId}-${index}`}
@@ -286,7 +291,7 @@ export interface WidgetStackTabProps {
   horizontalAnchor: HorizontalAnchor;
   iconSpec?: string | React.ReactNode;
   index: number;
-  isBetaBadgeVisible: boolean;
+  badgeType?: BadgeType;
   isCollapsed: boolean;
   isProtruding: boolean;
   lastPosition: PointProps | undefined;
@@ -307,7 +312,7 @@ export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
   public render(): React.ReactNode {
     return (
       <Tab
-        badge={this.props.isBetaBadgeVisible ? <BetaBadge /> : undefined}
+        badge={BadgeUtilities.getComponentForBadgeType(this.props.badgeType)}
         horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
         isProtruding={this.props.isProtruding}

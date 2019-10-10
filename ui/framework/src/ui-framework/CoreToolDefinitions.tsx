@@ -38,7 +38,7 @@ export class CoreTools {
     return new CustomItemDef({
       customId: "uif:keyinbrowser",
       reactElement: (
-        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" betaBadge={true}>
+        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label">
           {this._renderKeyInBrowser}
         </PopupButton>
       ),

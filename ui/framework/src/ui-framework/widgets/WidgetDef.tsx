@@ -5,6 +5,11 @@
 /** @module Widget */
 
 import * as React from "react";
+
+import { BadgeType } from "@bentley/imodeljs-frontend";
+import { UiEvent, UiError } from "@bentley/ui-core";
+import { Direction } from "@bentley/ui-ninezone";
+
 import { UiFramework } from "../UiFramework";
 import { WidgetProps } from "./Widget";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -14,10 +19,7 @@ import { ConfigurableUiControlType, ConfigurableUiControlConstructor, Configurab
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { StringGetter } from "../shared/ItemProps";
-
-import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "../shared/ItemMap";
-import { UiEvent, UiError } from "@bentley/ui-core";
 
 /** Widget state enum.
  * @public
@@ -119,7 +121,9 @@ export class WidgetDef {
   public applicationData?: any;
   public isFloating = false;
   public iconSpec?: string | React.ReactNode;
+  /** @deprecated - use badgeType instead */
   public betaBadge?: boolean;
+  public badgeType?: BadgeType;
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
@@ -189,8 +193,11 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me.iconSpec = widgetProps.iconSpec;
-    if (widgetProps.betaBadge !== undefined)
-      me.betaBadge = widgetProps.betaBadge;
+
+    if (widgetProps.betaBadge !== undefined)    // tslint:disable-line: deprecation
+      me.betaBadge = widgetProps.betaBadge;     // tslint:disable-line: deprecation
+    if (widgetProps.badgeType !== undefined)
+      me.badgeType = widgetProps.badgeType;
 
     me.setUpSyncSupport(widgetProps);
   }

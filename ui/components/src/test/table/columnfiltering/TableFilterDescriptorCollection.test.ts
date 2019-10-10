@@ -12,6 +12,7 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
 import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
 import { FilterOperator, FilterCompositionLogicalOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
+import { SortDirection } from "@bentley/ui-core";
 
 const columns: ColumnDescription[] = [
   {
@@ -182,6 +183,42 @@ describe("TableFilterDescriptorCollection", () => {
     filterableColumn1.columnFilterDescriptor.fieldFilter.clear();
     const expression = filterDescriptors.getFilterExpression();
     expect(expression).to.eq(`(((lorem = "Lorem") Or (lorem = "ipsum")))`);
+  });
+
+  it("sort column with SortDirection.Ascending after filter should not change count", async () => {
+    const filterDescriptors = testTable.filterDescriptors;
+    await dataProvider.applyFilterDescriptors(filterDescriptors);
+    let count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
+
+    await dataProvider.sort(0, SortDirection.Ascending);
+
+    count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
+  });
+
+  it("sort column with SortDirection.Descending after filter should not change count", async () => {
+    const filterDescriptors = testTable.filterDescriptors;
+    await dataProvider.applyFilterDescriptors(filterDescriptors);
+    let count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
+
+    await dataProvider.sort(0, SortDirection.Descending);
+
+    count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
+  });
+
+  it("sort column with SortDirection.NoSort after filter should not change count", async () => {
+    const filterDescriptors = testTable.filterDescriptors;
+    await dataProvider.applyFilterDescriptors(filterDescriptors);
+    let count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
+
+    await dataProvider.sort(0, SortDirection.NoSort);
+
+    count = await dataProvider.getRowsCount();
+    expect(count).to.eq(4);
   });
 
 });

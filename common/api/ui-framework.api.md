@@ -11,6 +11,7 @@ import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
+import { BadgeType } from '@bentley/imodeljs-frontend';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -20,6 +21,7 @@ import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
+import { ConditionalDisplayType } from '@bentley/imodeljs-frontend';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogProps } from '@bentley/ui-core';
@@ -481,12 +483,6 @@ export interface BackstageProps extends CommonProps {
     showOverlay?: boolean;
 }
 
-// @beta
-export enum BadgeType {
-    None = 0,
-    TechnicalPreview = 1
-}
-
 // @public
 export interface BaseItemState {
     // (undocumented)
@@ -790,14 +786,6 @@ export interface ConditionalDisplaySpecification {
     testFunc: () => boolean;
     // (undocumented)
     type: ConditionalDisplayType;
-}
-
-// @beta
-export enum ConditionalDisplayType {
-    // (undocumented)
-    EnableState = 1,
-    // (undocumented)
-    Visibility = 0
 }
 
 // @beta
@@ -2502,6 +2490,8 @@ export abstract class ItemDefBase {
     // (undocumented)
     applicationData?: any;
     // (undocumented)
+    badgeType?: BadgeType;
+    // @deprecated (undocumented)
     betaBadge: boolean;
     readonly description: string;
     // (undocumented)
@@ -2556,6 +2546,8 @@ export class ItemMap extends Map<string, ItemDefBase> {
 // @public
 export interface ItemProps extends IconProps_2, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
     applicationData?: any;
+    badgeType?: BadgeType;
+    // @deprecated
     betaBadge?: boolean;
     isActive?: boolean;
     isEnabled?: boolean;
@@ -4903,6 +4895,8 @@ export class WidgetDef {
     // (undocumented)
     applicationData?: any;
     // (undocumented)
+    badgeType?: BadgeType;
+    // @deprecated (undocumented)
     betaBadge?: boolean;
     // (undocumented)
     canOpen(): boolean;
@@ -4978,6 +4972,8 @@ export class WidgetHost {
 // @public
 export interface WidgetProps extends IconProps_2 {
     applicationData?: any;
+    badgeType?: BadgeType;
+    // @deprecated
     betaBadge?: boolean;
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
@@ -5083,13 +5079,13 @@ export interface WidgetStackTabGroupProps {
 // @internal
 export interface WidgetStackTabProps {
     // (undocumented)
+    badgeType?: BadgeType;
+    // (undocumented)
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     iconSpec?: string | React_2.ReactNode;
     // (undocumented)
     index: number;
-    // (undocumented)
-    isBetaBadgeVisible: boolean;
     // (undocumented)
     isCollapsed: boolean;
     // (undocumented)
@@ -5174,7 +5170,7 @@ export interface WidgetStateChangedEventArgs {
 // @internal
 export interface WidgetTab {
     // (undocumented)
-    readonly betaBadge: boolean;
+    readonly badgeType?: BadgeType;
     // (undocumented)
     readonly iconSpec?: string | React_2.ReactNode;
     // (undocumented)

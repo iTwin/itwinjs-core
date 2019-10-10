@@ -15,7 +15,7 @@ import { Toolbar } from "../toolbar/Toolbar";
 import { Orientation } from "@bentley/ui-core";
 import {
   PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec,
-  ToolbarItemType, BadgeType, ConditionalDisplayType,
+  ToolbarItemType, ConditionalDisplayType,
 } from "@bentley/imodeljs-frontend";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { AnyItemDef } from "../shared/ItemProps";
@@ -69,7 +69,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
         iconSpec: actionSpec.icon,
         label: actionSpec.label,
         execute: actionSpec.execute,
-        betaBadge: actionSpec.badge ? actionSpec.badge === BadgeType.TechnicalPreview : false,
+        badgeType: actionSpec.badge,
       });
     } else if (ToolbarItemType.GroupButton === spec.itemType) {
       const groupSpec = spec as GroupItemInsertSpec;
@@ -83,7 +83,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
         groupId: groupSpec.itemId,
         iconSpec: groupSpec.icon,
         label: groupSpec.label,
-        betaBadge: groupSpec.badge ? groupSpec.badge === BadgeType.TechnicalPreview : false,
+        badgeType: groupSpec.badge,
         items: childItems,
       });
     }

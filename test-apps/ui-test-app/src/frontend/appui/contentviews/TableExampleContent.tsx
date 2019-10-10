@@ -116,7 +116,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         key: "color",
         label: "Color",
         sortable: true,
-        resizable: false,
+        resizable: true,
         editable: true,
         width: 180,
         filterable: true,

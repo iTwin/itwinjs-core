@@ -15,7 +15,7 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BetaBadge } from "../betabadge/BetaBadge";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
@@ -158,6 +158,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       return null;
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
+    const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
 
     return (
       <ExpandableItem
@@ -170,7 +171,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
             onKeyDown={this._handleKeyDown}
             icon={icon}
             onSizeKnown={this.props.onSizeKnown}
-            badge={this.props.betaBadge && <BetaBadge />}
+            badge={badge}
           />
         </div>
       </ExpandableItem>

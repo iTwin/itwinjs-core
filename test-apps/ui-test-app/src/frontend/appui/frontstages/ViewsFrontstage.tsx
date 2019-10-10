@@ -16,6 +16,7 @@ import {
   OutputMessageType,
   RelativePosition,
   ViewState,
+  BadgeType,
 } from "@bentley/imodeljs-frontend";
 
 import {
@@ -206,7 +207,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
               <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
                 applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
@@ -483,7 +484,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _restoreContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
           // Parse SavedViewLayoutProps
@@ -623,7 +624,7 @@ class FrontstageToolWidget extends React.Component {
   private get _viewportPopupButtonItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
+        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" badgeType={BadgeType.New}>
           <div style={{ width: "400px", height: "300px" }}>
             <ScrollView>
               <div>
@@ -663,7 +664,7 @@ class FrontstageToolWidget extends React.Component {
       items: [AppTools.tool2, this._viewportPopupButtonItemDef],
       stateSyncIds: [SampleAppUiActionId.setTestProperty],
       stateFunc: this._enabledTestStateFunc,
-      betaBadge: true,
+      badgeType: BadgeType.New,
     }),
     AppTools.toolWithSettings,
     AppTools.toggleHideShowItemsCommand,
@@ -704,6 +705,7 @@ class FrontstageToolWidget extends React.Component {
       panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
       items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      badgeType: BadgeType.New,
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.anotherGroup",
@@ -757,7 +759,7 @@ class FrontstageNavigationWidget extends React.Component {
   private get _rotateViewCommand() {
     const toolItemDef = CoreTools.rotateViewCommand;
     toolItemDef.iconSpec = this._rotateSvgIcon2;
-    toolItemDef.betaBadge = true;
+    toolItemDef.badgeType = BadgeType.New;
     return toolItemDef;
   }
 

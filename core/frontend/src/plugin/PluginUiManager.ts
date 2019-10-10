@@ -24,6 +24,8 @@ export enum BadgeType {
   None = 0,
   /** Standard Technical Preview badge. */
   TechnicalPreview = 1,
+  /** Standard New Feature badge. */
+  New = 2,
 }
 
 /** Used to specify if the UI item's visibility or enable state is affected by the testFunc defined in [[ConditionalDisplaySpecification]].

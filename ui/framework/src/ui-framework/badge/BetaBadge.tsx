@@ -5,21 +5,15 @@
 /** @module Item */
 
 import * as React from "react";
-import * as classnames from "classnames";
-import { CommonProps, SvgSprite } from "@bentley/ui-core";
+import { CommonProps } from "@bentley/ui-core";
+import { Badge } from "./Badge";
 
-import "./BetaBadge.scss";
 import betaBadgeIcon from "./technical-preview-badge.svg";
 
 /** Beta Badge React component
- * @beta
+ * @internal
  */
-export class BetaBadge extends React.PureComponent<CommonProps> {
-  public render(): JSX.Element {
-    return (
-      <div className={classnames("uifw-beta-badge", this.props.className)} style={this.props.style}>
-        <SvgSprite src={betaBadgeIcon} />
-      </div>
-    );
-  }
-}
+// tslint:disable-next-line:variable-name
+export const BetaBadge: React.FunctionComponent<CommonProps> = (props: CommonProps) => {
+  return <Badge {...props} svg={betaBadgeIcon} />;
+};

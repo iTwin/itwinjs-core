@@ -11,6 +11,7 @@ import { ToolItemDef } from "./ToolItemDef";
 import { BaseItemState } from "./ItemDefBase";
 import { CommandItemDef } from "./CommandItemDef";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { BadgeType } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
 // ItemProps and sub-interfaces
@@ -73,8 +74,12 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
   isPressed?: boolean;
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
-  /** Indicates whether to draw a Beta badge. */
+  /** Indicates whether to draw a Beta badge.
+   * @deprecated - use badgeType instead
+   */
   betaBadge?: boolean;
+  /** Badge to be overlaid on the item. */
+  badgeType?: BadgeType;
 }
 
 /** Definition for a command handler used by [[CommandItemProps]].

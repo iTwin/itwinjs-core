@@ -23,6 +23,8 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
   private _secondarySortColumnStack: number[];
   private _sortDirection: SortDirection = SortDirection.NoSort;
   private _sortColumnIndex: number = -1;
+  private _filterDescriptors?: CompositeFilterDescriptorCollection;
+
   public onColumnsChanged = new TableDataChangeEvent();
   public onRowsChanged = new TableDataChangeEvent();
 
@@ -95,7 +97,10 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     this._sortDirection = sortDirection;
 
     if (sortDirection === SortDirection.NoSort) {
-      this.resetRowIndices();
+      if (this._filterDescriptors)
+        await this.applyFilterDescriptors(this._filterDescriptors);
+      else
+        this.resetRowIndices();
       return;
     }
 
@@ -219,6 +224,8 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
   /** @alpha */
   public async applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void> {
+    this._filterDescriptors = filterDescriptors;
+
     this._rowItemIndices.splice(0);
 
     this._items.forEach((row: RowItem, i: number) => {

@@ -6,6 +6,9 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
+
+import { ConditionalDisplayType } from "@bentley/imodeljs-frontend";
+
 import {
   BackstageComposer,
   CommandLaunchBackstageItem,
@@ -15,7 +18,6 @@ import {
   BackstageItemManager,
   BackstageItemProvider,
   BackstageItemSpec,
-  ConditionalDisplayType,
   CustomItemSpec,
 } from "../../ui-framework";
 import TestUtils, { MockAccessToken } from "../TestUtils";

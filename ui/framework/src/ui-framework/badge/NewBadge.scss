@@ -6,8 +6,6 @@
 
 $icon-size: 16px;
 
-.uifw-beta-badge {
-  transform: rotate(270deg);
-  width: $icon-size;
-  height: $icon-size;
+.uifw-new-badge {
+  color: $buic-foreground-success;
 }

@@ -4,28 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
-import { Logger, BeEvent } from "@bentley/bentleyjs-core";
 import * as React from "react";
+import { Logger, BeEvent } from "@bentley/bentleyjs-core";
+import { BadgeType, ConditionalDisplayType } from "@bentley/imodeljs-frontend";
 
 const loggerCategory = "ui-framework.BackstageItemManager";
-
-/** Specifies type of badge, if any, that should be overlaid on UI component.
- * @beta
- */
-export enum BadgeType {
-  /** No badge. */
-  None = 0,
-  /** Standard Technical Preview badge. */
-  TechnicalPreview = 1,
-}
-
-/** Used to specify if the UI item's visibility or enable state is affected by the testFunc defined in [[ConditionalDisplaySpecification]].
- * @beta
- */
-export enum ConditionalDisplayType {
-  Visibility = 0,
-  EnableState = 1,
-}
 
 /** Interface used to define a UI item whose display may change based on the current state of the application, such as the active view, the select element(s), etc.
  * @beta

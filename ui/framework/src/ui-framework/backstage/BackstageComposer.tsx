@@ -5,7 +5,10 @@
 /** @module Backstage */
 
 import * as React from "react";
+
+import { ConditionalDisplayType } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
+
 import { SeparatorBackstageItem } from "../backstage/Separator";
 import { CommandLaunchBackstageItem } from "../backstage/CommandLaunch";
 import { FrontstageLaunchBackstageItem } from "../backstage/FrontstageLaunch";
@@ -13,7 +16,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import {
   BackstageItemManager, BackstageItemProviderRegisteredEventArgs, BackstageItemType, BackstageItemSpec,
-  ConditionalDisplayType, ActionItemSpec, StageLauncher, CustomItemSpec,
+  ActionItemSpec, StageLauncher, CustomItemSpec,
 } from "./BackstageItemManager";
 import { Backstage, BackstageProps } from "../backstage/Backstage";
 import { SessionStateActionId } from "../SessionState";

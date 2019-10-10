@@ -6,6 +6,7 @@
 
 import * as React from "react";
 
+import { BadgeType } from "@bentley/imodeljs-frontend";
 import { IconProps } from "@bentley/ui-core";
 
 import { WidgetState } from "./WidgetDef";
@@ -56,8 +57,12 @@ export interface WidgetProps extends IconProps {
   classId?: string | ConfigurableUiControlConstructor;
   /** Control's priority */
   priority?: number;
-  /** Indicates whether to draw a Beta badge. */
+  /** Indicates whether to draw a Beta badge.
+   * @deprecated - use badgeType instead.
+   */
   betaBadge?: boolean;
+  /** Badge to be overlaid on the widget tab. */
+  badgeType?: BadgeType;
 }
 
 /** Widget React component.
