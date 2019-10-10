@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed a typo in the RealityDataServices client for accessing the lastAccessedTimestamp",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "carl.amigo@bentley.com"
+}
