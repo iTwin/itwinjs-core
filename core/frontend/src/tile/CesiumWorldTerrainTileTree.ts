@@ -131,8 +131,8 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     if (undefined === image) {
       image = new Image();
       image.src = "images/ion_color_white.png";
-      image.width = 173;
-      image.height = 30;
+      image.width = 114;
+      image.height = 20;
       this._copyrightImagesByViewportId.set(viewport.viewportId, image);
     }
 
