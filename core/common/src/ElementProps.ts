@@ -5,7 +5,7 @@
 /** @module WireFormats */
 
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AngleProps, ClipVector, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
@@ -124,8 +124,8 @@ export enum SectionType {
 export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
-  /** Details on how this section was clipped. */
-  clipGeometry?: ClipVector;
+  /** Details on how this section was clipped. A ClipVector stored as a json string. */
+  clipGeometry?: any;
   /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
   modelSelectorId?: Id64String;
   /** The element Id of the [CategorySelector]($backend) for this SectionLocation */

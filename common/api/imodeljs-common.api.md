@@ -16,7 +16,6 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
-import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
@@ -4544,7 +4543,7 @@ export interface SceneLightsProps {
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
-    clipGeometry?: ClipVector;
+    clipGeometry?: any;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
 }

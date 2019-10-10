@@ -1,0 +1,15 @@
+{
+  "tools": {
+    "SectionLocationMarkers": {
+      "keyin": "section location markers",
+      "Messages": {
+        "SectionCallout": "Section Callout",
+        "DetailCallout": "Detail Callout",
+        "ElevationCallout": "Elevation Callout",
+        "PlanCallout": "Plan Callout",
+        "NotFoundModels": "No section locations found for displayed models of selected view",
+        "NotFoundCategories": "No section locations found for displayed categories of selected view"
+      }
+    }
+  }
+}

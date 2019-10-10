@@ -110,7 +110,7 @@ export class Marker implements CanvasDecoration {
   public drawFunc?(ctx: CanvasRenderingContext2D): void;
 
   /** Called when the mouse pointer enters this Marker. */
-  public onMouseEnter(ev: BeButtonEvent) { this._isHilited = true; this._hiliteColor = ev.viewport!.hilite.color; }
+  public onMouseEnter(ev: BeButtonEvent) { this._isHilited = true; this._hiliteColor = ev.viewport!.hilite.color; IModelApp.accuSnap.clear(); }
 
   /** Called when the mouse pointer leaves this Marker. */
   public onMouseLeave() { this._isHilited = false; }

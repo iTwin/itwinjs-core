@@ -440,7 +440,7 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public constructor(props: SectionLocationProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-    this.clipGeometry = ClipVector.fromJSON(props.clipGeometry);
+    this.clipGeometry = props.clipGeometry ? ClipVector.fromJSON(JSON.parse(props.clipGeometry)) : undefined;
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
   }
@@ -448,7 +448,7 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public toJSON(): SectionLocationProps {
     const val = super.toJSON() as SectionLocationProps;
     val.sectionType = this.sectionType;
-    val.clipGeometry = this.clipGeometry;
+    val.clipGeometry = this.clipGeometry ? this.clipGeometry.toJSON().toString() : undefined;
     val.modelSelectorId = this.modelSelectorId;
     val.categorySelectorId = this.categorySelectorId;
     return val;

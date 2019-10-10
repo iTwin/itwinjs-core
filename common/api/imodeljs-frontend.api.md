@@ -3011,7 +3011,7 @@ export abstract class GraphicBuilder {
     // (undocumented)
     pickId?: string;
     placement: Transform;
-    // @internal
+    // @beta
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -8658,6 +8658,8 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
 export class ViewClipTool extends PrimitiveTool {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
+    static addClipPlanesLoops(builder: GraphicBuilder, loops: GeometryQuery[], outline: boolean): void;
+    // (undocumented)
     static areClipsEqual(clipA: ClipVector, clipB: ClipVector): boolean;
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
@@ -8671,6 +8673,8 @@ export class ViewClipTool extends PrimitiveTool {
     static doClipToRange(viewport: Viewport, range: Range3d, transform?: Transform): boolean;
     // (undocumented)
     static doClipToShape(viewport: Viewport, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
+    // (undocumented)
+    static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, id?: string): void;
     // (undocumented)
     static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void;
     // (undocumented)

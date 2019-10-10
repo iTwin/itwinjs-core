@@ -17,7 +17,7 @@ import { DecorateContext } from "../ViewContext";
 import { EditManipulator } from "./EditManipulator";
 import { AccuDrawHintBuilder, AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
-import { GraphicType } from "../rendering";
+import { GraphicType, GraphicBuilder } from "../rendering";
 import { HitDetail } from "../HitDetail";
 import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
@@ -214,15 +214,60 @@ export class ViewClipTool extends PrimitiveTool {
     return (offset < 0 ? -localOffset : localOffset);
   }
 
-  public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
+  public static addClipPlanesLoops(builder: GraphicBuilder, loops: GeometryQuery[], outline: boolean): void {
+    for (const geom of loops) {
+      if (!(geom instanceof Loop))
+        continue;
+      if (outline)
+        builder.addPath(Path.createArray(geom.children));
+      else
+        builder.addLoop(geom);
+    }
+  }
+
+  private static addClipShape(builder: GraphicBuilder, shape: ClipShape, extents: Range1d): void {
     const shapePtsLo = ViewClipTool.getClipShapePoints(shape, extents.low);
     const shapePtsHi = ViewClipTool.getClipShapePoints(shape, extents.high);
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, shape.transformFromClip, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
-    builder.setSymbology(color, ColorDef.black, weight);
     for (let i: number = 0; i < shapePtsLo.length; i++)
       builder.addLineString([shapePtsLo[i].clone(), shapePtsHi[i].clone()]);
     builder.addLineString(shapePtsLo);
     builder.addLineString(shapePtsHi);
+  }
+
+  public static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, id?: string): void {
+    const clipShape = ViewClipTool.isSingleClipShape(clip);
+    const clipPlanes = (undefined === clipShape ? ViewClipTool.isSingleConvexClipPlaneSet(clip) : undefined);
+    if (undefined === clipShape && undefined === clipPlanes)
+      return;
+
+    const viewRange = (viewExtents ? viewExtents : context.viewport.computeViewRange());
+    const clipPlanesLoops = (undefined !== clipPlanes ? ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, viewRange) : undefined);
+    if (undefined === clipShape && undefined === clipPlanesLoops)
+      return;
+
+    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration, clipShape ? clipShape.transformFromClip : undefined, id);
+    const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay, clipShape ? clipShape.transformFromClip : undefined);
+    builderVis.setSymbology(color, ColorDef.black, 3);
+    builderHid.setSymbology(color, ColorDef.black, 1, LinePixels.Code2);
+
+    if (undefined !== clipPlanesLoops) {
+      ViewClipTool.addClipPlanesLoops(builderVis, clipPlanesLoops, true);
+      ViewClipTool.addClipPlanesLoops(builderHid, clipPlanesLoops, true);
+    } else if (undefined !== clipShape) {
+      const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, viewRange);
+      ViewClipTool.addClipShape(builderVis, clipShape, clipExtents);
+      ViewClipTool.addClipShape(builderHid, clipShape, clipExtents);
+    }
+
+    context.addDecorationFromBuilder(builderVis);
+    context.addDecorationFromBuilder(builderHid);
+  }
+
+  public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, shape.transformFromClip, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
+    builder.setSymbology(color, ColorDef.black, weight);
+    ViewClipTool.addClipShape(builder, shape, extents);
     context.addDecorationFromBuilder(builder);
   }
 
@@ -270,21 +315,13 @@ export class ViewClipTool extends PrimitiveTool {
       return;
     const builderEdge = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builderEdge.setSymbology(color, ColorDef.black, weight, dashed ? LinePixels.Code2 : undefined);
-    for (const geom of loops) {
-      if (!(geom instanceof Loop))
-        continue;
-      builderEdge.addPath(Path.createArray(geom.children));
-    }
+    ViewClipTool.addClipPlanesLoops(builderEdge, loops, true);
     context.addDecorationFromBuilder(builderEdge);
     if (undefined === fill)
       return;
     const builderFace = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
     builderFace.setSymbology(fill, fill, 0);
-    for (const geom of loops) {
-      if (!(geom instanceof Loop))
-        continue;
-      builderFace.addLoop(geom);
-    }
+    ViewClipTool.addClipPlanesLoops(builderFace, loops, false);
     context.addDecorationFromBuilder(builderFace);
   }
 
