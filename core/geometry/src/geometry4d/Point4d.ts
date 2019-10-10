@@ -50,6 +50,14 @@ export class Point4d implements BeJSONFunctions {
     this.xyzw[3] = w;
     return this;
   }
+  /** Set a component by index.
+   * * No change if index is out of range.
+   */
+  public setComponent(index: number, value: number) {
+    if (index >= 0 && index < 4) {
+      this.xyzw[index] = value;
+    }
+  }
   /** Return the x component. */
   public get x() { return this.xyzw[0]; }
   /** Set the x component. */

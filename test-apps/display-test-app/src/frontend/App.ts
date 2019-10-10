@@ -166,6 +166,17 @@ class RefreshTilesTool extends Tool {
   }
 }
 
+class ShutDownTool extends Tool {
+  public static toolId = "ShutDown";
+
+  public run(_args: any[]): boolean {
+    DisplayTestApp.surface.closeAllViewers();
+    IModelApp.shutdown();
+    debugger; // tslint:disable-line:no-debugger
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -189,6 +200,7 @@ export class DisplayTestApp {
     SVTSelectionTool.register(svtToolNamespace);
     ResizeWindowTool.register(svtToolNamespace);
     RefreshTilesTool.register(svtToolNamespace);
+    ShutDownTool.register(svtToolNamespace);
 
     CreateWindowTool.register(svtToolNamespace);
     FocusWindowTool.register(svtToolNamespace);

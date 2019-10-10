@@ -72,14 +72,6 @@ export class MobileRpcProtocol extends RpcProtocol {
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
 
-    /*
-    This is WIP.
-    The problem is that the data sent over the socket to the frontend is not received (by the JS WebSockets layer -- it may very well be received at lower levels).
-    There are no errors on either end. Also, the maximum sustained send burst size (that reaches the frontend) is related to the chunk size.
-    A 1024 byte chunk size appears to work. However, WE DO NOT KNOW WHY! Research is in progress...
-    */
-    this.transferChunkThreshold = 1024;
-
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
     } else if (endPoint === RpcEndpoint.Backend) {

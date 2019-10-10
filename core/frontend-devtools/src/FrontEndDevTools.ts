@@ -31,12 +31,16 @@ import {
   ToggleSelectedViewFrustumTool,
 } from "./tools/FrustumDecoration";
 import {
+  ChangeEmphasisSettingsTool,
+  ChangeHiliteSettingsTool,
+  FadeOutTool,
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -88,7 +92,12 @@ export class FrontendDevTools {
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
+    ChangeHiliteSettingsTool.register(i18n);
+    ChangeEmphasisSettingsTool.register(i18n);
+    FadeOutTool.register(i18n);
+
     RealityTransitionTool.register(i18n);
+    ChangeUnitsTool.register(i18n);
 
     return i18n.readFinished;
   }

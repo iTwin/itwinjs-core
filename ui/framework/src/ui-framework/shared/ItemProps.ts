@@ -141,7 +141,6 @@ export interface CustomItemProps extends ItemProps {
 export interface MenuItemProps extends ItemProps {
   /** The id for the menu item. */
   id: string;
-
   /** The item to execute when this item is invoked. Either 'item' or 'submenu' must be specified. */
   item?: CommandItemProps;
   /** Nested array of item props. Either 'item' or 'submenu' must be specified. */

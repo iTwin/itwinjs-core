@@ -561,6 +561,7 @@ export class ViewAttributes {
     };
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
+    const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
@@ -578,6 +579,7 @@ export class ViewAttributes {
       imageryProviders.value = map.providerName;
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
+      transCheckbox.checked = false !== map.transparency;
       enableTerrain(terrainCheckbox.checked);
     });
     div.appendChild(backgroundSettingsDiv);
@@ -602,12 +604,12 @@ export class ViewAttributes {
     mapSettingsDiv.appendChild(groundBiasDiv);
 
     const depthCheckbox = this.addCheckbox("Depth", (enabled: boolean) => this.updateBackgroundMap({ useDepthBuffer: enabled }), mapSettingsDiv).checkbox;
-    const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), mapSettingsDiv).checkbox;
+
     this._updates.push((view) => {
       const map = this.getBackgroundMap(view);
       groundBias.value = map.groundBias.toString();
       depthCheckbox.checked = map.useDepthBuffer;
-      transCheckbox.checked = false !== map.transparency;
+
     });
     return mapSettingsDiv;
   }

@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
+import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
@@ -30,6 +31,7 @@ import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
+import { History } from '@bentley/ui-ninezone';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps as IconProps_2 } from '@bentley/ui-core';
@@ -100,6 +102,7 @@ import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
+import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeDataChangesListener } from '@bentley/ui-components';
@@ -1129,6 +1132,12 @@ export class CoreTools {
     // @beta
     static readonly keyinBrowserButtonItemDef: CustomItemDef;
     // (undocumented)
+    static readonly measureDistanceToolItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly measureLocationToolItemDef: ToolItemDef;
+    // (undocumented)
+    static readonly measureToolGroup: GroupItemDef;
+    // (undocumented)
     static readonly panViewCommand: ToolItemDef;
     // (undocumented)
     static readonly rotateViewCommand: ToolItemDef;
@@ -1255,6 +1264,17 @@ export class CursorInformation {
 }
 
 // @beta
+export interface CursorMenuData {
+    // (undocumented)
+    items: any[];
+    // (undocumented)
+    position: {
+        x: number;
+        y: number;
+    };
+}
+
+// @beta
 export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
@@ -1285,6 +1305,8 @@ export interface CursorPopupFadeOutEventArgs {
 
 // @beta
 export class CursorPopupManager {
+    // @internal (undocumented)
+    static clearPopups(): void;
     static close(id: string, apply: boolean, fadeOut?: boolean): void;
     // @internal (undocumented)
     static readonly onCursorPopupFadeOutEvent: CursorPopupFadeOutEvent;
@@ -1300,6 +1322,18 @@ export class CursorPopupManager {
     static update(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number): void;
     static updatePosition(pt: PointProps): void;
     }
+
+// @alpha
+export class CursorPopupMenu extends React_2.PureComponent<CommonProps, CursorPopupMenuState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // @internal (undocumented)
+    readonly state: CursorPopupMenuState;
+}
 
 // @beta
 export interface CursorPopupOptions {
@@ -1765,7 +1799,7 @@ export interface FilterInfo {
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2207,6 +2241,15 @@ export type FunctionType = (...args: any[]) => any;
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
 // @internal (undocumented)
+export const getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps;
+
+// @internal (undocumented)
+export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
+    zIndex: number;
+    position: "relative";
+} | undefined;
+
+// @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
 // @internal (undocumented)
@@ -2218,6 +2261,23 @@ export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
 // @public
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
+
+// @internal
+export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupItemState> {
+    constructor(props: GroupItemComponentProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState): boolean;
+    // (undocumented)
+    readonly state: Readonly<GroupItemState>;
+    }
 
 // @public
 export class GroupItemDef extends ActionButtonItemDef {
@@ -2433,6 +2493,9 @@ export enum InputStatus {
     Valid = 0
 }
 
+// @internal (undocumented)
+export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
+
 // @public
 export abstract class ItemDefBase {
     constructor(itemProps: ItemProps);
@@ -2611,11 +2674,17 @@ export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, Keyin
     // @internal
     constructor(props: any);
     // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
     render(): React_2.ReactNode;
     }
 
 // @alpha
 export interface KeyinBrowserProps extends CommonProps {
+    // (undocumented)
+    onCancel?: () => void;
     // (undocumented)
     onExecute?: () => void;
 }
@@ -2809,7 +2878,7 @@ export interface MenuButtonProps extends SquareButtonProps {
 
 // @alpha
 export class MenuItem extends ItemDefBase {
-    constructor(props: MenuItemProps);
+    constructor(props: MenuItemProps, onSelection?: () => void);
     // (undocumented)
     readonly actionItem: ActionButtonItemDef | undefined;
     // (undocumented)
@@ -2825,7 +2894,7 @@ export class MenuItemHelpers {
     // (undocumented)
     static createMenuItemNodes(itemList: MenuItem[]): React_2.ReactNode[];
     // (undocumented)
-    static createMenuItems(itemPropsList: MenuItemProps[]): MenuItem[];
+    static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[];
 }
 
 // @alpha
@@ -2852,7 +2921,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
-    }
+}
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -3398,7 +3467,7 @@ export class SectionsStatusField extends React_2.Component<any, any> {
     // (undocumented)
     render(): JSX.Element;
     renderContents(): JSX.Element;
-    }
+}
 
 // @public
 export const SelectionInfoField: any;
@@ -3421,6 +3490,8 @@ export interface SessionState {
     activeSelectionScope: string;
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
+    // (undocumented)
+    cursorMenuData: CursorMenuData | undefined;
     // (undocumented)
     defaultIModelViewportControlId: string | undefined;
     // (undocumented)
@@ -3458,7 +3529,9 @@ export enum SessionStateActionId {
     // (undocumented)
     SetNumItemsSelected = "sessionstate:set-num-items-selected",
     // (undocumented)
-    SetSelectionScope = "sessionstate:set-selection-scope"
+    SetSelectionScope = "sessionstate:set-selection-scope",
+    // (undocumented)
+    UpdateCursorMenu = "sessionstate:update-cursor-menu"
 }
 
 // @beta
@@ -3473,6 +3546,7 @@ export const SessionStateActions: {
     setDefaultRulesetId: (rulesetid: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
     setIModelConnection: (iModelConnection: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
     setAccessToken: (accessToken: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    updateCursorMenu: (cursorMenuData: CursorMenuData) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<CursorMenuData>>;
 };
 
 // @beta
@@ -3839,7 +3913,6 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 
 // @public
 export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> {
-    constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3850,7 +3923,7 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     static severityToStatus(severity: MessageSeverity): Status;
     // @internal (undocumented)
     readonly state: Readonly<StatusBarState>;
-    }
+}
 
 // @beta
 export const StatusBarCenterSection: React_2.FunctionComponent<CommonDivProps>;
@@ -4302,16 +4375,28 @@ export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProp
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
-}
+    }
 
 // @internal
 export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
-    bounds: RectangleProps;
+    dropTarget: ZoneTargetType | undefined;
+    // (undocumented)
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     isClosed: boolean;
     // (undocumented)
     isHidden: boolean;
+    // (undocumented)
+    lastPosition: PointProps | undefined;
+    // (undocumented)
+    targetChangeHandler: TargetChangeHandler;
+    // (undocumented)
+    targetedBounds: RectangleProps | undefined;
+    // (undocumented)
+    widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    zone: ZoneManagerProps;
 }
 
 // @public
@@ -4421,6 +4506,8 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiFramework {
+    // @beta (undocumented)
+    static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
     // @beta
@@ -4439,6 +4526,8 @@ export class UiFramework {
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
+    // @beta (undocumented)
+    static getCursorMenuData(): CursorMenuData | undefined;
     // (undocumented)
     static getDefaultIModelViewportControlId(): string | undefined;
     // (undocumented)
@@ -4468,6 +4557,8 @@ export class UiFramework {
     static readonly oidcClient: IOidcFrontendClient;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
+    // @beta (undocumented)
+    static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static readonly packageName: string;
     // @internal (undocumented)

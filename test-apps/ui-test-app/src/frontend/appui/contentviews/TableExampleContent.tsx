@@ -80,6 +80,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         label: "ID",
         resizable: true,
         sortable: true,
+        width: 90,
       },
       {
         key: "title",
@@ -94,6 +95,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         sortable: true,
         resizable: false,
         editable: true,
+        width: 180,
       },
     ];
 

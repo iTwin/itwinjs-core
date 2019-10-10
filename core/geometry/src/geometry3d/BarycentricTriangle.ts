@@ -13,6 +13,7 @@ import { Geometry } from "../Geometry";
  * @public
  */
 export class BarycentricTriangle {
+  /** Array of 3 point coordinates for the triangle. */
   public points: Point3d[];
   /** Constructor.
    * * Point references are CAPTURED
@@ -35,17 +36,19 @@ export class BarycentricTriangle {
     result.points[2].set(x2, y2, z2);
     return result;
   }
+  /** create a triangle with coordinates cloned from given points. */
   public static create(point0: Point3d, point1: Point3d, point2: Point3d, result?: BarycentricTriangle): BarycentricTriangle {
     if (!result)
       return new this(point0.clone(), point1.clone(), point2.clone());
     result.set(point0, point1, point2);
     return result;
   }
+  /** Return a new `BarycentricTriangle` with the same coordinates. */
   public clone(result?: BarycentricTriangle): BarycentricTriangle {
     return BarycentricTriangle.create(this.points[0], this.points[1], this.points[2], result);
   }
 
-  /* Return area divided by sum of squared lengths. */
+  /** Return area divided by sum of squared lengths. */
   public get aspectRatio(): number {
     return Geometry.safeDivideFraction(0.5 * this.points[0].crossProductToPointsMagnitude(this.points[1], this.points[2]),
       (this.points[0].distanceSquared(this.points[1]) + this.points[1].distanceSquared(this.points[2]) + this.points[2].distanceSquared(this.points[0])), 0);
@@ -69,6 +72,7 @@ export class BarycentricTriangle {
     this.points[1].setFromPoint3d(other.points[1]);
     this.points[2].setFromPoint3d(other.points[2]);
   }
+  /** copy contents of (not pointers to) the given points. */
   public set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined) {
     this.points[0].setFromPoint3d(point0);
     this.points[1].setFromPoint3d(point1);

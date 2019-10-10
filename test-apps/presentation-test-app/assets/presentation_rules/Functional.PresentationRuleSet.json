@@ -1,0 +1,37 @@
+{
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "Functional",
+  "supportedSchemas": {
+    "schemaNames": [
+      "BisCore",
+      "Functional"
+    ]
+  },
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": {
+            "schemaName": "Functional",
+            "classNames": [
+              "FunctionalElement"
+            ]
+          },
+          "arePolymorphic": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "Content",
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    }
+  ]
+}

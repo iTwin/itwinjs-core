@@ -323,6 +323,8 @@ export class ColorDef {
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
   /** True if this ColorDef is fully opaque */
   public get isOpaque(): boolean { return 255 === this.getAlpha(); }
+  /** Get the transparency value for this ColorDef (inverse of alpha). Will be between 0-255 */
+  public getTransparency(): number { return 255 - this.getAlpha(); }
   /** Change the transparency value for this ColorDef
    * @param transparency the new transparency value. Must be between 0-255, where 0 means 'fully opaque' and 255 means 'fully transparent'.
    */

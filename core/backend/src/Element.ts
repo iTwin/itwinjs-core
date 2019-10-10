@@ -5,12 +5,12 @@
 /** @module Elements */
 
 import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
-  ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
-  SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometryPartProps, GeometryStreamProps,
+  IModel, InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement,
+  SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -424,6 +424,41 @@ export class VolumeElement extends SpatialLocationElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** A SectionLocation element defines how a section drawing should be generated in a 3d view.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.6
+ * @beta
+ */
+export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
+  /** Section type */
+  public sectionType: SectionType;
+  /** Details on how this section was clipped. */
+  public clipGeometry?: ClipVector;
+  /** The element Id of the [[ModelSelector]] for this SectionLocation */
+  public modelSelectorId: Id64String;
+  /** The element Id of the [[CategorySelector]] for this SectionLocation */
+  public categorySelectorId: Id64String;
+
+  /** @internal */
+  public static get className(): string { return "SectionLocation"; }
+  /** @internal */
+  public constructor(props: SectionLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
+    this.clipGeometry = ClipVector.fromJSON(props.clipGeometry);
+    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
+    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
+  }
+  /** @internal */
+  public toJSON(): SectionLocationProps {
+    const val = super.toJSON() as SectionLocationProps;
+    val.sectionType = this.sectionType;
+    val.clipGeometry = this.clipGeometry;
+    val.modelSelectorId = this.modelSelectorId;
+    val.categorySelectorId = this.categorySelectorId;
+    return val;
+  }
+}
+
 /** Information Content Element is an abstract base class for modeling pure information entities. Only the
  * core framework should directly subclass from Information Content Element. Domain and application developers
  * should start with the most appropriate subclass of Information Content Element.
@@ -784,9 +819,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** An abstract base class for elements that introduce a new modeling
- * perspective within the overall iModel information hierarchy. An Information Partition is always parented
- * to a `Subject` and broken down by a `Model`.
+/** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
+ * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
+ * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
@@ -803,9 +838,9 @@ export abstract class InformationPartitionElement extends InformationContentElem
   }
 }
 
-/** An Element that indicates that there is a definition-related modeling perspective within
- * the overall iModel information hierarchy. A Definition Partition is always parented to a Subject and
- * broken down by a Definition Model.
+/** A DefinitionPartition element establishes a *Definition* modeling perspective for its parent Subject.
+ * A DefinitionPartition is always sub-modeled by a DefinitionModel.
+ * @see [[DefinitionModel]]
  * @public
  */
 export class DefinitionPartition extends InformationPartitionElement {
@@ -813,8 +848,9 @@ export class DefinitionPartition extends InformationPartitionElement {
   public static get className(): string { return "DefinitionPartition"; }
 }
 
-/** A Document Partition element indicates that there is a document-related modeling perspective within
- * the overall iModel information hierarchy. A Document Partition is always parented to a Subject and broken down by a Document List Model.
+/** A DocumentPartition element establishes a *Document* modeling perspective for its parent Subject.
+ * A DocumentPartition is always sub-modeled by a DocumentListModel.
+ * @see [[DocumentListModel]]
  * @public
  */
 export class DocumentPartition extends InformationPartitionElement {
@@ -822,9 +858,9 @@ export class DocumentPartition extends InformationPartitionElement {
   public static get className(): string { return "DocumentPartition"; }
 }
 
-/** A Group Information Partition element indicates that there is a group-information-related modeling perspective
- * within the overall iModel information hierarchy. A Group Information Partition is always parented to
- * a Subject and broken down by a Group Information Model.
+/** A GroupInformationPartition element establishes a *Group Information* modeling perspective for its parent Subject.
+ * A GroupInformationPartition is always sub-modeled by a GroupInformationModel.
+ * @see [[GroupInformationModel]]
  * @public
  */
 export class GroupInformationPartition extends InformationPartitionElement {
@@ -832,9 +868,20 @@ export class GroupInformationPartition extends InformationPartitionElement {
   public static get className(): string { return "GroupInformationPartition"; }
 }
 
-/** A Information Record Partition element indicates that there is an information-record-related modeling
- * perspective within the overall iModel information hierarchy. An Information Record Partition is always
- * parented to a Subject and broken down by an Information Record Model.
+/** A GraphicalPartition3d element establishes a *3D Graphical* modeling perspective for its parent Subject.
+ * A GraphicalPartition3d is always sub-modeled by a GraphicalModel3d.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.8
+ * @see [[GraphicalModel3d]]
+ * @public
+ */
+export class GraphicalPartition3d extends InformationPartitionElement {
+  /** @internal */
+  public static get className(): string { return "GraphicalPartition3d"; }
+}
+
+/** An InformationRecordPartition element establishes a *Information Record* modeling perspective for its parent Subject.
+ * A InformationRecordPartition is always sub-modeled by an InformationRecordModel.
+ * @see [[InformationRecordModel]]
  * @public
  */
 export class InformationRecordPartition extends InformationPartitionElement {
@@ -842,8 +889,8 @@ export class InformationRecordPartition extends InformationPartitionElement {
   public static get className(): string { return "InformationRecordPartition"; }
 }
 
-/** A Link Partition element indicates that there is a link-related modeling perspective within the overall
- * iModel information hierarchy. A Link Partition is always parented to a Subject and broken down by a LinkModel.
+/** A LinkPartition element establishes a *Link* modeling perspective for its parent Subject. A LinkPartition is always sub-modeled by a LinkModel.
+ * @see [[LinkModel]]
  * @public
  */
 export class LinkPartition extends InformationPartitionElement {
@@ -851,8 +898,8 @@ export class LinkPartition extends InformationPartitionElement {
   public static get className(): string { return "LinkPartition"; }
 }
 
-/** A Physical Partition element indicates that there is a physical modeling perspective within the overall
- * iModel information hierarchy. A Physical Partition is always parented to a Subject and broken down by a Physical Model.
+/** A PhysicalPartition element establishes a *Physical* modeling perspective for its parent Subject. A PhysicalPartition is always sub-modeled by a PhysicalModel.
+ * @see [[PhysicalModel]]
  * @public
  */
 export class PhysicalPartition extends InformationPartitionElement {
@@ -860,9 +907,9 @@ export class PhysicalPartition extends InformationPartitionElement {
   public static get className(): string { return "PhysicalPartition"; }
 }
 
-/** A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
- * within the overall iModel information hierarchy. A Spatial Location Partition is always parented to a
- * Subject and broken down by a Spatial Location Model.
+/** A SpatialLocationPartition element establishes a *SpatialLocation* modeling perspective for its parent Subject.
+ * A SpatialLocationPartition is always sub-modeled by a SpatialLocationModel.
+ * @see [[SpatialLocationModel]]
  * @public
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
@@ -870,8 +917,7 @@ export class SpatialLocationPartition extends InformationPartitionElement {
   public static get className(): string { return "SpatialLocationPartition"; }
 }
 
-/** Group Information is an abstract base class for modeling entities whose main purpose is to reference
- * a group of related elements.
+/** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.
  * @public
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "Functional",
+  "supplementationInfo": {
+    "supplementationPurpose": "Functional specific customization rules"
+  },
+  "supportedSchemas": {
+    "schemaNames": [
+      "BisCore",
+      "Functional"
+    ]
+  },
+  "rules": [
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"FunctionalElement\", \"Functional\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "Functional",
+            "classNames": [
+              "PhysicalElementFulfillsFunction"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "PhysicalElement"
+            ]
+          }
+        },
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "Functional",
+            "classNames": [
+              "DrawingGraphicRepresentsFunctionalElement"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "DrawingGraphic"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

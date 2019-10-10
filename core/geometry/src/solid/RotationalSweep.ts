@@ -28,6 +28,7 @@ import { StrokeOptions } from "../curve/StrokeOptions";
  * @public
  */
 export class RotationalSweep extends SolidPrimitive {
+  /** String name for schema properties */
   public readonly solidPrimitiveType = "rotationalSweep";
 
   private _contour: SweepContour;

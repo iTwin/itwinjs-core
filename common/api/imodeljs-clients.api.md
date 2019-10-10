@@ -1325,7 +1325,6 @@ export class ProjectShareClient extends WsgClient {
     static readonly configRelyingPartyUri = "imjs_project_share_client_relying_party_uri";
     // (undocumented)
     static readonly configURL = "imjs_project_share_client_url";
-    downloadFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array>;
     protected getDefaultUrl(): string;
     getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]>;
     getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]>;
@@ -1335,12 +1334,14 @@ export class ProjectShareClient extends WsgClient {
     protected getRelyingPartyUrl(): string;
     getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected getUrlSearchKey(): string;
+    readFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile, maxByteCount?: number): Promise<Uint8Array>;
+    readFileNodeJs(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array>;
     // (undocumented)
     static readonly searchKey: string;
-    updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, customProperties: Array<{
+    updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{
         Name: string;
         Value: string;
-    }>): Promise<ProjectShareFile>;
+    }>, deleteProperties?: string[]): Promise<ProjectShareFile>;
 }
 
 // @alpha

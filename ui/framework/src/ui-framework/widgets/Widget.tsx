@@ -30,7 +30,7 @@ export interface WidgetProps extends IconProps {
   tooltipKey?: string;
   /** Optional Id used to uniquely identify the widget. */
   id?: string;
-  /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Open. */
+  /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
   defaultState?: WidgetState;
   /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. */
   isFreeform?: boolean;

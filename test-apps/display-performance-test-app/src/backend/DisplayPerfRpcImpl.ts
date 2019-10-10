@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
+import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { RpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile, addEndOfTestToCsvFile } from "./CsvWriter";
-import * as fs from "fs";
+import * as path from "path";
 import { app } from "electron";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
@@ -15,11 +15,16 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   private _reporter = new Reporter();
   public async getDefaultConfigs(): Promise<string> {
     let jsonStr = "";
-    const defaultJsonFile = "./src/backend/DefaultConfig.json";
-    if (fs.existsSync(DisplayPerfRpcInterface.jsonFilePath)) {
-      jsonStr = fs.readFileSync(DisplayPerfRpcInterface.jsonFilePath).toString();
-    } else if (fs.existsSync(defaultJsonFile)) {
-      jsonStr = fs.readFileSync(defaultJsonFile).toString();
+    let defaultJsonFile;
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      defaultJsonFile = path.join(process.env.DOCS, "MobilePerformanceConfig.json");
+    } else {
+      defaultJsonFile = "./src/backend/DefaultConfig.json";
+    }
+    if (IModelJsFs.existsSync(DisplayPerfRpcInterface.jsonFilePath)) {
+      jsonStr = IModelJsFs.readFileSync(DisplayPerfRpcInterface.jsonFilePath).toString();
+    } else if (IModelJsFs.existsSync(defaultJsonFile)) {
+      jsonStr = IModelJsFs.readFileSync(defaultJsonFile).toString();
     }
     let argOutputPath: string | undefined;
     process.argv.forEach((arg, index) => {
@@ -44,9 +49,11 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     if (csvFormat === "original") {
       rowData.delete("Browser");
       if (outputPath !== undefined && outputName !== undefined) {
+        if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS)
+          outputPath = process.env.DOCS;
         let outputFile = this.createFullFilePath(outputPath, outputName);
         outputFile = outputFile ? outputFile : "";
-        if (fs.existsSync(outputFile)) {
+        if (IModelJsFs.existsSync(outputFile)) {
           addColumnsToCsvFile(outputFile, rowData);
         } else {
           createNewCsvFile(outputPath, outputName, rowData);
@@ -75,11 +82,17 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   }
 
   public async savePng(fileName: string, png: string) {
-    const filePath = this.getFilePath(fileName);
-    if (!fs.existsSync(filePath)) createFilePath(filePath);
-    if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+    let filePath;
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      filePath = process.env.DOCS;
+      fileName = path.join(filePath, fileName);
+    } else {
+      filePath = this.getFilePath(fileName);
+    }
+    if (!IModelJsFs.existsSync(filePath)) createFilePath(filePath);
+    if (IModelJsFs.existsSync(fileName)) IModelJsFs.unlinkSync(fileName);
     const buf = Buffer.from(png, "base64");
-    fs.writeFileSync(fileName, buf);
+    IModelJsFs.writeFileSync(fileName, buf);
   }
 
   public async finishCsv(output: string, outputPath?: string, outputName?: string, csvFormat?: string) {
@@ -111,13 +124,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       return undefined;
     if (filePath === undefined)
       return fileName;
-    else {
-      let output = filePath;
-      const lastChar = output[output.length - 1];
-      if (lastChar !== "/" && lastChar !== "\\")
-        output += "\\";
-      return output + fileName;
-    }
+    else
+      return path.join(filePath, fileName);
   }
 
   private mapToObj(map: Map<string, number | string>) {
@@ -137,10 +145,10 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 
   public async readExternalSavedViews(bimfileName: string): Promise<string> {
     const esvFileName = this.createEsvFilename(bimfileName);
-    if (!fs.existsSync(esvFileName)) {
+    if (!IModelJsFs.existsSync(esvFileName)) {
       return "";
     }
-    const jsonStr = fs.readFileSync(esvFileName).toString();
+    const jsonStr = IModelJsFs.readFileSync(esvFileName).toString();
     if (undefined === jsonStr)
       return "";
     return jsonStr;

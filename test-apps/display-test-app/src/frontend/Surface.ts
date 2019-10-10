@@ -57,9 +57,12 @@ export class Surface {
       baseId: "dtaKeyinField",
       historyLength: 50,
     });
-    this.keyinField.textBox.textbox.addEventListener("keyup", (e) => {
-      if (27 === e.keyCode)
+    this.keyinField.textBox.textbox.addEventListener("keydown", (e) => {
+      if (27 === e.keyCode || "`" === e.key) {
         this.keyinField.loseFocus();
+        e.preventDefault();
+        e.stopPropagation();
+      }
     });
     this.keyinField.textBox.div.className = "keyin-entry";
     this.keyinField.textBox.textbox.className = "keyin-entry-textbox";
@@ -342,6 +345,12 @@ export class Surface {
   public close(window: Window): void {
     if (window.isCloseable)
       this.forceClose(window);
+  }
+
+  public closeAllViewers(): void {
+    const viewers = this._windows.filter((x) => x instanceof Viewer);
+    for (const viewer of viewers)
+      this.forceClose(viewer);
   }
 
   private forceClose(window: Window): void {

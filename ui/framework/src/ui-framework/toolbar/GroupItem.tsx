@@ -166,8 +166,9 @@ interface GroupItemState extends BaseItemState {
 }
 
 /** Group Item React component.
+ * @internal
  */
-class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
+export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
 
   /** @internal */
   public readonly state: Readonly<GroupItemState>;
@@ -175,6 +176,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
   private _trayIndex = 0;
+  private _ref = React.createRef<HTMLDivElement>();
 
   constructor(props: GroupItemComponentProps) {
     super(props);
@@ -366,16 +368,18 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
-        <Item
-          className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-          isDisabled={!this.state.isEnabled}
-          title={this.state.groupItemDef.label}
-          onClick={() => this._toggleGroupButton()}
-          onKeyDown={this._handleKeyDown}
-          icon={icon}
-          onSizeKnown={this.props.onSizeKnown}
-          badge={groupItemDef.betaBadge && <BetaBadge />}
-        />
+        <div ref={this._ref}>
+          <Item
+            className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+            isDisabled={!this.state.isEnabled}
+            title={this.state.groupItemDef.label}
+            onClick={() => this._toggleGroupButton()}
+            onKeyDown={this._handleKeyDown}
+            icon={icon}
+            onSizeKnown={this.props.onSizeKnown}
+            badge={groupItemDef.betaBadge && <BetaBadge />}
+          />
+        </div>
       </ExpandableItem>
     );
   }
@@ -386,6 +390,12 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
       isExtended: false,
       isPressed: !prevState.isPressed,
     }));
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
+      return;
+    this._closeGroupButton();
   }
 
   private _closeGroupButton = () => {
@@ -584,7 +594,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
               backTrays,
             };
           })}
-          onOutsideClick={this._closeGroupButton}
+          onOutsideClick={this._handleOutsideClick}
           title={tray.title}
         />
       );
@@ -592,7 +602,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
     return (
       <ToolGroup
         columns={columns}
-        onOutsideClick={this._closeGroupButton}
+        onOutsideClick={this._handleOutsideClick}
         title={tray.title}
       />
     );

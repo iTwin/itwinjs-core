@@ -310,6 +310,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount(): void {
@@ -608,6 +609,24 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
     this.setPanelState(panelDef.location, panelState);
+  }
+
+  private _handleToolActivatedEvent = () => {
+    this.setState((prevState) => {
+      const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const manager = FrontstageManager.NineZoneManager;
+      let nineZone = prevState.nineZone;
+      if (activeToolSettingsNode) {
+        nineZone = manager.showWidget(2, prevState.nineZone);
+      } else {
+        nineZone = manager.hideWidget(2, prevState.nineZone);
+      }
+      if (nineZone === prevState.nineZone)
+        return null;
+      return {
+        nineZone,
+      };
+    });
   }
 
   private setPanelState(location: StagePanelLocation, panelState: StagePanelState) {

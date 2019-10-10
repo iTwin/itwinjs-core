@@ -41,7 +41,10 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
   }
   public getNodeKey(node: TreeNodeItem) { return this._wrapped.getNodeKey(node); }
   public async getFilteredNodePaths(filter: string) { return this._wrapped.getFilteredNodePaths(filter); }
-  public async loadHierarchy() { return this._wrapped.loadHierarchy(); }
+  public async loadHierarchy() {
+    if (this._wrapped.loadHierarchy)
+      await this._wrapped.loadHierarchy();
+  }
 }
 
 export interface Props {

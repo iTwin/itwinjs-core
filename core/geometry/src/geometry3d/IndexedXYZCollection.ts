@@ -33,7 +33,7 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
   /**
    * Get from `index` as a strongly typed Vector3d.
    * @param index index of point within the array

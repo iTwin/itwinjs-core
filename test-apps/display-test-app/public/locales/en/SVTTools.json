@@ -54,6 +54,9 @@
     },
     "Markup": {
       "keyin": "dta markup"
+    },
+    "ShutDown": {
+      "keyin": "dta shutdown"
     }
   }
 }

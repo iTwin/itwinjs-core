@@ -30,6 +30,7 @@ export interface ZoneManagerFloatingProps {
 /** @internal */
 export const getDefaultAllowsMerging = (id: WidgetZoneId): boolean => {
   switch (id) {
+    case 2:
     case 4:
     case 6:
     case 7:
@@ -51,7 +52,7 @@ export const getDefaultZoneManagerProps = (id: WidgetZoneId): ZoneManagerProps =
     bottom: 0,
   },
   isLayoutChanged: false,
-  widgets: [id],
+  widgets: id === 2 ? [] : [id],
 });
 
 /** Class used to manage [[ZoneManagerProps]].

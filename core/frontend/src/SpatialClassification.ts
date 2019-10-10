@@ -7,7 +7,6 @@ import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@be
 import { IModelConnection } from "./IModelConnection";
 import { SceneContext } from "./ViewContext";
 import { BatchType, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { IModelApp } from "./IModelApp";
 import { IModelTile } from "./tile/IModelTile";
 import { TileTree, TileTreeSet } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
@@ -116,14 +115,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       return;
 
     context.modelClassifiers.set(classifiedTree.modelId, classifier.modelId);
-    if (BatchType.PlanarClassifier === this._id.type) {
-      if (!context.getPlanarClassifier(classifier.modelId)) {
-        const pc = IModelApp.renderSystem.createPlanarClassifier(classifier, classifierTree, classifiedTree, context);
-        context.setPlanarClassifier(classifier.modelId, pc!);
-      }
-    } else {
+    if (BatchType.PlanarClassifier === this._id.type)
+      context.addPlanarClassifier(classifier, classifierTree, classifiedTree);
+    else
       classifierTree.drawScene(context);
-    }
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {

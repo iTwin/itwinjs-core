@@ -6,7 +6,7 @@
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
-import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager } from "./Widget";
+import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager, ToolSettingsWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "./Widget";
 import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager } from "./Zone";
 import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
 import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy } from "./ResizeStrategy";
@@ -56,7 +56,9 @@ export type ZonesManagerZonesProps = { readonly [id in WidgetZoneId]: ZoneManage
 /** Widgets used in [[ZonesManagerProps]].
  * @beta
  */
-export type ZonesManagerWidgetsProps = { readonly [id in WidgetZoneId]: WidgetManagerProps };
+export type ZonesManagerWidgetsProps =
+  { readonly [id in Exclude<WidgetZoneId, 2>]: WidgetManagerProps } &
+  { readonly [2]: ToolSettingsWidgetManagerProps };
 
 /** Available zone targets.
  * @beta
@@ -128,7 +130,7 @@ export const getDefaultZonesManagerZonesProps = (): ZonesManagerZonesProps => {
 export const getDefaultZonesManagerWidgetsProps = (): ZonesManagerWidgetsProps => {
   return {
     1: getDefaultWidgetManagerProps(1),
-    2: getDefaultWidgetManagerProps(2),
+    2: getDefaultToolSettingsWidgetManagerProps(),
     3: getDefaultWidgetManagerProps(3),
     4: getDefaultWidgetManagerProps(4),
     6: getDefaultWidgetManagerProps(6),
@@ -421,6 +423,8 @@ export class ZonesManager {
         newProps = this.setWidgetHorizontalAnchor(draggedZone.id, horizontalAnchor, newProps);
         const verticalAnchor = getDefaultWidgetVerticalAnchor(draggedZone.id);
         newProps = this.setWidgetVerticalAnchor(draggedZone.id, verticalAnchor, newProps);
+        if (draggedZone.id === 2)
+          newProps = this.setToolSettingsWidgetMode(ToolSettingsWidgetMode.TitleBar, newProps);
         return newProps;
       }
     }
@@ -849,6 +853,22 @@ export class ZonesManager {
         [widgetId]: {
           ...props.widgets[widgetId],
           verticalAnchor,
+        },
+      },
+    };
+  }
+
+  /** @internal */
+  public setToolSettingsWidgetMode<TProps extends ZonesManagerProps>(mode: ToolSettingsWidgetMode, props: TProps): TProps {
+    if (props.widgets[2].mode === mode)
+      return props;
+    return {
+      ...props,
+      widgets: {
+        ...props.widgets,
+        [2]: {
+          ...props.widgets[2],
+          mode,
         },
       },
     };

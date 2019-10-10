@@ -4,11 +4,8 @@ exports[`<Tab /> renders collapsed correctly 1`] = `
 <div
   className="nz-widget-rectangular-tab-tab nz-protruding nz-collapsed nz-left-anchor nz-middle-anchor nz-mode-open"
 >
-  <PointerCaptor
+  <DragHandle
     className="nz-draggable"
-    onMouseDown={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
   />
 </div>
 `;
@@ -17,11 +14,8 @@ exports[`<Tab /> renders correctly 1`] = `
 <div
   className="nz-widget-rectangular-tab-tab nz-protruding nz-left-anchor nz-middle-anchor nz-mode-open"
 >
-  <PointerCaptor
+  <DragHandle
     className="nz-draggable"
-    onMouseDown={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
   />
 </div>
 `;
@@ -30,12 +24,14 @@ exports[`<Tab /> renders with last position correctly 1`] = `
 <div
   className="nz-widget-rectangular-tab-tab nz-protruding nz-left-anchor nz-middle-anchor nz-mode-open"
 >
-  <PointerCaptor
+  <DragHandle
     className="nz-draggable"
-    isMouseDown={true}
-    onMouseDown={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
+    lastPosition={
+      Object {
+        "x": 0,
+        "y": 0,
+      }
+    }
   />
 </div>
 `;

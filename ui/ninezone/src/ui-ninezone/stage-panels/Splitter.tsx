@@ -58,9 +58,7 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
     const prevCount = React.Children.count(prevProps.children);
     const count = React.Children.count(this.props.children);
     if (prevCount !== count) {
-      this.setState(() => ({
-        sizeByPaneId: this.getInitialPaneSizes(),
-      }));
+      this.setState({ sizeByPaneId: this.getInitialPaneSizes() });
     }
   }
 

@@ -3,7 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp,
+  IModelConnection,
+  PlanarClassifierMap,
+  RenderMemory,
+  RenderPlanarClassifier,
+  RenderTextureDrape,
+  SceneContext,
+  ScreenViewport,
+  TextureDrapeMap,
+  TileTree,
+  } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodeljs-frontend/lib/rendering";
@@ -38,6 +49,23 @@ class ExposedTarget {
   public get environmentMap(): TextureHandle | undefined { return (this.target as any)._environmentMap; }
   public get diffuseMap(): TextureHandle | undefined { return (this.target as any)._diffuseMap; }
   public get batchesClone(): Batch[] { return (this.target as any)._batches.slice(); }
+  public get planarClassifiers(): PlanarClassifierMap | undefined { return (this.target as any)._planarClassifiers; }
+  public get textureDrapes(): TextureDrapeMap | undefined { return (this.target as any)._textureDrapes; }
+
+  public changePlanarClassifiers(map: PlanarClassifierMap | undefined) {
+    // The real implementation takes sole ownership of the map. Tests like to reuse same map. So clone it.
+    if (undefined !== map)
+      map = new Map<string, RenderPlanarClassifier>(map);
+
+    this.target.changePlanarClassifiers(map);
+  }
+
+  public changeTextureDrapes(map: TextureDrapeMap | undefined) {
+    if (undefined !== map)
+      map = new Map<string, RenderTextureDrape>(map);
+
+    this.target.changeTextureDrapes(map);
+  }
 }
 
 /** Return a Uint8Array that can be used for construction of an ImageBuffer. */
@@ -291,5 +319,128 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(clipMask));
     assert.isTrue(isDisposed(environmentMap));
     assert.isTrue(isDisposed(diffuseMap));
+  });
+
+  class Classifier extends RenderPlanarClassifier {
+    public disposed = false;
+    public constructor() { super(); }
+    public collectGraphics(_context: SceneContext, _classified: TileTree, _classifier: TileTree): void { }
+    public dispose(): void {
+      expect(this.disposed).to.be.false;
+      this.disposed = true;
+    }
+  }
+
+  class Drape extends RenderTextureDrape {
+    public disposed = false;
+    public constructor() { super(); }
+    public collectGraphics(_context: SceneContext): void { }
+    public collectStatistics(_stats: RenderMemory.Statistics): void { }
+    public dispose(): void {
+      expect(this.disposed).to.be.false;
+      this.disposed = true;
+    }
+  }
+
+  interface ClassifierOrDrape {
+    disposed: boolean;
+    dispose(): void;
+  }
+
+  async function testClassifiersOrDrapes<T extends ClassifierOrDrape>(
+    map: Map<string, T>,
+    key: "planarClassifiers" | "textureDrapes",
+    ctor: () => T,
+    get: (target: ExposedTarget, id: string) => T | undefined,
+    change: (target: ExposedTarget, map: Map<string, T> | undefined) => void,
+  ): Promise<void> {
+    const viewDefs = await imodel0.views.getViewList({ from: "BisCore.SpatialViewDefinition" });
+    expect(viewDefs[0]).not.to.be.undefined;
+    const view = await imodel0.views.load(viewDefs[0].id);
+    expect(view).not.to.be.undefined;
+
+    const div = document.createElement("div");
+    div.style.width = div.style.height = "100px";
+    document.body.appendChild(div);
+
+    const vp = ScreenViewport.create(div, view);
+    const target = new ExposedTarget(vp.target as Target);
+
+    expect(target[key]).to.be.undefined;
+
+    // Add an entry.
+    const c1 = ctor();
+    map.set("0x1", c1);
+    change(target, map);
+    expect(target[key]).not.to.be.undefined;
+    expect(target[key]!.size).to.equal(1);
+    expect(get(target, "0x1")).to.equal(c1);
+    expect(c1.disposed).to.be.false;
+
+    // Remove all entries..
+    change(target, undefined);
+    expect(target[key]).to.be.undefined;
+    expect(get(target, "0x1")).to.be.undefined;
+    expect(c1.disposed).to.be.true;
+
+    // Change to same map twice.
+    c1.disposed = false;
+    change(target, map);
+    change(target, map);
+    expect(target[key]).not.to.be.undefined;
+    expect(target[key]!.size).to.equal(1);
+    expect(get(target, "0x1")).to.equal(c1);
+    expect(c1.disposed).to.be.false;
+
+    // Associate a different value with same Id.
+    const c2 = ctor();
+    map.set("0x1", c2);
+    change(target, map);
+    expect(target[key]).not.to.be.undefined;
+    expect(target[key]!.size).to.equal(1);
+    expect(get(target, "0x1")).to.equal(c2);
+    expect(c2.disposed).to.be.false;
+    expect(c1.disposed).to.be.true;
+
+    // Add another entry.
+    c1.disposed = false;
+    map.set("0x2", c1);
+    change(target, map);
+    expect(target[key]).not.to.be.undefined;
+    expect(target[key]!.size).to.equal(2);
+    expect(get(target, "0x1")).to.equal(c2);
+    expect(get(target, "0x2")).to.equal(c1);
+    expect(c1.disposed).to.be.false;
+    expect(c2.disposed).to.be.false;
+
+    // Remove one entry.
+    map.delete("0x1");
+    change(target, map);
+    expect(target[key]).not.to.be.undefined;
+    expect(target[key]!.size).to.equal(1);
+    expect(get(target, "0x2")).to.equal(c1);
+    expect(c1.disposed).to.be.false;
+    expect(c2.disposed).to.be.true;
+
+    // Dispose of the target.
+    vp.dispose();
+    expect(target[key]).to.be.undefined;
+    expect(c1.disposed).to.be.true;
+  }
+
+  it("should manage lifetimes of planar classifiers", async () => {
+    const map = new Map<string, Classifier>();
+    await testClassifiersOrDrapes<Classifier>(map, "planarClassifiers",
+      () => new Classifier(),
+      (target, id) => target.target.getPlanarClassifier(id) as Classifier,
+      (target, newMap) => target.changePlanarClassifiers(newMap));
+  });
+
+  it("should manage lifetimes of texture drapes", async () => {
+    const map = new Map<string, Drape>();
+    await testClassifiersOrDrapes<Drape>(map, "textureDrapes",
+      () => new Drape(),
+      (target, id) => target.target.getTextureDrape(id) as Drape,
+      (target, newMap) => target.changeTextureDrapes(newMap));
   });
 });

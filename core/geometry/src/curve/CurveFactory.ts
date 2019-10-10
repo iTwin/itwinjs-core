@@ -91,4 +91,39 @@ export class CurveFactory {
     }
     return path;
   }
+
+  /**
+   * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
+   * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
+   * * "Reversed"
+   * @param arcA
+   * @param arcB
+   */
+  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
+    if (arcA.center.isAlmostEqual(arcB.center)) {
+      const sweepSign = Geometry.split3WaySign(arcA.sweep.sweepRadians * arcB.sweep.sweepRadians, -1, 0, 1);
+      // evaluate derivatives wrt radians (not fraction!), but adjust direction for sweep signs
+      const endA = arcA.angleToPointAndDerivative(arcA.sweep.fractionToAngle(1.0));
+      if (arcA.sweep.sweepRadians < 0)
+        endA.direction.scaleInPlace(-1.0);
+      const startB = arcB.angleToPointAndDerivative(arcB.sweep.fractionToAngle(0.0));
+      if (arcB.sweep.sweepRadians < 0)
+        startB.direction.scaleInPlace(-1.0);
+
+      if (endA.isAlmostEqual(startB)) {
+        arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians);
+        return true;
+      }
+      // Also ok if negated tangent . ..
+      if (allowReverse) {
+        startB.direction.scaleInPlace(-1.0);
+        if (endA.isAlmostEqual(startB)) {
+          arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians);
+          return true;
+        }
+      }
+
+    }
+    return false;
+  }
 }

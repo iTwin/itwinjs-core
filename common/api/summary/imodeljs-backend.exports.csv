@@ -143,6 +143,8 @@ public;GraphicalElement2dIsOfType
 public;class GraphicalElement3d 
 public;GraphicalElement3dRepresentsElement 
 public;class GraphicalModel2d 
+public;class GraphicalModel3d 
+public;GraphicalPartition3d 
 public;class GraphicalType2d 
 public;Group 
 public;class GroupInformationElement 
@@ -232,6 +234,7 @@ public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingModel 
+beta;SectionLocation 
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 

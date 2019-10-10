@@ -6,10 +6,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
-import { PointerCaptor } from "../../../base/PointerCaptor";
-
+import { DragHandle } from "../../../base/DragHandle";
 import "./Tab.scss";
 
 /** Describes available tab modes.
@@ -88,7 +87,6 @@ type TabDefaultProps = Pick<TabProps, "isProtruding">;
  * @alpha
  */
 export class Tab extends React.PureComponent<TabProps> {
-  private _initial: Point | undefined = undefined;
   private _tab = React.createRef<HTMLDivElement>();
 
   public static defaultProps: TabDefaultProps = {
@@ -124,50 +122,15 @@ export class Tab extends React.PureComponent<TabProps> {
             {this.props.badge}
           </div>
         }
-        <PointerCaptor
+        <DragHandle
           className="nz-draggable"
-          isMouseDown={this.props.lastPosition ? true : undefined}
-          onMouseDown={this._handleMouseDown}
-          onMouseUp={this._handleMouseUp}
-          onMouseMove={this._handleMouseMove}
+          lastPosition={this.props.lastPosition}
+          onClick={this.props.onClick}
+          onDrag={this.props.onDrag}
+          onDragEnd={this.props.onDragEnd}
+          onDragStart={this.props.onDragStart}
         />
       </div>
     );
-  }
-
-  private _handleMouseDown = (e: MouseEvent) => {
-    e.preventDefault();
-
-    this._initial = new Point(e.clientX, e.clientY);
-  }
-
-  private _handleMouseMove = (e: MouseEvent) => {
-    const current = new Point(e.clientX, e.clientY);
-    if (this.props.lastPosition) {
-      const dragged = Point.create(this.props.lastPosition).getOffsetTo(current);
-      this.props.onDrag && this.props.onDrag(dragged);
-      return;
-    }
-
-    if (this._initial && current.getDistanceTo(this._initial) >= 6) {
-      this.props.onDragStart && this.props.onDragStart(this._initial);
-    }
-  }
-
-  private _handleMouseUp = (e: MouseEvent) => {
-    this._initial = undefined;
-    if (this.props.lastPosition) {
-      this.props.onDragEnd && this.props.onDragEnd();
-      return;
-    }
-
-    if (!this._tab.current)
-      return;
-
-    const tabBounds = Rectangle.create(this._tab.current.getBoundingClientRect());
-    const point = new Point(e.clientX, e.clientY);
-    if (!tabBounds.containsPoint(point))
-      return;
-    this.props.onClick && this.props.onClick();
   }
 }

@@ -800,7 +800,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment depth
   // float finalizeDepth()
   FinalizeDepth,
-
+  // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
+  // vec4 overrideColor(vec4 currentColor)
+  OverrideColor,
   COUNT,
 }
 
@@ -970,14 +972,16 @@ export class ClippingShaders {
   public shaders: ShaderProgram[] = [];
   public maskShader?: ShaderProgram;
 
-  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
+  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext, wantMask: boolean) {
     this.builder = prog.clone();
     addClipping(this.builder, ClipDef.forPlanes(6));
 
-    const maskBuilder = prog.clone();
-    addClipping(maskBuilder, ClipDef.forMask());
-    this.maskShader = maskBuilder.buildProgram(context);
-    assert(this.maskShader !== undefined);
+    if (wantMask) {
+      const maskBuilder = prog.clone();
+      addClipping(maskBuilder, ClipDef.forMask());
+      this.maskShader = maskBuilder.buildProgram(context);
+      assert(this.maskShader !== undefined);
+    }
   }
 
   public compileShaders(): boolean {

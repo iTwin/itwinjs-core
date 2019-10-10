@@ -47,7 +47,7 @@ BaseClass _(0..1)_
 
 [Target](#source-and-target) _(1..1)_
 
-## Source and Target
+## Source and Target Constraints
 
 The Source and Target of a relationship define the endpoint classes and their constraints. Each endpoint must define at least one ECEntityClass, the multiplicity, if the endpoint is polymorphic, and if more than one constraint class is defined, an Abstract Constraint.
 
@@ -62,6 +62,10 @@ The Source and Target of a relationship define the endpoint classes and their co
 **multiplicity** multiplicity at this end of the relationship. It is specified using the UML format (x..y) where x >= 0 and (y >= 1 or y == "\*") and x <= y. It is typically set to (1..1) or (0..\*) if there is no limit.
 
 **abstractConstraint** an ECClass which all the constraint classes at this end of the relationship must be or derive from. Required in base relationship classes if there is more than one constraint class in this end of the relationship, otherwise is optional.
+
+## Custom Attributes
+
+A relationship constraint may have [Custom Attributes](./ec-custom-attributes.md) applied but do not inherit custom attributes from constraints of a base relationship.
 
 ## Sub-Elements
 

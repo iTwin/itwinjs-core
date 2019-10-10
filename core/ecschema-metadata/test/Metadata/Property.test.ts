@@ -20,6 +20,7 @@ import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { PropertyType } from "../../src/PropertyTypes";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("Property", () => {
   let testClass: EntityClass;
@@ -699,6 +700,175 @@ describe("Property", () => {
       expect(prop2.length).to.equal(1);
       expect(prop2[0].textContent).to.equal("test2");
     });
+  });
+});
+
+describe("Custom Attributes", () => {
+  function createSchemaJson(schemaItemJson: any): any {
+    return createSchemaJsonWithItems({
+      CaClass1: {
+        schemaItemType: "CustomAttributeClass",
+        appliesTo: "Any",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            typeName: "string",
+            name: "CaProp",
+          },
+        ],
+      },
+      CaClass2: {
+        schemaItemType: "CustomAttributeClass",
+        appliesTo: "Any",
+      },
+      BaseBaseClass: {
+        schemaItemType: "EntityClass",
+
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            typeName: "int",
+            name: "TestProp",
+            customAttributes: [
+              { className: "TestSchema.CaClass1" },
+            ],
+          },
+        ],
+      },
+      MrMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.BaseBaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "MrTestProp",
+            typeName: "string",
+            customAttributes: [
+              { className: "TestSchema.CaClass1" },
+            ],
+          },
+        ],
+      },
+      BaseClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BaseBaseClass",
+        mixins: ["TestSchema.MrMixin"],
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+            customAttributes: [
+              { className: "TestSchema.CaClass1" },
+            ],
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp3",
+            typeName: "string",
+            customAttributes: [
+              {
+                className: "TestSchema.CaClass1",
+                caProp: "Base",
+              },
+              { className: "TestSchema.CaClass2" },
+            ],
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "MrTestProp",
+            typeName: "string",
+          },
+        ],
+      },
+      TestClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "int",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+            customAttributes: [
+              { className: "TestSchema.CaClass2" },
+            ],
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp3",
+            typeName: "string",
+            customAttributes: [
+              {
+                className: "TestSchema.CaClass1",
+                caProp: "Derived",
+              },
+            ],
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "MrTestProp",
+            typeName: "string",
+            customAttributes: [
+              { className: "TestSchema.CaClass2" },
+            ],
+          },
+        ],
+      },
+      ...schemaItemJson,
+    });
+  }
+
+  const context: SchemaContext = new SchemaContext();
+  const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
+
+  it("Property CustomAttributes are inherited from base class", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+    const tpCustomAttributes = testProp!.getCustomAttributesSync();
+    expect(tpCustomAttributes).to.exist;
+    expect(tpCustomAttributes.has("TestSchema.CaClass1")).is.true;
+  });
+
+  it("Property CustomAttributes are merged with base class", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp2", false);
+    expect(testProp).to.exist;
+    const tpCustomAttributes = testProp!.getCustomAttributesSync();
+    expect(tpCustomAttributes).to.exist;
+    expect(tpCustomAttributes.has("TestSchema.CaClass1")).is.true;
+    expect(tpCustomAttributes.has("TestSchema.CaClass2")).is.true;
+  });
+
+  it("Property CustomAttributes from derived property override those from base property", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp3", false);
+    expect(testProp).to.exist;
+    const tpCustomAttributes = testProp!.getCustomAttributesSync();
+    expect(tpCustomAttributes).to.exist;
+    const caInst1 = tpCustomAttributes.get("TestSchema.CaClass1");
+    expect(caInst1).to.exist;
+    expect(caInst1!.caProp).to.equal("Derived");
+    expect(tpCustomAttributes.has("TestSchema.CaClass2")).is.true;
+  });
+
+  it("Property CustomAttributes are inherited from mixin", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("MrTestProp", false);
+    expect(testProp).to.exist;
+    const tpCustomAttributes = testProp!.getCustomAttributesSync();
+    expect(tpCustomAttributes).to.exist;
+    expect(tpCustomAttributes.has("TestSchema.CaClass1")).is.true;
+    expect(tpCustomAttributes.has("TestSchema.CaClass2")).is.true;
   });
 });
 

@@ -17,10 +17,10 @@ describe("<ToolAssistanceInstruction />", () => {
   });
 
   it("should render correctly with new", () => {
-    mount(<ToolAssistanceInstruction image="icon-placeholder" text="Test" isNew={true} />).should.matchSnapshot();
+    mount(<ToolAssistanceInstruction image="icon-placeholder" text="Test" isNew />).should.matchSnapshot();
   });
 
   it("renders correctly with new", () => {
-    shallow(<ToolAssistanceInstruction image="icon-placeholder" text="Test" isNew={true} />).should.matchSnapshot();
+    shallow(<ToolAssistanceInstruction image="icon-placeholder" text="Test" isNew />).should.matchSnapshot();
   });
 });

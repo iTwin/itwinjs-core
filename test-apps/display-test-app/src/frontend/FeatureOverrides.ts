@@ -145,6 +145,13 @@ export class Settings implements IDisposable {
       handler: (cb) => this.updateNonLocatable(cb.checked ? true : undefined),
     });
 
+    createCheckBox({
+      parent: this._element,
+      name: "Emphasized",
+      id: "ovr_emphasized",
+      handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
+    });
+
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
     createButton({
@@ -183,7 +190,7 @@ export class Settings implements IDisposable {
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable", value: any): void {
+  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureSymbology.Appearance.fromJSON(props);

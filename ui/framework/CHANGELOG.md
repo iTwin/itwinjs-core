@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:43 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:43 GMT
+
+### Updates
+
+- Add support for CursorMenu
+- Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools.
+- Fix Tool Settings label to ensure it stays in sync with active tool.
+- Added AutoSuggest component and improved KeyinBrowser component
+- Close tool group panel on toolbar item click.
+- Ability to drag and resize tool settings widget.
+- Ignore widgetDef state in WidgetContentRenderer of tool settings.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

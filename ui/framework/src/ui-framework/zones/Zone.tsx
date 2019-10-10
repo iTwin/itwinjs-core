@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import { ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps } from "@bentley/ui-ninezone";
+import { ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
@@ -134,17 +134,23 @@ export class Zone extends React.Component<ZoneProps> {
     let widgetElement: React.ReactNode;
     // istanbul ignore else
     if (runtimeProps.zone.widgets.length === 1) {
-      if (zoneDef.isToolSettings) {
+      if (zoneDef.isToolSettings && isToolSettingsWidgetManagerProps(runtimeProps.widget) && runtimeProps.widget.mode === ToolSettingsWidgetMode.TitleBar) {
         const widgetDef = zoneDef.getSingleWidgetDef();
         const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden) : false;
-
         return (
           <ToolSettingsZone
             className={this.props.className}
-            style={this.props.style}
-            bounds={runtimeProps.zone.bounds}
+            dropTarget={runtimeProps.dropTarget}
+            getWidgetContentRef={runtimeProps.getWidgetContentRef}
+            isClosed={isClosed}
             isHidden={runtimeProps.isHidden}
-            isClosed={isClosed} />
+            lastPosition={runtimeProps.draggedWidget && runtimeProps.draggedWidget.lastPosition}
+            style={this.props.style}
+            targetChangeHandler={runtimeProps.targetChangeHandler}
+            targetedBounds={runtimeProps.ghostOutline}
+            widgetChangeHandler={runtimeProps.widgetChangeHandler}
+            zone={runtimeProps.zone}
+          />
         );
       } else if (zoneDef.isStatusBar) {
         if (runtimeProps.zone.id !== 8)
@@ -250,3 +256,8 @@ export class Zone extends React.Component<ZoneProps> {
     return undefined;
   }
 }
+
+/** @internal */
+export const isToolSettingsWidgetManagerProps = (props: WidgetManagerProps | undefined): props is ToolSettingsWidgetManagerProps => {
+  return !!props && props.id === 2;
+};

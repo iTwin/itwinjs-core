@@ -34,6 +34,7 @@ import { SelectionScope } from '@bentley/presentation-common';
 
 // @beta
 export class FavoritePropertyManager {
+    constructor();
     add(field: Field): void;
     has(field: Field): boolean;
     onFavoritesChanged: BeEvent<() => void>;

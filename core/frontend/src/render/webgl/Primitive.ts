@@ -96,6 +96,8 @@ export class Primitive extends Graphic {
 
   private static _drawParams?: DrawParams;
 
+  public static freeParams(): void { Primitive._drawParams = undefined; }
+
   public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
     if (undefined === Primitive._drawParams)

@@ -42,6 +42,14 @@ export class FrameBuilder {
   private _vector0: undefined | Vector3d;
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
+  // test if both vectors are defined and have significant angle between.
+  private areStronglyIndependentVectors(vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians): boolean {
+    if (vector0 !== undefined && vector1 !== undefined) {
+      const q = vector0.smallerUnorientedRadiansTo(vector1);
+      return q > radiansTolerance;
+    }
+    return false;
+  }
   /** clear all accumulated point and vector data */
   public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
   constructor() { this.clear(); }
@@ -108,10 +116,10 @@ export class FrameBuilder {
     if (vector.isAlmostZero)
       return this.savedVectorCount();
 
-    if (!this._vector0) { this._vector0 = vector; return 1; }
+    if (!this._vector0) { this._vector0 = vector.clone(this._vector0); return 1; }
 
     if (!this._vector1) {
-      if (!vector.isParallelTo(this._vector0)) { this._vector1 = vector; return 2; }
+      if (this.areStronglyIndependentVectors(vector, this._vector0, 1.0e-5)) { this._vector1 = vector.clone(this._vector1); return 2; }
       return 1;
     }
 
@@ -119,7 +127,7 @@ export class FrameBuilder {
     if (!this._vector2) {
       const unitPerpendicular = this._vector0.unitCrossProduct(this._vector1);
       if (unitPerpendicular && !Geometry.isSameCoordinate(0, unitPerpendicular.dotProduct(vector))) {
-        this._vector2 = vector;
+        this._vector2 = vector.clone(this._vector2);
         return 3;
       }
       return 2;

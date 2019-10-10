@@ -29,6 +29,7 @@ export interface EmphasizeElementsProps {
   alwaysDrawnExclusiveEmphasized?: Id64Set;
   defaultAppearance?: FeatureSymbology.AppearanceProps;
   appearanceOverride?: AppearanceOverrideProps[];
+  wantEmphasis?: boolean;
 }
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
@@ -38,6 +39,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;
   private _emphasizeIsolated?: Id64Set;
   private _overrideAppearance?: Map<number, Id64Set>;
+
+  /** If true, all overridden elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [Viewport.emphasisSettings]. */
+  public wantEmphasis = false;
 
   /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
    * @see [[Viewport.featureOverrideProvider]]
@@ -62,12 +66,20 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
   /** @internal */
   protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance {
-    if (key < 0)
-      return FeatureSymbology.Appearance.fromTransparency(Math.abs(key));
-    const color = ColorDef.fromJSON(key);
-    if (0 === color.getAlpha())
-      return FeatureSymbology.Appearance.fromRgb(color); // Fully transparent signifies to use color only...
-    return FeatureSymbology.Appearance.fromRgba(color);
+    let transparency: number | undefined;
+    let rgb: RgbColor | undefined;
+
+    if (key < 0) {
+      transparency = Math.abs(key);
+    } else {
+      const color = ColorDef.fromJSON(key);
+      rgb = RgbColor.fromColorDef(color);
+      if (0 !== color.getAlpha()) // Fully transparent signifies to use color only...
+        transparency = color.getTransparency();
+    }
+
+    const emphasized = this.wantEmphasis ? true : undefined;
+    return FeatureSymbology.Appearance.fromJSON({ rgb, transparency, emphasized });
   }
 
   /** Get override key from color and override type */
@@ -442,16 +454,21 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const neverDrawn = this.getNeverDrawnElements(vp);
     if (undefined !== neverDrawn)
       props.neverDrawn = new Set(neverDrawn);
+
     const alwaysDrawn = this.getAlwaysDrawnElements(vp);
     if (undefined !== alwaysDrawn)
       props.alwaysDrawn = new Set(alwaysDrawn);
+
     if (vp.isAlwaysDrawnExclusive)
       props.isAlwaysDrawnExclusive = true; // isolate
+
     const alwaysDrawnExclusiveEmphasized = this.getEmphasizedIsolatedElements();
     if (undefined !== alwaysDrawnExclusiveEmphasized)
       props.alwaysDrawnExclusiveEmphasized = new Set(alwaysDrawnExclusiveEmphasized);
+
     if (undefined !== this.defaultAppearance)
       props.defaultAppearance = this.defaultAppearance; // emphasize (or specifically set for override)
+
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       const appearanceOverride: AppearanceOverrideProps[] = [];
@@ -461,8 +478,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         const ids = new Set(ovrIds);
         appearanceOverride.push({ overrideType, color, ids });
       }
+
       props.appearanceOverride = appearanceOverride;
     }
+
+    if (this.wantEmphasis)
+      props.wantEmphasis = true;
+
     return props;
   }
 
@@ -470,20 +492,32 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     let changed = false;
     if (undefined !== props.neverDrawn && this.setNeverDrawnElements(props.neverDrawn, vp, true))
       changed = true;
+
     if (undefined !== props.alwaysDrawn && this.setAlwaysDrawnElements(props.alwaysDrawn, vp, undefined !== props.isAlwaysDrawnExclusive && props.isAlwaysDrawnExclusive))
       changed = true;
+
     if (undefined !== props.alwaysDrawnExclusiveEmphasized)
       this._emphasizeIsolated = props.alwaysDrawnExclusiveEmphasized; // changed status determined by setAlwaysDrawnElements...
+
     if (undefined !== props.defaultAppearance)
       this.defaultAppearance = FeatureSymbology.Appearance.fromJSON(props.defaultAppearance); // changed status determined by setAlwaysDrawnElements or overrideElements...
+
     if (undefined !== props.appearanceOverride) {
       for (const ovrApp of props.appearanceOverride) {
         if (undefined === ovrApp.ids)
           continue;
+
         if (this.overrideElements(ovrApp.ids, vp, ColorDef.fromJSON(ovrApp.color), ovrApp.overrideType, true))
           changed = true;
       }
     }
+
+    const wantEmphasis = true === props.wantEmphasis;
+    if (wantEmphasis !== this.wantEmphasis) {
+      this.wantEmphasis = wantEmphasis;
+      changed = true;
+    }
+
     return changed;
   }
 

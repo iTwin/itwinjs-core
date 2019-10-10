@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-markup_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#168481 Tool assistance for markup tools"
+          },
+          {
+            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/imodeljs-markup_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",

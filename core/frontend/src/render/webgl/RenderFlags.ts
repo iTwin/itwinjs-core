@@ -61,10 +61,12 @@ export enum TextureUnit {
   PickDepthAndOrder = Four,
 
   VertexLUT = Five,
+
+  // Texture unit 6 is overloaded. Therefore classification, hilite classification, and aux channel are all mutually exclusive.
   AuxChannelLUT = Six,
-  PlanarClassification = Six,               // classification or aux channel - not both.
-  PlanarClassificationHilite = Six,         // hilite or color, not both.
-  ShadowMap = Seven,                        // shadows or classification - not both.
+  PlanarClassification = Six,
+  PlanarClassificationHilite = Six,
+  ShadowMap = Seven,
 }
 
 /**
@@ -143,19 +145,30 @@ export const enum SurfaceFlags {
 }
 
 /** @internal */
+/** 16-bit flags indicating what aspects of a feature's symbology are overridden.
+ * @internal
+ */
 export const enum OvrFlags {
   None = 0,
   Visibility = 1 << 0,
   Rgb = 1 << 1,
   Alpha = 1 << 2,
-  Weight = 1 << 3,
+  IgnoreMaterial = 1 << 3, // ignore material color, specular properties, and texture.
   Flashed = 1 << 4,
-  Hilited = 1 << 5,
+  NonLocatable = 1 << 5, // do not draw during pick - allows geometry beneath to be picked.
   LineCode = 1 << 6,
-  IgnoreMaterial = 1 << 7, // ignore material color, specular properties, and texture
+  Weight = 1 << 7,
+  Hilited = 1 << 8,
+  Emphasized = 1 << 9, // rendered with "emphasis" hilite settings (silhouette etc).
 
   Rgba = Rgb | Alpha,
 }
 
 /** @internal */
 export const enum IsTranslucent { No, Yes, Maybe }
+
+/** @internal */
+export const enum FlashMode {
+  MixHiliteColor,
+  Brighten,
+}

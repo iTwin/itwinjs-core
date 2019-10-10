@@ -24,13 +24,13 @@ function createSchemaJson(koq: any) {
       ...koq,
     },
   }, {
-      references: [
-        {
-          name: "Formats",
-          version: "1.0.0",
-        },
-      ],
-    });
+    references: [
+      {
+        name: "Formats",
+        version: "1.0.0",
+      },
+    ],
+  });
 }
 
 describe("Format", () => {
@@ -709,6 +709,9 @@ describe("Format", () => {
       };
       function validateTestFormat(testFormat: Format | undefined) {
         assert.isDefined(testFormat);
+
+        expect(testFormat!.name).eq("TestFormat");
+        expect(testFormat!.fullName).eq("TestSchema.TestFormat");
 
         expect(testFormat!.includeZero).false;
         expect(testFormat!.spacer).eq("-");

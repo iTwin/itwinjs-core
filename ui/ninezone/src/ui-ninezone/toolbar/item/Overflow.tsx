@@ -23,15 +23,14 @@ export interface OverflowProps extends ExpandableItemProps {
  */
 export class Overflow extends React.PureComponent<OverflowProps> {
   public render() {
-    const className = classnames(
+    const { onClick, className, ...props } = this.props;
+    const itemClassName = classnames(
       "nz-toolbar-item-overflow",
-      this.props.className);
-
-    const { onClick, ...props } = this.props;
+      className);
 
     return (
       <ExpandableItem
-        className={className}
+        className={itemClassName}
         {...props}
       >
         <Item

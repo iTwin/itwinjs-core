@@ -28,11 +28,11 @@ describe("<Toast />", () => {
   });
 
   it("should render", () => {
-    mount(<Toast animateOutTo={React.createRef()} />);
+    mount(<Toast />);
   });
 
   it("renders correctly", () => {
-    shallow(<Toast animateOutTo={React.createRef()} />).should.matchSnapshot();
+    shallow(<Toast />).should.matchSnapshot();
   });
 
   it("should stop the timer when unmounting", () => {
@@ -40,7 +40,7 @@ describe("<Toast />", () => {
     const stopSpy = sinon.spy(timer, "stop");
     timerConstructorStub = sinon.stub(UiCore, "Timer").returns(timer);
 
-    const sut = mount(<Toast animateOutTo={React.createRef()} />);
+    const sut = mount(<Toast />);
     sut.unmount();
 
     stopSpy.calledOnce.should.true;
@@ -49,13 +49,10 @@ describe("<Toast />", () => {
   it("should animate out to specified element", () => {
     fakeTimers = sinon.useFakeTimers();
 
-    const ref = React.createRef<HTMLDivElement>();
-    const sut = mount(
-      <div>
-        <Toast animateOutTo={ref} />
-        <div ref={ref}></div>
-      </div>,
-    ).find(".nz-toast").getDOMNode() as HTMLElement;
+    const animateOutTo = document.createElement("div");
+    const sut = mount(<Toast
+      animateOutTo={animateOutTo}
+    />).find(".nz-toast").getDOMNode() as HTMLElement;
 
     // Wait for animation.
     fakeTimers.tick(2000);
@@ -72,13 +69,10 @@ describe("<Toast />", () => {
   it("should not prepare for animation if component is unmounted", () => {
     fakeTimers = sinon.useFakeTimers();
 
-    const ref = React.createRef<HTMLDivElement>();
-    const mounted = mount(
-      <div>
-        <Toast animateOutTo={ref} />
-        <div ref={ref}></div>
-      </div>,
-    );
+    const animateOutTo = document.createElement("div");
+    const mounted = mount(<Toast
+      animateOutTo={animateOutTo}
+    />);
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
 
     fakeTimers.tick(2000);
@@ -92,13 +86,10 @@ describe("<Toast />", () => {
   it("should not start animation if component is unmounted", () => {
     fakeTimers = sinon.useFakeTimers();
 
-    const ref = React.createRef<HTMLDivElement>();
-    const mounted = mount(
-      <div>
-        <Toast animateOutTo={ref} />
-        <div ref={ref}></div>
-      </div>,
-    );
+    const animateOutTo = document.createElement("div");
+    const mounted = mount(<Toast
+      animateOutTo={animateOutTo}
+    />);
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
     sinon.stub(sut, "getBoundingClientRect").returns(createRect(10, 20, 40, 80));
 
@@ -113,12 +104,9 @@ describe("<Toast />", () => {
 
   it("should notify when toast animates out", () => {
     const spy = sinon.spy();
-    const sut = mount(
-      <Toast
-        animateOutTo={React.createRef()}
-        onAnimatedOut={spy}
-      />,
-    ).find(".nz-toast");
+    const sut = mount(<Toast
+      onAnimatedOut={spy}
+    />).find(".nz-toast");
 
     sut.simulate("transitionEnd");
     spy.calledOnce.should.true;

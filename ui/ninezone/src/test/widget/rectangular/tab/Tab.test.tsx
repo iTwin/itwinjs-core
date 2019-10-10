@@ -10,6 +10,7 @@ import { createRect } from "../../../Utils";
 import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
 import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
+import { DragHandle } from "../../../../ui-ninezone/base/DragHandle";
 
 describe("<Tab />", () => {
   let createRefStub: sinon.SinonStub | undefined;
@@ -36,7 +37,7 @@ describe("<Tab />", () => {
 
   it("renders with badge correctly", () => {
     const sut = mount(<Tab
-      badge={true}
+      badge
       horizontalAnchor={HorizontalAnchor.Left}
       mode={TabMode.Open}
       verticalAnchor={VerticalAnchor.Middle}
@@ -128,13 +129,8 @@ describe("<Tab />", () => {
       onClick={spy}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const pointerCaptor = sut.find(PointerCaptor);
-
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
-
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const dragHandle = sut.find(DragHandle);
+    dragHandle.prop("onClick")!();
 
     spy.calledOnceWithExactly().should.true;
   });

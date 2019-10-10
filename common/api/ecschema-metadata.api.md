@@ -1723,6 +1723,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     readonly fullName: string;
     // (undocumented)
     getCategorySync(): PropertyCategory | undefined;
+    getCustomAttributes(): Promise<CustomAttributeSet>;
+    getCustomAttributesSync(): CustomAttributeSet;
     // (undocumented)
     getKindOfQuantitySync(): KindOfQuantity | undefined;
     // (undocumented)

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { UiFramework, ColorTheme } from "../ui-framework";
+import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -134,6 +134,13 @@ describe("UiFramework", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     UiFramework.setIModelConnection(imodelMock.object);
     expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
+
+    UiFramework.closeCursorMenu();
+    expect(UiFramework.getCursorMenuData()).to.be.undefined;
+
+    const menuData: CursorMenuData = { items: [], position: { x: 100, y: 100 } };
+    UiFramework.openCursorMenu(menuData);
+    expect(UiFramework.getCursorMenuData()).not.to.be.undefined;
   });
 
 });

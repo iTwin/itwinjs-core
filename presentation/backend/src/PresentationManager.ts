@@ -593,6 +593,32 @@ export class PresentationManager {
     return modelKeys;
   }
 
+  private async computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    const nonTransientIds = new Array<Id64String>();
+    ids.forEach(skipTransients((id) => {
+      nonTransientIds.push(id);
+    }));
+    const query = `
+      SELECT e.ECClassId, e.ECInstanceId elId, funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
+        FROM bis.Element e
+        LEFT JOIN func.PhysicalElementFulfillsFunction rel1 ON rel1.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.DrawingGraphicRepresentsFunctionalElement rel2 ON rel2.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.FunctionalElement fe ON fe.ECInstanceId IN (rel1.TargetECInstanceId, rel2.TargetECInstanceId)
+        LEFT JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
+        LEFT JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
+       WHERE e.ECInstanceId IN (${nonTransientIds.map(() => "?").join(",")})
+      `;
+    const iter = requestOptions.imodel.query(query, nonTransientIds);
+    for await (const row of iter) {
+      if (row.funcElClassName && row.funcElId)
+        keys.add({ className: row.funcElClassName.replace(".", ":"), id: row.funcElId });
+      else
+        keys.add({ className: row.className.replace(".", ":"), id: row.elId });
+    }
+    return keys;
+  }
+
   /**
    * Computes selection set based on provided selection scope.
    * @param requestContext The client request context
@@ -610,6 +636,7 @@ export class PresentationManager {
       case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
       case "category": return this.computeCategorySelection(requestOptions, ids);
       case "model": return this.computeModelSelection(requestOptions, ids);
+      case "functional": return this.computeFunctionalElementSelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");

@@ -103,11 +103,16 @@ export class ViewsFrontstage extends FrontstageProvider {
         labelKey="SampleApp:widgets.VisibilityTree"
         control={VisibilityTreeWidgetControl}
         applicationData={{ iModelConnection: this.iModelConnection }}
-      />],
+      />,
+    ],
   };
 
   private _rightPanel = {
-    allowedZones: [6, 9],
+    allowedZones: [2, 6, 9],
+  };
+
+  private _bottomPanel = {
+    allowedZones: [2],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -148,8 +153,12 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         topCenter={
           <Zone
+            allowsMerging
             widgets={[
-              <Widget isToolSettings={true} defaultState={WidgetState.Open} />,
+              <Widget
+                iconSpec="icon-placeholder"
+                isToolSettings={true}
+              />,
             ]}
           />
         }
@@ -243,6 +252,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         rightPanel={
           <StagePanel
             allowedZones={this._rightPanel.allowedZones}
+          />
+        }
+        bottomPanel={
+          <StagePanel
+            allowedZones={this._bottomPanel.allowedZones}
           />
         }
       />
@@ -671,6 +685,7 @@ class FrontstageToolWidget extends React.Component {
   ]);
 
   private _verticalToolbarItems = new ItemList([
+    CoreTools.measureToolGroup,
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
       panelLabel: "Open Close Properties",

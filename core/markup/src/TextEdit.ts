@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module MarkupTools */
 
-import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, InputSource, ToolAssistance, IModelApp, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
@@ -25,7 +25,7 @@ export class PlaceTextTool extends RedlineTool {
     super.onPostInstall();
   }
 
-  protected showPrompt(): void { this.outputMarkupPrompt("Text.Place.Prompts.FirstPoint"); }
+  protected showPrompt(): void { this.provideToolAssistance(MarkupTool.toolKey + "Text.Place.Prompts.FirstPoint", true); }
 
   protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (isDynamics && InputSource.Touch === ev.inputSource)
@@ -50,10 +50,31 @@ export class PlaceTextTool extends RedlineTool {
  */
 export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
+  public static iconSpec = "icon-text-medium";
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
   public boxed?: G;
   constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
+
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(MarkupTool.toolKey + "Text.Edit.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Accept");
+    const rejectMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit");
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   /** Open the text editor  */
   public startEditor() {

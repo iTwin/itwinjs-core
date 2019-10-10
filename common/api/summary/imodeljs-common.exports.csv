@@ -119,6 +119,7 @@ public;GeometricElement2dProps
 public;GeometricElement3dProps 
 public;GeometricElementProps 
 public;GeometricModel2dProps 
+public;GeometricModel3dProps 
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
@@ -320,6 +321,8 @@ public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheC
 public;RpcSerializedValue
 public;RpcSerializedValue
 alpha;SceneLightsProps
+beta;SectionLocationProps 
+public;SectionType
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
 public;ServerError 

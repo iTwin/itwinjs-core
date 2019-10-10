@@ -94,13 +94,19 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   frag.addFunction(computeLinearDepth);
 
   const prelude = new SourceBuilder();
+  prelude.add(computePickBufferOutputs);
+
+  const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
+  if (undefined !== overrideColor) {
+    frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
+    prelude.addline("output0 = overrideColor(output0);");
+  }
+
   const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
   if (undefined !== overrideFeatureId) {
     frag.addFunction("vec4 overrideFeatureId(vec4 currentId)", overrideFeatureId);
-    prelude.add(computePickBufferOutputs);
     prelude.addline(reassignFeatureId);
-  } else
-    prelude.add(computePickBufferOutputs);
+  }
 
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
@@ -116,6 +122,12 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
   const prelude = new SourceBuilder();
   prelude.add(computeAltPickBufferOutputs);
 
+  const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
+  if (undefined !== overrideColor) {
+    frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
+    prelude.addline("output0 = overrideColor(output0);");
+  }
+
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
@@ -126,13 +138,26 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 }
 
 /** @internal */
+export function addFragColorWithPreMultipliedAlpha(frag: FragmentShaderBuilder): void {
+  const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
+  if (undefined === overrideColor) {
+    frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
+  } else {
+    frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
+    frag.set(FragmentShaderComponent.AssignFragData, overrideAndAssignFragColorWithPreMultipliedAlpha);
+  }
+}
+
+/** @internal */
 export const assignFragColor = "FragColor = baseColor;";
 
 /** @internal */
-export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
-
-/** @internal */
 export const assignFragColorWithPreMultipliedAlpha = "FragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);";
+const overrideAndAssignFragColorWithPreMultipliedAlpha = `
+  vec4 fragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);
+  fragColor = overrideColor(fragColor);
+  FragColor = fragColor;
+`;
 
 /** @internal */
 export const computeLinearDepth = `

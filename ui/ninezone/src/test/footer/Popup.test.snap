@@ -9,7 +9,6 @@ exports[`<FooterPopup /> renders correctly 1`] = `
   position={4}
   showArrow={true}
   showShadow={false}
-  target={null}
   top={-1}
 />
 `;

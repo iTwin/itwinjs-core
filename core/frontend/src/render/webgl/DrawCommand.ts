@@ -701,10 +701,17 @@ export class RenderCommands {
       }
     }
 
+    const classifier = this._stack.top.planarClassifier;
+
     this._batchState.push(batch, true);
     if (this.currentViewFlags.transparency) {
       this._opaqueOverrides = overrides.anyOpaque;
       this._translucentOverrides = overrides.anyTranslucent;
+
+      if (undefined !== classifier) {
+        this._opaqueOverrides = this._opaqueOverrides || classifier.anyOpaque;
+        this._translucentOverrides = this._translucentOverrides || classifier.anyTranslucent;
+      }
     }
 
     (batch.graphic as Graphic).addCommands(this);
@@ -713,7 +720,7 @@ export class RenderCommands {
 
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
-    const planarClassifierHilited = this._stack.top.planarClassifier && this._stack.top.planarClassifier.anyHilited;
+    const planarClassifierHilited = undefined !== classifier && classifier.anyHilited;
     if (anyHilited || planarClassifierHilited)
       (batch.graphic as Graphic).addHiliteCommands(this, batch, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
 

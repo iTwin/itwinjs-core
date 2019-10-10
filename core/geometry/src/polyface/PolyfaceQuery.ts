@@ -33,8 +33,11 @@ import { RangeLengthData } from "./RangeLengthData";
  * @public
  */
 export interface FacetProjectedVolumeSums {
+  /** Summed (signed) volume */
   volume: number;
+  /** summed area moments for positive contributions */
   positiveProjectedFacetAreaMoments?: MomentData;
+  /** summed area moments for negative contributions */
   negativeProjectedFacetAreaMoments?: MomentData;
 }
 

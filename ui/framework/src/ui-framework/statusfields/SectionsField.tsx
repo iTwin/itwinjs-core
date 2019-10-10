@@ -17,14 +17,13 @@ import "./SectionsField.scss";
 // TODO: Add testing as soon as possible - needed for Risk Management Plugin frontstage
 // istanbul ignore next
 export class SectionsStatusField extends React.Component<any, any> {
-  private _target = React.createRef<HTMLDivElement>();
-
   constructor(props: any) {
     super(props);
 
     this.state = {
       opened: false,
       manipulatorsShown: false,
+      target: null,
       toggleDisabled: true,
     };
   }
@@ -100,14 +99,14 @@ export class SectionsStatusField extends React.Component<any, any> {
   public render() {
     return (
       <>
-        <div ref={this._target} title={IModelApp.i18n.translate("UiFramework:tools.sectionTools")}>
+        <div ref={this._handleTargetRef} title={IModelApp.i18n.translate("UiFramework:tools.sectionTools")}>
           <Indicator
             iconName="icon-section-tool"
             onClick={this.handleClick.bind(this)}
             opened={this.state.opened}></Indicator>
         </div>
         <FooterPopup
-          target={this._target}
+          target={this.state.target}
           onClose={() => { this.setState({ ...this.state, opened: false }); }}
           isOpen={this.state.opened}>
           <Dialog
@@ -120,5 +119,9 @@ export class SectionsStatusField extends React.Component<any, any> {
         </FooterPopup>
       </>
     );
+  }
+
+  private _handleTargetRef = (target: HTMLElement | null) => {
+    this.setState({ target });
   }
 }

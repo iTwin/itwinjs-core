@@ -10,7 +10,7 @@ import {
   LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, BriefcaseManager, LinearReferencingSchema,
+  BackendRequestContext, LinearReferencingSchema,
   PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -29,12 +29,8 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await LinearReferencingSchema.importSchema(requestContext, iModelDb);
+    await iModelDb.importSchemas(requestContext, [LinearReferencingSchema.schemaFilePath, path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
     LinearReferencingSchema.registerSchema();
-
-    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchemas below will fail if this is not called to flush local changes
-
-    await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory
@@ -95,7 +91,7 @@ describe("LinearReferencing Domain", () => {
       attributedElement: { id: linearFeatureElementId },
     };
 
-    const linearFromToPosition: LinearlyReferencedFromToLocationProps = {
+    let linearFromToPosition: LinearlyReferencedFromToLocationProps = {
       fromPosition: { distanceAlongFromStart: 10.0 },
       toPosition: { distanceAlongFromStart: 70.0 },
     };
@@ -112,19 +108,50 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
+    // Create a Test PhysicalLinear element
+    const testPhysicalLinarProps: GeometricElement3dProps = {
+      classFullName: "TestLinearReferencing:TestLinearPhysicalElement",
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
+
+    linearFromToPosition = {
+      fromPosition: { distanceAlongFromStart: 30.0 },
+      toPosition: { distanceAlongFromStart: 60.0 },
+    };
+
+    const linearPhysicalElementId: Id64String =
+      LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinarProps, linearElementId, linearFromToPosition);
+    assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
+
     // Query for linearly located elements via the queryLinearLocations API
     let linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
       { fromDistanceAlong: 10.0, toDistanceAlong: 70.0 });
-    assert.equal(linearLocationRefs.length, 1);
+    assert.equal(linearLocationRefs.length, 2);
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[0].linearlyLocatedClassFullName, "TestLinearReferencing:TestLinearlyLocatedAttribution");
     assert.equal(linearLocationRefs[0].startDistanceAlong, 10.0);
     assert.equal(linearLocationRefs[0].stopDistanceAlong, 70.0);
 
+    assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
+    assert.equal(linearLocationRefs[1].linearlyLocatedClassFullName, "TestLinearReferencing:TestLinearPhysicalElement");
+    assert.equal(linearLocationRefs[1].startDistanceAlong, 30.0);
+    assert.equal(linearLocationRefs[1].stopDistanceAlong, 60.0);
+
     linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
       { linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution"] });
     assert.equal(linearLocationRefs.length, 1);
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
+
+    linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
+      {
+        linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution",
+          "TestLinearReferencing:TestLinearPhysicalElement"],
+      });
+    assert.equal(linearLocationRefs.length, 2);
+    assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
+    assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
 
     iModelDb.saveChanges("Insert Test LinearReferencing elements");
 

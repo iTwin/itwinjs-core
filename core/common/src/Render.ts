@@ -2527,13 +2527,28 @@ export namespace SolarShadows {
       this.bias = props ? JsonUtils.asDouble(props.bias, SolarShadows.Settings._defaultBias) : SolarShadows.Settings._defaultBias;
       this.color = (props !== undefined && props.color !== undefined) ? ColorDef.fromJSON(props.color) : new ColorDef(ColorByName.grey);
     }
-    public clone() { return new SolarShadows.Settings(this); }
+    public clone(result?: SolarShadows.Settings): SolarShadows.Settings {
+      if (undefined === result)
+        return new SolarShadows.Settings(this);
+
+      result.color.setFrom(this.color);
+      result.bias = this.bias;
+      return result;
+    }
+
     public static fromJSON(props?: Props): Settings { return new Settings(props); }
     public toJSON(): Props {
       return {
         bias: this.bias,
         color: this.color,
       };
+    }
+
+    public equals(other: SolarShadows.Settings): boolean {
+      if (this === other)
+        return true;
+
+      return this.bias === other.bias && this.color.equals(other.color);
     }
   }
 }

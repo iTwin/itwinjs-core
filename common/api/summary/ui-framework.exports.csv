@@ -110,11 +110,13 @@ alpha;CubeNavigationAidProps
 beta;CursorDirection
 beta;CursorDirectionParts
 beta;CursorInformation
+beta;CursorMenuData
 beta;CursorPopup 
 beta;CursorPopupContent: React_2.FunctionComponent
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
 beta;CursorPopupManager
+alpha;CursorPopupMenu 
 beta;CursorPopupOptions
 beta;CursorPopupProps 
 beta;CursorPopupRenderer 
@@ -182,10 +184,13 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
+internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React_2.FunctionComponent
 public;GroupButtonProps 
+internal;GroupItem 
 public;GroupItemDef 
 public;GroupItemProps 
 internal;HitBoxX
@@ -207,6 +212,7 @@ public;InputFieldMessageAddedEvent
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
+internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
 public;ItemList 
 public;ItemMap 

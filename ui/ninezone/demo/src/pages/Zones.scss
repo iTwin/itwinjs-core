@@ -29,4 +29,26 @@ body {
   .nzdemo-favorite {
     color: rgb(241, 223, 18);
   }
+
+  .nzdemo-tool-settings-content {
+    &.nzdemo-title-bar {
+      width: fit-content;
+      height: fit-content;
+      padding: unset;
+    }
+
+    &.nzdemo-tab {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+  }
+
+  .nzdemo-item {
+    position: relative;
+  }
+
+  .nzdemo-overflow {
+    height: 100%;
+    width: 100%;
+  }
 }

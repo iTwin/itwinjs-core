@@ -29,6 +29,7 @@ interface BackgroundTerrainTreeId {
   providerName: TerrainProviderName;
   heightOrigin: number;
   heightOriginMode: number;
+  wantSkirts: boolean;
 }
 class BackgroundTerrainDrawArgs extends Tile.DrawArgs {
   constructor(settings: TerrainSettings | undefined, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
@@ -69,6 +70,9 @@ class BackgroundTerrainTileTree extends MapTileTree {
 
 class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
   public compareTileTreeIds(lhs: BackgroundTerrainTreeId, rhs: BackgroundTerrainTreeId): number {
+    if (lhs.wantSkirts !== rhs.wantSkirts)
+      return lhs.wantSkirts ? 1 : -1;
+
     let cmp = compareStrings(lhs.providerName, rhs.providerName);
     if (0 === cmp) {
       cmp = compareNumbers(lhs.heightOrigin, rhs.heightOrigin);
@@ -107,7 +111,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
     heightRange.high += heightBias;
     const modelId = iModel.transientIds.next;
     const seaLevelOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-    const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange);
+    const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange, id.wantSkirts);
     const treeProps = new WebMapTileTreeProps(heightBias, modelId, heightRange, 12);
 
     if (undefined === loader || undefined === treeProps) {
@@ -130,7 +134,6 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
   private _mapDrapeTree?: TileTree.Reference;
   private _overrides?: FeatureSymbology.Overrides;
   private _doDrape = true;                      // Current settings configuration doesn't allow a terrain without a background drape...
-  private _shaderSupportsTransparency = false;  // Planar classification shader does not currently support transparency.
 
   public constructor(settings: BackgroundMapSettings, iModel: IModelConnection) {
     super();
@@ -145,6 +148,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
       providerName: this.settings.terrainSettings.providerName,
       heightOrigin: this.settings.terrainSettings.heightOrigin,
       heightOriginMode: this.settings.terrainSettings.heightOriginMode,
+      wantSkirts: false === this.settings.transparency,
     };
 
     return this._iModel.tiles.getTileTreeOwner(id, backgroundTerrainTreeSupplier);
@@ -224,7 +228,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     }
   }
   private get _symbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (this._shaderSupportsTransparency && (undefined === this._overrides || this._overrides.defaultOverrides.transparency !== this.settings.transparencyOverride)) {
+    if (undefined === this._overrides || this._overrides.defaultOverrides.transparency !== this.settings.transparencyOverride) {
       this._overrides = new FeatureSymbology.Overrides();
       const json: FeatureSymbology.AppearanceProps = {
         transparency: this.settings.transparencyOverride,

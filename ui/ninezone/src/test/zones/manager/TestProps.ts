@@ -5,6 +5,7 @@
 import { ZonesManagerProps, getDefaultZonesManagerProps } from "../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 import { getDefaultWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
+import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
 
 // tslint:disable: completed-docs
 export namespace TestProps {
@@ -81,7 +82,7 @@ export namespace TestProps {
     },
   };
 
-  export const draggedOpenedZone6: ZonesManagerProps = {
+  export const draggedOpenedZone6 = {
     ...openedZone6,
     zones: {
       ...openedZone6.zones,
@@ -99,7 +100,7 @@ export namespace TestProps {
       },
     },
     draggedWidget: {
-      id: 6,
+      id: 6 as WidgetZoneId,
       isUnmerge: true,
       lastPosition: {
         x: 10,

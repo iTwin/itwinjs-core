@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as enzyme from "enzyme";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   UiFramework,
@@ -245,5 +246,7 @@ export const storageMock = () => {
     },
   };
 };
+
+export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 
 export default TestUtils;   // tslint:disable-line: no-default-export

@@ -5,13 +5,15 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { ZoneManagerProps, ZoneTargetType, Zone, Outline } from "@bentley/ui-ninezone";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
+import { ZoneManagerProps, ZoneTargetType, Zone } from "@bentley/ui-ninezone";
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { Outline } from "./Outline";
+import { getFloatingZoneBounds } from "./FrameworkZone";
 
 /** Properties for the [[StatusBarZone]] component
  * @internal
@@ -32,7 +34,7 @@ export interface StatusBarZoneProps extends CommonProps {
  */
 export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
   public render(): React.ReactNode {
-    const bounds = Rectangle.create(this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds);
+    const bounds = getFloatingZoneBounds(this.props.zoneProps);
     return (
       <SafeAreaContext.Consumer>
         {(safeAreaInsets) => (
@@ -64,7 +66,7 @@ export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
                 targetChangeHandler={this.props.targetChangeHandler}
               />
             </Zone>
-            {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
+            <Outline bounds={this.props.targetedBounds} />
           </>
         )}
       </SafeAreaContext.Consumer>

@@ -471,6 +471,10 @@ export class Table extends React.Component<TableProps, TableState> {
     if (rowsCount !== this.state.rowsCount) {
       this._rowItemSelectionHandlers = undefined;
       this._cellItemSelectionHandlers = undefined;
+
+      // when updating the rows with new data from dataProvider clear out existing selections
+      this._selectedRowIndices.clear();
+      this._selectedCellKeys.clear();
     }
 
     this._rowGetterAsync.cache.clear!();
@@ -538,6 +542,7 @@ export class Table extends React.Component<TableProps, TableState> {
       key: columnDescription.key,
       name: columnDescription.label,
       icon: columnDescription.icon,
+      width: columnDescription.width,
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
       draggable: this.props.reorderableColumns || false,

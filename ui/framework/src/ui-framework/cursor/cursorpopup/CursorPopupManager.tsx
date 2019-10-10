@@ -82,6 +82,11 @@ export class CursorPopupManager {
   public static readonly onCursorPopupFadeOutEvent = new CursorPopupFadeOutEvent();
   /** @internal */
   public static readonly onCursorPopupsChangedEvent = new CursorPopupsChangedEvent();
+  /** @internal */
+  public static clearPopups() {
+    this._popups.length = 0;
+    CursorPopupManager._emitPopupsChangedEvent();
+  }
 
   public static get popups() { return this._popups; }
 

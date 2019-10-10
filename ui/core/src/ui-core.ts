@@ -95,8 +95,10 @@ export * from "./ui-core/utils/ScrollPositionMaintainer";
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";
 
+export * from "./ui-core/inputs/autosuggest/AutoSuggest";
 export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
+export * from "./ui-core/inputs/InputLabel";
 export * from "./ui-core/inputs/InputStatus";
 export * from "./ui-core/inputs/iconinput/IconInput";
 export * from "./ui-core/inputs/LabeledComponentProps";

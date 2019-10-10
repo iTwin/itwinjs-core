@@ -32,6 +32,7 @@ function allDefined(valueA: any, valueB: any, valueC: any): boolean {
  * @public
  */
 export abstract class Polyface extends GeometryQuery {
+   /** String name for schema properties */
   public readonly geometryCategory = "polyface";
 
   /** Underlying polyface data. */
@@ -594,6 +595,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   }
   /** Return the client polyface object. */
   public clientPolyface(): Polyface { return this._polyface; }
+  /** Set the number of vertices duplicated (e.g. 1 for start and end) in arrays in the visitor. */
   public setNumWrap(numWrap: number) { this._numWrap = numWrap; }
 
   /** Return the number of edges in the current facet.

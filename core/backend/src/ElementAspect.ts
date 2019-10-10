@@ -80,6 +80,7 @@ export class ElementMultiAspect extends ElementAspect {
 }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.2
  * @public
  */
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {

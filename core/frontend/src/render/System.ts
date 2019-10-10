@@ -7,7 +7,7 @@
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
-  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
   QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
@@ -186,14 +186,13 @@ export class RenderPlan {
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
-  public readonly aaLines: AntiAliasPref;
-  public readonly aaText: AntiAliasPref;
+  public readonly emphasisSettings: Hilite.Settings;
   public readonly activeVolume?: ClipVector;
   public readonly hline?: HiddenLine.Settings;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
-  public analysisTexture?: RenderTexture;
+  public readonly analysisTexture?: RenderTexture;
   public classificationTextures?: Map<Id64String, RenderTexture>;
   private _curFrustum: ViewFrustum;
 
@@ -202,34 +201,29 @@ export class RenderPlan {
 
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, activeVolume?: ClipVector, hline?: HiddenLine.Settings, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
-    this.is3d = is3d;
-    this.viewFlags = viewFlags;
-    this.bgColor = bgColor;
-    this.monoColor = monoColor;
-    this.hiliteSettings = hiliteSettings;
-    this.aaLines = aaLines;
-    this.aaText = aaText;
-    this.activeVolume = activeVolume;
-    this.hline = hline;
-    this._curFrustum = this.viewFrustum = viewFrustum;
-    this.analysisStyle = analysisStyle;
-    this.ao = ao;
-    this.isFadeOutActive = isFadeOutActive;
+  public static createFromViewport(vp: Viewport): RenderPlan {
+    return new RenderPlan(vp);
   }
 
-  public static createFromViewport(vp: Viewport): RenderPlan {
+  private constructor(vp: Viewport) {
     const view = vp.view;
     const style = view.displayStyle;
 
-    const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-    const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-    const clipVec = view.getViewClip();
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, clipVec, hline, style.analysisStyle, ao);
-    if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
-      rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
+    this.is3d = view.is3d();
+    this.viewFlags = style.viewFlags;
+    this.bgColor = view.backgroundColor;
+    this.monoColor = style.monochromeColor;
+    this.hiliteSettings = vp.hilite;
+    this.emphasisSettings = vp.emphasisSettings;
+    this._curFrustum = this.viewFrustum = vp.viewFrustum;
+    this.isFadeOutActive = vp.isFadeOutActive;
+    this.activeVolume = view.getViewClip();
+    this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+    this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
+    this.analysisStyle = style.analysisStyle;
 
-    return rp;
+    if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
+      this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
   }
 }
 
@@ -288,6 +282,9 @@ export abstract class RenderSolarShadowMap implements IDisposable {
   public abstract dispose(): void;
 
   /** @internal */
+  public abstract disable(): void;
+
+  /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
   /** @internal */
@@ -308,13 +305,14 @@ export abstract class RenderTextureDrape implements IDisposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
- * @beta
+ * @internal
  */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
+  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree): void;
 }
 
-/** @beta */
+/** @internal */
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 /** An array of [[RenderGraphic]]s.
@@ -797,6 +795,10 @@ export abstract class RenderTarget implements IDisposable {
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
   public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
+  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
+  public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
+  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
@@ -805,9 +807,8 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeScene(scene: GraphicList): void;
   public abstract changeBackgroundMap(_graphics: GraphicList): void;
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
-  public changeTextureDrapes(_drapes: TextureDrapeMap): void { }
+  public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -896,6 +897,19 @@ export interface GraphicBranchOptions {
   iModel?: IModelConnection;
 }
 
+/** @internal */
+export interface GLTimerResult {
+  /** Label from GLTimer.beginOperation */
+  label: string;
+  /** Time elapsed in nanoseconds; no-op queries seem to have 32ns of noise */
+  nanoseconds: number;
+  /** Child results if GLTimer.beginOperation calls were nested */
+  children?: GLTimerResult[];
+}
+
+/** @internal */
+export type GLTimerResultCallback = (result: GLTimerResult) => void;
+
 /** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
  * @beta
  */
@@ -904,6 +918,14 @@ export interface RenderSystemDebugControl {
   loseContext(): boolean;
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
+  /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
+   * @internal
+   */
+  resultsCallback?: GLTimerResultCallback;
+  /** Returns true if the browser supports GPU profiling queries.
+   * @internal
+   */
+  readonly isGLTimerSupported: boolean;
 }
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -1006,11 +1028,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
-  /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
-  /** @internal */
-  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
@@ -1174,7 +1192,7 @@ export abstract class RenderSystem implements IDisposable {
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
   "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth";
+  "EXT_frag_depth" | "EXT_disjoint_timer_query";
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which

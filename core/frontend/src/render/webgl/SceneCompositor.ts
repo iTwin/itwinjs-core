@@ -11,7 +11,7 @@ import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, Single
 import { Vector2d, Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { PackedFeatureTable, Pixel, GraphicList } from "../System";
+import { PackedFeatureTable, Pixel, GraphicList, RenderSolarShadowMap } from "../System";
 import { ViewRect } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
@@ -20,9 +20,11 @@ import { RenderCommands, DrawCommands, BatchPrimitiveCommand } from "./DrawComma
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { BatchState } from "./BranchState";
-import { Feature } from "@bentley/imodeljs-common";
+import { Feature, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import { Debug } from "./Diagnostics";
 import { getDrawParams } from "./ScratchDrawParams";
+import { SpatialViewState } from "../../ViewState";
+import { SolarShadowMap } from "./SolarShadowMap";
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements IDisposable {
@@ -392,9 +394,11 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
+  public abstract getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap;
 
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
+  public abstract get solarShadowMap(): SolarShadowMap | undefined;
 
   protected constructor(target: Target) { this.target = target; }
 
@@ -421,6 +425,7 @@ abstract class Compositor extends SceneCompositor {
   protected _classifyPickDataRenderState = new RenderState();
   protected _debugStencilRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
+  protected _solarShadowMap?: SolarShadowMap;
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -436,32 +441,39 @@ abstract class Compositor extends SceneCompositor {
   /** This function generates a texture that contains ambient occlusion information to be applied later. */
   protected renderAmbientOcclusion() {
     const system = System.instance;
+    const glTimer = system.glTimer;
 
     // Render unblurred ambient occlusion based on depth buffer
     let fbo = this._frameBuffers.occlusion!;
+    glTimer.beginOperation("Compute AO");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusion!);
       this.target.techniques.draw(params);
     });
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Compute AO");
 
     // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
     fbo = this._frameBuffers.occlusionBlur!;
+    glTimer.beginOperation("Blur AO X");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusionXBlur!);
       this.target.techniques.draw(params);
     });
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Blur AO X");
 
     // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
     fbo = this._frameBuffers.occlusion!;
+    glTimer.beginOperation("Blur AO Y");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusionYBlur!);
       this.target.techniques.draw(params);
     });
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Blur AO Y");
   }
 
@@ -567,41 +579,63 @@ abstract class Compositor extends SceneCompositor {
     const compositeFlags = commands.compositeFlags;
     const needComposite = CompositeFlags.None !== compositeFlags;
 
+    const glTimer = System.instance.glTimer;
+
     // Clear output targets
+    glTimer.beginOperation("Clear Opaque");
     this.clearOpaque(needComposite);
+    glTimer.endOperation();
 
     // Render the background
+    glTimer.beginOperation("Render Background");
     this.renderBackground(commands, needComposite);
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Render Background");
 
     // Render the sky box
+    glTimer.beginOperation("Render Skybox");
     this.renderSkyBox(commands, needComposite);
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Render SkyBox");
 
     // Render the background map graphics
+    glTimer.beginOperation("Render Background Map");
     this.renderBackgroundMap(commands, needComposite);
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Render BackgroundMap (background map)");
 
     // Enable clipping
+    glTimer.beginOperation("Enabled Clipping");
     this.target.pushActiveVolume();
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Enable Clipping");
 
     // Render opaque geometry
+    glTimer.beginOperation("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Render Opaque");
 
     // Render stencil volumes
+    glTimer.beginOperation("Render Stencils");
     this.renderClassification(commands, needComposite, false);
+    glTimer.endOperation();
     this.target.recordPerformanceMetric("Render Stencils");
 
     if (needComposite) {
       this._geom.composite!.update(compositeFlags);
+      glTimer.beginOperation("Render Translucent");
       this.clearTranslucent();
       this.renderTranslucent(commands);
+      glTimer.endOperation();
       this.target.recordPerformanceMetric("Render Translucent");
+      glTimer.beginOperation("Render Hilite");
       this.renderHilite(commands);
+      glTimer.endOperation();
       this.target.recordPerformanceMetric("Render Hilite");
+      glTimer.beginOperation("Composite");
       this.composite();
+      glTimer.endOperation();
       this.target.recordPerformanceMetric("Composite");
     }
     this.target.popActiveVolume();
@@ -678,6 +712,16 @@ abstract class Compositor extends SceneCompositor {
     return result;
   }
 
+  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
+
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
+    if (undefined === this._solarShadowMap)
+      this._solarShadowMap = new SolarShadowMap();
+
+    this._solarShadowMap!.set(frustum, direction, settings, view);
+    return this._solarShadowMap;
+  }
+
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
     if (undefined === fbo || !Debug.isValidFrameBuffer)
       return undefined;
@@ -701,6 +745,7 @@ abstract class Compositor extends SceneCompositor {
   public dispose() {
     this._depth = dispose(this._depth);
     this._includeOcclusion = false;
+    this._solarShadowMap = dispose(this._solarShadowMap);
     dispose(this._textures);
     dispose(this._frameBuffers);
     dispose(this._geom);

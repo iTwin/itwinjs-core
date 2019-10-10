@@ -23,8 +23,7 @@ export function createCopyStencilProgram(context: WebGLRenderingContext): Shader
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
-      const vf = params.target.currentViewFlags;
-      const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
+      const useLighting = params.geometry.getFlashMode(params);
       const hiliteColor = params.target.hiliteColor;
       scratchHiliteColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
       scratchHiliteColor.bind(uniform);

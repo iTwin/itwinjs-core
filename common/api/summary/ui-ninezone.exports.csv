@@ -54,6 +54,7 @@ alpha;getDefaultNineZoneStagePanelPaneManagerProps: () => NineZoneStagePanelPane
 alpha;getDefaultNineZoneStagePanelsManagerProps: () => NineZoneStagePanelsManagerProps
 beta;getDefaultStagePanelManagerProps: () => StagePanelManagerProps
 beta;getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps
+internal;getDefaultToolSettingsWidgetManagerProps: () => ToolSettingsWidgetManagerProps
 internal;getDefaultWidgetHorizontalAnchor: (id: WidgetZoneId) => HorizontalAnchor
 internal;getDefaultWidgetManagerProps: (id: WidgetZoneId) => WidgetManagerProps
 internal;getDefaultWidgetVerticalAnchor: (id: WidgetZoneId) => VerticalAnchor.Bottom | VerticalAnchor.Middle
@@ -117,6 +118,8 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 alpha;NineZoneManager
+internal;NineZoneManagerHiddenWidget
+internal;NineZoneManagerHiddenWidgets =
 alpha;NineZoneManagerPanelTarget
 alpha;NineZoneManagerPaneTarget 
 alpha;NineZoneManagerProps
@@ -227,6 +230,8 @@ beta;ToolSettingsPopupProps
 beta;ToolSettingsProps 
 beta;ToolSettingsTab 
 beta;ToolSettingsTabProps 
+beta;ToolSettingsWidgetManagerProps 
+beta;ToolSettingsWidgetMode
 alpha;ToolsProps 
 beta;Tooltip 
 beta;TooltipDefaultProps = Pick

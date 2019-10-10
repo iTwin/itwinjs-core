@@ -227,7 +227,12 @@ export abstract class GraphicBuilder {
    * @public
    */
   public addRangeBox(range: Range3d) {
-    const frustum = Frustum.fromRange(range);
+    this.addFrustum(Frustum.fromRange(range));
+  }
+
+  /** Add Frustum edges. Useful for debugging.
+   * @public
+   */public addFrustum(frustum: Frustum) {
     const p = frustum.points;
 
     this.addLineString([

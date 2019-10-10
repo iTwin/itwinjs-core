@@ -376,7 +376,7 @@ describe("Popup />", () => {
       sinon.stub(popup, "contains").returns(false);
 
       const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("mousedown");
+      mouseDown.initEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -392,7 +392,7 @@ describe("Popup />", () => {
       sinon.stub(popup, "contains").returns(false);
 
       const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("mousedown");
+      mouseDown.initEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 

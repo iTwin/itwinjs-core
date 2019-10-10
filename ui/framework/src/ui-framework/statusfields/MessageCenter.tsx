@@ -31,6 +31,7 @@ enum MessageCenterActiveTab {
  */
 interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
+  target: HTMLDivElement | null;
 }
 
 /** Properties of [[MessageCenterField]] component.
@@ -46,13 +47,11 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
  */
 export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
   private _className: string;
-  private _target: React.MutableRefObject<HTMLDivElement | null> = {
-    current: null,
-  };
   private _indicator = React.createRef<HTMLDivElement>();
 
   public readonly state: Readonly<MessageCenterState> = {
     activeTab: MessageCenterActiveTab.AllMessages,
+    target: null,
   };
 
   constructor(p: MessageCenterFieldProps) {
@@ -81,7 +80,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
-          target={this._target}
+          target={this.state.target}
         >
           <MessageCenterDialog
             prompt={UiFramework.translate("messageCenter.prompt")}
@@ -112,12 +111,12 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     return footerMessages;
   }
 
-  private _handleTargetRef = (instance: HTMLDivElement | null) => {
+  private _handleTargetRef = (target: HTMLDivElement | null) => {
     if (typeof this.props.targetRef === "function")
-      this.props.targetRef(instance);
+      this.props.targetRef(target);
     else if (this.props.targetRef)
-      (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = instance;
-    this._target.current = instance;
+      (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = target;
+    this.setState({ target });
   }
 
   private _handleClose = () => {

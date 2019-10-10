@@ -16,6 +16,7 @@ interface ViewAttributesStatusFieldState {
   opened: boolean;
   viewFlags: ViewFlagProps;
   cameraOn: boolean;
+  target: HTMLElement | null;
 }
 
 /** Widget for showing section extra tools for clearing and showing manipulators
@@ -24,8 +25,6 @@ interface ViewAttributesStatusFieldState {
 // TODO: Add testing as soon as possible - needed for Risk Management Plugin frontstage
 // istanbul ignore next
 export class ViewAttributesStatusField extends React.Component<any, ViewAttributesStatusFieldState> {
-  private _target = React.createRef<HTMLDivElement>();
-
   constructor(props: any) {
     super(props);
 
@@ -33,6 +32,7 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
       cameraOn: false,
       opened: false,
       viewFlags: {},
+      target: null,
     };
   }
 
@@ -106,14 +106,14 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
   public render() {
     return (
       <>
-        <div ref={this._target} title={IModelApp.i18n.translate("UiFramework:listTools.viewAttributes")}>
+        <div ref={this._handleTargetRef} title={IModelApp.i18n.translate("UiFramework:listTools.viewAttributes")}>
           <Indicator
             iconName="icon-window-settings"
             onClick={this.handleClick.bind(this)}
             opened={this.state.opened}></Indicator>
         </div>
         <FooterPopup
-          target={this._target}
+          target={this.state.target}
           onClose={() => { this.setState({ ...this.state, opened: false }); }}
           isOpen={this.state.opened}>
           <Dialog
@@ -126,5 +126,9 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
         </FooterPopup>
       </>
     );
+  }
+
+  private _handleTargetRef = (target: HTMLElement | null) => {
+    this.setState({ target });
   }
 }

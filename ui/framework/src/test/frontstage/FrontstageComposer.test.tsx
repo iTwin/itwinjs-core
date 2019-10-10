@@ -34,14 +34,18 @@ class TestModalFrontstage implements ModalFrontstageInfo {
 }
 
 describe("FrontstageComposer", () => {
-  let handleTabClickStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
   beforeEach(() => {
-    handleTabClickStub && handleTabClickStub.restore();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("FrontstageComposer support of ModalFrontstage", () => {
@@ -78,7 +82,7 @@ describe("FrontstageComposer", () => {
         },
       },
     };
-    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
+    const handleTabClickStub = sandbox.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     wrapper.instance().handleTabClick(6, 0);
 
@@ -218,6 +222,19 @@ describe("FrontstageComposer", () => {
     const panels = wrapper.state().nineZone.nested.panels[panelKey.id];
     const panel = StagePanelsManager.getPanel(panelKey.type, panels);
     expect(panel.isCollapsed).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  it("should hide tool settings widget", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    const hideWidgetSpy = sandbox.spy(FrontstageManager.NineZoneManager, "hideWidget");
+
+    FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
+
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
 
     wrapper.unmount();
   });

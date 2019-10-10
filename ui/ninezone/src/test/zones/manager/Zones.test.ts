@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { RectangleProps, PointProps, Rectangle } from "@bentley/ui-core";
 import {
   ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
-  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager,
+  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager, ToolSettingsWidgetMode,
 } from "../../../ui-ninezone";
 import { TestProps } from "./TestProps";
 import { widgetZoneIds } from "../../../ui-ninezone/zones/manager/Zones";
@@ -351,6 +351,31 @@ describe("ZonesManager", () => {
       const sut = new ZonesManager();
       const newProps = sut.handleWidgetTabDragEnd(props);
       newProps.should.eq(props);
+    });
+
+    it("should reset tool settings widget mode when merging back", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.draggedOpenedZone6,
+        draggedWidget: {
+          ...TestProps.draggedOpenedZone6.draggedWidget,
+          id: 2 as WidgetZoneId,
+        },
+        target: { zoneId: 2, type: ZoneTargetType.Back },
+        zones: {
+          ...TestProps.draggedOpenedZone6.zones,
+          2: {
+            ...TestProps.draggedOpenedZone6.zones[2],
+            widgets: [
+              2,
+            ],
+          },
+        },
+      };
+      const sut = new ZonesManager();
+      const setToolSettingsWidgetModeSpy = sinon.spy(sut, "setToolSettingsWidgetMode");
+      sut.handleWidgetTabDragEnd(props);
+
+      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.TitleBar, sinon.match.any as any).should.true;
     });
   });
 
@@ -1104,7 +1129,7 @@ describe("ZonesManager", () => {
   describe("getInitialBounds", () => {
     it("should return initial bounds", () => {
       const zone = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
-      const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][WidgetZoneId]>();
+      const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][2]>();
       managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
       widgets.setup((x) => x[2]).returns(() => widget.object);
       zones.setup((x) => x[2]).returns(() => zone.object);

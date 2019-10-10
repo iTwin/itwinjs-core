@@ -21,6 +21,7 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
+import * as path from "path";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -430,15 +431,10 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 }
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
-  let output = configs.outputPath ? configs.outputPath : "";
-  const lastChar = output[output.length - 1];
-  if (lastChar !== "/" && lastChar !== "\\")
-    output += "\\";
-  let filename = "";
-  filename += getTestName(configs, prefix, true);
-  output += filename;
-  output += ".png";
-  return output;
+  const filename = getTestName(configs, prefix, true) + ".png";
+  if (MobileRpcConfiguration.isMobileFrontend)
+    return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
+  return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
 
 function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, ignoreDupes = false): string {
@@ -513,7 +509,7 @@ class DefaultConfigs {
       this.numRendersToTime = 100;
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
-      this.outputPath = "D:\\output\\performanceData\\";
+      this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
       this.iModelName = "Wraith2.bim";
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
@@ -793,7 +789,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState.viewState;
 
   // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined);
+  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
       activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
@@ -808,7 +804,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   }
 
   // Open an iModel from the iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
       return false;
@@ -1050,7 +1046,7 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
   if (!loaded) {
-    await closeIModel(testConfig.iModelLocation !== undefined);
+    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
     return; // could not properly open the given model or saved view so skip test
   }
 
@@ -1127,7 +1123,7 @@ async function runTest(testConfig: DefaultConfigs) {
   }
 
   // Close the imodel
-  await closeIModel(testConfig.iModelLocation !== undefined);
+  await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
 }
 
 // selects the configured view.

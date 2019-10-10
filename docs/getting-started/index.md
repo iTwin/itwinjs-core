@@ -65,22 +65,22 @@ _Note: The “iModel Testdrive” organization is intended for developer testing
 
 ## 5. Get the Sample Code
 
-The Github repositories for the applications described in step 3.
+The samples are included in [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples).  For the complete list of samples see the readme.
 
-<a href="https://github.com/imodeljs/simple-viewer-app" target="_blank">Simple Viewer App</a><br/>
-An example of an *interactive application* which can:
+Depending on your choice of application type from step 3, you should start out with one of the following:
+
+[Basic Viewport App](https://github.com/imodeljs/imodeljs-samples/master/interactive-app/basic-viewport-app)<br/>
+An example of an *interactive application* which demonstrates how to:
 
 - Embed an iModel.js viewport into your application to display graphical data.
-- Browse iModel catalog and view element properties.
+- Include built-in tools for view navigation such as Pan, Rotate, Zoom.
 
-[iModel Query Agent](https://github.com/imodeljs/imodel-query-agent)<br/>
-An example of an *agent application* which can:
+[iModel Query Agent](https://github.com/imodeljs/imodeljs-samples/master/agent-app/query-agent)<br/>
+An example of an *agent application* which demonstrates how to:
 
 - Listen to changes made to an iModel on the iModelHub.
 - Construct a 'Change Summary' of useful information.
 
-<br/>
-<br/>
 <br/>
 
 ---

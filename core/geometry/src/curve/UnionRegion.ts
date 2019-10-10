@@ -19,6 +19,7 @@ import { AnyCurve } from "./CurveChain";
  * @public
  */
 export class UnionRegion extends CurveCollection {
+   /** String name for schema properties */
   public readonly curveCollectionType = "unionRegion";
 
   /** test if `other` is a `UnionRegion` */

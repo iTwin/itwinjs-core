@@ -320,7 +320,8 @@ describe("Breadcrumb", () => {
         it("should change to dropdown mode when outside is clicked", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const dropdownInputParent = renderedComponent.getByTestId("components-breadcrumb-dropdown-input-parent");
-          await waitForUpdate(() => fireEvent.click(dropdownInputParent), renderSpy, 1);
+          await waitForUpdate(() => fireEvent.pointerDown(dropdownInputParent), renderSpy, 0);
+          await waitForUpdate(() => fireEvent.pointerUp(dropdownInputParent), renderSpy, 1);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
         });
         it("should change back from input mode when (X) button is clicked", async () => {

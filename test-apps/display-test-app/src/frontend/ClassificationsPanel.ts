@@ -292,19 +292,6 @@ export class ClassificationsPanel extends ToolBarDropDown {
       value: classifier.flags.outside,
     });
 
-    createComboBox({
-      name: "Selected: ",
-      id: "SelectedComboBox",
-      parent,
-      entries: displayEntires,
-      handler: (select) => {
-        const newValue = Number.parseInt(select.value, 10) as SpatialClassificationProps.Display;
-        this._selectedClassifier!.flags.selected = newValue;
-        this._vp.invalidateScene();
-      },
-      value: classifier.flags.selected,
-    });
-
     const label = document.createElement("label");
     label.textContent = "Expansion: ";
     parent.appendChild(label);

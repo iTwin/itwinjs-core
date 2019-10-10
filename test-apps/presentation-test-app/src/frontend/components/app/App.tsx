@@ -7,7 +7,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
 import IModelSelector from "../imodel-selector/IModelSelector";
@@ -40,6 +40,7 @@ export default class App extends React.Component<{}, State> {
   private readonly _maxContentRatio = 0.9;
   private _rightPaneRef = React.createRef<HTMLDivElement>();
   private _contentRef = React.createRef<HTMLDivElement>();
+  private _selectionListener!: () => void;
 
   public readonly state: State = {
     rightPaneRatio: 0.5,
@@ -124,6 +125,26 @@ export default class App extends React.Component<{}, State> {
     this.setState({ similarInstancesProvider: undefined });
   }
 
+  private _onSelectionChanged = async (args: SelectionChangeEventArgs) => {
+    if (!IModelApp.viewManager.selectedView) {
+      // no viewport to zoom in
+      return;
+    }
+
+    if (args.source === "Tool") {
+      // selection originated from the viewport - don't change what it's displaying by zooming in
+      return;
+    }
+
+    // determine what the viewport is hiliting
+    const hiliteSet = await Presentation.selection.getHiliteSet(args.imodel);
+    if (hiliteSet.elements) {
+      // note: the hilite list may contain models and subcategories as well - we don't
+      // care about them at this moment
+      await IModelApp.viewManager.selectedView.zoomToElements(hiliteSet.elements);
+    }
+  }
+
   private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
     return (
       <div
@@ -191,10 +212,15 @@ export default class App extends React.Component<{}, State> {
 
   public componentDidMount() {
     this.afterRender();
+    this._selectionListener = Presentation.selection.selectionChange.addListener(this._onSelectionChanged);
   }
 
   public componentDidUpdate() {
     this.afterRender();
+  }
+
+  public componentWillUnmount() {
+    Presentation.selection.selectionChange.removeListener(this._selectionListener);
   }
 
   public render() {

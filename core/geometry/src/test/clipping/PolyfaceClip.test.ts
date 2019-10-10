@@ -27,6 +27,8 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Polyface } from "../../polyface/Polyface";
 
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
@@ -334,6 +336,70 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFill");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  // cspell:word Arnoldas
+  it("ArnoldasBox", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const meshData = {
+      indexedMesh: {
+        point: [
+          [0, 0, 0.4999999999723128],
+          [0, 0, 1], [2.3283064365386963e-10, 0.6889561647549272, 0.49999999998019096],
+          [0.8495529009960592, 9.313225746154785e-10, 0.5000000000207994],
+
+          [0.3110438375733793, 0.6889561647549272, 0.499999999997943],
+          [0.8495529009960592, 0.15044710040092468, 0.5000000000225198],
+          [4.656612873077393e-10, 0.6889561638236046, 1],
+          [0.8495529008796439, 9.313225746154785e-10, 1],
+
+          [0.8495529012288898, 0.6889561638236046, 0.5000000000286775],
+          [0.8495529012288898, 0.6889561638236046, 0.8908151873411514],
+          [0.8495529012288898, 0.6889561638236046, 1]],
+        pointIndex: [1, 4, 8, 2, 0, 3, 1, 2,
+          7, 0, 11, 7, 2, 8, 0, 3,
+          5, 6, 4, 1, 0, 6, 5, 9,
+          0,
+          9, 5, 10, 0, 5, 3, 7, 0,
+          7, 11, 10, 5, 0, 4, 6, 8,
+          0,
+          6, 9, 10, 0, 10, 11, 8, 0,
+          8, 6, 10, 0],
+      },
+    };
+    let x0 = 0;
+    let y0 = 0;
+    const yStep = 2.0;
+    const xStep = 5.0;
+    const polyface = IModelJson.Reader.parse(meshData);
+    const vectorA = Vector3d.create(-1, -1, -0.234);
+    vectorA.normalizeInPlace();
+    if (ck.testDefined(polyface) && ck.testTrue(polyface instanceof Polyface) && polyface instanceof Polyface) {
+      for (const transform of Sample.createRigidTransforms(1.0)) {
+        y0 = 0.0;
+        for (const clipPlane of [ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -0.8221099398657934)!,
+        ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
+        ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
+        ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
+          const clipPlaneA = clipPlane.clone();
+          clipPlaneA.transformInPlace(transform);
+          const polyfaceA = polyface.cloneTransformed(transform) as Polyface;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0);
+          for (const inside of [false, true]) {
+            const clip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyfaceA, clipPlaneA, inside, true);
+            if (ck.testDefined(clip) && clip) {
+              ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(clip), " clip closure");
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip, x0, y0 += yStep);
+            }
+          }
+          y0 += 5 * yStep;
+        }
+        x0 += xStep;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ArnoldasBox");
     expect(ck.getNumErrors()).equals(0);
 
   });

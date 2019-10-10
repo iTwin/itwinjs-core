@@ -5,10 +5,9 @@
 import * as path from "path";
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import * as fs from "fs";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
-
+import { IModelJsFs } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
@@ -28,7 +27,7 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = filename;
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
-    fs.writeFileSync(path.join(__dirname, "configuration.json"), JSON.stringify(configuration), "utf8");
+    IModelJsFs.writeFileSync(path.join(__dirname, "configuration.json"), JSON.stringify(configuration));
   }
 }
 
