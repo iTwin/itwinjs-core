@@ -63,6 +63,23 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run SchemaDesignPerf tests (Offline)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/backend/lib/perftest",
+        "--debug",
+        "--offline",
+        "--grep",
+        "SchemaDesignPerf"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "CrashCollectionServer",
       "program": "${workspaceFolder}/core/backend/lib/test/standalone/CrashCollectionServer.js",
       "cwd": "${workspaceFolder}/core/backend",
