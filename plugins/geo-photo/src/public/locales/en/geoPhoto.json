@@ -7,11 +7,12 @@
   },
   "messages": {
     "RootFolderName": "Project Share Photos",
-    "PanoramaFile": "<b>{{fileName}} (panorama)</b>",
-    "PhotoFile": "<b>{{fileName}} (photo)</b>",
     "NotGeolocated": "The iModel is not Geolocated, so photo locations can not be computed.",
     "ShowingMarkers": "Displaying Geolocated Photo Markers",
-    "ToolTip": "<b>{{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}, {{formattedHeight}}</b>"
+    "PanoramaFile": "<b>File:</b> {{fileName}} (Panorama)<br>",
+    "PhotoFile": "<b>File:</b> {{fileName}} (Jpeg)<br>",
+    "ToolTipGeo": "<b>GPS Latitude, Longitude:</b> {{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}<br><b>Altitude:</b> {{formattedHeight}}<br>",
+    "ToolTipXY": "<b>Model Coordinate:</b> {{formattedX}}, {{formattedY}}, {{formattedHeight}}<br>"
   },
   "pannellum": {
     "loadButtonLabel": "Click to<br>Load<br>Panorama",

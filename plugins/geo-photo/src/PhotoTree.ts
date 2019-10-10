@@ -128,14 +128,19 @@ export abstract class PhotoFile extends FolderEntry {
       try {
         const globalOrigin = this.treeHandler.getIModel().globalOrigin;
         const zAdjusted = this.geoLocation.height - globalOrigin.z;
-
+        const spatial = Point3d.fromJSON(this.spatial);
+        const xAdjusted = spatial.x - globalOrigin.x;
+        const yAdjusted = spatial.y - globalOrigin.y;
         const cartographic = Cartographic.fromDegrees(this.geoLocation.longitude, this.geoLocation.latitude, this.geoLocation.height);
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = IModelApp.quantityFormatter.formatQuantity(zAdjusted, coordFormatterSpec);
+        const formattedX = IModelApp.quantityFormatter.formatQuantity(xAdjusted, coordFormatterSpec);
+        const formattedY = IModelApp.quantityFormatter.formatQuantity(yAdjusted, coordFormatterSpec);
         const latDir = cartographic.latitude < 0 ? "S" : "N";
         const longDir = cartographic.longitude < 0 ? "W" : "E";
-        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTip", { formattedLat, latDir, formattedLong, longDir, formattedHeight });
+        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight });
+        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipXY", { formattedX, formattedY, formattedHeight });
       } catch { }
     }
     toolTip.innerHTML = toolTipHtml;
@@ -192,12 +197,12 @@ class SpatialPositionCollector {
   private async gatherRequests(file: PhotoFile, _folder: PhotoFolder) {
     const geoLocation: Cartographic | undefined = file.geoLocation;
     if (geoLocation) {
-      this._geoPoints!.push(new Point3d(geoLocation.longitude, geoLocation.latitude, 0.0 /*geoLocation.height*/));
+      this._geoPoints!.push(new Point3d(geoLocation.longitude, geoLocation.latitude, geoLocation.height));
       this._photoFiles!.push(file);
     }
   }
 
-  private async getEcefResults (file: PhotoFile, _folder: PhotoFolder) {
+  private async getEcefResults(file: PhotoFile, _folder: PhotoFolder) {
     const geoLocation: Cartographic | undefined = file.geoLocation;
     if (geoLocation) {
       const cartographic = Cartographic.fromDegrees(geoLocation.longitude, geoLocation.latitude, geoLocation.height);
