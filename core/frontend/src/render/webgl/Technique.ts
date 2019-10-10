@@ -16,7 +16,7 @@ import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
-import { createCopyStencilProgram } from "./glsl/CopyStencil";
+import { createVolClassCopyZProgram, createVolClassSetBlendProgram, createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZUsingPointsProgram } from "./glsl/CopyStencil";
 import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
@@ -561,7 +561,7 @@ export class Techniques implements IDisposable {
 
           const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap !== undefined && target.solarShadowMap.isReady;   // TBD - Avoid shadows for pick?
           const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
-          const isClassified = undefined !== target.currentPlanarClassifierOrDrape ? IsClassified.Yes : IsClassified.No;
+          const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
 
           flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, isShadowable);
           flags.setAnimated(command.hasAnimation);
@@ -584,17 +584,16 @@ export class Techniques implements IDisposable {
     });
   }
 
-  /** Execute the commands for a single given classification primitive */
-  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+  /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, techId?: TechniqueId) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
-    // There should be 3 commands per classifier in the cmdsByIndex array.
-    index *= 3;
-    if (index < 0 || index > cmdsByIndex.length - 3)
-      return; // index out of range
+    // There should be at least 3 commands in the cmdsByIndex array.
+    if (cmdsByIndex.length < 3)
+      return; // not enough commands
 
-    const pushCmd = cmdsByIndex[index];
-    const primCmd = cmdsByIndex[index + 1];
-    const popCmd = cmdsByIndex[index + 2];
+    const pushCmd = cmdsByIndex[0];
+    const primCmd = cmdsByIndex[1];
+    const popCmd = cmdsByIndex[2];
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
@@ -613,8 +612,11 @@ export class Techniques implements IDisposable {
       assert(TechniqueId.Invalid !== techniqueId);
       // A primitive command.
       assert(primCmd.isPrimitiveCommand, "expected primitive command");
-      flags.init(target, renderPass, IsInstanced.No);
+      const isClassified = (undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
+      flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, IsShadowable.No);
       flags.setAnimated(primCmd.hasAnimation);
+      flags.setInstanced(primCmd.isInstanced);
+      flags.setHasMaterialAtlas(target.currentViewFlags.materials && primCmd.hasMaterialAtlas);
       const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
       const program = tech.getShader(flags);
       if (executor.setProgram(program)) {
@@ -671,7 +673,6 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
     this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
-    this._list[TechniqueId.CopyStencil] = new SingularTechnique(createCopyStencilProgram(gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
@@ -686,6 +687,13 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+    if (System.instance.capabilities.supportsFragDepth)
+      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
+    else
+      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
+    this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
+    this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
+    this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));
 
     for (let compositeFlags = 1; compositeFlags <= 7; compositeFlags++) {
       const techId = computeCompositeTechniqueId(compositeFlags);

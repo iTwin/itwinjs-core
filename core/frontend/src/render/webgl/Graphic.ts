@@ -22,7 +22,7 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
 import { DisplayParams } from "../primitives/DisplayParams";
 
-function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
     return false;
 

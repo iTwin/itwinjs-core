@@ -77,6 +77,12 @@
     },
     "FadeOut": {
       "keyin": "fdt fadeout"
+    },
+    "VCIntersectOn": {
+      "keyin": "fdt vcintersect on"
+    },
+    "VCIntersectOff": {
+      "keyin": "fdt vcintersect off"
     }
   }
 }

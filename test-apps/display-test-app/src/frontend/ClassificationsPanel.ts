@@ -46,8 +46,12 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
       // Find existing classifier
       const modelId = modelProps.id!;
-      [...this._selectedSpatialClassifiers].forEach((existingClassifier) =>
-        classifier = modelId === existingClassifier.modelId ? classifier : undefined);
+      for (const existingClassifier of this._selectedSpatialClassifiers) {
+        if (existingClassifier.modelId === modelId) {
+          classifier = existingClassifier;
+          break;
+        }
+      }
 
       if (undefined === classifier) {
         // If one does not exist, create a new classifier using model id
@@ -302,6 +306,17 @@ export class ClassificationsPanel extends ToolBarDropDown {
       value: classifier.expand,
       handler: (value) => {
         this._selectedClassifier!.expand = value;
+        this._vp.invalidateScene();
+      },
+    });
+
+    createCheckBox({
+      name: "Volume: ",
+      id: "cbxVolumeClassifier",
+      parent,
+      isChecked: classifier.flags.isVolumeClassifier,
+      handler: (cb) => {
+        this._selectedClassifier!.flags.isVolumeClassifier = cb.checked;
         this._vp.invalidateScene();
       },
     });

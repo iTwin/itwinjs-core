@@ -5813,6 +5813,8 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
+    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void;
+    // (undocumented)
     abstract changeBackgroundMap(_graphics: GraphicList): void;
     // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
@@ -5890,6 +5892,8 @@ export interface RenderTargetDebugControl {
     // @alpha (undocumented)
     primitiveVisibility: PrimitiveVisibility;
     useLogZ: boolean;
+    // @internal (undocumented)
+    vcSupportIntersectingVolumes: boolean;
 }
 
 // @internal
@@ -6001,6 +6005,8 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
+    getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined;
+    // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrapeForModel(modelId: Id64String): RenderTextureDrape | undefined;
@@ -6022,6 +6028,8 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
+    // (undocumented)
+    setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined): void;
     // (undocumented)
     readonly textureDrapes: Map<string, RenderTextureDrape>;
     // (undocumented)
@@ -6883,6 +6891,10 @@ export class SyncFlags {
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
     protected constructor(rect?: ViewRect);
     // (undocumented)
+    activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+    // (undocumented)
+    activeVolumeClassifierTexture?: WebGLTexture;
+    // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
@@ -6904,6 +6916,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly branchStack: BranchStack;
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
+    // (undocumented)
+    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void;
     // (undocumented)
     changeBackgroundMap(backgroundMap: GraphicList): void;
     // (undocumented)
@@ -7110,6 +7124,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly transparencyThreshold: number;
     // (undocumented)
     useLogZ: boolean;
+    // (undocumented)
+    vcSupportIntersectingVolumes: boolean;
     // (undocumented)
     readonly viewMatrix: Transform;
     // (undocumented)

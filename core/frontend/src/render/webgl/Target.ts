@@ -314,11 +314,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
-  public isFadeOutActive = false;
   private _currentlyDrawingClassifier?: PlanarClassifier;
+  public isFadeOutActive = false;
+  public activeVolumeClassifierTexture?: WebGLTexture;
+  public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
 
   // RenderTargetDebugControl
   public useLogZ = true;
+  public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public get debugControl(): RenderTargetDebugControl { return this; }
@@ -602,6 +605,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
 
+  }
+  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void {
+    this.activeVolumeClassifierProps = props;
   }
 
   public changeDynamics(dynamics?: GraphicList) {

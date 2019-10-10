@@ -58,6 +58,8 @@ beta;class RenderTargetDebugControlTool
 beta;ReportWebGLCompatibilityTool 
 beta;SaveViewTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
+internal;SetVolClassIntersectOff 
+internal;SetVolClassIntersectOn 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps

@@ -2605,6 +2605,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;

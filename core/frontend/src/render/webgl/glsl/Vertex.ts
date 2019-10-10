@@ -21,7 +21,7 @@ const unquantizePosition = `
 vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
 `;
 
-const unquantizeVertexPosition = `
+export const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 

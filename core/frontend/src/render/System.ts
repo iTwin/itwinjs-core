@@ -765,6 +765,8 @@ export interface RenderTargetDebugControl {
   useLogZ: boolean;
   /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
+  /** @internal */
+  vcSupportIntersectingVolumes: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -809,6 +811,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
+  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;

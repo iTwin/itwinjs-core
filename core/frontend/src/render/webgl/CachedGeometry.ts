@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
-import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters } from "./Handle";
+import { Point3d, Range3d, Vector2d, Point2d } from "@bentley/geometry-core";
+import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
@@ -782,6 +782,108 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   protected constructor(params: IndexedGeometryParams, texture: WebGLTexture, techId: TechniqueId) {
     super(params, techId, [texture]);
   }
+}
+
+/** @internal */
+export enum BoundaryType {
+  Outside = 0,
+  Inside = 1,
+  Selected = 2,
+}
+
+/** @internal */
+export class VolumeClassifierGeometry extends SingleTexturedViewportQuadGeometry {
+  public boundaryType: BoundaryType = BoundaryType.Inside;
+
+  public static createVCGeometry(texture: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+    return new VolumeClassifierGeometry(params, texture);
+  }
+
+  private constructor(params: IndexedGeometryParams, texture: WebGLTexture) {
+    super(params, texture, TechniqueId.VolClassSetBlend);
+  }
+}
+
+/** A geometric primitive which renders gl points using gl.drawArrays() with one vertex buffer.
+ * @internal
+ */
+export class ScreenPointsGeometry extends CachedGeometry {
+  protected _numPoints: number;
+  protected _origin: Float32Array;
+  protected _scale: Float32Array;
+  protected _positions: QBufferHandle2d;
+  public readonly buffers: BuffersContainer;
+  public readonly zTexture: WebGLTexture;
+
+  protected constructor(vertices: QPoint2dList, zTexture: WebGLTexture) {
+    super();
+
+    this.zTexture = zTexture;
+
+    this._numPoints = vertices.length;
+
+    this._positions = QBufferHandle2d.create(vertices.params, vertices.toTypedArray())!;
+
+    this._origin = new Float32Array(3);
+    this._origin[0] = this._positions.params[0];
+    this._origin[1] = this._positions.params[1];
+    this._origin[2] = 0.0;
+    this._scale = new Float32Array(3);
+    this._scale[0] = this._positions.params[2];
+    this._scale[1] = this._positions.params[3];
+    this._scale[2] = this._positions.params[3]; // just copy the scale from y
+
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.VolClassCopyZ, false);
+    assert(attrPos !== undefined);
+    this.buffers.addBuffer(this._positions, [BufferParameters.create(attrPos!.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+  }
+
+  public static createGeometry(width: number, height: number, depth: WebGLTexture): ScreenPointsGeometry {
+    const pixWidth = 2.0 / width;
+    const pixHeight = 2.0 / height;
+
+    const startX = pixWidth * 0.5 - 1.0;
+    const startY = pixHeight * 0.5 - 1.0;
+
+    const pt = new Point2d(startX, startY);
+    const vertices = new QPoint2dList(QParams2d.fromNormalizedRange());
+
+    for (let y = 0; y < height; ++y) {
+      pt.x = startX;
+      for (let x = 0; x < width; ++x) {
+        vertices.add(pt);
+        pt.x += pixWidth;
+      }
+      pt.y += pixHeight;
+    }
+    return new ScreenPointsGeometry(vertices, depth);
+  }
+
+  public draw(): void {
+    this.buffers.bind();
+    System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._numPoints);
+    this.buffers.unbind();
+  }
+
+  public dispose() {
+    dispose(this.buffers);
+    dispose(this._positions);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addBuffer(RenderMemory.BufferType.PointStrings, this._positions.bytesUsed);
+  }
+
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  public get techniqueId(): TechniqueId { return TechniqueId.VolClassCopyZ; }
+  public getRenderPass(_target: Target) { return RenderPass.Classification; }
+  public get renderOrder() { return RenderOrder.None; }
+  public get qOrigin() { return this._origin; }
+  public get qScale() { return this._scale; }
 }
 
 /** @internal */

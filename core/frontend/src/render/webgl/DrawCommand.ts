@@ -10,11 +10,11 @@ import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderMode, ViewFlag, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
+import { Batch, Branch, Graphic, GraphicsArray, isFeatureHilited } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
-import { Target } from "./Target";
+import { Target, Hilites } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic, AnimationBranchState, ClippingType } from "../System";
 import { TechniqueId } from "./TechniqueId";
@@ -257,8 +257,18 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
       if (undefined !== featureElementId)
         return featureElementId.toString() === flashedId.toString();
     }
-
     return Id64.isInvalid(flashedId);
+  }
+
+  public computeIsHilited(hilites: Hilites): boolean {
+    const sp = this.primitive.cachedGeometry.asSurface;
+    if (undefined !== sp && undefined !== sp.mesh.uniformFeatureId) {
+      const fi = sp.mesh.uniformFeatureId;
+      const feature = this._batch.featureTable.getPackedFeature(fi);
+      if (undefined !== feature)
+        return isFeatureHilited(feature, hilites);
+    }
+    return false;
   }
 }
 

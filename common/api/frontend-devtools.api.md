@@ -558,6 +558,22 @@ export class SaveViewTool extends Tool {
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
 
+// @internal
+export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface Slider {
     // (undocumented)

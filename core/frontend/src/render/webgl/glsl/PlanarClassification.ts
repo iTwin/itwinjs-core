@@ -7,11 +7,27 @@ import { VariableType, ProgramBuilder, FragmentShaderComponent } from "../Shader
 import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
+import { Texture2DHandle } from "../Texture";
+import { addWindowToTexCoords } from "./Fragment";
 import { addClassifierFlash, addHiliteSettings } from "./FeatureSymbology";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
 import { Matrix4 } from "../Matrix";
 import { addInstancedRtcMatrix } from "./Vertex";
+
+export const volClassOpaqueColor = `
+vec4 volClassColor(vec4 baseColor, float depth) {
+  if (depth <= TEXTURE(s_pClassSampler, windowCoordsToTexCoords(gl_FragCoord.xy)).r)
+    discard;
+  return vec4(baseColor.rgb, 1.0);
+}
+`;
+
+const volClassTranslucentColor = `
+vec4 volClassColor(vec4 baseColor, float depth) {
+  return vec4(baseColor.rgb, depth); // This will never be called, so we use depth here to avoid a compile error
+}
+`;
 
 // ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
 // Change it so that fully-transparent classifiers do the clipping.
@@ -20,6 +36,9 @@ const applyPlanarClassificationColor = `
   float colorMix = u_pClassPointCloud ? .65 : .35;
   vec2 classPos = v_pClassPos / v_pClassPosW;
   if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+    if (u_pClassColorParams.x > kTextureDrape) {
+      return volClassColor(baseColor, depth);
+    }
     if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
       discard;
 
@@ -98,9 +117,12 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   vert.addUniform("u_pClassProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_pClassProj", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape!;
-      assert(undefined !== source);
-      source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
-      scratchMatrix.initFromMatrix4d(scratchModelProjection);
+      assert(undefined !== source || undefined !== params.target.activeVolumeClassifierTexture);
+      if (undefined !== params.target.currentPlanarClassifierOrDrape) {
+        source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
+        scratchMatrix.initFromMatrix4d(scratchModelProjection);
+      } else
+        scratchMatrix.initIdentity(); // needs to be identity for volume classifiers
       uniform.setMatrix4(scratchMatrix);
     });
   });
@@ -117,24 +139,38 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   frag.addDefine("kClassifierDisplay_Dimmed", SpatialClassificationProps.Display.Dimmed.toFixed(1));
   frag.addDefine("kClassifierDisplay_Hilite", SpatialClassificationProps.Display.Hilite.toFixed(1));
   frag.addDefine("kClassifierDisplay_Element", SpatialClassificationProps.Display.ElementColor.toFixed(1));
+  const td = SpatialClassificationProps.Display.ElementColor + 1;
+  frag.addDefine("kTextureDrape", td.toFixed(1));
 }
 
 /** @internal */
-export function addColorPlanarClassifier(builder: ProgramBuilder) {
+export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: boolean) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassSampler", (uniform, params) => {
-      const source = params.target.currentPlanarClassifierOrDrape!;
-      assert(undefined !== source.texture);
-      source.texture!.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
+      const source = params.target.currentPlanarClassifierOrDrape;
+      const volClass = params.target.activeVolumeClassifierTexture;
+      assert(undefined !== source || undefined !== volClass);
+      if (source) {
+        assert(undefined !== source.texture);
+        source.texture!.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
+      } else
+        Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
     });
   });
 
   frag.addUniform("u_pClassColorParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_pClassColorParams", (uniform, params) => {
-      const source = params.target.currentPlanarClassifierOrDrape!;
-      source.getParams(scratchColorParams);
+      const source = params.target.currentPlanarClassifierOrDrape;
+      const volClass = params.target.activeVolumeClassifierTexture;
+      assert(undefined !== source || undefined !== volClass);
+      if (undefined !== source) {
+        source.getParams(scratchColorParams);
+      } else {
+        scratchColorParams[0] = 6.0;      // Volume classifier, by element color.
+        scratchColorParams[1] = 0.5;      // used for alpha value
+      }
       uniform.setUniform2fv(scratchColorParams);
     });
   });
@@ -149,6 +185,14 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
 
   addHiliteSettings(frag);
   addClassifierFlash(frag);
+  if (translucent)
+    // We will never call the shaders for volume classifiers with translucency,
+    // so use a different version of the function which does not use glFragCoord to reduce the varyings count
+    frag.addFunction(volClassTranslucentColor);
+  else {
+    addWindowToTexCoords(frag);
+    frag.addFunction(volClassOpaqueColor);
+  }
   frag.set(FragmentShaderComponent.ApplyPlanarClassifier, applyPlanarClassificationColor);
 }
 

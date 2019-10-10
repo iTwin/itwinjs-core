@@ -457,7 +457,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
   if (flags.isClassified) {
     opts &= ~FeatureSymbologyOptions.Alpha;
-    addColorPlanarClassifier(builder);
+    addColorPlanarClassifier(builder, flags.isTranslucent);
   }
 
   addFeatureSymbology(builder, feat, opts);

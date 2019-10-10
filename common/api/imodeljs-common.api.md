@@ -4792,31 +4792,27 @@ export namespace SpatialClassificationProps {
     export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
     export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
+        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
         // (undocumented)
         inside: Display;
         // (undocumented)
-        outside: Display;
+        isVolumeClassifier: boolean;
         // (undocumented)
-        type: number;
+        outside: Display;
+        readonly type = 0;
     }
     export interface FlagsProps {
         // (undocumented)
         inside: SpatialClassificationProps.Display;
         // (undocumented)
-        outside: SpatialClassificationProps.Display;
+        isVolumeClassifier?: boolean;
         // (undocumented)
-        type: number;
+        outside: SpatialClassificationProps.Display;
+        readonly type: number;
     }
     export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-    }
-    export enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
     }
 }
 

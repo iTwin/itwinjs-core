@@ -9,6 +9,8 @@ import {
   ToggleLogZTool,
   TogglePrimitiveVisibilityTool,
   ToggleReadPixelsTool,
+  SetVolClassIntersectOn,
+  SetVolClassIntersectOff,
 } from "./tools/RenderTargetTools";
 import {
   LoseWebGLContextTool,
@@ -98,6 +100,9 @@ export class FrontendDevTools {
 
     RealityTransitionTool.register(i18n);
     ChangeUnitsTool.register(i18n);
+
+    SetVolClassIntersectOn.register(i18n);
+    SetVolClassIntersectOff.register(i18n);
 
     return i18n.readFinished;
   }

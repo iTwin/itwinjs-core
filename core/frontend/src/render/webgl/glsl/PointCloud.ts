@@ -33,7 +33,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   if (classified) {
-    addColorPlanarClassifier(builder);
+    addColorPlanarClassifier(builder, false);
     builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
     if (FeatureMode.None !== featureMode)
       addFeaturePlanarClassifier(builder);
