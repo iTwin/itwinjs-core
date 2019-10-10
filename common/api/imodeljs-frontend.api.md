@@ -4032,6 +4032,7 @@ export abstract class MarkerSet<T extends Marker> {
     minimumClusterSize: number;
     // @internal (undocumented)
     protected _minScaleViewW?: number;
+    readonly viewport?: ScreenViewport;
     // @internal (undocumented)
     protected readonly _worldToViewMap: Matrix4d;
 }

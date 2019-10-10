@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d, Vector3d } from "@bentley/geometry-core";
-import { imageElementFromUrl } from "./ImageUtil";
-import { DecorateContext } from "./ViewContext";
-import { CanvasDecoration } from "./render/System";
-import { ViewRect, Viewport, ScreenViewport } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ToolTipOptions } from "./NotificationManager";
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
+import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { ColorDef } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { imageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
+import { ToolTipOptions } from "./NotificationManager";
+import { CanvasDecoration } from "./render/System";
+import { BeButtonEvent } from "./tools/Tool";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
 
 /** The types that may be used for Markers
  * @public
@@ -315,7 +315,8 @@ export class Cluster<T extends Marker> {
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
-  private _viewport?: ScreenViewport;
+  /** The ScreenViewport of this MarkerSet. */
+  public readonly viewport?: ScreenViewport;
 
   /** @internal */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
@@ -334,7 +335,7 @@ export abstract class MarkerSet<T extends Marker> {
    * @param viewport the ScreenViewport for this MarkerSet. If undefined, use [[IModelApp.viewManager.selectedView]]
    */
   public constructor(viewport?: ScreenViewport) {
-    this._viewport = undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
+    this.viewport = undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
     const markDirty = () => this.markDirty();
     this._markers.onAdded.addListener(markDirty);
     this._markers.onDeleted.addListener(markDirty);
@@ -370,7 +371,7 @@ export abstract class MarkerSet<T extends Marker> {
    */
   public addDecoration(context: DecorateContext): void {
     const vp = context.viewport;
-    if (vp !== this._viewport)
+    if (vp !== this.viewport)
       return; // not viewport of this MarkerSet, ignore it
 
     const entries = this._entries;

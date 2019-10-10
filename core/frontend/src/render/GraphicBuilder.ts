@@ -223,16 +223,13 @@ export abstract class GraphicBuilder {
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
-  /** Add Range3d edges. Useful for debugging.
-   * @public
-   */
+  /** Add Range3d edges. Useful for debugging. */
   public addRangeBox(range: Range3d) {
     this.addFrustum(Frustum.fromRange(range));
   }
 
-  /** Add Frustum edges. Useful for debugging.
-   * @public
-   */public addFrustum(frustum: Frustum) {
+  /** Add Frustum edges. Useful for debugging. */
+  public addFrustum(frustum: Frustum) {
     const p = frustum.points;
 
     this.addLineString([
