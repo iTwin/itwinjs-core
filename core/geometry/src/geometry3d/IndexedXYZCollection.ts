@@ -9,6 +9,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range3d } from "./Range";
 
 /**
  * abstract base class for read-only access to XYZ data with indexed reference.
@@ -107,7 +108,17 @@ export abstract class IndexedXYZCollection {
   public cyclicIndex(i: number): number {
     return (i % this.length);
   }
-
+  /** Return the range of the points. */
+  public getRange(): Range3d {
+    const range = Range3d.createNull();
+    const n = this.length;
+    const point = Point3d.create();
+    for (let i = 0; i < n; i++) {
+      this.getPoint3dAtUncheckedPointIndex(i, point);
+      range.extendPoint(point);
+    }
+    return range;
+  }
   /** Accumulate scale times the x,y,z values at index.
    * * No action if index is out of bounds.
    */

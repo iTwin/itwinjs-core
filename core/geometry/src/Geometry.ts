@@ -578,9 +578,9 @@ export class Geometry {
   }
   /**
    * Clamp value to (min,max) with no test for order of (min,max)
-   * @param value C
-   * @param min
-   * @param max
+   * @param value value to clamp
+   * @param min smallest allowed output
+   * @param max largest allowed result.
    */
   public static clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
   /** If given a number, return it.   If given undefined, return `defaultValue`. */

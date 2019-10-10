@@ -32,7 +32,7 @@ function allDefined(valueA: any, valueB: any, valueC: any): boolean {
  * @public
  */
 export abstract class Polyface extends GeometryQuery {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly geometryCategory = "polyface";
 
   /** Underlying polyface data. */
@@ -566,6 +566,15 @@ export interface PolyfaceVisitor extends PolyfaceData {
   /** Set the number of vertices to replicate in visitor arrays. */
   setNumWrap(numWrap: number): void;
 
+  /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
+  clearArrays(): void;
+  /** transfer data from a specified index of the other visitor as new data in this visitor. */
+  pushDataFrom(other: PolyfaceVisitor, index: number): void;
+  /** transfer interpolated data from the other visitor.
+   * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
+   */
+  pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+
 }
 
 /**
@@ -679,4 +688,76 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public clientColorIndex(i: number): number { return this.colorIndex ? this.colorIndex[i] : -1; }
   /** Return the aux data index of vertex i within the currently loaded facet */
   public clientAuxIndex(i: number): number { return this.auxData ? this.auxData.indices[i] : -1; }
+
+  /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
+  public clearArrays(): void {
+    if (this.point !== undefined)
+      this.point.length = 0;
+    if (this.param !== undefined)
+      this.param.length = 0;
+    if (this.normal !== undefined)
+      this.normal.length = 0;
+    if (this.color !== undefined)
+      this.color.length = 0;
+  }
+  /** transfer data from a specified index of the other visitor as new data in this visitor. */
+  public pushDataFrom(other: PolyfaceVisitor, index: number): void {
+    this.point.pushFromGrowableXYZArray(other.point, index);
+    if (this.color && other.color && index < other.color.length)
+      this.color.push(other.color[index]);
+    if (this.param && other.param && index < other.param.length)
+      this.param.pushFromGrowableXYArray(other.param, index);
+    if (this.normal && other.normal && index < other.normal.length)
+      this.normal.pushFromGrowableXYZArray(other.normal, index);
+  }
+  /** transfer interpolated data from the other visitor.
+   * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
+   */
+  public pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void {
+    this.point.pushInterpolatedFromGrowableXYZArray(other.point, index0, fraction, index1);
+    if (this.color && other.color && index0 < other.color.length && index1 < other.color.length)
+      this.color.push(interpolateColor(other.color[index0], fraction, other.color[index1]));
+    if (this.param && other.param && index0 < other.param.length && index1 < other.param.length)
+      this.param.pushInterpolatedFromGrowableXYArray(other.param, index0, fraction, index1);
+    if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
+      this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
+  }
+
+}
+
+/**
+ * * shift to right by shiftBits.
+ * * mask off the low 8 bits
+ * * interpolate the number
+ * * truncate to floor
+ * * shift left
+ * * Hence all numbers in and out of the floating point are 0..255.
+ * @param color0
+ * @param fraction
+ * @param color1
+ * @param shiftBits
+ */
+function interpolateByte(color0: number, fraction: number, color1: number, shiftBits: number): number {
+  color0 = (color0 >>> shiftBits) & 0xFF;
+  color1 = (color1 >>> shiftBits) & 0xFF;
+  const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xFF;
+  return color << shiftBits;
+}
+
+function interpolateColor(color0: number, fraction: number, color1: number) {
+  // don't allow fractions outside the individual byte ranges.
+  fraction = Geometry.clamp(fraction, 0, 1);
+  // interpolate each byte in place ....
+  /*
+  const byte0 = interpolateLowByte(color0 & 0xFF, fraction, color1 & 0xFF);
+  const byte1 = interpolateLowByte((color0 & 0xFF00) >>> 8, fraction, (color1 & 0xFF00) >>> 8) << 8;
+  const byte2 = interpolateLowByte((color0 & 0xFF0000) >>> 16, fraction, (color1 & 0xFF0000) >>> 16) << 16;
+  const byte3 = interpolateLowByte((color0 & 0xFF000000) >>> 24, fraction, (color1 & 0xFF000000) >>> 24) << 24;
+  */
+  const byte0 = interpolateByte(color0, fraction, color1, 0);
+  const byte1 = interpolateByte(color0, fraction, color1, 8);
+  const byte2 = interpolateByte(color0, fraction, color1, 16);
+  const byte3 = interpolateByte(color0, fraction, color1, 24);
+
+  return (byte0 | byte1 | byte2 | byte3);
 }

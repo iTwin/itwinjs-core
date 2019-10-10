@@ -291,6 +291,20 @@ describe("PolyfaceClip", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
           y0 += yStep;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+          y0 += 2 * yStep;
+          const fixA = PolyfaceQuery.cloneWithTVertexFixup(cutFill.meshAOverB);
+          const fixB = PolyfaceQuery.cloneWithTVertexFixup(cutFill.meshAUnderB);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixA, x0, y0);
+          y0 += yStep;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixB, x0, y0);
+          y0 += 2 * yStep;
+          const fixEdgeA = PolyfaceQuery.cloneWithColinearEdgeFixup(fixA);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixEdgeA, x0, y0);
+          y0 += yStep;
+          const fixEdgeB = PolyfaceQuery.cloneWithColinearEdgeFixup(fixB);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixEdgeB, x0, y0);
+          y0 += yStep;
+
           x0 += numX * 2 + 4;
         }
       }
