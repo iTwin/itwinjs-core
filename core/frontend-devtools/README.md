@@ -70,7 +70,11 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
-* `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey.
+* `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey. If the selection set is empty, clear the effects of any previous use of this key-in. Accepts one of the following arguments:
+  * "none": Don't override color, don't apply silhouette.
+  * "color": Override color to white.
+  * "emphasis": Apply silhouette for emphasis.
+  * "both": Apply both color and silhouette.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.

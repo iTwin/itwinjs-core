@@ -39,8 +39,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;
   private _emphasizeIsolated?: Id64Set;
   private _overrideAppearance?: Map<number, Id64Set>;
+  private readonly _emphasizedAppearance = FeatureSymbology.Appearance.fromJSON({ emphasized: true });
 
-  /** If true, all overridden elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [Viewport.emphasisSettings]. */
+  /** If true, all overridden and emphasized elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [Viewport.emphasisSettings]. */
   public wantEmphasis = false;
 
   /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
@@ -50,7 +51,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
       overrides.setDefaultOverrides(this._defaultAppearance!);
-      const app = FeatureSymbology.Appearance.defaults;
+      const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureSymbology.Appearance.defaults;
       emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
     }
     const overriddenElements = this.getOverriddenElements();

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ColorByName,
   ColorDef,
 } from "@bentley/imodeljs-common";
 import {
@@ -34,6 +33,13 @@ export abstract class EmphasizeElementsTool extends Tool {
   }
 }
 
+const enum OverrideType {
+  None = 0,
+  Color = 1 << 0,
+  Emphasis = 1 << 1,
+  Both = Color | Emphasis,
+}
+
 /** If any elements are selected, emphasize them all by overriding their color to be orange; and de-emphasize all other elements by drawing them transparent grey.
  * @beta
  */
@@ -41,22 +47,40 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   public static toolId = "EmphasizeSelectedElements";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
-  private _wantEmphasis = false;
+  private _type = OverrideType.None;
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
-    if (emph.overrideSelectedElements(vp, new ColorDef(ColorByName.white), undefined, true, false) // replace existing; don't clear selection set...
-      && emph.emphasizeSelectedElements(vp, undefined, true)) { // ...replace existing; now clear selection set
-      emph.wantEmphasis = this._wantEmphasis;
-      vp.isFadeOutActive = true;
-    } else {
-      EmphasizeElements.clear(vp); // clear any previous overrides
-      emph.wantEmphasis = false;
-      vp.isFadeOutActive = false;
+    if (OverrideType.None === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white.clone(), undefined, true, false)) {
+      emph.wantEmphasis = OverrideType.None !== (this._type & OverrideType.Emphasis);
+      if (emph.emphasizeSelectedElements(vp, undefined, true)) {
+        vp.isFadeOutActive = true;
+        return;
+      }
     }
+
+    // Empty selection set - clear any previous overrides.
+    EmphasizeElements.clear(vp);
+    emph.wantEmphasis = false;
+    vp.isFadeOutActive = false;
   }
 
   public parseAndRun(...args: string[]): boolean {
-    this._wantEmphasis = "1" === args[0];
+    if (1 === args.length) {
+      switch (args[0].toLowerCase()[0]) {
+        case "n":
+          break;
+        case "c":
+          this._type = OverrideType.Color;
+          break;
+        case "e":
+          this._type = OverrideType.Emphasis;
+          break;
+        case "b":
+          this._type = OverrideType.Both;
+          break;
+      }
+    }
+
     return this.run(args);
   }
 }
