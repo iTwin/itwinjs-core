@@ -1,0 +1,23 @@
+{
+  "name": "@bentley/geo-photo-plugin",
+  "entries": [
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/geo-photo-plugin_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added licensing notice. "
+          },
+          {
+            "comment": "Initial publish of the Geo-Photo Plugin"
+          },
+          {
+            "comment": "Refactored geoPhoto plugins to allow for tests in chrome and node.js"
+          }
+        ]
+      }
+    }
+  ]
+}

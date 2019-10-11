@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Add GeometricModel3dProps
+- Add SectionLocationProps
+- Remove no-longer-needed mobile RPC chunk size workaround for mobile backends.
+- Fixed multiple viewport shadows
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

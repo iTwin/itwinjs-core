@@ -2,6 +2,7 @@
 ignore: true
 ---
 # NextVersion
+<<<<<<< HEAD
 
 ## Geometry
 
@@ -19,3 +20,6 @@ ignore: true
 * `[PolyfaceQuery.cloneWithColinearEdgeCleanup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
 
 
+=======
+
+>>>>>>> 25fb5ac98... 1.6.0

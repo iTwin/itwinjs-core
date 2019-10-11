@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Do not favorite all nested properties inside nested content field. Instead, favorite it as a separate kind of field
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

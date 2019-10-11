@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Add isNotSpatiallyLocated and isPlanProjection to GeometricModel3d
+- Add SectionLocation
+- Add GraphicalPartition3d and GraphicalModel3d
+- Schema perf tests
+- Addressing bug while querying for linearLocations filtering on more than 1 classes.
+- Addressing rush lint issues.
+- Addressing issues while returning LinearLocationReferences.
+- Deprecating importSchema on the LinearReferencing domain in favor of its bulk-version.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

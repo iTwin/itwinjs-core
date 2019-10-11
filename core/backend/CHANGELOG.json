@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-backend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add isNotSpatiallyLocated and isPlanProjection to GeometricModel3d"
+          },
+          {
+            "comment": "Add SectionLocation"
+          },
+          {
+            "comment": "Add GraphicalPartition3d and GraphicalModel3d"
+          },
+          {
+            "comment": "Schema perf tests"
+          },
+          {
+            "comment": "Addressing bug while querying for linearLocations filtering on more than 1 classes."
+          },
+          {
+            "comment": "Addressing rush lint issues."
+          },
+          {
+            "comment": "Addressing issues while returning LinearLocationReferences."
+          },
+          {
+            "comment": "Deprecating importSchema on the LinearReferencing domain in favor of its bulk-version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/imodeljs-backend_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",

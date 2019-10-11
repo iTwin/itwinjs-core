@@ -2,6 +2,24 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/geometry-core_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BUG#184729 and BUG#185436"
+          },
+          {
+            "comment": "(TASK#175760 Triangulate between linestrings) (TASK#184495 consolidateAdjacentPrimitives) (TASK#184489 Test if points are a rectangle)"
+          },
+          {
+            "comment": "BUG#184729 General matrix4d inverse"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/geometry-core_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",
