@@ -1551,6 +1551,25 @@ describe("ZonesManager", () => {
         resizeBounds[4].top.should.eq(220, "z4.top");
         resizeBounds[4].bottom.should.eq(440, "z4.bottom");
       });
+
+      it("should offset first zone", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zones: {
+            ...TestProps.defaultProps.zones,
+            2: {
+              ...TestProps.defaultProps.zones[2],
+              widgets: [],
+            },
+          },
+          zonesBounds: new Rectangle(0, 0, 0, 900),
+        };
+        const sut = new ZonesManager();
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[8].top.should.eq(600, "z8.top");
+        resizeBounds[8].bottom.should.eq(900, "z8.bottom");
+      });
     });
 
     describe("horizontal", () => {

@@ -564,11 +564,11 @@ export class ZonesManager {
 
       // Spacing ratio to top zone.
       const zoneSpacingRatios = zones.map((zoneId, index) => {
-        if (index === 0)
-          return 0;
         const manager = this.getZoneManager(zoneId);
-        const to = manager.windowResize.vStart;
+        if (index === 0)
+          return manager.windowResize.vStart;
 
+        const to = manager.windowResize.vStart;
         const topZoneId = zones[index - 1];
         const topManager = this.getZoneManager(topZoneId);
         const from = topManager.windowResize.vEnd;
