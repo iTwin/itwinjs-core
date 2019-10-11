@@ -2187,7 +2187,8 @@ export class IModelJsFsStats {
 
 // @alpha
 export class IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
+    constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions);
+    readonly autoExtendProjectExtents: boolean;
     readonly context: IModelCloneContext;
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
@@ -2267,6 +2268,12 @@ export class IModelTransformer {
     protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
     protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
+}
+
+// @alpha
+export interface IModelTransformOptions {
+    autoExtendProjectExtents?: boolean;
+    targetScopeElementId?: Id64String;
 }
 
 // @internal @deprecated

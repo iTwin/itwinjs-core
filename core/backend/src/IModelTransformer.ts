@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, GeometricElement, InformationPartitionElement, Subject } from "./Element";
+import { DefinitionPartition, Element, GeometricElement, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -19,6 +19,16 @@ import { ElementRefersToElements, Relationship, RelationshipProps } from "./Rela
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
+/** Options provided to the [[IModelTransformer]] constructor.
+ * @alpha
+ */
+export interface IModelTransformOptions {
+  /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
+  targetScopeElementId?: Id64String;
+  /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are inserted. If `false`, throw an Error if an element would be outside of the projectExtents. */
+  autoExtendProjectExtents?: boolean;
+}
+
 /** Base class used to transform a source iModel into a different target iModel.
  * @alpha
  */
@@ -27,10 +37,12 @@ export class IModelTransformer {
   public readonly sourceDb: IModelDb;
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
-  /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
-  public readonly targetScopeElementId: Id64String = IModel.rootSubjectId;
   /** The IModelTransformContext for this IModelTransformer. */
   public readonly context: IModelCloneContext;
+  /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
+  public readonly targetScopeElementId: Id64String = IModel.rootSubjectId;
+  /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are inserted. If `false`, throw an Error if an element would be outside of the projectExtents. */
+  public readonly autoExtendProjectExtents: boolean = true;
 
   /** The set of CodeSpecs to exclude from transformation to the target iModel. */
   protected _excludedCodeSpecNames = new Set<string>();
@@ -50,13 +62,16 @@ export class IModelTransformer {
   /** Construct a new IModelImporter
    * @param sourceDb The source IModelDb
    * @param targetDb The target IModelDb
-   * @param targetScopeElementId The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   * @param options The options that specify how the transformation should be done.
    */
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String) {
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
     this.sourceDb = sourceDb;
     this.targetDb = targetDb;
     this.context = new IModelCloneContext(sourceDb, targetDb);
-    if (undefined !== targetScopeElementId) this.targetScopeElementId = targetScopeElementId;
+    if (undefined !== options) {
+      if (undefined !== options.targetScopeElementId) this.targetScopeElementId = options.targetScopeElementId;
+      if (undefined !== options.autoExtendProjectExtents) this.autoExtendProjectExtents = options.autoExtendProjectExtents;
+    }
     this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
     this.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
   }
@@ -414,6 +429,30 @@ export class IModelTransformer {
     return true;
   }
 
+  /** Called before inserting or updating an element in the target iModel to make sure that it is within the projectExtents. */
+  private checkProjectExtents(sourceElement: Element, targetElementProps: ElementProps): void {
+    const targetElementClass: typeof Element = this.targetDb.getJsClass<typeof Element>(targetElementProps.classFullName);
+    if (targetElementClass.prototype instanceof GeometricElement3d) {
+      const targetElementPlacement: Placement3d = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
+      if (targetElementPlacement.isValid) {
+        const targetExtents: AxisAlignedBox3d = targetElementPlacement.calculateRange();
+        if (!targetExtents.isNull && !this.targetDb.projectExtents.containsRange(targetExtents)) {
+          if (this.autoExtendProjectExtents) {
+            Logger.logTrace(loggerCategory, "[Target] Auto-extending projectExtents");
+            targetExtents.extendRange(this.targetDb.projectExtents);
+            this.targetDb.updateProjectExtents(targetExtents);
+          } else {
+            throw new IModelError(IModelStatus.BadElement, "Target element would be outside of projectExtents", Logger.logError, loggerCategory, () => ({
+              sourceElementClass: sourceElement.classFullName,
+              sourceElementId: sourceElement.id,
+              targetElementClass: targetElementProps.classFullName,
+            }));
+          }
+        }
+      }
+    }
+  }
+
   /** Determine if any predecessors have not been imported yet.
    * @param sourceElement The Element from the source iModel
    */
@@ -446,6 +485,7 @@ export class IModelTransformer {
       if (this.hasElementChanged(sourceElement, targetElementId)) {
         const targetElementProps: ElementProps = this.transformElement(sourceElement);
         targetElementProps.id = targetElementId;
+        this.checkProjectExtents(sourceElement, targetElementProps);
         this.updateElement(targetElementProps);
         this.onElementUpdated(sourceElement, targetElementProps);
         this.updateElementProvenance(sourceElement, targetElementId);
@@ -466,6 +506,7 @@ export class IModelTransformer {
       const targetElementProps: ElementProps = this.transformElement(sourceElement);
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (targetElementId === undefined) {
+        this.checkProjectExtents(sourceElement, targetElementProps);
         targetElementId = this.insertElement(targetElementProps);
         this.context.remapElement(sourceElement.id, targetElementId!);
         this.onElementInserted(sourceElement, targetElementProps);
@@ -473,6 +514,7 @@ export class IModelTransformer {
       } else if (this.hasElementChanged(sourceElement, targetElementId)) {
         this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
         targetElementProps.id = targetElementId;
+        this.checkProjectExtents(sourceElement, targetElementProps);
         this.updateElement(targetElementProps);
         this.onElementUpdated(sourceElement, targetElementProps);
         this.updateElementProvenance(sourceElement, targetElementId);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, IModel } from "@bentley/imodeljs-common";
+import { ColorDef, CreateIModelProps, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
@@ -225,15 +225,19 @@ describe("IModelTransformer", () => {
     // Target IModelDb
     const targetFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
     const targetDb: IModelDb = IModelDb.openSnapshot("d:/data/DgnDb/PlantSight/PlantSightTarget.bim").createSnapshot(targetFileName);
-    const targetModelId: Id64String = "0x30000000002";
-    assert.doesNotThrow(() => targetDb.elements.getElement<PhysicalPartition>(targetModelId));
-    assert.doesNotThrow(() => targetDb.models.getModel<PhysicalModel>(targetModelId));
-    assert.equal(countElementsInModel(targetDb, targetModelId), 0, "Target Model should not contain Elements yet");
     // Import
     const transformer = new IModelTransformerWithAsserts(sourceDb, targetDb);
-    transformer.importModelContents(IModel.dictionaryId, IModel.dictionaryId, SpatialCategory.classFullName);
-    transformer.importModelContents(sourceModelId, targetModelId);
-    transformer.importSkippedElements();
+    if (true) {
+      transformer.importAll();
+    } else { // old test case
+      const targetModelId: Id64String = "0x30000000002";
+      assert.doesNotThrow(() => targetDb.elements.getElement<PhysicalPartition>(targetModelId));
+      assert.doesNotThrow(() => targetDb.models.getModel<PhysicalModel>(targetModelId));
+      assert.equal(countElementsInModel(targetDb, targetModelId), 0, "Target Model should not contain Elements yet");
+      transformer.importModelContents(IModel.dictionaryId, IModel.dictionaryId, SpatialCategory.classFullName);
+      transformer.importModelContents(sourceModelId, targetModelId);
+      transformer.importSkippedElements();
+    }
     transformer.dispose();
     // Close
     sourceDb.closeSnapshot();
@@ -252,7 +256,11 @@ describe("IModelTransformer", () => {
     if (IModelJsFs.existsSync(targetDbFile)) {
       IModelJsFs.removeSync(targetDbFile);
     }
-    const targetDb: IModelDb = IModelDb.createSnapshot(targetDbFile, { rootSubject: { name: "Clone-Target" } });
+    const targetDbProps: CreateIModelProps = {
+      rootSubject: { name: "Clone-Target" },
+      ecefLocation: sourceDb.ecefLocation,
+    };
+    const targetDb: IModelDb = IModelDb.createSnapshot(targetDbFile, targetDbProps);
     assert.exists(targetDb);
     // import
     const transformer = new IModelTransformer(sourceDb, targetDb);
@@ -261,6 +269,7 @@ describe("IModelTransformer", () => {
     transformer.dispose();
     const numTargetElements: number = count(targetDb, Element.classFullName);
     assert.isAtLeast(numTargetElements, numSourceElements);
+    assert.deepEqual(sourceDb.ecefLocation, targetDb.ecefLocation);
     // clean up
     sourceDb.closeSnapshot();
     targetDb.closeSnapshot();
@@ -273,7 +282,7 @@ describe("IModelTransformer", () => {
       const iModelA: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "A", Point3d.create(0, 0, 0), ColorDef.green);
       IModelTransformerUtils.assertTeamIModelContents(iModelA, "A");
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
-      const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
+      const transformerA2S = new IModelTransformer(iModelA, iModelShared, { targetScopeElementId: subjectId });
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerA2S.excludeSubject("/Context");
       transformerA2S.excludeElement(IModel.dictionaryId);
@@ -288,7 +297,7 @@ describe("IModelTransformer", () => {
       const iModelB: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "B", Point3d.create(0, 10, 0), ColorDef.blue);
       IModelTransformerUtils.assertTeamIModelContents(iModelB, "B");
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
-      const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
+      const transformerB2S = new IModelTransformer(iModelB, iModelShared, { targetScopeElementId: subjectId });
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerB2S.excludeSubject("/Context");
       transformerB2S.excludeElement(IModel.dictionaryId);
