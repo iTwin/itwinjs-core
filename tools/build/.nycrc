@@ -18,7 +18,7 @@
     ".ts",
     ".tsx"
   ],
-  "temp-directory": "./lib/test/coverage/.nyc_output",
+  "temp-dir": "./lib/test/coverage/.nyc_output",
   "report-dir": "./lib/test/coverage",
   "reporter": [
     "text-summary",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed test output sometimes omitting exception details.",
+      "packageName": "@bentley/certa",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "Bill.Goehrig@bentley.com"
+}
