@@ -9,6 +9,8 @@ import * as i18next from 'i18next';
 // @public
 export class I18N {
     constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
+    // @internal
+    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): any;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)

@@ -38,6 +38,8 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   /** Handler for input receiving focus. */
   onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  /** calculate suggestions for any given input value. */
+  getSuggestions?: (value: string) => AutoSuggestData[];
 
   /** @internal */
   alwaysRenderSuggestions?: boolean;
@@ -113,7 +115,10 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
   }
 
   /** Teach Autosuggest how to calculate suggestions for any given input value. */
-  private _getSuggestions = (value: string) => {
+  private _getSuggestions = (value: string): AutoSuggestData[] => {
+    if (this.props.getSuggestions)
+      return this.props.getSuggestions(value);
+
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
@@ -180,7 +185,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
   public render(): JSX.Element {
     const { inputValue, suggestions } = this.state;
     const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions,
-      onPressEnter, onPressEscape, onPressTab, onInputFocus,
+      onPressEnter, onPressEscape, onPressTab, onInputFocus, getSuggestions,
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 

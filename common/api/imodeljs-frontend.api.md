@@ -7766,14 +7766,15 @@ export class Tool {
     constructor(..._args: any[]);
     readonly description: string;
     static readonly description: string;
-    readonly flyover: string;
+    static readonly englishKeyin: string;
     static readonly flyover: string;
+    readonly flyover: string;
     static hidden: boolean;
     static i18n: I18N;
     static iconSpec: string;
     readonly iconSpec: string;
-    readonly keyin: string;
     static readonly keyin: string;
+    readonly keyin: string;
     // @beta
     static readonly maxArgs: number | undefined;
     // @beta

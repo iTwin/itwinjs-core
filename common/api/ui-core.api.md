@@ -71,6 +71,7 @@ export interface AutoSuggestData {
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
+    getSuggestions?: (value: string) => AutoSuggestData[];
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
