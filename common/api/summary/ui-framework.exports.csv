@@ -182,6 +182,7 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey

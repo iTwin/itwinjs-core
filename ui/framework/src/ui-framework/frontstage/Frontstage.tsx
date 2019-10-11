@@ -9,10 +9,10 @@ import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
-import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
+import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
-import { FrontstageRuntimeProps } from "./FrontstageComposer";
+import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
@@ -370,7 +370,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const zones = runtimeProps.nineZone.zones;
       const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, zones);
       const dropTarget = zonesManager.getDropTarget(zoneId, zones);
-      const zone = zones.zones[zoneId];
+      const zone = getExtendedZone(zoneId, zones, runtimeProps.zoneDefProvider);
       const widget = zone.widgets.length > 0 ? zones.widgets[zone.widgets[0]] : undefined;
       const openWidgetId = zone.widgets.find((wId) => zones.widgets[wId].tabIndex >= 0);
       const activeTabIndex = openWidgetId ? zones.widgets[openWidgetId].tabIndex : 0;
@@ -390,7 +390,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         widget,
         zoneDef,
         zoneDefProvider: runtimeProps.zoneDefProvider,
-        zone: runtimeProps.nineZone.zones.zones[zoneId],
+        zone,
       };
       return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
     });
@@ -582,3 +582,33 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.forceUpdate();
   }
 }
+
+/** @internal */
+export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider): ZoneManagerProps => {
+  const zone = zones.zones[zoneId];
+  if (zoneId === 1 || zoneId === 3) {
+    let extendOverId: WidgetZoneId = zoneId;
+    const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
+    let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
+    while (bottomZoneId !== undefined) {
+      const bottomZoneDef = defProvider.getZoneDef(bottomZoneId);
+      if (bottomZoneDef && bottomZoneDef.widgetDefs.length !== 0)
+        break;
+
+      extendOverId = bottomZoneId;
+      bottomZoneId = zonesManager.bottomZones.getInitial(bottomZoneId);
+    }
+
+    const bottom = zones.zones[extendOverId].bounds.bottom;
+    if (bottom === zone.bounds.bottom)
+      return zone;
+    return {
+      ...zone,
+      bounds: {
+        ...zone.bounds,
+        bottom,
+      },
+    };
+  }
+  return zone;
+};

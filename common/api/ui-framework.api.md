@@ -123,6 +123,7 @@ import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
+import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
 
@@ -2227,6 +2228,9 @@ export type FunctionType = (...args: any[]) => any;
 
 // @public
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
+
+// @internal (undocumented)
+export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
 // @internal (undocumented)
 export const getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps;
