@@ -7430,11 +7430,11 @@ export namespace Tile {
         readonly worldToViewMap: Map4d;
     }
     export const enum LoadPriority {
-        Background = 1,
-        Classifier = 3,
-        Context = 4,
-        Primary = 0,
-        Terrain = 2
+        Classifier = 50,
+        Context = 40,
+        Map = 1,
+        Primary = 20,
+        Terrain = 30
     }
     export const enum LoadStatus {
         // (undocumented)

@@ -670,16 +670,16 @@ export namespace Tile {
    * @internal
    */
   export const enum LoadPriority {
+    /** Background map tiles. */
+    Map = 1,
     /** Typically, tiles generated from the contents of geometric models. */
-    Primary = 0,
-    /** Typically, map tiles. */
-    Background = 1,
+    Primary = 20,
     /** Terrain -- requires background/map tiles for drape. */
-    Terrain = 2,
-    /** Supplementary tiles used to classify the contents of geometric or reality models. */
-    Classifier = 3,
+    Terrain = 30,
     /** Typically, context reality models. */
-    Context = 4,
+    Context = 40,
+    /** Supplementary tiles used to classify the contents of geometric or reality models. */
+    Classifier = 50,
   }
 
   /**

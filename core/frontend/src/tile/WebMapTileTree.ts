@@ -188,7 +188,7 @@ export abstract class MapTileLoaderBase extends TileLoader {
   }
 
   public get parentsAndChildrenExclusive(): boolean { return false; }
-  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Background; }
+  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Map; }
   public tileRequiresLoading(params: Tile.Params): boolean {
     return 0.0 !== params.maximumSize;
   }
