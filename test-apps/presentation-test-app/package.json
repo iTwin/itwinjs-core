@@ -70,8 +70,7 @@
     "@bentley/ui-components": "1.7.0-dev.4",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
-    "semver": "^5.5.0",
-    "immutable": "^3.8.2"
+    "semver": "^5.5.0"
   },
   "devDependencies": {
     "@bentley/config-loader": "1.7.0-dev.4",

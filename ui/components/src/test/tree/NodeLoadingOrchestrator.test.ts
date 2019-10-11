@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
-import { Subscription } from "rxjs/internal/Subscription";
 import { throwError } from "rxjs/internal/observable/throwError";
 import { from } from "rxjs/internal/observable/from";
 import { of } from "rxjs/internal/observable/of";
 import { initializeTree, TestTreeDataProvider } from "./TestDataFactories";
 import { ResolvablePromise } from "../test-helpers/misc";
+import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
 import { makeObservableCallback, onCancelation, NodeSet, PendingNodeTracker, NodeLoadingOrchestrator, NodeKey } from "../../ui-components/tree/NodeLoadingOrchestrator";
 import { BeInspireTreeNode, BeInspireTree, toNodes, toNode } from "../../ui-components/tree/component/BeInspireTree";
 import { TreeNodeItem } from "../../ui-components";
@@ -33,24 +33,14 @@ describe("NodeLoadingOrchestrator", () => {
 
   /** Expects observable to emit nodes in a specific order. The order is defined by the sequence of groups of emitted node ids, e.g. `[[0], [1, 2]]`. */
   async function expectSequence(observable: Observable<Array<BeInspireTreeNode<TreeNodeItem>>>, expectedSequence: number[][]): Promise<void> {
+    const observedSequence = await extractSequence(observable);
     const actualSequence: string[][] = [];
-    const subscription = observable.subscribe({
-      next: (loadedNodes) => {
-        loadedNodes.forEach((node) => expect(node.payload).to.not.be.undefined);
-        actualSequence.push(loadedNodes.map((node) => node.id!));
-      },
-      complete: () => {
-        expect(actualSequence).to.eql(expectedSequence.map((ids) => ids.map((id) => id.toString())));
-      },
-    });
-    return waitForUnsubscription(subscription);
-  }
+    for (const loadedNodes of observedSequence) {
+      loadedNodes.forEach((node) => expect(node.payload).to.not.be.undefined);
+      actualSequence.push(loadedNodes.map((node) => node.id!));
+    }
 
-  /** Returns a promise which is resolved when the input subscription is disposed. */
-  async function waitForUnsubscription(subscription: Subscription): Promise<void> {
-    const promise = new ResolvablePromise<void>();
-    subscription.add(() => promise.resolve());
-    return promise;
+    expect(actualSequence).to.eql(expectedSequence.map((ids) => ids.map((id) => id.toString())));
   }
 
   describe("prepareNodes", () => {

@@ -122,6 +122,16 @@ export * from "./ui-components/tree/ImageLoader";
 export * from "./ui-components/tree/hocs/withDragDrop";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
 
+export * from "./ui-components/tree/controlled/TreeActions";
+export * from "./ui-components/tree/controlled/TreeEventDispatcher";
+export * from "./ui-components/tree/controlled/TreeEventHandler";
+export * from "./ui-components/tree/controlled/TreeEvents";
+export * from "./ui-components/tree/controlled/TreeModel";
+export * from "./ui-components/tree/controlled/TreeModelSource";
+export * from "./ui-components/tree/controlled/component/ControlledTree";
+export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
+export * from "./ui-components/tree/controlled/component/TreeRenderer";
+
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";
 

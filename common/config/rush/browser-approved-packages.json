@@ -395,8 +395,12 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "immer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "immutable",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "imports-loader",
@@ -652,6 +656,14 @@
     },
     {
       "name": "react-virtualized",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-virtualized-auto-sizer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-window",
       "allowedCategories": [ "frontend" ]
     },
     {

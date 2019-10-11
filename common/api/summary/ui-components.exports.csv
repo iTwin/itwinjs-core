@@ -51,6 +51,8 @@ beta;BreadcrumbUpdateEventArgs
 beta;CellEditingEngine
 public;CellItem
 public;CellProps
+alpha;CheckBoxInfo
+alpha;CheckboxStateChange
 beta;ColorEditor 
 beta;ColorPickerButton 
 beta;ColorPickerProps 
@@ -64,6 +66,8 @@ alpha;CompositeFilterDescriptorCollection
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 
+alpha;ControlledTree: React.FC
+alpha;ControlledTreeProps 
 public;ConvertedPrimitives
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
@@ -100,6 +104,7 @@ beta;EnumPropertyButtonGroupEditor
 beta;EnumPropertyEditor 
 public;EnumTypeConverter 
 public;EventsMuteContext 
+alpha;ExtendedTreeNodeRendererProps 
 alpha;FieldFilterDescriptor 
 alpha;FilterableColumn
 alpha;FilterableTable
@@ -142,6 +147,9 @@ public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is 
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is Promise
 public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[]
+alpha;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
+alpha;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
+alpha;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
@@ -152,14 +160,19 @@ beta;LineWeightSwatch
 beta;LineWeightSwatchProps 
 public;LoadedBinaryImage 
 public;LoadedImage
+internal;LoadedNodeHierarchy
+internal;LoadedNodeHierarchyItem
 public;MapPayloadToInspireNodeCallback
 public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange
 internal;MultiSelectionHandler
+alpha;MutableCheckBoxInfo 
 beta;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
+alpha;MutableTreeModel 
+alpha;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 internal;NodeRenderer = (item: BeInspireTreeNode
@@ -289,17 +302,42 @@ beta;TogglePropertyEditor
 internal;toNode: 
 internal;toNodes: 
 public;Tree 
+alpha;TreeActions
 beta;TreeCellUpdatedArgs
+alpha;TreeCheckboxStateChangeEvent
 public;TreeDataChangesListener = (nodes: Array
 public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
 public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
 public;TreeDataProviderPromise = Promise
 public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
+internal;TreeDataSource
 beta;TreeDragDropProps
 beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
+internal;TreeEventDispatcher 
+alpha;TreeEventHandler 
+alpha;TreeEventHandlerParams
+alpha;TreeEvents
 public;TreeImageLoader 
+alpha;TreeModel
+alpha;TreeModelNode
+alpha;TreeModelNodeInput
+alpha;TreeModelNodePlaceholder
+alpha;TreeModelRootNode
+alpha;TreeModelSource 
+internal;TreeModelUpdaterParams
+alpha;TreeNodeEvent
 public;TreeNodeItem
+alpha;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
+alpha;TreeNodeLoader
+alpha;TreeNodeLoadResult
+alpha;TreeNodeRenderer: React.MemoExoticComponent
+alpha;TreeNodeRendererProps 
 public;TreeProps 
+alpha;TreeRenderer: React.FC
+alpha;TreeRendererProps
+alpha;TreeSelectionChange
+alpha;TreeSelectionModificationEvent
+alpha;TreeSelectionReplacementEvent
 internal;TreeTest
 public;class TypeConverter 
 public;TypeConverterManager
@@ -314,6 +352,7 @@ public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
+alpha;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 
 beta;WeightPickerProps 
