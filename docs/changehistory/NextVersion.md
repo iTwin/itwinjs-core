@@ -14,3 +14,11 @@ The [Hilite]($common) effect can now be applied to individual features (elements
 * [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.
 * [RegionOps.consolidateAdjacentPrimitives]($geometry) method to consolidate adjacent lines and linestrings, and adjacent arcs of the same underlying circle or ellipse.
 * [RegionOps.rectangleEdgeTransform]($geometry) method to decide if a Loop object or point array is a simple rectangle.
+
+## Presentation
+
+### Read-Only Mode
+
+Added a flag [PresentationManagerProps.mode]($presentation-backend) to indicate that the backend always opens iModels in read-only mode and presentation manager
+can make some optimizations related to reacting to changes in iModels. This is an optional property that defaults to previous behavior (read-write), but it's
+strongly encouraged to set it to [PresentationManagerMode.ReadOnly]($presentation-backend) on read-only backends.

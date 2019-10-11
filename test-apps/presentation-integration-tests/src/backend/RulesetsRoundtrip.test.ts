@@ -10,6 +10,7 @@ import { Ruleset } from "@bentley/presentation-common";
 import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/RulesetManager";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import { tweakRuleset } from "./Helpers";
+import { PresentationManagerMode } from "@bentley/presentation-backend";
 
 describe("Rulesets roundtrip", () => {
 
@@ -19,7 +20,12 @@ describe("Rulesets roundtrip", () => {
   before(() => {
     initialize();
 
-    const TNativePlatform = createDefaultNativePlatform("", [], {}); // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+      id: "",
+      localeDirectories: [],
+      taskAllocationsMap: {},
+      mode: PresentationManagerMode.ReadWrite,
+    });
     nativePlatform = new TNativePlatform();
 
     rulesets = new RulesetManagerImpl(() => nativePlatform);
