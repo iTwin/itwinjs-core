@@ -185,6 +185,11 @@ beta;class LinearLocationElement
 beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
+beta;LinearlyLocatedBase
+beta;LinearlyLocatedMultipleAt 
+beta;LinearlyLocatedMultipleFromTo 
+beta;LinearlyLocatedSingleAt 
+beta;LinearlyLocatedSingleFromTo 
 beta;LinearlyReferencedAtLocation 
 beta;LinearlyReferencedAtPositionRefersToReferent 
 beta;LinearlyReferencedFromPositionRefersToReferent 

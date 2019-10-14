@@ -11,10 +11,60 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, LinearReferencingSchema,
-  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements,
+  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { LinearElement, LinearlyLocated } from "../../domains/LinearReferencingElements";
+import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
+
+class TestLinearReferencingSchema extends Schema {
+  public static get schemaName(): string { return "TestLinearReferencing"; }
+  public static get schemaFilePath(): string { return path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml"); }
+  public static registerSchema() {
+    if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+      Schemas.unregisterSchema(this.schemaName);
+      Schemas.registerSchema(this);
+
+      ClassRegistry.register(TestLinearlyLocatedAttribution, this);
+    }
+  }
+}
+
+class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implements LinearlyLocatedSingleFromTo {
+  public static get className(): string { return "TestLinearlyLocatedAttribution"; }
+
+  public constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+
+  private static toProps(modelId: Id64String, categoryId: Id64String, attributedElementId: Id64String): LinearlyLocatedAttributionProps {
+    const props: LinearlyLocatedAttributionProps = {
+      classFullName: TestLinearlyLocatedAttribution.classFullName,
+      category: categoryId,
+      model: modelId,
+      code: Code.createEmpty(),
+      attributedElement: { id: attributedElementId },
+    };
+
+    return props;
+  }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
+  }
+
+  public getFromToLocation(): LinearlyReferencedFromToLocation | undefined {
+    return LinearlyLocated.getFromToLocation(this.iModel, this.id);
+  }
+
+  public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
+    LinearlyLocated.updateFromToLocation(this.iModel, this.id, linearLocation, aspectId);
+  }
+
+  public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+    fromToPosition: LinearlyReferencedFromToLocationProps, attributedElementId: Id64String): Id64String {
+    return LinearlyLocated.insertFromTo(iModel, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
+  }
+}
 
 describe("LinearReferencing Domain", () => {
   const requestContext = new BackendRequestContext();
@@ -29,8 +79,9 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await iModelDb.importSchemas(requestContext, [LinearReferencingSchema.schemaFilePath, path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
+    await iModelDb.importSchemas(requestContext, [LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
     LinearReferencingSchema.registerSchema();
+    TestLinearReferencingSchema.registerSchema();
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory
@@ -83,30 +134,38 @@ describe("LinearReferencing Domain", () => {
     assert.isTrue(Id64.isValidId64(linearElementId));
 
     // Create a Test LinearlyLocatedAttribution element
-    const testLinearlyLocatedAttributionProps: LinearlyLocatedAttributionProps = {
-      classFullName: "TestLinearReferencing:TestLinearlyLocatedAttribution",
-      model: physicalModelId,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-      attributedElement: { id: linearFeatureElementId },
-    };
-
     let linearFromToPosition: LinearlyReferencedFromToLocationProps = {
       fromPosition: { distanceAlongFromStart: 10.0 },
       toPosition: { distanceAlongFromStart: 70.0 },
     };
 
-    const linearlyLocatedAttributionId: Id64String =
-      LinearlyLocated.insertFromTo(iModelDb, testLinearlyLocatedAttributionProps, linearElementId, linearFromToPosition);
+    const linearlyLocatedAttributionId = TestLinearlyLocatedAttribution.insertFromTo(
+      iModelDb, physicalModelId, spatialCategoryId, linearElementId, linearFromToPosition, linearFeatureElementId);
     assert.isTrue(Id64.isValidId64(linearlyLocatedAttributionId));
+    assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearlyLocatedAttributionId));
 
     const linearLocationAspects = LinearlyLocated.getFromToLocations(iModelDb, linearlyLocatedAttributionId);
     assert.equal(linearLocationAspects.length, 1);
 
-    const linearLocationAspect = LinearlyLocated.getFromToLocation(iModelDb, linearlyLocatedAttributionId);
+    let linearLocationAspect = LinearlyLocated.getFromToLocation(iModelDb, linearlyLocatedAttributionId);
     assert.isFalse(linearLocationAspect === undefined);
     assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
+
+    const linearlyLocatedAttribution = iModelDb.elements.getElement<TestLinearlyLocatedAttribution>(linearlyLocatedAttributionId);
+    linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
+    assert.equal(linearlyLocatedAttribution.getLinearElementId(), linearElementId);
+
+    // TODO: Enable testing of updateFromToLocation below once iModel.elements.updateAspect is fixed.
+    // It currently doesn't work with LinearReferencing aspects since its schema declares handlers.
+    // linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
+    // linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
+
+    // linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
+    // assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    // assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     // Create a Test PhysicalLinear element
     const testPhysicalLinarProps: GeometricElement3dProps = {
@@ -124,6 +183,7 @@ describe("LinearReferencing Domain", () => {
     const linearPhysicalElementId: Id64String =
       LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinarProps, linearElementId, linearFromToPosition);
     assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
+    assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearPhysicalElementId));
 
     // Query for linearly located elements via the queryLinearLocations API
     let linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,

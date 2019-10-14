@@ -2430,14 +2430,15 @@ export class LinearLocationReference {
 
 // @beta
 export class LinearlyLocated {
-    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps | undefined;
-    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps[];
-    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps | undefined;
-    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps[];
+    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined;
+    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation[];
+    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation | undefined;
+    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation[];
+    static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined;
     static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
     static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
-    static updateAtLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedAtLocationAspectProps): void;
-    static updateFromToLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedFromToLocationAspectProps): void;
+    static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+    static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 // @beta
@@ -2447,6 +2448,44 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
     attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
     static readonly className: string;
+}
+
+// @beta
+export interface LinearlyLocatedBase {
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
+}
+
+// @beta
+export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
+    // (undocumented)
+    getAtLocations(): LinearlyReferencedAtLocation[];
+    // (undocumented)
+    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {
+    // (undocumented)
+    getFromToLocations(): LinearlyReferencedFromToLocation[];
+    // (undocumented)
+    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
+    // (undocumented)
+    getAtLocation(): LinearlyReferencedAtLocation | undefined;
+    // (undocumented)
+    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
+    // (undocumented)
+    getFromToLocation(): LinearlyReferencedFromToLocation | undefined;
+    // (undocumented)
+    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 // @beta
