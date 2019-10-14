@@ -614,6 +614,42 @@ export enum Face {
 // @alpha (undocumented)
 export const FeaturedTile: React.FunctionComponent<TileProps>;
 
+// @alpha
+export class Field extends React.Component<IFieldProps> {
+    constructor(props: IFieldProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface FieldDef {
+    // (undocumented)
+    editor?: FieldEditor;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    options?: string[] | {
+        [key: string]: string;
+    };
+    // (undocumented)
+    value?: any;
+}
+
+// @alpha
+export interface FieldDefinitions {
+    // (undocumented)
+    [key: string]: FieldDef;
+}
+
+// @alpha
+export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
+
+// @alpha
+export interface FieldValues {
+    // (undocumented)
+    [key: string]: any;
+}
+
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
@@ -635,6 +671,22 @@ export class FocusTrap extends React.Component<Props, State> {
     // (undocumented)
     render(): JSX.Element | null;
     }
+
+// @alpha
+export class Form extends React.Component<IFormProps, FormState> {
+    constructor(props: IFormProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export const FormContext: React.Context<FormContextState | undefined>;
+
+// @alpha
+export interface FormContextState extends FormState {
+    // (undocumented)
+    setValues: (values: FieldValues) => void;
+}
 
 // @internal
 export const getClassName: (obj: any) => string;

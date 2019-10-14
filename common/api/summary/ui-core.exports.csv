@@ -58,10 +58,18 @@ public;ExpansionToggle
 public;ExpansionToggleProps 
 beta;Face
 alpha;FeaturedTile: React.FunctionComponent
+alpha;Field 
+alpha;FieldDef
+alpha;FieldDefinitions
+alpha;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+alpha;FieldValues
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
 beta;FocusTrap 
+alpha;Form 
+alpha;FormContext: React.Context
+alpha;FormContextState 
 internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string

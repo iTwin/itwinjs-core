@@ -111,6 +111,9 @@ export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
 
+export * from "./ui-core/form/Field";
+export * from "./ui-core/form/Form";
+
 export * from "./ui-core/tabs/HorizontalTabs";
 export * from "./ui-core/tabs/VerticalTabs";
 export * from "./ui-core/tabs/Tabs";

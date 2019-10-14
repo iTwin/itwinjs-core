@@ -141,12 +141,12 @@
         @include uicore-text-block;
 
         padding: $uicore-unbordered-padding;
+        margin: 0;
 
         @include uicore-touch-scrolling;
         @include uicore-scrollbar();
 
         &.core-dialog-content-no-inset {
-          margin: 0;
           padding: 0;
         }
       }

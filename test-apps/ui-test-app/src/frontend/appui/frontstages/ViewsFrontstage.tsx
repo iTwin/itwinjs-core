@@ -87,6 +87,7 @@ import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionT
 import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+import { ExampleForm } from "../forms/ExampleForm";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
@@ -417,6 +418,12 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _exampleFormItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-annotation", label: "Open Example Form", execute: () => { ExampleForm.open(); },
+    });
+  }
+
   private get _radialMenuItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { ModalDialogManager.openDialog(this.radialMenu()); },
@@ -704,7 +711,7 @@ class FrontstageToolWidget extends React.Component {
       labelKey: "SampleApp:buttons.dialogDemos",
       panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      items: [this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
       badgeType: BadgeType.New,
     }),
     new GroupItemDef({
