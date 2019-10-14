@@ -159,6 +159,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -792,7 +796,7 @@
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslint",
@@ -812,7 +816,7 @@
     },
     {
       "name": "tsutils",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "typedoc",
