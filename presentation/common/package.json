@@ -22,7 +22,7 @@
   "scripts": {
     "build": "npm run ruleset-json-schema && npm run extract && buildIModelJsModule",
     "build:watch": "npm run ruleset-json-schema && tsc -b ./src/test -w",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-common",

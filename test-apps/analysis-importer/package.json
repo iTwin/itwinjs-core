@@ -7,7 +7,7 @@
     "build": "npm run build-code && npm run extract-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "lint": "tslint -p . 1>&2",
     "build-code": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json ../../generated-docs",
+    "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
     "test": "",
     "docs": "",

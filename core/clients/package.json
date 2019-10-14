@@ -11,7 +11,7 @@
   "scripts": {
     "build": "buildIModelJsModule",
     "build:module": "buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",

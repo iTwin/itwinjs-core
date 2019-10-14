@@ -684,7 +684,11 @@
     },
     {
       "name": "request",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "request-promise",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "request-promise-native",

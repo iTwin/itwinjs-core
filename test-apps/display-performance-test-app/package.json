@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib .rush package-deps.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",

@@ -11,7 +11,7 @@
   "typings": "lib/ui-components",
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf ./lib package-deps.json",
+    "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-components/file.json --tsIndexFile=./ui-components.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",

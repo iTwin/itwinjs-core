@@ -7,7 +7,7 @@
     "build": "npm run build-code && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "lint": "tslint -p . 1>&2",
     "build-code": "tsc 1>&2",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib .rush",
     "test": "",
     "docs": "",
     "cover": ""

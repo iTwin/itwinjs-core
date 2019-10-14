@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && cpx ./lib/buildIModelJsModule.js ./bin && node ../build/scripts/ignoreargs.js 1>&2",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib .rush",
     "docs": "",
     "lint": "",
     "test": "",

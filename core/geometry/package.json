@@ -7,7 +7,7 @@
   "typings": "lib/geometry-core",
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json",
+    "clean": "rimraf lib .rush ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
