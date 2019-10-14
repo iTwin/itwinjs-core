@@ -180,6 +180,7 @@ import { TransientIdSequence } from '@bentley/bentleyjs-core';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { UserManagerSettings } from 'oidc-client';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
 import { ViewDefinition2dProps } from '@bentley/imodeljs-common';
@@ -4686,6 +4687,8 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     constructor(_configuration: OidcFrontendClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @internal
+    protected getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings>;
     readonly hasExpired: boolean;
     readonly hasSignedIn: boolean;
     initialize(requestContext: FrontendRequestContext): Promise<void>;

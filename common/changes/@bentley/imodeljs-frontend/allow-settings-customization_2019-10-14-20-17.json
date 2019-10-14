@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

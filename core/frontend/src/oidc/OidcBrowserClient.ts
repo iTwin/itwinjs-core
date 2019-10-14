@@ -298,7 +298,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     return this._userManager;
   }
 
-  private async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
+  /**
+   * Override to customize the user manager settings used by the underlying oidc-client-js.
+   * This allows setting additional fields that are not exposed by [[OidcFrontendClientConfiguration]] or customizing the defaults.
+   * @internal
+   */
+  protected async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
       authority: this._configuration.authority || await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
