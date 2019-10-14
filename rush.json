@@ -152,6 +152,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ui-abstract",
+      "projectFolder": "ui/abstract",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-core",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",

@@ -13,7 +13,7 @@ import { WidgetState } from "./WidgetDef";
 import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($framework). component.
+/** Properties for a [Widget]($ui-framework). component.
  * @public
  */
 export interface WidgetProps extends IconProps {

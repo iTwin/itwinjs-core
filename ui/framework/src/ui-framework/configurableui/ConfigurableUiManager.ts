@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -60,7 +60,7 @@ export class ConfigurableUiManager {
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
    * [[WidgetControl]] or
-   * [ToolUiProvider]($framework).
+   * [ToolUiProvider]($ui-framework).
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */

@@ -29,6 +29,6 @@ initializes the FrontstageDef, and calls `FrontstageManager.openNestedFrontstage
 
 ## API Reference
 
-* [NestedFrontstage]($framework)
-* [FrontstageManager]($framework)
-* [Frontstage]($framework:Frontstage)
+* [NestedFrontstage]($ui-framework)
+* [FrontstageManager]($ui-framework)
+* [Frontstage]($ui-framework:Frontstage)

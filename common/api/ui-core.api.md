@@ -4,15 +4,13 @@
 
 ```ts
 
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
+import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { UiError as UiError_2 } from '@bentley/ui-abstract';
 
 // @internal
 export class AnnularSector {
@@ -688,7 +686,7 @@ export interface FormContextState extends FormState {
     setValues: (values: FieldValues) => void;
 }
 
-// @internal
+// @internal @deprecated
 export const getClassName: (obj: any) => string;
 
 // @internal
@@ -1842,14 +1840,11 @@ export class UiCore {
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
-// @public
-export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
-}
+// @public @deprecated
+export const UiError: typeof UiError_2;
 
 // @public
-export class UiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
-    emit(args: TEventArgs): void;
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
 // @beta

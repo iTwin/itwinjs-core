@@ -9,19 +9,22 @@ import * as React from "react";
 import { IconSpec as Core_IconSpec, IconProps as Core_IconProps, Icon as Core_Icon } from "@bentley/ui-core";
 
 /** Prototype for an IconSpec which can be a string or a ReactNode.
+ * Deprecated - Use IconSpec in bentley/ui-core instead.
  * @public
  * @deprecated Use IconSpec in bentley/ui-core instead
  */
 export type IconSpec = Core_IconSpec;
 
-/** Properties for the [[Icon]] React component
+/** Properties for the [[Icon]] React component.
+ * Deprecated - Use IconProps in bentley/ui-core instead.
  * @public
  * @deprecated Use IconProps in bentley/ui-core instead
  */
 
 export interface IconProps extends Core_IconProps { }   // tslint:disable-line: no-empty-interface
 
-/** Icon Functional component
+/** Icon Functional component.
+ * Deprecated - Use the Icon component in bentley/ui-core instead.
  * @public
  * @deprecated Use the Icon component in bentley/ui-core instead
  */

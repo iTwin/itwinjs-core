@@ -1,0 +1,5 @@
+sep=;
+Release Tag;API Item
+internal;getClassName: (obj: any) => string
+public;UiAbstract
+public;UiError 

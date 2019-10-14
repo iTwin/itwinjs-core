@@ -7,7 +7,8 @@
 import * as React from "react";
 
 import { BadgeType } from "@bentley/imodeljs-frontend";
-import { UiEvent, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { UiEvent } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";

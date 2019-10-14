@@ -115,6 +115,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@bentley/ui-abstract",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/ui-components",
       "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },

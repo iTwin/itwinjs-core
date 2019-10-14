@@ -108,6 +108,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@bentley/ui-abstract": "1.7.0-dev.5",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "js-untar": "^2.0.0",

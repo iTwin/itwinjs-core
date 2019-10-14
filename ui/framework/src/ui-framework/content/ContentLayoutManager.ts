@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";

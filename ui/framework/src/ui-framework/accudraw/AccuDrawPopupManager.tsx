@@ -89,7 +89,7 @@ class InputEditorCommitHandler {
 export class AccuDrawPopupsChangedEvent extends UiEvent<{}> { }
 
 /** AccuDraw Popup Manager
- *  @alpha
+ * @alpha
  */
 export class AccuDrawPopupManager {
   private static _popups: AccuDrawPopupInfo[] = new Array<AccuDrawPopupInfo>();
@@ -272,7 +272,7 @@ export class AccuDrawPopupManager {
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 /** AccuDraw Popup Renderer
- *  @alpha
+ * @alpha
  */
 export class AccuDrawPopupRenderer extends React.Component<CommonProps> {
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module KeyboardShortcut */
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
 import { ItemProps } from "../shared/ItemProps";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";

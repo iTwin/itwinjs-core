@@ -10,7 +10,8 @@ import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } fro
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState } from "@bentley/imodeljs-frontend";
-import { UiEvent, UiError, getClassName } from "@bentley/ui-core";
+import { UiError, getClassName } from "@bentley/ui-abstract";
+import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
 
 import { ProjectServices } from "./clientservices/ProjectServices";

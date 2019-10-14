@@ -68,6 +68,7 @@
     "@bentley/build-tools": "1.7.0-dev.5",
     "@bentley/bentleyjs-core": "1.7.0-dev.5",
     "@bentley/imodeljs-i18n": "1.7.0-dev.5",
+    "@bentley/ui-abstract": "1.7.0-dev.5",
     "@bentley/webpack-tools": "1.7.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

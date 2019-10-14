@@ -6,7 +6,8 @@
 
 import * as React from "react";
 
-import { ContextSubMenu, UiError, ContextMenuItem } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { ContextSubMenu, ContextMenuItem } from "@bentley/ui-core";
 
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { ItemDefBase } from "./ItemDefBase";

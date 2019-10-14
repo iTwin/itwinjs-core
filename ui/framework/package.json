@@ -89,6 +89,7 @@
     "@bentley/presentation-common": "1.7.0-dev.5",
     "@bentley/presentation-frontend": "1.7.0-dev.5",
     "@bentley/presentation-testing": "1.7.0-dev.5",
+    "@bentley/ui-abstract": "1.7.0-dev.5",
     "@bentley/ui-core": "1.7.0-dev.5",
     "@bentley/ui-components": "1.7.0-dev.5",
     "@bentley/ui-ninezone": "1.7.0-dev.5",

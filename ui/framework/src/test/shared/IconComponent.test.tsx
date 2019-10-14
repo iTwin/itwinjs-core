@@ -9,18 +9,22 @@ import { Icon } from "../../ui-framework/shared/IconComponent";
 describe("IconComponent", () => {
 
   it("should render with ReactNode", () => {
+    // tslint:disable-next-line: deprecation
     mount(<Icon iconSpec={<span>Test</span>} />);
   });
 
   it("should render correctly with ReactNode", () => {
+    // tslint:disable-next-line: deprecation
     shallow(<Icon iconSpec={<span>Test</span>} />).should.matchSnapshot();
   });
 
   it("should render correctly with icon svg string", () => {
+    // tslint:disable-next-line: deprecation
     shallow(<Icon iconSpec="svg:test.svg" />).should.matchSnapshot();
   });
 
   it("should render correctly with icon class string", () => {
+    // tslint:disable-next-line: deprecation
     shallow(<Icon iconSpec="icon-developer" />).should.matchSnapshot();
   });
 
