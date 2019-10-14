@@ -679,6 +679,16 @@ export class ZonesManager {
   public mergeZone(zoneId: WidgetZoneId, targetZoneId: WidgetZoneId, props: ZonesManagerProps): ZonesManagerProps {
     if (!this.canBeMergedTo(zoneId, targetZoneId, props))
       return props;
+    const managerSettings = this.getZoneManager(zoneId).windowResize;
+    const targetSettings = this.getZoneManager(targetZoneId).windowResize;
+    targetSettings.vStart = Math.min(managerSettings.vStart, targetSettings.vStart);
+    targetSettings.vEnd = Math.max(managerSettings.vEnd, targetSettings.vEnd);
+    targetSettings.hStart = Math.min(managerSettings.hStart, targetSettings.hStart);
+    targetSettings.hEnd = Math.max(managerSettings.hEnd, targetSettings.hEnd);
+
+    const zone = props.zones[zoneId];
+    const targetZone = props.zones[targetZoneId];
+    const bounds = Rectangle.create(zone.bounds).outerMergeWith(targetZone.bounds).toProps();
     return {
       ...props,
       zones: {
@@ -689,6 +699,7 @@ export class ZonesManager {
         },
         [targetZoneId]: {
           ...props.zones[targetZoneId],
+          bounds,
           widgets: [
             ...props.zones[targetZoneId].widgets,
             zoneId,

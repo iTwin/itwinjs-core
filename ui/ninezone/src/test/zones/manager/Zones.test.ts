@@ -767,6 +767,49 @@ describe("ZonesManager", () => {
       const newProps = sut.object.mergeZone(4, 6, props.object);
       (newProps === props.object).should.true;
     });
+
+    it("should update window resize vStart setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(6, 9, TestProps.defaultProps);
+      const managerSettings = sut.getZoneManager(9).windowResize;
+      managerSettings.vStart.should.eq(1 / 3);
+    });
+
+    it("should update window resize vEnd setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(9, 6, TestProps.defaultProps);
+      const managerSettings = sut.getZoneManager(6).windowResize;
+      managerSettings.vEnd.should.eq(1);
+    });
+
+    it("should update window resize hStart setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(8, 9, TestProps.inWidgetMode);
+      const managerSettings = sut.getZoneManager(9).windowResize;
+      managerSettings.hStart.should.eq(1 / 3);
+    });
+
+    it("should update window resize hEnd setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(9, 8, TestProps.inWidgetMode);
+      const managerSettings = sut.getZoneManager(8).windowResize;
+      managerSettings.hEnd.should.eq(1);
+    });
+
+    it("should merge bounds", () => {
+      const sut = new ZonesManager();
+      const newProps = sut.mergeZone(9, 6, TestProps.openedZone6);
+
+      const bounds = newProps.zones[6].bounds;
+      bounds.left.should.eq(10);
+      bounds.top.should.eq(20);
+      bounds.right.should.eq(99);
+      bounds.bottom.should.eq(110);
+    });
   });
 
   describe("canBeMergedTo", () => {

@@ -2742,7 +2742,6 @@ interface ZonesExampleProps {
   onHideMessage: () => void;
   onHistoryItemClick: (item: HistoryItem) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
-  onLayout: () => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onOpenWidgetChange: (openWidget: FooterWidget) => void;
   onResize: () => void;
@@ -2783,8 +2782,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
 
   public componentDidMount(): void {
     window.addEventListener("resize", this._handleWindowResize, true);
-
-    this.props.onLayout();
+    this.props.onResize();
   }
 
   public componentWillUnmount(): void {
@@ -3114,6 +3112,18 @@ interface ZonesPageState {
 
 const defaultNineZoneStagePanelsManagerProps = getDefaultNineZoneStagePanelsManagerProps();
 
+const defaultZonesManagerProps = getDefaultZonesManagerProps();
+const defaultZonesProps = {
+  ...defaultZonesManagerProps,
+  zones: {
+    ...defaultZonesManagerProps.zones,
+    9: {
+      ...defaultZonesManagerProps.zones[9],
+      isLayoutChanged: true,
+    },
+  },
+};
+
 export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   private _handleTabDrag: ScheduleFn<WidgetTabDragFn>;
   private _handleZoneResize: ScheduleFn<ZoneResizeFn>;
@@ -3141,7 +3151,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           },
         },
       },
-      zones: getDefaultZonesManagerProps(),
+      zones: this._nineZone.getZonesManager().mergeZone(6, 9, defaultZonesProps),
     },
     openWidget: FooterWidget.None,
     safeAreaInsets: SafeAreaInsets.All,
@@ -3235,7 +3245,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           onHideMessage={this._handleHideMessage}
           onHistoryItemClick={this._handleHistoryItemClick}
           onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
-          onLayout={this._handleLayout}
           onOpenPanelGroup={this._handleExpandPanelGroup}
           onOpenWidgetChange={this._handleOpenWidgetChange}
           onStagePanelInitialize={this._handleStagePanelInitialize}
@@ -3895,28 +3904,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         nineZone,
         openWidget,
       };
-    });
-  }
-
-  private _handleLayout = () => {
-    if (!this._zonesMeasurer.current)
-      return;
-    const zoneBounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
-    this.setState((prevState) => {
-      const zonesManager = this._nineZone.getZonesManager();
-      let zones = prevState.nineZone.zones;
-      zones = zonesManager.setZonesBounds(zoneBounds, zones);
-      zones = zonesManager.restoreLayout(zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    }, () => {
-      this._zoneBounds = zoneBounds;
     });
   }
 
