@@ -4024,6 +4024,8 @@ export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElemen
 export abstract class MarkerSet<T extends Marker> {
     constructor(viewport?: ScreenViewport);
     addDecoration(context: DecorateContext): void;
+    // @beta
+    changeViewport(viewport: ScreenViewport): void;
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
@@ -4033,7 +4035,7 @@ export abstract class MarkerSet<T extends Marker> {
     minimumClusterSize: number;
     // @internal (undocumented)
     protected _minScaleViewW?: number;
-    readonly viewport?: ScreenViewport;
+    readonly viewport: ScreenViewport | undefined;
     // @internal (undocumented)
     protected readonly _worldToViewMap: Matrix4d;
 }
