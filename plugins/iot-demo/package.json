@@ -81,6 +81,7 @@
     "@bentley/imodeljs-i18n": "1.7.0-dev.7",
     "@bentley/imodeljs-frontend": "1.7.0-dev.7",
     "@bentley/imodeljs-quantity": "1.7.0-dev.7",
+    "@bentley/ui-abstract": "1.7.0-dev.7",
     "@bentley/ui-components": "1.7.0-dev.7",
     "@bentley/ui-core": "1.7.0-dev.7",
     "@bentley/ui-framework": "1.7.0-dev.7",

@@ -5,6 +5,11 @@
 
 export * from "./ui-abstract/UiAbstract";
 
+export * from "./ui-abstract/items/BadgeType";
+export * from "./ui-abstract/items/ConditionalDisplayType";
+
+export * from "./ui-abstract/plugins/PluginUi";
+
 export * from "./ui-abstract/utils/UiError";
 export * from "./ui-abstract/utils/getClassName";
 
@@ -19,6 +24,14 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-abstract package contains abstractions for UI controls, such as toolbars, buttons and menus.
+ */
+/**
+ * @docs-group-description Items
+ * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
+ */
+/**
+ * @docs-group-description Plugins
+ * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
  */
 /**
  * @docs-group-description Utilities

@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
-import { ConditionalDisplayType } from "@bentley/imodeljs-frontend";
+import { ConditionalDisplayType } from "@bentley/ui-abstract";
 
 import {
   BackstageComposer,

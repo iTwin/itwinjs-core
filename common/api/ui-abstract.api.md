@@ -10,8 +10,73 @@ import { I18N } from '@bentley/imodeljs-i18n';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
+// @alpha
+export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
+    // (undocumented)
+    execute: () => void;
+    // (undocumented)
+    readonly itemType: ToolbarItemType.ActionButton;
+}
+
+// @beta
+export enum BadgeType {
+    New = 2,
+    None = 0,
+    TechnicalPreview = 1
+}
+
+// @alpha
+export interface ConditionalDisplaySpecification {
+    // (undocumented)
+    syncEventIds: string[];
+    // (undocumented)
+    testFunc: () => boolean;
+    // (undocumented)
+    type: ConditionalDisplayType;
+}
+
+// @alpha
+export enum ConditionalDisplayType {
+    // (undocumented)
+    EnableState = 1,
+    // (undocumented)
+    Visibility = 0
+}
+
 // @internal
 export const getClassName: (obj: any) => string;
+
+// @alpha
+export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
+    // (undocumented)
+    items: ToolbarItemInsertSpec[];
+    // (undocumented)
+    readonly itemType: ToolbarItemType.GroupButton;
+}
+
+// @alpha
+export interface InsertSpec {
+    // (undocumented)
+    condition?: ConditionalDisplaySpecification;
+    insertBefore?: boolean;
+    // (undocumented)
+    label: string;
+    relativeToolIdPath?: string;
+}
+
+// @alpha
+export interface ToolbarItemInsertSpec extends InsertSpec {
+    badge?: BadgeType;
+    icon: string;
+    itemId: string;
+    itemType: ToolbarItemType;
+}
+
+// @alpha
+export enum ToolbarItemType {
+    ActionButton = 0,
+    GroupButton = 1
+}
 
 // @public
 export class UiAbstract {

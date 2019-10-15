@@ -15,8 +15,9 @@ import {
   BaseItemState,
   SyncUiEventId,
 } from "../../ui-framework";
-import { SelectionTool, BadgeType } from "@bentley/imodeljs-frontend";
+import { SelectionTool } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
+import { BadgeType } from "@bentley/ui-abstract";
 
 describe("ToolButton", () => {
 

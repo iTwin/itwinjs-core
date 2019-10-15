@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { BadgeType, ConditionalDisplayType } from "@bentley/imodeljs-frontend";
+import { BadgeType, ConditionalDisplayType } from "@bentley/ui-abstract";
 
 const loggerCategory = "ui-framework.BackstageItemManager";
 

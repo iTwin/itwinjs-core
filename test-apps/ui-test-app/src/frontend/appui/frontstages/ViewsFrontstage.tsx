@@ -16,8 +16,10 @@ import {
   OutputMessageType,
   RelativePosition,
   ViewState,
-  BadgeType,
 } from "@bentley/imodeljs-frontend";
+
+import { BadgeType } from "@bentley/ui-abstract";
+import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 
 import {
   FrontstageProvider,
@@ -92,7 +94,6 @@ import { ExampleForm } from "../forms/ExampleForm";
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
 
-import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 

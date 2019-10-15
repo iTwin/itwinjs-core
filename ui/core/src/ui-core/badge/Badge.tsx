@@ -2,11 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @module Utilities */
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps, SvgSprite } from "@bentley/ui-core";
+
+import { CommonProps } from "../utils/Props";
+import { SvgSprite } from "../icons/SvgSprite";
 
 import "./Badge.scss";
 
@@ -23,7 +25,7 @@ export interface BadgeProps extends CommonProps {
 export class Badge extends React.PureComponent<BadgeProps> {
   public render(): JSX.Element {
     return (
-      <div className={classnames("uifw-badge", this.props.className)} style={this.props.style}>
+      <div className={classnames("core-badge", this.props.className)} style={this.props.style}>
         <SvgSprite src={this.props.svg} />
       </div>
     );

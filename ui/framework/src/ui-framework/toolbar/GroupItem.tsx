@@ -7,9 +7,9 @@
 import * as React from "react";
 import classnames = require("classnames");
 
-import { BadgeType } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
+import { BadgeType } from "@bentley/ui-abstract";
+import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
@@ -23,7 +23,6 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

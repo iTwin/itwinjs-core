@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { ConditionalDisplayType } from "@bentley/imodeljs-frontend";
+import { ConditionalDisplayType } from "@bentley/ui-abstract";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 import { SeparatorBackstageItem } from "../backstage/Separator";

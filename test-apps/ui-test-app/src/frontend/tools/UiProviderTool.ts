@@ -5,9 +5,12 @@
 /** @module Tools */
 
 import {
-  Tool, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec,
-  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+  Tool, PluginUiProvider, PluginUiManager, UiItemNode,
 } from "@bentley/imodeljs-frontend";
+import {
+  ActionItemInsertSpec, GroupItemInsertSpec,
+  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+} from "@bentley/ui-abstract";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
 /** alpha test code */

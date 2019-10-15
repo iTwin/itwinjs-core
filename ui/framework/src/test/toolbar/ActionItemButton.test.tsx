@@ -7,6 +7,8 @@ import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
+import { BadgeType } from "@bentley/ui-abstract";
+
 import {
   ActionItemButton,
   CommandItemDef,
@@ -15,7 +17,6 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { BadgeType } from "@bentley/imodeljs-frontend";
 
 describe("ActionItemButton", () => {
 
@@ -181,7 +182,7 @@ it("should render with badgeType", () => {
   const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
   const badge = wrapper.find("div.nz-badge");
   badge.length.should.eq(1);
-  const newBadge = wrapper.find("div.uifw-new-badge");
+  const newBadge = wrapper.find("div.core-new-badge");
   newBadge.length.should.eq(1);
   wrapper.unmount();
 });

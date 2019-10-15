@@ -11,9 +11,8 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import { LocalFileOpenFrontstage } from "./frontstages/LocalFileStage";
-import {
-  IModelApp, MessageBoxType, MessageBoxIconType, ConditionalDisplayType,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { ConditionalDisplayType } from "@bentley/ui-abstract";
 
 export class AppBackstageItemProvider implements BackstageItemProvider {
   /** id of provider */

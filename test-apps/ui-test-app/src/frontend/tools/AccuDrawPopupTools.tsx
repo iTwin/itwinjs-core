@@ -5,16 +5,17 @@
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { Point } from "@bentley/ui-core";
 import { MenuItemProps, CommandItemDef, AccuDrawPopupManager } from "@bentley/ui-framework";
+import { BadgeType } from "@bentley/ui-abstract";
 
 export class AccuDrawPopupTools {
 
   private static _menuButtonAdded = false;
   private static _accudrawMenuItems: MenuItemProps[] = [
     {
-      id: "Mode", label: "~Mode", iconSpec: "icon-placeholder",
+      id: "Mode", label: "~Mode", iconSpec: "icon-placeholder", badgeType: BadgeType.New,
       submenu: [
-        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", execute: () => { } } },
-        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", execute: () => { } } },
+        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } } },
+        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } } },
       ],
     },
     {
@@ -25,7 +26,7 @@ export class AccuDrawPopupTools {
       ],
     },
     {
-      id: "LockToAxis", item: { label: "~Lock to Axis", iconSpec: "icon-placeholder", execute: () => { } },
+      id: "LockToAxis", item: { label: "~Lock to Axis", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
     },
     {
       id: "MoveOrigin", item: { label: "Move ~Origin", iconSpec: "icon-placeholder", execute: () => { } },

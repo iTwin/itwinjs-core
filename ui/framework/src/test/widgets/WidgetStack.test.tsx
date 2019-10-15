@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import TestUtils from "../TestUtils";
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 import {
   HorizontalAnchor,
   TabMode,

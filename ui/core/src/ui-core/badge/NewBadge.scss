@@ -2,10 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "../style/themecolors";
 
-$icon-size: 16px;
-
-.uifw-new-badge {
+.core-new-badge {
   color: $buic-foreground-success;
 }

@@ -1,5 +1,13 @@
 sep=;
 Release Tag;API Item
+alpha;ActionItemInsertSpec 
+beta;BadgeType
+alpha;ConditionalDisplaySpecification
+alpha;ConditionalDisplayType
 internal;getClassName: (obj: any) => string
+alpha;GroupItemInsertSpec 
+alpha;InsertSpec
+alpha;ToolbarItemInsertSpec 
+alpha;ToolbarItemType
 public;UiAbstract
 public;UiError 

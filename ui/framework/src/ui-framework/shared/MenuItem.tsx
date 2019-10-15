@@ -35,11 +35,13 @@ export class MenuItem extends ItemDefBase {
     if (props.item) {
       this._actionItem = new CommandItemDef(props.item);
 
-      // Copy over icon, label & tooltip from the item
+      // Copy over icon, label & badgeType from the item
       if (!this.iconSpec)
         this.iconSpec = this._actionItem.iconSpec;
       if (!this.label)
         this.setLabel(this._actionItem.label);
+      if (!this.badgeType)
+        this.badgeType = this._actionItem.badgeType;
     } else if (props.submenu) {
       props.submenu.forEach((childProps: MenuItemProps) => {
         const childItem = new MenuItem(childProps);
@@ -102,13 +104,12 @@ export class MenuItemHelpers {
     let node: React.ReactNode = null;
     const label = item.label;
     const iconSpec = item.iconSpec;
+    const badgeType = item.badgeType;
 
     if (item.actionItem) {
       const sel = () => item.itemPicked();
       node = (
-        <ContextMenuItem key={index}
-          onSelect={sel}
-          icon={iconSpec} >
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} badgeType={badgeType}>
           {label}
         </ContextMenuItem>
       );
@@ -116,7 +117,7 @@ export class MenuItemHelpers {
       const items = this.createMenuItemNodes(item.submenu);
 
       node = (
-        <ContextSubMenu key={index} icon={iconSpec} label={label}>
+        <ContextSubMenu key={index} icon={iconSpec} label={label} badgeType={badgeType}>
           {items}
         </ContextSubMenu>
       );

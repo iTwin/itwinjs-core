@@ -11,7 +11,7 @@ import TestUtils from "../TestUtils";
 import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem } from "../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",

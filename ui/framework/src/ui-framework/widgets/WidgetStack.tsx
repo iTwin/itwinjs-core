@@ -6,8 +6,8 @@
 
 import * as React from "react";
 
-import { BadgeType } from "@bentley/imodeljs-frontend";
-import { CommonProps, PointProps, RectangleProps, Rectangle, Icon } from "@bentley/ui-core";
+import { BadgeType } from "@bentley/ui-abstract";
+import { CommonProps, PointProps, RectangleProps, Rectangle, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
   WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers,
@@ -15,7 +15,6 @@ import {
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 // cSpell:ignore Timedout
 

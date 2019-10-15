@@ -7,6 +7,11 @@
 
 export * from "./ui-core/UiCore";
 
+export * from "./ui-core/badge/Badge";
+export * from "./ui-core/badge/BadgeUtilities";
+export * from "./ui-core/badge/BetaBadge";
+export * from "./ui-core/badge/NewBadge";
+
 export * from "./ui-core/base/Div";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";

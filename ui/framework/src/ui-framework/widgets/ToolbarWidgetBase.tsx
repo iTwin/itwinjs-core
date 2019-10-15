@@ -12,11 +12,9 @@ import { ItemList } from "../shared/ItemMap";
 
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { Toolbar } from "../toolbar/Toolbar";
+import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import {
-  PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec,
-  ToolbarItemType, ConditionalDisplayType,
-} from "@bentley/imodeljs-frontend";
+import { PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { AnyItemDef } from "../shared/ItemProps";
 import { GroupItemDef } from "../toolbar/GroupItem";

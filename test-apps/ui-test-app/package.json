@@ -107,6 +107,7 @@
     "@bentley/presentation-common": "1.7.0-dev.7",
     "@bentley/presentation-components": "1.7.0-dev.7",
     "@bentley/presentation-frontend": "1.7.0-dev.7",
+    "@bentley/ui-abstract": "1.7.0-dev.7",
     "@bentley/ui-core": "1.7.0-dev.7",
     "@bentley/ui-components": "1.7.0-dev.7",
     "@bentley/ui-ninezone": "1.7.0-dev.7",

@@ -174,6 +174,7 @@ import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
+import { ToolbarItemInsertSpec } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -906,14 +907,6 @@ export enum ACSType {
     Spherical = 3
 }
 
-// @alpha
-export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
-    // (undocumented)
-    execute: () => void;
-    // (undocumented)
-    readonly itemType: ToolbarItemType.ActionButton;
-}
-
 // @alpha (undocumented)
 export enum ActiveClipStatus {
     // (undocumented)
@@ -1320,13 +1313,6 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     // (undocumented)
     readonly treeOwner: TileTree.Owner;
     unionFitRange(_range: Range3d): void;
-}
-
-// @alpha
-export enum BadgeType {
-    New = 2,
-    None = 0,
-    TechnicalPreview = 1
 }
 
 // @beta
@@ -1776,24 +1762,6 @@ export enum CompassMode {
 
 // @internal (undocumented)
 export function computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform;
-
-// @alpha
-export interface ConditionalDisplaySpecification {
-    // (undocumented)
-    syncEventIds: string[];
-    // (undocumented)
-    testFunc: () => boolean;
-    // (undocumented)
-    type: ConditionalDisplayType;
-}
-
-// @alpha
-export enum ConditionalDisplayType {
-    // (undocumented)
-    EnableState = 1,
-    // (undocumented)
-    Visibility = 0
-}
 
 // @internal (undocumented)
 export enum ContextMode {
@@ -3040,14 +3008,6 @@ export enum GridOrientationType {
     WorldYZ = 2
 }
 
-// @alpha
-export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
-    // (undocumented)
-    items: ToolbarItemInsertSpec[];
-    // (undocumented)
-    readonly itemType: ToolbarItemType.GroupButton;
-}
-
 // @internal (undocumented)
 export interface GroupMark {
     // (undocumented)
@@ -3607,16 +3567,6 @@ export enum InputSource {
     Mouse = 1,
     Touch = 2,
     Unknown = 0
-}
-
-// @alpha
-export interface InsertSpec {
-    // (undocumented)
-    condition?: ConditionalDisplaySpecification;
-    insertBefore?: boolean;
-    // (undocumented)
-    label: string;
-    relativeToolIdPath?: string;
 }
 
 // @internal
@@ -8008,20 +7958,6 @@ export interface ToolAssistanceKeyboardInfo {
 export interface ToolAssistanceSection {
     instructions: ToolAssistanceInstruction[];
     label?: string;
-}
-
-// @alpha
-export interface ToolbarItemInsertSpec extends InsertSpec {
-    badge?: BadgeType;
-    icon: string;
-    itemId: string;
-    itemType: ToolbarItemType;
-}
-
-// @alpha
-export enum ToolbarItemType {
-    ActionButton = 0,
-    GroupButton = 1
 }
 
 // @public (undocumented)

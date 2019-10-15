@@ -4,6 +4,7 @@
 
 ```ts
 
+import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -79,6 +80,28 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     setFocus?: boolean;
     value?: string;
 }
+
+// @internal
+export class Badge extends React.PureComponent<BadgeProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface BadgeProps extends CommonProps {
+    // (undocumented)
+    svg: any;
+}
+
+// @internal
+export class BadgeUtilities {
+    static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType;
+    static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode;
+    static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
+}
+
+// @internal
+export const BetaBadge: React.FunctionComponent<CommonProps>;
 
 // @public
 export const BlockText: React.FunctionComponent<TextProps>;
@@ -290,6 +313,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 
 // @public
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+    badgeType?: BadgeType;
     disabled?: boolean;
     icon?: string | React.ReactNode;
     // (undocumented)
@@ -1048,6 +1072,9 @@ export const MinimalTile: React.FunctionComponent<TileProps>;
 
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
+
+// @internal
+export const NewBadge: React.FunctionComponent<CommonProps>;
 
 // @beta
 export interface NoChildrenProps {

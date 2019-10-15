@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @module Utilities */
 
 import * as React from "react";
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 import { BetaBadge } from "./BetaBadge";
 import { NewBadge } from "./NewBadge";
 

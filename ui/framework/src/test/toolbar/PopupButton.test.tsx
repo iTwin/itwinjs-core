@@ -15,7 +15,7 @@ import {
   BaseItemState,
 } from "../../ui-framework";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 
 // cSpell:ignore buttonstate
 

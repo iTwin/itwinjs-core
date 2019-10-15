@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import { BadgeType } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
+
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ToolItemDef } from "./ToolItemDef";
 import { BaseItemState } from "./ItemDefBase";
 import { CommandItemDef } from "./CommandItemDef";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { BadgeType } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
 // ItemProps and sub-interfaces

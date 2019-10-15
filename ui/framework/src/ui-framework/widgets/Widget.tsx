@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
 
 import { WidgetState } from "./WidgetDef";

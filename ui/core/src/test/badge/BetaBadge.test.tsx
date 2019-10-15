@@ -2,12 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import { BetaBadge } from "../../ui-core";
 
-$icon-size: 16px;
-
-.uifw-badge {
-  transform: rotate(270deg);
-  width: $icon-size;
-  height: $icon-size;
-}
+describe("<BetaBadge />", () => {
+  it("should render", () => {
+    const wrapper = mount(<BetaBadge />);
+    wrapper.unmount();
+  });
+  it("renders correctly", () => {
+    shallow(<BetaBadge />).should.matchSnapshot();
+  });
+});

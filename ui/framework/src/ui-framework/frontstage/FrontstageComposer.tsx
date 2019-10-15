@@ -5,7 +5,7 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import {
@@ -20,7 +20,6 @@ import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, M
 import { ModalFrontstage } from "./ModalFrontstage";
 import { WidgetTabs, WidgetTab } from "../widgets/WidgetStack";
 import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 /** Interface defining callbacks for widget changes
  * @public

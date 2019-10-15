@@ -7,6 +7,7 @@
 import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { CommonProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
@@ -15,8 +16,6 @@ import { ToolItemProps, StringGetter } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { CommonProps, Icon } from "@bentley/ui-core";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public

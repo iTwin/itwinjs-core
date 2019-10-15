@@ -5,6 +5,10 @@ internal;Annulus
 alpha;AutoSuggest 
 alpha;AutoSuggestData
 alpha;AutoSuggestProps 
+internal;Badge 
+internal;BadgeProps 
+internal;BadgeUtilities
+internal;BetaBadge: React.FunctionComponent
 public;BlockText: React.FunctionComponent
 public;BodyText: React.FunctionComponent
 alpha;BoundsFunctionProp = number | (() => number | undefined)
@@ -124,6 +128,7 @@ public;MessageSeverity
 alpha;MinimalFeaturedTile: React.FunctionComponent
 alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
+internal;NewBadge: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode

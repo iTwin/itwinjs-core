@@ -24,7 +24,6 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
@@ -43,7 +42,6 @@ public;AuxCoordSystemSpatialState
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundTerrainTileTreeReference 
-alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
 beta;class BaseQuantityDescription 
@@ -84,8 +82,6 @@ public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
-alpha;ConditionalDisplaySpecification
-alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
 alpha;ConversionData 
@@ -163,7 +159,6 @@ public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-alpha;GroupItemInsertSpec 
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -196,7 +191,6 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
-alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
@@ -386,8 +380,6 @@ beta;ToolAssistanceInstruction
 beta;ToolAssistanceInstructions
 beta;ToolAssistanceKeyboardInfo
 beta;ToolAssistanceSection
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings

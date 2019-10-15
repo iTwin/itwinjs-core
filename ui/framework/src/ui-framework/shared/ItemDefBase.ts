@@ -6,7 +6,7 @@
 
 import { ItemProps, StringGetter } from "./ItemProps";
 import { PropsHelper } from "../utils/PropsHelper";
-import { BadgeType } from "@bentley/imodeljs-frontend";
+import { BadgeType } from "@bentley/ui-abstract";
 
 /** Base state for any 'stateful' React component
  * @public

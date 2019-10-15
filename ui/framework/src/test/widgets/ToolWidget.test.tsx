@@ -27,10 +27,8 @@ import {
   BaseItemState,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import {
-  PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec,
-  GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType,
-} from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
+import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
 
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 

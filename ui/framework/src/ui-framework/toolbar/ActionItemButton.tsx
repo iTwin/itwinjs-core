@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { CommonProps, SizeProps, Icon } from "@bentley/ui-core";
+import { CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -15,7 +15,6 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 /** Properties that must be specified for a ActionItemButton component
  * @public

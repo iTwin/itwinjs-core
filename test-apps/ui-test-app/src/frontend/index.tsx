@@ -20,7 +20,8 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
-import { UiCore, getClassName } from "@bentley/ui-core";
+import { getClassName } from "@bentley/ui-abstract";
+import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
