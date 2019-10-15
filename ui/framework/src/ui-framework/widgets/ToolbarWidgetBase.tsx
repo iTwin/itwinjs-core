@@ -124,6 +124,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     });
     if (foundIndex >= 0 && relativePath.length > 1) {
       const parentItem = itemList[foundIndex];
+      // istanbul ignore else
       if ((parentItem instanceof GroupItemDef) || (parentItem instanceof ConditionalItemDef)) {
         this.insertItemDefAtLocation(item, parentItem.items, relativePath.slice(1), insertBefore);
         parentItem.resolveItems(true);
@@ -138,6 +139,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     if (foundIndex <= 0)
       foundIndex = 0;
 
+    // istanbul ignore else
     if (foundIndex < itemList.length)
       itemList.splice(foundIndex, 0, item);
     else

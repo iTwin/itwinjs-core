@@ -100,6 +100,7 @@ export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";
+export * from "./ui-framework/widgets/DefaultNavigationWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";

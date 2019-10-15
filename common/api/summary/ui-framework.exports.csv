@@ -130,6 +130,8 @@ beta;CustomItemSpec
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+beta;DefaultNavigationProps
+beta;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DescriptionProps

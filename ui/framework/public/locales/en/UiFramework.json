@@ -145,6 +145,7 @@
     "sectionClear": "Clear Sections",
     "measureTools": "Measure Tools",
     "sectionShowHandles": "Section Handles:",
+    "viewZoomingTools": "Zooming Tools",
     "View": {
       "Fly": {
         "description": "Fly in view",

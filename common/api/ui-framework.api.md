@@ -1446,6 +1446,20 @@ export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+// @beta
+export interface DefaultNavigationProps {
+    prefixHorizontalItems?: ItemList;
+    prefixVerticalItems?: ItemList;
+    suffixHorizontalItems?: ItemList;
+    suffixVerticalItems?: ItemList;
+}
+
+// @beta
+export class DefaultNavigationWidget extends React_2.Component<DefaultNavigationProps> {
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @internal
 export class DefaultToolSettingsProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -4065,6 +4079,7 @@ export enum SyncUiEventId {
     SelectionSetChanged = "selectionsetchanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
+    ViewStateChanged = "viewstateshanged",
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
 }

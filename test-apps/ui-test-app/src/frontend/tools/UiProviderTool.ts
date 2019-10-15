@@ -90,7 +90,6 @@ class TestUiProvider implements PluginUiProvider {
         label: "test action tool (navH)",
       };
       return [navHorizontalSpec];
-
     } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
       const navVerticalSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,

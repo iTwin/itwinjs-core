@@ -152,12 +152,12 @@ export class CoreTools {
       label: () => ViewUndoTool.flyover,
       description: () => ViewUndoTool.description,
       execute: () => { IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView); },
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
         const activeContentControl = ContentViewManager.getActiveContentControl();
         if (activeContentControl && activeContentControl.viewport)
-          returnState.isEnabled = activeContentControl.viewport.isRedoPossible;
+          returnState.isEnabled = activeContentControl.viewport.isUndoPossible;
         return returnState;
       },
     });
@@ -170,7 +170,7 @@ export class CoreTools {
       label: () => ViewRedoTool.flyover,
       description: () => ViewRedoTool.description,
       execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
         const activeContentControl = ContentViewManager.getActiveContentControl();
