@@ -14,7 +14,7 @@ import { TestConfig } from "./TestConfig";
 
 chai.should();
 
-describe.only("JpegTagReader (#integration)", () => {
+describe("JpegTagReader (#integration)", () => {
   const projectShareClient: ProjectShareClient = new ProjectShareClient();
   let projectId: GuidString;
 
