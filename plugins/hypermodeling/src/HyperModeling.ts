@@ -11,8 +11,8 @@ import { SectionLocationSetDecoration } from "./HyperModelingMarkers";
  * The key-in takes at most 1 argument (case-insensitive):
  *  - "ON" => enable display of markers
  *  - "OFF" => disable display of markers
- *  - "DIRTY" => force update of markers if currently displayed, ex. category selector changes
- *  - "SYNC" => recreate markers if currently displayed, ex. model selector changes
+ *  - "SYNC" => update visibility of markers if currently displayed, ex. category selector changes
+ *  - "UPDATE" => recreate markers if currently displayed, ex. model selector changes
  *  - "TOGGLE" or omitted => toggle display of markers
  * @beta
  */
@@ -22,21 +22,21 @@ export class SectionLocationMarkersTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(vp?: ScreenViewport, enable?: boolean, dirty?: boolean, sync?: boolean): boolean {
+  public run(vp?: ScreenViewport, enable?: boolean, sync?: boolean, update?: boolean): boolean {
     if (undefined === SectionLocationMarkersTool.plugin)
       return false;
     if (undefined === enable)
       enable = (undefined === SectionLocationSetDecoration.decorator);
-    if (undefined === dirty)
-      dirty = false;
     if (undefined === sync)
       sync = false;
-    if (enable || dirty || sync) {
+    if (undefined === update)
+      update = false;
+    if (enable || sync || update) {
       if (undefined === vp)
         vp = IModelApp.viewManager.selectedView;
       if (undefined === vp)
         return false;
-      SectionLocationSetDecoration.show(SectionLocationMarkersTool.plugin, vp, dirty, sync); // tslint:disable-line:no-floating-promises
+      SectionLocationSetDecoration.show(SectionLocationMarkersTool.plugin, vp, sync, update); // tslint:disable-line:no-floating-promises
     } else {
       SectionLocationSetDecoration.clear();
     }
@@ -44,14 +44,14 @@ export class SectionLocationMarkersTool extends Tool {
   }
 
   public parseAndRun(...args: string[]): boolean {
-    let enable, dirty, sync;
+    let enable, sync, update;
     if (undefined !== args[0]) {
       switch (args[0].toLowerCase()) {
-        case "dirty":
-          dirty = true;
-          break;
         case "sync":
           sync = true;
+          break;
+        case "update":
+          update = true;
           break;
         case "on":
           enable = true;
@@ -64,7 +64,7 @@ export class SectionLocationMarkersTool extends Tool {
           break;
       }
     }
-    return this.run(undefined, enable, dirty, sync);
+    return this.run(undefined, enable, sync, update);
   }
 }
 
@@ -76,9 +76,7 @@ export class HyperModelingPlugin extends Plugin {
 
   /** Invoked the first time this plugin is loaded. */
   public onLoad(_args: string[]): void {
-    // store the plugin in the tool prototype.
-    SectionLocationMarkersTool.plugin = this;
-
+    SectionLocationMarkersTool.plugin = this; // store the plugin in the tool prototype.
     this._i18NNamespace = this.i18n.registerNamespace("HyperModeling");
     this._i18NNamespace!.readFinished.then(() => {
       IModelApp.tools.register(SectionLocationMarkersTool, this._i18NNamespace, this.i18n);
@@ -87,22 +85,7 @@ export class HyperModelingPlugin extends Plugin {
   }
 
   /** Invoked each time this plugin is loaded. */
-  public onExecute(args: string[]): void {
-    // if no args passed in, don't do anything.
-    if (args.length < 1)
-      return;
-
-    const view = IModelApp.viewManager.selectedView;
-    if (!view)
-      return;
-
-    // const operation = this.getOperation(args[0]);
-
-    // if ((Operation.Show === operation) || ((Operation.Toggle === operation) && !this.showingMarkers(view)))
-    //   this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
-    // else if ((Operation.Hide === operation) || ((Operation.Toggle === operation) && this.showingMarkers(view)))
-    //   this.hideGeoPhotoMarkers(view.iModel);
-  }
+  public onExecute(_args: string[]): void { }
 }
 
 // This variable is set by webPack when building a plugin.

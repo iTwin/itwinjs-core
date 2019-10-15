@@ -152,6 +152,7 @@ export class SectionLocationSetDecoration {
 
   /** Set marker visibility based on category display */
   public setMarkerVisibility(vp: Viewport, outputMsg: boolean = true): boolean {
+    // ###TODO Check display filters for category, section type, etc...
     let haveVisibleCategory = false;
     for (const marker of this._sectionLocations.markers) {
       marker.visible = vp.view.viewsCategory(marker.props.category);
@@ -190,25 +191,25 @@ export class SectionLocationSetDecoration {
   }
 
   /** Start showing markers if not currently active (or optionally refresh when currently displayed). */
-  public static async show(plugin: HyperModelingPlugin, vp: ScreenViewport, dirty: boolean, sync: boolean): Promise<void> {
+  public static async show(plugin: HyperModelingPlugin, vp: ScreenViewport, sync: boolean, update: boolean): Promise<void> {
     SectionLocationSetDecoration.plugin = plugin;
     if (undefined !== SectionLocationSetDecoration.decorator) {
       const currentVp = SectionLocationSetDecoration.decorator._sectionLocations.viewport;
       if (currentVp && currentVp !== vp) {
-        if (dirty || sync)
+        if (sync || update)
           vp = currentVp;
         else
-          sync = true; // clear and show in new view...
+          update = true; // clear and show in new view...
       }
-      if (!sync) {
-        if (dirty) {
+      if (!update) {
+        if (sync) {
           SectionLocationSetDecoration.decorator.setMarkerVisibility(vp);
           SectionLocationSetDecoration.decorator._sectionLocations.markDirty();
         }
         return;
       }
       this.clear();
-    } else if (dirty || sync) {
+    } else if (sync || update) {
       return;
     }
 
@@ -216,7 +217,6 @@ export class SectionLocationSetDecoration {
       return;
 
     const sectionMarkerImage = await this.loadImage(SectionLocationSetDecoration.plugin.resolveResourceUrl("sectionmarkersprite.ico"));
-    //    const sectionMarkerImage = await this.loadImage("sprites/sectionmarkersprite.ico");
     if (undefined === sectionMarkerImage)
       return; // No point continuing if we don't have a marker image to show...
 

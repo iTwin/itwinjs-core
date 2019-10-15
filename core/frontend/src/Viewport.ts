@@ -2262,7 +2262,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2294,7 +2294,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
