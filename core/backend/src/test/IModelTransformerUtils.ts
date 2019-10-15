@@ -3,19 +3,19 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelProps, ModelSelectorProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
+  IModel, ModelProps, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
   DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GroupModel,
-  IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
+  GeometricElement3d, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -705,7 +705,7 @@ export namespace IModelTransformerUtils {
     return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
   }
 
-  function createBox(size: Point3d): GeometryStreamProps {
+  export function createBox(size: Point3d): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     geometryStreamBuilder.appendGeometry(Box.createDgnBox(
       Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, size.z),
@@ -746,6 +746,29 @@ export class IModelTransformerWithAsserts extends IModelTransformer {
       assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.parent!.id));
     }
     return super.insertElement(targetElementProps);
+  }
+}
+
+/** Test IModelTransformer that applies a 3d transform to all GeometricElement3d instances. */
+export class IModelTransformer3d extends IModelTransformer {
+  /** The Transform to apply to all GeometricElement3d instances. */
+  private readonly _transform3d: Transform;
+  /** Construct a new IModelTransformer3d */
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, transform3d: Transform) {
+    super(sourceDb, targetDb);
+    this._transform3d = transform3d;
+  }
+  /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
+  protected transformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+    if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
+      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
+      if (placement.isValid) {
+        placement.multiplyTransform(this._transform3d);
+        targetElementProps.placement = placement;
+      }
+    }
+    return targetElementProps;
   }
 }
 

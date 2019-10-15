@@ -1143,6 +1143,7 @@ export class ColorIndex {
 // @public
 export enum CommonLoggerCategory {
     ElementProps = "imodeljs-common.ElementProps",
+    Geometry = "imodeljs-common.Geometry",
     RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
@@ -3340,6 +3341,7 @@ export class Placement2d implements Placement2dProps {
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point2d;
     readonly rotation: Matrix3d;
@@ -3368,6 +3370,7 @@ export class Placement3d implements Placement3dProps {
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point3d;
     readonly rotation: Matrix3d;
