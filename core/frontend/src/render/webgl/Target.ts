@@ -389,6 +389,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       vf.clipVolume = false;
 
       vf.lighting = !this.is2d;
+      vf.shadows = false; // don't want shadows applied to these
 
       this._worldDecorations = new WorldDecorations(vf);
     }

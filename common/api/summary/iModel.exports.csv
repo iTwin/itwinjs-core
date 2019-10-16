@@ -36,7 +36,6 @@ beta;BackstageItemSpec
 public;BackstageItemState
 beta;BackstageItemType
 public;BackstageProps 
-beta;BadgeType
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -67,7 +66,6 @@ public;CommandItemProps
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
 beta;ConditionalDisplaySpecification
-beta;ConditionalDisplayType
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -132,6 +130,8 @@ beta;CustomItemSpec
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+beta;DefaultNavigationProps
+beta;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DescriptionProps
@@ -184,6 +184,7 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
