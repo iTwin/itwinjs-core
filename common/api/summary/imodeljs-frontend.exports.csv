@@ -282,6 +282,7 @@ beta;class RenderClipVolume
 public;RenderContext
 internal;enum RenderDiagnostics
 public;class RenderGraphic 
+public;class RenderGraphicOwner 
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 

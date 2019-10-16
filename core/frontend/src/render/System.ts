@@ -241,6 +241,29 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
+/** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.
+ * Use a GraphicOwner to prevent disposal of a graphic that you want to reuse. The graphic owner can be added to decorations and list of dynamics just like any other graphic, but the graphic it owns
+ * will never be automatically disposed of. Instead, you assume responsibility for disposing of the owned graphic by calling [[disposeGraphic]] when the owned graphic is no longer in use. Failure
+ * to do so will result in leaks of graphics memory or other webgl resources.
+ * @public
+ */
+export abstract class RenderGraphicOwner extends RenderGraphic {
+  /** The owned graphic. */
+  public abstract get graphic(): RenderGraphic;
+  /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
+  public dispose(): void { }
+  /** Disposes of the owned graphic. */
+  public disposeGraphic(): void { this.graphic.dispose(); }
+  /** @internal */
+  public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+}
+
+/** Default implementation of RenderGraphicOwner. */
+class GraphicOwner extends RenderGraphicOwner {
+  public constructor(private readonly _graphic: RenderGraphic) { super(); }
+  public get graphic(): RenderGraphic { return this._graphic; }
+}
+
 /** Describes the type of a RenderClipVolume.
  * @beta
  */
@@ -1096,6 +1119,14 @@ export abstract class RenderSystem implements IDisposable {
    * @internal
    */
   public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+
+  /** Create a graphic that assumes ownership of another graphic.
+   * @param ownedGraphic The RenderGraphic to be owned.
+   * @returns The owning graphic that exposes a `disposeGraphic` method for explicitly disposing of the owned graphic.
+   * @see [[RenderGraphicOwner]] for details regarding ownership semantics.
+   * @public
+   */
+  public createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner { return new GraphicOwner(ownedGraphic); }
 
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.

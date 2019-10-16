@@ -18,6 +18,7 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
+  RenderGraphicOwner,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
@@ -31,7 +32,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { Branch, Batch, GraphicsArray } from "./Graphic";
+import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -690,6 +691,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
 
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
+
+  public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
+    return new GraphicOwner(owned as Graphic);
+  }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {

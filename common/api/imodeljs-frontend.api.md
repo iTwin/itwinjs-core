@@ -5314,6 +5314,15 @@ export abstract class RenderGraphic implements IDisposable {
     abstract dispose(): void;
 }
 
+// @public
+export abstract class RenderGraphicOwner extends RenderGraphic {
+    // @internal (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    dispose(): void;
+    disposeGraphic(): void;
+    abstract readonly graphic: RenderGraphic;
+}
+
 // @internal
 export namespace RenderMemory {
     export class Buffers extends Consumers {
@@ -5679,6 +5688,7 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
+    createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
