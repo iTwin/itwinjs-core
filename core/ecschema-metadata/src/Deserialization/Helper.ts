@@ -151,7 +151,7 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Ensures that the SchemaReferences can be located and then loads the references.
+   * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
@@ -164,7 +164,7 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Ensures that the SchemaReferences can be located and then loads the references.
+   * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
@@ -177,9 +177,9 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Given
-   * @param schema The Schema to add this SchemaItem to.
-   * @param name The name of the SchemaItem.
+   * Given the schema item object, the anticipated type and the name a schema item is created and loaded into the schema provided.
+   * @param schema The Schema the SchemaItem to.
+   * @param name The name of the schema item to be loaded.
    * @param itemType The SchemaItemType of the item to load.
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
@@ -255,9 +255,9 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Given
-   * @param schema The Schema to add this SchemaItem to.
-   * @param name The name of the SchemaItem.
+   * Given the schema item object, the anticipated type and the name a schema item is created and loaded into the schema provided.
+   * @param schema The Schema the SchemaItem to.
+   * @param name The name of the schema item to be loaded.
    * @param itemType The SchemaItemType of the item to load.
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
