@@ -123,8 +123,8 @@ export class LogEntryConverter {
     let sub1: number | undefined;
     let sub2: number | undefined;
     if (length > 2) {
-      sub1 = parseInt(versionSplit[2], 10) || undefined;
-      if (length > 3 && sub1) {
+      sub1 = parseInt(versionSplit[2], 10);
+      if (length > 3 && !isNaN(sub1)) {
         sub2 = parseInt(versionSplit[3], 10) || undefined;
       }
     }
