@@ -8,6 +8,7 @@ export * from "./FrontEndDevTools";
 export * from "./tools/ChangeViewFlagsTool";
 export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/FrustumDecoration";
+export * from "./tools/parseToggle";
 export * from "./tools/ProjectExtents";
 export * from "./tools/RenderSystemTools";
 export * from "./tools/RenderTargetTools";

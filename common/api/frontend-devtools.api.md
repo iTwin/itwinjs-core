@@ -426,6 +426,9 @@ export interface NumericInputProps {
     value: number;
 }
 
+// @beta
+export function parseToggle(arg: string | undefined): string | boolean | undefined;
+
 // @alpha (undocumented)
 export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     constructor(iModel: IModelConnection);

@@ -57,6 +57,9 @@
     },
     "ShutDown": {
       "keyin": "dta shutdown"
+    },
+    "ToggleFrustumIntersection": {
+      "keyin": "dta frustum intersection"
     }
   }
 }

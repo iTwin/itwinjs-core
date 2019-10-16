@@ -43,6 +43,8 @@ import {
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
+import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
+import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -100,6 +102,8 @@ export class FrontendDevTools {
 
     RealityTransitionTool.register(i18n);
     ChangeUnitsTool.register(i18n);
+    ToggleTileRequestDecorationTool.register(i18n);
+    MeasureTileLoadTimeTool.register(i18n);
 
     SetVolClassIntersectOn.register(i18n);
     SetVolClassIntersectOff.register(i18n);

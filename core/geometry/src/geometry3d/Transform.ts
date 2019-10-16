@@ -514,8 +514,11 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
 
-  /** transform each of the 8 corners of a range. Return the range of the transformed corers */
+  /** transform each of the 8 corners of a range. Return the range of the transformed corners */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
+    if (range.isNull)
+      return range.clone(result);
+
     // snag current values to allow aliasing.
     const lowX = range.low.x;
     const lowY = range.low.y;

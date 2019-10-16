@@ -7459,6 +7459,8 @@ export abstract class TileAdmin {
     abstract getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     abstract getNumRequestsForViewport(vp: Viewport): number;
     // @internal
+    abstract getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
+    // @internal
     abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
     abstract maxActiveRequests: number;
     // @internal (undocumented)
@@ -7584,6 +7586,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     clipVolume?: RenderClipVolume;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    computeTileRangeForFrustum(vp: Viewport): Range3d | undefined;
     // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
     // (undocumented)

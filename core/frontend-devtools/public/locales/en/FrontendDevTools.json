@@ -83,6 +83,12 @@
     },
     "VCIntersectOff": {
       "keyin": "fdt vcintersect off"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
     }
   }
 }

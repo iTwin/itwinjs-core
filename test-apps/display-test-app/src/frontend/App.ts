@@ -26,6 +26,7 @@ import { showError, showStatus } from "./Utils";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import {
   CloneViewportTool,
@@ -215,6 +216,7 @@ export class DisplayTestApp {
     MarkupTool.register(svtToolNamespace);
     ZoomToSelectedElementsTool.register(svtToolNamespace);
     IncidentMarkerDemoTool.register(svtToolNamespace);
+    ToggleFrustumIntersectionTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 

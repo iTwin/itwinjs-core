@@ -11,6 +11,28 @@ import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 
+class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
+  private readonly _collection: IndexedXYZCollection;
+  private _curIndex = -1;
+
+  public constructor(collection: IndexedXYZCollection) {
+    this._collection = collection;
+  }
+
+  public next(): IteratorResult<Point3d> {
+    if (++this._curIndex >= this._collection.length) {
+      // The ECMAScript spec states that value=undefined is valid if done=true. The TypeScript interface violates the spec hence the cast to any and back below.
+      return { done: true } as any as IteratorResult<Point3d>;
+    }
+
+    return {
+      value: this._collection.getPoint3dAtUncheckedPointIndex(this._curIndex),
+      done: false,
+    };
+  }
+
+  public [Symbol.iterator](): Iterator<Point3d> { return this; }
+}
 /**
  * abstract base class for read-only access to XYZ data with indexed reference.
  * * This allows algorithms to work with Point3d[] or GrowableXYZ.
@@ -132,6 +154,15 @@ export abstract class IndexedXYZCollection {
 
   /** access z of indexed point */
   public abstract getZAtUncheckedPointIndex(pointIndex: number): number;
+
+  /** Return iterator over the points in this collection. Usage:
+   * ```ts
+   *  for (const point: Point3d of collection.points) { ... }
+   * ```
+   */
+  public get points(): Iterable<Point3d> {
+    return new PointsIterator(this);
+  }
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
