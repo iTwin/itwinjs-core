@@ -2780,6 +2780,16 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
     toolSettingsMode: ToolSettingsMode.Open,
   };
 
+  private _widgetModeStyle: React.CSSProperties = {
+    position: "absolute",
+  };
+
+  private _footerModeStyle: React.CSSProperties = {
+    ...this._widgetModeStyle,
+    display: "flex",
+    flexDirection: "column",
+  };
+
   public componentDidMount(): void {
     window.addEventListener("resize", this._handleWindowResize, true);
     this.props.onResize();
@@ -2791,11 +2801,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
 
   public render() {
     return (
-      <Zones style={{
-        position: "absolute",
-        display: "flex",
-        flexDirection: "column",
-      }}>
+      <Zones style={this.props.zones.isInFooterMode ? this._footerModeStyle : this._widgetModeStyle}>
         <TooltipExample
           getContainerSize={this.props.getContainerSize}
           isTooltipVisible={this.props.isTooltipVisible}

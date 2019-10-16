@@ -88,9 +88,17 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
-  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
+  private _zonesStyle: React.CSSProperties = {
+    pointerEvents: "none",
+  };
+  private _zonesFooterModeStyle: React.CSSProperties = {
+    ...this._zonesStyle,
+    display: "flex",
+    flexFlow: "column",
+  };
 
   /** @internal */
   constructor(props: FrontstageProps) {
@@ -450,18 +458,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       height: "100%",
     };
 
-    /** For Zones area within the Nine-zone area; excludes */
-    const zonesStyle: React.CSSProperties = {
-      pointerEvents: "none",
-      display: "flex",
-      flexFlow: "column",
-    };
-
     const frontstageDef = runtimeProps.frontstageDef;
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        <NZ_Zones style={zonesStyle} >
+        <NZ_Zones style={runtimeProps.nineZone.zones.isInFooterMode ? this._zonesFooterModeStyle : this._zonesStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
             topPanel={this.cloneStagePanelElement(frontstageDef.topMostPanel, runtimeProps)}
