@@ -319,7 +319,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private generateSkirts(mesh: Mesh, indices: Uint16Array | Uint32Array, skirtHeight: number) {
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
-      mesh.points.unquantize(index, CesiumWorldTerrainTileLoader._scratchPoint);
+      mesh.points.list[index].unquantize(CesiumWorldTerrainTileLoader._scratchQParams, CesiumWorldTerrainTileLoader._scratchPoint);
       const normal = mesh.normals.length ? mesh.normals[index] : undefined;
       CesiumWorldTerrainTileLoader._scratchPoint.z -= skirtHeight;
       CesiumWorldTerrainTileLoader._scratchQPoint.init(CesiumWorldTerrainTileLoader._scratchPoint, CesiumWorldTerrainTileLoader._scratchQParams);
