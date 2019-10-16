@@ -107,7 +107,23 @@ export class SectionLocationSetDecoration {
   public elevationMarkerImage?: HTMLImageElement;
   public planMarkerImage?: HTMLImageElement;
   public static decorator?: SectionLocationSetDecoration; // static variable so we can tell if the decorator is active.
-  public static plugin: HyperModelingPlugin | undefined;
+
+  /** By setting members of this object, applications can control the display and behavior of the section markers. */
+  public static props = {
+    /** Determines what is returned by MarkupApp.stop */
+    display: {
+      /** Show marker based on display of section location element's category */
+      category: true,
+      /** Show section markers */
+      section: true,
+      /** Show detail markers */
+      detail: true,
+      /** Show elevation markers */
+      elevation: true,
+      /** Show plan markers */
+      plan: true,
+    },
+  };
 
   public constructor(vp: ScreenViewport, public sectionMarkerImage: HTMLImageElement) { this._sectionLocations = new SectionLocationSet(vp); }
 
@@ -129,13 +145,26 @@ export class SectionLocationSetDecoration {
       return props.userLabel;
     switch (props.sectionType) {
       case SectionType.Detail:
-        return SectionLocationSetDecoration.plugin!.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.DetailCallout");
+        return HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.DetailCallout");
       case SectionType.Elevation:
-        return SectionLocationSetDecoration.plugin!.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.ElevationCallout");
+        return HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.ElevationCallout");
       case SectionType.Plan:
-        return SectionLocationSetDecoration.plugin!.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.PlanCallout");
+        return HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.PlanCallout");
       default:
-        return SectionLocationSetDecoration.plugin!.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.SectionCallout");
+        return HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.SectionCallout");
+    }
+  }
+
+  private getMarkerTypeDisplay(props: SectionLocationProps): boolean {
+    switch (props.sectionType) {
+      case SectionType.Detail:
+        return SectionLocationSetDecoration.props.display.detail;
+      case SectionType.Elevation:
+        return SectionLocationSetDecoration.props.display.elevation;
+      case SectionType.Plan:
+        return SectionLocationSetDecoration.props.display.plan;
+      default:
+        return SectionLocationSetDecoration.props.display.section;
     }
   }
 
@@ -151,19 +180,26 @@ export class SectionLocationSetDecoration {
   }
 
   /** Set marker visibility based on category display */
-  public setMarkerVisibility(vp: Viewport, outputMsg: boolean = true): boolean {
-    // ###TODO Check display filters for category, section type, etc...
+  public setMarkerVisibility(vp: Viewport): boolean {
     let haveVisibleCategory = false;
+    let haveVisibleType = false;
     for (const marker of this._sectionLocations.markers) {
-      marker.visible = vp.view.viewsCategory(marker.props.category);
-      if (marker.visible)
+      if (marker.visible = (SectionLocationSetDecoration.props.display.category ? vp.view.viewsCategory(marker.props.category) : true)) {
         haveVisibleCategory = true;
+        if (marker.visible = this.getMarkerTypeDisplay(marker.props))
+          haveVisibleType = true;
+      }
     }
-    if (outputMsg && !haveVisibleCategory) {
-      const msg = SectionLocationSetDecoration.plugin!.i18n.translate("HyperModeling::tools.SectionLocationMarkers.Messages.NotFoundCategories");
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
+    if (undefined !== HyperModelingPlugin.plugin) {
+      if (!haveVisibleCategory) {
+        const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundCategories");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
+      } else if (!haveVisibleType) {
+        const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundTypes");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
+      }
     }
-    return haveVisibleCategory;
+    return haveVisibleCategory && haveVisibleType;
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
@@ -191,8 +227,7 @@ export class SectionLocationSetDecoration {
   }
 
   /** Start showing markers if not currently active (or optionally refresh when currently displayed). */
-  public static async show(plugin: HyperModelingPlugin, vp: ScreenViewport, sync: boolean, update: boolean): Promise<void> {
-    SectionLocationSetDecoration.plugin = plugin;
+  public static async show(vp: ScreenViewport, sync: boolean, update: boolean): Promise<void> {
     if (undefined !== SectionLocationSetDecoration.decorator) {
       const currentVp = SectionLocationSetDecoration.decorator._sectionLocations.viewport;
       if (currentVp && currentVp !== vp) {
@@ -213,10 +248,10 @@ export class SectionLocationSetDecoration {
       return;
     }
 
-    if (!vp.view.isSpatialView())
+    if (undefined === HyperModelingPlugin.plugin || !vp.view.isSpatialView())
       return;
 
-    const sectionMarkerImage = await this.loadImage(SectionLocationSetDecoration.plugin.resolveResourceUrl("sectionmarkersprite.ico"));
+    const sectionMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("sectionmarkersprite.ico"));
     if (undefined === sectionMarkerImage)
       return; // No point continuing if we don't have a marker image to show...
 
@@ -237,20 +272,20 @@ export class SectionLocationSetDecoration {
     } catch (_) { }
 
     if (undefined === secLocPropList || 0 === secLocPropList.length) {
-      const msg = SectionLocationSetDecoration.plugin.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.NotFoundModels");
+      const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundModels");
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg, undefined, OutputMessageType.Toast));
       return;
     }
 
     // Start by creating the decoration object and adding it as a ViewManager decorator.
     SectionLocationSetDecoration.decorator = new SectionLocationSetDecoration(vp, sectionMarkerImage);
-    SectionLocationSetDecoration.decorator.detailMarkerImage = await this.loadImage(SectionLocationSetDecoration.plugin.resolveResourceUrl("detailmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator.elevationMarkerImage = await this.loadImage(SectionLocationSetDecoration.plugin.resolveResourceUrl("elevationmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator.planMarkerImage = await this.loadImage(SectionLocationSetDecoration.plugin.resolveResourceUrl("planmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator.detailMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("detailmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator.elevationMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("elevationmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator.planMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("planmarkersprite.ico"));
     SectionLocationSetDecoration.decorator.createMarkers(secLocPropList);
 
     if (0 === SectionLocationSetDecoration.decorator._sectionLocations.markers.size) {
-      const msg = SectionLocationSetDecoration.plugin.i18n.translate("HyperModeling:tools.SectionLocationMarkers.Messages.NotFoundModels");
+      const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundModels");
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg, undefined, OutputMessageType.Toast));
       return;
     }
