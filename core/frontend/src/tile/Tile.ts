@@ -462,8 +462,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
-    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
+    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
+      this._childrenLastUsed = args.now;
+    }
 
     if (undefined !== children) {
       // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.

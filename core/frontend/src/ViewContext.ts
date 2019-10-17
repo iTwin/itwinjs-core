@@ -441,7 +441,7 @@ export class SceneContext extends RenderContext {
     super(vp, frustum);
   }
 
-  public get viewFrustum(): ViewFrustum | undefined {
+  public get viewFrustum(): ViewFrustum {
     return undefined !== this._viewFrustum ? this._viewFrustum : this.viewport.viewFrustum;
   }
 

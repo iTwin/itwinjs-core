@@ -5661,18 +5661,6 @@ export namespace RenderScheduleState {
     {};
 }
 
-// @internal
-export abstract class RenderSolarShadowMap implements IDisposable {
-    // (undocumented)
-    abstract collectGraphics(sceneContext: SceneContext): void;
-    // (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract disable(): void;
-    // (undocumented)
-    abstract dispose(): void;
-}
-
 // @public
 export abstract class RenderSystem implements IDisposable {
     // @internal
@@ -5813,8 +5801,6 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
-    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined;
-    // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     static readonly maxDisplayPriority: number;
@@ -5843,8 +5829,7 @@ export abstract class RenderTarget implements IDisposable {
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
-    // (undocumented)
-    readonly solarShadowMap: RenderSolarShadowMap | undefined;
+    updateSolarShadows(_context: SceneContext | undefined): void;
     // (undocumented)
     abstract updateViewRect(): boolean;
     // (undocumented)
@@ -6000,7 +5985,7 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly textureDrapes: Map<string, RenderTextureDrape>;
     // (undocumented)
-    readonly viewFrustum: ViewFrustum | undefined;
+    readonly viewFrustum: ViewFrustum;
     // (undocumented)
     withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewFrustum | undefined, func: () => void): void;
     // (undocumented)
@@ -6992,8 +6977,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
-    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined;
-    // (undocumented)
     getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
@@ -7089,6 +7072,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly techniques: Techniques;
     // (undocumented)
     readonly transparencyThreshold: number;
+    // (undocumented)
+    updateSolarShadows(context: SceneContext | undefined): void;
     // (undocumented)
     useLogZ: boolean;
     // (undocumented)

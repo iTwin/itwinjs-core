@@ -37,7 +37,6 @@ import {
   PrimitiveVisibility,
   RenderPlan,
   RenderPlanarClassifier,
-  RenderSolarShadowMap,
   RenderSystem,
   RenderTarget,
   RenderTargetDebugControl,
@@ -57,7 +56,6 @@ import {
   RenderTexture,
   SpatialClassificationProps,
   ViewFlags,
-  SolarShadows,
 } from "@bentley/imodeljs-common";
 import { freeDrawParams } from "./ScratchDrawParams";
 import { Primitive } from "./Primitive";
@@ -87,7 +85,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
-import { SpatialViewState } from "../../ViewState";
+import { SceneContext } from "../../ViewContext";
 
 // tslint:disable:no-const-enum
 
@@ -557,8 +555,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._wantAmbientOcclusion;
   }
 
-  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined {
-    return this.compositor.getSolarShadowMap(_frustum, _direction, _settings, _view);
+  public updateSolarShadows(context: SceneContext | undefined): void {
+    this.compositor.updateSolarShadows(context);
   }
 
   // ---- Implementation of RenderTarget interface ---- //
@@ -722,6 +720,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
       this._worldDecorations = dispose(this._worldDecorations);
+
+      // Turn off shadows if switching from 3d to 2d
+      if (!plan.is3d)
+        this.updateSolarShadows(undefined);
     }
 
     if (!this.assignDC()) {
@@ -1281,7 +1283,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
   public drawSolarShadowMap() {
-    if (this.solarShadowMap)
+    if (this.solarShadowMap && this.solarShadowMap.isEnabled)
       this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {

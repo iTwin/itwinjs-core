@@ -287,7 +287,6 @@ internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderScheduleState
-internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
