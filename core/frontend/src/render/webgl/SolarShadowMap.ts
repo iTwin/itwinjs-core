@@ -6,7 +6,7 @@
 import { GL } from "./GL";
 import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";
-import { Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
+import { Geometry, Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
@@ -289,6 +289,15 @@ export class SolarShadowMap implements RenderMemory.Consumer {
     } else if (0 < this._graphics.length) {
       if (!backgroundOn) {
         shadowRange.intersect(tileRange, shadowRange);
+
+        // Avoid an uninvertible matrix on empty range...
+        if (Geometry.isAlmostEqualNumber(shadowRange.low.x, shadowRange.high.x) ||
+          Geometry.isAlmostEqualNumber(shadowRange.low.y, shadowRange.high.y) ||
+          Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
+          this.clearGraphics();
+          return;
+        }
+
         this._shadowFrustum.initFromRange(shadowRange);
         mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
       }
