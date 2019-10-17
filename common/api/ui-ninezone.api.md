@@ -142,18 +142,6 @@ export interface CellProps {
 }
 
 // @alpha
-export class Chevron extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ChevronProps extends CommonProps, NoChildrenProps {
-    direction: Direction;
-    onClick?: () => void;
-}
-
-// @alpha
 export class Columns extends React.PureComponent<ColumnsProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1071,27 +1059,6 @@ export class SafeAreaInsetsHelpers {
     static isTop(flags: SafeAreaInsets): boolean;
 }
 
-// @alpha
-export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
-    // (undocumented)
-    componentDidUpdate(prevProps: Readonly<ScrollableProps>): void;
-    // (undocumented)
-    static readonly defaultProps: ScrollableDefaultProps;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<ScrollableState>;
-}
-
-// @alpha
-export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
-
-// @alpha
-export interface ScrollableProps extends ToolbarProps {
-    onScroll?: () => void;
-    visibleItemThreshold: number;
-}
-
 // @beta
 export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
     // (undocumented)
@@ -1107,12 +1074,6 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
 // @beta
 export interface ScrollableToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
-}
-
-// @alpha
-export class ScrollIndicator extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
 }
 
 // @beta

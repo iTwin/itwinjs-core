@@ -16,8 +16,6 @@ alpha;BackTarget
 alpha;BackTargetProps 
 alpha;Cell 
 alpha;CellProps
-alpha;Chevron 
-alpha;ChevronProps 
 alpha;Columns 
 alpha;ColumnsProps 
 alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
@@ -153,12 +151,8 @@ alpha;ResizeGripResizeArgs
 beta;ResizeHandle
 beta;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
-alpha;Scrollable 
-alpha;ScrollableDefaultProps = Pick
-alpha;ScrollableProps 
 beta;ScrollableToolSettings 
 beta;ScrollableToolSettingsProps 
-alpha;ScrollIndicator 
 beta;Snap 
 beta;SnapMode 
 beta;SnapModePanel 

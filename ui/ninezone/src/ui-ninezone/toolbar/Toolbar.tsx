@@ -158,8 +158,7 @@ interface ToolbarState {
   panels: HTMLElement | null;
 }
 
-/** A toolbar that may contain items.
- * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
+/** A toolbar that contains toolbar items.
  * @beta
  */
 export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
