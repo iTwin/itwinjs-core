@@ -45,8 +45,8 @@ export abstract class SectionMarkerFilterTool extends Tool {
 /** Enable or disable section marker display by category.
  * @beta
  */
-export class SectionMarkerCategoryTool extends SectionMarkerFilterTool {
-  public static toolId = "SectionMarkerCategory";
+export class SectionMarkerFilterCategoryTool extends SectionMarkerFilterTool {
+  public static toolId = "HyperModeling.Marker.Category";
   public run(enable?: boolean): boolean {
     SectionLocationSetDecoration.props.display.category = (undefined === enable ? !SectionLocationSetDecoration.props.display.category : enable);
     return true;
@@ -56,8 +56,8 @@ export class SectionMarkerCategoryTool extends SectionMarkerFilterTool {
 /** Enable or disable section type marker display.
  * @beta
  */
-export class SectionMarkerSectionTool extends SectionMarkerFilterTool {
-  public static toolId = "SectionMarkerSection";
+export class SectionMarkerFilterSectionTypeTool extends SectionMarkerFilterTool {
+  public static toolId = "HyperModeling.Marker.Type.Section";
   public run(enable?: boolean): boolean {
     SectionLocationSetDecoration.props.display.section = (undefined === enable ? !SectionLocationSetDecoration.props.display.section : enable);
     return true;
@@ -67,8 +67,8 @@ export class SectionMarkerSectionTool extends SectionMarkerFilterTool {
 /** Enable or disable detail type marker display.
  * @beta
  */
-export class SectionMarkerDetailTool extends SectionMarkerFilterTool {
-  public static toolId = "SectionMarkerDetail";
+export class SectionMarkerFilterDetailTypeTool extends SectionMarkerFilterTool {
+  public static toolId = "HyperModeling.Marker.Type.Detail";
   public run(enable?: boolean): boolean {
     SectionLocationSetDecoration.props.display.detail = (undefined === enable ? !SectionLocationSetDecoration.props.display.detail : enable);
     return true;
@@ -78,8 +78,8 @@ export class SectionMarkerDetailTool extends SectionMarkerFilterTool {
 /** Enable or disable elevation type marker display.
  * @beta
  */
-export class SectionMarkerElevationTool extends SectionMarkerFilterTool {
-  public static toolId = "SectionMarkerElevation";
+export class SectionMarkerFilterElevationTypeTool extends SectionMarkerFilterTool {
+  public static toolId = "HyperModeling.Marker.Type.Elevation";
   public run(enable?: boolean): boolean {
     SectionLocationSetDecoration.props.display.elevation = (undefined === enable ? !SectionLocationSetDecoration.props.display.elevation : enable);
     return true;
@@ -89,8 +89,8 @@ export class SectionMarkerElevationTool extends SectionMarkerFilterTool {
 /** Enable or disable plan type marker display.
  * @beta
  */
-export class SectionMarkerPlanTool extends SectionMarkerFilterTool {
-  public static toolId = "SectionMarkerPlan";
+export class SectionMarkerFilterPlanTypeTool extends SectionMarkerFilterTool {
+  public static toolId = "HyperModeling.Marker.Type.Plan";
   public run(enable?: boolean): boolean {
     SectionLocationSetDecoration.props.display.plan = (undefined === enable ? !SectionLocationSetDecoration.props.display.plan : enable);
     return true;
@@ -107,7 +107,7 @@ export class SectionMarkerPlanTool extends SectionMarkerFilterTool {
  * @beta
  */
 export class SectionMarkerDisplayTool extends Tool {
-  public static toolId = "SectionMarkerDisplay";
+  public static toolId = "HyperModeling.Marker.Display";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
@@ -158,11 +158,11 @@ export class HyperModelingPlugin extends Plugin {
     this._i18NNamespace = this.i18n.registerNamespace("HyperModeling");
     this._i18NNamespace!.readFinished.then(() => {
       IModelApp.tools.register(SectionMarkerDisplayTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerCategoryTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerSectionTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerDetailTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerElevationTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerPlanTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(SectionMarkerFilterCategoryTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(SectionMarkerFilterSectionTypeTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(SectionMarkerFilterDetailTypeTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(SectionMarkerFilterElevationTypeTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(SectionMarkerFilterPlanTypeTool, this._i18NNamespace, this.i18n);
     }).catch(() => { });
   }
 

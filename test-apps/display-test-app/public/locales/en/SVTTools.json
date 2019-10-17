@@ -6,8 +6,9 @@
       }
     },
     "Markup": {
+      "keyin": "dta markup",
       "TestSelect": {
-      "keyin": "dta markup select"
+        "keyin": "dta markupselect"
       }
     },
     "SVTSelect": {
@@ -51,9 +52,6 @@
     },
     "ToggleIncidentMarkers": {
       "keyin": "dta incident markers"
-    },
-    "Markup": {
-      "keyin": "dta markup"
     },
     "ShutDown": {
       "keyin": "dta shutdown"

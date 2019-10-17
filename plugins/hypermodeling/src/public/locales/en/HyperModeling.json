@@ -1,22 +1,28 @@
 {
   "tools": {
-    "SectionMarkerDisplay": {
-      "keyin": "hypermodeling marker display"
-    },
-    "SectionMarkerCategory": {
-      "keyin": "hypermodeling marker category"
-    },
-    "SectionMarkerSection": {
-      "keyin": "hypermodeling marker section"
-    },
-    "SectionMarkerDetail": {
-      "keyin": "hypermodeling marker detail"
-    },
-    "SectionMarkerElevation": {
-      "keyin": "hypermodeling marker elevation"
-    },
-    "SectionMarkerPlan": {
-      "keyin": "hypermodeling marker plan"
+    "HyperModeling": {
+      "Marker": {
+        "Display": {
+          "keyin": "hypermodeling marker display"
+        },
+        "Category": {
+          "keyin": "hypermodeling marker category"
+        },
+        "Type": {
+          "Section": {
+            "keyin": "hypermodeling marker type section"
+          },
+          "Detail": {
+            "keyin": "hypermodeling marker type detail"
+          },
+          "Elevation": {
+            "keyin": "hypermodeling marker type elevation"
+          },
+          "Plan": {
+            "keyin": "hypermodeling marker type plan"
+          }
+        }
+      }
     }
   },
   "Message": {

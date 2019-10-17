@@ -181,14 +181,18 @@ export class SectionLocationSetDecoration {
 
   /** Set marker visibility based on category display */
   public setMarkerVisibility(vp: Viewport): boolean {
+    let haveVisibleChange = false;
     let haveVisibleCategory = false;
     let haveVisibleType = false;
     for (const marker of this._sectionLocations.markers) {
+      const oldVisible = marker.visible;
       if (marker.visible = (SectionLocationSetDecoration.props.display.category ? vp.view.viewsCategory(marker.props.category) : true)) {
         haveVisibleCategory = true;
         if (marker.visible = this.getMarkerTypeDisplay(marker.props))
           haveVisibleType = true;
       }
+      if (oldVisible !== marker.visible)
+        haveVisibleChange = true;
     }
     if (undefined !== HyperModelingPlugin.plugin) {
       if (!haveVisibleCategory) {
@@ -199,7 +203,7 @@ export class SectionLocationSetDecoration {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
       }
     }
-    return haveVisibleCategory && haveVisibleType;
+    return haveVisibleChange;
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
@@ -237,9 +241,9 @@ export class SectionLocationSetDecoration {
           update = true; // clear and show in new view...
       }
       if (!update) {
-        if (sync) {
-          SectionLocationSetDecoration.decorator.setMarkerVisibility(vp);
+        if (sync && SectionLocationSetDecoration.decorator.setMarkerVisibility(vp)) {
           SectionLocationSetDecoration.decorator._sectionLocations.markDirty();
+          vp.invalidateDecorations();
         }
         return;
       }
