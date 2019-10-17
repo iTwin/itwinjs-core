@@ -56,7 +56,7 @@ function addBoundaryTypeConstants(builder: ShaderBuilder): void {
 }
 
 /** @internal */
-function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgba): void {
+function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgba, hAlpha: number): void {
   switch (display) {
     case SpatialClassificationProps.Display.Dimmed:
       scratchColor.set(0.0, 0.0, 0.0, 0.3);
@@ -68,7 +68,7 @@ function setScratchColor(display: SpatialClassificationProps.Display, hilite: Fl
       scratchColor.set(0.0, 0.0, 0.0, 0.0);
       break;
     default: // Hilite or ByElementColor (though ByElementColor should never use this shader)
-      scratchColor.set(hilite.red, hilite.green, hilite.blue, 0.4);
+      scratchColor.set(hilite.red, hilite.green, hilite.blue, hAlpha);
       break;
   }
 }
@@ -82,8 +82,11 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const useLighting = params.geometry.getFlashMode(params);
-      const hiliteColor = params.target.hiliteColor;
-      scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
+      if (useLighting) {
+        const hiliteColor = params.target.hiliteColor;
+        scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
+      } else
+        scratchColor.set(1.0, 1.0, 1.0, 0.0);
       scratchColor.bind(uniform);
     });
   });
@@ -172,16 +175,17 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext): S
     prog.addGraphicUniform("u_blend_color", (uniform, params) => {
       const geom = params.geometry as VolumeClassifierGeometry;
       const hiliteColor = params.target.hiliteColor;
+      const hiliteAlpha = params.target.hiliteSettings.visibleRatio;
       switch (geom.boundaryType) {
         case BoundaryType.Outside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor);
+          setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);
           break;
         case BoundaryType.Inside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.inside, hiliteColor);
+          setScratchColor(params.target.activeVolumeClassifierProps!.flags.inside, hiliteColor, hiliteAlpha);
           break;
         case BoundaryType.Selected:
-          // setScratchColor(params.target.activeVolumeClassifierProps!.flags.selected, hiliteColor);
-          setScratchColor(SpatialClassificationProps.Display.Hilite, hiliteColor); // option for how to display selected classifiers has been removed, always just hilite
+          // setScratchColor(params.target.activeVolumeClassifierProps!.flags.selected, hiliteColor, hiliteAlpha);
+          setScratchColor(SpatialClassificationProps.Display.Hilite, hiliteColor, hiliteAlpha); // option for how to display selected classifiers has been removed, always just hilite
           break;
       }
       scratchColor.bind(uniform);

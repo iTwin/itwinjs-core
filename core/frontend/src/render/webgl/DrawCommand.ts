@@ -503,6 +503,12 @@ export class RenderCommands {
     return this._commands[idx];
   }
 
+  public replaceCommands(pass: RenderPass, cmds: DrawCommands): void {
+    const idx = pass as number;
+    this._commands[idx].splice(0);
+    this._commands[idx] = cmds;
+  }
+
   public addHiliteBranch(branch: Branch, batch: Batch, pass: RenderPass): void {
     this.pushAndPopBranchForPass(pass, branch, () => {
       branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, batch, pass));

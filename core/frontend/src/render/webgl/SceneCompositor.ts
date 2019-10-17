@@ -988,7 +988,8 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private findHilitedClassifiers(cmds: DrawCommands): DrawCommands {
-    // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated.
+    // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
+    //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
     const selectedCmds: DrawCommand[] = [];
     for (const command of cmds) {
       if (command.isPrimitiveCommand) {
@@ -1198,12 +1199,15 @@ abstract class Compositor extends SceneCompositor {
         });
       }
     }
-    // Handle the selected classifier volumes.  In order for this to work the list of command needs to get reduced to only the ones which draw hilited volumes.
-    // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn;t need to sine it is only used elsewhere when Z write is turned off)
+
+    // Handle the selected classifier volumes.  Note though that if color-by-element is being used, then the selected volumes are already hilited
+    // and this stage can be skipped.  In order for this to work the list of command needs to get reduced to only the ones which draw hilited volumes.
+    // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn't need to since it is only used elsewhere when Z write is turned off)
     // and we don't really want another whole set of hilite shaders just for this.
     const cmdsSelected = this.findHilitedClassifiers(commands.getCommands(RenderPass.HiliteClassification));
+    commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== this.target.activeVolumeClassifierProps!.flags.selected) {
-    if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
+    if (!doColorByElement && cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1230,6 +1234,7 @@ abstract class Compositor extends SceneCompositor {
         System.instance.bindTexture2d(TextureUnit.Zero, undefined);
       });
     }
+
     // Now modify the color of the reality mesh by using the blend texture to blend with it.
     fbStack.execute(fboColorAndZ!, false, () => {
       this.target.pushState(this.target.decorationState);
@@ -1242,8 +1247,9 @@ abstract class Compositor extends SceneCompositor {
     });
 
     // Process the flashed classifier if there is one.
+    // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
     const flashedClassifierCmds = this.findFlashedClassifier(cmdsByIndex);
-    if (undefined !== flashedClassifierCmds) {
+    if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1254,8 +1260,8 @@ abstract class Compositor extends SceneCompositor {
       // Process the stencil to flash the contents.
       fbStack.execute(fboColorAndZ!, true, () => {
         this.target.pushState(this.target.decorationState);
-        this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.67];
-        this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusConstAlpha, GL.BlendFactor.One);
+        this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
+        this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);
         System.instance.applyRenderState(this._vcColorRenderState!);
         const params = getDrawParams(this.target, this._geom.volClassColorStencil!);
         this.target.techniques.draw(params);
@@ -1283,7 +1289,7 @@ abstract class Compositor extends SceneCompositor {
       });
     }
 
-    // Process the hilite stencil volumes.
+    // Process the volume classifiers.
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 !== vcHiliteCmds.length) {
       // Set the stencil for the given classifier stencil volume.
