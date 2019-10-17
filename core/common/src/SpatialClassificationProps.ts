@@ -83,7 +83,7 @@ export namespace SpatialClassificationProps {
     if (lhs === rhs)
       return true;
 
-    return lhs.inside === rhs.inside && lhs.outside === rhs.outside;
+    return lhs.inside === rhs.inside && lhs.outside === rhs.outside && lhs.isVolumeClassifier === rhs.isVolumeClassifier;
   }
 
   /** Returns true if two Classifiers are equivalent.
