@@ -341,12 +341,8 @@ async function waitForTilesToLoad(modelLocation?: string) {
     theViewport!.sync.invalidateScene();
     theViewport!.renderFrame();
 
-    const sceneContext = theViewport!.createSceneContext();
-    activeViewState.viewState!.createScene(sceneContext);
-    sceneContext.requestMissingTiles();
-
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || (0 < IModelApp.tileAdmin.getNumRequestsForViewport(theViewport!));
 
     // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
     if (haveNewTiles)
@@ -479,6 +475,8 @@ class ViewSize {
   constructor(w = 0, h = 0) { this.width = w; this.height = h; }
 }
 
+type TestType = "timing" | "readPixels" | "interactive" | "image" | "both";
+
 class DefaultConfigs {
   public view?: ViewSize;
   public numRendersToTime?: number;
@@ -495,7 +493,7 @@ class DefaultConfigs {
   public viewStatePropsString?: string;
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
-  public testType?: string;
+  public testType?: TestType;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
@@ -1037,6 +1035,24 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   }
 }
 
+async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>): Promise<void> {
+  IModelApp.viewManager.addViewport(vp);
+
+  let frameCount = 0;
+  return new Promise((resolve: () => void, _reject) => {
+    const removeListener = vp.onRender.addListener((_) => {
+      timings[frameCount] = (vp.target as Target).performanceMetrics!.frameTimings;
+      if (++frameCount === numFrames) {
+        removeListener();
+        IModelApp.viewManager.dropViewport(vp, false);
+        resolve();
+      } else {
+        vp.sync.setRedrawPending();
+      }
+    });
+  });
+}
+
 async function runTest(testConfig: DefaultConfigs) {
   // Restart the IModelApp if needed
   restartIModelApp(testConfig);
@@ -1055,7 +1071,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
   const csvFormat = testConfig.csvFormat!;
 
-  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
+  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels" || testConfig.testType === "interactive") {
     // Throw away the first n renderFrame times, until it's more consistent
     for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
       theViewport!.sync.setRedrawPending();
@@ -1094,11 +1110,16 @@ async function runTest(testConfig: DefaultConfigs) {
       await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
     } else {
       const timer = new StopWatch(undefined, true);
-      for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-        theViewport!.sync.setRedrawPending();
-        theViewport!.renderFrame();
-        finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+      if ("interactive" === testConfig.testType) {
+        await renderAsync(theViewport!, testConfig.numRendersToTime!, finalFrameTimings);
+      } else {
+        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
+          theViewport!.sync.setRedrawPending();
+          theViewport!.renderFrame();
+          finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+        }
       }
+
       timer.stop();
       updateTestNames(testConfig); // Update the list of timing test names
       if (wantConsoleOutput) {
