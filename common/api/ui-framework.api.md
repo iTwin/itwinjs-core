@@ -2402,12 +2402,12 @@ export enum IModelScope {
 
 // @internal
 export interface IModelServices {
-    getChangeSets(accessToken: AccessToken, iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(accessToken: AccessToken, projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
-    getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined>;
-    getUser(accessToken: AccessToken, iModelId: string, userId: string): Promise<IModelUserInfo[]>;
-    getUsers(accessToken: AccessToken, iModelId: string): Promise<IModelUserInfo[]>;
-    getVersions(accessToken: AccessToken, iModelId: string): Promise<VersionInfo[]>;
+    getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
+    getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+    getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
+    getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
+    getUsers(iModelId: string): Promise<IModelUserInfo[]>;
+    getVersions(iModelId: string): Promise<VersionInfo[]>;
     openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
 }
 
@@ -3340,7 +3340,7 @@ export enum ProjectScope {
 
 // @internal
 export interface ProjectServices {
-    getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
+    getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
 // @public
@@ -4574,8 +4574,8 @@ export class UiFramework {
     static readonly packageName: string;
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
-    // (undocumented)
-    static setAccessToken(accessToken: AccessToken, immediateSync?: boolean): void;
+    // @deprecated (undocumented)
+    static setAccessToken(accessToken: AccessToken | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)

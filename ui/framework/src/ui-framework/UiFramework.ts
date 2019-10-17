@@ -91,14 +91,14 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
     if (oidcConfig) {
-      if (oidcConfig) {
-        UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
-        const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
-          .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
-        return Promise.all([readFinishedPromise, initOidcPromise]);
-      }
-      return readFinishedPromise;
+      UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
+      UiFramework._oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
+
+      const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
+        .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
+      return Promise.all([readFinishedPromise, initOidcPromise]);
     }
+    return readFinishedPromise;
   }
 
   /** Unregisters the UiFramework internationalization service namespace */
@@ -247,7 +247,12 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
+  /** @deprecated Token is managed internally, and there is no need for the caller to explicitly set the access token. */
+  public static setAccessToken(accessToken: AccessToken | undefined, immediateSync = false) {
+    this.setAccessTokenInternal(accessToken, immediateSync);
+  }
+
+  private static setAccessTokenInternal(accessToken: AccessToken | undefined, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
   }
 

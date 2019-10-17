@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { ProjectInfo } from "./ProjectServices";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -73,24 +72,24 @@ export interface IModelUserInfo {
 export interface IModelServices {
 
   /** Get the iModels in a project. */
-  getIModels(accessToken: AccessToken, projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+  getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
 
   /** Open the specified version of the IModel */
   openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
 
   /** Get the thumbnail for the iModel. */
-  getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined>;
+  getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
 
   /** Get the versions for the iModel. */
-  getVersions(accessToken: AccessToken, iModelId: string): Promise<VersionInfo[]>;
+  getVersions(iModelId: string): Promise<VersionInfo[]>;
 
   /** Get the changesets for the iModel. */
-  getChangeSets(accessToken: AccessToken, iModelId: string): Promise<ChangeSetInfo[]>;
+  getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
 
   /** Get the users that have access to a particular iModel. */
-  getUsers(accessToken: AccessToken, iModelId: string): Promise<IModelUserInfo[]>;
+  getUsers(iModelId: string): Promise<IModelUserInfo[]>;
 
   /** Get the users that have access to a particular iModel. */
-  getUser(accessToken: AccessToken, iModelId: string, userId: string): Promise<IModelUserInfo[]>;
+  getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
 
 }

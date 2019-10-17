@@ -16,9 +16,8 @@ class IModelIndexControl extends ContentControl {
     super(info, options);
 
     const iModelConnection = UiFramework.getIModelConnection();
-    const accessToken = UiFramework.getAccessToken();
-    if (iModelConnection && accessToken)
-      this.reactElement = <IModelIndex iModelConnection={iModelConnection} accessToken={accessToken} onOpen={this._onOpen} />;
+    if (iModelConnection && UiFramework.oidcClient.isAuthorized)
+      this.reactElement = <IModelIndex iModelConnection={iModelConnection} onOpen={this._onOpen} />;
     else
       this.reactElement = null;
   }

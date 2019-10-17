@@ -244,6 +244,29 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "ui-test-app Electron (Main Process)",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/test-apps/ui-test-app/",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron.cmd"
+      },
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
+      "args": [
+        "--remote-debugging-port=9223",
+        "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/ui-test-app/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "display-performance-test-app Browser (backend)",
       "cwd": "${workspaceRoot}/test-apps/display-performance-test-app",
       "program": "${workspaceRoot}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
@@ -431,7 +454,7 @@
         "webpack:///./*": "${webRoot}/*",
         "webpack:///*": "*",
         "webpack:///packages/*": "${webRoot}/*",
-      }
+      },
     },
     {
       "type": "node",

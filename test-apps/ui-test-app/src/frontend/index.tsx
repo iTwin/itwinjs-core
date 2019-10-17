@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
@@ -186,32 +186,15 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
-
+    const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
     if (ElectronRpcConfiguration.isElectron) {
-      // cSpell:disable
-      let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
-      // cSpell:enable
-      let redirectUri = "electron://frontend/signin-callback";
-      if (Config.App.has("imjs_electron_test_client_id"))
-        clientId = Config.App.get("imjs_electron_test_client_id");
-
-      if (Config.App.has("imjs_electron_test_redirect_uri"))
-        redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
-
-      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
-      oidcConfiguration = { clientId, redirectUri, scope };
+      const clientId = "imodeljs-electron-test";
+      const redirectUri = "electron://frontend/signin-callback";
+      oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
     } else {
-      let clientId = "imodeljs-spa-test-2686";
-      let redirectUri = "http://localhost:3000/signin-callback";
-
-      if (Config.App.has("imjs_browser_test_client_id"))
-        clientId = Config.App.get("imjs_browser_test_client_id");
-
-      if (Config.App.has("imjs_browser_test_redirect_uri"))
-        redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
-
-      const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service projectwise-share";
-      oidcConfiguration = { clientId, redirectUri, scope };
+      const clientId = "imodeljs-spa-test";
+      const redirectUri = "http://localhost:3000/signin-callback";
+      oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
     }
 
     await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
@@ -361,14 +344,6 @@ export class SampleAppIModelApp {
 
   // called after the user has signed in (or access token is still valid)
   public static async onSignedIn() {
-    const accessToken = await IModelApp.authorizationClient!.getAccessToken();
-
-    // NOTE: do we need to store access token since its store in OidcClient?
-    UiFramework.setAccessToken(accessToken);
-
-    if (!accessToken)
-      return;
-
     // get the default IModel (from imodejs-config)
     let defaultImodel: IModelInfo | undefined;
 
@@ -529,13 +504,17 @@ async function retrieveConfiguration(): Promise<void> {
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
-  await retrieveConfiguration(); // (does a fetch)
-  console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+  if (!ElectronRpcConfiguration.isElectron) {
+    await retrieveConfiguration(); // (does a fetch)
+    console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+  }
 
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("ui-test-app", LogLevel.Info);
+  Logger.setLevel(FrontendLoggerCategory.OidcBrowserClient, LogLevel.Info);
+
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
 

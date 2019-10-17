@@ -5,12 +5,12 @@
 /** @module ClientServices */
 
 import {
-  IModelHubClient, AccessToken, HubIModel, Version,
+  IModelHubClient, HubIModel, Version,
   HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery,
-  ChangeSetQuery, VersionQuery, AuthorizedClientRequestContext,
+  ChangeSetQuery, VersionQuery,
 } from "@bentley/imodeljs-clients";
 import { OpenMode, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
@@ -57,8 +57,8 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get all iModels in a project */
-  public async getIModels(accessToken: AccessToken, projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
 
     const iModelInfos: IModelInfo[] = [];
     const queryOptions = new IModelQuery();
@@ -95,8 +95,8 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get the thumbnail for the iModel */
-  public async getThumbnail(accessToken: AccessToken, contextId: string, iModelId: GuidString): Promise<string | undefined> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getThumbnail(contextId: string, iModelId: GuidString): Promise<string | undefined> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     try {
       const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: contextId!, size: "Small" });
       return pngImage;
@@ -107,8 +107,8 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get versions (top 5 for testing) for the iModel */
-  public async getVersions(accessToken: AccessToken, iModelId: GuidString): Promise<VersionInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getVersions(iModelId: GuidString): Promise<VersionInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     const versionInfos: VersionInfo[] = [];
     try {
       const versions: Version[] = await this._hubClient.versions.get(requestContext, iModelId, new VersionQuery().select("*").top(5));
@@ -123,8 +123,8 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get changesets (top 5 for testing) for the iModel */
-  public async getChangeSets(accessToken: AccessToken, iModelId: GuidString): Promise<ChangeSetInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getChangeSets(iModelId: GuidString): Promise<ChangeSetInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     const changeSetInfos: ChangeSetInfo[] = [];
     try {
       const changesets: ChangeSet[] = await this._hubClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(5).latest());
@@ -139,8 +139,8 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get users that have access to a particular iModel */
-  public async getUsers(accessToken: AccessToken, iModelId: GuidString): Promise<IModelUserInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getUsers(iModelId: GuidString): Promise<IModelUserInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     const userInfos: IModelUserInfo[] = [];
     try {
       const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().select("*"));
@@ -154,8 +154,8 @@ export class DefaultIModelServices implements IModelServices {
     return userInfos;
   }
 
-  public async getUser(accessToken: AccessToken, iModelId: GuidString, userId: string): Promise<IModelUserInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getUser(iModelId: GuidString, userId: string): Promise<IModelUserInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     const userInfos: IModelUserInfo[] = [];
     try {
       const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().byId(userId));

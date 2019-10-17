@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { CheckBoxState, LoadingSpinner, Checkbox } from "@bentley/ui-core";
@@ -100,8 +99,6 @@ class DocumentProperty {
 export interface ModelsProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
-  /** AccessToken */
-  accessToken: AccessToken;
   /** If doccodes do not exist, show flat list of models instead of presentation tree */
   showFlatList?: boolean;
   /** Callback to display "loading" when entering an imodel */

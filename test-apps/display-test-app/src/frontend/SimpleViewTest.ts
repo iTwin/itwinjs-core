@@ -19,7 +19,7 @@ import {
   MobileRpcManager,
   TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   FrontendRequestContext,
   IModelApp,
@@ -75,11 +75,19 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
 }
 
 async function initializeOidc(requestContext: FrontendRequestContext): Promise<OidcBrowserClient> {
-  const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
-  const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
+  let oidcConfiguration: OidcFrontendClientConfiguration;
+  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+  if (ElectronRpcConfiguration.isElectron) {
+    const clientId = "imodeljs-electron-test";
+    const redirectUri = "electron://frontend/signin-callback";
+    oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+  } else {
+    const clientId = "imodeljs-spa-test";
+    const redirectUri = "http://localhost:3000/signin-callback";
+    oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+  }
 
-  const oidcClient = new OidcBrowserClient(oidcConfig);
+  const oidcClient = new OidcBrowserClient(oidcConfiguration);
   await oidcClient.initialize(requestContext);
   IModelApp.authorizationClient = oidcClient;
   return oidcClient;

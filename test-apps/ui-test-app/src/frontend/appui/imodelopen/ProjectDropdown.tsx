@@ -6,13 +6,11 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { ProjectInfo } from "@bentley/ui-framework";
 import { ProjectDialog } from "./ProjectDialog";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { Popup, Position } from "@bentley/ui-core";
 import "./ProjectDropdown.scss";
 
 /** Properties for the [[ProjectDropdown]] component */
 export interface ProjectDropdownProps {
-  accessToken: AccessToken;
   numVisibleProjects?: number;
   recentProjects?: ProjectInfo[];
   currentProject?: ProjectInfo;
@@ -145,7 +143,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
         <div className="pp-highlight" />
         {this.renderDropdown()}
         {this.state.showProjectsDialog &&
-          <ProjectDialog accessToken={this.props.accessToken} onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
+          <ProjectDialog onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
         }
       </div>
     );

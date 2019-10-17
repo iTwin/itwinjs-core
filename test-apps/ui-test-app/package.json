@@ -33,6 +33,10 @@
         {
           "source": "./public/**/*",
           "dest": "./lib/webresources"
+        },
+        {
+          "source": "./src/**/*.js",
+          "dest": "./lib"
         }
       ],
       "webpack": {
