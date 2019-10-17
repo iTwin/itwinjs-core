@@ -4,38 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import {
-  Frontstage,
-  ConfigurableCreateInfo,
-  ContentControl,
-  ContentGroup,
-  ContentLayoutDef,
-  ContentProps,
-  FrontstageProvider,
-  FrontstageProps,
-  FrontstageManager,
-  ToolWidget,
-  NestedFrontstage,
-  Zone,
-  Widget,
-  CoreTools,
-} from "@bentley/ui-framework";
+import { FrontstageManager, ModalFrontstageInfo } from "@bentley/ui-framework";
 
 import { PhotoFile } from "./PhotoTree";
-import { PannellumViewer } from "./pannellum/pannellumViewer";
+import { PannellumViewer, PannellumViewerConfig } from "./pannellum/pannellumViewer";
 import { GeoPhotoPlugin } from "./geoPhoto";
 
-export class PannellumContentControl extends ContentControl {
-  public constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-    this.reactElement = <PannellumContent panoBlob = {options.panoBlob} photo={options.photo} plugin={options.plugin} />;
+// cSpell:ignore pano
+
+export class PannellumModalFrontstage implements ModalFrontstageInfo {
+  public title: string;
+  constructor(public panoBlob: Blob, public photo: PhotoFile, public config: PannellumViewerConfig, public plugin: GeoPhotoPlugin) {
+    this.title = plugin.i18n.translate("geoPhoto:messages.Viewer");
+  }
+
+  public get content(): React.ReactNode {
+    return <PannellumContent panoBlob={this.panoBlob} photo={this.photo} config={this.config} plugin={this.plugin} />;
+  }
+
+  public static async open(panoBlob: Blob, photo: PhotoFile, config: PannellumViewerConfig, plugin: GeoPhotoPlugin) {
+    const modalFrontstage = new PannellumModalFrontstage(panoBlob, photo, config, plugin);
+    FrontstageManager.openModalFrontstage(modalFrontstage);
   }
 }
 
 interface PannellumContentProps {
-  photo: PhotoFile;
-  plugin: GeoPhotoPlugin;
   panoBlob: Blob;
+  photo: PhotoFile;
+  config: PannellumViewerConfig;
+  plugin: GeoPhotoPlugin;
 }
 
 interface PannellumContentState {
@@ -53,8 +50,8 @@ class PannellumContent extends React.Component<PannellumContentProps, PannellumC
   }
 
   private createPannellumViewer() {
-    const viewer: PannellumViewer = new PannellumViewer (this._containerDiv, this.props.plugin.i18n);
-    viewer.initialView (this.props.panoBlob);
+    const viewer: PannellumViewer = new PannellumViewer(this._containerDiv, this.props.plugin.i18n, this.props.config);
+    viewer.initialView(this.props.panoBlob);
     // Create PannellumViewer
     // const viewer: PannellumViewer();
 
@@ -71,53 +68,5 @@ class PannellumContent extends React.Component<PannellumContentProps, PannellumC
     if (this._containerDiv && prevProps.photo !== this.props.photo) {
       this.createPannellumViewer();
     }
-  }
-}
-
-export class PannellumFrontstage extends FrontstageProvider {
-
-  constructor(public panoBlob: Blob, public photo: PhotoFile, public plugin: GeoPhotoPlugin) {
-    super();
-  }
-
-  public get frontstage(): React.ReactElement<FrontstageProps> {
-    const pannellumContentLayout: ContentLayoutDef = new ContentLayoutDef({ id: "PannellumContent" });
-    const contentProps: ContentProps[] = [{ classId: PannellumContentControl, applicationData: { panoBlob: this.panoBlob, photo: this.photo, plugin: this.plugin } }];
-    const pannellumContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
-
-    return (
-      <Frontstage id="Pannellum"
-        defaultTool={CoreTools.rotateViewCommand}
-        defaultLayout={pannellumContentLayout}
-        contentGroup={pannellumContentGroup}
-        isInFooterMode={false}
-        topLeft={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
-            ]}
-          />
-        }
-      />
-    );
-  }
-
-  public static async open(panoBlob: Blob, photo: PhotoFile, plugin: GeoPhotoPlugin) {
-      const frontstageProvider = new PannellumFrontstage(panoBlob, photo, plugin);
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
-  }
-
-}
-
-/** Define a ToolWidget with Buttons to display in the TopLeft zone.
- */
-class FrontstageToolWidget extends React.Component {
-  public render() {
-    return (
-      <ToolWidget
-        appButton={NestedFrontstage.backToPreviousFrontstageCommand}
-      />
-    );
   }
 }

@@ -35,6 +35,10 @@
           "dest": "./lib/build"
         },
         {
+          "source": "./src/public/*.svg",
+          "dest": "./lib/public/"
+        },
+        {
           "source": "./src/pannellum/css/**/*",
           "dest": "./lib/pannellum/css"
         }

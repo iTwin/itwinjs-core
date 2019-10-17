@@ -11,6 +11,7 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
 import { PhotoTreeHandler, PhotoFolder, PhotoTraverseFunction } from "./PhotoTree";
 import { ProjectShareHandler } from "./ProjectSharePhotoTree";
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 
 /*-----------------------------------------------------------------------
 This is the source for an iModel.js Plugin that displays on-screen markers
@@ -29,6 +30,7 @@ into an appropriately configured browser or Electron process.
 export class GeoPhotos {
   public rootFolder: PhotoFolder | undefined;
   private _markers: GeoPhotoMarkerManager | undefined;
+  private _photoCount: number = 0;
 
   /** Constructs GeoPhotos container. Specify the tree handler to access the storage mechanism.
    * The GeoPhotos container is stored on the associated IModelConnection object.
@@ -59,6 +61,9 @@ export class GeoPhotos {
     if (!this._markers) {
       this._markers = new GeoPhotoMarkerManager(this.plugin, this);
     }
+    const message: string = this.plugin.i18n.translate("geoPhoto:messages.ShowingMarkers");
+    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+    IModelApp.notifications.outputMessage(msgDetails);
     this._markers.startDecorating().catch((_err) => { });
   }
 
@@ -82,6 +87,18 @@ export class GeoPhotos {
   public showingMarkers(): boolean {
     return (undefined !== this._markers) && this._markers.nowDecorating();
   }
+
+  private countFunc(folder: PhotoFolder, _parent: PhotoFolder): void {
+    this._photoCount += folder.photoCount;
+  }
+
+  public getPhotoCount(): number {
+    if (!this.rootFolder)
+      return SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
+    this._photoCount = 0;
+    this.rootFolder.traverseFolders(this.countFunc.bind(this), true, true);
+    return this._photoCount;
+  }
 }
 
 /** An Immediate Tool that can be used to execute the operations in GeoPhotoPlugin. */
@@ -97,9 +114,8 @@ class GeoTagTool extends Tool {
   public run(args: any[]): boolean {
     // the plugin does the actual work.
     if (IModelApp.viewManager.selectedView) {
-      if ((undefined === args) || args.length < 1)
-        args = ["toggle"];
-      GeoTagTool.plugin!.onExecute(args);
+      const arg: string = ((undefined !== args) && (args.length > 0)) ? args[0] : "toggle";
+      GeoTagTool.plugin!.markerOperation(arg);
     }
     return true;
   }
@@ -127,14 +143,20 @@ export class GeoPhotoPlugin extends Plugin {
 
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
     if (undefined === geoPhotos) {
+      let message: string = this.i18n.translate("geoPhoto:messages.GatheringPhotos");
+      let msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+      IModelApp.notifications.outputMessage(msgDetails);
+
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel);
       geoPhotos = new GeoPhotos(this, treeHandler!, iModel);
       await geoPhotos.readTreeContents();
+
+      const photoCount: number = geoPhotos.getPhotoCount();
+      message = this.i18n.translate("geoPhoto:messages.GeneratingMarkers", { photoCount });
+      msgDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+      IModelApp.notifications.outputMessage(msgDetails);
     }
-    const message: string = this.i18n.translate("geoPhoto:messages.ShowingMarkers");
-    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
-    IModelApp.notifications.outputMessage(msgDetails);
     geoPhotos.showMarkers();
   }
 
@@ -161,6 +183,18 @@ export class GeoPhotoPlugin extends Plugin {
     return (geoPhotos && geoPhotos.showingMarkers());
   }
 
+  public markerOperation(opArg: string) {
+    const view = IModelApp.viewManager.selectedView;
+    if (!view)
+      return;
+
+    const operation = this.getOperation(opArg);
+    if ((Operation.Show === operation) || ((Operation.Toggle === operation) && !this.showingMarkers(view)))
+      this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
+    else if ((Operation.Hide === operation) || ((Operation.Toggle === operation) && this.showingMarkers(view)))
+      this.hideGeoPhotoMarkers(view.iModel);
+  }
+
   /** Invoked the first time this plugin is loaded. */
   public onLoad(_args: string[]): void {
     // store the plugin in the tool prototype.
@@ -179,16 +213,9 @@ export class GeoPhotoPlugin extends Plugin {
     if (args.length < 1)
       return;
 
-    const view = IModelApp.viewManager.selectedView;
-    if (!view)
-      return;
-
-    const operation = this.getOperation(args[0]);
-
-    if ((Operation.Show === operation) || ((Operation.Toggle === operation) && !this.showingMarkers(view)))
-      this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
-    else if ((Operation.Hide === operation) || ((Operation.Toggle === operation) && this.showingMarkers(view)))
-      this.hideGeoPhotoMarkers(view.iModel);
+    this._i18NNamespace!.readFinished.then(() => {
+      this.markerOperation(args.length > 1 ? args[1] : "toggle");
+    }).catch ((_err: Error) => {});
   }
 }
 

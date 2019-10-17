@@ -40,9 +40,9 @@ interface StartEnd {
 }
 
 interface Move {
-  pitch: StartEnd;
-  yaw: StartEnd;
-  hfov: StartEnd;
+  pitch?: StartEnd;
+  yaw?: StartEnd;
+  hfov?: StartEnd;
 }
 
 interface Speed {
@@ -56,19 +56,41 @@ interface PointerCoordinates {
   clientY: number;
 }
 
+type EscapeFunc = () => void;
+
+export interface PannellumHotSpot {
+  yaw: number;
+  pitch: number;
+  cssClassName?: string;
+  text?: string;
+  video?: string;
+  image?: string;
+  URL?: string;
+  width?: number;
+  scale?: boolean;
+  attributes?: string[];
+  clickHandlerFunc?: (ev: MouseEvent, args: any) => void;
+  clickHandlerArgs?: any;
+  createTooltipFunc?: (div: HTMLDivElement, args: any) => void;
+  createTooltipArgs?: any;
+  styleFunc?: (hs: PannellumHotSpot, args: any) => void;
+  styleArgs?: any;
+  div?: HTMLDivElement | null;
+}
+
 export interface PannellumViewerConfig {
-  hfov?: number;
-  minHfov?: number;
+  hfov?: number;      // horizontal field of view
+  minHfov?: number;   // minimum horizontal field of view
   maxHfov?: number;
-  pitch?: number;
+  pitch?: number;     // pitch angle
   minPitch?: number;
   maxPitch?: number;
-  yaw?: number;
+  yaw?: number;       // yaw angle.
   minYaw?: number;
   maxYaw?: number;
-  roll?: number;
-  haov?: number;
-  vaov?: number;
+  roll?: number;    // roll angle.
+  haov?: number;    // horizontal angle of view
+  vaov?: number;    // vertical angle of view
   vOffset?: number;
   autoRotate?: number;
   autoRotateInactivityDelay?: number;
@@ -99,9 +121,11 @@ export interface PannellumViewerConfig {
   title?: string;
   author?: string;
   authorURL?: string;
+  hotSpots?: PannellumHotSpot[];
+  escapeKeyFunc?: EscapeFunc;
 }
 
-export interface PannellumViewerParameters {
+interface PannellumViewerParameters {
   hfov: number;
   minHfov: number;
   maxHfov: number;
@@ -144,11 +168,13 @@ export interface PannellumViewerParameters {
   title: string | undefined;
   author: string | undefined;
   authorURL: string | undefined;
+  hotSpots: PannellumHotSpot[] | undefined;
+  escapeKeyFunc: EscapeFunc | undefined;
 }
 
 export class PannellumViewer {
   private _config: PannellumViewerParameters;
-  private _initialConfig: PannellumViewerParameters | undefined;
+  private _initialConfig: PannellumViewerConfig | undefined;
   private _renderer: PannellumRenderer | undefined;
   private _preview: HTMLElement | undefined;
   private _isUserInteracting: boolean = false;
@@ -174,6 +200,7 @@ export class PannellumViewer {
   private _origHfov: number;
   private _origPitch: number;
   private _animatedMove: Move = this.noMove();
+  private _animationStoppedForNewPanorama: boolean = false;
   private _externalEventListeners: any = {};
   private _specifiedPhotoSphereExcludes: string[] = [];
   private _eps: number = 1e-6;
@@ -191,6 +218,7 @@ export class PannellumViewer {
   private _pointerCoordinates: PointerCoordinates[] = [];
   private _orientationSupport: boolean;
   private _startOrientationIfSupported: boolean;
+  private _hotSpotsCreated: boolean = false;
   private _i18n: I18N;
 
   private _defaultConfig: PannellumViewerParameters = {
@@ -236,6 +264,8 @@ export class PannellumViewer {
     title: undefined,
     author: undefined,
     authorURL: undefined,
+    hotSpots: undefined,
+    escapeKeyFunc: undefined,
   };
 
   /**
@@ -246,7 +276,7 @@ export class PannellumViewer {
    * @param {I18n} i18n - the internationalization provider.
    * @param {Object} initialConfig - Inital configuration for viewer.
    */
-  constructor(container: HTMLElement | string | null, i18n: I18N, initialConfig?: PannellumViewerParameters) {
+  constructor(container: HTMLElement | string | null, i18n: I18N, initialConfig?: PannellumViewerConfig) {
 
     // initialize config;
     this._config = Object.assign(this._defaultConfig);
@@ -430,6 +460,19 @@ export class PannellumViewer {
     if (this._config.draggable)
       this._uiContainer.classList.add("pnlm-grab");
     this._uiContainer.classList.remove("pnlm-grabbing");
+  }
+
+  public newPanorama(panoBlob: Blob, config: PannellumViewerConfig) {
+    // leave yaw alone, but
+    this._animationStoppedForNewPanorama = true;
+    this.stopMovement();
+    this.destroyHotSpots();
+    this._config.hotSpots = config.hotSpots;
+    this.createHotSpots();
+    this._config.title = config.title;
+    this.processDisplayedOptions();
+    this.parseGPanoXMP(panoBlob);
+    this._animationStoppedForNewPanorama = false;
   }
 
   /**
@@ -963,9 +1006,9 @@ export class PannellumViewer {
     this._latestInteraction = Date.now();
 
     if (event.deltaY) {
-      // WebKit
-      this.setHfovInternal(this._config.hfov - event.deltaY * 0.05);
-      this._speed.hfov = event.deltaY < 0 ? 1 : -1;
+      console.log("wheel event deltay = " + event.deltaY);
+      this.setHfovInternal(this._config.hfov + event.deltaY * 0.05);
+      this._speed.hfov = event.deltaY < 0 ? -1 : 1;
     }
     this.animateInit();
   }
@@ -996,6 +1039,10 @@ export class PannellumViewer {
       // If in fullscreen mode
       if (this._fullscreenActive) {
         await this.toggleFullscreen();
+      } else {
+        if (this._config.escapeKeyFunc) {
+          this._config.escapeKeyFunc();
+        }
       }
     } else {
       // Change key
@@ -1308,7 +1355,7 @@ export class PannellumViewer {
    * @private
    */
   private animate() {
-    if (this._destroyed)
+    if (this._destroyed || this._animationStoppedForNewPanorama)
       return;
 
     this.render();
@@ -1435,7 +1482,7 @@ export class PannellumViewer {
 
       this._renderer!.render(this._config.pitch * Math.PI / 180, this._config.yaw * Math.PI / 180, this._config.hfov * Math.PI / 180, { roll: this._config.roll * Math.PI / 180 });
 
-      // this.renderHotSpots();
+      this.renderHotSpots();
 
       // Update compass
       if (this._config.compass) {
@@ -1536,7 +1583,7 @@ export class PannellumViewer {
       } else if (event.type === "webgl size error") {
         this.anError(this._i18n.translate("geoPhoto:pannellum:textureSizeError", { panWidth: event.width, maxWidth: event.maxWidth }));
       } else {
-        this.anError(this._i18n.translate("geoPphoto:pannellum.unknownError"));
+        this.anError(this._i18n.translate("geoPhoto:pannellum.unknownError"));
         throw event;
       }
     }
@@ -1569,7 +1616,7 @@ export class PannellumViewer {
     }
 
     // Show hotspots
-    // this.createHotSpots();
+    this.createHotSpots();
 
     // Hide loading display
     /* --------- load not used -----------
@@ -1584,6 +1631,179 @@ export class PannellumViewer {
     this.animateInit();
 
     this.fireEvent("load");
+  }
+
+  /**
+   * Creates hot spot element for the current scene.
+   * @private
+   * @param {Object} hs - The configuration for the hotSpot
+   */
+  private createHotSpot(hs: PannellumHotSpot) {
+    const div = document.createElement("div");
+    div.className = "pnlm-hotspot-base";
+    if (hs.cssClassName)
+      div.className += " " + hs.cssClassName;
+    else
+      div.className += " pnlm-hotspot pnlm-sprite pnlm-info";
+
+    const span = document.createElement("span");
+    if (hs.text)
+      span.innerHTML = this.escapeHTML(hs.text);
+
+    if (hs.video) {
+      const video = document.createElement("video");
+      video.src = this.sanitizeURL(hs.video);
+      video.controls = true;
+      if (hs.width)
+        video.style.width = hs.width + "px";
+      this._renderContainer.appendChild(div);
+      span.appendChild(video);
+    } else if (hs.image) {
+      const link = document.createElement("a");
+      link.href = this.sanitizeURL(hs.URL ? hs.URL : hs.image);
+      link.target = "_blank";
+      span.appendChild(link);
+      const image = document.createElement("img");
+      image.src = this.sanitizeURL(hs.image);
+      if (hs.width)
+        image.style.width = hs.width + "px";
+      image.style.paddingTop = "5px";
+      this._renderContainer.appendChild(div);
+      link.appendChild(image);
+      span.style.maxWidth = "initial";
+    } else if (hs.URL) {
+      const link = document.createElement("a");
+      link.href = this.sanitizeURL(hs.URL);
+      if (hs.attributes) {
+        for (const key in hs.attributes) {
+          if (hs.hasOwnProperty(key))
+            link.setAttribute(key, hs.attributes[key]);
+        }
+      } else {
+        link.target = "_blank";
+      }
+      this._renderContainer.appendChild(link);
+      div.className += " pnlm-pointer";
+      span.className += " pnlm-pointer";
+      link.appendChild(div);
+    } else {
+      this._renderContainer.appendChild(div);
+    }
+
+    if (hs.createTooltipFunc) {
+      hs.createTooltipFunc(div, hs.createTooltipArgs);
+    } else if (hs.text || hs.video || hs.image) {
+      div.classList.add("pnlm-tooltip");
+      div.appendChild(span);
+      span.style.width = span.scrollWidth - 20 + "px";
+      span.style.marginLeft = -(span.scrollWidth - div.offsetWidth) / 2 + "px";
+      span.style.marginTop = -span.scrollHeight - 12 + "px";
+    }
+    if (hs.clickHandlerFunc) {
+      div.addEventListener("click", ((e) => { hs.clickHandlerFunc!(e, [this, ...hs.clickHandlerArgs]); }), false);
+      div.className += " pnlm-pointer";
+      span.className += " pnlm-pointer";
+    }
+    hs.div = div;
+  }
+
+  /**
+   * Creates hot spot elements for the current scene.
+   * @private
+   */
+  private createHotSpots() {
+    if (this._hotSpotsCreated)
+      return;
+
+    if (!this._config.hotSpots) {
+      this._config.hotSpots = [];
+    } else {
+      // Sort by pitch so tooltip is never obscured by another hot spot
+      this._config.hotSpots = this._config.hotSpots.sort((a: PannellumHotSpot, b: PannellumHotSpot) => a.pitch - b.pitch);
+      this._config.hotSpots.forEach(this.createHotSpot.bind(this));
+    }
+    this._hotSpotsCreated = true;
+  }
+
+  /**
+   * Destroys currently created hot spot elements.
+   * @private
+   */
+  private destroyHotSpots() {
+    const hotSpots = this._config.hotSpots;
+    this._hotSpotsCreated = false;
+    delete this._config.hotSpots;
+    if (hotSpots) {
+      for (const hs of hotSpots) {
+        let current: Node | undefined | null = hs.div;
+        if (current) {
+          while ((undefined !== current!.parentNode) && current!.parentNode !== this._renderContainer) {
+            current = current!.parentNode;
+          }
+          this._renderContainer.removeChild(current!);
+        }
+        delete hs.div;
+      }
+    }
+  }
+
+  /**
+   * Renders hot spot, updating its position and visibility.
+   * @private
+   */
+  private renderHotSpot(hs: PannellumHotSpot) {
+    const hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
+    const hsPitchCos = Math.cos(hs.pitch * Math.PI / 180);
+    const config = this._config;
+    const configPitchSin = Math.sin(config.pitch * Math.PI / 180);
+    const configPitchCos = Math.cos(config.pitch * Math.PI / 180);
+    const yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
+    const z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
+    if (!hs.div) {
+      // tslint:disable-next-line:no-debugger
+      debugger;
+    }
+    if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) || ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
+      hs.div!.style.visibility = "hidden";
+    } else {
+      const yawSin = Math.sin((-hs.yaw + config.yaw) * Math.PI / 180);
+      const hfovTan = Math.tan(config.hfov * Math.PI / 360);
+      hs.div!.style.visibility = "visible";
+      // Subpixel rendering doesn't work in Firefox
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
+      const canvas = this._renderer!.canvas;
+      const canvasWidth = canvas.clientWidth;
+      const canvasHeight = canvas.clientHeight;
+      let coord = [-canvasWidth / hfovTan * yawSin * hsPitchCos / z / 2, -canvasWidth / hfovTan * (hsPitchSin * configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2];
+      // Apply roll
+      const rollSin = Math.sin(this._config.roll * Math.PI / 180);
+      const rollCos = Math.cos(this._config.roll * Math.PI / 180);
+      coord = [coord[0] * rollCos - coord[1] * rollSin, coord[0] * rollSin + coord[1] * rollCos];
+      // Apply transform
+      coord[0] += (canvasWidth - hs.div!.offsetWidth) / 2;
+      coord[1] += (canvasHeight - hs.div!.offsetHeight) / 2;
+      let transform = "translate(" + coord[0] + "px, " + coord[1] + "px) translateZ(9999px) rotate(" + config.roll + "deg)";
+      if (hs.scale) {
+        transform += " scale(" + (this._origHfov / this._config.hfov) / z + ")";
+      }
+      hs.div!.style.webkitTransform = transform;
+      hs.div!.style.transform = transform;
+      // allow callback to affect style.
+      if (hs.styleFunc)
+        hs.styleFunc(hs, hs.styleArgs);
+    }
+  }
+
+  /**
+   * Renders hot spots, updating their positions and visibility.
+   * @private
+   */
+  private renderHotSpots() {
+    if (this._config.hotSpots) {
+      for (const hs of this._config.hotSpots) {
+        this.renderHotSpot(hs);
+      }
+    }
   }
 
   /**
@@ -1611,12 +1831,7 @@ export class PannellumViewer {
     }
   }
 
-  /**
-   * Processes configuration options.
-   * @param {boolean} [isPreview] - Whether or not the preview is being displayed
-   * @private
-   */
-  private processOptions() {
+  private processDisplayedOptions() {
     // Reset title / author display
     if (undefined === this._config.title)
       this._infoDisplay.title.innerHTML = "";
@@ -1642,6 +1857,15 @@ export class PannellumViewer {
 
     if ((undefined === this._config.title) && (undefined === this._config.author))
       this._infoDisplay.container.style.display = "none";
+  }
+
+  /**
+   * Processes configuration options.
+   * @param {boolean} [isPreview] - Whether or not the preview is being displayed
+   * @private
+   */
+  private processOptions() {
+    this.processDisplayedOptions();
 
     /* ------------ We always autoload ------------------
     // Fill in load button label and loading box text
@@ -1791,11 +2015,7 @@ export class PannellumViewer {
   }
 
   private noMove(): Move {
-    return {
-      pitch: { startTime: Date.now(), startPosition: 0, endPosition: 0, duration: 1000 },
-      yaw: { startTime: Date.now(), startPosition: 0, endPosition: 0, duration: 1000 },
-      hfov: { startTime: Date.now(), startPosition: 0, endPosition: 0, duration: 1000 },
-    };
+    return { pitch: undefined, yaw: undefined, hfov: undefined };
   }
 
   /**
@@ -1886,7 +2106,7 @@ export class PannellumViewer {
     }
 
     // Destroy hot spots from previous scene
-    // this.destroyHotSpots();
+    this.destroyHotSpots();
 
     // Create the new this._config for the scene
     this.mergeConfig(newConfig);
