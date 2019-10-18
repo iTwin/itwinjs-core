@@ -737,9 +737,8 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
-    debugPrint("theViewport: " + theViewport);
+    theViewport.rendersToScreen = true;
     const canvas = theViewport.canvas as HTMLCanvasElement;
-    debugPrint("canvas: " + canvas);
     canvas.style.width = String(viewSize.width) + "px";
     canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
@@ -1046,19 +1045,45 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
 async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>): Promise<void> {
   IModelApp.viewManager.addViewport(vp);
 
+  const target = vp.target as Target;
+  const metrics = target.performanceMetrics!;
+  target.performanceMetrics = undefined;
+
+  const numFramesToIgnore = 120;
+  let ignoreFrameCount = 0;
   let frameCount = 0;
+  vp.continuousRendering = true;
   return new Promise((resolve: () => void, _reject) => {
+    const timer = new StopWatch();
     const removeListener = vp.onRender.addListener((_) => {
-      timings[frameCount] = (vp.target as Target).performanceMetrics!.frameTimings;
+      // Ignore the first N frames - they seem to have more variable frame rate.
+      ++ignoreFrameCount;
+      if (ignoreFrameCount <= numFramesToIgnore) {
+        if (ignoreFrameCount === numFramesToIgnore) {
+          // Time to start recording.
+          target.performanceMetrics = metrics;
+          timer.start();
+        }
+
+        return;
+        }
+
+      timer.stop();
+      timings[frameCount] = metrics.frameTimings;
+      timings[frameCount].set("Total Time", timer.current.milliseconds);
+
       if (++frameCount === numFrames) {
         removeListener();
         IModelApp.viewManager.dropViewport(vp, false);
         resolve();
       } else {
         vp.sync.setRedrawPending();
+        timer.start();
       }
     });
   });
+
+  vp.continuousRendering = false;
 }
 
 async function runTest(testConfig: DefaultConfigs) {
@@ -1087,7 +1112,7 @@ async function runTest(testConfig: DefaultConfigs) {
     }
 
     // Turn on performance metrics to start collecting data when we render things
-    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
+    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics("interactive" !== testConfig.testType, false);
 
     // Add a pause so that user can start the GPU Performance Capture program
     // await resolveAfterXMilSeconds(7000);
