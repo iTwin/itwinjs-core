@@ -7,7 +7,6 @@
 import * as React from "react";
 import { NavigationWidget } from "./NavigationWidget";
 import { CoreTools } from "../CoreToolDefinitions";
-import { GroupItemDef } from "../toolbar/GroupItem";
 import { UiFramework } from "../UiFramework";
 import { ItemList } from "../shared/ItemMap";
 
@@ -31,18 +30,11 @@ export interface DefaultNavigationProps {
  */
 export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> {
 
-  private _zoomGroupItemDef = new GroupItemDef({
-    groupId: "default-navigation-zoom-group",
-    labelKey: "UiFramework:tools.viewZoomingTools",
-    iconSpec: "icon-zoom-in-2",
-    items: [CoreTools.fitViewCommand, CoreTools.windowAreaCommand],
-    itemsInColumn: 2,
-  });
-
   private _horizontalToolbarItems = new ItemList([
     CoreTools.rotateViewCommand,
     CoreTools.panViewCommand,
-    this._zoomGroupItemDef,
+    CoreTools.fitViewCommand,
+    CoreTools.windowAreaCommand,
     CoreTools.viewUndoCommand,
     CoreTools.viewRedoCommand,
   ]);
