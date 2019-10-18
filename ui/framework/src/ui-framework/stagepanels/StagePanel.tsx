@@ -45,6 +45,16 @@ export enum StagePanelLocation {
   BottomMost,
 }
 
+/** @internal */
+export const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
+  StagePanelLocation.Top,
+  StagePanelLocation.TopMost,
+  StagePanelLocation.Left,
+  StagePanelLocation.Right,
+  StagePanelLocation.Bottom,
+  StagePanelLocation.BottomMost,
+];
+
 /** Properties of a [[StagePanel]] component
  * @alpha
  */
@@ -101,9 +111,8 @@ export class StagePanel extends React.Component<StagePanelProps> {
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
     panelDef.size = props.size;
     panelDef.location = panelLocation;
-    // panelDef.panelState = StagePanelState.Minimized;
-    if (props.defaultState)
-      panelDef.panelState = props.defaultState;
+    if (props.defaultState !== undefined)
+      panelDef.initializePanelState(props.defaultState);
     panelDef.resizable = props.resizable;
     if (props.applicationData !== undefined)
       panelDef.applicationData = props.applicationData;

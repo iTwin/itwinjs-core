@@ -16,6 +16,7 @@ import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import { StagePanelLocation, getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
+import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -237,5 +238,15 @@ describe("FrontstageComposer", () => {
     expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
 
     wrapper.unmount();
+  });
+
+  describe("isCollapsedToPanelState", () => {
+    it("should return Minimized if is collapsed", () => {
+      expect(isCollapsedToPanelState(true)).to.eq(StagePanelState.Minimized);
+    });
+
+    it("should return Open if not collapsed", () => {
+      expect(isCollapsedToPanelState(false)).to.eq(StagePanelState.Open);
+    });
   });
 });

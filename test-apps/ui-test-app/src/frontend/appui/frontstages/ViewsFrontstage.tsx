@@ -66,6 +66,7 @@ import {
   StagePanelHeader,
   StagePanelLocation,
   DefaultNavigationWidget,
+  StagePanelState,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -260,6 +261,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               location={StagePanelLocation.Left}
               title="Visibility tree"
             />}
+            defaultState={StagePanelState.Minimized}
             size={280}
             widgets={this._leftPanel.widgets}
           />

@@ -2500,6 +2500,9 @@ export enum InputStatus {
 }
 
 // @internal (undocumented)
+export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
+
+// @internal (undocumented)
 export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
 
 // @public
@@ -3794,6 +3797,8 @@ export interface StagePanelChangeHandler {
 export class StagePanelDef extends WidgetHost {
     constructor();
     applicationData?: any;
+    // @internal (undocumented)
+    initializePanelState(panelState: StagePanelState): void;
     location: StagePanelLocation;
     panelState: StagePanelState;
     resizable: boolean;
@@ -3832,6 +3837,9 @@ export enum StagePanelLocation {
     // (undocumented)
     TopMost = 1
 }
+
+// @internal (undocumented)
+export const stagePanelLocations: ReadonlyArray<StagePanelLocation>;
 
 // @alpha
 export interface StagePanelProps {
