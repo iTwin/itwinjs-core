@@ -68,7 +68,7 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
-      "name": "test-integration",
+      "name": "test:integration",
       "commandKind": "bulk",
       "summary": "Run test:integration script for each package",
       "description": "Iterates through each package in the monorepo and runs the 'test:integration' script",

@@ -70,7 +70,7 @@ describe("ProjectShareClient (#integration)", () => {
 
     const imageFiles: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().inFolder(subFolder2A.wsgId));
     chai.assert(imageFiles);
-    chai.assert.isAbove(imageFiles.length, 20);
+    chai.assert.isAtLeast(imageFiles.length, 18);
   });
 
   async function getFirstImageTestFile(): Promise<ProjectShareFile> {

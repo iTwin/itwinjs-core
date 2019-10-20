@@ -15,6 +15,7 @@
     ]
   },
   "mochaOptions": {
+    "timeout": 160000,
     "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"

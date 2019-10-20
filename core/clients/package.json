@@ -17,9 +17,9 @@
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test-integration": "npm run webpackTests && npm run test-integration:chrome",
-    "test-integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
-    "test-integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
+    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
+    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
     "cover": "npm test -- --cover",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
