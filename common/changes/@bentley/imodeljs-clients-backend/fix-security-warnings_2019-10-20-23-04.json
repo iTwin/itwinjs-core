@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "comment": "Update https-proxy-agent to 3.x for security issues",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}
