@@ -55,6 +55,7 @@
 
   > .nz-app-button {
     grid-area: button;
+    pointer-events: auto;
     @include nz-widget-opacity;
   }
 
