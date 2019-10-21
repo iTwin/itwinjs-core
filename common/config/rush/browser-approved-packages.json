@@ -28,7 +28,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",

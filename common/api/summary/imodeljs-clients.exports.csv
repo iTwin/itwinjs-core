@@ -134,7 +134,9 @@ beta;ProgressInfo
 beta;Project 
 alpha;ProjectShareClient 
 alpha;ProjectShareFile 
+alpha;ProjectShareFileQuery 
 alpha;ProjectShareFolder 
+alpha;ProjectShareFolderQuery 
 alpha;ProjectShareQuery 
 internal;RbacProject 
 internal;RbacRequestQueryOptions 

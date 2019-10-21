@@ -92,25 +92,17 @@ export class ProjectShareFile extends WsgInstance {
   public customProperties?: any;
 }
 
-/** Query object for getting SeedFiles. You can use this to modify the query.
+/** Base query object for getting ProjectShare files and folders
  * @alpha
  */
 export class ProjectShareQuery extends WsgQuery {
   /**
-   * Query for children inside of the specified path
+   * Query for children inside the specified folder
    * @param contextId Context Id (e.g., projectId or assetId)
-   * @param path Path specified relative to the root folder. Note: Root folder is named by the contextId
-   * @note
-   * <ul>
-   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
-   * <li> This cannot be combined with other queries.
-   * <li> The method currently only works for folders and NOT files!!!
-   * <ul>
+   * @note This cannot be combined with other queries.
    */
-  public inPath(contextId: GuidString, path: string) {
-    // TBD: Get this method to work for files also!!
-    const correctedPath = path.endsWith("/") ? path : path + "/";
-    this.filter(`Path eq '${contextId}/${correctedPath}'`);
+  public inRootFolder(contextId: GuidString) {
+    this.filter(`FolderHasContent-backward-Folder.$id+eq+'${contextId}'`);
     return this;
   }
 
@@ -125,16 +117,6 @@ export class ProjectShareQuery extends WsgQuery {
   }
 
   /**
-   * Query for children inside the specified folder
-   * @param contextId Context Id (e.g., projectId or assetId)
-   * @note This cannot be combined with other queries.
-   */
-  public inRootFolder(contextId: GuidString) {
-    this.filter(`FolderHasContent-backward-Folder.$id+eq+'${contextId}'`);
-    return this;
-  }
-
-  /**
    * Query for folders or files by ids
    * @param ids (Array of) folder or file ids
    */
@@ -142,6 +124,78 @@ export class ProjectShareQuery extends WsgQuery {
     const stringOfIds = ids.reduce((prev: GuidString, curr: GuidString) => (!prev ? `'${curr}'` : prev + `,'${curr}'`), "");
     this.filter(`$id in [${stringOfIds}]`);
     this._query.$pageSize = undefined;
+    return this;
+  }
+
+  /**
+   * Query for children in the specified folder, and with a name that matches the specified expression
+   * @param folderId  Id of the folder to look in
+   * @param nameLike Wild card expression to match the name of the file
+   * @note
+   * <ul>
+   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> This cannot be combined with other queries.
+   * <ul>
+   */
+  public inFolderWithNameLike(folderId: GuidString, searchName: string) {
+    this.addFilter(`Name like '${searchName}' and FolderHasContent-backward-Folder.$id+eq+'${folderId}'`);
+    return this;
+  }
+
+  /**
+   * Query for children in the specified path, and with a name that matches the specified expression
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param path Path specified relative to the root folder to look in. Note: Root folder is named by the contextId, and need not be included.
+   * @param nameLike Wildcard expression to match the name of the file
+   * @note
+   * <ul>
+   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> This cannot be combined with other queries.
+   * <ul>
+   */
+  public startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike: string = "*") {
+    const correctedPath = path.endsWith("/") ? path : path + "/";
+    this.addFilter(`startswith(Path,'${contextId}/${correctedPath}') and Name like '${nameLike}'`);
+    return this;
+  }
+}
+
+/** Query object for getting ProjectShareFiles. You can use this to modify the query.
+ * @alpha
+ */
+export class ProjectShareFileQuery extends ProjectShareQuery {
+  /**
+   * Query for children inside of the specified path
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param path Path specified relative to the root folder to look in. Note: Root folder is named by the contextId, and need not be included.
+   * @note
+   * <ul>
+   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> This cannot be combined with other queries.
+   * <ul>
+   */
+  public startsWithPath(contextId: GuidString, path: string) {
+    return this.startsWithPathAndNameLike(contextId, path, "*");
+  }
+}
+
+/** Query object for getting ProjectShareFolders. You can use this to modify the query.
+ * @alpha
+ */
+export class ProjectShareFolderQuery extends ProjectShareQuery {
+  /**
+   * Query for children inside of the specified path
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param path Path specified relative to the root folder to look in. Note: Root folder is named by the contextId, and need not be included.
+   * @note
+   * <ul>
+   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> This cannot be combined with other queries.
+   * <ul>
+   */
+  public inPath(contextId: GuidString, path: string) {
+    const correctedPath = path.endsWith("/") ? path : path + "/";
+    this.filter(`Path eq '${contextId}/${correctedPath}'`);
     return this;
   }
 }
@@ -301,7 +355,12 @@ export class ProjectShareClient extends WsgClient {
     if (!file.accessUrl)
       throw new BentleyError(BentleyStatus.ERROR, "Supplied file must have an accessUrl", Logger.logError, loggerCategory, () => ({ ...file }));
 
-    const response: Response = await fetch(file.accessUrl);
+    const requestInit = maxByteCount === undefined ? undefined : {
+      headers: {
+        Range: `bytes=0-${maxByteCount}`,
+      },
+    };
+    const response: Response = await fetch(file.accessUrl, requestInit);
     if (!response.body)
       throw new BentleyError(BentleyStatus.ERROR, "Empty file", Logger.logError, loggerCategory, () => ({ ...file }));
 
@@ -354,9 +413,8 @@ export class ProjectShareClient extends WsgClient {
    * @return The instance after the changes
    */
   public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{ Name: string, Value: string }>, deleteProperties?: string[]): Promise<ProjectShareFile> {
-    let customProperties: any = updateProperties;
+    const customProperties: any[] = updateProperties === undefined ? new Array<any>() : updateProperties;
     if (deleteProperties) {
-      customProperties = new Array(updateProperties);
       deleteProperties.forEach((value: string) => customProperties.push({
         Name: value,
         IsDeleted: true,
@@ -369,11 +427,11 @@ export class ProjectShareClient extends WsgClient {
     const updateInstance = new ProjectShareFile();
     updateInstance.wsgId = file.wsgId;
     updateInstance.changeState = "modified"; // TBD: Not sure why we need this to be setup.
-    updateInstance.customProperties = updateProperties;
+    updateInstance.customProperties = customProperties;
 
     const projectShareRequestOptions = {
       CustomOptions: {
-        EnableAdHocChangeSet: true,
+        EnableAdHocChangeset: true,
       },
     };
 

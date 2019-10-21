@@ -8,7 +8,7 @@ const glob = require("glob");
 const webpack = require("webpack");
 const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
 
-const pluginLib = path.resolve(__dirname, "../../../lib");
+const pluginLib = path.resolve(__dirname, "../../lib");
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -56,7 +56,7 @@ function createConfig(shouldInstrument) {
             env[key] = JSON.stringify(raw[key]);
             return env;
           }, {
-            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
+            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../../..")),
           }),
       })
     ]
@@ -66,8 +66,10 @@ function createConfig(shouldInstrument) {
     config.output.filename = "bundled-tests.instrumented.js";
     config.module.rules.push({
       test: /\.(jsx?|tsx?)$/,
-      include: pluginLib,
-      exclude: path.join(pluginLib, "test"),
+      include: [
+        path.join(__dirname, "../../../core/backend"),
+        path.join(__dirname, "../../../core/frontend"),
+      ],
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
         debug: true

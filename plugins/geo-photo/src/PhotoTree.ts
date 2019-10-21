@@ -358,7 +358,7 @@ export abstract class PhotoFile extends FolderEntry {
 
   /** Read tags from a JPEG image */
   public async readTagsFromJpeg(): Promise<GeoPhotoTags> {
-    const byteCount = 12000; // 12KB should be sufficient to read the GPS headers and Thumbnails
+    const byteCount = 60000; // 60 KB should be sufficient to read the GPS headers and Thumbnails
     const byteArray: Uint8Array = await this.getFileContents(byteCount);
 
     const tagSet: ImageTags = JpegTagReader.readTags(byteArray.buffer);

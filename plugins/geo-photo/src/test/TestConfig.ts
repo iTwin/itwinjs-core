@@ -7,6 +7,7 @@ import {
   ImsActiveSecureTokenClient, ImsUserCredentials, AuthorizationToken, HubIModel,
   IModelHubClient, IModelClient, ConnectClient, Project, Config,
   AuthorizedClientRequestContext,
+  IModelQuery,
 } from "@bentley/imodeljs-clients";
 
 /**
@@ -33,12 +34,12 @@ export class TestConfig {
     return project;
   }
 
-  public static async queryIModel(requestContext: AuthorizedClientRequestContext, projectId: GuidString): Promise<HubIModel> {
+  public static async queryIModel(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-    const iModel: HubIModel = await imodelHubClient.iModel.get(requestContext, projectId);
-    if (!iModel || !iModel.wsgId)
-      throw new Error(`Primary iModel not found for project ${projectId}`);
-    return iModel;
+    const iModels: HubIModel[] = await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+    if (iModels.length === 0)
+      throw new Error(`iModel ${iModelName} not found in project ${projectId}`);
+    return iModels[0];
   }
 }
 

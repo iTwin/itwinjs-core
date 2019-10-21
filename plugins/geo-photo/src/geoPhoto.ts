@@ -215,7 +215,7 @@ export class GeoPhotoPlugin extends Plugin {
 
     this._i18NNamespace!.readFinished.then(() => {
       this.markerOperation(args.length > 1 ? args[1] : "toggle");
-    }).catch ((_err: Error) => {});
+    }).catch((_err: Error) => { });
   }
 }
 

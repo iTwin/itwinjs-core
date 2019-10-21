@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Logger, GuidString } from "@bentley/bentleyjs-core";
-import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { loggerCategory, GeoPhotoTags, PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
@@ -12,7 +12,7 @@ import { loggerCategory, GeoPhotoTags, PhotoTreeHandler, PhotoFolder, PhotoFile,
 // ------------------------ Project Share TreeHandler implementation ---------------------
 
 /** Subclass of PhotoFolder created by ProjectShareHandler */
-class PSPhotoFolder extends PhotoFolder {
+export class PSPhotoFolder extends PhotoFolder {
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder | undefined, private _i18n: I18N, private _psFolder: ProjectShareFolder | undefined) {
     super(treeHandler, parent);
@@ -40,7 +40,7 @@ class FoundProperty {
 }
 
 /** Subclass of PhotoEntry created by ProjectShareHandler */
-class PSPhotoFile extends PhotoFile {
+export class PSPhotoFile extends PhotoFile {
   public geoLocation: Cartographic | undefined;
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder, i18n: I18N, public psFile: ProjectShareFile) {
@@ -123,17 +123,10 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
    * @param tags
    * @returns Updated ProjectShareFile
    */
-  public async saveTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, tags: GeoPhotoTags): Promise<void> {
+  private async saveTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, tags: GeoPhotoTags): Promise<void> {
     const tagsStr = JSON.stringify(tags);
-
-    const prop = this.findCustomProperty(psFile.psFile);
-    const customProperties = psFile.psFile.customProperties;
-    if (prop)
-      customProperties[prop.index].Value = tagsStr; // Update existing
-    else
-      customProperties.push({ Name: ProjectShareHandler._customPropertyName, Value: tagsStr }); // Create new
-
-    await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, customProperties);
+    const customProperties = [{ Name: ProjectShareHandler._customPropertyName, Value: tagsStr }]; // Create or update
+    psFile.psFile = await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, customProperties);
   }
 
   /**
@@ -161,13 +154,14 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
    * @param contextId Connect context Id (e.g., projectId or assetId)
    * @param file
    */
-  public async deleteTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile): Promise<void> {
-    const prop = this.findCustomProperty(file);
+  public async deleteTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<void> {
+    const prop = this.findCustomProperty(psFile.psFile);
     if (!prop)
       return;
 
-    const deleteProperties = new Array<string>(ProjectShareHandler._customPropertyName);
-    await this._projectShareClient.updateCustomProperties(requestContext, contextId, file, undefined, deleteProperties);
+    const deleteProperties = [];
+    deleteProperties.push(ProjectShareHandler._customPropertyName);
+    psFile.psFile = await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, undefined, deleteProperties);
   }
 
   /** Validates the tags retrieved from the ProjectShare image */
@@ -196,7 +190,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
       return tags;
     } catch (error) {
       // tslint:disable-next-line:no-console
-      console.log (`Error ${error} attempting to read tags of ${psFile.name}`);
+      console.log(`Error ${error} attempting to read tags of ${psFile.name}`);
       return undefined;
     }
   }
@@ -239,13 +233,12 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     let folderId = (folder as PSPhotoFolder).folderId;
     if (undefined === folderId)
       folderId = projectId;
-    const projectShareQuery = new ProjectShareQuery().inFolder(folderId!);
-    const psFolders: ProjectShareFolder[] = await this._projectShareClient.getFolders(this._context, projectId, projectShareQuery);
+    const psFolders: ProjectShareFolder[] = await this._projectShareClient.getFolders(this._context, projectId, new ProjectShareFolderQuery().inFolder(folderId!));
     for (const thisPsFolder of psFolders) {
       entries.push(new PSPhotoFolder(this, folder, this._i18n, thisPsFolder));
     }
 
-    const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, projectShareQuery);
+    const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, new ProjectShareFileQuery().inFolder(folderId!));
     for (const thisFile of files) {
       // we want only jpeg files.
       if (undefined !== thisFile.name) {

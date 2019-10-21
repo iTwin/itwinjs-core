@@ -617,7 +617,44 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "⚠️Clients Tests (Integration - Chrome)",
+      "name": "⚠️Clients Tests (Integration - Frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+      "cwd": "${workspaceRoot}/plugins/geo-photo/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000"
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "⚠️GeoPhoto Plugin Tests (Integration - Frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -839,7 +876,14 @@
       "name": "✔️Clients Tests (Integration)",
       "configurations": [
         "⚠️Clients Tests (Integration - Certa/Backend)",
-        "⚠️Clients Tests (Integration - Chrome)"
+        "⚠️Clients Tests (Integration - Frontend)"
+      ]
+    },
+    {
+      "name": "✔️GeoPhoto Plugin Tests (Integration)",
+      "configurations": [
+        "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+        "⚠️GeoPhoto Plugin Tests (Integration - Frontend)"
       ]
     }
   ],
