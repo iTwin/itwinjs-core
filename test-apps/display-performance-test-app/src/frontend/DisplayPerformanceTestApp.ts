@@ -461,8 +461,9 @@ function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = fal
 }
 
 async function savePng(fileName: string): Promise<void> {
-  if (theViewport && theViewport.canvas) {
-    const img = theViewport.canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
+  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+  if (canvas !== undefined) {
+    const img = canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
     return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
   }
@@ -734,6 +735,12 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
+    const devicePixelRatio = window.devicePixelRatio || 1;
+
+    // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
+    viewSize.width /= devicePixelRatio;
+    viewSize.height /= devicePixelRatio;
+
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
@@ -955,15 +962,16 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   const width = testConfig.view!.width;
   const height = testConfig.view!.height;
   const viewRect = new ViewRect(0, 0, width, height);
-  if (theViewport && theViewport.canvas) {
-    const ctx = theViewport.canvas.getContext("2d");
+  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+  if (canvas !== undefined) {
+    const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
       const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
       const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
 
-      theViewport.readPixels(viewRect, pix, (pixels: any) => {
+      theViewport!.readPixels(viewRect, pix, (pixels: any) => {
         if (undefined === pixels)
           return;
         for (let y = viewRect.top; y < viewRect.bottom; ++y) {
@@ -1066,7 +1074,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
         }
 
         return;
-        }
+      }
 
       timer.stop();
       timings[frameCount] = metrics.frameTimings;
