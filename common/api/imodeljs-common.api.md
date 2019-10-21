@@ -69,6 +69,7 @@ export namespace AmbientOcclusion {
         // (undocumented)
         readonly blurTexelStepSize?: number;
         readonly intensity?: number;
+        readonly maxDistance?: number;
         readonly texelStepSize?: number;
         readonly zLengthCap?: number;
     }
@@ -87,6 +88,8 @@ export namespace AmbientOcclusion {
         static fromJSON(json?: Props): Settings;
         // (undocumented)
         readonly intensity?: number;
+        // (undocumented)
+        readonly maxDistance?: number;
         // (undocumented)
         readonly texelStepSize?: number;
         // (undocumented)

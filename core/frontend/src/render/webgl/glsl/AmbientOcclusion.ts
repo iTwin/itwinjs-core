@@ -32,6 +32,9 @@ const computeAmbientOcclusion = `
 
   float linearDepth = depthAndOrder.y;
   float nonLinearDepth = computeNonLinearDepth(linearDepth);
+  if (nonLinearDepth > u_maxDistance)
+    return vec4(1.0);
+
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport.zw; // could use uniform for this
@@ -44,8 +47,6 @@ const computeAmbientOcclusion = `
   // Multiply screen UV (range 0..1) with size of viewport divided by 4 in order to tile the 4x4 noise texture across the screen.
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
-
-  // Potential ###TODO: frustumLength (If the current fragment has a distance from the camera greater than this value, ambient occlusion is not computed for the fragment.)
 
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
@@ -204,6 +205,12 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
         params.target.ambientOcclusionSettings.intensity!,
         params.target.ambientOcclusionSettings.texelStepSize!]);
       uniform.setUniform4fv(hbaoSettings);
+    });
+  }, VariablePrecision.High);
+
+  frag.addUniform("u_maxDistance", VariableType.Float, (prog) => {
+    prog.addProgramUniform("u_maxDistance", (uniform, params) => {
+      uniform.setUniform1f(params.target.ambientOcclusionSettings.maxDistance!);
     });
   }, VariablePrecision.High);
 

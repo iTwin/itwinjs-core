@@ -1036,6 +1036,8 @@ export namespace AmbientOcclusion {
     readonly bias?: number;
     /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.0025.  The full range of linear depth is 0 to 1. */
     readonly zLengthCap?: number;
+    /** If defined, the maximum distance from the camera's near plane in meters at which ambient occlusion will be applied. If undefined, the maximum distance defaults to 100. */
+    readonly maxDistance?: number;
     /** If defined, raise the final ambient occlusion to the power of this value. Larger values make the ambient shadows darker. If undefined, the intensity defaults to 2.0. */
     readonly intensity?: number;
     /** If defined, indicates the distance to step toward the next texel sample in the current direction. If undefined, texelStepSize defaults to 1.95. */
@@ -1052,14 +1054,16 @@ export namespace AmbientOcclusion {
   export class Settings implements Props {
     private static _defaultBias: number = 0.25;
     private static _defaultZLengthCap: number = 0.0025;
-    private static _defaultIntensity: number = 2.0;
-    private static _defaultTexelStepSize: number = 1.95;
+    private static _defaultMaxDistance: number = 100.0;
+    private static _defaultIntensity: number = 1.0;
+    private static _defaultTexelStepSize: number = 1;
     private static _defaultBlurDelta: number = 1.0;
     private static _defaultBlurSigma: number = 2.0;
     private static _defaultBlurTexelStepSize: number = 1.0;
 
     public readonly bias?: number;
     public readonly zLengthCap?: number;
+    public readonly maxDistance?: number;
     public readonly intensity?: number;
     public readonly texelStepSize?: number;
     public readonly blurDelta?: number;
@@ -1072,6 +1076,7 @@ export namespace AmbientOcclusion {
 
       this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
       this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
+      this.maxDistance = JsonUtils.asDouble(json.maxDistance, Settings._defaultMaxDistance);
       this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
       this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
       this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
@@ -1087,6 +1092,7 @@ export namespace AmbientOcclusion {
       return {
         bias: this.bias,
         zLengthCap: this.zLengthCap,
+        maxDistance: this.maxDistance,
         intensity: this.intensity,
         texelStepSize: this.texelStepSize,
         blurDelta: this.blurDelta,
