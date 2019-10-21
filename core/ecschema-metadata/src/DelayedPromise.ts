@@ -125,5 +125,7 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
   }
 }) as DelayedPromiseWithPropsConstructor;
 
-// Define the type of a DelayedPromiseWithProps instance
+/** Define the type of a DelayedPromiseWithProps instance
+ * @beta
+ */
 export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;

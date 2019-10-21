@@ -1802,12 +1802,12 @@ export interface TreeNodePlaceholderProps extends CommonProps {
 
 // @public
 export interface TreeNodeProps extends CommonProps {
+    // (undocumented)
+    ["data-testid"]?: string;
     // @beta
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    ["data-testid"]?: string;
     // (undocumented)
     icon?: React.ReactChild;
     // (undocumented)
