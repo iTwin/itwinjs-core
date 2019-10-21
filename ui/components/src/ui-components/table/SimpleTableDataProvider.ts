@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
 
-import { SortDirection, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { SortDirection } from "@bentley/ui-core";
 import { Primitives, PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";

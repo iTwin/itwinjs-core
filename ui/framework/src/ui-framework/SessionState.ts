@@ -9,6 +9,9 @@
 // import { AccessToken } from "@bentley/imodeljs-clients";
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
+import { XAndY } from "@bentley/geometry-core";
+import { MenuItemProps } from "./shared/MenuItem";
+
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 
 /** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
@@ -25,8 +28,8 @@ export interface PresentationSelectionScope {
  * @beta
  */
 export interface CursorMenuData {
-  items: any[];  // currently MenuItemProps[] but may change to an interface defined in frontend
-  position: { x: number, y: number };
+  items: MenuItemProps[];
+  position: XAndY;
 }
 
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.

@@ -1,9 +1,5 @@
 sep=;
 Release Tag;API Item
-alpha;AccuDrawPopupManager
-alpha;AccuDrawPopupRenderer 
-internal;AccuDrawPopupsChangedEvent 
-internal;AccuDrawPopupType
 public;Action
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
@@ -60,7 +56,7 @@ internal;ColumnType
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
 public;CombineReducersFunction = 
-public;CommandHandler
+public;CommandHandler = CommandHandler_2
 public;CommandItemDef 
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
@@ -134,7 +130,7 @@ beta;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
-public;DescriptionProps
+public;DescriptionProps = DescriptionProps_2
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 public;DialogInfo
@@ -164,6 +160,7 @@ alpha;FilterInfo
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
+beta;FrameworkUiAdmin 
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
@@ -228,7 +225,7 @@ public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
 alpha;KeyinBrowser 
 alpha;KeyinBrowserProps 
-public;LabelProps
+public;LabelProps = LabelProps_2
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplit
@@ -248,7 +245,7 @@ alpha;MenuButton
 alpha;MenuButtonProps 
 alpha;MenuItem 
 alpha;MenuItemHelpers
-alpha;MenuItemProps 
+beta;MenuItemProps = AbstractMenuItemProps
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 
@@ -282,8 +279,6 @@ public;NavigationWidgetProps
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
-alpha;OnCancelFunc = () => void
-alpha;OnCommitFunc = (value: number) => void
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -295,6 +290,14 @@ public;PopupButton
 public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
 public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
+internal;PopupInfo
+alpha;PopupManager
+alpha;PopupPropsBase
+alpha;PopupRenderer 
+internal;PopupsChangedEvent 
+alpha;PositionPopup 
+alpha;PositionPopupContent: React_2.FunctionComponent
+alpha;PositionPopupProps 
 beta;PresentationSelectionScope
 internal;ProjectInfo
 internal;ProjectReadStatus
@@ -373,7 +376,7 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
-public;StringGetter = () => string
+public;StringGetter = StringGetter_2
 public;SupportsViewSelectorChange
 alpha;SyncPropertiesChangeEvent 
 alpha;SyncPropertiesChangeEventArgs
@@ -383,7 +386,7 @@ public;SyncUiEvent
 public;SyncUiEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
-public;SyncUiProps
+public;SyncUiProps = SyncUiProps_2
 public;TargetChangeHandler
 public;Task 
 public;TaskActivatedEvent 
@@ -416,7 +419,7 @@ public;ToolItemDef
 public;ToolItemProps 
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
-public;TooltipProps
+public;TooltipProps = TooltipProps_2
 internal;ToolUiManager
 public;ToolUiProvider 
 public;ToolWidget 

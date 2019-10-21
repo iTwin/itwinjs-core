@@ -5,7 +5,7 @@
 /** @module Common */
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { getClassName, UiError } from "@bentley/ui-core";
+import { UiError, getClassName } from "@bentley/ui-abstract";
 
 /**
  * Entry point for static initialization required by various

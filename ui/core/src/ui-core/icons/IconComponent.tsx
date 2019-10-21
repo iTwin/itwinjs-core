@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { SvgSprite } from "./SvgSprite";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 
 import "./IconComponent.scss";
 
@@ -29,11 +30,12 @@ export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:
   if (!props.iconSpec) return null;
 
   if (typeof props.iconSpec === "string") {
+    const svgSource = IconSpecUtilities.getSvgSource(props.iconSpec);
     // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
-    if (props.iconSpec.startsWith("svg:") && props.iconSpec.length > 4)
+    if (svgSource !== undefined)
       return (
         <i className="icon core-svg-icon">
-          <SvgSprite src={props.iconSpec.slice(4)} />
+          <SvgSprite src={svgSource} />
         </i>
       );
 

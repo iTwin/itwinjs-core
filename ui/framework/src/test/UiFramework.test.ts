@@ -118,7 +118,8 @@ describe("UiFramework", () => {
     await TestUtils.initializeUiFramework();
 
     const mockToken = new MockAccessToken();
-    UiFramework.setAccessToken(mockToken);
+
+    UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
     expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id);
 
     UiFramework.setDefaultRulesetId("TestRuleSet");

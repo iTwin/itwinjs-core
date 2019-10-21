@@ -22,4 +22,8 @@
     padding: $uifw-popup-content-padding;
   }
 
+  &.uifw-no-border {
+    border-width: 0;
+  }
+
 }

@@ -8,7 +8,8 @@ import InspireTree, * as Inspire from "inspire-tree";
 import { isArrayLike } from "lodash";
 import { CallableInstance } from "callable-instance2/import";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 import { PageOptions } from "../../common/PageOptions";
 import { UiComponents } from "../../UiComponents";
 

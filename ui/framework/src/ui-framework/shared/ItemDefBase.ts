@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { ItemProps, StringGetter } from "./ItemProps";
+import { BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
-import { BadgeType } from "@bentley/ui-abstract";
+import { ItemProps } from "./ItemProps";
 
 /** Base state for any 'stateful' React component
  * @public

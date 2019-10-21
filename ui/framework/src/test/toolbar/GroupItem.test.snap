@@ -10,6 +10,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_description": "",
           "_label": "Tool 1",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
           "betaBadge": false,
@@ -27,6 +28,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_description": "",
           "_label": "Tool 2",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "applicationData": Object {
             "key": "value",
@@ -52,6 +54,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "tool1" => CommandItemDef {
           "_description": "",
           "_label": "Tool 1",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
           "betaBadge": false,
@@ -69,6 +72,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "tool2" => CommandItemDef {
           "_description": "",
           "_label": "Tool 2",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "applicationData": Object {
             "key": "value",
@@ -91,6 +95,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
       },
       "_label": "tests.label",
+      "_onItemExecuted": undefined,
       "_panelLabel": "",
       "_tooltip": "",
       "badgeType": undefined,
@@ -110,6 +115,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_description": "",
           "_label": "Tool 1",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
           "betaBadge": false,
@@ -127,6 +133,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_description": "",
           "_label": "Tool 2",
+          "_onItemExecuted": undefined,
           "_tooltip": "",
           "applicationData": Object {
             "key": "value",
@@ -159,6 +166,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       CommandItemDef {
         "_description": "",
         "_label": "Tool 1",
+        "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": 2,
         "betaBadge": false,
@@ -176,6 +184,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       CommandItemDef {
         "_description": "",
         "_label": "Tool 2",
+        "_onItemExecuted": undefined,
         "_tooltip": "",
         "applicationData": Object {
           "key": "value",

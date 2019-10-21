@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { shallow, mount } from "enzyme";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { Icon } from "../../ui-framework/shared/IconComponent";
 
 describe("IconComponent", () => {
@@ -19,8 +20,9 @@ describe("IconComponent", () => {
   });
 
   it("should render correctly with icon svg string", () => {
+    const iconSpec = IconSpecUtilities.createSvgIconSpec("test.svg");
     // tslint:disable-next-line: deprecation
-    shallow(<Icon iconSpec="svg:test.svg" />).should.matchSnapshot();
+    shallow(<Icon iconSpec={iconSpec} />).should.matchSnapshot();
   });
 
   it("should render correctly with icon class string", () => {

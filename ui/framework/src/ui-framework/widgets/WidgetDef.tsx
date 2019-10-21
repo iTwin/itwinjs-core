@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { UiError, BadgeType } from "@bentley/ui-abstract";
+import { UiError, BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
 
@@ -18,7 +18,6 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { StringGetter } from "../shared/ItemProps";
 import { ItemList } from "../shared/ItemMap";
 
 /** Widget state enum.

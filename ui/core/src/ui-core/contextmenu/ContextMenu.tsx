@@ -356,6 +356,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
               this._selectedElement.select();
             }
           });
+          event.stopPropagation();
           return;
         }
       }

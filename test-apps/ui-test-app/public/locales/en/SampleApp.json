@@ -154,7 +154,9 @@
     "showCalculator": "Show Calculator",
     "showAngleEditor": "Show Angle Editor",
     "showLengthEditor": "Show Length Editor",
-    "showHeightEditor": "Show Height Editor"
+    "showHeightEditor": "Show Height Editor",
+    "showContextMenu": "Show Context Menu",
+    "showToolbar": "Show Toolbar"
   },
   "tools": {
     "ToolWithSettings": {

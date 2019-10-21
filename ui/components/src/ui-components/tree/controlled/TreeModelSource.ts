@@ -26,7 +26,7 @@ import {
 import { UiComponents } from "../../UiComponents";
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
 import { produce } from "immer";
 

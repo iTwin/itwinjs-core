@@ -148,6 +148,7 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { RelatedElement } from '@bentley/imodeljs-common';
+import { RelativePosition as RelativePosition_2 } from '@bentley/ui-abstract';
 import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
@@ -178,6 +179,7 @@ import { ToolbarItemInsertSpec } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
+import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
@@ -3374,6 +3376,7 @@ export class IModelApp {
     static readonly tileAdmin: TileAdmin;
     static readonly toolAdmin: ToolAdmin;
     static readonly tools: ToolRegistry;
+    static readonly uiAdmin: UiAdmin;
     static readonly viewManager: ViewManager;
     }
 
@@ -3406,6 +3409,7 @@ export interface IModelAppOptions {
     // @alpha
     tileAdmin?: TileAdmin;
     toolAdmin?: ToolAdmin;
+    uiAdmin?: UiAdmin;
     viewManager?: ViewManager;
 }
 
@@ -4496,7 +4500,7 @@ export class NotificationManager {
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
     // (undocumented)
     readonly toolTipLocation: Point2d;
-    updatePointerMessage(_displayPoint: XAndY, _relativePosition?: RelativePosition): void;
+    updatePointerMessage(_displayPoint: XAndY, _relativePosition?: RelativePosition_2): void;
 }
 
 // @public
@@ -4519,9 +4523,9 @@ export class NotifyMessageDetails {
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
-    relativePosition: RelativePosition;
+    relativePosition: RelativePosition_2;
     setInputFieldTypeDetails(inputField: HTMLElement): void;
-    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
+    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition_2): void;
     // (undocumented)
     viewport?: HTMLElement;
 }
@@ -5250,7 +5254,7 @@ export interface RangeEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.Range;
 }
 
-// @public
+// @public @deprecated
 export enum RelativePosition {
     // (undocumented)
     Bottom = 3,

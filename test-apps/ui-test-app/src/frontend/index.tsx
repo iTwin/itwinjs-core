@@ -24,7 +24,7 @@ import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
-  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
+  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
   BackstageItemManager,
@@ -64,7 +64,7 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -154,6 +154,7 @@ export class SampleAppIModelApp {
     opts = opts ? opts : {};
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
+    opts.uiAdmin = new FrameworkUiAdmin();
     IModelApp.startup(opts);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");

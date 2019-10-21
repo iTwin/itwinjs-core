@@ -17,6 +17,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
                 "badgeType": undefined,
                 "betaBadge": false,
@@ -51,6 +52,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_description": "",
                   "_label": "",
+                  "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "badgeType": undefined,
                   "betaBadge": false,
@@ -68,6 +70,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_description": "",
                   "_label": "",
+                  "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "applicationData": Object {
                     "key": "value",
@@ -104,6 +107,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         },
         "_description": "",
         "_label": "",
+        "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": undefined,
         "betaBadge": false,
@@ -178,6 +182,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_description": "",
                   "_label": "",
+                  "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "badgeType": undefined,
                   "betaBadge": false,
@@ -195,6 +200,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_description": "",
                   "_label": "",
+                  "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "applicationData": Object {
                     "key": "value",

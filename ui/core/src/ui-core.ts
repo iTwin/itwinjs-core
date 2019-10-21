@@ -13,6 +13,7 @@ export * from "./ui-core/badge/BetaBadge";
 export * from "./ui-core/badge/NewBadge";
 
 export * from "./ui-core/base/Div";
+export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/ScrollView";

@@ -4,14 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./ui-abstract/UiAbstract";
+export * from "./ui-abstract/UiAdmin";
 
+export * from "./ui-abstract/items/AbstractConditionalItemProps";
+export * from "./ui-abstract/items/AbstractGroupItemProps";
+export * from "./ui-abstract/items/AbstractItemProps";
+export * from "./ui-abstract/items/AbstractMenuItemProps";
+export * from "./ui-abstract/items/AbstractToolbarProps";
+export * from "./ui-abstract/items/AnyItemProps";
 export * from "./ui-abstract/items/BadgeType";
+export * from "./ui-abstract/items/BaseItemState";
 export * from "./ui-abstract/items/ConditionalDisplayType";
+export * from "./ui-abstract/items/RelativePosition";
 
 export * from "./ui-abstract/plugins/PluginUi";
 
-export * from "./ui-abstract/utils/UiError";
 export * from "./ui-abstract/utils/getClassName";
+export * from "./ui-abstract/utils/IconSpecUtilities";
+export * from "./ui-abstract/utils/callbacks";
+export * from "./ui-abstract/utils/UiError";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -26,7 +37,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * The ui-abstract package contains abstractions for UI controls, such as toolbars, buttons and menus.
  */
 /**
- * @docs-group-description Items
+ * @docs-group-description Admin
+ * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
+ */
+/**
+ * @docs-group-description Item
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
  */
 /**

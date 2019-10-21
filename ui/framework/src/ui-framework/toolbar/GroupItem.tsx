@@ -8,7 +8,7 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
@@ -17,12 +17,14 @@ import {
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
+import { AnyItemDef } from "../shared/AnyItemDef";
+import { GroupItemProps } from "../shared/GroupItemProps";
+import { ItemDefFactory } from "../shared/ItemDefFactory";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -50,8 +52,8 @@ export class GroupItemDef extends ActionButtonItemDef {
   private _itemMap!: ItemMap;
   private _panelLabel: string | StringGetter = "";
 
-  constructor(groupItemProps: GroupItemProps) {
-    super(groupItemProps);
+  constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc) {
+    super(groupItemProps, onItemExecuted);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
     this.directionExplicit = (groupItemProps.direction !== undefined);
@@ -59,6 +61,20 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
     this.items = groupItemProps.items;
+  }
+
+  /** @internal */
+  public static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef {
+    const groupItemDef: GroupItemProps = {
+      groupId: itemProps.groupId,
+      items: ItemDefFactory.createItemListForGroupItem(itemProps.items, onItemExecuted),
+      direction: itemProps.direction as number,
+      itemsInColumn: itemProps.itemsInColumn,
+      panelLabel: itemProps.panelLabel,
+      paneLabelKey: itemProps.paneLabelKey,
+    };
+
+    return new GroupItemDef(groupItemDef);
   }
 
   public get id(): string {

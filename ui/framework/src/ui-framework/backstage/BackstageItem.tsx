@@ -5,14 +5,18 @@
 /** @module Backstage */
 
 import * as React from "react";
+
+import { LabelProps, DescriptionProps, TooltipProps } from "@bentley/ui-abstract";
+import { IconProps, IconSpec } from "@bentley/ui-core";
 import {
   BackstageItem as NZ_BackstageItem,
   BackstageItemProps as NZ_BackstageItemProps,
 } from "@bentley/ui-ninezone";
-import { LabelProps, DescriptionProps, TooltipProps } from "../shared/ItemProps";
+
 import { PropsHelper } from "../utils/PropsHelper";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { IconProps, IconSpec } from "@bentley/ui-core";
+
+// cSpell:ignore safearea
 
 /** Base properties for a [[Backstage]] item.
  * @public

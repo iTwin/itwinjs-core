@@ -6,12 +6,12 @@
 
 import { UiError } from "@bentley/ui-abstract";
 
-import { ItemProps } from "../shared/ItemProps";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { UiFramework } from "../UiFramework";
 import { CursorInformation } from "../cursor/CursorInformation";
+import { ItemProps } from "../shared/ItemProps";
 
 /** Enumeration for Function Keys
  * @public

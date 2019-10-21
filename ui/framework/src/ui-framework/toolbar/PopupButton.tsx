@@ -7,10 +7,10 @@
 import * as React from "react";
 import classnames from "classnames";
 
+import { StringGetter } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 
-import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
@@ -18,6 +18,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
+import { ItemProps } from "../shared/ItemProps";
 
 // cSpell:ignore popupbutton
 

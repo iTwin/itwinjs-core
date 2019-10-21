@@ -17,7 +17,8 @@ import {
 } from "../TreeModel";
 import { UiComponents } from "../../../UiComponents";
 
-import { Tree as CoreTree, TreeNodePlaceholder, UiError, getClassName } from "@bentley/ui-core";
+import { UiError, getClassName } from "@bentley/ui-abstract";
+import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
 
 import classnames from "classnames";
 import AutoSizer, { Size } from "react-virtualized-auto-sizer";

@@ -6,7 +6,8 @@
 
 import * as React from "react";
 
-import { RelativePosition, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { Timer, BodyText, Point, PointProps, Icon } from "@bentley/ui-core";
 
 import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs } from "../../../ui-framework";

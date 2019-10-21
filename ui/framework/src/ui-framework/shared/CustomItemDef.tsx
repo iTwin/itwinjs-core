@@ -8,8 +8,8 @@ import * as React from "react";
 
 import { SizeProps } from "@bentley/ui-core";
 
-import { CustomItemProps } from "./ItemProps";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { CustomItemProps } from "./CustomItemProps";
 
 /** @internal */
 interface CloneProps {

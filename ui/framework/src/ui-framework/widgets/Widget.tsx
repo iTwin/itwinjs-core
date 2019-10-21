@@ -6,11 +6,10 @@
 
 import * as React from "react";
 
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
 
 import { WidgetState } from "./WidgetDef";
-import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
 /** Properties for a [Widget]($ui-framework). component.

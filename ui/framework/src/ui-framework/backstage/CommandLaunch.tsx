@@ -5,10 +5,12 @@
 /** @module Backstage */
 
 import * as React from "react";
+
 import { Logger } from "@bentley/bentleyjs-core";
+import { CommandHandler } from "@bentley/ui-abstract";
+
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { CommandHandler } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps, BackstageItem } from "./BackstageItem";

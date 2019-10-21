@@ -9,6 +9,63 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { XAndY } from '@bentley/geometry-core';
+
+// @beta
+export interface AbstractCommandItemProps extends AbstractItemProps, CommandHandler {
+    commandId?: string;
+}
+
+// @beta
+export interface AbstractConditionalItemProps extends AbstractItemProps {
+    // (undocumented)
+    conditionalId?: string;
+    // (undocumented)
+    items: AnyItemProps[];
+}
+
+// @beta
+export interface AbstractGroupItemProps extends AbstractItemProps {
+    direction?: GroupButtonDirection;
+    groupId: string;
+    items: AnyItemProps[];
+    itemsInColumn?: number;
+    paneLabelKey?: string;
+    panelLabel?: string | StringGetter;
+}
+
+// @beta
+export interface AbstractIconProps {
+    iconSpec?: string;
+}
+
+// @beta
+export interface AbstractItemProps extends AbstractIconProps, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
+    applicationData?: any;
+    badgeType?: BadgeType;
+    isActive?: boolean;
+    isEnabled?: boolean;
+    isPressed?: boolean;
+    isVisible?: boolean;
+}
+
+// @beta
+export interface AbstractMenuItemProps extends AbstractItemProps {
+    id: string;
+    item?: AbstractCommandItemProps | AbstractToolItemProps;
+    submenu?: AbstractMenuItemProps[];
+}
+
+// @beta
+export interface AbstractToolbarProps extends AbstractItemProps {
+    items: AnyToolbarItemProps[];
+    toolbarId?: string;
+}
+
+// @beta
+export interface AbstractToolItemProps extends AbstractItemProps, CommandHandler {
+    toolId: string;
+}
 
 // @alpha
 export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
@@ -19,10 +76,35 @@ export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
 }
 
 // @beta
+export type AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | AbstractGroupItemProps;
+
+// @beta
+export type AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps;
+
+// @beta
 export enum BadgeType {
     New = 2,
     None = 0,
     TechnicalPreview = 1
+}
+
+// @beta
+export interface BaseItemState {
+    // (undocumented)
+    isActive?: boolean;
+    // (undocumented)
+    isEnabled?: boolean;
+    // (undocumented)
+    isPressed?: boolean;
+    // (undocumented)
+    isVisible?: boolean;
+}
+
+// @beta
+export interface CommandHandler {
+    execute?: (args?: any) => any;
+    getCommandArgs?: () => any[];
+    parameters?: any;
 }
 
 // @alpha
@@ -35,7 +117,7 @@ export interface ConditionalDisplaySpecification {
     type: ConditionalDisplayType;
 }
 
-// @alpha
+// @beta
 export enum ConditionalDisplayType {
     // (undocumented)
     EnableState = 1,
@@ -43,8 +125,26 @@ export enum ConditionalDisplayType {
     Visibility = 0
 }
 
+// @beta
+export interface DescriptionProps {
+    description?: string | StringGetter;
+    descriptionKey?: string;
+}
+
 // @internal
 export const getClassName: (obj: any) => string;
+
+// @beta
+export enum GroupButtonDirection {
+    // (undocumented)
+    Bottom = 3,
+    // (undocumented)
+    Left = 0,
+    // (undocumented)
+    Right = 2,
+    // (undocumented)
+    Top = 1
+}
 
 // @alpha
 export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
@@ -55,6 +155,13 @@ export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
 }
 
 // @alpha
+export class IconSpecUtilities {
+    static createSvgIconSpec(svgSrc: string): string;
+    static getSvgSource(iconSpec: string): string | undefined;
+    static SVG_PREFIX: string;
+}
+
+// @alpha
 export interface InsertSpec {
     // (undocumented)
     condition?: ConditionalDisplaySpecification;
@@ -62,6 +169,50 @@ export interface InsertSpec {
     // (undocumented)
     label: string;
     relativeToolIdPath?: string;
+}
+
+// @beta
+export interface LabelProps {
+    label?: string | StringGetter;
+    labelKey?: string;
+}
+
+// @beta
+export type OnCancelFunc = () => void;
+
+// @beta
+export type OnItemExecutedFunc = (item: any) => void;
+
+// @beta
+export type OnNumberCommitFunc = (value: number) => void;
+
+// @public
+export enum RelativePosition {
+    // (undocumented)
+    Bottom = 3,
+    // (undocumented)
+    BottomLeft = 6,
+    // (undocumented)
+    BottomRight = 7,
+    // (undocumented)
+    Left = 0,
+    // (undocumented)
+    Right = 2,
+    // (undocumented)
+    Top = 1,
+    // (undocumented)
+    TopLeft = 4,
+    // (undocumented)
+    TopRight = 5
+}
+
+// @beta
+export type StringGetter = () => string;
+
+// @beta
+export interface SyncUiProps {
+    stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+    stateSyncIds?: string[];
 }
 
 // @alpha
@@ -78,6 +229,12 @@ export enum ToolbarItemType {
     GroupButton = 1
 }
 
+// @beta
+export interface TooltipProps {
+    tooltip?: string | StringGetter;
+    tooltipKey?: string;
+}
+
 // @public
 export class UiAbstract {
     static readonly i18n: I18N;
@@ -90,6 +247,17 @@ export class UiAbstract {
     static terminate(): void;
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;
+}
+
+// @beta
+export class UiAdmin {
+    createXAndY(x: number, y: number): XAndY;
+    readonly cursorPosition: XAndY;
+    hideToolbar(): void;
+    // @internal (undocumented)
+    onInitialized(): void;
+    showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
+    showToolbar(_toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
 }
 
 // @public

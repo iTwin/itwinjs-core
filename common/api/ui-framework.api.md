@@ -5,6 +5,11 @@
 ```ts
 
 import * as _ from 'lodash';
+import { AbstractConditionalItemProps } from '@bentley/ui-abstract';
+import { AbstractGroupItemProps } from '@bentley/ui-abstract';
+import { AbstractItemProps } from '@bentley/ui-abstract';
+import { AbstractMenuItemProps } from '@bentley/ui-abstract';
+import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -19,11 +24,13 @@ import { ButtonProps } from '@bentley/ui-core';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
+import { CommandHandler as CommandHandler_2 } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
 import { ConditionalDisplayType } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
+import { DescriptionProps as DescriptionProps_2 } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
@@ -45,6 +52,7 @@ import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
+import { LabelProps as LabelProps_2 } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
@@ -63,6 +71,9 @@ import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { Omit } from '@bentley/ui-core';
+import { OnCancelFunc } from '@bentley/ui-abstract';
+import { OnItemExecutedFunc } from '@bentley/ui-abstract';
+import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -78,7 +89,7 @@ import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-core';
 import { RegisteredRuleset } from '@bentley/presentation-common';
-import { RelativePosition } from '@bentley/imodeljs-frontend';
+import { RelativePosition } from '@bentley/ui-abstract';
 import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
 import { SafeAreaInsets } from '@bentley/ui-ninezone';
@@ -93,6 +104,8 @@ import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
+import { StringGetter as StringGetter_2 } from '@bentley/ui-abstract';
+import { SyncUiProps as SyncUiProps_2 } from '@bentley/ui-abstract';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { TimelineDataProvider } from '@bentley/ui-components';
@@ -106,9 +119,11 @@ import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
+import { TooltipProps as TooltipProps_2 } from '@bentley/ui-abstract';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
+import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiItemNode } from '@bentley/imodeljs-frontend';
 import { UiSettings } from '@bentley/ui-core';
@@ -127,68 +142,6 @@ import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
 
-// @alpha
-export class AccuDrawPopupManager {
-    // @internal (undocumented)
-    static clearPopups(): void;
-    // (undocumented)
-    static hideCalculator(): void;
-    // (undocumented)
-    static hideInputEditor(): void;
-    // (undocumented)
-    static hideMenuButton(id: string): void;
-    // (undocumented)
-    static offset: XAndY;
-    // @internal (undocumented)
-    static readonly onAccuDrawPopupsChangedEvent: AccuDrawPopupsChangedEvent;
-    // @internal (undocumented)
-    static readonly popupCount: number;
-    // @internal (undocumented)
-    static readonly popups: AccuDrawPopupInfo[];
-    // (undocumented)
-    static removeCalculator(): void;
-    // (undocumented)
-    static removeInputEditor(): void;
-    // (undocumented)
-    static removeMenuButton(id: string): void;
-    // (undocumented)
-    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnCommitFunc, onCancel: OnCancelFunc): void;
-    // (undocumented)
-    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnCommitFunc, onCancel: OnCancelFunc): void;
-    // (undocumented)
-    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnCommitFunc, onCancel: OnCancelFunc): void;
-    // (undocumented)
-    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnCommitFunc, onCancel: OnCancelFunc): void;
-    // (undocumented)
-    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnCommitFunc, onCancel: OnCancelFunc): void;
-    // (undocumented)
-    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: MenuItemProps[]): void;
-}
-
-// @alpha
-export class AccuDrawPopupRenderer extends React_2.Component<CommonProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React_2.ReactNode;
-    }
-
-// @internal
-export class AccuDrawPopupsChangedEvent extends UiEvent<{}> {
-}
-
-// @internal
-export enum AccuDrawPopupType {
-    // (undocumented)
-    Calculator = 2,
-    // (undocumented)
-    InputEditor = 1,
-    // (undocumented)
-    MenuButton = 0
-}
-
 // @public
 export interface Action<T extends string> {
     // (undocumented)
@@ -197,9 +150,9 @@ export interface Action<T extends string> {
 
 // @public
 export abstract class ActionButtonItemDef extends ItemDefBase {
-    constructor(itemProps: ItemProps);
+    constructor(itemProps: ItemProps, onItemExecuted?: OnItemExecutedFunc);
     // (undocumented)
-    protected _commandHandler?: CommandHandler;
+    protected _commandHandler?: CommandHandler_2;
     // (undocumented)
     static defaultButtonSize: number;
     // (undocumented)
@@ -413,7 +366,7 @@ export class BackstageItemManager {
 }
 
 // @public
-export interface BackstageItemProps extends LabelProps, DescriptionProps, TooltipProps, IconProps_2 {
+export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, TooltipProps_2, IconProps_2 {
     isActive?: boolean;
     isEnabled?: boolean;
     stateFunc?: (state: Readonly<BackstageItemState>) => BackstageItemState;
@@ -584,7 +537,7 @@ export interface CalculatorProps extends CommonProps {
     engine: CalculatorEngine;
     initialValue?: number;
     onCancel?: OnCancelFunc;
-    onOk?: OnCommitFunc;
+    onOk?: OnNumberCommitFunc;
     resultIcon?: React_2.ReactNode;
 }
 
@@ -730,19 +683,12 @@ export const combineReducers: CombineReducersFunction;
 // @public
 export type CombineReducersFunction = <A>(reducers: A) => (state: CombinedReducerState<A>, action: ReducerMapActions<A>) => CombinedReducerState<A>;
 
-// @public
-export interface CommandHandler {
-    // (undocumented)
-    execute?: (args?: any) => any;
-    // (undocumented)
-    getCommandArgs?: () => any[];
-    // (undocumented)
-    parameters?: any;
-}
+// @public @deprecated
+export type CommandHandler = CommandHandler_2;
 
 // @public
 export class CommandItemDef extends ActionButtonItemDef {
-    constructor(commandItemProps: CommandItemProps);
+    constructor(commandItemProps: CommandItemProps, onItemExecuted?: OnItemExecutedFunc);
     // (undocumented)
     commandId: string;
     // (undocumented)
@@ -752,7 +698,7 @@ export class CommandItemDef extends ActionButtonItemDef {
     }
 
 // @public
-export interface CommandItemProps extends ItemProps, CommandHandler {
+export interface CommandItemProps extends ItemProps, CommandHandler_2 {
     // (undocumented)
     commandId?: string;
 }
@@ -775,7 +721,7 @@ export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLau
     }
 
 // @public
-export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
+export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler_2 {
     commandId: string;
 }
 
@@ -796,6 +742,8 @@ export class ConditionalItemDef extends ItemDefBase {
     conditionalId: string;
     // (undocumented)
     static conditionalIdPrefix: string;
+    // @internal (undocumented)
+    static constructFromAbstractItemProps(abstractItemProps: AbstractConditionalItemProps, onItemExecuted?: OnItemExecutedFunc): ConditionalItemDef;
     // (undocumented)
     getVisibleItems(): ActionButtonItemDef[];
     // (undocumented)
@@ -1255,12 +1203,9 @@ export class CursorInformation {
 // @beta
 export interface CursorMenuData {
     // (undocumented)
-    items: any[];
+    items: MenuItemProps[];
     // (undocumented)
-    position: {
-        x: number;
-        y: number;
-    };
+    position: XAndY;
 }
 
 // @beta
@@ -1486,11 +1431,8 @@ export class DefaultViewOverlay extends React_2.Component<Props, State> {
     render(): React_2.ReactNode;
     }
 
-// @public
-export interface DescriptionProps {
-    description?: string | StringGetter;
-    descriptionKey?: string;
-}
+// @public @deprecated
+export type DescriptionProps = DescriptionProps_2;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -1859,6 +1801,16 @@ export interface FrameworkState {
     configurableUiState: ConfigurableUiState;
     // (undocumented)
     sessionState: SessionState;
+}
+
+// @beta
+export class FrameworkUiAdmin extends UiAdmin {
+    readonly cursorPosition: XAndY;
+    hideToolbar(): void;
+    // @internal (undocumented)
+    onInitialized(): void;
+    showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
+    showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
 // @internal
@@ -2287,7 +2239,9 @@ export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupI
 
 // @public
 export class GroupItemDef extends ActionButtonItemDef {
-    constructor(groupItemProps: GroupItemProps);
+    constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc);
+    // @internal (undocumented)
+    static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef;
     // (undocumented)
     direction: Direction;
     // (undocumented)
@@ -2313,7 +2267,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     readonly panelLabel: string;
     // (undocumented)
     resolveItems(force?: boolean): void;
-    setPanelLabel(v: string | StringGetter): void;
+    setPanelLabel(v: string | StringGetter_2): void;
     // (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
@@ -2329,7 +2283,7 @@ export interface GroupItemProps extends ItemProps {
     // (undocumented)
     itemsInColumn?: number;
     paneLabelKey?: string;
-    panelLabel?: string | StringGetter;
+    panelLabel?: string | StringGetter_2;
 }
 
 // @internal (undocumented)
@@ -2532,9 +2486,9 @@ export abstract class ItemDefBase {
     // (undocumented)
     isVisible: boolean;
     readonly label: string;
-    setDescription(v: string | StringGetter): void;
-    setLabel(v: string | StringGetter): void;
-    setTooltip(v: string | StringGetter): void;
+    setDescription(v: string | StringGetter_2): void;
+    setLabel(v: string | StringGetter_2): void;
+    setTooltip(v: string | StringGetter_2): void;
     // (undocumented)
     stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
     // (undocumented)
@@ -2565,15 +2519,9 @@ export class ItemMap extends Map<string, ItemDefBase> {
 }
 
 // @public
-export interface ItemProps extends IconProps_2, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
-    applicationData?: any;
-    badgeType?: BadgeType;
+export interface ItemProps extends Omit<AbstractItemProps, "iconSpec">, IconProps_2 {
     // @deprecated
     betaBadge?: boolean;
-    isActive?: boolean;
-    isEnabled?: boolean;
-    isPressed?: boolean;
-    isVisible?: boolean;
 }
 
 // @public
@@ -2702,11 +2650,8 @@ export interface KeyinBrowserProps extends CommonProps {
     onExecute?: () => void;
 }
 
-// @public
-export interface LabelProps {
-    label?: string | StringGetter;
-    labelKey?: string;
-}
+// @public @deprecated
+export type LabelProps = LabelProps_2;
 
 // @public
 export interface LayoutFragmentProps {
@@ -2910,12 +2855,8 @@ export class MenuItemHelpers {
     static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[];
 }
 
-// @alpha
-export interface MenuItemProps extends ItemProps {
-    id: string;
-    item?: CommandItemProps;
-    submenu?: MenuItemProps[];
-}
+// @beta
+export type MenuItemProps = AbstractMenuItemProps;
 
 // @public
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> {
@@ -3195,12 +3136,6 @@ export interface NineZoneChangeHandler {
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
 
-// @alpha (undocumented)
-export type OnCancelFunc = () => void;
-
-// @alpha (undocumented)
-export type OnCommitFunc = (value: number) => void;
-
 // @alpha
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
@@ -3299,6 +3234,103 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
     onSizeKnown?: (size: SizeProps) => void;
 }
 
+// @internal
+export class PopupInfo {
+    constructor(id: string);
+    // (undocumented)
+    component: React_2.ReactNode;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    pt: XAndY;
+    // (undocumented)
+    size?: Size;
+}
+
+// @alpha
+export class PopupManager {
+    // @internal (undocumented)
+    static clearPopups(): void;
+    // (undocumented)
+    static defaultOffset: XAndY;
+    // (undocumented)
+    static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size?: Size): Point;
+    // @internal (undocumented)
+    static readonly onPopupsChangedEvent: PopupsChangedEvent;
+    // @internal (undocumented)
+    static readonly popupCount: number;
+    // @internal (undocumented)
+    static readonly popups: PopupInfo[];
+    // (undocumented)
+    static removeCalculator(): void;
+    // (undocumented)
+    static removeInputEditor(): void;
+    // (undocumented)
+    static removeMenuButton(id: string): void;
+    // (undocumented)
+    static removeToolbar(): void;
+    // (undocumented)
+    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    // (undocumented)
+    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    // (undocumented)
+    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    // (undocumented)
+    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    // (undocumented)
+    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    // (undocumented)
+    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): void;
+    // (undocumented)
+    static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): void;
+    }
+
+// @alpha
+export interface PopupPropsBase {
+    // (undocumented)
+    el: HTMLElement;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    offset: XAndY;
+    // (undocumented)
+    onSizeKnown: (size: SizeProps) => void;
+    // (undocumented)
+    pt: XAndY;
+    // (undocumented)
+    size?: Size;
+}
+
+// @alpha
+export class PopupRenderer extends React_2.Component<CommonProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+}
+
+// @internal
+export class PopupsChangedEvent extends UiEvent<{}> {
+}
+
+// @alpha (undocumented)
+export class PositionPopup extends React_2.PureComponent<PositionPopupProps> {
+    constructor(props: PositionPopupProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export const PositionPopupContent: React_2.FunctionComponent<CommonDivProps>;
+
+// @alpha (undocumented)
+export interface PositionPopupProps extends CommonProps {
+    onSizeKnown?: (size: SizeProps) => void;
+    point: PointProps;
+}
+
 // @beta
 export interface PresentationSelectionScope {
     // (undocumented)
@@ -3368,8 +3400,8 @@ export enum PropertyChangeStatus {
 // @public
 export class PropsHelper {
     static getIcon(iconSpec: string | React_2.ReactNode): JSX.Element | undefined;
-    static getStringFromSpec(spec: string | StringGetter): string;
-    static getStringSpec(explicitValue: string | StringGetter | undefined, stringKey?: string): string | StringGetter;
+    static getStringFromSpec(spec: string | StringGetter_2): string;
+    static getStringSpec(explicitValue: string | StringGetter_2 | undefined, stringKey?: string): string | StringGetter_2;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
@@ -4014,8 +4046,8 @@ export interface StatusFieldProps extends CommonProps {
     openWidget: StatusBarFieldId;
 }
 
-// @public
-export type StringGetter = () => string;
+// @public @deprecated
+export type StringGetter = StringGetter_2;
 
 // @public
 export interface SupportsViewSelectorChange {
@@ -4092,13 +4124,8 @@ export enum SyncUiEventId {
     WorkflowActivated = "workflowactivated"
 }
 
-// @public
-export interface SyncUiProps {
-    // (undocumented)
-    stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-    // (undocumented)
-    stateSyncIds?: string[];
-}
+// @public @deprecated
+export type SyncUiProps = SyncUiProps_2;
 
 // @public
 export interface TargetChangeHandler {
@@ -4369,7 +4396,7 @@ export class ToolInformation {
 
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
-    constructor(toolItemProps: ToolItemProps);
+    constructor(toolItemProps: ToolItemProps, onItemExecuted?: OnItemExecutedFunc);
     static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
     // (undocumented)
     readonly id: string;
@@ -4378,7 +4405,7 @@ export class ToolItemDef extends ActionButtonItemDef {
 }
 
 // @public
-export interface ToolItemProps extends ItemProps, CommandHandler {
+export interface ToolItemProps extends ItemProps, CommandHandler_2 {
     // (undocumented)
     toolId: string;
 }
@@ -4418,11 +4445,8 @@ export interface ToolSettingsZoneProps extends CommonProps {
     zone: ZoneManagerProps;
 }
 
-// @public
-export interface TooltipProps {
-    tooltip?: string | StringGetter;
-    tooltipKey?: string;
-}
+// @public @deprecated
+export type TooltipProps = TooltipProps_2;
 
 // @internal
 export class ToolUiManager {
@@ -4960,8 +4984,8 @@ export class WidgetDef {
     priority: number;
     // (undocumented)
     reactElement: React_2.ReactNode;
-    setLabel(v: string | StringGetter): void;
-    setTooltip(v: string | StringGetter): void;
+    setLabel(v: string | StringGetter_2): void;
+    setTooltip(v: string | StringGetter_2): void;
     // (undocumented)
     setUpSyncSupport(props: WidgetProps): void;
     // (undocumented)
@@ -5014,12 +5038,12 @@ export interface WidgetProps extends IconProps_2 {
     isFreeform?: boolean;
     isStatusBar?: boolean;
     isToolSettings?: boolean;
-    label?: string | StringGetter;
+    label?: string | StringGetter_2;
     labelKey?: string;
     priority?: number;
     stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
     syncEventIds?: string[];
-    tooltip?: string | StringGetter;
+    tooltip?: string | StringGetter_2;
     tooltipKey?: string;
 }
 

@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { CircularHandle } from "../../ui-framework/accudraw/CircularHandle";
+import { DivWithOutsideClick } from "../../ui-core";
 
-describe("CircularHandle", () => {
+describe("<DivWithOutsideClick />", () => {
   it("should render", () => {
-    mount(<CircularHandle point={{ x: 100, y: 120 }} size={21} />);
+    const wrapper = mount(<DivWithOutsideClick />);
+    wrapper.unmount();
   });
-
   it("renders correctly", () => {
-    shallow(<CircularHandle point={{ x: 100, y: 120 }} size={21} />).should.matchSnapshot();
+    shallow(<DivWithOutsideClick />).should.matchSnapshot();
   });
 });

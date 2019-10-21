@@ -6,8 +6,8 @@
 
 import * as React from "react";
 
+import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, CommonDivProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/imodeljs-frontend";
 import { TitleBar } from "@bentley/ui-ninezone";
 
 import "./CursorPopup.scss";

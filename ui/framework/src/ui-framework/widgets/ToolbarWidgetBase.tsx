@@ -6,19 +6,19 @@
 
 import * as React from "react";
 
+import { PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
+import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
+import { Orientation } from "@bentley/ui-core";
+import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
-
-import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { Toolbar } from "../toolbar/Toolbar";
-import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
-import { PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { AnyItemDef } from "../shared/ItemProps";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ConditionalItemDef } from "../shared/ConditionalItemDef";
+import { AnyItemDef } from "../shared/AnyItemDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  * @public

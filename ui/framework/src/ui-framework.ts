@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
 
 export * from "./ui-framework/UiFramework";
 
@@ -73,16 +73,20 @@ export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
 
+export * from "./ui-framework/shared/ActionButtonItemDef";
+export * from "./ui-framework/shared/AnyItemDef";
+export * from "./ui-framework/shared/CommandItemDef";
+export * from "./ui-framework/shared/ConditionalItemDef";
+export * from "./ui-framework/shared/ConditionalItemProps";
+export * from "./ui-framework/shared/CustomItemDef";
+export * from "./ui-framework/shared/CustomItemProps";
+export * from "./ui-framework/shared/GroupItemProps";
 export * from "./ui-framework/shared/IconComponent";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
-export * from "./ui-framework/shared/ActionButtonItemDef";
-export * from "./ui-framework/shared/CommandItemDef";
-export * from "./ui-framework/shared/ConditionalItemDef";
-export * from "./ui-framework/shared/CustomItemDef";
-export * from "./ui-framework/shared/ToolItemDef";
 export * from "./ui-framework/shared/MenuItem";
+export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -169,6 +173,8 @@ export * from "./ui-framework/statusfields/ViewAttributes";
 
 export * from "./ui-framework/theme/ThemeManager";
 
+export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
+
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";
@@ -178,10 +184,12 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
 
-export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
 export * from "./ui-framework/accudraw/MenuButton";
+
+export * from "./ui-framework/popup/PopupManager";
+export * from "./ui-framework/popup/PositionPopup";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -196,6 +204,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
+ */
+/**
+ * @docs-group-description Admin
+ * APIs for various UI components, such as toolbars, buttons and menus.
  */
 /**
  * @docs-group-description Backstage

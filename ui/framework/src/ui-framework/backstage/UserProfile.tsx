@@ -13,6 +13,8 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { Backstage } from "./Backstage";
 
+// cSpell:ignore safearea
+
 /** Properties for the [[Backstage]] React component.
  * @public
  */

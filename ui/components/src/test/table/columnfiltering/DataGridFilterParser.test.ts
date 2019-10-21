@@ -156,7 +156,7 @@ describe("DataGridFilterParser", () => {
 
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(onApplyFilterSpy.called).to.be.true;
   });
 
@@ -193,7 +193,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(1);
   });
 
@@ -221,7 +221,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(10);
   });
 
@@ -249,7 +249,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(100);
   });
 
@@ -277,7 +277,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(100);
   });
 
@@ -304,7 +304,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
   });
 
@@ -334,7 +334,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
 
     spyLogger.calledOnce.should.true;
@@ -372,7 +372,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
   });
 
@@ -400,7 +400,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(1);
   });
 
@@ -430,7 +430,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(3);
   });
 
@@ -461,7 +461,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows / 4);
   });
 
@@ -485,7 +485,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows / loremIpsum.length);
   });
 
@@ -509,7 +509,7 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
     await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
 
-    await TestUtils.tick(20);
+    await TestUtils.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows / loremIpsum.length);
   });
 

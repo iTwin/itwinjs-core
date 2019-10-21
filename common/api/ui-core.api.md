@@ -549,6 +549,73 @@ export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
 
+// @beta
+export const DivWithOutsideClick: {
+    new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    contextType?: React.Context<any> | undefined;
+};
+
 // @public
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
     // (undocumented)

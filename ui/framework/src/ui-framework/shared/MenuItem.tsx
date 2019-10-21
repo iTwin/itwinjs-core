@@ -6,14 +6,18 @@
 
 import * as React from "react";
 
-import { UiError } from "@bentley/ui-abstract";
+import { UiError, AbstractMenuItemProps } from "@bentley/ui-abstract";
 import { ContextSubMenu, ContextMenuItem } from "@bentley/ui-core";
 
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { ItemDefBase } from "./ItemDefBase";
 import { UiFramework } from "../UiFramework";
 import { CommandItemDef } from "./CommandItemDef";
-import { MenuItemProps } from "./ItemProps";
+
+/** Menu Item Properties
+ * @beta
+ */
+export type MenuItemProps = AbstractMenuItemProps;
 
 /** Menu Item
  * @alpha
@@ -44,7 +48,7 @@ export class MenuItem extends ItemDefBase {
         this.badgeType = this._actionItem.badgeType;
     } else if (props.submenu) {
       props.submenu.forEach((childProps: MenuItemProps) => {
-        const childItem = new MenuItem(childProps);
+        const childItem = new MenuItem(childProps, onSelection);
         this._submenu.push(childItem);
       });
     } else {
@@ -68,6 +72,8 @@ export class MenuItem extends ItemDefBase {
       if (this._actionItem)
         this._actionItem.execute();
     });
+
+    // istanbul ignore else
     if (this._onSelection)
       this._onSelection();
   }
@@ -113,14 +119,17 @@ export class MenuItemHelpers {
           {label}
         </ContextMenuItem>
       );
-    } else if (item.submenu && item.submenu.length > 0) {
-      const items = this.createMenuItemNodes(item.submenu);
+    } else {
+      // istanbul ignore else
+      if (item.submenu && item.submenu.length > 0) {
+        const items = this.createMenuItemNodes(item.submenu);
 
-      node = (
-        <ContextSubMenu key={index} icon={iconSpec} label={label} badgeType={badgeType}>
-          {items}
-        </ContextSubMenu>
-      );
+        node = (
+          <ContextSubMenu key={index} icon={iconSpec} label={label} badgeType={badgeType}>
+            {items}
+          </ContextSubMenu>
+        );
+      }
     }
 
     return node;

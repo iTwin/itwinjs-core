@@ -14,11 +14,10 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   OutputMessageType,
-  RelativePosition,
   ViewState,
 } from "@bentley/imodeljs-frontend";
 
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, RelativePosition } from "@bentley/ui-abstract";
 import { ScrollView, Point } from "@bentley/ui-core";
 
 import {

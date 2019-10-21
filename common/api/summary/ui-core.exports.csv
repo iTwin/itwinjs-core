@@ -51,6 +51,7 @@ public;DialogButtonType
 public;DialogProps 
 internal;Div 
 internal;DivProps 
+beta;DivWithOutsideClick:
 public;ElementSeparator 
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
