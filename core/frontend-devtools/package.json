@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "1.7.0-dev.14",
+  "version": "1.7.0-dev.15",
   "description": "Debug menu and supporting UI widgets",
   "license": "MIT",
   "main": "lib/frontend-devtools.js",
@@ -45,17 +45,17 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-frontend": "1.7.0-dev.14",
-    "@bentley/imodeljs-i18n": "1.7.0-dev.14",
-    "@bentley/imodeljs-common": "1.7.0-dev.14",
-    "@bentley/bentleyjs-core": "1.7.0-dev.14",
-    "@bentley/geometry-core": "1.7.0-dev.14",
+    "@bentley/imodeljs-frontend": "1.7.0-dev.15",
+    "@bentley/imodeljs-i18n": "1.7.0-dev.15",
+    "@bentley/imodeljs-common": "1.7.0-dev.15",
+    "@bentley/bentleyjs-core": "1.7.0-dev.15",
+    "@bentley/geometry-core": "1.7.0-dev.15",
     "file-saver": "^2.0.2"
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "1.7.0-dev.14",
-    "@bentley/webpack-tools": "1.7.0-dev.14",
+    "@bentley/build-tools": "1.7.0-dev.15",
+    "@bentley/webpack-tools": "1.7.0-dev.15",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "rimraf": "^2.6.2",
