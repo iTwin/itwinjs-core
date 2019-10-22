@@ -178,7 +178,7 @@ describe("Instancing", () => {
     }
   }
 
-  after(async () => {
+  after(() => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
       TestApp.shutdown();
