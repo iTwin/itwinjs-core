@@ -27,6 +27,7 @@ interface TableExampleState {
   selectionMode: SelectionMode;
   tableSelectionTarget: TableSelectionTarget;
   selectedIndexes: any[];
+  requestedTopRow: number;
   topRow: number;
 }
 
@@ -161,6 +162,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       selectedIndexes: [],
       selectionMode: SelectionMode.Single,
       tableSelectionTarget: TableSelectionTarget.Row,
+      requestedTopRow: 0,
       topRow: 0,
     };
   }
@@ -219,11 +221,15 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     return updated;
   }
 
-  private _onTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private _onRequestedTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value !== null) {
       const value = parseInt(e.target.value, 10);
-      this.setState({ topRow: value });
+      this.setState({ requestedTopRow: value });
     }
+  }
+
+  private _onScrollToRow = (topRowIndex: number) => {
+    this.setState({ topRow: topRowIndex });
   }
 
   public render(): React.ReactNode {
@@ -242,7 +248,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
           </select>
           <label>
             <BodyText>Top row:</BodyText>
-            <input onChange={this._onTopRowChange} style={{ width: "100px" }} />
+            <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <span>({this.state.topRow})</span>
           </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
@@ -251,7 +258,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             tableSelectionTarget={this.state.tableSelectionTarget}
             selectionMode={this.state.selectionMode}
             onPropertyUpdated={this._handlePropertyUpdated}
-            scrollToRow={this.state.topRow}
+            scrollToRow={this.state.requestedTopRow}
+            onScrollToRow={this._onScrollToRow}
           />
         </div>
       </div>

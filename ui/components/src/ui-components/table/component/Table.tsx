@@ -62,6 +62,33 @@ export enum TableSelectionTarget {
   Cell,
 }
 
+/** Scroll Direction */
+enum SCROLL_DIRECTION {
+  UP = "upwards",
+  DOWN = "downwards",
+  LEFT = "left",
+  RIGHT = "right",
+  NONE = "none",
+}
+
+/** Scroll ScrollState  */
+interface ScrollState {
+  height: number;
+  scrollTop: number;
+  scrollLeft: number;
+  rowVisibleStartIdx: number;
+  rowVisibleEndIdx: number;
+  rowOverscanStartIdx: number;
+  rowOverscanEndIdx: number;
+  colVisibleStartIdx: number;
+  colVisibleEndIdx: number;
+  colOverscanStartIdx: number;
+  colOverscanEndIdx: number;
+  scrollDirection: SCROLL_DIRECTION;
+  lastFrozenColumnIndex: number;
+  isScrolling: boolean;
+}
+
 /** Properties for the Table React component
  * @public
  */
@@ -1327,6 +1354,11 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // private _onPopupHide = () =>  this.setState({ popup: undefined });
 
+  private _onScroll = (scrollData: ScrollState) => {
+    if (this.props.onScrollToRow)
+      this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
+  }
+
   /** @internal */
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
@@ -1377,6 +1409,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 onClearFilters={this._handleOnClearFilters}
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
+                onScroll={this._onScroll}
               />}
           </ReactResizeDetector>
         </div>

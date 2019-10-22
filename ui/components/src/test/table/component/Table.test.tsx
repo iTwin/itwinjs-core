@@ -1274,7 +1274,9 @@ describe("Table", () => {
     it("should scroll to a specific row", () => {
       table.setProps({ scrollToRow: 50 });
       table.update();
-      expect(onScrollToRow.calledOnceWith(50)).to.be.true;
+      setImmediate(() => {
+        expect(onScrollToRow.calledOnceWith(50)).to.be.true;
+      });
     });
 
   });
