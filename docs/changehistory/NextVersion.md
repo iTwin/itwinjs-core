@@ -2,7 +2,6 @@
 ignore: true
 ---
 # NextVersion
-<<<<<<< HEAD
 
 ## Geometry
 
@@ -19,7 +18,10 @@ ignore: true
 * `[PolyfaceQuery.cloneWithTVertexFixup]($geometry) -- clone a polyface, inserting vertices within edges that are incident to points on other facets.
 * `[PolyfaceQuery.cloneWithColinearEdgeCleanup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
 
+## Presentation
 
-=======
+### Read-Only Mode
 
->>>>>>> 25fb5ac98... 1.6.0
+Added a flag [PresentationManagerProps.mode]($presentation-backend) to indicate that the backend always opens iModels in read-only mode and presentation manager
+can make some optimizations related to reacting to changes in iModels. This is an optional property that defaults to previous behavior (read-write), but it's
+strongly encouraged to set it to [PresentationManagerMode.ReadOnly]($presentation-backend) on read-only backends.

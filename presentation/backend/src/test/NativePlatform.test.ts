@@ -11,6 +11,7 @@ import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend"
 import { PresentationError, VariableValueTypes } from "@bentley/presentation-common";
 import "./IModelHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "../NativePlatform";
+import { PresentationManagerMode } from "../PresentationManager";
 
 describe("default NativePlatform", () => {
 
@@ -32,7 +33,12 @@ describe("default NativePlatform", () => {
     }
     addonMock.reset();
     // tslint:disable-next-line:variable-name naming-convention
-    const TNativePlatform = createDefaultNativePlatform(faker.random.uuid(), [], {});
+    const TNativePlatform = createDefaultNativePlatform({
+      id: faker.random.uuid(),
+      localeDirectories: [],
+      taskAllocationsMap: {},
+      mode: PresentationManagerMode.ReadOnly,
+    });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original
     // one gets terminated
