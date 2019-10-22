@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
-import { DivWithOutsideClick } from "@bentley/ui-core";
+import { DivWithOutsideClick, SizeProps, Size } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
@@ -37,18 +37,34 @@ export interface InputEditorPopupProps extends PopupPropsBase {
   commitHandler: InputEditorCommitHandler;
 }
 
+/** @internal */
+interface InputEditorPopupState {
+  size: Size;
+}
+
 /** Popup component for Input Editor
  * @alpha
  */
-export class InputEditorPopup extends React.PureComponent<InputEditorPopupProps> {
+export class InputEditorPopup extends React.PureComponent<InputEditorPopupProps, InputEditorPopupState> {
+  /** @internal */
+  public readonly state = {
+    size: new Size(-1, -1),
+  };
 
+  private _onSizeKnown = (newSize: SizeProps) => {
+    // istanbul ignore else
+    if (!this.state.size.equals(newSize))
+      this.setState({ size: Size.create(newSize) });
+  }
+
+  /** @internal */
   public render() {
-    const point = PopupManager.getPopupPosition(this.props.el, this.props.pt, this.props.offset, this.props.size);
+    const point = PopupManager.getPopupPosition(this.props.el, this.props.pt, this.props.offset, this.state.size);
 
     return (
       <PositionPopup key={this.props.id}
         point={point}
-        onSizeKnown={this.props.onSizeKnown}
+        onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel}>
           <PositionPopupContent>

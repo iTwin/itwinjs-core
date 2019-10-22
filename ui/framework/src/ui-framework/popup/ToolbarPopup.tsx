@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { OnCancelFunc, RelativePosition } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, Orientation, Point } from "@bentley/ui-core";
+import { DivWithOutsideClick, Orientation, Point, SizeProps, Size } from "@bentley/ui-core";
 import { Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
 
 import { PositionPopup } from "./PositionPopup";
@@ -26,10 +26,26 @@ export interface ToolbarPopupProps extends PopupPropsBase {
   onCancel: OnCancelFunc;
 }
 
+/** @internal */
+interface ToolbarPopupState {
+  size: Size;
+}
+
 /** Popup component for Input Editor
  * @alpha
  */
-export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps> {
+export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
+  /** @internal */
+  public readonly state = {
+    size: new Size(-1, -1),
+  };
+
+  private _onSizeKnown = (newSize: SizeProps) => {
+    // istanbul ignore else
+    if (!this.state.size.equals(newSize))
+      this.setState({ size: Size.create(newSize) });
+  }
+
   private _handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     switch (event.key) {
       case "Escape":
@@ -46,8 +62,8 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps> {
   }
 
   public render() {
-    let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.props.size);
-    const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.props.size, this.props.relativePosition!);
+    let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.state.size);
+    const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition!);
     point = new Point(popupRect.left, popupRect.top);
 
     const actionItems = new Array<ActionButtonItemDef>();
@@ -78,7 +94,7 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps> {
       <PositionPopup key={this.props.id}
         className="uifw-no-border"
         point={point}
-        onSizeKnown={this.props.onSizeKnown}
+        onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel} onKeyDown={this._handleKeyDown}>
           <NZ_Toolbar items={toolbarItems} />

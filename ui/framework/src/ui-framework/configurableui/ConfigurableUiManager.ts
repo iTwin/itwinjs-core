@@ -192,4 +192,12 @@ export class ConfigurableUiManager {
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
     KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
   }
+
+  /** Gets the HTML wrapper element for Configurable UI */
+  public static getWrapperElement(): HTMLElement {
+    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    const htmlElement = wrapper!;
+    return htmlElement;
+  }
+
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { BadgeType, AbstractToolItemProps, AbstractMenuItemProps, AbstractToolbarProps } from "@bentley/ui-abstract";
-import { CommandItemDef, PopupManager, ActionButtonItemDef } from "@bentley/ui-framework";
+import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
 
@@ -47,7 +47,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.addMenuButton", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          PopupManager.showMenuButton("test1", viewport.toolTipDiv, IModelApp.uiAdmin.createXAndY(150, 150), this._accudrawMenuItems);
+          IModelApp.uiAdmin.showMenuButton("test1", this._accudrawMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
           this._menuButtonAdded = true;
         }
       },
@@ -58,7 +58,7 @@ export class AccuDrawPopupTools {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.hideMenuButton", execute: () => {
         if (this._menuButtonAdded) {
-          PopupManager.removeMenuButton("test1");
+          IModelApp.uiAdmin.hideMenuButton("test1");
           this._menuButtonAdded = false;
         }
       },
@@ -75,7 +75,7 @@ export class AccuDrawPopupTools {
   }
 
   private static _closeCalculator() {
-    PopupManager.removeCalculator();
+    IModelApp.uiAdmin.hideCalculator();
   }
 
   public static get showCalculator() {
@@ -83,7 +83,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showCalculator", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          PopupManager.showCalculator(viewport.toolTipDiv, IModelApp.uiAdmin.createXAndY(150, 150), 100, "icon-placeholder", this._calculatorOnOk, this._calculatorOnCancel);
+          IModelApp.uiAdmin.showCalculator(100, "icon-placeholder", IModelApp.uiAdmin.createXAndY(150, 150), this._calculatorOnOk, this._calculatorOnCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -99,7 +99,7 @@ export class AccuDrawPopupTools {
   }
 
   private static _closeInputEditor() {
-    PopupManager.removeInputEditor();
+    IModelApp.uiAdmin.hideInputEditor();
   }
 
   public static get showAngleEditor() {
@@ -107,7 +107,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showAngleEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          PopupManager.showAngleEditor(viewport.toolTipDiv, IModelApp.uiAdmin.createXAndY(150, 150), 90, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -118,7 +118,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showLengthEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          PopupManager.showLengthEditor(viewport.toolTipDiv, IModelApp.uiAdmin.createXAndY(150, 150), 90, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -129,7 +129,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showHeightEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          PopupManager.showHeightEditor(viewport.toolTipDiv, IModelApp.uiAdmin.createXAndY(150, 150), 30, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });

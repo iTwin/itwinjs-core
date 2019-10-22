@@ -31,6 +31,7 @@ export class CursorPrompt {
 
   public display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset: PointProps = { x: 20, y: 20 }, relativePosition: RelativePosition = RelativePosition.BottomRight) {
     if (!instruction.text) {
+      // istanbul ignore else
       if (this._timer.isRunning)
         this.close(false);
       return;

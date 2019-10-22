@@ -15,7 +15,7 @@ import {
 } from "@bentley/ui-abstract";
 import { PrimitiveValue, PropertyValueFormat, PropertyRecord, PropertyDescription, AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
 
-import { Size, CommonProps, UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
+import { CommonProps, UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
@@ -37,7 +37,6 @@ export class PopupInfo {
   constructor(public readonly id: string) { }
   public pt: XAndY = new Point();
   public component: React.ReactNode;
-  public size?: Size;
 }
 
 /** Popups Changed Event class.
@@ -53,8 +52,6 @@ export interface PopupPropsBase {
   el: HTMLElement;
   pt: XAndY;
   offset: XAndY;
-  onSizeKnown: (size: SizeProps) => void;
-  size?: Size;
 }
 
 /** Popup Manager class
@@ -88,29 +85,25 @@ export class PopupManager {
     PopupManager._popups.push(popupInfo);
   }
 
-  private static removePopup(id: string): void {
+  private static removePopup(id: string): boolean {
     const index = PopupManager._popups.findIndex((info: PopupInfo) => id === info.id);
+    let result = true;
 
     if (index >= 0) {
       PopupManager._popups.splice(index, 1);
       PopupManager.emitPopupsChangedEvent();
     } else {
       Logger.logError(UiFramework.loggerCategory(this), `removePopup: Could not find popup with id of '${id}'`);
+      result = false;
     }
-  }
 
-  private static _handlePopupSizeKnown(popupInfo: PopupInfo, size: SizeProps) {
-    // istanbul ignore else
-    if (!popupInfo.size || !popupInfo.size.equals(size)) {
-      popupInfo.size = Size.create(size);
-      PopupManager.emitPopupsChangedEvent();
-    }
+    return result;
   }
 
   public static get defaultOffset(): XAndY { return PopupManager._defaultOffset; }
   public static set defaultOffset(offset: XAndY) { PopupManager._defaultOffset = offset; }
 
-  public static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): void {
+  public static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean {
     let popupInfo = PopupManager._popups.find((info: PopupInfo) => id === info.id);
     if (!popupInfo) {
       popupInfo = new PopupInfo(id);
@@ -122,19 +115,20 @@ export class PopupManager {
 
     popupInfo.pt = pt;
     popupInfo.component = (
-      <MenuButtonPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset} size={popupInfo.size}
-        onSizeKnown={(size: SizeProps) => PopupManager._handlePopupSizeKnown(popupInfo!, size)}
+      <MenuButtonPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset}
         content={menuContent} />
     );
 
     PopupManager.emitPopupsChangedEvent();
+
+    return true;
   }
 
-  public static removeMenuButton(id: string): void {
-    PopupManager.removePopup(id);
+  public static removeMenuButton(id: string): boolean {
+    return PopupManager.removePopup(id);
   }
 
-  public static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): void {
+  public static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const id = PopupManager._calculatorId;
 
     let popupInfo = PopupManager._popups.find((info: PopupInfo) => id === info.id);
@@ -145,34 +139,35 @@ export class PopupManager {
 
     popupInfo.pt = pt;
     popupInfo.component = (
-      <CalculatorPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset} size={popupInfo.size}
-        onSizeKnown={(size: SizeProps) => PopupManager._handlePopupSizeKnown(popupInfo!, size)}
+      <CalculatorPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset}
         initialValue={initialValue} resultIcon={resultIcon} onOk={onOk} onCancel={onCancel} />
     );
 
     PopupManager.emitPopupsChangedEvent();
+
+    return true;
   }
 
-  public static removeCalculator(): void {
-    PopupManager.removePopup(PopupManager._calculatorId);
+  public static removeCalculator(): boolean {
+    return PopupManager.removePopup(PopupManager._calculatorId);
   }
 
-  public static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void {
+  public static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new AngleDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(angleIcon));
-    PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
   }
 
-  public static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void {
+  public static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(lengthIcon));
-    PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
   }
 
-  public static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void {
+  public static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(heightIcon));
-    PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
   }
 
-  public static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void {
+  public static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const primitiveValue: PrimitiveValue = {
       value,
       valueFormat: PropertyValueFormat.Primitive,
@@ -188,21 +183,22 @@ export class PopupManager {
     }
 
     popupInfo.pt = pt;
-    popupInfo.component = <InputEditorPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset} size={popupInfo.size}
-      onSizeKnown={(size: SizeProps) => PopupManager._handlePopupSizeKnown(popupInfo!, size)}
+    popupInfo.component = <InputEditorPopup id={id} el={el} pt={pt} offset={PopupManager.defaultOffset}
       record={record} onCancel={onCancel} commitHandler={commitHandler} />;
 
     PopupManager.emitPopupsChangedEvent();
+
+    return true;
   }
 
-  public static removeInputEditor(): void {
-    PopupManager.removePopup(PopupManager._editorId);
+  public static removeInputEditor(): boolean {
+    return PopupManager.removePopup(PopupManager._editorId);
   }
 
   public static showToolbar(
     toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY,
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
-  ): void {
+  ): boolean {
 
     const toolbarItems = ItemDefFactory.createItemListForToolbar(toolbarProps.items, onItemExecuted);
     const id = PopupManager._toolbarId;
@@ -215,20 +211,20 @@ export class PopupManager {
 
     popupInfo.pt = pt;
     popupInfo.component = (
-      <ToolbarPopup id={id} el={el} pt={pt} offset={offset} size={popupInfo.size}
-        onSizeKnown={(size: SizeProps) => PopupManager._handlePopupSizeKnown(popupInfo!, size)}
+      <ToolbarPopup id={id} el={el} pt={pt} offset={offset}
         items={toolbarItems} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} />
     );
 
     PopupManager.emitPopupsChangedEvent();
+
+    return true;
   }
 
-  public static removeToolbar(): void {
-    PopupManager.removePopup(PopupManager._toolbarId);
+  public static removeToolbar(): boolean {
+    return PopupManager.removePopup(PopupManager._toolbarId);
   }
 
-  public static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size?: Size): Point {
-    size = (size !== undefined) ? size : new Size();
+  public static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point {
     const containerBounds = Rectangle.create(el.getBoundingClientRect());
     const relativeBounds = Rectangle.createFromSize(size).offset(pt);
     const adjustedPosition: Point = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), offset);

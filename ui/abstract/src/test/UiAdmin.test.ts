@@ -56,7 +56,59 @@ describe("UiAdmin", () => {
     const spyCancel = sinon.fake();
 
     expect(uiAdmin.showToolbar(toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
-    uiAdmin.hideToolbar();
+    expect(uiAdmin.hideToolbar()).to.be.false;
+  });
+
+  it("showMenuButton should return false by default", () => {
+    const menuItemProps: AbstractMenuItemProps[] = [
+      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+    ];
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+
+    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be.false;
+    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250))).to.be.false;
+    expect(uiAdmin.hideMenuButton("test")).to.be.false;
+  });
+
+  it("showCalculator should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showCalculator(100, "icon-placeholder", uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
+    expect(uiAdmin.showCalculator(100, "icon-placeholder", uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(uiAdmin.hideCalculator()).to.be.false;
+  });
+
+  it("showAngleEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
+    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(uiAdmin.hideInputEditor()).to.be.false;
+  });
+
+  it("showLengthEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
+    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(uiAdmin.hideInputEditor()).to.be.false;
+  });
+
+  it("showHeightEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
+    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
 });

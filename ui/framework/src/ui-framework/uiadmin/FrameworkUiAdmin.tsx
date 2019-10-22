@@ -7,13 +7,14 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   UiAdmin, AbstractMenuItemProps, AbstractToolbarProps,
-  RelativePosition, OnItemExecutedFunc, OnCancelFunc,
+  RelativePosition, OnItemExecutedFunc, OnCancelFunc, OnNumberCommitFunc,
 } from "@bentley/ui-abstract";
 
 import { CursorInformation } from "../cursor/CursorInformation";
 import { UiFramework } from "../UiFramework";
 import { CursorMenuData } from "../SessionState";
 import { PopupManager } from "../popup/PopupManager";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -49,6 +50,21 @@ export class FrameworkUiAdmin extends UiAdmin {
     return true;
   }
 
+  /** Resolve location and parent element */
+  private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
+    let position = location;
+    let el = htmlElement!;
+
+    if (htmlElement) {
+      const anchorOffset = htmlElement.getBoundingClientRect();
+      position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
+    } else {
+      el = ConfigurableUiManager.getWrapperElement();
+    }
+
+    return { position, el };
+  }
+
   /** Show a Toolbar at a particular location.
    * @param toolbarProps Properties of the Toolbar to display.
    * @param location Location of the Toolbar, relative to the origin of htmlElement or the overall window.
@@ -59,28 +75,109 @@ export class FrameworkUiAdmin extends UiAdmin {
    * @param htmlElement The HTMLElement that anchors the Toolbar. If undefined, the location is relative to the overall window.
    * @return true if the Toolbar was displayed, false if the Toolbar could not be displayed.
    */
-  public showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean {
-    let position = location;
-
-    if (htmlElement) {
-      const anchorOffset = htmlElement.getBoundingClientRect();
-      position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
-    } else {
-      const wrapper = document.getElementById("uifw-configurableui-wrapper");
-      htmlElement = wrapper!;
-    }
+  public showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY,
+    onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, htmlElement?: HTMLElement)
+    : boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 
-    PopupManager.showToolbar(toolbarProps, htmlElement, position, offset, onItemExecuted, onCancel, relativePosition);
-
-    return true;
+    return PopupManager.showToolbar(toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
   }
 
   /** Hides the toolbar. */
-  public hideToolbar(): void {
-    PopupManager.removeToolbar();
+  public hideToolbar(): boolean {
+    return PopupManager.removeToolbar();
+  }
+
+  /** Show a menu button at a particular location. A menu button opens a context menu.
+   * @param id Id of the menu button. Multiple menu buttons may be displayed.
+   * @param menuItemsProps Properties of the menu items to display.
+   * @param location Location of the context menu, relative to the origin of htmlElement or the window.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the menu was displayed, false if the menu could not be displayed.
+   */
+  public showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showMenuButton(id, el, position, menuItemsProps);
+  }
+
+  /** Hides a menu button.
+   * @param id Id of the menu button. Multiple menu buttons may be displayed.
+   * @return true if the menu was hidden, false if the menu could not be hidden.
+   */
+  public hideMenuButton(id: string): boolean {
+    return PopupManager.removeMenuButton(id);
+  }
+
+  /** Show a calculator at a particular location.
+   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
+   * @param initialValue Value initially displayed in the calculator.
+   * @param resultIcon Icon displayed to the left of the value.
+   * @param onOk Function called when the OK button or the Enter key is pressed.
+   * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the menu was displayed, false if the menu could not be displayed.
+   */
+  public showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showCalculator(el, position, initialValue, resultIcon, onOk, onCancel);
+  }
+
+  /** Hides the calculator. */
+  public hideCalculator(): boolean {
+    return PopupManager.removeCalculator();
+  }
+
+  /** Show an input editor for an angle value at a particular location.
+   * @param initialValue Value initially displayed in the editor.
+   * @param location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param onCommit Function called when the OK button or the Enter key is pressed.
+   * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showAngleEditor(el, position, initialValue, onCommit, onCancel);
+  }
+
+  /** Show an input editor for a length value at a particular location.
+   * @param initialValue Value initially displayed in the editor.
+   * @param location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param onCommit Function called when the OK button or the Enter key is pressed.
+   * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showLengthEditor(el, position, initialValue, onCommit, onCancel);
+  }
+
+  /** Show an input editor for a height value at a particular location.
+   * @param initialValue Value initially displayed in the editor.
+   * @param location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param onCommit Function called when the OK button or the Enter key is pressed.
+   * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showHeightEditor(el, position, initialValue, onCommit, onCancel);
+  }
+
+  /** Hides the input editor. */
+  public hideInputEditor(): boolean {
+    return PopupManager.removeInputEditor();
   }
 
 }

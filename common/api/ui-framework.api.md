@@ -867,6 +867,7 @@ export class ConfigurableUiManager {
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     // @internal
     static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
+    static getWrapperElement(): HTMLElement;
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
     static loadContentGroup(groupProps: ContentGroupProps): void;
@@ -1806,10 +1807,18 @@ export interface FrameworkState {
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
     readonly cursorPosition: XAndY;
-    hideToolbar(): void;
+    hideCalculator(): boolean;
+    hideInputEditor(): boolean;
+    hideMenuButton(id: string): boolean;
+    hideToolbar(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
+    showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
+    showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
@@ -3243,8 +3252,6 @@ export class PopupInfo {
     readonly id: string;
     // (undocumented)
     pt: XAndY;
-    // (undocumented)
-    size?: Size;
 }
 
 // @alpha
@@ -3254,7 +3261,7 @@ export class PopupManager {
     // (undocumented)
     static defaultOffset: XAndY;
     // (undocumented)
-    static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size?: Size): Point;
+    static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
     // @internal (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
     // @internal (undocumented)
@@ -3262,27 +3269,27 @@ export class PopupManager {
     // @internal (undocumented)
     static readonly popups: PopupInfo[];
     // (undocumented)
-    static removeCalculator(): void;
+    static removeCalculator(): boolean;
     // (undocumented)
-    static removeInputEditor(): void;
+    static removeInputEditor(): boolean;
     // (undocumented)
-    static removeMenuButton(id: string): void;
+    static removeMenuButton(id: string): boolean;
     // (undocumented)
-    static removeToolbar(): void;
+    static removeToolbar(): boolean;
     // (undocumented)
-    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
-    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
-    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
-    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
-    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): void;
+    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
-    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): void;
+    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
     // (undocumented)
-    static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): void;
+    static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
 
 // @alpha
@@ -3294,11 +3301,7 @@ export interface PopupPropsBase {
     // (undocumented)
     offset: XAndY;
     // (undocumented)
-    onSizeKnown: (size: SizeProps) => void;
-    // (undocumented)
     pt: XAndY;
-    // (undocumented)
-    size?: Size;
 }
 
 // @alpha

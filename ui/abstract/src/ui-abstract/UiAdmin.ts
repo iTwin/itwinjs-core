@@ -8,7 +8,7 @@ import { XAndY } from "@bentley/geometry-core";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
-import { OnCancelFunc, OnItemExecutedFunc } from "./utils/callbacks";
+import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc } from "./utils/callbacks";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -51,5 +51,78 @@ export class UiAdmin {
   }
 
   /** Hides the toolbar. */
-  public hideToolbar(): void { }
+  public hideToolbar(): boolean { return false; }
+
+  /** Show a menu button at a particular location. A menu button opens a context menu.
+   * @param _id Id of the menu button. Multiple menu buttons may be displayed.
+   * @param _menuItemsProps Properties of the menu items to display.
+   * @param _location Location of the context menu, relative to the origin of htmlElement or the window.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the button was displayed, false if the button could not be displayed.
+   */
+  public showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Hides a menu button.
+   * @param _id Id of the menu button. Multiple menu buttons may be displayed.
+   * @return true if the menu was hidden, false if the menu could not be hidden.
+   */
+  public hideMenuButton(_id: string): boolean { return false; }
+
+  /** Show a calculator at a particular location.
+   * @param _initialValue Value initially displayed in the calculator.
+   * @param _resultIcon Icon displayed to the left of the value.
+   * @param _location Location of the calculator, relative to the origin of htmlElement or the window.
+   * @param _onCommit Function called when the OK button or the Enter key is pressed.
+   * @param _onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the calculator was displayed, false if the calculator could not be displayed.
+   */
+  public showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Hides the calculator. */
+  public hideCalculator(): boolean { return false; }
+
+  /** Show an input editor for an angle value at a particular location.
+   * @param _initialValue Value initially displayed in the editor.
+   * @param _location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param _onCommit Function called when the OK button or the Enter key is pressed.
+   * @param _onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Show an input editor for a length value at a particular location.
+   * @param _initialValue Value initially displayed in the editor.
+   * @param _location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param _onCommit Function called when the OK button or the Enter key is pressed.
+   * @param _onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Show an input editor for a height value at a particular location.
+   * @param _initialValue Value initially displayed in the editor.
+   * @param _location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param _onCommit Function called when the OK button or the Enter key is pressed.
+   * @param _onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Hides the input editor. */
+  public hideInputEditor(): boolean { return false; }
+
 }
