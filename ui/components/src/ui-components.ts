@@ -128,6 +128,8 @@ export * from "./ui-components/tree/controlled/TreeEventHandler";
 export * from "./ui-components/tree/controlled/TreeEvents";
 export * from "./ui-components/tree/controlled/TreeModel";
 export * from "./ui-components/tree/controlled/TreeModelSource";
+export * from "./ui-components/tree/controlled/Observable";
+export * from "./ui-components/tree/controlled/TreeHooks";
 export * from "./ui-components/tree/controlled/component/ControlledTree";
 export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
 export * from "./ui-components/tree/controlled/component/TreeRenderer";

@@ -61,6 +61,7 @@ beta;ColorSwatch: React.FunctionComponent
 beta;ColorSwatchProps 
 public;ColumnDescription
 alpha;ColumnFilterDescriptor 
+alpha;CompletionObserver
 alpha;CompositeFilterDescriptor 
 alpha;CompositeFilterDescriptorCollection
 internal;ContextMenu 
@@ -103,6 +104,7 @@ beta;EnumEditor
 beta;EnumPropertyButtonGroupEditor 
 beta;EnumPropertyEditor 
 public;EnumTypeConverter 
+alpha;ErrorObserver
 public;EventsMuteContext 
 alpha;ExtendedTreeNodeRendererProps 
 alpha;FieldFilterDescriptor 
@@ -117,6 +119,7 @@ public;FilteringInputProps
 alpha;FilterOperator
 alpha;FilterRenderer
 public;FloatTypeConverter 
+alpha;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
@@ -175,6 +178,7 @@ alpha;MutableTreeModel
 alpha;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
+alpha;NextObserver
 internal;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
 internal;NodesSelectedCallback = OnItemsSelectedCallback
@@ -185,6 +189,8 @@ public;NonPrimitivePropertyRendererProps
 public;NullableOperatorProcessor
 alpha;NumericRangeData
 public;class NumericTypeConverterBase 
+alpha;Observable
+alpha;Observer
 public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
@@ -269,6 +275,8 @@ beta;StandardTypeConverterTypeNames
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
+alpha;Subscribable
+alpha;Subscription 
 public;Table 
 public;TableArrayValueRenderer 
 public;TableCellEditorState
@@ -323,7 +331,7 @@ alpha;TreeModelNode
 alpha;TreeModelNodeInput
 alpha;TreeModelNodePlaceholder
 alpha;TreeModelRootNode
-alpha;TreeModelSource 
+alpha;TreeModelSource
 internal;TreeModelUpdaterParams
 alpha;TreeNodeEvent
 public;TreeNodeItem
@@ -343,6 +351,8 @@ public;class TypeConverter
 public;TypeConverterManager
 beta;TypeEditor
 public;UiComponents
+alpha;Unsubscribable
+alpha;useVisibleTreeNodes(modelSource: TreeModelSource
 public;ViewClassFullNameChangedEvent 
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 

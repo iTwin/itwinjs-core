@@ -13,11 +13,12 @@ import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeMode
 import { TreeEvents, TreeSelectionChange, CheckboxStateChange } from "../../../ui-components/tree/controlled/TreeEvents";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { TreeModelMutator } from "../../../ui-components/tree/controlled/internal/TreeModelMutator";
+import { TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("TreeEventHandler", () => {
 
   let eventHandler: TreeEventHandler;
-  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource<TreeDataProvider>>();
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
   const params: TreeEventHandlerParams = {
     modelSource: modelSourceMock.object,

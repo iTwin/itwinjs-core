@@ -6,7 +6,7 @@
 
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 
-/** @internal */
+/** @alpha */
 export function from<T>(iterable: Iterable<T>): Observable<T> {
   return rxjsFrom(iterable);
 }
@@ -14,11 +14,11 @@ export function from<T>(iterable: Iterable<T>): Observable<T> {
 /**
  * Observable interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
  * This interface ensures that consumers are not required to have rxjs as dependency.
- * @internal
+ * @alpha
  */
 export interface Observable<T> extends Subscribable<T> { }
 
-/** @internal */
+/** @alpha */
 export interface Subscribable<T> {
   subscribe(observer?: Observer<T>): Subscription;
   subscribe(next: null | undefined, error: null | undefined, complete: () => void): Subscription;
@@ -30,17 +30,23 @@ export interface Subscribable<T> {
 /**
  * Observer interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
  * This interface ensures that consumers are not required to have rxjs as dependency.
- * @internal
+ * @alpha
  */
 export declare type Observer<T> = NextObserver<T> | ErrorObserver<T> | CompletionObserver<T>;
 
-/** @internal */
-export interface Subscription {
-  readonly closed: boolean;
+/** @alpha */
+export interface Unsubscribable {
   unsubscribe(): void;
 }
 
-/** @internal */
+/** @alpha */
+export interface Subscription extends Unsubscribable {
+  readonly closed: boolean;
+  unsubscribe(): void;
+  add(tearDown: Unsubscribable | (() => void) | void): void;
+}
+
+/** @alpha */
 export interface NextObserver<T> {
   closed?: boolean;
   next: (value: T) => void;
@@ -48,7 +54,7 @@ export interface NextObserver<T> {
   complete?: () => void;
 }
 
-/** @internal */
+/** @alpha */
 export interface ErrorObserver<T> {
   closed?: boolean;
   next?: (value: T) => void;
@@ -56,7 +62,7 @@ export interface ErrorObserver<T> {
   complete?: () => void;
 }
 
-/** @internal */
+/** @alpha */
 export interface CompletionObserver<T> {
   closed?: boolean;
   next?: (value: T) => void;

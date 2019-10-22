@@ -17,13 +17,15 @@ import { TreeModelSource } from "./TreeModelSource";
 import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { TreeDataProvider } from "../TreeDataProvider";
+import { Subscription } from "./Observable";
 
 /**
  * Data structure that describes tree event handler params.
  * @alpha
  */
 export interface TreeEventHandlerParams {
-  modelSource: TreeModelSource;
+  modelSource: TreeModelSource<TreeDataProvider>;
   collapsedChildrenDisposalEnabled?: boolean;
 }
 
@@ -32,7 +34,7 @@ export interface TreeEventHandlerParams {
  * @alpha
  */
 export class TreeEventHandler implements TreeEvents {
-  private _modelSource: TreeModelSource;
+  private _modelSource: TreeModelSource<TreeDataProvider>;
   private _modelMutator: TreeModelMutator;
 
   private _disposed = new Subject();
@@ -55,8 +57,8 @@ export class TreeEventHandler implements TreeEvents {
     this._modelMutator.collapseNode(nodeId);
   }
 
-  public onSelectionModified({ modifications }: TreeSelectionModificationEvent) {
-    from(modifications)
+  public onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined {
+    return from(modifications)
       .pipe(
         takeUntil(this._disposed),
         takeUntil(this._selectionReplaced),
@@ -68,11 +70,11 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent) {
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined {
     this._selectionReplaced.next();
 
     let firstEmission = true;
-    from(replacements)
+    return from(replacements)
       .pipe(
         takeUntil(this._disposed),
         takeUntil(this._selectionReplaced),
@@ -89,7 +91,7 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent) {
-    stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
+  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined {
+    return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
   }
 }

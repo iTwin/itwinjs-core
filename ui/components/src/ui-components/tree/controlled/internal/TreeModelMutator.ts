@@ -9,13 +9,14 @@ import { CheckboxStateChange } from "../TreeEvents";
 import { TreeModelSource, TreeNodeLoadResult } from "../TreeModelSource";
 
 import { EMPTY } from "rxjs/internal/observable/empty";
+import { TreeDataProvider } from "../../TreeDataProvider";
 
 /** @internal */
 export class TreeModelMutator {
-  private _modelSource: TreeModelSource;
+  private _modelSource: TreeModelSource<TreeDataProvider>;
   private _collapsedChildrenDisposalEnabled: boolean;
 
-  constructor(modelSource: TreeModelSource, collapsedChildrenDisposalEnabled: boolean) {
+  constructor(modelSource: TreeModelSource<TreeDataProvider>, collapsedChildrenDisposalEnabled: boolean) {
     this._modelSource = modelSource;
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }

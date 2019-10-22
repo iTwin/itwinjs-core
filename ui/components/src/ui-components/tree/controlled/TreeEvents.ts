@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { Observable } from "./Observable";
+import { Observable, Subscription } from "./Observable";
 import { CheckBoxState } from "@bentley/ui-core";
 
 /**
@@ -15,10 +15,10 @@ export interface TreeEvents {
   onNodeExpanded?(event: TreeNodeEvent): void;
   onNodeCollapsed?(event: TreeNodeEvent): void;
 
-  onSelectionModified?(event: TreeSelectionModificationEvent): void;
-  onSelectionReplaced?(event: TreeSelectionReplacementEvent): void;
+  onSelectionModified?(event: TreeSelectionModificationEvent): Subscription | undefined;
+  onSelectionReplaced?(event: TreeSelectionReplacementEvent): Subscription | undefined;
 
-  onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): void;
+  onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
 }
 
 /**

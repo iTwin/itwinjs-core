@@ -10,7 +10,7 @@ import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { TreeModelSource, TreeDataSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem, TreeDataProviderRaw } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem, TreeDataProviderRaw, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 import { MutableTreeModel, VisibleTreeNodes } from "../../../ui-components";
 import { extractSequence } from "../ObservableTestHelpers";
 import { TreeModelNodeInput, MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
@@ -18,7 +18,7 @@ import { createRandomMutableTreeModelNode, createRandomTreeNodeItems, createRand
 
 describe("TreeModelSource", () => {
 
-  let modelSource: TreeModelSource;
+  let modelSource: TreeModelSource<TreeDataProvider>;
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
   const mutableTreeModelMock = moq.Mock.ofType<MutableTreeModel>();
   const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
@@ -45,6 +45,15 @@ describe("TreeModelSource", () => {
       modelSource.onModelChanged.emit(mutableTreeModelMock.object);
       modelSource.getVisibleNodes();
       mutableTreeModelMock.verifyAll();
+    });
+
+  });
+
+  describe("getDataProvider", () => {
+
+    it("returns data provider", () => {
+      const dataProvider = modelSource.getDataProvider();
+      expect(dataProvider).to.be.deep.eq(dataProviderMock.object);
     });
 
   });

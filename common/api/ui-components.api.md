@@ -31,7 +31,7 @@ import * as Inspire from 'inspire-tree';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable as Observable_2 } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
@@ -845,6 +845,18 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
     fieldFilter: FieldFilterDescriptor;
 }
 
+// @alpha (undocumented)
+export interface CompletionObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete: () => void;
+    // (undocumented)
+    error?: (err: any) => void;
+    // (undocumented)
+    next?: (value: T) => void;
+}
+
 // @alpha
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
@@ -1274,6 +1286,18 @@ export class EnumTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Enum, b: Primitives.Enum, ignoreCase?: boolean): number;
 }
 
+// @alpha (undocumented)
+export interface ErrorObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete?: () => void;
+    // (undocumented)
+    error: (err: any) => void;
+    // (undocumented)
+    next?: (value: T) => void;
+}
+
 // @public
 export class EventsMuteContext implements IDisposable {
     constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => () => void) | undefined, allowedEventTriggersBeforeMute?: number);
@@ -1428,6 +1452,9 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
 }
+
+// @alpha (undocumented)
+export function from<T>(iterable: Iterable<T>): Observable<T>;
 
 // @beta
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
@@ -1904,6 +1931,18 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
+// @alpha (undocumented)
+export interface NextObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete?: () => void;
+    // (undocumented)
+    error?: (err: any) => void;
+    // (undocumented)
+    next: (value: T) => void;
+}
+
 // @internal
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
@@ -1976,6 +2015,13 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
     // (undocumented)
     sortCompare(a: Primitives.Numeric, b: Primitives.Numeric, _ignoreCase?: boolean): number;
 }
+
+// @alpha
+export interface Observable<T> extends Subscribable<T> {
+}
+
+// @alpha
+export type Observer<T> = NextObserver<T> | ErrorObserver<T> | CompletionObserver<T>;
 
 // @public
 export type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
@@ -2812,6 +2858,30 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
+// @alpha (undocumented)
+export interface Subscribable<T> {
+    // (undocumented)
+    subscribe(observer?: Observer<T>): Subscription;
+    // (undocumented)
+    subscribe(next: null | undefined, error: null | undefined, complete: () => void): Subscription;
+    // (undocumented)
+    subscribe(next: null | undefined, error: (error: any) => void, complete?: () => void): Subscription;
+    // (undocumented)
+    subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): Subscription;
+    // (undocumented)
+    subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription;
+}
+
+// @alpha (undocumented)
+export interface Subscription extends Unsubscribable {
+    // (undocumented)
+    add(tearDown: Unsubscribable | (() => void) | void): void;
+    // (undocumented)
+    readonly closed: boolean;
+    // (undocumented)
+    unsubscribe(): void;
+}
+
 // @public
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
@@ -3191,7 +3261,7 @@ export interface TreeCellUpdatedArgs {
 // @alpha
 export interface TreeCheckboxStateChangeEvent {
     // (undocumented)
-    stateChanges: Observable_2<CheckboxStateChange[]>;
+    stateChanges: Observable<CheckboxStateChange[]>;
 }
 
 // @public
@@ -3215,7 +3285,7 @@ export class TreeDataSource {
     // (undocumented)
     readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
     // (undocumented)
-    requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable<TreeDataSourceResult>;
+    requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable_2<TreeDataSourceResult>;
 }
 
 // @beta
@@ -3254,15 +3324,15 @@ export class TreeEventHandler implements TreeEvents {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): void;
+    onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined;
     // (undocumented)
     onNodeCollapsed({ nodeId }: TreeNodeEvent): void;
     // (undocumented)
     onNodeExpanded({ nodeId }: TreeNodeEvent): void;
     // (undocumented)
-    onSelectionModified({ modifications }: TreeSelectionModificationEvent): void;
+    onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined;
     // (undocumented)
-    onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): void;
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined;
     }
 
 // @alpha
@@ -3270,21 +3340,21 @@ export interface TreeEventHandlerParams {
     // (undocumented)
     collapsedChildrenDisposalEnabled?: boolean;
     // (undocumented)
-    modelSource: TreeModelSource;
+    modelSource: TreeModelSource<TreeDataProvider>;
 }
 
 // @alpha
 export interface TreeEvents {
     // (undocumented)
-    onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): void;
+    onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
     // (undocumented)
     onNodeCollapsed?(event: TreeNodeEvent): void;
     // (undocumented)
     onNodeExpanded?(event: TreeNodeEvent): void;
     // (undocumented)
-    onSelectionModified?(event: TreeSelectionModificationEvent): void;
+    onSelectionModified?(event: TreeSelectionModificationEvent): Subscription | undefined;
     // (undocumented)
-    onSelectionReplaced?(event: TreeSelectionReplacementEvent): void;
+    onSelectionReplaced?(event: TreeSelectionReplacementEvent): Subscription | undefined;
 }
 
 // @public
@@ -3375,14 +3445,16 @@ export interface TreeModelRootNode {
 }
 
 // @alpha
-export class TreeModelSource implements TreeNodeLoader {
-    constructor(dataProvider: TreeDataProvider, pageSize: number);
+export class TreeModelSource<TDataProvider extends TreeDataProvider> implements TreeNodeLoader {
+    constructor(dataProvider: TDataProvider, pageSize: number);
+    // (undocumented)
+    getDataProvider(): TDataProvider;
     // (undocumented)
     getModel(): TreeModel;
     // (undocumented)
     getVisibleNodes(): VisibleTreeNodes;
     // (undocumented)
-    loadNode(parentId: string | undefined, childIndex: number): Observable_2<TreeNodeLoadResult>;
+    loadNode(parentId: string | undefined, childIndex: number): Observable<TreeNodeLoadResult>;
     // (undocumented)
     modifyModel(callback: (model: MutableTreeModel) => void): void;
     // (undocumented)
@@ -3441,7 +3513,7 @@ export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNo
 // @alpha
 export interface TreeNodeLoader {
     // (undocumented)
-    loadNode(parentId: string | undefined, childIndex: number): Observable_2<TreeNodeLoadResult>;
+    loadNode(parentId: string | undefined, childIndex: number): Observable<TreeNodeLoadResult>;
 }
 
 // @alpha
@@ -3546,13 +3618,13 @@ export interface TreeSelectionChange {
 // @alpha
 export interface TreeSelectionModificationEvent {
     // (undocumented)
-    modifications: Observable_2<TreeSelectionChange>;
+    modifications: Observable<TreeSelectionChange>;
 }
 
 // @alpha
 export interface TreeSelectionReplacementEvent {
     // (undocumented)
-    replacements: Observable_2<{
+    replacements: Observable<{
         selectedNodeIds: string[];
     }>;
 }
@@ -3631,9 +3703,18 @@ export class UiComponents {
 }
 
 // @alpha (undocumented)
+export interface Unsubscribable {
+    // (undocumented)
+    unsubscribe(): void;
+}
+
+// @alpha (undocumented)
 export const 
 /** @alpha */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
+
+// @alpha
+export function useVisibleTreeNodes(modelSource: TreeModelSource<TreeDataProvider>): VisibleTreeNodes;
 
 // @public
 export class ViewClassFullNameChangedEvent extends UiEvent<ViewClassFullNameChangedEventArgs> {

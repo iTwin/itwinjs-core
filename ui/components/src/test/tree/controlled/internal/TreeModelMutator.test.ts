@@ -11,11 +11,12 @@ import { TreeModelSource } from "../../../../ui-components/tree/controlled/TreeM
 import { MutableTreeModelNode, MutableTreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
 import { CheckboxStateChange } from "../../../../ui-components/tree/controlled/TreeEvents";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import { TreeDataProvider } from "../../../../ui-components/tree/TreeDataProvider";
 
 describe("TreeModelMutator", () => {
 
   let modelMutator: TreeModelMutator;
-  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource>();
+  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource<TreeDataProvider>>();
   const treeModelMock = moq.Mock.ofType<MutableTreeModel>();
   let node: MutableTreeModelNode;
 

@@ -31,10 +31,10 @@ import { distinctUntilChanged } from "rxjs/internal/operators/distinctUntilChang
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
 import { mergeAll } from "rxjs/internal/operators/mergeAll";
-import { publish } from "rxjs/internal/operators/publish";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { toArray } from "rxjs/internal/operators/toArray";
+import { publishReplay } from "rxjs/internal/operators/publishReplay";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
 
 /**
@@ -73,7 +73,7 @@ export class TreeEventDispatcher implements TreeActions {
             ),
           ),
           concatAll(),
-          publish(),
+          publishReplay(),
           refCount(),
         );
 
@@ -94,7 +94,7 @@ export class TreeEventDispatcher implements TreeActions {
           finalize(() => {
             this._activeSelections.delete(modifications);
           }),
-          publish(),
+          publishReplay(),
           refCount(),
         );
 
@@ -115,7 +115,7 @@ export class TreeEventDispatcher implements TreeActions {
           finalize(() => {
             this._activeSelections.delete(replacements);
           }),
-          publish(),
+          publishReplay(),
           refCount(),
         );
 
@@ -154,7 +154,7 @@ export class TreeEventDispatcher implements TreeActions {
         ),
     )
       .pipe(
-        publish(),
+        publishReplay(),
         refCount(),
       );
 

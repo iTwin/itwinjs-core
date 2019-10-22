@@ -63,19 +63,21 @@ export interface TreeNodeLoadResult {
  * It is used to load nodes and modify tree model which is rendered.
  * @alpha
  */
-export class TreeModelSource implements TreeNodeLoader {
+export class TreeModelSource<TDataProvider extends TreeDataProvider> implements TreeNodeLoader {
   private _model = new MutableTreeModel();
   private _pageLoader: PageLoader<TreeNodeLoadResult>;
   private _loadScheduler = new SubscriptionScheduler<TreeNodeLoadResult>();
+  private _dataProvider: TDataProvider;
 
   private _visibleNodes?: VisibleTreeNodes;
 
-  constructor(dataProvider: TreeDataProvider, pageSize: number) {
+  public onModelChanged = new BeUiEvent<TreeModel>();
+
+  constructor(dataProvider: TDataProvider, pageSize: number) {
     this._pageLoader = new PageLoader(new TreeDataSource(dataProvider), pageSize, this._onPageLoaded);
+    this._dataProvider = dataProvider;
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
   }
-
-  public onModelChanged = new BeUiEvent<TreeModel>();
 
   public modifyModel(callback: (model: MutableTreeModel) => void): void {
     const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft));
@@ -84,6 +86,8 @@ export class TreeModelSource implements TreeNodeLoader {
       this.onModelChanged.emit(this._model);
     }
   }
+
+  public getDataProvider(): TDataProvider { return this._dataProvider; }
 
   public getModel(): TreeModel { return this._model; }
 

@@ -6,14 +6,13 @@ import {
   ControlledTree,
   TreeModelSource,
   TreeEventHandler,
-  VisibleTreeNodes,
   TreeNodeItem,
   PageOptions,
   SelectionMode,
 } from "@bentley/ui-components";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider, IPresentationTreeDataProvider, controlledTreeWithUnifiedSelection } from "@bentley/presentation-components";
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
@@ -21,6 +20,8 @@ import { useEffect, useMemo, useState, useRef } from "react";
 
 import "./TreeWidget.css";
 
+// tslint:disable-next-line: variable-name
+const UnifiedSelectionTree = controlledTreeWithUnifiedSelection(ControlledTree);
 const PAGING_SIZE = 20;
 
 export interface Props {
@@ -34,12 +35,11 @@ export interface Props {
 export const ControlledTreeWidget: React.FC<Props> = (props: Props) => {
   const modelSource = useModelSource(props.imodel, props.rulesetId);
   const eventHandler = useMemo(() => new TreeEventHandler({ modelSource, collapsedChildrenDisposalEnabled: true }), [modelSource]);
-  const visibleNodes = useVisibleNodes(modelSource);
 
   return (
     <div className="treewidget">
-      <ControlledTree
-        visibleNodes={visibleNodes}
+      <UnifiedSelectionTree
+        modelSource={modelSource}
         treeEvents={eventHandler}
         nodeLoader={modelSource}
         selectionMode={SelectionMode.Extended}
@@ -49,7 +49,7 @@ export const ControlledTreeWidget: React.FC<Props> = (props: Props) => {
   );
 };
 
-function useModelSource(imodel: IModelConnection, rulesetId: string): TreeModelSource {
+function useModelSource(imodel: IModelConnection, rulesetId: string): TreeModelSource<SampleDataProvider> {
   const [modelSource, setModelSource] = useState(() => createModelSource(imodel, rulesetId));
 
   const skipEffect = useRef(true);
@@ -98,20 +98,4 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
 function createModelSource(imodel: IModelConnection, rulesetId: string) {
   const dataProvider = new SampleDataProvider(imodel, rulesetId);
   return new TreeModelSource(dataProvider, PAGING_SIZE);
-}
-
-function useVisibleNodes(modelSource: TreeModelSource): VisibleTreeNodes {
-  const [visibleNodes, setVisibleNodes] = useState(modelSource.getVisibleNodes());
-
-  useEffect(() => {
-    const onModelChanged = () => {
-      setVisibleNodes(modelSource.getVisibleNodes());
-    };
-
-    onModelChanged();
-    modelSource.onModelChanged.addListener(onModelChanged);
-    return () => { modelSource.onModelChanged.removeListener(onModelChanged); };
-  }, [modelSource]);
-
-  return visibleNodes;
 }
