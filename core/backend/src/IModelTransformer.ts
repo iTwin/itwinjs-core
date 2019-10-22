@@ -15,6 +15,7 @@ import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
+import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -149,7 +150,7 @@ export class IModelTransformer {
   private static initExternalSourceAspect(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetElementId },
+      element: { id: targetElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: targetScopeElementId },
       identifier: sourceElement.id,
       kind: ExternalSourceAspect.Kind.Element,

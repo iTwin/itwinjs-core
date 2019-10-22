@@ -1346,6 +1346,13 @@ export class ElementOwnsChildElements extends RelatedElement {
 }
 
 // @public
+export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class ElementOwnsMultiAspects extends RelatedElement {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)

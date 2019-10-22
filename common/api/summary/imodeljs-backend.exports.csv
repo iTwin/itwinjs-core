@@ -91,6 +91,7 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsExternalSourceAspects 
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 

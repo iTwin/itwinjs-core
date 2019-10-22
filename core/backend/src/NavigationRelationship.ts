@@ -129,3 +129,13 @@ export class ElementOwnsMultiAspects extends RelatedElement {
     super({ id: parentId, relClassName });
   }
 }
+
+/** Relates an [[Element]] and an [[ExternalSourceAspect]] that it owns.
+ * @public
+ */
+export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
+  public static classFullName = "BisCore:ElementOwnsExternalSourceAspects";
+  public constructor(parentId: Id64String, relClassName: string = ElementOwnsExternalSourceAspects.classFullName) {
+    super(parentId, relClassName);
+  }
+}
