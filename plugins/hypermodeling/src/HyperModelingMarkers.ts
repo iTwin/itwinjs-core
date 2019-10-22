@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Id64Array } from "@bentley/bentleyjs-core";
 import { Point2d, XYAndZ, XAndY, Point3d, ClipVector } from "@bentley/geometry-core";
-import { SectionLocationProps, SectionType } from "@bentley/imodeljs-common";
+import { SectionLocationProps, SectionType, Placement3d } from "@bentley/imodeljs-common";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl } from "@bentley/imodeljs-frontend";
 import { HyperModelingPlugin } from "./HyperModeling";
 
@@ -14,6 +14,7 @@ import { HyperModelingPlugin } from "./HyperModeling";
 class SectionLocation extends Marker {
   private static _size = Point2d.create(40, 40);
   private _clip?: ClipVector;
+  public isSelected: boolean = false;
 
   /** Create a new SectionLocation */
   constructor(public props: SectionLocationProps, pos: Point3d, title: string, icon: HTMLImageElement) {
@@ -24,16 +25,22 @@ class SectionLocation extends Marker {
   }
 
   private get clip(): ClipVector {
-    if (undefined === this._clip)
+    if (undefined === this._clip) {
       this._clip = ClipVector.fromJSON(JSON.parse(this.props.clipGeometry));
+      if (undefined !== this.props.placement)
+        this._clip.transformInPlace(Placement3d.fromJSON(this.props.placement).transform);
+    }
     return this._clip;
   }
 
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (BeButton.Data !== ev.button || !ev.isDown || !ev.viewport || !ev.viewport.view.isSpatialView())
       return true;
+    this.isSelected = !this.isSelected;
     ViewClipTool.enableClipVolume(ev.viewport);
-    ViewClipTool.setViewClip(ev.viewport, this.clip !== ev.viewport.view.getViewClip() ? this.clip : undefined);
+    ViewClipTool.setViewClip(ev.viewport, this.isSelected ? this.clip : undefined);
+    SectionLocationSetDecoration.props.display.selectedOnly = this.isSelected;
+    SectionLocationSetDecoration.show(ev.viewport, true, false); // tslint:disable-line:no-floating-promises
     return true; // Don't allow clicks to be sent to active tool...
   }
 
@@ -122,6 +129,8 @@ export class SectionLocationSetDecoration {
       elevation: true,
       /** Show plan markers */
       plan: true,
+      /** @internal Show selected markers only */
+      selectedOnly: false,
     },
   };
 
@@ -186,15 +195,19 @@ export class SectionLocationSetDecoration {
     let haveVisibleType = false;
     for (const marker of this._sectionLocations.markers) {
       const oldVisible = marker.visible;
-      if (marker.visible = (SectionLocationSetDecoration.props.display.category ? vp.view.viewsCategory(marker.props.category) : true)) {
-        haveVisibleCategory = true;
-        if (marker.visible = this.getMarkerTypeDisplay(marker.props))
-          haveVisibleType = true;
+      if (SectionLocationSetDecoration.props.display.selectedOnly) {
+        marker.visible = marker.isSelected;
+      } else {
+        if (marker.visible = (SectionLocationSetDecoration.props.display.category ? vp.view.viewsCategory(marker.props.category) : true)) {
+          haveVisibleCategory = true;
+          if (marker.visible = this.getMarkerTypeDisplay(marker.props))
+            haveVisibleType = true;
+        }
       }
       if (oldVisible !== marker.visible)
         haveVisibleChange = true;
     }
-    if (undefined !== HyperModelingPlugin.plugin) {
+    if (undefined !== HyperModelingPlugin.plugin && !SectionLocationSetDecoration.props.display.selectedOnly) {
       if (!haveVisibleCategory) {
         const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundCategories");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
