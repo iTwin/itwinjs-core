@@ -706,42 +706,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️perf-test-app tests (backend)",
-      "cwd": "${workspaceRoot}/test-apps/perf-test-app/",
-      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
-      "args": [
-        "--debug",
-        "-r",
-        "${input:integrationTestEnvironment}",
-        "--grep",
-        "\"#integration\"",
-      ],
-      "smartStep": true,
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/perf-test-app/lib/**/*.js",
-        "${workspaceRoot}/core/*/lib/**/*.js",
-        "${workspaceRoot}/tools/certa/lib/**/*.js"
-      ],
-      "protocol": "inspector",
-      "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
-    },
-    {
-      "name": "⚠️perf-test-app tests (frontend)",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
-      "sourceMaps": true,
-      "timeout": 200000,
-      "smartStep": true,
-      "breakOnLoadStrategy": "instrument",
-      "showAsyncStacks": true,
-      "webRoot": "${workspaceFolder}"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "⚠️Frontend Tests (certa/backend)",
       "cwd": "${workspaceRoot}/core/frontend/",
       "runtimeExecutable": "npm",
