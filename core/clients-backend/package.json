@@ -21,7 +21,7 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients-backend",
     "lint": "tslint --project . 1>&2",
-    "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
+    "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"#unit|iModelHub URL Whitelist Validator\" --invert",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
