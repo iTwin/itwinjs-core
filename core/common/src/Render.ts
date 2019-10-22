@@ -1061,18 +1061,18 @@ export namespace AmbientOcclusion {
     private static _defaultBlurSigma: number = 2.0;
     private static _defaultBlurTexelStepSize: number = 1.0;
 
-    public readonly bias?: number;
-    public readonly zLengthCap?: number;
-    public readonly maxDistance?: number;
-    public readonly intensity?: number;
-    public readonly texelStepSize?: number;
-    public readonly blurDelta?: number;
-    public readonly blurSigma?: number;
-    public readonly blurTexelStepSize?: number;
+    public readonly bias: number;
+    public readonly zLengthCap: number;
+    public readonly maxDistance: number;
+    public readonly intensity: number;
+    public readonly texelStepSize: number;
+    public readonly blurDelta: number;
+    public readonly blurSigma: number;
+    public readonly blurTexelStepSize: number;
 
     private constructor(json?: Props) {
       if (undefined === json)
-        return;
+        json = {};
 
       this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
       this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);

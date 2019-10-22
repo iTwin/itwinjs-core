@@ -75,27 +75,27 @@ export namespace AmbientOcclusion {
     }
     export class Settings implements Props {
         // (undocumented)
-        readonly bias?: number;
+        readonly bias: number;
         // (undocumented)
-        readonly blurDelta?: number;
+        readonly blurDelta: number;
         // (undocumented)
-        readonly blurSigma?: number;
+        readonly blurSigma: number;
         // (undocumented)
-        readonly blurTexelStepSize?: number;
+        readonly blurTexelStepSize: number;
         // (undocumented)
         static defaults: Settings;
         // (undocumented)
         static fromJSON(json?: Props): Settings;
         // (undocumented)
-        readonly intensity?: number;
+        readonly intensity: number;
         // (undocumented)
-        readonly maxDistance?: number;
+        readonly maxDistance: number;
         // (undocumented)
-        readonly texelStepSize?: number;
+        readonly texelStepSize: number;
         // (undocumented)
         toJSON(): Props;
         // (undocumented)
-        readonly zLengthCap?: number;
+        readonly zLengthCap: number;
     }
 }
 

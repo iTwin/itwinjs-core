@@ -202,14 +202,14 @@ export class AmbientOcclusionEditor {
 
     const aoSettings = getAOSettings(view);
 
-    this._aoBias!.slider.value = aoSettings.bias!.toString();
-    this._aoZLengthCap!.slider.value = aoSettings.zLengthCap!.toString();
-    this._aoMaxDistance.slider.value = aoSettings.maxDistance!.toString();
-    this._aoIntensity!.slider.value = aoSettings.intensity!.toString();
-    this._aoTexelStepSize!.slider.value = aoSettings.texelStepSize!.toString();
-    this._aoBlurDelta!.slider.value = aoSettings.blurDelta!.toString();
-    this._aoBlurSigma!.slider.value = aoSettings.blurSigma!.toString();
-    this._aoBlurTexelStepSize!.slider.value = aoSettings.blurTexelStepSize!.toString();
+    this._aoBias.slider.value = aoSettings.bias.toString();
+    this._aoZLengthCap.slider.value = aoSettings.zLengthCap.toString();
+    this._aoMaxDistance.slider.value = aoSettings.maxDistance.toString();
+    this._aoIntensity.slider.value = aoSettings.intensity.toString();
+    this._aoTexelStepSize.slider.value = aoSettings.texelStepSize.toString();
+    this._aoBlurDelta.slider.value = aoSettings.blurDelta.toString();
+    this._aoBlurSigma.slider.value = aoSettings.blurSigma.toString();
+    this._aoBlurTexelStepSize.slider.value = aoSettings.blurTexelStepSize.toString();
   }
 
   private updateAmbientOcclusion(updateFunction: (aoProps: any) => void) {
