@@ -4,19 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
-import * as React from "react";
-
 import { LabelProps, DescriptionProps, TooltipProps } from "@bentley/ui-abstract";
 import { IconProps, IconSpec } from "@bentley/ui-core";
-import {
-  BackstageItem as NZ_BackstageItem,
-  BackstageItemProps as NZ_BackstageItemProps,
-} from "@bentley/ui-ninezone";
-
 import { PropsHelper } from "../utils/PropsHelper";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-
-// cSpell:ignore safearea
 
 /** Base properties for a [[Backstage]] item.
  * @public
@@ -60,16 +50,4 @@ export const getBackstageItemStateFromProps = (props: BackstageItemProps): Backs
     iconSpec: props.iconSpec,
     isActive: undefined !== props.isActive ? props.isActive : false,
   };
-};
-
-/** @internal */
-// tslint:disable-next-line: variable-name
-export const BackstageItem = (props: NZ_BackstageItemProps) => {
-  const safeAreaInsets = React.useContext(SafeAreaContext);
-  return (
-    <NZ_BackstageItem
-      safeAreaInsets={safeAreaInsets}
-      {...props}
-    />
-  );
 };

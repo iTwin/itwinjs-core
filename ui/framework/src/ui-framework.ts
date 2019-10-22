@@ -6,10 +6,8 @@
 // cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
 
 export * from "./ui-framework/UiFramework";
-
 export * from "./ui-framework/SessionState";
 export * from "./ui-framework/FrameworkState";
-export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
 export * from "./ui-framework/MarkupToolDefinitions";
 
@@ -144,13 +142,16 @@ export * from "./ui-framework/timeline/AnalysisAnimationProvider";
 export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
 export * from "./ui-framework/backstage/Backstage";
-export * from "./ui-framework/backstage/BackstageItem";
-export * from "./ui-framework/backstage/FrontstageLaunch";
-export * from "./ui-framework/backstage/CommandLaunch";
-export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/BackstageComposer";
-export * from "./ui-framework/backstage/BackstageItemManager";
+export * from "./ui-framework/backstage/BackstageComposerItem";
+export * from "./ui-framework/backstage/BackstageItem";
+export * from "./ui-framework/backstage/BackstageItemsManager";
+export * from "./ui-framework/backstage/BackstageManager";
+export * from "./ui-framework/backstage/CommandLaunch";
+export * from "./ui-framework/backstage/FrontstageLaunch";
+export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/TaskLaunch";
+export * from "./ui-framework/backstage/UserProfile";
 
 export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/CubeNavigationAid";

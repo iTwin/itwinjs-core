@@ -22,7 +22,7 @@ import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
-import { FrontstageManager } from "./FrontstageManager";
+import { FrontstageManager, FrontstageActivatedEventArgs } from "./FrontstageManager";
 import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
 
 /** Properties for a [[Frontstage]] component.
@@ -612,4 +612,21 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
     };
   }
   return zone;
+};
+
+/** Hook that returns active frontstage id.
+ * @beta
+ */
+export const useActiveFrontstageId = () => {
+  const [id, setId] = React.useState(FrontstageManager.activeFrontstageId);
+  React.useEffect(() => {
+    const handleActivated = (args: FrontstageActivatedEventArgs) => {
+      setId(args.activatedFrontstageDef.id);
+    };
+    FrontstageManager.onFrontstageActivatedEvent.addListener(handleActivated);
+    return () => {
+      FrontstageManager.onFrontstageActivatedEvent.removeListener(handleActivated);
+    };
+  }, []);
+  return id;
 };

@@ -6,12 +6,17 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps, BackstageItem } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { Backstage } from "./Backstage";
+
+// tslint:disable-next-line:variable-name
+const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public

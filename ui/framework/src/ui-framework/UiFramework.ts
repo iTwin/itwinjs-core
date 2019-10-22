@@ -24,6 +24,7 @@ import { ConfigurableUiActionId } from "./configurableui/state";
 import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./SessionState";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
+import { BackstageManager } from "./backstage/BackstageManager";
 
 // cSpell:ignore Mobi
 
@@ -50,6 +51,7 @@ export class UiFramework {
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
+  private static _backstageManager?: BackstageManager;
 
   /** Get Show Ui event.
    * @beta
@@ -89,6 +91,7 @@ export class UiFramework {
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
+    UiFramework._backstageManager = new BackstageManager();
 
     if (oidcConfig) {
       UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
@@ -111,6 +114,7 @@ export class UiFramework {
     UiFramework._i18n = undefined;
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
+    UiFramework._backstageManager = undefined;
   }
 
   private static _oidcClient: IOidcFrontendClient;
@@ -149,6 +153,13 @@ export class UiFramework {
   /** The internationalization service namespace. */
   public static get i18nNamespace(): string {
     return "UiFramework";
+  }
+
+  /** @beta */
+  public static get backstageManager(): BackstageManager {
+    if (!UiFramework._backstageManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._backstageManager;
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
@@ -343,5 +354,4 @@ export class UiFramework {
     }
     return mobile;
   }
-
 }

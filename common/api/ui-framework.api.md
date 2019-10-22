@@ -15,7 +15,6 @@ import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
-import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
@@ -27,7 +26,6 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler as CommandHandler_2 } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
-import { ConditionalDisplayType } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DescriptionProps as DescriptionProps_2 } from '@bentley/ui-abstract';
@@ -203,14 +201,6 @@ export interface ActionItemButtonProps extends CommonProps {
     onSizeKnown?: (size: SizeProps) => void;
 }
 
-// @beta
-export interface ActionItemSpec extends BackstageItemSpec {
-    // (undocumented)
-    execute: (args?: any) => void;
-    // (undocumented)
-    readonly itemType: BackstageItemType.ActionItem;
-}
-
 // @public
 export type ActionsUnion<A extends ActionCreatorsObject> = ReturnType<A[keyof A]>;
 
@@ -326,17 +316,49 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
 }
 
 // @beta
-export class BackstageComposer extends React_2.Component<BackstageProps, BackstageComposerState> {
-    constructor(props: BackstageProps);
+export interface BackstageActionItem extends CommonBackstageItem {
     // (undocumented)
-    componentDidMount(): void;
+    readonly execute: () => void;
     // (undocumented)
-    componentWillUnmount(): void;
-    getBackstageItemNodes(): React_2.ReactNode[];
+    readonly type: BackstageItemType.ActionItem;
+}
+
+// @beta
+export function BackstageComposer(props: BackstageComposerProps): JSX.Element;
+
+// @internal (undocumented)
+export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element;
+
+// @internal (undocumented)
+export interface BackstageComposerActionItemProps {
     // (undocumented)
-    render(): React_2.ReactNode;
-    // @internal (undocumented)
-    readonly state: Readonly<BackstageComposerState>;
+    readonly item: BackstageActionItem;
+}
+
+// @beta
+export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX.Element;
+
+// @beta
+export interface BackstageComposerItemProps {
+    // (undocumented)
+    readonly item: BackstageItem;
+}
+
+// @beta
+export interface BackstageComposerProps extends CommonProps {
+    // (undocumented)
+    readonly header?: React_2.ReactNode;
+    // (undocumented)
+    readonly showOverlay?: boolean;
+}
+
+// @internal (undocumented)
+export function BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncherProps): JSX.Element;
+
+// @internal (undocumented)
+export interface BackstageComposerStageLauncherProps {
+    // (undocumented)
+    readonly item: BackstageStageLauncher;
 }
 
 // @public
@@ -349,21 +371,8 @@ export interface BackstageEventArgs {
     isVisible: boolean;
 }
 
-// @internal (undocumented)
-export const BackstageItem: (props: BackstageItemProps_2) => JSX.Element;
-
 // @beta
-export class BackstageItemManager {
-    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): ActionItemSpec;
-    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): CustomItemSpec;
-    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): StageLauncher;
-    static getBackstageItemProvider(providerId: string): BackstageItemProvider | undefined;
-    static getBackstageItemSpecs(): BackstageItemSpec[];
-    static readonly hasRegisteredProviders: boolean;
-    static readonly onBackstageItemProviderRegisteredEvent: BeEvent<(ev: BackstageItemProviderRegisteredEventArgs) => void>;
-    static register(itemProvider: BackstageItemProvider): void;
-    static unregister(itemProviderId: string): void;
-}
+export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
 
 // @public
 export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, TooltipProps_2, IconProps_2 {
@@ -374,30 +383,24 @@ export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, To
 }
 
 // @beta
-export interface BackstageItemProvider {
-    readonly id: string;
-    provideBackstageItems: () => BackstageItemSpec[];
-    provideCustomBackstageItem?: (itemSpec: CustomItemSpec) => React_2.ReactNode;
-}
-
-// @beta
-export interface BackstageItemProviderRegisteredEventArgs {
+export interface BackstageItemsChangedArgs {
     // (undocumented)
-    providerId: string;
+    readonly items: ReadonlyArray<BackstageItem>;
 }
 
 // @beta
-export interface BackstageItemSpec {
-    badge?: BadgeType;
-    condition?: ConditionalDisplaySpecification;
-    groupPriority: number;
-    icon?: string;
-    itemId: string;
-    itemPriority: number;
-    itemType: BackstageItemType;
-    label: string;
-    subtitle?: string;
-    tooltip?: string;
+export class BackstageItemsManager {
+    // (undocumented)
+    add(itemOrItems: BackstageItem | ReadonlyArray<BackstageItem>): void;
+    // @internal (undocumented)
+    items: ReadonlyArray<BackstageItem>;
+    readonly onChanged: BeEvent<(args: BackstageItemsChangedArgs) => void>;
+    // (undocumented)
+    remove(itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>): void;
+    // (undocumented)
+    setIsEnabled(id: BackstageItem["id"], isEnabled: boolean): void;
+    // (undocumented)
+    setIsVisible(id: BackstageItem["id"], isVisible: boolean): void;
 }
 
 // @public
@@ -419,8 +422,22 @@ export interface BackstageItemState {
 // @beta
 export enum BackstageItemType {
     ActionItem = 1,
-    CustomItem = 3,
     StageLauncher = 2
+}
+
+// @beta
+export class BackstageManager {
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    readonly isOpen: boolean;
+    // (undocumented)
+    readonly itemsManager: BackstageItemsManager;
+    readonly onToggled: BeEvent<(args: BackstageToggledArgs) => void>;
+    // (undocumented)
+    open(): void;
+    // (undocumented)
+    toggle(): void;
 }
 
 // @public
@@ -435,6 +452,20 @@ export interface BackstageProps extends CommonProps {
     onClose?: () => void;
     // (undocumented)
     showOverlay?: boolean;
+}
+
+// @beta
+export interface BackstageStageLauncher extends CommonBackstageItem {
+    // (undocumented)
+    readonly stageId: string;
+    // (undocumented)
+    readonly type: BackstageItemType.StageLauncher;
+}
+
+// @beta
+export interface BackstageToggledArgs {
+    // (undocumented)
+    readonly isOpen: boolean;
 }
 
 // @public
@@ -726,13 +757,18 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 }
 
 // @beta
-export interface ConditionalDisplaySpecification {
-    // (undocumented)
-    syncEventIds: string[];
-    // (undocumented)
-    testFunc: () => boolean;
-    // (undocumented)
-    type: ConditionalDisplayType;
+export interface CommonBackstageItem {
+    readonly badge?: BadgeType;
+    readonly groupPriority: number;
+    readonly icon?: string;
+    readonly id: string;
+    readonly isEnabled: boolean;
+    readonly isVisible: boolean;
+    readonly itemPriority: number;
+    readonly label: string;
+    readonly subtitle?: string;
+    readonly tooltip?: string;
+    readonly type: BackstageItemType;
 }
 
 // @beta
@@ -1370,14 +1406,6 @@ export interface CustomItemProps extends ItemProps {
     customId?: string;
     // (undocumented)
     reactElement: React.ReactNode;
-}
-
-// @beta
-export interface CustomItemSpec extends BackstageItemSpec {
-    // (undocumented)
-    customItemProviderId: string;
-    // (undocumented)
-    readonly itemType: BackstageItemType.CustomItem;
 }
 
 // @public
@@ -2229,6 +2257,9 @@ export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
 
+// @internal (undocumented)
+export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem>>;
+
 // @internal
 export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupItemState> {
     constructor(props: GroupItemComponentProps);
@@ -2462,8 +2493,14 @@ export enum InputStatus {
     Valid = 0
 }
 
+// @beta
+export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
+
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
+
+// @beta
+export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher;
 
 // @internal (undocumented)
 export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
@@ -3788,22 +3825,6 @@ export interface SplitterPaneTargetProps {
     paneIndex: number;
 }
 
-// @beta
-export interface StageLauncher extends BackstageItemSpec {
-    // (undocumented)
-    readonly itemType: BackstageItemType.StageLauncher;
-    // (undocumented)
-    stageId: string;
-}
-
-// @beta
-export interface StageLauncher extends BackstageItemSpec {
-    // (undocumented)
-    readonly itemType: BackstageItemType.StageLauncher;
-    // (undocumented)
-    stageId: string;
-}
-
 // @alpha
 export class StagePanel extends React_2.Component<StagePanelProps> {
     // (undocumented)
@@ -4553,6 +4574,8 @@ export abstract class UiDataProvider {
 // @public
 export class UiFramework {
     // @beta (undocumented)
+    static readonly backstageManager: BackstageManager;
+    // @beta (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
@@ -4667,6 +4690,35 @@ export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> {
 export interface UiVisibilityEventArgs {
     // (undocumented)
     visible: boolean;
+}
+
+// @beta
+export const useActiveFrontstageId: () => string;
+
+// @beta
+export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
+
+// @beta
+export const useBackstageManager: () => BackstageManager;
+
+// @internal (undocumented)
+export const useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[];
+
+// @beta
+export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @public
+export class UserProfileBackstageItem extends React_2.PureComponent<UserProfileBackstageItemProps> {
+    // (undocumented)
+    render(): React_2.ReactNode | undefined;
+}
+
+// @public
+export interface UserProfileBackstageItemProps extends CommonProps {
+    // (undocumented)
+    accessToken: AccessToken;
+    // (undocumented)
+    onOpenSignOut?: () => void;
 }
 
 // @alpha
@@ -5251,6 +5303,61 @@ export enum WidgetType {
     // (undocumented)
     ToolSettings = 4
 }
+
+// @alpha
+export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React_2.ReactElement<any, string | ((props: any) => React_2.ReactElement<any, string | any | (new (props: any) => React_2.Component<any, any, any>)> | null) | (new (props: any) => React_2.Component<any, any, any>)> | null) & C) | ((new (props: P) => React_2.Component<P, any, any>) & C)) => {
+    new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
+            children?: React_2.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React_2.ReactInstance;
+        };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    new (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>, context?: any): {
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
+            children?: React_2.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React_2.ReactInstance;
+        };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    contextType?: React_2.Context<any> | undefined;
+};
 
 // @public
 export class Workflow extends ItemDefBase {

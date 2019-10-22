@@ -5,7 +5,6 @@ public;class ActionButtonItemDef
 public;ActionCreatorsObject =
 public;ActionItemButton 
 public;ActionItemButtonProps 
-beta;ActionItemSpec 
 public;ActionsUnion
 public;ActionTypes
 public;ActionWithPayload
@@ -20,18 +19,27 @@ public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonIt
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
-beta;BackstageComposer 
+beta;BackstageActionItem 
+beta;BackstageComposer(props: BackstageComposerProps): JSX.Element
+internal;BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element
+internal;BackstageComposerActionItemProps
+beta;BackstageComposerItem({ item }: BackstageComposerItemProps): JSX.Element
+beta;BackstageComposerItemProps
+beta;BackstageComposerProps 
+internal;BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncherProps): JSX.Element
+internal;BackstageComposerStageLauncherProps
 public;BackstageEvent 
 public;BackstageEventArgs
-internal;BackstageItem: (props: BackstageItemProps_2) => JSX.Element
-beta;BackstageItemManager
+beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
 public;BackstageItemProps 
-beta;BackstageItemProvider
-beta;BackstageItemProviderRegisteredEventArgs
-beta;BackstageItemSpec
+beta;BackstageItemsChangedArgs
+beta;BackstageItemsManager
 public;BackstageItemState
 beta;BackstageItemType
+beta;BackstageManager
 public;BackstageProps 
+beta;BackstageStageLauncher 
+beta;BackstageToggledArgs
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -61,7 +69,7 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
-beta;ConditionalDisplaySpecification
+beta;CommonBackstageItem
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -122,7 +130,6 @@ beta;CursorUpdatedEvent
 beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
-beta;CustomItemSpec 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -188,6 +195,7 @@ internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePa
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React_2.FunctionComponent
 public;GroupButtonProps 
+internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
 public;GroupItemDef 
 public;GroupItemProps 
@@ -210,7 +218,9 @@ public;InputFieldMessageAddedEvent
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
+beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
+beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
 public;ItemList 
@@ -346,8 +356,6 @@ alpha;SpatialContainmentTreeState
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
-beta;StageLauncher 
-beta;StageLauncher 
 alpha;StagePanel 
 public;StagePanelChangeHandler
 alpha;StagePanelDef 
@@ -434,6 +442,13 @@ public;UiFramework
 alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
+beta;useActiveFrontstageId: () => string
+beta;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
+beta;useBackstageManager: () => BackstageManager
+internal;useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[]
+beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
+public;UserProfileBackstageItem 
+public;UserProfileBackstageItemProps 
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 
@@ -476,6 +491,7 @@ public;WidgetStateChangedEventArgs
 internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
+alpha;withSafeArea: 
 public;Workflow 
 public;WorkflowActivatedEvent 
 public;WorkflowActivatedEventArgs

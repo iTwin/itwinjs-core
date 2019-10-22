@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, Store } from "redux";
-import { Provider } from "react-redux";
+import { connect, Provider } from "react-redux";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
@@ -18,7 +18,7 @@ import {
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
@@ -26,16 +26,17 @@ import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
-  BackstageItemManager,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
   FrontstageDef,
   SafeAreaContext,
+  SyncUiEventArgs,
+  BackstageComposer,
+  UserProfileBackstageItem,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { AppBackstageItemProvider } from "./appui/AppBackstageItemProvider";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
@@ -50,6 +51,7 @@ import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+import { AppBackstageItemProvider } from "./appui/AppBackstageItemProvider";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -213,8 +215,6 @@ export class SampleAppIModelApp {
     UiProviderTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
-
-    BackstageItemManager.register(new AppBackstageItemProvider());
 
     // store name of this registered control in Redux store so it can be access by plugins
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
@@ -447,6 +447,33 @@ export class SampleAppIModelApp {
   }
 }
 
+function mapStateToProps(state: RootState) {
+  const frameworkState = state.frameworkState;
+
+  if (!frameworkState)
+    return undefined;
+
+  return { accessToken: frameworkState.sessionState.accessToken };
+}
+
+interface AppBackstageComposerProps {
+  /** AccessToken from sign-in */
+  accessToken: AccessToken | undefined;
+}
+
+export class AppBackstageComposerComponent extends React.PureComponent<AppBackstageComposerProps> {
+  public render() {
+    return (
+      <BackstageComposer
+        header={this.props.accessToken && <UserProfileBackstageItem accessToken={this.props.accessToken} />}
+      />
+    );
+  }
+}
+
+export const AppBackstageComposer = connect(mapStateToProps)(AppBackstageComposerComponent); // tslint:disable-line:variable-name
+
+const provider = new AppBackstageItemProvider();
 export class SampleAppViewer extends React.Component<any> {
   constructor(props: any) {
     super(props);
@@ -460,19 +487,51 @@ export class SampleAppViewer extends React.Component<any> {
     }
   }
 
+  public componentDidMount() {
+    UiFramework.backstageManager.itemsManager.add(provider.backstageItems);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
+  }
+
+  public componentWillUnmount() {
+    const items = provider.backstageItems.map((item) => item.id);
+    UiFramework.backstageManager.itemsManager.remove(items);
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
+  }
+
   public render(): JSX.Element {
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+              <ConfigurableUiContent
+                appBackstage={<AppBackstageComposer />}
+              />
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
       </Provider >
     );
+  }
+
+  public handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setTestProperty])) {
+      if (SampleAppIModelApp.getTestProperty() === "HIDE") {
+        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", false);
+        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", false);
+      } else {
+        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", true);
+        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", true);
+      }
+    }
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setIsIModelLocal])) {
+      if (SampleAppIModelApp.isIModelLocal) {
+        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", false);
+      } else {
+        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", true);
+      }
+    }
   }
 }
 

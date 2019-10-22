@@ -15,6 +15,7 @@ import {
   BaseItemState,
 } from "../../ui-framework";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { Item } from "@bentley/ui-ninezone";
 import { BadgeType } from "@bentley/ui-abstract";
 
 // cSpell:ignore buttonstate
@@ -190,5 +191,18 @@ describe("<PopupButton />", async () => {
     divWithOnOutsideClick.prop("onOutsideClick")!(event);
 
     expect(spy.called).to.be.false;
+  });
+
+  it("should minimize on Escape down", () => {
+    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    const spy = sinon.spy(sut.instance(), "minimize");
+    const item = sut.find(Item);
+
+    item.simulate("keyDown", { key: "Escape" });
+
+    expect(spy.called).to.be.true;
   });
 });
