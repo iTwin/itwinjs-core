@@ -47,7 +47,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let n = 0;
     while (++n < 100) {
       const openPromise = IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
-      const waitPromise = BeDuration.wait(10000); // 10 seconds
+      const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
 
       promiseArray.push(openPromise);
