@@ -563,7 +563,7 @@ class PseudoLocalizer {
   private convertString(inputString: string): string {
     let inReplace = 0;
     let outString = "";
-    let replaceIndex = 0; // Note: the pseudoLocalize algorithm in Bim02 uses random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
+    let replaceIndex = 0; // Note: the pseudoLocalize algorithm would normally use random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
     for (let iChar = 0; iChar < inputString.length; iChar++) {
       let thisChar = inputString.charAt(iChar);
       let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;

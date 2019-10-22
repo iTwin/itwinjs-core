@@ -13,7 +13,7 @@
     "build": "buildIModelJsModule",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "nyc npm test",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-abstract/file.json --tsIndexFile=./ui-abstract.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-abstract/file.json --tsIndexFile=./ui-abstract.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-abstract",
