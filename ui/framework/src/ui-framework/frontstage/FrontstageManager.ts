@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
 
+import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";

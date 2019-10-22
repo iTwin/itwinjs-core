@@ -13,7 +13,7 @@ class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} onSignedIn={SampleAppIModelApp.onSignedIn} />;
+    this.reactElement = <SignIn oidcClient={SampleAppIModelApp.oidcClient} onOffline={this._onWorkOffline} onRegister={this._onRegister} onSignedIn={SampleAppIModelApp.onSignedIn} />;
   }
 
   // user chose to work offline from the sign in page

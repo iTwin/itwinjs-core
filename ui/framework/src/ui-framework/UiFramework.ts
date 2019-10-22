@@ -9,7 +9,7 @@ import { Store } from "redux";
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -94,10 +94,8 @@ export class UiFramework {
     UiFramework._backstageManager = new BackstageManager();
 
     if (oidcConfig) {
-      UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
-      UiFramework._oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
-
-      const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
+      UiFramework.oidcClient = new OidcBrowserClient(oidcConfig);
+      const initOidcPromise = UiFramework.oidcClient.initialize(new ClientRequestContext())
         .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
@@ -117,10 +115,27 @@ export class UiFramework {
     UiFramework._backstageManager = undefined;
   }
 
-  private static _oidcClient: IOidcFrontendClient;
+  private static _oidcClient: IOidcFrontendClient | undefined;
+  private static _removeUserStateListener: () => void;
   /** @beta */
-  public static get oidcClient(): IOidcFrontendClient {
+  public static get oidcClient(): IOidcFrontendClient | undefined {
     return UiFramework._oidcClient;
+  }
+
+  /** @beta */
+  public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
+    if (UiFramework._removeUserStateListener)
+      UiFramework._removeUserStateListener();
+
+    UiFramework._oidcClient = oidcClient;
+
+    if (oidcClient) {
+      oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
+        .then((accessToken: AccessToken | undefined) => {
+          UiFramework.setAccessTokenInternal(accessToken);
+        });
+      UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
+    }
   }
 
   /** @beta */

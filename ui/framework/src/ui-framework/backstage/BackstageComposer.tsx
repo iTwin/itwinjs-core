@@ -12,6 +12,8 @@ import { useBackstageItems, BackstageItem, BackstageItemsManager } from "./Backs
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 
+// cSpell:ignore safearea
+
 /** @internal */
 export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem>>;
 

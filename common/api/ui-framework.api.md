@@ -84,7 +84,7 @@ import { PointProps } from '@bentley/ui-core';
 import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import * as PropTypes from 'prop-types';
-import * as React_2 from 'react';
+import * as React from 'react';
 import { RectangleProps } from '@bentley/ui-core';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/ui-abstract';
@@ -168,7 +168,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // (undocumented)
     size?: SizeProps;
     // (undocumented)
-    toolbarReactNode(index?: number): React_2.ReactNode;
+    toolbarReactNode(index?: number): React.ReactNode;
 }
 
 // @public
@@ -177,7 +177,7 @@ export type ActionCreatorsObject = {
 };
 
 // @public
-export class ActionItemButton extends React_2.Component<ActionItemButtonProps, BaseItemState> {
+export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
     constructor(props: ActionItemButtonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -186,7 +186,7 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     // @internal (undocumented)
     static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState): BaseItemState | null;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BaseItemState>;
 }
@@ -226,14 +226,14 @@ export interface ActiveContentChangedEventArgs {
 }
 
 // @public
-export class ActivityCenterField extends React_2.Component<StatusFieldProps, ActivityCenterState> {
+export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
     constructor(p: StatusFieldProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @public
@@ -294,7 +294,7 @@ export class AppNotificationManager extends NotificationManager {
 }
 
 // @public
-export class Backstage extends React_2.Component<BackstageProps, BackstageState> {
+export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static readonly backstageToggleCommand: CommandItemDef;
     // (undocumented)
@@ -309,7 +309,7 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     // (undocumented)
     static readonly onBackstageEvent: BackstageEvent;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     static show(): void;
     // @internal (undocumented)
     readonly state: BackstageState;
@@ -347,7 +347,7 @@ export interface BackstageComposerItemProps {
 // @beta
 export interface BackstageComposerProps extends CommonProps {
     // (undocumented)
-    readonly header?: React_2.ReactNode;
+    readonly header?: React.ReactNode;
     // (undocumented)
     readonly showOverlay?: boolean;
 }
@@ -445,7 +445,7 @@ export interface BackstageProps extends CommonProps {
     // (undocumented)
     accessToken?: AccessToken;
     // (undocumented)
-    header?: React_2.ReactNode;
+    header?: React.ReactNode;
     // (undocumented)
     isVisible?: boolean;
     // (undocumented)
@@ -488,20 +488,20 @@ export interface BooleanListenerProps {
 }
 
 // @public
-export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProps, BooleanListenerState> {
+export class BooleanSyncUiListener extends React.Component<BooleanListenerProps, BooleanListenerState> {
     constructor(props: BooleanListenerProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: BooleanListenerState;
 }
 
 // @alpha (undocumented)
-export class Calculator extends React_2.PureComponent<CalculatorProps, CalculatorState> {
+export class Calculator extends React.PureComponent<CalculatorProps, CalculatorState> {
     constructor(props: CalculatorProps);
     // (undocumented)
     componentDidMount(): void;
@@ -569,14 +569,14 @@ export interface CalculatorProps extends CommonProps {
     initialValue?: number;
     onCancel?: OnCancelFunc;
     onOk?: OnNumberCommitFunc;
-    resultIcon?: React_2.ReactNode;
+    resultIcon?: React.ReactNode;
 }
 
 // @internal (undocumented)
 export type CalculatorPropsProps = Pick<CalculatorProps, "engine">;
 
 // @alpha
-export class CardContainer extends React_2.Component<CardContainerProps> {
+export class CardContainer extends React.Component<CardContainerProps> {
     static readonly onCardSelectedEvent: CardSelectedEvent;
     // @internal (undocumented)
     render(): JSX.Element;
@@ -619,7 +619,7 @@ export interface CardSelectedEventArgs {
 }
 
 // @alpha
-export class CategoryTree extends React_2.Component<CategoryTreeProps, CategoryTreeState> {
+export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTreeState> {
     constructor(props: CategoryTreeProps);
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
@@ -735,7 +735,7 @@ export interface CommandItemProps extends ItemProps, CommandHandler_2 {
 }
 
 // @public
-export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
+export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: CommandLaunchBackstageItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -746,7 +746,7 @@ export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLau
     // (undocumented)
     execute: () => void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BackstageItemState>;
     }
@@ -849,7 +849,7 @@ export const ConfigurableUiContent: any;
 // @public
 export interface ConfigurableUiContentProps extends CommonProps {
     // (undocumented)
-    appBackstage?: React_2.ReactNode;
+    appBackstage?: React.ReactNode;
     // (undocumented)
     placeholder: string;
 }
@@ -944,7 +944,7 @@ export class ContentControl extends ConfigurableUiControl {
     readonly navigationAidControl: string;
     onActivated(): void;
     onDeactivated(): void;
-    reactElement: React_2.ReactNode;
+    reactElement: React.ReactNode;
     readonly viewport: ScreenViewport | undefined;
 }
 
@@ -969,8 +969,8 @@ export class ContentGroup {
     getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined;
     getContentControlById(id: string): ContentControl | undefined;
     getContentControls(): ContentControl[];
-    getContentNodes(): React_2.ReactNode[];
-    getControlFromElement(node: React_2.ReactNode): ContentControl | undefined;
+    getContentNodes(): React.ReactNode[];
+    getControlFromElement(node: React.ReactNode): ContentControl | undefined;
     // @internal
     getViewports(): Array<ScreenViewport | undefined>;
     // (undocumented)
@@ -1001,14 +1001,14 @@ export interface ContentGroupProps {
 }
 
 // @public
-export class ContentLayout extends React_2.Component<ContentLayoutComponentProps, ContentLayoutState> {
+export class ContentLayout extends React.Component<ContentLayoutComponentProps, ContentLayoutState> {
     constructor(props: ContentLayoutComponentProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ContentLayoutState>;
     }
@@ -1041,7 +1041,7 @@ export class ContentLayoutDef {
     // @internal (undocumented)
     static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
     descriptionKey: string;
-    fillLayoutContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode | undefined;
+    fillLayoutContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode | undefined;
     getUsedContentIndexes(): number[];
     id: string;
     priority: number;
@@ -1158,13 +1158,13 @@ export enum CubeHover {
 }
 
 // @alpha
-export class CubeNavigationAid extends React_2.Component<CubeNavigationAidProps, CubeNavigationAidState> {
+export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     readonly state: Readonly<CubeNavigationAidState>;
 }
@@ -1246,7 +1246,7 @@ export interface CursorMenuData {
 }
 
 // @beta
-export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
+export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
     // (undocumented)
@@ -1262,7 +1262,7 @@ export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopup
     }
 
 // @beta
-export const CursorPopupContent: React_2.FunctionComponent<CommonDivProps>;
+export const CursorPopupContent: React.FunctionComponent<CommonDivProps>;
 
 // @internal
 export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> {
@@ -1285,23 +1285,23 @@ export class CursorPopupManager {
     static readonly onCursorPopupsChangedEvent: CursorPopupsChangedEvent;
     // @internal (undocumented)
     static readonly onCursorPopupUpdatePositionEvent: CursorPopupUpdatePositionEvent;
-    static open(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number, options?: CursorPopupOptions): void;
+    static open(id: string, content: React.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number, options?: CursorPopupOptions): void;
     // (undocumented)
     static readonly popupCount: number;
     // (undocumented)
     static readonly popups: CursorPopupInfo[];
-    static update(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number): void;
+    static update(id: string, content: React.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number): void;
     static updatePosition(pt: PointProps): void;
     }
 
 // @alpha
-export class CursorPopupMenu extends React_2.PureComponent<CommonProps, CursorPopupMenuState> {
+export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopupMenuState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: CursorPopupMenuState;
 }
@@ -1317,7 +1317,7 @@ export interface CursorPopupOptions {
 // @beta
 export interface CursorPopupProps extends CommonProps {
     // (undocumented)
-    content: React_2.ReactNode;
+    content: React.ReactNode;
     // (undocumented)
     id: string;
     // (undocumented)
@@ -1334,14 +1334,14 @@ export interface CursorPopupProps extends CommonProps {
 }
 
 // @beta
-export class CursorPopupRenderer extends React_2.Component<any, CursorPopupRendererState> {
+export class CursorPopupRenderer extends React.Component<any, CursorPopupRendererState> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal
@@ -1395,9 +1395,9 @@ export class CustomItemDef extends ActionButtonItemDef {
     // (undocumented)
     readonly id: string;
     // (undocumented)
-    reactElement: React_2.ReactNode;
+    reactElement: React.ReactNode;
     // (undocumented)
-    toolbarReactNode(index?: number): React_2.ReactNode;
+    toolbarReactNode(index?: number): React.ReactNode;
 }
 
 // @beta
@@ -1405,7 +1405,7 @@ export interface CustomItemProps extends ItemProps {
     // (undocumented)
     customId?: string;
     // (undocumented)
-    reactElement: React.ReactNode;
+    reactElement: React_2.ReactNode;
 }
 
 // @public
@@ -1429,7 +1429,7 @@ export interface DefaultNavigationProps {
 }
 
 // @beta
-export class DefaultNavigationWidget extends React_2.Component<DefaultNavigationProps> {
+export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> {
     // (undocumented)
     render(): JSX.Element;
     }
@@ -1450,14 +1450,14 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 }
 
 // @alpha
-export class DefaultViewOverlay extends React_2.Component<Props, State> {
+export class DefaultViewOverlay extends React.Component<Props, State> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @public @deprecated
@@ -1470,7 +1470,7 @@ export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
 // @public
 export interface DialogChangedEventArgs {
     // (undocumented)
-    activeDialog: React_2.ReactNode | undefined;
+    activeDialog: React.ReactNode | undefined;
     // (undocumented)
     dialogCount: number;
 }
@@ -1480,16 +1480,16 @@ export interface DialogInfo {
     // (undocumented)
     id: string;
     // (undocumented)
-    reactNode: React_2.ReactNode;
+    reactNode: React.ReactNode;
 }
 
 // @internal
 export class DialogManagerBase {
     constructor(onDialogChangedEvent: DialogChangedEvent);
     // (undocumented)
-    readonly activeDialog: React_2.ReactNode | undefined;
+    readonly activeDialog: React.ReactNode | undefined;
     // (undocumented)
-    closeDialog(dialog?: React_2.ReactNode): void;
+    closeDialog(dialog?: React.ReactNode): void;
     // (undocumented)
     readonly dialogCount: number;
     // (undocumented)
@@ -1499,23 +1499,23 @@ export class DialogManagerBase {
     // (undocumented)
     readonly onDialogChangedEvent: DialogChangedEvent;
     // (undocumented)
-    openDialog(dialog: React_2.ReactNode, id?: string): void;
+    openDialog(dialog: React.ReactNode, id?: string): void;
     // (undocumented)
     pushDialog(dialogInfo: DialogInfo): void;
     // (undocumented)
-    removeDialog(dialog: React_2.ReactNode): void;
+    removeDialog(dialog: React.ReactNode): void;
     // (undocumented)
     update(): void;
 }
 
 // @internal
-export class DialogRendererBase extends React_2.PureComponent<DialogRendererProps> {
+export class DialogRendererBase extends React.PureComponent<DialogRendererProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -1535,11 +1535,11 @@ export interface DragDropLayerChangedEventArgs {
 
 // @beta
 export class DragDropLayerManager {
-    static getActiveLayer(): React_2.ComponentClass<DragLayerProps<any>, any> | React_2.FunctionComponent<DragLayerProps<any>> | undefined;
+    static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
     // (undocumented)
     static readonly onDragDropLayerChangedEvent: DragDropLayerChangedEvent;
-    static registerTypeLayer(type: string, layer: React_2.ComponentType<DragLayerProps>): void;
+    static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>): void;
     static setType(type: string | undefined): void;
 }
 
@@ -1547,14 +1547,14 @@ export class DragDropLayerManager {
 export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}>;
 
 // @beta
-export class DragDropLayerRendererComponent extends React_2.Component<DragDropLayerRendererProps> {
+export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
     constructor(props: DragDropLayerRendererProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @beta
@@ -1590,7 +1590,7 @@ export interface DragDropLayerRendererProps extends CommonProps {
 }
 
 // @alpha
-export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
+export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
     constructor(props: DrawingNavigationAidProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1603,7 +1603,7 @@ export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAid
     // @internal (undocumented)
     static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
     // @internal (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<DrawingNavigationAidState>;
     }
@@ -1644,7 +1644,7 @@ export interface DrawingNavigationAidProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export class DrawingNavigationCanvas extends React_2.Component<DrawingNavigationCanvasProps> {
+export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1652,7 +1652,7 @@ export class DrawingNavigationCanvas extends React_2.Component<DrawingNavigation
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal (undocumented)
@@ -1678,10 +1678,10 @@ export interface DrawingNavigationCanvasProps {
 }
 
 // @internal (undocumented)
-export type dummy_node = React_2.ReactNode;
+export type dummy_node = React.ReactNode;
 
 // @public
-export class ElementTooltip extends React_2.Component<CommonProps, ElementTooltipState> {
+export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
     constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1720,7 +1720,7 @@ export interface ElementTooltipChangedEventArgs {
 }
 
 // @beta
-export class ExpandableSection extends React_2.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
+export class ExpandableSection extends React.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
     render(): JSX.Element;
 }
@@ -1734,13 +1734,13 @@ export interface ExpandableSectionProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export class FaceCell extends React_2.Component<FaceCellProps> {
+export class FaceCell extends React.Component<FaceCellProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal (undocumented)
-export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement> {
+export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
     // (undocumented)
     center?: boolean;
     // (undocumented)
@@ -1779,13 +1779,13 @@ export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReduce
 }>;
 
 // @internal
-export class FrameworkStagePanel extends React_2.PureComponent<FrameworkStagePanelProps> {
+export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanelProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -1797,9 +1797,9 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     draggedWidgetId: WidgetZoneId | undefined;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
-    header?: React_2.ReactNode;
+    header?: React.ReactNode;
     // (undocumented)
     initialSize?: number;
     // (undocumented)
@@ -1811,7 +1811,7 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
     // (undocumented)
-    renderPane: (index: number) => React_2.ReactNode;
+    renderPane: (index: number) => React.ReactNode;
     // (undocumented)
     resizable: boolean;
     // (undocumented)
@@ -1851,9 +1851,9 @@ export class FrameworkUiAdmin extends UiAdmin {
 }
 
 // @internal
-export class FrameworkZone extends React_2.PureComponent<FrameworkZoneProps> {
+export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -1867,7 +1867,7 @@ export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     fillZone?: boolean;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
@@ -1881,7 +1881,7 @@ export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
-    widgetElement: React_2.ReactNode;
+    widgetElement: React.ReactNode;
     // (undocumented)
     widgetTabs: WidgetTabs;
     // (undocumented)
@@ -1889,7 +1889,7 @@ export interface FrameworkZoneProps extends CommonProps {
 }
 
 // @public
-export class Frontstage extends React_2.Component<FrontstageProps, FrontstageState> {
+export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
     // @internal
     constructor(props: FrontstageProps);
     // @internal
@@ -1900,7 +1900,7 @@ export class Frontstage extends React_2.Component<FrontstageProps, FrontstageSta
     componentWillUnmount(): void;
     static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void;
     // @internal
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @public
@@ -1916,7 +1916,7 @@ export interface FrontstageActivatedEventArgs {
 }
 
 // @public
-export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
+export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
     constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1955,7 +1955,7 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // (undocumented)
     mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void;
     // @internal (undocumented)
@@ -2059,7 +2059,7 @@ export class FrontstageDef {
 }
 
 // @public
-export class FrontstageLaunchBackstageItem extends React_2.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
+export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: FrontstageLaunchBackstageItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2070,7 +2070,7 @@ export class FrontstageLaunchBackstageItem extends React_2.PureComponent<Frontst
     // (undocumented)
     execute: () => void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BackstageItemState>;
     }
@@ -2131,15 +2131,15 @@ export class FrontstageManager {
 // @public
 export interface FrontstageProps extends CommonProps {
     applicationData?: any;
-    bottomCenter?: React_2.ReactElement<ZoneProps>;
-    bottomLeft?: React_2.ReactElement<ZoneProps>;
+    bottomCenter?: React.ReactElement<ZoneProps>;
+    bottomLeft?: React.ReactElement<ZoneProps>;
     // @alpha
-    bottomMostPanel?: React_2.ReactElement<StagePanelProps>;
+    bottomMostPanel?: React.ReactElement<StagePanelProps>;
     // @alpha
-    bottomPanel?: React_2.ReactElement<StagePanelProps>;
-    bottomRight?: React_2.ReactElement<ZoneProps>;
-    centerLeft?: React_2.ReactElement<ZoneProps>;
-    centerRight?: React_2.ReactElement<ZoneProps>;
+    bottomPanel?: React.ReactElement<StagePanelProps>;
+    bottomRight?: React.ReactElement<ZoneProps>;
+    centerLeft?: React.ReactElement<ZoneProps>;
+    centerRight?: React.ReactElement<ZoneProps>;
     contentGroup: string | ContentGroup;
     defaultContentId?: string;
     defaultLayout: string | ContentLayoutDef;
@@ -2147,23 +2147,23 @@ export interface FrontstageProps extends CommonProps {
     id: string;
     isInFooterMode?: boolean;
     // @alpha
-    leftPanel?: React_2.ReactElement<StagePanelProps>;
+    leftPanel?: React.ReactElement<StagePanelProps>;
     // @alpha
-    rightPanel?: React_2.ReactElement<StagePanelProps>;
+    rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)
     runtimeProps?: FrontstageRuntimeProps;
-    topCenter?: React_2.ReactElement<ZoneProps>;
-    topLeft?: React_2.ReactElement<ZoneProps>;
+    topCenter?: React.ReactElement<ZoneProps>;
+    topLeft?: React.ReactElement<ZoneProps>;
     // @alpha
-    topMostPanel?: React_2.ReactElement<StagePanelProps>;
+    topMostPanel?: React.ReactElement<StagePanelProps>;
     // @alpha
-    topPanel?: React_2.ReactElement<StagePanelProps>;
-    topRight?: React_2.ReactElement<ZoneProps>;
+    topPanel?: React.ReactElement<StagePanelProps>;
+    topRight?: React.ReactElement<ZoneProps>;
 }
 
 // @public
 export abstract class FrontstageProvider {
-    abstract readonly frontstage: React_2.ReactElement<FrontstageProps>;
+    abstract readonly frontstage: React.ReactElement<FrontstageProps>;
     readonly frontstageDef: FrontstageDef | undefined;
     initializeDef(frontstageDef?: FrontstageDef): FrontstageDef;
 }
@@ -2251,7 +2251,7 @@ export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedSta
 export const getStagePanelType: (location: StagePanelLocation) => StagePanelType;
 
 // @public
-export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
+export const GroupButton: React.FunctionComponent<GroupButtonProps>;
 
 // @public
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
@@ -2261,7 +2261,7 @@ export interface GroupButtonProps extends GroupItemProps, CommonProps {
 export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem>>;
 
 // @internal
-export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupItemState> {
+export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
     constructor(props: GroupItemComponentProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2270,7 +2270,7 @@ export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupI
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState): boolean;
     // (undocumented)
@@ -2309,7 +2309,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     resolveItems(force?: boolean): void;
     setPanelLabel(v: string | StringGetter_2): void;
     // (undocumented)
-    toolbarReactNode(index?: number): React_2.ReactNode;
+    toolbarReactNode(index?: number): React.ReactNode;
 }
 
 // @public
@@ -2357,7 +2357,7 @@ export enum HitBoxZ {
 }
 
 // @public @deprecated
-export const Icon: React_2.FunctionComponent<IconProps_2>;
+export const Icon: React.FunctionComponent<IconProps_2>;
 
 // @public @deprecated
 export interface IconProps extends IconProps_2 {
@@ -2422,10 +2422,10 @@ export class IModelViewportControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
     // (undocumented)
     protected _disableDefaultViewOverlay: boolean;
-    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React_2.ReactNode;
-    protected getNoContentReactElement(_options: IModelViewportControlOptions): React_2.ReactNode;
-    getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React_2.ReactNode;
-    protected _getViewOverlay: (viewport: ScreenViewport) => React_2.ReactNode;
+    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React.ReactNode;
+    protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
+    getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
+    protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
     // (undocumented)
     static readonly id: string;
     // (undocumented)
@@ -2447,20 +2447,20 @@ export interface IModelViewportControlOptions {
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
 // @beta
-export class Indicator extends React_2.Component<IndicatorProps, any> {
+export class Indicator extends React.Component<IndicatorProps, any> {
     constructor(props: IndicatorProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
+export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     readonly state: Readonly<InputFieldMessageState>;
 }
@@ -2638,14 +2638,14 @@ export class KeyboardShortcutManager {
     }
 
 // @public
-export class KeyboardShortcutMenu extends React_2.PureComponent<CommonProps, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, KeyboardShortcutMenuState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     static readonly onKeyboardShortcutMenuEvent: KeyboardShortcutMenuEvent;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: KeyboardShortcutMenuState;
 }
@@ -2677,7 +2677,7 @@ export interface KeyboardShortcutProps extends ItemProps {
 }
 
 // @alpha
-export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
+export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
     // @internal
     constructor(props: any);
     // @internal (undocumented)
@@ -2685,7 +2685,7 @@ export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, Keyin
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @alpha
@@ -2716,7 +2716,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 // @public
 export interface LayoutSplit {
     // (undocumented)
-    createContentContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode;
+    createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
     // (undocumented)
     isLocked: boolean;
 }
@@ -2761,7 +2761,7 @@ export enum ListItemType {
 }
 
 // @beta
-export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
+export class ListPicker extends React.Component<ListPickerPropsExtended> {
     constructor(props: ListPickerPropsExtended);
     isSpecialItem(item: ListItem): boolean;
     // (undocumented)
@@ -2776,20 +2776,20 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 }
 
 // @beta
-export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
+export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
-    getExpandedContent(): React_2.ReactNode;
+    getExpandedContent(): React.ReactNode;
     isExpanded: () => boolean;
     minimize: () => void;
     render(): JSX.Element;
     }
 
 // @beta
-export class ListPickerItem extends React_2.PureComponent<ListPickerItemProps> {
+export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
     render(): JSX.Element;
 }
 
@@ -2810,7 +2810,7 @@ export interface ListPickerItemProps extends CommonProps {
 // @beta
 export interface ListPickerProps {
     // (undocumented)
-    iconSpec?: string | React_2.ReactNode;
+    iconSpec?: string | React.ReactNode;
     // (undocumented)
     items: ListItem[];
     // (undocumented)
@@ -2868,7 +2868,7 @@ export class MarkupTools {
 }
 
 // @alpha (undocumented)
-export class MenuButton extends React_2.PureComponent<MenuButtonProps, MenuButtonState> {
+export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonState> {
     constructor(props: MenuButtonProps);
     // (undocumented)
     render(): JSX.Element;
@@ -2896,7 +2896,7 @@ export class MenuItem extends ItemDefBase {
 // @alpha
 export class MenuItemHelpers {
     // (undocumented)
-    static createMenuItemNodes(itemList: MenuItem[]): React_2.ReactNode[];
+    static createMenuItemNodes(itemList: MenuItem[]): React.ReactNode[];
     // (undocumented)
     static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[];
 }
@@ -2915,17 +2915,17 @@ export interface MessageAddedEventArgs {
 }
 
 // @public
-export class MessageCenterField extends React_2.Component<MessageCenterFieldProps, MessageCenterState> {
+export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
     constructor(p: MessageCenterFieldProps);
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
 }
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
-    targetRef?: React_2.Ref<HTMLElement>;
+    targetRef?: React.Ref<HTMLElement>;
 }
 
 // @public
@@ -2966,26 +2966,26 @@ export class ModalDialogChangedEvent extends DialogChangedEvent {
 
 // @public
 export class ModalDialogManager {
-    static readonly activeDialog: React_2.ReactNode | undefined;
-    static closeDialog(dialog?: React_2.ReactNode): void;
+    static readonly activeDialog: React.ReactNode | undefined;
+    static closeDialog(dialog?: React.ReactNode): void;
     static readonly dialogCount: number;
     // @internal (undocumented)
     static readonly dialogManager: DialogManagerBase;
     static readonly dialogs: import("./DialogManagerBase").DialogInfo[];
     static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
-    static openDialog(dialog: React_2.ReactNode, id?: string): void;
+    static openDialog(dialog: React.ReactNode, id?: string): void;
     static update(): void;
 }
 
 // @public
-export class ModalDialogRenderer extends React_2.PureComponent<CommonProps> {
+export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
     constructor(props: CommonProps);
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @public
-export class ModalFrontstage extends React_2.Component<ModalFrontstageProps> {
+export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
     constructor(props: ModalFrontstageProps);
     // (undocumented)
     render(): JSX.Element;
@@ -3013,7 +3013,7 @@ export interface ModalFrontstageInfo {
 
 // @public
 export interface ModalFrontstageProps extends CommonProps {
-    appBarRight?: React_2.ReactNode;
+    appBarRight?: React.ReactNode;
     closeModal: () => any;
     isOpen?: boolean;
     navigateBack: () => any;
@@ -3021,7 +3021,7 @@ export interface ModalFrontstageProps extends CommonProps {
 }
 
 // @public
-export class ModelessDialog extends React_2.Component<ModelessDialogProps> {
+export class ModelessDialog extends React.Component<ModelessDialogProps> {
     constructor(props: ModelessDialogProps);
     // (undocumented)
     render(): JSX.Element;
@@ -3033,7 +3033,7 @@ export class ModelessDialogChangedEvent extends DialogChangedEvent {
 
 // @public
 export class ModelessDialogManager {
-    static readonly activeDialog: React_2.ReactNode | undefined;
+    static readonly activeDialog: React.ReactNode | undefined;
     static closeDialog(id: string): void;
     static readonly dialogCount: number;
     // @internal (undocumented)
@@ -3042,9 +3042,9 @@ export class ModelessDialogManager {
     // (undocumented)
     static getDialogInfo(id: string): ModelessDialogInfo | undefined;
     static getDialogZIndex(id: string): number;
-    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+    static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
-    static openDialog(dialog: React_2.ReactNode, id: string): void;
+    static openDialog(dialog: React.ReactNode, id: string): void;
     static update(): void;
 }
 
@@ -3055,14 +3055,14 @@ export interface ModelessDialogProps extends DialogProps {
 }
 
 // @public
-export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
+export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
     constructor(props: CommonProps);
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal @deprecated
-export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
+export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -3088,15 +3088,15 @@ export interface MouseDownChangedEventArgs {
 }
 
 // @internal (undocumented)
-export class NavCubeFace extends React_2.Component<NavCubeFaceProps> {
+export class NavCubeFace extends React.Component<NavCubeFaceProps> {
     // (undocumented)
     static faceCellToPos: (face: Face, x: number, y: number) => Vector3d;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal (undocumented)
-export interface NavCubeFaceProps extends React_2.AllHTMLAttributes<HTMLDivElement> {
+export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
     // (undocumented)
     face: Face;
     // (undocumented)
@@ -3128,18 +3128,18 @@ export class NavigationAidControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getSize(): string | undefined;
     getType(): ConfigurableUiControlType;
-    reactElement: React_2.ReactNode;
+    reactElement: React.ReactNode;
     }
 
 // @public
-export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
+export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
     constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState): void;
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<NavigationWidgetState>;
 }
@@ -3148,9 +3148,9 @@ export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx,
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: NavigationWidgetProps);
     // (undocumented)
-    readonly reactElement: React_2.ReactNode;
+    readonly reactElement: React.ReactNode;
     // (undocumented)
-    renderCornerItem(): React_2.ReactNode;
+    renderCornerItem(): React.ReactNode;
     // (undocumented)
     updateNavigationAid(navigationAidId: string, imodel?: IModelConnection): void;
 }
@@ -3164,11 +3164,11 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 // @public
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
     // (undocumented)
-    horizontalToolbar?: React_2.ReactNode;
+    horizontalToolbar?: React.ReactNode;
     // (undocumented)
     iModelConnection?: IModelConnection;
     // (undocumented)
-    verticalToolbar?: React_2.ReactNode;
+    verticalToolbar?: React.ReactNode;
 }
 
 // @public
@@ -3198,7 +3198,7 @@ export interface PanelStateChangedEventArgs {
 export const panelStateToIsCollapsed: (panelState: StagePanelState) => boolean;
 
 // @public
-export class PointerMessage extends React_2.Component<PointerMessageProps, PointerMessageState> {
+export class PointerMessage extends React.Component<PointerMessageProps, PointerMessageState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3208,7 +3208,7 @@ export class PointerMessage extends React_2.Component<PointerMessageProps, Point
     // (undocumented)
     static readonly onPointerMessageChangedEvent: PointerMessageChangedEvent;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     static showMessage(message: NotifyMessageDetails): void;
     // (undocumented)
@@ -3247,7 +3247,7 @@ export interface PointerMessageProps extends CommonProps {
 }
 
 // @public
-export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemState> {
+export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
     constructor(props: PopupButtonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -3260,7 +3260,7 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     }
 
 // @public
-export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode;
+export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 // @public
 export interface PopupButtonChildrenRenderPropArgs {
@@ -3271,7 +3271,7 @@ export interface PopupButtonChildrenRenderPropArgs {
 // @public
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
-    children?: React_2.ReactNode | PopupButtonChildrenRenderProp;
+    children?: React.ReactNode | PopupButtonChildrenRenderProp;
     // (undocumented)
     noPadding?: boolean;
     // (undocumented)
@@ -3284,7 +3284,7 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
 export class PopupInfo {
     constructor(id: string);
     // (undocumented)
-    component: React_2.ReactNode;
+    component: React.ReactNode;
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -3342,13 +3342,13 @@ export interface PopupPropsBase {
 }
 
 // @alpha
-export class PopupRenderer extends React_2.Component<CommonProps> {
+export class PopupRenderer extends React.Component<CommonProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -3356,14 +3356,14 @@ export class PopupsChangedEvent extends UiEvent<{}> {
 }
 
 // @alpha (undocumented)
-export class PositionPopup extends React_2.PureComponent<PositionPopupProps> {
+export class PositionPopup extends React.PureComponent<PositionPopupProps> {
     constructor(props: PositionPopupProps);
     // (undocumented)
     render(): JSX.Element;
     }
 
 // @alpha
-export const PositionPopupContent: React_2.FunctionComponent<CommonDivProps>;
+export const PositionPopupContent: React.FunctionComponent<CommonDivProps>;
 
 // @alpha (undocumented)
 export interface PositionPopupProps extends CommonProps {
@@ -3439,14 +3439,14 @@ export enum PropertyChangeStatus {
 
 // @public
 export class PropsHelper {
-    static getIcon(iconSpec: string | React_2.ReactNode): JSX.Element | undefined;
+    static getIcon(iconSpec: string | React.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter_2): string;
     static getStringSpec(explicitValue: string | StringGetter_2 | undefined, stringKey?: string): string | StringGetter_2;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
 // @alpha
-export class RealityDataPicker extends React_2.Component<RealityDataPickerProps, RealityDataPickerState> {
+export class RealityDataPicker extends React.Component<RealityDataPickerProps, RealityDataPickerState> {
     constructor(props: RealityDataPickerProps);
     // (undocumented)
     readonly attachedModels: AttachedRealityModel[];
@@ -3483,7 +3483,7 @@ export interface RotationData {
 }
 
 // @alpha
-export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
+export const SafeAreaContext: React.Context<SafeAreaInsets>;
 
 // @beta
 export class SavedView {
@@ -3542,7 +3542,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export class SectionsStatusField extends React_2.Component<any, any> {
+export class SectionsStatusField extends React.Component<any, any> {
     constructor(props: any);
     componentDidMount(): void;
     componentWillUnmount(): void;
@@ -3561,10 +3561,10 @@ export const SelectionInfoField: any;
 export const SelectionScopeField: any;
 
 // @public
-export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
+export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
     constructor(separatorBackstageItemDef: BackstageItemProps);
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @beta
@@ -3641,7 +3641,7 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @alpha
-export class SheetCard extends React_2.Component<SheetCardProps, SheetCardState> {
+export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
     constructor(props: SheetCardProps);
     // (undocumented)
     render(): JSX.Element;
@@ -3670,12 +3670,12 @@ export interface SheetData {
 }
 
 // @alpha
-export class SheetNavigationAid extends React_2.Component<SheetNavigationProps, SheetNavigationState> {
+export class SheetNavigationAid extends React.Component<SheetNavigationProps, SheetNavigationState> {
     constructor(props: SheetNavigationProps);
     componentDidMount(): Promise<void>;
     componentWillUnmount(): void;
     // @internal (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<SheetNavigationState>;
     }
@@ -3698,14 +3698,14 @@ export interface SheetNavigationProps extends CommonProps {
 // @alpha
 export class SheetsModalFrontstage implements ModalFrontstageInfo {
     constructor(sheets: SheetData[], connection: IModelConnection, currentIndex: number);
-    readonly appBarRight: React_2.ReactNode;
-    readonly content: React_2.ReactNode;
+    readonly appBarRight: React.ReactNode;
+    readonly content: React.ReactNode;
     // (undocumented)
     title: string;
 }
 
 // @public
-export class SignIn extends React_2.PureComponent<SignInProps> {
+export class SignIn extends React.PureComponent<SignInProps> {
     constructor(props: SignInProps);
     // (undocumented)
     componentDidMount(): void;
@@ -3717,6 +3717,7 @@ export class SignIn extends React_2.PureComponent<SignInProps> {
 
 // @public
 export interface SignInProps extends CommonProps {
+    oidcClient?: IOidcFrontendClient;
     onOffline?: () => void;
     onRegister?: () => void;
     onSignedIn: () => void;
@@ -3728,7 +3729,7 @@ export interface SignInProps extends CommonProps {
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
     constructor(accessToken: AccessToken, onSignOut?: () => void);
     // (undocumented)
-    readonly content: React_2.ReactNode;
+    readonly content: React.ReactNode;
     // (undocumented)
     title: string;
     }
@@ -3750,7 +3751,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @alpha
-export class SpatialContainmentTree extends React_2.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
+export class SpatialContainmentTree extends React.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
     constructor(props: SpatialContainmentTreeProps);
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
@@ -3812,7 +3813,7 @@ export enum SpecialKey {
 }
 
 // @internal (undocumented)
-export class SplitterPaneTarget extends React_2.PureComponent<SplitterPaneTargetProps> {
+export class SplitterPaneTarget extends React.PureComponent<SplitterPaneTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3826,13 +3827,13 @@ export interface SplitterPaneTargetProps {
 }
 
 // @alpha
-export class StagePanel extends React_2.Component<StagePanelProps> {
+export class StagePanel extends React.Component<StagePanelProps> {
     // (undocumented)
     static readonly defaultProps: StagePanelDefaultProps;
     // (undocumented)
     static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @public
@@ -3865,7 +3866,7 @@ export class StagePanelDef extends WidgetHost {
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
-export class StagePanelHeader extends React_2.PureComponent<StagePanelHeaderProps> {
+export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3902,12 +3903,12 @@ export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
     defaultState?: StagePanelState;
-    header?: React_2.ReactNode;
+    header?: React.ReactNode;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
     size?: number;
-    widgets?: Array<React_2.ReactElement<WidgetProps>>;
+    widgets?: Array<React.ReactElement<WidgetProps>>;
 }
 
 // @internal
@@ -3915,7 +3916,7 @@ export interface StagePanelRuntimeProps {
     // (undocumented)
     draggedWidgetId: WidgetZoneId | undefined;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
     isInFooterMode: boolean;
     // (undocumented)
@@ -3949,7 +3950,7 @@ export enum StagePanelState {
 }
 
 // @public
-export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
+export class StandardMessageBox extends React.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
     // (undocumented)
     render(): JSX.Element;
@@ -3967,10 +3968,10 @@ export interface StandardMessageBoxProps extends CommonProps {
 }
 
 // @alpha
-export class StandardRotationNavigationAid extends React_2.Component<CommonProps, StandardRotationNavigationAidState> {
+export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<StandardRotationNavigationAidState>;
     }
@@ -3986,13 +3987,13 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>;
 
 // @public
-export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> {
+export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     static severityToStatus(severity: MessageSeverity): Status;
     // @internal (undocumented)
@@ -4000,13 +4001,13 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
 }
 
 // @beta
-export const StatusBarCenterSection: React_2.FunctionComponent<CommonDivProps>;
+export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
 
 // @public
 export type StatusBarFieldId = string | null;
 
 // @beta
-export const StatusBarLeftSection: React_2.FunctionComponent<CommonDivProps>;
+export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps>;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -4017,15 +4018,15 @@ export interface StatusBarProps extends CommonProps {
 }
 
 // @beta
-export const StatusBarRightSection: React_2.FunctionComponent<CommonDivProps>;
+export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
 
 // @beta
-export const StatusBarSpaceBetween: React_2.FunctionComponent<CommonDivProps>;
+export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
 
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-    abstract getReactNode(args: StatusBarWidgetControlArgs): React.ReactNode;
+    abstract getReactNode(args: StatusBarWidgetControlArgs): React_2.ReactNode;
     getType(): ConfigurableUiControlType;
 }
 
@@ -4034,13 +4035,13 @@ export interface StatusBarWidgetControlArgs {
     isInFooterMode: boolean;
     onOpenWidget: (widget: StatusBarFieldId) => void;
     openWidget: StatusBarFieldId;
-    toastTargetRef: React.Ref<HTMLElement>;
+    toastTargetRef: React_2.Ref<HTMLElement>;
 }
 
 // @internal
-export class StatusBarZone extends React_2.PureComponent<StatusBarZoneProps> {
+export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -4189,7 +4190,7 @@ export interface TaskActivatedEventArgs {
 }
 
 // @public
-export class TaskLaunchBackstageItem extends React_2.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
+export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: TaskLaunchBackstageItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -4202,7 +4203,7 @@ export class TaskLaunchBackstageItem extends React_2.PureComponent<TaskLaunchBac
     // (undocumented)
     readonly id: string;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BackstageItemState>;
     }
@@ -4245,7 +4246,7 @@ export interface TaskPropsList {
 export const ThemeManager: any;
 
 // @internal
-export class TileLoadingIndicator extends React_2.PureComponent<CommonProps, TileLoadingIndicatorState> {
+export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
     constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -4275,7 +4276,7 @@ export interface ToolAssistanceChangedEventArgs {
 }
 
 // @beta
-export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
     componentDidMount(): void;
@@ -4284,9 +4285,9 @@ export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldPr
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
-    static getInstructionImage(instruction: ToolAssistanceInstruction): React_2.ReactNode;
+    static getInstructionImage(instruction: ToolAssistanceInstruction): React.ReactNode;
     // @internal (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal
@@ -4302,7 +4303,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React_2.Component<ToolbarProps, State_2> {
+export class Toolbar extends React.Component<ToolbarProps, State_2> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
@@ -4356,9 +4357,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalPanelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    renderHorizontalToolbar(): React_2.ReactNode;
+    renderHorizontalToolbar(): React.ReactNode;
     // (undocumented)
-    renderVerticalToolbar(): React_2.ReactNode;
+    renderVerticalToolbar(): React.ReactNode;
     // (undocumented)
     verticalDirection: Direction;
     // (undocumented)
@@ -4382,7 +4383,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 // @public
-export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState> {
+export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {
     constructor(props: ToolItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -4391,7 +4392,7 @@ export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState
     // (undocumented)
     readonly label: string;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BaseItemState>;
 }
@@ -4435,14 +4436,14 @@ export interface ToolItemProps extends ItemProps, CommandHandler_2 {
 }
 
 // @internal
-export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
+export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
     }
@@ -4452,7 +4453,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
     dropTarget: ZoneTargetType | undefined;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
     isClosed: boolean;
     // (undocumented)
@@ -4490,16 +4491,16 @@ export class ToolUiManager {
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
-    toolSettingsNode: React_2.ReactNode;
+    toolSettingsNode: React.ReactNode;
     }
 
 // @public
-export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
+export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
     constructor(props: ToolWidgetPropsEx);
     // (undocumented)
     componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ToolWidgetState>;
 }
@@ -4508,9 +4509,9 @@ export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetS
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: ToolWidgetProps);
     // (undocumented)
-    readonly reactElement: React_2.ReactNode;
+    readonly reactElement: React.ReactNode;
     // (undocumented)
-    renderCornerItem(): React_2.ReactNode | undefined;
+    renderCornerItem(): React.ReactNode | undefined;
 }
 
 // @public
@@ -4522,11 +4523,11 @@ export interface ToolWidgetProps extends ToolbarWidgetProps {
 // @public
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     // (undocumented)
-    button?: React_2.ReactNode;
+    button?: React.ReactNode;
     // (undocumented)
-    horizontalToolbar?: React_2.ReactNode;
+    horizontalToolbar?: React.ReactNode;
     // (undocumented)
-    verticalToolbar?: React_2.ReactNode;
+    verticalToolbar?: React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -4623,7 +4624,7 @@ export class UiFramework {
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @beta (undocumented)
-    static readonly oidcClient: IOidcFrontendClient;
+    static oidcClient: IOidcFrontendClient | undefined;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // @beta (undocumented)
@@ -4667,11 +4668,11 @@ export class UiShowHideManager {
     // (undocumented)
     static autoHideUi: boolean;
     // (undocumented)
-    static handleContentMouseMove(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    static handleContentMouseMove(_event?: React_2.MouseEvent<HTMLElement, MouseEvent>): void;
     // (undocumented)
     static handleFrontstageReady(): void;
     // (undocumented)
-    static handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    static handleWidgetMouseEnter(_event?: React_2.MouseEvent<HTMLElement, MouseEvent>): void;
     // (undocumented)
     static inactivityTime: number;
     // (undocumented)
@@ -4708,9 +4709,9 @@ export const useGroupedItems: (manager: BackstageItemsManager) => readonly (read
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
 // @public
-export class UserProfileBackstageItem extends React_2.PureComponent<UserProfileBackstageItemProps> {
+export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
     // (undocumented)
-    render(): React_2.ReactNode | undefined;
+    render(): React.ReactNode | undefined;
 }
 
 // @public
@@ -4722,10 +4723,10 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @alpha
-export class ValidationTextbox extends React_2.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
+export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
     constructor(props: ValidationTextboxProps);
     // @internal (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal
@@ -4747,7 +4748,7 @@ export interface VersionInfo {
 }
 
 // @beta
-export class ViewAttributesStatusField extends React_2.Component<any, ViewAttributesStatusFieldState> {
+export class ViewAttributesStatusField extends React.Component<any, ViewAttributesStatusFieldState> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): void;
@@ -4773,7 +4774,7 @@ export interface ViewLayout {
 // @public
 export class ViewportContentControl extends ContentControl implements SupportsViewSelectorChange {
     constructor(info: ConfigurableCreateInfo, options: any);
-    getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode;
+    getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React_2.ReactNode;
     getType(): ConfigurableUiControlType;
     readonly isReady: Promise<void>;
     readonly isViewport: boolean;
@@ -4786,7 +4787,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     }
 
 // @beta
-export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelectorState> {
+export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
     constructor(props: ViewSelectorProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -4852,7 +4853,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export class VisibilityComponent extends React_2.Component<VisibilityComponentProps, VisibilityTreeState_2> {
+export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState_2> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -4873,7 +4874,7 @@ export enum VisibilityComponentHierarchy {
 
 // @alpha
 export interface VisibilityComponentProps {
-    activeTreeRef?: React_2.Ref<HTMLDivElement>;
+    activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
@@ -4913,7 +4914,7 @@ export interface VisibilityStatus {
 }
 
 // @public
-export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
+export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
     constructor(props: VisibilityTreeProps);
     // (undocumented)
     componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState): void;
@@ -4936,7 +4937,7 @@ export interface VisibilityTreeProps {
     enablePreloading?: boolean;
     imodel: IModelConnection;
     // @alpha
-    rootElementRef?: React_2.Ref<HTMLDivElement>;
+    rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @internal
     visibilityHandler?: VisibilityHandler;
@@ -4956,7 +4957,7 @@ export class VisibilityWidget extends WidgetControl {
 }
 
 // @public
-export class Widget extends React_2.Component<WidgetProps> {
+export class Widget extends React.Component<WidgetProps> {
     constructor(props: WidgetProps);
     // (undocumented)
     render(): null;
@@ -4986,7 +4987,7 @@ export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
     onWidgetStateChanged(): void;
-    reactElement: React_2.ReactNode;
+    reactElement: React.ReactNode;
     restoreTransientState(): boolean;
     saveTransientState(): void;
     setWidgetState(state: WidgetState): void;
@@ -5013,7 +5014,7 @@ export class WidgetDef {
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
-    iconSpec?: string | React_2.ReactNode;
+    iconSpec?: string | React.ReactNode;
     // (undocumented)
     id: string;
     // (undocumented)
@@ -5038,7 +5039,7 @@ export class WidgetDef {
     // (undocumented)
     priority: number;
     // (undocumented)
-    reactElement: React_2.ReactNode;
+    reactElement: React.ReactNode;
     setLabel(v: string | StringGetter_2): void;
     setTooltip(v: string | StringGetter_2): void;
     // (undocumented)
@@ -5084,9 +5085,9 @@ export interface WidgetProps extends IconProps_2 {
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
     defaultState?: WidgetState;
-    element?: React_2.ReactNode;
+    element?: React.ReactNode;
     fillZone?: boolean;
-    iconSpec?: string | React_2.ReactNode;
+    iconSpec?: string | React.ReactNode;
     id?: string;
     isFloatingStateSupported?: boolean;
     isFloatingStateWindowResizable?: boolean;
@@ -5103,9 +5104,9 @@ export interface WidgetProps extends IconProps_2 {
 }
 
 // @internal
-export class WidgetStack extends React_2.PureComponent<WidgetStackProps> {
+export class WidgetStack extends React.PureComponent<WidgetStackProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
     }
 
 // @internal
@@ -5117,7 +5118,7 @@ export interface WidgetStackProps extends CommonProps {
     // (undocumented)
     fillZone: boolean;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
@@ -5139,15 +5140,15 @@ export interface WidgetStackProps extends CommonProps {
 }
 
 // @internal
-export class WidgetStackTab extends React_2.PureComponent<WidgetStackTabProps> {
+export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
-export class WidgetStackTabGroup extends React_2.PureComponent<WidgetStackTabGroupProps> {
+export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroupProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -5189,7 +5190,7 @@ export interface WidgetStackTabProps {
     // (undocumented)
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
-    iconSpec?: string | React_2.ReactNode;
+    iconSpec?: string | React.ReactNode;
     // (undocumented)
     index: number;
     // (undocumented)
@@ -5209,7 +5210,7 @@ export interface WidgetStackTabProps {
     // (undocumented)
     onDragStart: (index: number, initialPosition: PointProps) => void;
     // (undocumented)
-    tabRef?: React_2.Ref<Tab>;
+    tabRef?: React.Ref<Tab>;
     // (undocumented)
     title: string;
     // (undocumented)
@@ -5217,9 +5218,9 @@ export interface WidgetStackTabProps {
 }
 
 // @internal
-export class WidgetStackTabs extends React_2.PureComponent<WidgetStackTabsProps> {
+export class WidgetStackTabs extends React.PureComponent<WidgetStackTabsProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal
@@ -5278,7 +5279,7 @@ export interface WidgetTab {
     // (undocumented)
     readonly badgeType?: BadgeType;
     // (undocumented)
-    readonly iconSpec?: string | React_2.ReactNode;
+    readonly iconSpec?: string | React.ReactNode;
     // (undocumented)
     readonly title: string;
 }
@@ -5305,23 +5306,23 @@ export enum WidgetType {
 }
 
 // @alpha
-export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React_2.ReactElement<any, string | ((props: any) => React_2.ReactElement<any, string | any | (new (props: any) => React_2.Component<any, any, any>)> | null) | (new (props: any) => React_2.Component<any, any, any>)> | null) & C) | ((new (props: P) => React_2.Component<P, any, any>) & C)) => {
+export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
     new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
-            children?: React_2.ReactNode;
+            children?: React.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React_2.ReactInstance;
+            [key: string]: React.ReactInstance;
         };
         componentDidMount?(): void;
         shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -5337,16 +5338,16 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
-            children?: React_2.ReactNode;
+            children?: React.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React_2.ReactInstance;
+            [key: string]: React.ReactInstance;
         };
         componentDidMount?(): void;
         shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -5356,7 +5357,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
         componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React_2.Context<any> | undefined;
+    contextType?: React.Context<any> | undefined;
 };
 
 // @public
@@ -5429,7 +5430,7 @@ export interface WorkflowPropsList {
 }
 
 // @public
-export class Zone extends React_2.Component<ZoneProps> {
+export class Zone extends React.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
     componentDidMount(): void;
@@ -5438,7 +5439,7 @@ export class Zone extends React_2.Component<ZoneProps> {
     // (undocumented)
     static initializeZoneDef(zoneDef: ZoneDef, props: ZoneProps): void;
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @public
@@ -5487,7 +5488,7 @@ export interface ZoneProps extends CommonProps {
     mergeWithZone?: ZoneLocation;
     // @internal (undocumented)
     runtimeProps?: ZoneRuntimeProps;
-    widgets?: Array<React_2.ReactElement<WidgetProps>>;
+    widgets?: Array<React.ReactElement<WidgetProps>>;
 }
 
 // @internal
@@ -5499,7 +5500,7 @@ export interface ZoneRuntimeProps {
     // (undocumented)
     dropTarget: ZoneTargetType | undefined;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
     // (undocumented)
     ghostOutline: RectangleProps | undefined;
     // (undocumented)
@@ -5539,9 +5540,9 @@ export enum ZoneState {
 }
 
 // @internal
-export class ZoneTargets extends React_2.Component<ZoneTargetsProps> {
+export class ZoneTargets extends React.Component<ZoneTargetsProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
+    render(): React.ReactNode;
 }
 
 // @internal

@@ -25,11 +25,16 @@ export interface BackstageComposerActionItemProps {
 
 /** @internal */
 export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps) {
+  const manager = useBackstageManager();
+  const handleClick = React.useCallback(() => {
+    manager.close();
+    item.execute();
+  }, [manager]);
   return (
     <NZ_BackstageItem
       icon={<Icon iconSpec={item.icon} />}
       isDisabled={!item.isEnabled}
-      onClick={item.execute}
+      onClick={handleClick}
     >
       {item.label}
     </NZ_BackstageItem>
