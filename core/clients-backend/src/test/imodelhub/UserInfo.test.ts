@@ -45,12 +45,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   const imodelName = "imodeljs-clients UserInfo test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
-  before(async function () {
-    if (TestConfig.enableIModelBank) {
-      this.skip();
-      return;
-    }
-
+  before(async () => {
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     const managerAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager);
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));

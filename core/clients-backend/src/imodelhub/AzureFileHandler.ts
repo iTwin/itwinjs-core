@@ -12,6 +12,7 @@ import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
 import * as fs from "fs";
 import * as https from "https";
+import * as http from "http";
 import * as path from "path";
 import * as os from "os";
 import { URL } from "url";
@@ -203,7 +204,7 @@ export class AzureFileHandler implements FileHandler {
     }
 
     return new Promise((resolve, reject) => {
-      https.get(downloadUrl, ((res) => {
+      const downloadCallback = ((res: http.IncomingMessage) => {
         res.pipe(bufferedStream)
           .on("data", (chunk: any) => {
             bytesWritten += chunk.length;
@@ -216,11 +217,15 @@ export class AzureFileHandler implements FileHandler {
           .on("finish", () => {
             resolve();
           });
-      }))
-        .on("error", (error: any) => {
-          const parsedError = ResponseError.parse(error);
-          reject(parsedError);
-        });
+      });
+
+      const clientRequest = downloadUrl.startsWith("https:") ?
+        https.get(downloadUrl, downloadCallback) : http.get(downloadUrl, downloadCallback);
+
+      clientRequest.on("error", (error: any) => {
+        const parsedError = ResponseError.parse(error);
+        reject(parsedError);
+      });
     });
   }
   /**
