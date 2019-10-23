@@ -58,9 +58,6 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
 
-  if (undefined !== process.env.SVT_DISABLE_DIRECT_SCREEN_RENDERING)
-    configuration.directScreenRendering = false;
-
   if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;
 

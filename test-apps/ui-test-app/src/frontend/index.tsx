@@ -13,12 +13,12 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, FrontendRequestContext, OidcBrowserClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, AccessToken, IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
@@ -151,6 +151,7 @@ export class SampleAppIModelApp {
   public static store: Store<RootState>;
   public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
+  public static oidcClient: IOidcFrontendClient;
 
   public static startup(opts?: IModelAppOptions): void {
     opts = opts ? opts : {};
@@ -188,19 +189,9 @@ export class SampleAppIModelApp {
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
-    let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
-    if (ElectronRpcConfiguration.isElectron) {
-      const clientId = "imodeljs-electron-test";
-      const redirectUri = "electron://frontend/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
-    } else {
-      const clientId = "imodeljs-spa-test";
-      const redirectUri = "http://localhost:3000/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-    }
+    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, undefined, "frameworkState");
 
-    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
+    await this.initializeOidc();
 
     // initialize Presentation
     Presentation.initialize({
@@ -220,6 +211,30 @@ export class SampleAppIModelApp {
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
+  }
+
+  private static async initializeOidc() {
+    // cSpell:disable
+    let oidcConfiguration: OidcFrontendClientConfiguration;
+    const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+    if (ElectronRpcConfiguration.isElectron) {
+      const clientId = "imodeljs-electron-test";
+      const redirectUri = "electron://frontend/signin-callback";
+      oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+    } else {
+      const clientId = "imodeljs-spa-test";
+      const redirectUri = "http://localhost:3000/signin-callback";
+      oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    }
+    // cSpell:enable
+
+    // Create an OIDC client that helps with the sign-in / sign-out process
+    const requestContext = new FrontendRequestContext();
+    this.oidcClient = new OidcBrowserClient(oidcConfiguration);
+    await this.oidcClient.initialize(requestContext);
+
+    IModelApp.authorizationClient = this.oidcClient;
+    UiFramework.oidcClient = this.oidcClient;
   }
 
   public static loggerCategory(obj: any): string {
@@ -480,7 +495,7 @@ export class SampleAppViewer extends React.Component<any> {
 
     AppUi.initialize();
 
-    if (UiFramework.oidcClient.hasSignedIn) {
+    if (SampleAppIModelApp.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
     } else {
       SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises

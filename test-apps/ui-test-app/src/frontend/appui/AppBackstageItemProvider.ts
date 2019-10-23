@@ -51,7 +51,6 @@ export class AppBackstageItemProvider {
         createActionItem("SampleApp.open-local-file", 200, 30, () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, undefined, "icon-placeholder"),
         createActionItem("SampleApp.settings", 300, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, undefined, "icon-placeholder"),
         createStageLauncher("ViewsFrontstage", 400, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"), IModelApp.i18n.translate("SampleApp:backstage.iModelStage"), undefined, "icon-placeholder"),
-        createStageLauncher("custom-test", 500, 10, IModelApp.i18n.translate("SampleApp:backstage.custom"), undefined, undefined, undefined),
       ];
     }
     return this._backstageItems;

@@ -114,7 +114,7 @@ beta;CursorDirectionParts
 beta;CursorInformation
 beta;CursorMenuData
 beta;CursorPopup 
-beta;CursorPopupContent: React_2.FunctionComponent
+beta;CursorPopupContent: React.FunctionComponent
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
 beta;CursorPopupManager
@@ -155,7 +155,7 @@ alpha;DrawingNavigationAidControl
 alpha;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
-internal;dummy_node = React_2.ReactNode
+internal;dummy_node = React.ReactNode
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
@@ -193,7 +193,7 @@ internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
-public;GroupButton: React_2.FunctionComponent
+public;GroupButton: React.FunctionComponent
 public;GroupButtonProps 
 internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
@@ -202,7 +202,7 @@ public;GroupItemProps
 internal;HitBoxX
 internal;HitBoxY
 internal;HitBoxZ
-public;Icon: React_2.FunctionComponent
+public;Icon: React.FunctionComponent
 public;IconProps 
 public;IconSpec = IconSpec_2
 internal;IModelInfo
@@ -297,7 +297,7 @@ public;PointerMessageChangedEvent
 public;PointerMessageChangedEventArgs
 public;PointerMessageProps 
 public;PopupButton 
-public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
+public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
 public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
 internal;PopupInfo
@@ -306,7 +306,7 @@ alpha;PopupPropsBase
 alpha;PopupRenderer 
 internal;PopupsChangedEvent 
 alpha;PositionPopup 
-alpha;PositionPopupContent: React_2.FunctionComponent
+alpha;PositionPopupContent: React.FunctionComponent
 alpha;PositionPopupProps 
 beta;PresentationSelectionScope
 internal;ProjectInfo
@@ -323,7 +323,7 @@ public;Reducer
 public;ReducerActions
 public;ReducerMapActions
 internal;RotationData
-alpha;SafeAreaContext: React_2.Context
+alpha;SafeAreaContext: React.Context
 beta;SavedView
 beta;SavedViewLayout
 beta;SavedViewLayoutProps
@@ -373,12 +373,12 @@ alpha;StandardRotationNavigationAid
 alpha;StandardRotationNavigationAidControl 
 public;StateType
 public;StatusBar 
-beta;StatusBarCenterSection: React_2.FunctionComponent
+beta;StatusBarCenterSection: React.FunctionComponent
 public;StatusBarFieldId = string | null
-beta;StatusBarLeftSection: React_2.FunctionComponent
+beta;StatusBarLeftSection: React.FunctionComponent
 public;StatusBarProps 
-beta;StatusBarRightSection: React_2.FunctionComponent
-beta;StatusBarSpaceBetween: React_2.FunctionComponent
+beta;StatusBarRightSection: React.FunctionComponent
+beta;StatusBarSpaceBetween: React.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 

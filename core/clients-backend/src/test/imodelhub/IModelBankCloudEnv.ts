@@ -10,6 +10,7 @@ import * as http from "http";
 import * as https from "https";
 import { IModelClient, IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { workDir } from "./TestUtils";
@@ -29,12 +30,15 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
 
   const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
 
+  const basicAuthentication: string = Config.App.get("imjs_test_imodel_bank_basic_authentication", false);
+  const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
+
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    authorization: new IModelBankDummyAuthorizationClient(),
+    authorization,
     contextMgr,
     shutdown: () => Promise.resolve(0),
     startup: () => Promise.resolve(),
@@ -135,13 +139,16 @@ function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
     });
   }
 
+  const basicAuthentication: string = Config.App.get("imjs_test_imodel_bank_basic_authentication", false);
+  const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
+
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    authorization: new IModelBankDummyAuthorizationClient(),
+    authorization,
     contextMgr,
     shutdown: doShutdown,
     startup: doStartup,

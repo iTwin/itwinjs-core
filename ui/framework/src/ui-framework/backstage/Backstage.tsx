@@ -13,6 +13,8 @@ import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { UiFramework } from "../UiFramework";
 
+// cSpell:ignore safearea
+
 /** [[BackstageEvent]] arguments.
  * @public
  */

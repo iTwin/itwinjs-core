@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
 import { getUserColor } from "@bentley/ui-core";
 
@@ -64,6 +64,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     // istanbul ignore next
     if (UiFramework.oidcClient)
       UiFramework.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    else
+      Logger.logInfo(UiFramework.loggerCategory(this), "UiFramework.oidcClient must be set for signOut");
 
     // istanbul ignore else
     if (this._handleSignOut)

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import * as React from "react";
 import { BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ItemProps } from "./ItemProps";

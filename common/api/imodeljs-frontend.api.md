@@ -5742,7 +5742,7 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem {
     // @beta
     export interface Options {
-        // @internal
+        // @internal @deprecated (undocumented)
         directScreenRendering?: boolean;
         // @internal
         disabledExtensions?: WebGLExtensionName[];

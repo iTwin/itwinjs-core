@@ -3,6 +3,13 @@ ignore: true
 ---
 # NextVersion
 
+## Display system startup options
+
+The following changes have been made to `RenderSystem.Options`:
+
+* `displaySolarShadows` now defaults to `true` if not defined, instead of false.
+* `directScreenRendering` has been deprecated; it no longer has any effect.
+
 ## Geometry
 
 * [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.

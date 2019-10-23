@@ -4,14 +4,14 @@ exports[`TableDataProvider getColumns returns columns for a single instance 1`] 
 Array [
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "PhysicalModel_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
@@ -23,14 +23,14 @@ exports[`TableDataProvider getColumns returns columns for multiple instances 1`]
 Array [
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "PhysicalModel_RepositoryModel_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
