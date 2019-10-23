@@ -2,7 +2,12 @@
 ignore: true
 ---
 # NextVersion
-<<<<<<< HEAD
+
+## Display system startup options
+
+The following changes have been made to `RenderSystem.Options`:
+* `displaySolarShadows` now defaults to `true` if not defined, instead of false.
+* `directScreenRendering` has been deprecated; it no longer has any effect.
 
 ## Geometry
 
@@ -19,7 +24,3 @@ ignore: true
 * `[PolyfaceQuery.cloneWithTVertexFixup]($geometry) -- clone a polyface, inserting vertices within edges that are incident to points on other facets.
 * `[PolyfaceQuery.cloneWithColinearEdgeCleanup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
 
-
-=======
-
->>>>>>> 25fb5ac98... 1.6.0

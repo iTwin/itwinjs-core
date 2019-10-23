@@ -1246,7 +1246,7 @@ export namespace RenderSystem {
 
     /** If true, display solar shadows when enabled by [ViewFlags.shadows]($common).
      *
-     * Default value: false
+     * Default value: true
      *
      * @beta
      */
@@ -1260,15 +1260,8 @@ export namespace RenderSystem {
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** By default, all [[ScreenViewports]] render their webgl content to a single, shared, off-screen canvas, then copy the resultant image to the 2d rendering context of
-     * their own on-screen canvases. This allows webgl resources to be shared amongst all viewports because they all use the same webgl context. However, the copy operation
-     * incurs a significant performance penalty on non-chromium-based browsers. When only one ScreenViewport is actually rendering webgl content, we can avoid that copy operation
-     * and therefore improve performance by rendering the webgl content directly to the screen, by adding the shared webgl canvas to the document as a child of that one-and-only
-     * viewport. We will only do that if this option is defined to `true`.
-     *
-     * Default value: false
-     *
-     * @internal
+    /** @internal
+     * @deprecated This setting no longer has any effect.
      */
     directScreenRendering?: boolean;
   }

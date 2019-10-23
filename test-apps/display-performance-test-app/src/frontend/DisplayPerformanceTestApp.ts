@@ -164,7 +164,7 @@ function getRenderOpts(): string {
         if (value) optString += "+shadeSrc";
         break;
       case "displaySolarShadows":
-        if (value) optString += "+solShd";
+        if (!value) optString += "-solShd";
         break;
       case "logarithmicZBuffer":
         if (value) optString += "+logZBuf";
@@ -498,7 +498,7 @@ class DefaultConfigs {
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
-  public renderOptions: RenderSystem.Options = { directScreenRendering: true };
+  public renderOptions: RenderSystem.Options = { };
   public tileProps?: TileAdmin.Props;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
