@@ -1991,6 +1991,7 @@ export class IModelDb extends IModel {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
+    querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
     // @beta

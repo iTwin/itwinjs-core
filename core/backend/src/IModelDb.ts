@@ -1143,6 +1143,23 @@ export class IModelDb extends IModel {
     return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
   }
 
+  /** Query for a schema of the specified name in this iModel.
+   * @returns The schema version as a semver-compatible string or `undefined` if the schema has not been imported.
+   */
+  public querySchemaVersion(schemaName: string): string | undefined {
+    const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
+    return this.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+      statement.bindString("schemaName", schemaName);
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const versionMajor: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
+        const versionWrite: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
+        const versionMinor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
+        return `${versionMajor}.${versionWrite}.${versionMinor}`;
+      }
+      return undefined;
+    });
+  }
+
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */

@@ -36,10 +36,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
+import * as semver from "semver";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
+  GenericSchema, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
@@ -1869,6 +1870,16 @@ describe("iModel", () => {
     const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
     await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
     iModelDb.saveChanges();
+    // test querySchemaVersion
+    const bisCoreSchemaVersion: string = iModelDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, ">= 1.0.8"));
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, "< 2"));
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, "^1.0.0"));
+    assert.isTrue(semver.satisfies(iModelDb.querySchemaVersion(GenericSchema.schemaName)!, ">= 1.0.2"));
+    assert.isTrue(semver.eq(iModelDb.querySchemaVersion("TestAnalytical")!, "1.0.0"));
+    assert.isDefined(iModelDb.querySchemaVersion("Analytical"), "Expect Analytical to be imported");
+    assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
+    assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
     // insert partition
     const partitionProps: InformationPartitionElementProps = {
       classFullName: "TestAnalytical:Partition",
