@@ -10,7 +10,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
-import { imageBufferToPngDataUrl } from "../../ImageUtil";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -330,7 +330,7 @@ export abstract class TextureHandle implements IDisposable {
 
       const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w)!;
       const url = imageBufferToPngDataUrl(buffer, false);
-      window.open(url!, "Classifiers");
+      openImageDataUrlInNewWindow(url!, "Classifiers");
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

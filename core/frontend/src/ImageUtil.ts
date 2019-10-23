@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ImageSource, ImageSourceFormat, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
+import {
+  ElectronRpcConfiguration,
+  ImageBuffer,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+} from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 
 interface Rgba {
@@ -242,4 +248,25 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
     return undefined;
 
   return url.substring(urlPrefix.length);
+}
+
+/** Open an image specified as a data URL in a new window/tab. Works around differences between browsers and Electron.
+ * @param url The base64-encoded image URL.
+ * @param title An optional title to apply to the new window.
+ * @beta
+ */
+export function openImageDataUrlInNewWindow(url: string, title?: string): void {
+  if (ElectronRpcConfiguration.isElectron) {
+    window.open(url, title);
+  } else {
+    const win = window.open();
+    if (null === win)
+      return;
+
+    const div = win.document.createElement("div");
+    div.innerHTML = "<img src='" + url + "'/>";
+    win.document.body.append(div);
+    if (undefined !== title)
+      win.document.title = title;
+  }
 }

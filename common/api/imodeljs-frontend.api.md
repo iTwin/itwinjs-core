@@ -4683,6 +4683,9 @@ export class OnScreenTarget extends Target {
     readonly viewRect: ViewRect;
     }
 
+// @beta
+export function openImageDataUrlInNewWindow(url: string, title?: string): void;
+
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
