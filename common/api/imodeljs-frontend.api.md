@@ -153,6 +153,7 @@ import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { RgbColorProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/imodeljs-clients';
 import { SettingsMapResult } from '@bentley/imodeljs-clients';
 import { SettingsResult } from '@bentley/imodeljs-clients';
@@ -980,7 +981,7 @@ export interface AppearanceOverrideProps {
     // (undocumented)
     color?: ColorDefProps;
     // (undocumented)
-    ids?: Id64Set;
+    ids?: Id64Array;
     // (undocumented)
     overrideType?: FeatureOverrideType;
 }
@@ -2427,9 +2428,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 // @beta (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
-    alwaysDrawn?: Id64Set;
+    alwaysDrawn?: Id64Array;
     // (undocumented)
-    alwaysDrawnExclusiveEmphasized?: Id64Set;
+    alwaysDrawnExclusiveEmphasized?: Id64Array;
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
@@ -2437,7 +2438,7 @@ export interface EmphasizeElementsProps {
     // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
-    neverDrawn?: Id64Set;
+    neverDrawn?: Id64Array;
     // (undocumented)
     wantEmphasis?: boolean;
 }
@@ -2582,7 +2583,7 @@ export namespace FeatureSymbology {
         ignoresMaterial?: true | undefined;
         linePixels?: LinePixels;
         nonLocatable?: true | undefined;
-        rgb?: RgbColor;
+        rgb?: RgbColorProps;
         transparency?: number;
         weight?: number;
     }

@@ -4025,10 +4025,21 @@ export class RgbColor {
     equals(other: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
+    static fromJSON(json: RgbColorProps | undefined): RgbColor;
+    // (undocumented)
     readonly g: number;
     // (undocumented)
     readonly r: number;
+    // (undocumented)
+    toJSON(): RgbColorProps;
 }
+
+// @public
+export type RgbColorProps = {
+    r: number;
+    g: number;
+    b: number;
+} | RgbColor;
 
 // @beta
 export type RgbFactorProps = number[];
