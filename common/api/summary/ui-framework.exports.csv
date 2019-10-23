@@ -60,7 +60,6 @@ alpha;CategoryTreeState
 internal;ChangeSetInfo
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
-internal;ColumnType
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
 public;CombineReducersFunction = 
@@ -434,9 +433,6 @@ public;ToolWidget
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
-internal;TsCol
-internal;TsLabel
-internal;TsRow
 alpha;class UiDataProvider
 public;UiFramework
 alpha;UiShowHideManager

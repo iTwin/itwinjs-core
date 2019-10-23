@@ -691,18 +691,6 @@ export enum ColorTheme {
     Light = "light"
 }
 
-// @internal (undocumented)
-export enum ColumnType {
-    // (undocumented)
-    Empty = 3,
-    // (undocumented)
-    Label = 0,
-    // (undocumented)
-    Record = 1,
-    // (undocumented)
-    RecordSpan = 2
-}
-
 // @public
 export type CombinedReducerState<R> = {
     readonly [K in keyof R]: R[K] extends FunctionType ? StateType<R[K]> : never;
@@ -1439,8 +1427,6 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     execute(): void;
-    // (undocumented)
-    labelMap: Map<string, TsLabel>;
     // (undocumented)
     onInitialize(): void;
     // (undocumented)
@@ -4528,37 +4514,6 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     horizontalToolbar?: React.ReactNode;
     // (undocumented)
     verticalToolbar?: React.ReactNode;
-}
-
-// @internal (undocumented)
-export class TsCol {
-    constructor(columnIndex: number);
-    // (undocumented)
-    readonly columnIndex: number;
-    // (undocumented)
-    columnSpan: number;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    type: ColumnType;
-}
-
-// @internal (undocumented)
-export class TsLabel {
-    constructor(label: string, isDisabled?: boolean | undefined);
-    // (undocumented)
-    isDisabled?: boolean | undefined;
-    // (undocumented)
-    readonly label: string;
-}
-
-// @internal (undocumented)
-export class TsRow {
-    constructor(priority: number, numColumns: number);
-    // (undocumented)
-    cols: TsCol[];
-    // (undocumented)
-    priority: number;
 }
 
 // @alpha

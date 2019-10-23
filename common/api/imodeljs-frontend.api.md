@@ -8030,11 +8030,13 @@ export class ToolSettingsPropertyItem {
 
 // @beta
 export class ToolSettingsPropertyRecord extends PropertyRecord {
-    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean);
+    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean, lockProperty?: PropertyRecord);
     // (undocumented)
     static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord;
     // (undocumented)
     editorPosition: EditorPosition;
+    // (undocumented)
+    lockProperty?: PropertyRecord;
 }
 
 // @beta

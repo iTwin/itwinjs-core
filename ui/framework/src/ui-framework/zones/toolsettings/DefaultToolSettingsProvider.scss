@@ -4,11 +4,155 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.uifw-toolSettingsContainer {
-  font-family: $uicore-font-family;
-  font-size: $uicore-font-size;
+.uifw-default-toolsettings-resizer-parent {
+  width: 100%;
+  height: 100%;
+  min-width: 200px;
 }
 
-span.uifw-toolSettings-label-disabled {
+.uifw-toolSettings-label-disabled {
   color: $buic-text-color-disabled;
+}
+
+div.uifw-default-toolsettings-property-lock input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.uifw-default-toolsettings-center-across-width {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-content: center;
+  grid-column: 1 / span 2;
+}
+
+.uifw-width-100percent {
+  width: 100%;
+}
+
+.uifw-width-6rem {
+  width: 6rem;
+}
+
+.uifw-width-fit-content {
+  width: fit-content;
+}
+
+div.uifw-default-toolsettings-inline-editor-group {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-label {
+  margin-right: 4px;
+  width: auto;
+}
+
+div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-editor {
+  margin-right: 6px;
+}
+
+div.uifw-default-toolsettings-lock-and-label {
+  align-content: flex-start;
+  flex-direction: row;
+  display: inline-flex;
+}
+
+.uifw-default-toolsettings-inline-label-and-editor {
+  align-items: baseline;
+  display: flex;
+  flex-direction: row;
+  width: auto;
+}
+
+.uifw-default-toolsettings-wide-only-display {
+  display: inline-flex;
+  flex-wrap: none;
+}
+
+.uifw-default-toolsettings-narrow-only-display {
+  display: none;
+}
+
+/* Fixed spacing used to hold lock/enable toggle in first column */
+.uifw-default-toolsettings-lock {
+  min-width: 30px;
+  height: 1rem;
+  margin: 3px;
+}
+
+.uifw-default-toolsettings-editor {
+  margin-bottom: 6px;
+}
+
+div.uifw-default-toolsettings-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-row-gap: 0px;
+  grid-column-gap: 8px;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  align-items: baseline;
+  margin: 6px 4px 0px 6px;
+}
+
+.uifw-default-toolsettings-label {
+  text-align: right;
+  text-overflow: ellipsis;
+  width: 100%
+}
+
+/* Overrides when uifw-default-toolsettings-narrow class is added to parent container div */
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow {
+  grid-template-columns: 1fr;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow div.uifw-default-toolsettings-center-across-width {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-content: center;
+  grid-column: 1 / span 1;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-narrow-only-display {
+  display: block;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-lock-and-label.uifw-default-toolsettings-wide-only-display {
+  display: none;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow div.uifw-default-toolsettings-inline-editor-group {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-lock {
+  min-width: 0px;
+  height: 1rem;
+  margin-left: 0px;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-editor {
+  margin-bottom: 12px;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-label {
+  text-align: left;
+  margin-bottom: 3px;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-inline-label-and-editor {
+  align-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+}
+
+div.uifw-default-toolsettings-container.uifw-default-toolsettings-narrow .uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-editor {
+  margin-left: 0px;
 }
