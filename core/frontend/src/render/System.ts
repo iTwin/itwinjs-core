@@ -774,6 +774,8 @@ export interface RenderTargetDebugControl {
   primitiveVisibility: PrimitiveVisibility;
   /** @internal */
   vcSupportIntersectingVolumes: boolean;
+  /** @internal */
+  readonly shadowFrustum: Frustum | undefined;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.

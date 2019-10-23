@@ -1186,15 +1186,44 @@ export namespace HiddenLine {
     }
 
     /** Create a Style equivalent to this one but with the specified color override. */
-    public overrideColor(color: ColorDef): Style {
-      if (undefined !== this.color && this.color.equals(color))
+    public overrideColor(color: ColorDef | undefined): Style {
+      if (undefined === this.color && undefined === color)
+        return this;
+
+      if (undefined !== this.color && undefined !== color && this.color.equals(color))
         return this;
 
       return Style.fromJSON({
-        color,
-        ovrColor: true,
+        color: undefined !== color ? color.clone() : undefined,
+        ovrColor: undefined !== color,
         pattern: this.pattern,
         width: this.width,
+      });
+    }
+
+    /** Create a Style equivalent to this one but with the specified pattern overide. */
+    public overridePattern(pattern: LinePixels | undefined): Style {
+      if (pattern === this.pattern)
+        return this;
+
+      return Style.fromJSON({
+        color: this.color,
+        ovrColor: this.ovrColor,
+        pattern,
+        width: this.width,
+      });
+    }
+
+    /** Create a Style equivalent to this one but with the specified width overide. */
+    public overrideWidth(width: number | undefined): Style {
+      if (width === this.width)
+        return this;
+
+      return Style.fromJSON({
+        color: this.color,
+        ovrColor: this.ovrColor,
+        pattern: this.pattern,
+        width,
       });
     }
 
@@ -1269,6 +1298,18 @@ export namespace HiddenLine {
         hidden: this.hidden.toJSON(),
         transThreshold: this.transThreshold,
       };
+    }
+
+    /** Create a Settings equivalent to this one with the exception of those properties defined in the supplied JSON. */
+    public override(props: SettingsProps): Settings {
+      const visible = props.visible;
+      const hidden = props.hidden;
+      const transparencyThreshold = props.transThreshold;
+      return Settings.fromJSON({
+        visible: undefined !== visible ? visible : this.visible,
+        hidden: undefined !== hidden ? hidden : this.hidden,
+        transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
+      });
     }
 
     private constructor(json: SettingsProps) {

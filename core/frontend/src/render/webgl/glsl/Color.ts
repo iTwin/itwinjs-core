@@ -24,9 +24,6 @@ const computeElementColor = `
   lutColor.rgb /= max(0.0001, lutColor.a);
   vec4 color = mix(u_color, lutColor, extractShaderBit(kShaderBit_NonUniformColor));
 `;
-const computeBaseAlpha = `
-  g_baseAlpha = color.a;
-`;
 const returnColor = `
   return color;
 `;
@@ -38,15 +35,13 @@ const applyInstanceColor = `
 const computeInstancedElementColor = computeElementColor + applyInstanceColor;
 const computeColor = computeElementColor + returnColor;
 const computeInstancedColor = computeInstancedElementColor + returnColor;
-const computeSurfaceColor = computeElementColor + computeBaseAlpha + returnColor;
-const computeInstancedSurfaceColor = computeInstancedElementColor + computeBaseAlpha + returnColor;
 
-function getComputeColor(vert: VertexShaderBuilder, forwardBaseAlpha: boolean): string {
+function getComputeColor(vert: VertexShaderBuilder): string {
   if (vert.usesInstancedGeometry) {
     addInstanceColor(vert);
-    return forwardBaseAlpha ? computeInstancedSurfaceColor : computeInstancedColor;
+    return computeInstancedColor;
   } else {
-    return forwardBaseAlpha ? computeSurfaceColor : computeColor;
+    return computeColor;
   }
 }
 
@@ -54,7 +49,7 @@ function getComputeColor(vert: VertexShaderBuilder, forwardBaseAlpha: boolean): 
 const computeBaseColor = "return v_color;";
 
 /** @internal */
-export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = false) {
+export function addColor(builder: ProgramBuilder) {
   builder.vert.addUniform("u_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
       const lutGeom = params.geometry.asLUT!;
@@ -65,11 +60,7 @@ export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = fa
     });
   });
 
-  if (forwardBaseAlpha)
-    builder.addGlobal("g_baseAlpha", VariableType.Float);
-
   builder.addVarying("v_color", VariableType.Vec4);
-  builder.vert.set(VertexShaderComponent.ComputeBaseColor, getComputeColor(builder.vert, forwardBaseAlpha));
-
+  builder.vert.set(VertexShaderComponent.ComputeBaseColor, getComputeColor(builder.vert));
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 }

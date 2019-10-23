@@ -5847,6 +5847,8 @@ export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
     // @alpha (undocumented)
     primitiveVisibility: PrimitiveVisibility;
+    // @internal (undocumented)
+    readonly shadowFrustum: Frustum | undefined;
     useLogZ: boolean;
     // @internal (undocumented)
     vcSupportIntersectingVolumes: boolean;
@@ -7071,7 +7073,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
     // (undocumented)
-    readonly solarShadowMap: SolarShadowMap | undefined;
+    readonly shadowFrustum: Frustum | undefined;
+    // (undocumented)
+    readonly solarShadowMap: SolarShadowMap;
     // (undocumented)
     readonly techniques: Techniques;
     // (undocumented)
@@ -7381,7 +7385,7 @@ export namespace Tile {
         // (undocumented)
         viewFrustum?: ViewFrustum;
         // (undocumented)
-        readonly worldToViewMap: Map4d;
+        protected readonly worldToViewMap: Map4d;
     }
     export const enum LoadPriority {
         Classifier = 50,

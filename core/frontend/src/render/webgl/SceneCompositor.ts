@@ -439,6 +439,7 @@ class PixelBuffer implements Pixel.Buffer {
  */
 export abstract class SceneCompositor implements IDisposable {
   public readonly target: Target;
+  public readonly solarShadowMap = new SolarShadowMap();
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -453,7 +454,6 @@ export abstract class SceneCompositor implements IDisposable {
 
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
-  public abstract get solarShadowMap(): SolarShadowMap | undefined;
 
   protected constructor(target: Target) { this.target = target; }
 
@@ -475,7 +475,6 @@ abstract class Compositor extends SceneCompositor {
   protected _opaqueRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
-  protected _solarShadowMap?: SolarShadowMap;
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
   protected _vcBranchState?: BranchState;
   protected _vcSetStencilRenderState?: RenderState;
@@ -763,13 +762,8 @@ abstract class Compositor extends SceneCompositor {
     return result;
   }
 
-  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
-
   public updateSolarShadows(context: SceneContext | undefined): void {
-    if (undefined === this._solarShadowMap)
-      this._solarShadowMap = new SolarShadowMap();
-
-    this._solarShadowMap.update(context);
+    this.solarShadowMap.update(context);
   }
 
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
@@ -796,7 +790,7 @@ abstract class Compositor extends SceneCompositor {
     this._depth = dispose(this._depth);
     this._vcAltDepthStencil = dispose(this._vcAltDepthStencil);
     this._includeOcclusion = false;
-    this._solarShadowMap = dispose(this._solarShadowMap);
+    dispose(this.solarShadowMap);
     dispose(this._textures);
     dispose(this._frameBuffers);
     dispose(this._geom);

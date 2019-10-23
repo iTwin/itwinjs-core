@@ -89,6 +89,9 @@
     },
     "MeasureTileLoadTime": {
       "keyin": "fdt time tile load"
+    },
+    "ToggleShadowFrustum": {
+      "keyin": "fdt shadow frustum"
     }
   }
 }

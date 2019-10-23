@@ -322,6 +322,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
+  public get shadowFrustum(): Frustum | undefined {
+    const map = this.solarShadowMap;
+    return map.isEnabled && map.isReady ? map.frustum : undefined;
+  }
   public get debugControl(): RenderTargetDebugControl { return this; }
 
   protected constructor(rect?: ViewRect) {
@@ -367,7 +371,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
-  public get solarShadowMap(): SolarShadowMap | undefined { return this.compositor.solarShadowMap; }
+  public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
@@ -738,9 +742,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.emphasisSettings = plan.emphasisSettings;
     this.emphasisColor.setColorDef(this.emphasisSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
-    this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
+
+    // used by HiddenLine, SolidFill, and determining shadow casting
+    this._transparencyThreshold = 0.0;
+    if (undefined !== plan.hline) {
+      // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
+      // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
+      let threshold = plan.hline.transparencyThreshold;
+      threshold = Math.min(1.0, Math.max(0.0, threshold));
+      this._transparencyThreshold = 1.0 - threshold;
+    }
 
     this.updateActiveVolume(plan.activeVolume);
 
@@ -781,16 +794,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.visibleEdges = true;
-
-        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
-        if (undefined !== plan.hline) {
-          // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
-          // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
-          let threshold = plan.hline.transparencyThreshold;
-          threshold = Math.min(1.0, Math.max(0.0, threshold));
-          this._transparencyThreshold = 1.0 - threshold;
-        }
-
+        vf.transparency = false;
         break;
       }
     }
@@ -1283,7 +1287,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
   public drawSolarShadowMap() {
-    if (this.solarShadowMap && this.solarShadowMap.isEnabled)
+    if (this.solarShadowMap.isEnabled)
       this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {

@@ -143,3 +143,4 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta drawing aid points** - start tool for testing AccuSnap.
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
 * **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
+* **dta shadow tiles** - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.

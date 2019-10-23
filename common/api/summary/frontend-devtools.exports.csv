@@ -76,6 +76,7 @@ beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
 beta;ToggleSelectedViewFrustumTool 
+beta;ToggleShadowFrustumTool 
 alpha;ToggleSkyboxTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

@@ -37,6 +37,7 @@ class FrustumIntersectionDecoration {
     const removeViewChanged = vp.onViewChanged.addListener(this.onViewChanged, this);
     this._removeListeners = () => { removeDecorator(); removeViewChanged(); this._removeListeners = undefined; };
     IModelApp.viewManager.invalidateDecorationsAllViews();
+    vp.invalidateScene();
   }
 
   private stop(): void {

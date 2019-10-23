@@ -31,6 +31,7 @@ import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import {
   ToggleFrustumSnapshotTool,
   ToggleSelectedViewFrustumTool,
+  ToggleShadowFrustumTool,
 } from "./tools/FrustumDecoration";
 import {
   ChangeEmphasisSettingsTool,
@@ -89,9 +90,11 @@ export class FrontendDevTools {
     ApplyViewTool.register(i18n);
 
     ToggleProjectExtentsTool.register(i18n);
+    ToggleToolTipsTool.register(i18n);
+
     ToggleFrustumSnapshotTool.register(i18n);
     ToggleSelectedViewFrustumTool.register(i18n);
-    ToggleToolTipsTool.register(i18n);
+    ToggleShadowFrustumTool.register(i18n);
 
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);

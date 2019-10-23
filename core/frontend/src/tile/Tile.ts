@@ -728,7 +728,7 @@ export namespace Tile {
     public readonly viewClip?: ClipVector;
     public parentsAndChildrenExclusive: boolean;
 
-    public getPixelSize(tile: Tile) {
+    public getPixelSize(tile: Tile): number {
       const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
       const center = this.getTileCenter(tile);
 
@@ -741,7 +741,7 @@ export namespace Tile {
     public get frustumPlanes(): FrustumPlanes {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
-    public get worldToViewMap(): Map4d {
+    protected get worldToViewMap(): Map4d {
       return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
     }
 

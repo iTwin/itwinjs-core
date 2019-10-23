@@ -14,7 +14,7 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { TextureUnit, OvrFlags } from "../RenderFlags";
+import { TextureUnit } from "../RenderFlags";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
@@ -130,6 +130,9 @@ const checkVertexDiscard = `
     hasAlpha = feature_alpha <= s_maxAlpha;
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
+  if (isOpaquePass && !u_discardTranslucentDuringOpaquePass)
+    return false;
+
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
@@ -182,11 +185,6 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
           flags = edgeOvrs.computeOvrFlags();
       }
 
-      // If transparency view flag is off, do not allow features to override transparency.
-      // This is particularly important for Target.readPixels(), which draws everything opaque - otherwise we cannot locate elements with transparent overrides.
-      if (!params.target.currentViewFlags.transparency)
-        flags |= OvrFlags.Alpha;
-
       uniform.setUniform1f(flags);
     });
   });
@@ -216,6 +214,17 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       addMaxAlpha(vert);
       addRenderPass(vert);
       addAlpha(vert);
+
+      // Even when transparency view flag is off, we need to allow features to override transparency, because it
+      // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
+      // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
+      vert.addUniform("u_discardTranslucentDuringOpaquePass", VariableType.Boolean, (prog) => {
+        prog.addGraphicUniform("u_discardTranslucentDuringOpaquePass", (uniform, params) => {
+          // ###TODO Handle raster text if necessary
+          uniform.setUniform1i(params.target.currentViewFlags.transparency ? 1 : 0);
+        });
+      });
+
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
     }
   }
@@ -501,10 +510,11 @@ export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
   }
 }
 
-// For hidden line + solid fill modes...translucent + opaque passes only.
-// Note the test is based on the element color's alpha, ignoring any feature overrides etc.
+// Discard vertex if transparency is less than the display style's transparency threshold, IFF the specific bit is set. The bit is set if:
+//  - Solid Fill or Hidden Line mode; or
+//  - Shaded mode and generating shadow map (sufficiently transparent surfaces receive but do not cast shadows).
 const isBelowTransparencyThreshold = `
-  return g_baseAlpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
+  return v_color.a < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
 `;
 
 /** @internal */

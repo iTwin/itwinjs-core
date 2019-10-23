@@ -730,6 +730,20 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     static toolId: string;
 }
 
+// @beta
+export class ToggleShadowFrustumTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class ToggleSkyboxTool extends Tool {
     // (undocumented)

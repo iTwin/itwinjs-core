@@ -2278,6 +2278,7 @@ export namespace HiddenLine {
         static defaults: Settings;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
@@ -2299,7 +2300,9 @@ export namespace HiddenLine {
         equals(other: Style): boolean;
         // (undocumented)
         static fromJSON(json?: StyleProps, hidden?: true): Style;
-        overrideColor(color: ColorDef): Style;
+        overrideColor(color: ColorDef | undefined): Style;
+        overridePattern(pattern: LinePixels | undefined): Style;
+        overrideWidth(width: number | undefined): Style;
         // @internal (undocumented)
         readonly ovrColor: boolean;
         readonly pattern?: LinePixels;
