@@ -57,7 +57,7 @@ function setPropVals(elem: any, pCount: number, baseName: string = "primProp") {
 
 describe("SchemaDesignPerf Impact of Properties", () => {
   const outDir = path.join(KnownTestLocations.outputDir, "PropPerformance");
-  let propCounts: number[];
+  const propCounts: number[] = [];
   let opCount = 0;
   let seedCount = 0;
   const reporter = new Reporter();
@@ -85,7 +85,9 @@ describe("SchemaDesignPerf Impact of Properties", () => {
     const configData = require(path.join(__dirname, "SchemaPerfConfig.json"));
     seedCount = configData.props.seedCount;
     opCount = configData.props.operationsCount;
-    propCounts = configData.props.propertiesCounts;
+    const pConfig = configData.props.propertiesCounts;
+    for (let i = pConfig.start; i <= pConfig.end; i = i + pConfig.increment)
+      propCounts.push(i);
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     if (!IModelJsFs.existsSync(outDir))
