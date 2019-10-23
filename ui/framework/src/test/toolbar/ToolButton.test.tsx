@@ -17,6 +17,7 @@ import {
 } from "../../ui-framework";
 import { SelectionTool } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
+import { BadgeType } from "@bentley/ui-abstract";
 
 describe("ToolButton", () => {
 
@@ -38,7 +39,7 @@ describe("ToolButton", () => {
     wrapper.unmount();
   });
 
-  it("renders correctly", () => {
+  it("renders active correctly", () => {
     FrontstageManager.setActiveToolId("tool1");
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
   });
@@ -49,6 +50,14 @@ describe("ToolButton", () => {
 
   it("disabled renders correctly", () => {
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isEnabled={false} />).should.matchSnapshot();
+  });
+
+  it("renders correctly with beta badge", () => {
+    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" badgeType={BadgeType.TechnicalPreview} />).should.matchSnapshot();
+  });
+
+  it("renders correctly with new badge", () => {
+    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" badgeType={BadgeType.New} />).should.matchSnapshot();
   });
 
   it("should execute a function", () => {

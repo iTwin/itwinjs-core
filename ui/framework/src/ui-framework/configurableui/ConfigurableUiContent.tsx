@@ -22,9 +22,11 @@ import { FrameworkState } from "../FrameworkState";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
-import { AccuDrawPopupRenderer } from "../accudraw/AccuDrawPopupManager";
+import { PopupRenderer } from "../popup/PopupManager";
 
 import "./configurableui.scss";
+
+// cSpell:ignore cursormenu
 
 /** Properties for [[ConfigurableUiContent]]
  * @public
@@ -54,13 +56,15 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
   }
 
   public componentDidMount() {
-    window.addEventListener("keydown", this._handleKeyDown);
+    window.addEventListener("keyup", this._handleKeyUp);
+    // window.addEventListener("focusin", this._handleFocusIn);
 
     KeyboardShortcutManager.setFocusToHome();
   }
 
   public componentWillUnmount() {
-    window.removeEventListener("keydown", this._handleKeyDown);
+    window.removeEventListener("keyup", this._handleKeyUp);
+    // window.removeEventListener("focusin", this._handleFocusIn);
   }
 
   public render(): JSX.Element | undefined {
@@ -78,12 +82,12 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <InputFieldMessage />
         <CursorPopupMenu />
         <CursorPopupRenderer />
-        <AccuDrawPopupRenderer />
+        <PopupRenderer />
       </div>
     );
   }
 
-  private _handleKeyDown(e: KeyboardEvent): void {
+  private _handleKeyUp(e: KeyboardEvent): void {
     const element = document.activeElement as HTMLElement;
 
     if (element === document.body && e.key !== "Escape") {

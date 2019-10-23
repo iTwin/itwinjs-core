@@ -18,6 +18,7 @@ Because this is a developer-only package, its functionality is not expected to e
   * `FpsTracker` - displays the average frames-per-second.
   * `TileStatisticsTracker` - displays the state of tile requests in the system.
   * `MemoryTracker` - displays statistics about GPU memory allocated by the display system.
+  * `GpuProfiler` - displays GPU timing queries and allows recording for viewing in chrome://tracing. See https://aras-p.info/blog/2017/01/23/Chrome-Tracing-as-Profiler-Frontend/ for more information.
   * `DiagnosticsPanel` - combines all of the above widgets into a single panel.
 
 ## Usage
@@ -55,6 +56,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
+* `fdt tile requests` - When enabled, displays in each viewport the bounding boxes of all tiles currently requested for loading by the viewport that was selected at the time the key-in was executed. Green boxes indicate pending requests; red indicate requests being actively processed.
 
 ### Other key-ins
 
@@ -69,7 +71,11 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
-* `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey.
+* `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey. If the selection set is empty, clear the effects of any previous use of this key-in. Accepts one of the following arguments:
+  * "none": Don't override color, don't apply silhouette.
+  * "color": Override color to white.
+  * "emphasis": Apply silhouette for emphasis.
+  * "both": Apply both color and silhouette.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
@@ -80,6 +86,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "both": Both volume and content boxes.
   * "children": For each tile, draw a box around the volume of each of its child tiles, color-coded such that green indicates an empty child tile and blue a non-empty child tile.
   * "sphere": Bounding sphere representing the full range of each tile.
+* `fdt time tile load` - Purges all tile trees from memory and reloads the contents of the selected viewport. Outputs to the notifications center the time elapsed once all tiles required for the view are loaded and displayed.
 * `fdt hilite settings` - Modifies the hilite settings for the selected viewport. If no arguments are specified, it resets them to the defaults. Otherwise, each argument modifies an aspect of the current settings:
   * "r", "g", or "b": An integer in [0..255] specifying the red, green, or blue component of the hilite color.
   * "v", "h": The visible or hidden ratio in [0..1].

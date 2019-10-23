@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "1.6.0-dev.12",
+  "version": "1.7.0-dev.16",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
@@ -11,11 +11,11 @@
   },
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json .nyc_output",
+    "clean": "rimraf lib .rush package-deps.json .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
@@ -39,9 +39,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.6.0-dev.12",
-    "@bentley/build-tools": "1.6.0-dev.12",
-    "@bentley/webpack-tools": "1.6.0-dev.12",
+    "@bentley/bentleyjs-core": "1.7.0-dev.16",
+    "@bentley/build-tools": "1.7.0-dev.16",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -61,7 +61,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.6.0-dev.12"
+    "@bentley/bentleyjs-core": "^1.7.0-dev.16"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

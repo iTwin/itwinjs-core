@@ -113,7 +113,6 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestPropsSchema:PropElement"), seedCount);
-        seedIModel.saveChanges();
         seedIModel.closeSnapshot();
       }
     }
@@ -366,8 +365,6 @@ describe("SchemaDesignPerf Number of Indices", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement"), seedCount);
-
-        seedIModel.saveChanges();
         seedIModel.closeSnapshot();
       }
     }

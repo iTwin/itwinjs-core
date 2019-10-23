@@ -4,15 +4,14 @@
 
 ```ts
 
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
+import { BadgeType } from '@bentley/ui-abstract';
+import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { UiError as UiError_2 } from '@bentley/ui-abstract';
 
 // @internal
 export class AnnularSector {
@@ -71,6 +70,7 @@ export interface AutoSuggestData {
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
+    getSuggestions?: (value: string) => AutoSuggestData[];
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -80,6 +80,28 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     setFocus?: boolean;
     value?: string;
 }
+
+// @internal
+export class Badge extends React.PureComponent<BadgeProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface BadgeProps extends CommonProps {
+    // (undocumented)
+    svg: any;
+}
+
+// @internal
+export class BadgeUtilities {
+    static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType;
+    static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode;
+    static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
+}
+
+// @internal
+export const BetaBadge: React.FunctionComponent<CommonProps>;
 
 // @public
 export const BlockText: React.FunctionComponent<TextProps>;
@@ -291,6 +313,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 
 // @public
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+    badgeType?: BadgeType;
     disabled?: boolean;
     icon?: string | React.ReactNode;
     // (undocumented)
@@ -526,6 +549,73 @@ export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
 
+// @beta
+export const DivWithOutsideClick: {
+    new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    contextType?: React.Context<any> | undefined;
+};
+
 // @public
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
     // (undocumented)
@@ -613,6 +703,42 @@ export enum Face {
 // @alpha (undocumented)
 export const FeaturedTile: React.FunctionComponent<TileProps>;
 
+// @alpha
+export class Field extends React.Component<IFieldProps> {
+    constructor(props: IFieldProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface FieldDef {
+    // (undocumented)
+    editor?: FieldEditor;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    options?: string[] | {
+        [key: string]: string;
+    };
+    // (undocumented)
+    value?: any;
+}
+
+// @alpha
+export interface FieldDefinitions {
+    // (undocumented)
+    [key: string]: FieldDef;
+}
+
+// @alpha
+export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
+
+// @alpha
+export interface FieldValues {
+    // (undocumented)
+    [key: string]: any;
+}
+
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
@@ -635,7 +761,23 @@ export class FocusTrap extends React.Component<Props, State> {
     render(): JSX.Element | null;
     }
 
-// @internal
+// @alpha
+export class Form extends React.Component<IFormProps, FormState> {
+    constructor(props: IFormProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export const FormContext: React.Context<FormContextState | undefined>;
+
+// @alpha
+export interface FormContextState extends FormState {
+    // (undocumented)
+    setValues: (values: FieldValues) => void;
+}
+
+// @internal @deprecated
 export const getClassName: (obj: any) => string;
 
 // @internal
@@ -997,6 +1139,9 @@ export const MinimalTile: React.FunctionComponent<TileProps>;
 
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
+
+// @internal
+export const NewBadge: React.FunctionComponent<CommonProps>;
 
 // @beta
 export interface NoChildrenProps {
@@ -1724,12 +1869,12 @@ export interface TreeNodePlaceholderProps extends CommonProps {
 
 // @public
 export interface TreeNodeProps extends CommonProps {
+    // (undocumented)
+    ["data-testid"]?: string;
     // @beta
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    ["data-testid"]?: string;
     // (undocumented)
     icon?: React.ReactChild;
     // (undocumented)
@@ -1789,14 +1934,11 @@ export class UiCore {
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
-// @public
-export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
-}
+// @public @deprecated
+export const UiError: typeof UiError_2;
 
 // @public
-export class UiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
-    emit(args: TEventArgs): void;
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
 // @beta

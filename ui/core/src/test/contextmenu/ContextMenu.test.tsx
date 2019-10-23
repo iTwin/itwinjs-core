@@ -9,6 +9,7 @@ import { expect } from "chai";
 import { ContextMenu, GlobalContextMenu, ContextMenuItem, ContextSubMenu, ContextMenuDivider } from "../../ui-core";
 import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
 import TestUtils from "../TestUtils";
+import { BadgeType } from "@bentley/ui-abstract";
 
 describe("ContextMenu", () => {
 
@@ -323,6 +324,16 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("focus"));
     });
 
+    it("renders disabled correctly", () => {
+      const component = render(<ContextMenuItem disabled={true}>Test</ContextMenuItem>);
+      expect(component.container.querySelector(".core-context-menu-disabled")).not.to.be.null;
+    });
+
+    it("renders badge correctly", () => {
+      const component = render(<ContextMenuItem badgeType={BadgeType.New}>Test</ContextMenuItem>);
+      expect(component.container.querySelector(".core-badge")).not.to.be.null;
+    });
+
     it("onClick handled correctly", () => {
       const handleClick = sinon.fake();
       const component = render(<ContextMenuItem onClick={handleClick}>Test</ContextMenuItem>);
@@ -368,6 +379,24 @@ describe("ContextMenu", () => {
           </ContextSubMenu>
         </ContextMenu>);
       expect(component.getByText("test")).to.exist;
+    });
+    it("renders disabled correctly", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" disabled={true}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      expect(component.container.querySelector(".core-context-menu-disabled")).not.to.be.null;
+    });
+    it("renders badge correctly", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" badgeType={BadgeType.TechnicalPreview}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      expect(component.container.querySelector(".core-badge")).not.to.be.null;
     });
     it("onHover handled correctly", () => {
       const handleHover = sinon.fake();

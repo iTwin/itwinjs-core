@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
- * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 
 // This script sets module.export to the proper value for webpacking one of our packages as a Universal Module Definition library.
 // Some of the package's open source dependencies are set to external.
@@ -167,6 +167,7 @@ function getConfig(env) {
       '@bentley/imodeljs-frontend': 'imodeljs_frontend',
       '@bentley/imodeljs-markup': 'imodeljs_markup',
       '@bentley/frontend-devtools': 'frontend_devtools',
+      '@bentley/ui-abstract': 'ui_abstract',
       '@bentley/ui-core': 'ui_core',
       '@bentley/ui-components': 'ui_components',
       '@bentley/ui-framework': 'ui_framework',
@@ -415,6 +416,19 @@ function getConfig(env) {
         },
         {
           test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+          use: {
+            loader: require.resolve("url-loader"),
+            options: {
+              limit: 10000,
+              name: "static/media/[name].[hash:8].[ext]",
+            },
+          }
+        },
+        {
+          test: [/\.svg$/],
+          issuer: {
+            include: /\.css$/
+          },
           use: {
             loader: require.resolve("url-loader"),
             options: {

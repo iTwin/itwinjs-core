@@ -6,8 +6,8 @@
 
 import * as React from "react";
 
+import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, CommonDivProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/imodeljs-frontend";
 import { TitleBar } from "@bentley/ui-ninezone";
 
 import "./CursorPopup.scss";
@@ -42,6 +42,7 @@ export enum CursorPopupShow {
  */
 interface CursorPopupState {
   showPopup: CursorPopupShow;
+  size: Size;
 }
 
 /** CursorPopup React component
@@ -50,7 +51,6 @@ interface CursorPopupState {
 export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
 
   private _isMounted: boolean = false;
-  private _popupSize: SizeProps = new Size(0, 0);
 
   /** @internal */
   public static fadeOutTime = 500;
@@ -61,6 +61,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
 
     this.state = {
       showPopup: CursorPopupShow.Open,
+      size: new Size(-1, -1),
     };
   }
 
@@ -147,17 +148,24 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
     // istanbul ignore else
     if (div) {
       const rect = div.getBoundingClientRect();
-      this._popupSize = new Size(rect.width, rect.height);
+      const newSize = new Size(rect.width, rect.height);
 
       // istanbul ignore else
-      if (this.props.onSizeKnown)
-        this.props.onSizeKnown(this._popupSize);
+      if (!this.state.size.equals(newSize)) {
+        // istanbul ignore else
+        if (this.props.onSizeKnown)
+          this.props.onSizeKnown(newSize);
+
+        // istanbul ignore else
+        if (this._isMounted)
+          this.setState({ size: newSize });
+      }
     }
   }
 
   /** @internal */
   public render() {
-    const popupRect = CursorPopup.getPopupRect(this.props.pt, this.props.offset, this._popupSize, this.props.relativePosition);
+    const popupRect = CursorPopup.getPopupRect(this.props.pt, this.props.offset, this.state.size, this.props.relativePosition);
 
     const positioningStyle: React.CSSProperties = {
       left: popupRect.left,

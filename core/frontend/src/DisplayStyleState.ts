@@ -294,7 +294,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public get wantShadows(): boolean {
-    return this.is3d() && this.viewFlags.shadows && !!IModelApp.renderSystem.options.displaySolarShadows;
+    return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
 }
 

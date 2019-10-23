@@ -28,41 +28,43 @@ readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
   for (const inputFileName of inputFileNames) {
     const inputFileContents = fs.readFileSync(inputFileName, "utf8");
 
-    if (inputFileContents.indexOf(__PUBLISH_EXTRACT_START__) > 0) {
-      console.log("Processing: " + inputFileName);
-      const inputLines = inputFileContents.split("\n");
-      let outputFileName = undefined;
-      let outputLines = [];
+    // Skip the file if there are no occurences of the starting comment.
+    if (inputFileContents.indexOf(__PUBLISH_EXTRACT_START__) <= 0)
+      continue;
 
-      for (const inputLine of inputLines) {
-        const startIndex = inputLine.indexOf(__PUBLISH_EXTRACT_START__);
-        if (startIndex > 0) {
-          if (outputFileName)
-            throw new Error("Nested " + __PUBLISH_EXTRACT_START__);
+    console.log("Processing: " + inputFileName);
+    const inputLines = inputFileContents.split("\n");
+    let outputFileName = undefined;
+    let outputLines = [];
 
-          outputFileName = inputLine.substring(startIndex + __PUBLISH_EXTRACT_START__.length).trim();
-          if (0 === outputFileName.length)
-            throw new Error("Expected output file name after " + __PUBLISH_EXTRACT_START__);
-        } else if (inputLine.indexOf(__PUBLISH_EXTRACT_END__) > 0) {
-          if (!outputFileName)
-            throw new Error("Missing " + __PUBLISH_EXTRACT_START__);
+    for (const inputLine of inputLines) {
+      const startIndex = inputLine.indexOf(__PUBLISH_EXTRACT_START__);
+      if (startIndex > 0) {
+        if (outputFileName)
+          throw new Error("Nested " + __PUBLISH_EXTRACT_START__);
 
-          if (!fs.existsSync(outDir))
-            fs.ensureDirSync(outDir);
+        outputFileName = inputLine.substring(startIndex + __PUBLISH_EXTRACT_START__.length).trim();
+        if (0 === outputFileName.length)
+          throw new Error("Expected output file name after " + __PUBLISH_EXTRACT_START__);
+      } else if (inputLine.indexOf(__PUBLISH_EXTRACT_END__) > 0) {
+        if (!outputFileName)
+          throw new Error("Missing " + __PUBLISH_EXTRACT_START__);
 
-          const outputFilePath = path.join(outDir, outputFileName);
-          console.log("> Extracting into: " + outputFilePath);
-          fs.writeFileSync(outputFilePath, outputLines.join("\n"));
+        if (!fs.existsSync(outDir))
+          fs.ensureDirSync(outDir);
 
-          outputFileName = undefined;
-          outputLines = [];
-        } else if (outputFileName) {
-          outputLines.push(inputLine);
-        }
+        const outputFilePath = path.join(outDir, outputFileName);
+        console.log("> Extracting into: " + outputFilePath);
+        fs.writeFileSync(outputFilePath, outputLines.join("\n"));
+
+        outputFileName = undefined;
+        outputLines = [];
+      } else if (outputFileName) {
+        outputLines.push(inputLine);
       }
-
-      if (outputFileName)
-        throw new Error("Missing " + __PUBLISH_EXTRACT_END__);
     }
+
+    if (outputFileName)
+      throw new Error("Missing " + __PUBLISH_EXTRACT_END__);
   }
 });

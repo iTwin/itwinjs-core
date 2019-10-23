@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "1.6.0-dev.12",
+  "version": "1.7.0-dev.16",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && cpx ./lib/buildIModelJsModule.js ./bin && node ../build/scripts/ignoreargs.js 1>&2",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib .rush",
     "docs": "",
     "lint": "",
     "test": "",
@@ -23,14 +23,14 @@
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js",
     "buildIModelJsModule": "./bin/buildIModelJsModule.js"
   },
+  "types": "./index.d.ts",
   "dependencies": {
-    "@bentley/config-loader": "1.6.0-dev.12",
+    "@bentley/config-loader": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/sinon": "^5.0.5",
-    "@types/webdriverio": "^4.8.6",
     "app-root-path": "^2.0.1",
     "autoprefixer": "^8.6.5",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
@@ -61,7 +61,7 @@
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.16.0",
     "mocha-webpack": "^2.0.0-beta.0",
-    "node-gyp": "3.6.2",
+    "node-gyp": "~5.0.3",
     "node-sass": "^4.9.2",
     "nodemon": "^1.18.3",
     "null-loader": "^0.1.1",
@@ -86,13 +86,6 @@
     "tslint-loader": "^3.6.0",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^1.0.1",
-    "wdio-chromedriver-service": "^0.1.2",
-    "wdio-junit-reporter": "^0.4.3",
-    "wdio-mocha-framework": "^0.6.2",
-    "wdio-screenshot": "^0.6.0",
-    "wdio-spec-reporter": "^0.1.4",
-    "wdio-visual-regression-service": "^0.9.0",
-    "webdriverio": "^4.13.1",
     "webpack": "^4.20.2",
     "webpack-dev-server": "^3.1.6",
     "webpack-manifest-plugin": "2.0.3",
@@ -122,6 +115,5 @@
     "react-test-renderer": "^16.8.0",
     "rimraf": "^2.6.2",
     "typescript": "~3.6.2"
-  },
-  "types": "./index.d.ts"
+  }
 }

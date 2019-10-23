@@ -24,7 +24,6 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
@@ -43,7 +42,6 @@ public;AuxCoordSystemSpatialState
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundTerrainTileTreeReference 
-alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
 beta;class BaseQuantityDescription 
@@ -84,8 +82,6 @@ public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
-alpha;ConditionalDisplaySpecification
-alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
 alpha;ConversionData 
@@ -155,13 +151,14 @@ internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64Stri
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+internal;GLTimerResult
+internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-alpha;GroupItemInsertSpec 
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -194,7 +191,6 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
-alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
@@ -286,11 +282,11 @@ beta;class RenderClipVolume
 public;RenderContext
 internal;enum RenderDiagnostics
 public;class RenderGraphic 
+public;class RenderGraphicOwner 
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderScheduleState
-internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
@@ -384,8 +380,6 @@ beta;ToolAssistanceInstruction
 beta;ToolAssistanceInstructions
 beta;ToolAssistanceKeyboardInfo
 beta;ToolAssistanceSection
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
@@ -439,7 +433,7 @@ public;class ViewTool
 beta;ViewUndoEvent
 public;ViewUndoTool 
 public;WalkViewTool 
-internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth"
+internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query"
 beta;WebGLFeature
 beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus

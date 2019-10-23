@@ -2227,7 +2227,7 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored (e.g., those having null range of nonsensical origin). If no valid placements are supplied, this function does nothing.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
@@ -2262,7 +2262,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2294,7 +2294,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
@@ -2605,6 +2605,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;

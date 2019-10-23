@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed EmphasizeElements.wantEmphasis having no effect if neither color nor transparency were overridden.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

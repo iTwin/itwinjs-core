@@ -6,20 +6,14 @@ import * as chai from "chai";
 import { ClientRequestContext, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
-import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareQuery } from "../projectshare/ProjectShareClient";
+import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "../projectshare/ProjectShareClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
 
 /**
- * Defects for the Project Share Service team:
- * + File search by path does not work as expected (see skipped test below)
- * + Custom property update/delete based on "change sets" in the REST API documentation doesn't work as expected,
- *   or in the best case is not clear.
- *
  * Project Share Client API TODOs:
  * + Add an id field, and replace all wsgIds with ids - including parentFolderWsgId
- * + Move tests out of the node.js environment to a web environment using puppeteer
  * + Setup OIDC authentication for tests instead of IMS
  */
 
@@ -38,74 +32,113 @@ describe("ProjectShareClient (#integration)", () => {
     projectId = project.wsgId;
   });
 
-  it("should be able to retrieve folders in a specified path", async () => {
-    const query = new ProjectShareQuery().inPath(projectId, "360-Images");
-    const folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, query);
-    chai.assert.strictEqual(2, folders.length);
-  });
-
-  it.skip("should be able to retrieve files in a specified path", async () => {
-    // TBD: This does NOT work yet!!!
-    const query = new ProjectShareQuery().inPath(projectId, "360-Images/2A");
-    const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, query);
-    chai.assert.isAbove(files.length, 20);
-  });
-
-  it("should be able to retrieve a list of folders and files", async () => {
-    const folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().inRootFolder(projectId));
-    chai.assert(folders);
+  it("should be able to query folders with different options", async () => {
+    // inRootFolder
+    let folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
     chai.assert.strictEqual(1, folders.length);
-    chai.assert.strictEqual("360-Images", folders[0].name);
+    const folder360Images = folders[0];
+    chai.assert.strictEqual(folder360Images.name, "360-Images");
 
-    const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().inRootFolder(projectId));
+    // inFolder
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
+    chai.assert.strictEqual(2, folders.length);
+    let folder2B = folders[0];
+    let folder2A = folders[1];
+    chai.assert.strictEqual(folder2B.name, "2B");
+    chai.assert.strictEqual(folder2A.name, "2A");
+
+    // byWsgIds
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().byWsgIds(folder2B.wsgId, folder2A.wsgId));
+    chai.assert.strictEqual(2, folders.length);
+    chai.assert.strictEqual(folder2B.wsgId, folders[0].wsgId);
+    chai.assert.strictEqual(folder2A.wsgId, folders[1].wsgId);
+
+    // inPath
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, "360-Images"));
+    chai.assert.strictEqual(2, folders.length);
+    folder2B = folders[0];
+    folder2A = folders[1];
+    chai.assert.strictEqual(folder2B.name, "2B");
+    chai.assert.strictEqual(folder2A.name, "2A");
+
+    // inFolderWithNameLike
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolderWithNameLike(folder360Images.wsgId, "2*"));
+    chai.assert.strictEqual(2, folders.length);
+    folder2B = folders[0];
+    folder2A = folders[1];
+    chai.assert.strictEqual(folder2B.name, "2B");
+    chai.assert.strictEqual(folder2A.name, "2A");
+
+    // startsWithPathAndNameLike
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "360-Images", "2A"));
+    chai.assert.strictEqual(1, folders.length);
+    folder2A = folders[0];
+    chai.assert.strictEqual(folder2A.name, "2A");
+    folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "360-Images", "*"));
+    chai.assert.strictEqual(4, folders.length);
+  });
+
+  it("should be able to query files with different options", async () => {
+    const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
+    const subFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
+    const folder2B = subFolders[0];
+    const folder2A = subFolders[1];
+
+    // inRootFolder
+    let files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inRootFolder(projectId));
     chai.assert(files);
     chai.assert.strictEqual(0, files.length);
 
-    const subFolders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().inFolder(folders[0].wsgId));
-    chai.assert(subFolders);
-    chai.assert.strictEqual(2, subFolders.length);
+    // inFolder
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2A.wsgId));
+    chai.assert(files);
+    chai.assert.strictEqual(files.length, 18);
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2B.wsgId));
+    chai.assert(files);
+    chai.assert.strictEqual(files.length, 0);
 
-    const subFolder2A = subFolders[1];
-    chai.assert.strictEqual("2A", subFolder2A.name);
+    // startsWithPath
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPath(projectId, "360-Images/2A"));
+    chai.assert(files);
+    chai.assert.isAtLeast(files.length, 500);
 
-    const imageFiles: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().inFolder(subFolder2A.wsgId));
-    chai.assert(imageFiles);
-    chai.assert.isAbove(imageFiles.length, 20);
-  });
+    // inFolderWithNameLike
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folder2A.wsgId, "2A_v0410462"));
+    chai.assert(files);
+    chai.assert.strictEqual(files.length, 1);
+    let firstImage = files[0];
+    chai.assert.strictEqual(firstImage.name, "2A_v0410462.jpg");
 
-  async function getFirstImageTestFile(): Promise<ProjectShareFile> {
-    const subFolder2A: ProjectShareFolder = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().inPath(projectId, "360-Images")))[1];
-    const imageFiles: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().inFolder(subFolder2A.wsgId));
-    return imageFiles[0];
-  }
+    // startsWithPathAndNameLike
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, "360-Images/2A", "2A_v0410470"));
+    chai.assert(files);
+    chai.assert.strictEqual(files.length, 1);
+    let secondImage = files[0];
+    chai.assert.strictEqual(secondImage.name, "2A_v0410470.jpg");
 
-  it("should be able to retrieve folder and file by id", async () => {
-    const firstImageFile = await getFirstImageTestFile();
-
-    const retFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().byWsgIds(firstImageFile.wsgId)))[0];
-    chai.assert.strictEqual(retFile.wsgId, firstImageFile.wsgId);
-
-    const retFolder = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().byWsgIds(firstImageFile.parentFolderWsgId!)))[0];
-    chai.assert.strictEqual(retFolder.wsgId, firstImageFile.parentFolderWsgId);
-  });
-
-  it("should be able to retrieve multiple folders by id", async () => {
-    // TODO: Does not work as expected - needs to be fixed!!!
-    const subFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().inPath(projectId, "360-Images"));
-    const retFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareQuery().byWsgIds(subFolders[0].wsgId, subFolders[1].wsgId));
-    chai.assert.strictEqual(2, retFolders.length);
-    chai.assert.strictEqual(subFolders[0].wsgId, retFolders[0].wsgId);
-    chai.assert.strictEqual(subFolders[1].wsgId, retFolders[1].wsgId);
+    // byWsgIds
+    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImage.wsgId, secondImage.wsgId));
+    chai.assert.strictEqual(2, files.length);
+    firstImage = files[0];
+    chai.assert.strictEqual(firstImage.name, "2A_v0410462.jpg");
+    secondImage = files[1];
+    chai.assert.strictEqual(secondImage.name, "2A_v0410470.jpg");
   });
 
   it("should be able to CRUD custom properties", async () => {
-    const firstImageFile = await getFirstImageTestFile();
+    const firstImageFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, "360-Images/2A", "2A_v0410470")))[0];
+
+    // Delete any existing custom properties due to incomplete test runs
+    if (firstImageFile.customProperties !== undefined && (firstImageFile.customProperties as any[]).length > 0) {
+      const deleteProps = (firstImageFile.customProperties as any[]).map((entry: any) => entry.Name);
+      await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, undefined, deleteProps);
+    }
 
     // Create custom properties and validate returned file
     const createCustomProperties = [
       {
-        Name: "testKey1",
-        Value: "testValue1",
+        Name: "TestKey1",
+        Value: "TestValue1",
       },
       {
         Name: "TestKey2",
@@ -115,36 +148,49 @@ describe("ProjectShareClient (#integration)", () => {
     const retFile: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, createCustomProperties);
     chai.assert.isDefined(retFile.customProperties);
     chai.assert.strictEqual(2, retFile.customProperties.length);
-    chai.assert.strictEqual("testKey1", retFile.customProperties[0].Name);
-    chai.assert.strictEqual("testValue1", retFile.customProperties[0].Value);
+    chai.assert.strictEqual("TestKey1", retFile.customProperties[0].Name);
+    chai.assert.strictEqual("TestValue1", retFile.customProperties[0].Value);
     chai.assert.strictEqual("TestKey2", retFile.customProperties[1].Name);
     chai.assert.strictEqual("TestValue2", retFile.customProperties[1].Value);
 
     // Get the updated file again and validate it
-    const retFile2: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    const retFile2: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
     chai.assert.strictEqual(2, retFile2.customProperties.length);
-    chai.assert.strictEqual("testKey1", retFile2.customProperties[0].Name);
-    chai.assert.strictEqual("testValue1", retFile2.customProperties[0].Value);
+    chai.assert.strictEqual("TestKey1", retFile2.customProperties[0].Name);
+    chai.assert.strictEqual("TestValue1", retFile2.customProperties[0].Value);
     chai.assert.strictEqual("TestKey2", retFile2.customProperties[1].Name);
     chai.assert.strictEqual("TestValue2", retFile2.customProperties[1].Value);
 
     // Update a custom property and validate
     const updateCustomProperties = [
       {
-        Name: "testKey1",
-        Value: "testUpdatedValue1",
+        Name: "TestKey1",
+        Value: "TestUpdatedValue1",
       },
     ];
     const retFile3: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, updateCustomProperties);
-    chai.assert.strictEqual(1, retFile3.customProperties.length);
-    chai.assert.strictEqual("testKey1", retFile3.customProperties[0].Name);
-    chai.assert.strictEqual("testUpdatedValue1", retFile3.customProperties[0].Value);
+    chai.assert.strictEqual(2, retFile3.customProperties.length);
+    chai.assert.strictEqual("TestKey1", retFile3.customProperties[0].Name);
+    chai.assert.strictEqual("TestUpdatedValue1", retFile3.customProperties[0].Value);
+    chai.assert.strictEqual("TestKey2", retFile3.customProperties[1].Name);
+    chai.assert.strictEqual("TestValue2", retFile3.customProperties[1].Value);
 
     // Get the updated file again and validate it
-    const retFile4: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareQuery().byWsgIds(firstImageFile.wsgId)))[0];
-    chai.assert.strictEqual(1, retFile4.customProperties.length);
-    chai.assert.strictEqual("testKey1", retFile4.customProperties[0].Name);
-    chai.assert.strictEqual("testUpdatedValue1", retFile4.customProperties[0].Value);
+    const retFile4: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    chai.assert.strictEqual(2, retFile4.customProperties.length);
+    chai.assert.strictEqual("TestKey1", retFile4.customProperties[0].Name);
+    chai.assert.strictEqual("TestUpdatedValue1", retFile4.customProperties[0].Value);
+    chai.assert.strictEqual("TestKey2", retFile4.customProperties[1].Name);
+    chai.assert.strictEqual("TestValue2", retFile4.customProperties[1].Value);
+
+    // Delete a custom property and validate
+    const deleteProperties = ["TestKey2", "TestKey1"];
+    const retFile5: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, undefined, deleteProperties);
+    chai.assert.strictEqual(0, retFile5.customProperties.length);
+
+    // Get the updated file again and validate it
+    const retFile6: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    chai.assert.strictEqual(0, retFile6.customProperties.length);
   });
 
 });

@@ -76,7 +76,17 @@ class GCtoIMCResultCache {
         missing.push(thisGeoCoord);
 
         // keep track of the original position of this point.
-        originalPositions[thisCacheKey] = iPoint;
+        if (originalPositions.hasOwnProperty(thisCacheKey)) {
+          // it is a duplicate of an earlier point (or points)
+          if (Array.isArray(originalPositions[thisCacheKey])) {
+            originalPositions[thisCacheKey].push(iPoint);
+          } else {
+            const list: number[] = [originalPositions[thisCacheKey], iPoint];
+            originalPositions[thisCacheKey] = list;
+          }
+        } else {
+          originalPositions[thisCacheKey] = iPoint;
+        }
 
         // mark the response as pending.
         response.iModelCoords.push({ p: [0, 0, 0], s: GeoCoordStatus.Pending });
@@ -107,7 +117,13 @@ class GCtoIMCResultCache {
 
             // transfer the answer stored in remainingResponse to the correct position in the overall response.
             const responseIndex = originalPositions[thisCacheKey];
-            response.iModelCoords[responseIndex] = thisPoint;
+            if (Array.isArray(responseIndex)) {
+              for (const thisIndex of responseIndex) {
+                response.iModelCoords[thisIndex] = thisPoint;
+              }
+            } else {
+              response.iModelCoords[responseIndex] = thisPoint;
+            }
           }
         });
 

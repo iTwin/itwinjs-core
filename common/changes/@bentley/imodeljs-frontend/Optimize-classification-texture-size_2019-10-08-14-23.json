@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Reduce planar texture frustum by clipping to view planes.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

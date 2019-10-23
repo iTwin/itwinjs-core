@@ -324,19 +324,26 @@ class Joint {
       const ray0 = this.curve0.fractionToPointAndDerivative(0.0); // And we know that is full length ray !
       const ray1 = this.curve1.fractionToPointAndDerivative(0.0); // ditto
       if (this.curve0 instanceof LineSegment3d && this.curve1 instanceof LineSegment3d) {
-        const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
-        if (intersection.approachType === CurveCurveApproachType.Intersection) {
-          this.fraction0 = intersection.detailA.fraction;
-          this.fraction1 = intersection.detailB.fraction;
-          if (this.fraction0 >= 1.0 && this.fraction1 <= 0.0) {
-            this.annotateExtension(options);
-          } else if (this.fraction0 < 1.0 && this.fraction1 > 0.0) {
-            this.flexure = JointMode.Trim;
-          } else if (this.fraction0 > 1.0 && this.fraction1 > 1.0) {
-            this.flexure = JointMode.Gap;
-            this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
-            this.fraction0 = 1.0;
-            this.fraction1 = 0.0;
+        // check for direct intersection -- occurs on offset of colinear base segments.
+        if (this.curve0.endPoint().isAlmostEqual(this.curve1.startPoint())) {
+          this.fraction0 = 1.0;
+          this.fraction1 = 0.0;
+          this.flexure = JointMode.Trim;
+        } else {
+          const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
+          if (intersection.approachType === CurveCurveApproachType.Intersection) {
+            this.fraction0 = intersection.detailA.fraction;
+            this.fraction1 = intersection.detailB.fraction;
+            if (this.fraction0 >= 1.0 && this.fraction1 <= 0.0) {
+              this.annotateExtension(options);
+            } else if (this.fraction0 < 1.0 && this.fraction1 > 0.0) {
+              this.flexure = JointMode.Trim;
+            } else if (this.fraction0 > 1.0 && this.fraction1 > 1.0) {
+              this.flexure = JointMode.Gap;
+              this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
+              this.fraction0 = 1.0;
+              this.fraction1 = 0.0;
+            }
           }
         }
       } else {
@@ -491,6 +498,10 @@ export class PolygonWireOffsetContext {
     }
     if (wrap)
       Joint.link(previousJoint, joint0);
+    else {
+      newJoint = new Joint(fragment0, undefined, points[numPoints - 1]);
+      Joint.link(previousJoint, newJoint);
+    }
     Joint.annotateChain(joint0, options, numPoints);
     for (let pass = 0; pass++ < 5;) {
       const state = Joint.removeDegeneratePrimitives(joint0, options, numPoints);

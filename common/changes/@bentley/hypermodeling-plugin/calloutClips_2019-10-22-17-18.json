@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "comment": "Callout clip is now local to placement. Only show marker for active clip.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-plugin",
+  "email": "Brien.Bastings@bentley.com"
+}

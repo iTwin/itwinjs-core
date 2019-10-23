@@ -22,6 +22,7 @@ import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { GraphicsCollectorDrawArgs } from "./PlanarClassifier";
+import { FeatureSymbology } from "../FeatureSymbology";
 
 /** @internal */
 export class BackgroundMapDrape extends TextureDrape {
@@ -40,6 +41,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustum?: Frustum;
   private _doDebugFrustum = false;
   private _debugFrustumGrahic?: RenderGraphic = undefined;
+  private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
@@ -82,7 +84,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._height = requiredHeight;
 
     const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, tileTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -96,7 +98,7 @@ export class BackgroundMapDrape extends TextureDrape {
     if (this._doDebugFrustum) {
       this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
       const builder = context.createSceneGraphicBuilder();
-      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.setSymbology(ColorDef.white, ColorDef.blue, 1);
       builder.addFrustum(this._frustum);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addFrustum(context.viewFrustum.getFrustum());
@@ -107,6 +109,9 @@ export class BackgroundMapDrape extends TextureDrape {
   }
 
   public draw(target: Target) {
+    if (undefined !== this._debugFrustumGrahic)
+      target.scene.push(this._debugFrustumGrahic);
+
     if (undefined === this._frustum || this._graphics.length === 0)
       return;
 
@@ -123,14 +128,17 @@ export class BackgroundMapDrape extends TextureDrape {
       assert(false, "unable to create frame buffer object");
       return;
     }
-    if (undefined !== this._debugFrustumGrahic)
-      target.scene.push(this._debugFrustumGrahic);
+
+    System.instance.glTimer.beginOperation("Terrain Projection");
 
     const prevState = System.instance.currentRenderState.clone();
     System.instance.context.viewport(0, 0, this._width, this._height);
 
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
     const stack = new BranchStack();
+    stack.setViewFlags(drawingParams.viewFlags);
+    stack.setSymbologyOverrides(this._symbologyOverrides);
+
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
@@ -139,7 +147,7 @@ export class BackgroundMapDrape extends TextureDrape {
     target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
     target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.setViewFlags(drawingParams.viewFlags);
+    target.branchStack.pushState(stack.top);
 
     const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics, RenderPass.OpaqueGeneral);
@@ -155,6 +163,8 @@ export class BackgroundMapDrape extends TextureDrape {
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
+    target.branchStack.pop();
+
     batchState.reset();   // Reset the batch Ids...
     target.bgColor.setTbgr(prevBgColor);
     if (prevPlan)
@@ -162,5 +172,6 @@ export class BackgroundMapDrape extends TextureDrape {
 
     system.applyRenderState(prevState);
     gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
+    system.glTimer.endOperation();
   }
 }

@@ -14,7 +14,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   PresentationError, PresentationStatus,
   DefaultContentDisplayTypes, Descriptor, SortDirection,
-  Content, Field, PropertyValueFormat, Item, Ruleset,
+  Content, Field, Item, Ruleset,
   InstanceKey,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
@@ -244,7 +244,9 @@ const createColumn = (field: Readonly<Field>): ColumnDescription => {
     label: field.label,
     sortable: true,
     editable: !field.isReadonly,
-    filterable: (field.type.valueFormat === PropertyValueFormat.Primitive),
+    filterable: false,
+    // note: disable column filtering until this data provider supports filtering
+    // filterable: (field.type.valueFormat === PropertyValueFormat.Primitive),
   };
 };
 

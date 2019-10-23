@@ -80,6 +80,23 @@ export class OidcAgentClient extends OidcBackendClient implements IAuthorization
 // @beta
 export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 
+// @internal @deprecated
+export interface OidcAgentClientConfigurationV1 extends OidcBackendClientConfiguration {
+    // (undocumented)
+    serviceUserEmail: string;
+    // (undocumented)
+    serviceUserPassword: string;
+}
+
+// @internal @deprecated
+export class OidcAgentClientV1 extends OidcBackendClient {
+    constructor(_agentConfiguration: OidcAgentClientConfigurationV1);
+    // (undocumented)
+    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    // (undocumented)
+    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+}
+
 // @beta
 export abstract class OidcBackendClient extends OidcClient {
     constructor(configuration: OidcBackendClientConfiguration);

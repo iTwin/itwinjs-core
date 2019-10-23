@@ -28,6 +28,9 @@ import { UnionFindContext } from "../numerics/UnionFind";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { RangeLengthData } from "./RangeLengthData";
+import { XYPointBuckets } from "./multiclip/XYPointBuckets";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Range3d } from "../geometry3d/Range";
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -506,7 +509,108 @@ export class PolyfaceQuery {
       rangeData.accumulateGrowableXYZArrayRange(polyface.point);
     return rangeData;
   }
+
+  /** Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices impinge within edges.
+   *
+   */
+  public static cloneWithTVertexFixup(polyface: Polyface): Polyface {
+    const oldFacetVisitor = polyface.createVisitor(1);  // This is to visit the existing facets.
+    const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const builder = PolyfaceBuilder.create();
+    const edgeRange = Range3d.createNull();
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
+    const spacePoint = Point3d.create();
+    const segment = LineSegment3d.create(point0, point1);
+
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      newFacetVisitor.clearArrays();
+      for (let i = 0; i + 1 < oldFacetVisitor.point.length; i++) {
+        // each base vertex is part of the result ...
+        oldFacetVisitor.point.getPoint3dAtUncheckedPointIndex(i, point0);
+        oldFacetVisitor.point.getPoint3dAtUncheckedPointIndex(i + 1, point1);
+        newFacetVisitor.pushDataFrom(oldFacetVisitor, i);
+        edgeRange.setNull();
+        LineSegment3d.create(point0, point1, segment);
+        let detailArray: CurveLocationDetail[] | undefined;
+        edgeRange.extend(point0);
+        edgeRange.extend(point1);
+        rangeSearcher.announcePointsInRange(edgeRange, (index: number, _x: number, _y: number, _z: number) => {
+          // x,y,z has x,y within the range of the search ... test for exact on (in full 3d!)
+          polyface.data.point.getPoint3dAtUncheckedPointIndex(index, spacePoint);
+          const detail = segment.closestPoint(spacePoint, false);
+          if (undefined !== detail) {
+            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)) {
+              if (detailArray === undefined)
+                detailArray = [];
+              detail.a = index;
+              detailArray.push(detail);
+            }
+          }
+          return true;
+        });
+        if (detailArray !== undefined) {
+          detailArray.sort((a: CurveLocationDetail, b: CurveLocationDetail) => (a.fraction - b.fraction));
+          for (const d of detailArray) {
+            newFacetVisitor.pushInterpolatedDataFrom(oldFacetVisitor, i, d.fraction, i + 1);
+          }
+        }
+      }
+      builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+    }
+
+    return builder.claimPolyface();
+  }
+
+  /** Clone the facets, inserting removing points that are simply within colinear edges.
+   *
+   */
+  public static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface {
+    const oldFacetVisitor = polyface.createVisitor(2);  // This is to visit the existing facets.
+    const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
+    const builder = PolyfaceBuilder.create();
+    const vector01 = Vector3d.create();
+    const vector12 = Vector3d.create();
+    const numPoint = polyface.data.point.length;
+    const pointState = new Int32Array(numPoint);
+    // FIRST PASS -- in each sector of each facet, determine if the sector has colinear incoming and outgoing vectors.
+    //   Mark each point as
+    //  0 unvisited
+    // -1 incident to a non-colinear sector
+    //  n incident to n colinear sectors
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      for (let i = 0; i + 2 < oldFacetVisitor.point.length; i++) {
+        // each base vertex is part of the result ...
+        oldFacetVisitor.point.vectorIndexIndex(i, i + 1, vector01);
+        oldFacetVisitor.point.vectorIndexIndex(i + 1, i + 2, vector12);
+        const pointIndex = oldFacetVisitor.clientPointIndex(i + 1);
+        if (pointState[pointIndex] >= 0) {
+          const theta = vector01.angleTo(vector12);
+          if (theta.isAlmostZero) {
+            pointState[pointIndex]++;
+          } else {
+            pointState[pointIndex] = -1;
+          }
+        }
+      }
+    }
+    // SECOND PASS -- make copies, omitting references to points at colinear sectors
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      newFacetVisitor.clearArrays();
+      for (let i = 0; i + 2 < oldFacetVisitor.point.length; i++) {
+        const pointIndex = oldFacetVisitor.clientPointIndex(i);
+        if (pointState[pointIndex] < 0) {
+          newFacetVisitor.pushDataFrom(oldFacetVisitor, i);
+        }
+      }
+      if (newFacetVisitor.point.length > 2)
+        builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+    }
+    return builder.claimPolyface();
+  }
 }
+
 /** Announce the points on a drape panel.
  * * The first two points in the array are always along the draped line segment.
  * * The last two are always on the facet.

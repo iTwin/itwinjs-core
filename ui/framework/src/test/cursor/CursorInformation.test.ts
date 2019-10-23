@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 
-import { CursorInformation, CursorDirection } from "../../ui-framework/cursor/CursorInformation";
-import { RelativePosition } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
+import { CursorInformation, CursorDirection } from "../../ui-framework/cursor/CursorInformation";
 
 describe("CursorInformation", () => {
 

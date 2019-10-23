@@ -34,7 +34,7 @@ export const enum TechniqueId {
   CopyPickBuffers,
   CopyColor,
   CopyColorNoAlpha,
-  CopyStencil,
+  VolClassColorUsingStencil,
   ClearPickAndColor,
   ClipMask,
   EVSMFromDepth,
@@ -44,6 +44,9 @@ export const enum TechniqueId {
   AmbientOcclusion,
   Blur,
   CombineTextures,
+  VolClassCopyZ,
+  VolClassSetBlend,
+  VolClassBlend,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

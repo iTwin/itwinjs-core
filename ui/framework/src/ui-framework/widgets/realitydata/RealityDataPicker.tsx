@@ -9,6 +9,7 @@ import * as classnames from "classnames";
 import * as _ from "lodash";
 import { IModelConnection, findAvailableUnattachedRealityModels, IModelApp, Viewport, ContextRealityModelState, SpatialViewState, ScreenViewport, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { ContextRealityModelProps, BackgroundMapType, CartographicRange } from "@bentley/imodeljs-common";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { LoadingSpinner, SpinnerSize, SearchBox, ContextMenu, ContextMenuItem, ContextMenuDirection } from "@bentley/ui-core";
 import { RealityDataEntry, AttachedRealityModel } from "./RealityData";
 import { RealityDataItem } from "./RealityDataItem";
@@ -49,7 +50,7 @@ interface RealityDataPickerState {
 // istanbul ignore next
 export class RealityDataPickerControl extends WidgetControl {
   public static get iconSpec() {
-    return `svg:${widgetIconSvg}`;
+    return IconSpecUtilities.createSvgIconSpec(widgetIconSvg);
   }
 
   public static get label() {

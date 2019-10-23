@@ -589,9 +589,6 @@ export abstract class ViewManip extends ViewTool {
     else
       viewport.view.lookAtVolume(range, aspect, marginPercent);
 
-    viewport.synchWithView(false);
-    const after = viewport.getFrustum();
-    viewport.view.setupFromFrustum(after);
     viewport.synchWithView(true);
     viewport.viewCmdTargetCenter = undefined;
 

@@ -8,9 +8,9 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
 import { Task, TaskManager } from "./Task";
 import { UiFramework } from "../UiFramework";
+import { ItemProps } from "../shared/ItemProps";
 
 /** Properties for a [[Workflow]].
  * @public

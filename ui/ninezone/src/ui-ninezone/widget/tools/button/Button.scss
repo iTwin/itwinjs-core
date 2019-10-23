@@ -18,6 +18,7 @@
     radius: $button-stroke-radius;
     style: solid;
   }
+  pointer-events: auto;
 
   > .nz-gradient {
     background: linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);

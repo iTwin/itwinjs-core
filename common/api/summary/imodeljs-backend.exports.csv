@@ -91,6 +91,7 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsExternalSourceAspects 
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
@@ -165,6 +166,7 @@ public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
 alpha;IModelTransformer
+alpha;IModelTransformOptions
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
@@ -184,6 +186,11 @@ beta;class LinearLocationElement
 beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
+beta;LinearlyLocatedBase
+beta;LinearlyLocatedMultipleAt 
+beta;LinearlyLocatedMultipleFromTo 
+beta;LinearlyLocatedSingleAt 
+beta;LinearlyLocatedSingleFromTo 
 beta;LinearlyReferencedAtLocation 
 beta;LinearlyReferencedAtPositionRefersToReferent 
 beta;LinearlyReferencedFromPositionRefersToReferent 

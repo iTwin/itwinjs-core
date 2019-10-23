@@ -81,6 +81,9 @@ export class AttributeMap {
       ["a_pos", 0, VariableType.Vec3],
       ["a_color", 1, VariableType.Vec3],
     ]);
+    const screenPoints = new AttributeMapEntry([
+      ["a_pos", 0, VariableType.Vec2],
+    ]);
 
     this._attrMaps = new Map<TechniqueId | undefined, AttributeMapEntry>([
       [undefined, posOnly],
@@ -90,6 +93,7 @@ export class AttributeMap {
       [TechniqueId.Edge, edge],
       [TechniqueId.SilhouetteEdge, silhouette],
       [TechniqueId.PointCloud, pointCloud],
+      [TechniqueId.VolClassCopyZ, screenPoints],
     ]);
   }
 

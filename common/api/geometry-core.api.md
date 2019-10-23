@@ -1812,7 +1812,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     static isAlmostEqual(dataA: GrowableXYArray | undefined, dataB: GrowableXYArray | undefined): boolean;
     isAlmostEqual(other: GrowableXYArray, tolerance?: number): boolean;
     isIndexValid(index: number): boolean;
-    readonly length: number;
+    length: number;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
@@ -1820,6 +1820,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     pushAll(points: XAndY[]): void;
     pushAllXYAndZ(points: XYAndZ[] | GrowableXYZArray): void;
     pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number;
+    pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
     pushXY(x: number, y: number): void;
     resize(pointCount: number): void;
@@ -2310,6 +2311,7 @@ export class IndexedPolyface extends Polyface {
 
 // @public
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
+    clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
     clientNormalIndex(i: number): number;
@@ -2321,6 +2323,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     moveToNextFacet(): boolean;
     moveToReadIndex(facetIndex: number): boolean;
     readonly numEdgesThisFacet: number;
+    pushDataFrom(other: PolyfaceVisitor, index: number): void;
+    pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
     reset(): void;
     setNumWrap(numWrap: number): void;
     tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined;
@@ -2360,11 +2364,13 @@ export abstract class IndexedXYZCollection {
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
+    getRange(): Range3d;
     abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     abstract getXAtUncheckedPointIndex(pointIndex: number): number;
     abstract getYAtUncheckedPointIndex(pointIndex: number): number;
     abstract getZAtUncheckedPointIndex(pointIndex: number): number;
     abstract readonly length: number;
+    readonly points: Iterable<Point3d>;
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
 }
@@ -3650,6 +3656,8 @@ export class PolyfaceQuery {
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     static boundaryEdges(source: Polyface, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
+    static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
+    static cloneWithTVertexFixup(polyface: Polyface): Polyface;
     static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
@@ -3670,6 +3678,7 @@ export class PolyfaceQuery {
 
 // @public
 export interface PolyfaceVisitor extends PolyfaceData {
+    clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
     clientNormalIndex(i: number): number;
@@ -3679,6 +3688,8 @@ export interface PolyfaceVisitor extends PolyfaceData {
     currentReadIndex(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(index: number): boolean;
+    pushDataFrom(other: PolyfaceVisitor, index: number): void;
+    pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
     reset(): void;
     setNumWrap(numWrap: number): void;
 }
@@ -3815,6 +3826,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     containsPoint(point: XAndY): boolean;
     containsRange(other: LowAndHighXY): boolean;
     containsXY(x: number, y: number): boolean;
+    corners3d(asLoop?: boolean, z?: number): Point3d[];
     static createArray<T extends Range2d>(points: Point2d[], result?: T): T;
     static createFrom<T extends Range2d>(other: LowAndHighXY, result?: T): T;
     static createNull<T extends Range2d>(result?: T): T;
@@ -4212,6 +4224,7 @@ export class Sample {
     static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
+    static createInterpolatedPoints(point0: Point3d, point1: Point3d, numPoints: number, result?: Point3d[], index0?: number, index1?: number): Point3d[];
     static createInvertibleTransforms(): Transform[];
     static createLineArcPaths(): Path[];
     static createLineStrings(): LineString3d[];
@@ -4255,7 +4268,7 @@ export class Sample {
     static createSpheres(includeEllipsoidal?: boolean): Sphere[];
     static createSquareWave(origin: Point3d, dx0: number, dy: number, dx1: number, numPhase: number, dyReturn: number): Point3d[];
     static createSquareWavePath(numTooth: number, dxA: number, dxB: number, yA: number, yB: number, structure: number): Path;
-    static createStar(cx: number, cy: number, cz: number, r0: number, r1: number, numPoint: number, close: boolean): Point3d[];
+    static createStar(cx: number, cy: number, cz: number, r0: number, r1: number | undefined, numPoint: number, close: boolean, theta0?: Angle): Point3d[];
     static createStarsInStars(rA0: number, rA1: number, numAPoint: number, rB0: number, rB1: number, numBPoint: number, rC: number, numC: number, close: boolean): Point3d[][];
     static createTorusPipes(): TorusPipe[];
     static createTriangleWithSplitEdges(numSplitAB: number, numSplitBC: number, numSplitCA: number, wrap?: boolean, xyzA?: Point3d, xyzB?: Point3d, xyzC?: Point3d): Point3d[];

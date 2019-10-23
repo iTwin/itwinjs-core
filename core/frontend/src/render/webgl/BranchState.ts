@@ -33,7 +33,7 @@ export class BranchState {
     const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
     const iModel = undefined !== branch.iModel ? branch.iModel : prev.iModel;
-    const planarClassifier = undefined !== branch.planarClassifier ? branch.planarClassifier : prev.planarClassifier;
+    const planarClassifier = (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier;
     const textureDrape = undefined !== branch.textureDrape ? branch.textureDrape : prev.textureDrape;
     const clip = undefined !== branch.clips ? branch.clips : prev.clipVolume;
     return new BranchState(vf, transform, ovrs, clip, planarClassifier, textureDrape, iModel);

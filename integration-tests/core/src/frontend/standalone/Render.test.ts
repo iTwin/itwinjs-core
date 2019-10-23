@@ -158,40 +158,6 @@ describe("Properly create on-screen viewport with directScreenRendering enabled"
   });
 });
 
-describe("Properly create on-screen viewport with directScreenRendering disabled", () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
-    renderSysOpts.directScreenRendering = false;
-
-    IModelApp.startup({ renderSys: renderSysOpts });
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openSnapshot(imodelLocation);
-  });
-
-  after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
-  });
-
-  it("single viewport should not render using system canvas", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-      expect(vp.rendersToScreen).to.be.false;
-    });
-  });
-
-  it("neither of dual viewports should render using system canvas", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.false; // even single viewport should not render using system canvas - it has been disabled!
-    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.false;
-    expect(vp1.rendersToScreen).to.be.false;
-  });
-});
-
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
 // The initial view is in top orientation, centered on the top of the rectangle, but not fitted to its extents (empty space on all sides of rectangle).

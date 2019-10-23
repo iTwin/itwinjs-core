@@ -540,24 +540,37 @@ export class LinearlyLocated {
     return retVal;
   }
 
+  private static queryFirstLinearLocationAspectId(iModel: IModelDb, linearlyLocatedElementId: Id64String, className: string): Id64String | undefined {
+    let aspectId: Id64String | undefined;
+
+    iModel.withPreparedStatement("SELECT ECInstanceId FROM LinearReferencing." + className + " WHERE Element.Id = ? LIMIT 1",
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, linearlyLocatedElementId);
+        if (stmt.step() === DbResult.BE_SQLITE_ROW)
+          aspectId = stmt.getValue(0).getId();
+      });
+
+    return aspectId;
+  }
+
   /** Query for LinearlyReferenced AtLocation aspects owned by the specified LinearlyLocated Element.
    * @param iModel The iModel to query from.
    * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query aspects about.
-   * @returns Returns an array of LinearlyReferencedAtLocationProps.
+   * @returns Returns an array of LinearlyReferencedAtLocation.
    * @throws [[IModelError]]
    */
-  public static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps[] {
-    return this.getLinearLocations<LinearlyReferencedAtLocationProps>(
+  public static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation[] {
+    return this.getLinearLocations<LinearlyReferencedAtLocation>(
       iModel, linearlyLocatedElementId, "LinearReferencing:LinearlyReferencedAtLocation");
   }
 
   /** Query for the single LinearlyReferenced AtLocation aspect owned by the specified LinearlyLocated Element. If more than one aspect is expected, use [[getAtLocations]] instead.
    * @param iModel The iModel to query from.
    * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query about.
-   * @returns Returns an LinearlyReferencedAtLocationProps.
+   * @returns Returns an LinearlyReferencedAtLocation or undefined is none is found.
    * @throws [[IModelError]]
    */
-  public static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps | undefined {
+  public static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined {
     const linearLocations = this.getAtLocations(iModel, linearlyLocatedElementId);
     if (linearLocations.length === 0)
       return undefined;
@@ -569,40 +582,99 @@ export class LinearlyLocated {
 
   /** Update an existing LinearlyReferencedAtLocation aspect within the iModel.
    * @param iModel The iModel to update.
+   * @param linearlyLocatedElementId The Id of the owning Linearly Located Element.
    * @param linearLocationProps The properties to use to update the LinearlyReferencedAtLocation aspect.
+   * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
    */
-  public static updateAtLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedAtLocationAspectProps): void {
-    iModel.elements.updateAspect(linearLocationProps);
+  public static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps,
+    aspectId?: Id64String): void {
+    let linearLocAspectId: Id64String;
+    if (aspectId !== undefined)
+      linearLocAspectId = aspectId;
+    else {
+      linearLocAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedAtLocation")!;
+    }
+
+    const linearLocationAspectProps: LinearlyReferencedAtLocationAspectProps = {
+      id: linearLocAspectId,
+      element: { id: linearlyLocatedElementId },
+      classFullName: "LinearReferencing:LinearlyReferencedAtLocation",
+      atPosition: linearLocationProps.atPosition,
+      fromReferent: linearLocationProps.fromReferent,
+    };
+
+    iModel.elements.updateAspect(linearLocationAspectProps);
   }
 
   /** Update an existing LinearlyReferencedFromToLocation aspect within the iModel.
    * @param iModel The iModel to update.
+   * @param linearlyLocatedElementId The Id of the owning Linearly Located Element.
    * @param linearLocationProps The properties to use to update the LinearlyReferencedFromToLocation aspect.
+   * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
    */
-  public static updateFromToLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedFromToLocationAspectProps): void {
-    iModel.elements.updateAspect(linearLocationProps);
+  public static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps,
+    aspectId?: Id64String): void {
+    let linearLocAspectId: Id64String;
+    if (aspectId !== undefined)
+      linearLocAspectId = aspectId;
+    else {
+      linearLocAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedFromToLocation")!;
+    }
+
+    const linearLocationAspectProps: LinearlyReferencedFromToLocationAspectProps = {
+      id: linearLocAspectId,
+      element: { id: linearlyLocatedElementId, relClassName: "LinearReferencing:ILinearlyLocatedOwnsFromToLocations" },
+      classFullName: "LinearReferencing:LinearlyReferencedFromToLocation",
+      fromPosition: linearLocationProps.fromPosition,
+      fromPositionFromReferent: linearLocationProps.fromPositionFromReferent,
+      toPosition: linearLocationProps.toPosition,
+      toPositionFromReferent: linearLocationProps.toPositionFromReferent,
+    };
+
+    iModel.elements.updateAspect(linearLocationAspectProps);
+  }
+
+  /** Query for the Id of the Linear-Element along which the specified LinearlyLocated Element is located.
+   * @param iModel The iModel to query from.
+   * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query a Linear-Element for.
+   * @returns Returns the Id of the Linear-Element or undefined is none is assigned.
+   */
+  public static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined {
+    let linearElementId: Id64String | undefined;
+    iModel.withPreparedStatement(
+      "SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?",
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, linearlyLocatedElementId);
+
+        if (DbResult.BE_SQLITE_ROW === stmt.step())
+          linearElementId = stmt.getValue(0).getId();
+        else
+          linearElementId = undefined;
+      });
+
+    return linearElementId;
   }
 
   /** Query for LinearlyReferenced FromToLocation aspects owned by the specified LinearlyLocated Element.
    * @param iModel The iModel to query from.
    * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query aspects about.
-   * @returns Returns an array of LinearlyReferencedFromToLocationProps.
+   * @returns Returns an array of LinearlyReferencedFromToLocation.
    * @throws [[IModelError]]
    */
-  public static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps[] {
-    return this.getLinearLocations<LinearlyReferencedFromToLocationProps>(
+  public static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation[] {
+    return this.getLinearLocations<LinearlyReferencedFromToLocation>(
       iModel, linearlyLocatedElementId, "LinearReferencing:LinearlyReferencedFromToLocation");
   }
 
   /** Query for the single LinearlyReferenced FromToLocation aspect owned by the specified LinearlyLocated Element. If more than one aspect is expected, use [[getFromToLocations]] instead.
    * @param iModel The iModel to query from.
    * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query about.
-   * @returns Returns an LinearlyReferencedFromToLocationProps.
+   * @returns Returns an LinearlyReferencedFromToLocation or undefined is none is found.
    * @throws [[IModelError]]
    */
-  public static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps | undefined {
+  public static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation | undefined {
     const linearLocations = this.getFromToLocations(iModel, linearlyLocatedElementId);
     if (linearLocations.length === 0)
       return undefined;
@@ -611,6 +683,54 @@ export class LinearlyLocated {
       return linearLocations[0];
     }
   }
+}
+
+/** Base interface to optionally be implemented by Elements inherintly Linearly-Located. Implementors should choose the
+ * appropriate sub-interface rather than implementing LinearlyLocatedBase directly.
+ * @beta
+ */
+export interface LinearlyLocatedBase {
+  getLinearElementId(): Id64String | undefined;
+}
+
+/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single at-position.
+ * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
+ * make use of the services provided by [LinearlyLocated]($backend).
+ * @beta
+ */
+export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
+  getAtLocation(): LinearlyReferencedAtLocation | undefined;
+  updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+}
+
+/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always at-positions.
+ * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
+ * make use of the services provided by [LinearlyLocated]($backend).
+ * @beta
+ */
+export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
+  getAtLocations(): LinearlyReferencedAtLocation[];
+  updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
+}
+
+/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single from-to-position.
+ * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
+ * make use of the services provided by [LinearlyLocated]($backend).
+ * @beta
+ */
+export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
+  getFromToLocation(): LinearlyReferencedFromToLocation | undefined;
+  updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
+}
+
+/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always from-to-positions.
+ * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
+ * make use of the services provided by [LinearlyLocated]($backend).
+ * @beta
+ */
+export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {
+  getFromToLocations(): LinearlyReferencedFromToLocation[];
+  updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId: Id64String): void;
 }
 
 /** A class offering services for linearly-located data along a Linear-Element.

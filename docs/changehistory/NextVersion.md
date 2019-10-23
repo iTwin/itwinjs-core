@@ -3,17 +3,27 @@ ignore: true
 ---
 # NextVersion
 
-## Silhouettes for emphasis
+## Display system startup options
 
-The [Hilite]($common) effect can now be applied to individual features (elements, models, subcategories, etc) using [FeatureSymbology.Overrides]($frontend). The color, color ratios, and silhouette width can all be customized using [Viewport.emphasisSettings]($frontend) - the default settings apply a thick black silhouette to emphasized features with no effect on the features' own colors. If you are using [EmphasizeElements]($frontend), set its `wantEmphasis` property to control whether or not the emphasis settings are applied. Otherwise, have your [FeatureOverrideProvider]($frontend) specify which features are emphasized using [FeatureSymbology.Appearance.emphasized]($frontend) and optionally override [Viewport.emphasisSettings]($frontend).
+The following changes have been made to `RenderSystem.Options`:
 
-![emphasis example](./assets/EmphasizedElements.png "Example showing default emphasis settings")
+* `displaySolarShadows` now defaults to `true` if not defined, instead of false.
+* `directScreenRendering` has been deprecated; it no longer has any effect.
 
 ## Geometry
 
 * [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.
 * [RegionOps.consolidateAdjacentPrimitives]($geometry) method to consolidate adjacent lines and linestrings, and adjacent arcs of the same underlying circle or ellipse.
 * [RegionOps.rectangleEdgeTransform]($geometry) method to decide if a Loop object or point array is a simple rectangle.
+* [Range2d.corners3d]($geometry) method to get a `Point3d[]` containing the range corners.
+* [GrowableXYArray.length]($geometry) property is writable (e.g. to trim the array)
+* [IndexedXYZCollection.getRange]($geometry) -- return the range of data in the collection.
+* Support methods for using `PolyfaceVisitor` as staging area for new facets to be given to a `PolyfaceBuilder`
+  * [PolyfaceVisitor.clearArray]($geometry) -- empty all arrays
+  * [PolyfaceVisitor.pushDataFrom]($geometry) -- add new point, param, normal, color from indexed position in another `PolyfaceVisitor`
+* [PolyfaceVisitor.pushInterpolatedDataFrom]($geometry) -- add new point, param, normal, color interpolated between two indexed positions in another `PolyfaceVisitor`
+* `[PolyfaceQuery.cloneWithTVertexFixup]($geometry) -- clone a polyface, inserting vertices within edges that are incident to points on other facets.
+* `[PolyfaceQuery.cloneWithColinearEdgeCleanup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
 
 ## Presentation
 

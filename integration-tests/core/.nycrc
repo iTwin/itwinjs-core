@@ -13,7 +13,7 @@
     ".ts",
     ".tsx"
   ],
-  "temp-directory": "./integration-tests/core/coverage/.nyc_output",
+  "temp-dir": "./integration-tests/core/coverage/.nyc_output",
   "report-dir": "./integration-tests/core/coverage/",
   "reporter": [
     "text-summary",

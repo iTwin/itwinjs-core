@@ -554,6 +554,7 @@ export class ConcurrencyControl {
   }
 }
 
+/** @beta */
 export namespace ConcurrencyControl {
   /** A request for locks and/or code reservations. */
   export class Request {

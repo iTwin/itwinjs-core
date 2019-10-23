@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added initial implementation of ControlledTree",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

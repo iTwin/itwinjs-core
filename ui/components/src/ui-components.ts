@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore iconpicker lineweight
+
 export { UiComponents } from "./ui-components/UiComponents";
 
 export * from "./ui-components/breadcrumb/Breadcrumb";
@@ -105,7 +108,9 @@ export * from "./ui-components/lineweight/WeightPickerButton";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
+export * from "./ui-components/table/columnfiltering/ColumnFiltering";
 export * from "./ui-components/table/component/Table";
+export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/tree/TreeDataProvider";
@@ -116,6 +121,18 @@ export * from "./ui-components/tree/CellEditingEngine";
 export * from "./ui-components/tree/ImageLoader";
 export * from "./ui-components/tree/hocs/withDragDrop";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
+
+export * from "./ui-components/tree/controlled/TreeActions";
+export * from "./ui-components/tree/controlled/TreeEventDispatcher";
+export * from "./ui-components/tree/controlled/TreeEventHandler";
+export * from "./ui-components/tree/controlled/TreeEvents";
+export * from "./ui-components/tree/controlled/TreeModel";
+export * from "./ui-components/tree/controlled/TreeModelSource";
+export * from "./ui-components/tree/controlled/Observable";
+export * from "./ui-components/tree/controlled/TreeHooks";
+export * from "./ui-components/tree/controlled/component/ControlledTree";
+export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
+export * from "./ui-components/tree/controlled/component/TreeRenderer";
 
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";

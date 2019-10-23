@@ -42,6 +42,8 @@ export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
 export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
+export { useControlledTreeUnifiedSelection } from "./tree/controlled/UseUnifiedSelection";
+export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
 
 /**
  * @module Viewport

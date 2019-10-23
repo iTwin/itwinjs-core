@@ -7,7 +7,7 @@ exports[`Calculator renders correctly 1`] = `
     CalculatorEngine {
       "_calculate": [Function],
       "_createResultString": [Function],
-      "_displayValue": "100",
+      "_displayValue": "0",
       "_firstValue": "",
       "_isMathOperator": [Function],
       "_modValue": "",

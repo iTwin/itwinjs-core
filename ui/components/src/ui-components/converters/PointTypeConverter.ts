@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { TypeConverter } from "./TypeConverter";
+import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+
+// cSpell:ignore valuetypes
 
 /**
  * Point type converter.
@@ -81,7 +83,8 @@ export class Point2dTypeConverter extends BasePointTypeConverter {
     return values;
   }
 }
-TypeConverterManager.registerConverter("point2d", Point2dTypeConverter);
+
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Point2d, Point2dTypeConverter);
 
 /**
  * Point3d type converter.
@@ -107,4 +110,5 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
     return { ...values, z: z ? z : 0 };
   }
 }
-TypeConverterManager.registerConverter("point3d", Point3dTypeConverter);
+
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Point3d, Point3dTypeConverter);

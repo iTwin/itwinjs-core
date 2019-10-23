@@ -1293,6 +1293,26 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public fractionToPoint(fractionX: number, fractionY: number, result?: Point2d): Point2d {
     return this.low.interpolateXY(fractionX, fractionY, this.high, result);
   }
+  /** Return an array with the 4 corners.
+   * * if asLoop is false, 4 corners are "x varies fastest, then y"
+   * * if asLoop is true, 5 corners are in CCW order WITH CLOSURE
+   */
+  public corners3d(asLoop: boolean = false, z: number = 0): Point3d[] {
+    if (asLoop)
+      return [
+        Point3d.create(this.low.x, this.low.y, z),
+        Point3d.create(this.high.x, this.low.y, z),
+        Point3d.create(this.high.x, this.high.y, z),
+        Point3d.create(this.low.x, this.high.y, z),
+        Point3d.create(this.low.x, this.low.y, z)];
+
+    return [
+      Point3d.create(this.low.x, this.low.y, z),
+      Point3d.create(this.high.x, this.low.y, z),
+      Point3d.create(this.low.x, this.high.y, z),
+      Point3d.create(this.high.x, this.high.y, z)];
+  }
+
   /** Largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
     if (this.isNull)

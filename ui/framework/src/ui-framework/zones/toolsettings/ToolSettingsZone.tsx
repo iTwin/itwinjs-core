@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
@@ -17,6 +17,7 @@ import {
   WidgetZoneId,
 } from "@bentley/ui-ninezone";
 import { WidgetChangeHandler, TargetChangeHandler } from "../../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
@@ -25,6 +26,8 @@ import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 import { Outline } from "../Outline";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
+
+// cSpell:ignore safearea
 
 /** State for the ToolSettingsZone content.
  */
@@ -37,6 +40,7 @@ enum ToolSettingsZoneContent {
  */
 interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
+  title: string;
 }
 
 /** Properties for the [[ToolSettingsZone]] React component.
@@ -61,7 +65,6 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
   };
-  private _settingsSuffix: string;
   private _widget = React.createRef<ToolSettings>();
 
   /** @internal */
@@ -70,10 +73,27 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    this._settingsSuffix = UiFramework.translate("general.settings");
+    const title = `${ToolUiManager.activeToolLabel}`;
+
     this.state = {
       toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
+      title,
     };
+  }
+
+  private _handleToolActivatedEvent = (): void => {
+    // Update tool settings title when active tool changes.
+    const title = `${ToolUiManager.activeToolLabel}`;
+    if (this.state.title !== title)
+      this.setState({ title });
+  }
+
+  public componentDidMount(): void {
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+  }
+
+  public componentWillUnmount(): void {
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public render(): React.ReactNode {
@@ -133,13 +153,12 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private getToolSettingsWidget(): React.ReactNode {
     if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
-      const tooltip = `${ToolUiManager.activeToolLabel} - ${this._settingsSuffix}`;
 
       return (
         <ToolSettingsTab
           onClick={this._processClick}
           onKeyDown={this._handleKeyDown}
-          title={tooltip}
+          title={this.state.title}
           onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >
           <i className="icon icon-settings" />
@@ -168,7 +187,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
         onResize={this.props.zone.floating && this._handleResize}
         onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         ref={this._widget}
-        title={ToolUiManager.activeToolLabel}
+        title={this.state.title}
       />
     );
   }

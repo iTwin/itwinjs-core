@@ -412,6 +412,16 @@ export class Tool {
   }
 
   /**
+   * Get the English keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from
+   * its registered Namespace (e.g. "en/MyApp.json").
+   */
+  public static get englishKeyin(): string {
+    const key = "tools." + this.toolId + ".keyin";
+    const val = this.i18n.getEnglishTranslation(this.namespace.name, key);
+    return val !== key ? val : ""; // default to empty string
+  }
+
+  /**
    * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from
    * its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * [[keyin]] is returned.

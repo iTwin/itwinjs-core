@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { CategoryDescription } from '@bentley/presentation-common';
 import { ColumnDescription } from '@bentley/ui-components';
 import { Content } from '@bentley/presentation-common';
+import { ControlledTreeProps } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
@@ -39,6 +40,8 @@ import { SortDirection } from '@bentley/ui-core';
 import { TableDataChangeEvent } from '@bentley/ui-components';
 import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
+import { TreeEvents } from '@bentley/ui-components';
+import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeProps } from '@bentley/ui-components';
 import { ViewportProps } from '@bentley/ui-components';
@@ -78,6 +81,14 @@ export class ContentDataProvider implements IContentDataProvider {
     protected shouldConfigureContentDescriptor(): boolean;
     protected shouldExcludeFromDescriptor(field: Field): boolean;
     protected shouldRequestContentForEmptyKeyset(): boolean;
+}
+
+// @alpha
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "modelSource" | Exclude<keyof P, "visibleNodes">>>;
+
+// @alpha
+export interface ControlledTreeWithUnifiedSelectionProps {
+    modelSource: TreeModelSource<IPresentationTreeDataProvider>;
 }
 
 // @public
@@ -255,6 +266,9 @@ export interface TreeWithUnifiedSelectionProps {
     // @internal (undocumented)
     selectionHandler?: SelectionHandler;
 }
+
+// @alpha
+export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource<IPresentationTreeDataProvider>, treeEvents: TreeEvents): TreeEvents;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;

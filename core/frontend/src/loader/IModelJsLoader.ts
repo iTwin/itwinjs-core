@@ -187,6 +187,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-clients"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-quantity"));
+  await ScriptLoader.loadPackage(options.prefixVersion("ui-abstract"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-frontend"));
   if (options.loadMarkup)
     await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup"));

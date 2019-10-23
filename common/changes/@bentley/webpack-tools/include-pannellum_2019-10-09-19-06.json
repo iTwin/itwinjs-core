@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use url-loader for svg's referenced from css files.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}

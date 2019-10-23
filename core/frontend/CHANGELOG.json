@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-frontend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement proper flashing and hiliting of classified geometry."
+          },
+          {
+            "comment": "Add new range that represents the dipslayed extents.  This is currently used to set the displayed depths."
+          },
+          {
+            "comment": "Dont expand displayed extents for unbounded trees."
+          },
+          {
+            "comment": "Added support for overriding feature symbology to use a hilite effect."
+          },
+          {
+            "comment": "Fix display artifacts caused by interpolation of material settings."
+          },
+          {
+            "comment": "Rework frustum calculation for terrain draping."
+          },
+          {
+            "comment": "Fix inability to locate polylines and edges if their transparency was overridden."
+          },
+          {
+            "comment": "Add GPU timing queries for devtools."
+          },
+          {
+            "comment": "Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)"
+          },
+          {
+            "comment": "Enable display of non-spatial, spatially-located models in spatial views."
+          },
+          {
+            "comment": "Geometry of planar classifier models is not required to itself be planar."
+          },
+          {
+            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+          },
+          {
+            "comment": "Refine planar texture frustum calculation to handle parallel views."
+          },
+          {
+            "comment": "Errors during shader program compilation produce exceptions."
+          },
+          {
+            "comment": "Improve shadow lighting to match shadow direction"
+          },
+          {
+            "comment": "Fixed multiple viewport shadows"
+          },
+          {
+            "comment": "Refine classification frustum calculation."
+          },
+          {
+            "comment": "Support transparency for terrain and planar classification."
+          },
+          {
+            "comment": "#168481 Tool assistance for viewing tools. Prompt punctuation consistency."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/imodeljs-frontend_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",

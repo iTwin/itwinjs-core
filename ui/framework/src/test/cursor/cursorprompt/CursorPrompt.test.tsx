@@ -6,7 +6,8 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
-import { ToolAssistance, RelativePosition } from "@bentley/imodeljs-frontend";
+import { ToolAssistance } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 
 import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";

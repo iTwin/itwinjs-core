@@ -9,7 +9,6 @@ import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@b
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import ViewItem, { ViewItemProps } from "./ViewItem";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import "./ViewsList.scss";
 
 /** Properties for [[ViewsList]] component
@@ -20,8 +19,6 @@ export interface ViewsListProps extends CommonProps {
   refreshEvent?: BeEvent<(args: any) => void>;
   /** IModelConnection to use to query views */
   iModelConnection?: IModelConnection;
-  /** Access Token to use in the client. Only used for saved views functionality */
-  accessToken?: AccessToken;
   /** Forced view flags when applying view state, will be spread into the view flags */
   forcedViewFlags?: any;
   /** Show views stored in the iModel */

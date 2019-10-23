@@ -7,7 +7,8 @@
 import * as React from "react";
 
 import { IModelConnection, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
-import { CommonProps, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 
@@ -56,6 +57,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     if (FrontstageManager.isLoading)
       return null;
 
+    // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
@@ -64,6 +66,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       this._navigationAidControl.initialize();
     }
 
+    // istanbul ignore else
     if (this._navigationAidControl) {
       const size = this._navigationAidControl.getSize() || "64px";
       const divStyle: React.CSSProperties = {

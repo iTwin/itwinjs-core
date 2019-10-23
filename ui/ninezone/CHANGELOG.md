@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:43 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:43 GMT
+
+### Updates
+
+- Added AutoSuggest component and improved KeyinBrowser component
+- Ability to drag and resize tool settings widget.
+- Change prop type from RefObject<T> to T.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

@@ -2,6 +2,24 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-ninezone_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Ability to drag and resize tool settings widget."
+          },
+          {
+            "comment": "Change prop type from RefObject<T> to T."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/ui-ninezone_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",

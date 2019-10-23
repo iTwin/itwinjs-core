@@ -18,10 +18,12 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
+  RenderGraphicOwner,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
+  GLTimerResultCallback,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -30,7 +32,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { Branch, Batch, GraphicsArray } from "./Graphic";
+import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -42,6 +44,7 @@ import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
+import { GLTimer } from "./GLTimer";
 import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
 import { MeshGraphic } from "./Mesh";
@@ -107,6 +110,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "ANGLE_instanced_arrays",
   "OES_vertex_array_object",
   "WEBGL_lose_context",
+  "EXT_disjoint_timer_query",
 ];
 
 /** Describes the rendering capabilities of the host system.
@@ -153,6 +157,7 @@ export class Capabilities {
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
   public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
   public get supportsFragDepth(): boolean { return this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
+  public get supportsDisjointTimerQuery(): boolean { return this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -352,6 +357,7 @@ export class Capabilities {
     Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
     Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
     Debug.print(() => "               fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
+    Debug.print(() => "      disjointTimerQuery : " + (this.supportsDisjointTimerQuery ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
@@ -528,6 +534,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  public readonly glTimer: GLTimer;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -685,6 +692,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
 
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
 
+  public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
+    return new GraphicOwner(owned as Graphic);
+  }
+
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
       return SkyCubePrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
@@ -808,6 +819,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
+    this.glTimer = GLTimer.create(this);
 
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
@@ -1056,4 +1068,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     return true;
   }
 
+  public get isGLTimerSupported(): boolean { return this.glTimer.isSupported; }
+  public set resultsCallback(callback: GLTimerResultCallback | undefined) {
+    this.glTimer.resultsCallback = callback;
+  }
 }

@@ -64,16 +64,19 @@ export class HighlightingEngine {
   }
 
   public static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode {
-    return (
-      <Highlighter
-        searchWords={[props.searchText]}
-        findChunks={findChunksNoRegex as any} // .d.ts declaration wrong
-        activeIndex={props.activeMatchIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
-        activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
-        autoEscape={true}
-        textToHighlight={text}
-      />
-    );
+    if (props.searchText) {
+      return (
+        <Highlighter
+          searchWords={[props.searchText]}
+          findChunks={findChunksNoRegex as any} // .d.ts declaration wrong
+          activeIndex={props.activeMatchIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
+          activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
+          autoEscape={true}
+          textToHighlight={text}
+        />
+      );
+    }
+    return text;
   }
 }
 

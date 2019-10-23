@@ -112,7 +112,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -154,7 +154,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
           "groupByLabel": false
@@ -194,7 +194,7 @@
               "GeometricModel3d"
             ]
           },
-          "instanceFilter": "this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "NOT this.IsPrivate AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "groupByClass": false,
           "groupByLabel": false
         }

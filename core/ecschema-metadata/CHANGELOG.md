@@ -1,6 +1,14 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Updating ECSchema-Metadata docs to clarify that FormatOverrides return a fully qualified name for both name and fullname.  Update tests to make it clear as well
+- Add ability to get inherited custom attributes from base properties
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

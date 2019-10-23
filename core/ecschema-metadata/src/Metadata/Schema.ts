@@ -66,6 +66,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @internal
    */
   constructor(context: SchemaContext);
+  /** @internal */
   constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, readVer?: SchemaContext | number, writeVer?: number, minorVer?: number) {
     this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
     this._context = context;

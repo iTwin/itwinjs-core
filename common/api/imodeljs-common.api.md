@@ -16,7 +16,6 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
-import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
@@ -70,30 +69,33 @@ export namespace AmbientOcclusion {
         // (undocumented)
         readonly blurTexelStepSize?: number;
         readonly intensity?: number;
+        readonly maxDistance?: number;
         readonly texelStepSize?: number;
         readonly zLengthCap?: number;
     }
     export class Settings implements Props {
         // (undocumented)
-        readonly bias?: number;
+        readonly bias: number;
         // (undocumented)
-        readonly blurDelta?: number;
+        readonly blurDelta: number;
         // (undocumented)
-        readonly blurSigma?: number;
+        readonly blurSigma: number;
         // (undocumented)
-        readonly blurTexelStepSize?: number;
+        readonly blurTexelStepSize: number;
         // (undocumented)
         static defaults: Settings;
         // (undocumented)
         static fromJSON(json?: Props): Settings;
         // (undocumented)
-        readonly intensity?: number;
+        readonly intensity: number;
         // (undocumented)
-        readonly texelStepSize?: number;
+        readonly maxDistance: number;
+        // (undocumented)
+        readonly texelStepSize: number;
         // (undocumented)
         toJSON(): Props;
         // (undocumented)
-        readonly zLengthCap?: number;
+        readonly zLengthCap: number;
     }
 }
 
@@ -1144,6 +1146,7 @@ export class ColorIndex {
 // @public
 export enum CommonLoggerCategory {
     ElementProps = "imodeljs-common.ElementProps",
+    Geometry = "imodeljs-common.Geometry",
     RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
@@ -1768,6 +1771,8 @@ export class FrustumPlanes {
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
     readonly isValid: boolean;
+    // (undocumented)
+    readonly planes: ClipPlane[] | undefined;
     }
 
 // @internal (undocumented)
@@ -3339,6 +3344,7 @@ export class Placement2d implements Placement2dProps {
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point2d;
     readonly rotation: Matrix3d;
@@ -3367,6 +3373,7 @@ export class Placement3d implements Placement3dProps {
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point3d;
     readonly rotation: Matrix3d;
@@ -4542,7 +4549,7 @@ export interface SceneLightsProps {
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
-    clipGeometry?: ClipVector;
+    clipGeometry?: any;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
 }
@@ -4790,31 +4797,27 @@ export namespace SpatialClassificationProps {
     export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
     export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
+        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
         // (undocumented)
         inside: Display;
         // (undocumented)
-        outside: Display;
+        isVolumeClassifier: boolean;
         // (undocumented)
-        type: number;
+        outside: Display;
+        readonly type = 0;
     }
     export interface FlagsProps {
         // (undocumented)
         inside: SpatialClassificationProps.Display;
         // (undocumented)
-        outside: SpatialClassificationProps.Display;
+        isVolumeClassifier?: boolean;
         // (undocumented)
-        type: number;
+        outside: SpatialClassificationProps.Display;
+        readonly type: number;
     }
     export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-    }
-    export enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
     }
 }
 

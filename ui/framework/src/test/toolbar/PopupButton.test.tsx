@@ -7,6 +7,7 @@ import { mount, shallow, ReactWrapper } from "enzyme";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
+
 import TestUtils from "../TestUtils";
 import {
   PopupButton,
@@ -14,6 +15,10 @@ import {
   BaseItemState,
 } from "../../ui-framework";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { Item } from "@bentley/ui-ninezone";
+import { BadgeType } from "@bentley/ui-abstract";
+
+// cSpell:ignore buttonstate
 
 describe("<PopupButton />", async () => {
   before(async () => {
@@ -40,7 +45,8 @@ describe("<PopupButton />", async () => {
   });
 
   it("should render with many props", async () => {
-    const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" labelKey="Sample:test.key" isVisible={true} isEnabled={true} isActive={true} isPressed={true}>
+    const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" labelKey="Sample:test.key"
+      isVisible={true} isEnabled={true} isActive={true} isPressed={true} badgeType={BadgeType.New}>
       <div style={{ width: "200px", height: "100px" }}>
         hello world!
       </div>
@@ -185,5 +191,18 @@ describe("<PopupButton />", async () => {
     divWithOnOutsideClick.prop("onOutsideClick")!(event);
 
     expect(spy.called).to.be.false;
+  });
+
+  it("should minimize on Escape down", () => {
+    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    const spy = sinon.spy(sut.instance(), "minimize");
+    const item = sut.find(Item);
+
+    item.simulate("keyDown", { key: "Escape" });
+
+    expect(spy.called).to.be.true;
   });
 });

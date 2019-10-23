@@ -247,7 +247,6 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
     prog.addGraphicUniform("u_hilite_settings", (uniform, params) => {
       const c = params.target.hiliteColor;
       const e = params.target.emphasisColor;
-      const vf = params.target.currentViewFlags;
       const m = scratchHiliteSettings;
       m.data[0] = c.red;
       m.data[1] = c.green;
@@ -257,7 +256,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
       m.data[5] = e.blue;
       m.data[6] = params.target.hiliteSettings.visibleRatio;
       m.data[7] = params.target.emphasisSettings.visibleRatio;
-      m.data[8] = params.geometry.wantMixHiliteColorForFlash(vf, params.target) ? 1.0 : 0.0;
+      m.data[8] = params.geometry.getFlashMode(params);
       uniform.setMatrix3(m);
     });
   });
@@ -646,6 +645,30 @@ vec4 doApplyFlash(float flags, vec4 baseColor) {
 }
 `;
 
+const doClassifierFlash = `
+  vec4 applyClassifierFlash(vec4 baseColor) {
+    const float maxBrighten = 0.2;
+    float brighten = u_flash_intensity * maxBrighten;
+    vec3 brightRgb = baseColor.rgb + brighten;
+    return vec4(brightRgb, baseColor.a);
+  }
+`;
+
+/** @internal */
+export function addClassifierFlash(frag: FragmentShaderBuilder): void {
+  addFlashIntensity(frag);
+  addHiliteSettings(frag);
+  frag.addFunction(doClassifierFlash);
+}
+
+function addFlashIntensity(frag: FragmentShaderBuilder): void {
+  frag.addUniform("u_flash_intensity", VariableType.Float, (prog) => {
+    prog.addProgramUniform("u_flash_intensity", (uniform, params) => {
+      uniform.setUniform1f(params.target.flashIntensity);
+    });
+  });
+}
+
 function addApplyFlash(frag: FragmentShaderBuilder) {
   addHiliteSettings(frag);
   addEmphasisFlags(frag);
@@ -653,12 +676,7 @@ function addApplyFlash(frag: FragmentShaderBuilder) {
   frag.addFunction(extractNthBit);
   frag.addFunction(doApplyFlash);
   frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
-
-  frag.addUniform("u_flash_intensity", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_flash_intensity", (uniform, params) => {
-      uniform.setUniform1f(params.target.flashIntensity);
-    });
-  });
+  addFlashIntensity(frag);
 }
 
 /** @internal */

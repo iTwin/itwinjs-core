@@ -6,10 +6,11 @@ import * as sinon from "sinon";
 import * as Moq from "typemoq";
 import { RectangleProps, Rectangle } from "@bentley/ui-core";
 import { ZonesManagerProps, ZonesManager } from "../../../ui-ninezone";
-import { GrowStrategy, ResizeStrategy, GrowTop, ShrinkBottom, GrowBottom, ShrinkTop, GrowLeft, ShrinkRight, GrowRight, ShrinkLeft, ShrinkStrategy, ShrinkHorizontalStrategy, ShrinkVerticalStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
+import { GrowStrategy, ResizeStrategy, GrowTop, ShrinkBottom, GrowBottom, ShrinkTop, GrowLeft, ShrinkRight, GrowRight, ShrinkLeft, ShrinkStrategy, ShrinkHorizontalStrategy, ShrinkVerticalStrategy, UpdateWindowResizeSettings } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
 import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 import { TopZones, LeftZones, BottomZones, RightZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import TestProps from "./TestProps";
 
 const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();
 const zonesManagerPropsMock = Moq.Mock.ofType<ZonesManagerProps>();
@@ -215,7 +216,7 @@ describe("GrowTop", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkBottom>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkBottom"]>();
     zonesManagerMock.setup((x) => x.shrinkBottom).returns(() => shrinkStrategy.object);
     const sut = new GrowTop(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -261,7 +262,7 @@ describe("GrowBottom", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkTop>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkTop"]>();
     zonesManagerMock.setup((x) => x.shrinkTop).returns(() => shrinkStrategy.object);
     const sut = new GrowBottom(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -307,7 +308,7 @@ describe("GrowLeft", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkRight>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkRight"]>();
     zonesManagerMock.setup((x) => x.shrinkRight).returns(() => shrinkStrategy.object);
     const sut = new GrowLeft(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -376,7 +377,7 @@ describe("GrowRight", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkLeft>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkLeft"]>();
     zonesManagerMock.setup((x) => x.shrinkLeft).returns(() => shrinkStrategy.object);
     const sut = new GrowRight(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -673,7 +674,7 @@ describe("ShrinkTop", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkBottom>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkTop"]>();
     zonesManagerMock.setup((x) => x.shrinkTop).returns(() => shrinkStrategy.object);
     const sut = new ShrinkTop(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -719,7 +720,7 @@ describe("ShrinkBottom", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkBottom>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkBottom"]>();
     zonesManagerMock.setup((x) => x.shrinkBottom).returns(() => shrinkStrategy.object);
     const sut = new ShrinkBottom(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -765,7 +766,7 @@ describe("ShrinkLeft", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkLeft>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkLeft"]>();
     zonesManagerMock.setup((x) => x.shrinkLeft).returns(() => shrinkStrategy.object);
     const sut = new ShrinkLeft(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -811,7 +812,7 @@ describe("ShrinkRight", () => {
   });
 
   it("should return shrink strategy", () => {
-    const shrinkStrategy = Moq.Mock.ofType<ShrinkRight>();
+    const shrinkStrategy = Moq.Mock.ofType<ZonesManager["shrinkRight"]>();
     zonesManagerMock.setup((x) => x.shrinkRight).returns(() => shrinkStrategy.object);
     const sut = new ShrinkRight(zonesManagerMock.object);
     const strategy = sut.getShrinkStrategy();
@@ -823,5 +824,93 @@ describe("ShrinkRight", () => {
     const sut = new ShrinkRight(zonesManagerMock.object);
     const resizedBounds = sut.resize(new Rectangle(0, 100, 200, 300), 20, 10);
     resizedBounds.should.deep.eq(new Rectangle(-10, 100, 170, 300));
+  });
+});
+
+describe("UpdateWindowResizeSettings", () => {
+  describe("getMaxResize", () => {
+    it("should call resizeStrategy", () => {
+      const resizeStrategy = Moq.Mock.ofType<ResizeStrategy>();
+      resizeStrategy.setup((x) => x.getMaxResize(4, zonesManagerPropsMock.object)).returns(() => 50);
+      const sut = new UpdateWindowResizeSettings(zonesManagerMock.object, resizeStrategy.object);
+      const returned = sut.getMaxResize(4, zonesManagerPropsMock.object);
+
+      resizeStrategy.verify((x) => x.getMaxResize(4, zonesManagerPropsMock.object), Moq.Times.once());
+      returned.should.eq(50);
+    });
+  });
+
+  describe("tryResizeFloating", () => {
+    it("should call resizeStrategy", () => {
+      const resizeStrategy = Moq.Mock.ofType<ResizeStrategy>();
+      const result = Moq.Mock.ofType<ZonesManagerProps>();
+      resizeStrategy.setup((x) => x.tryResizeFloating(4, 10, zonesManagerPropsMock.object)).returns(() => result.object);
+      const sut = new UpdateWindowResizeSettings(zonesManagerMock.object, resizeStrategy.object);
+      const returned = sut.tryResizeFloating(4, 10, zonesManagerPropsMock.object);
+
+      resizeStrategy.verify((x) => x.tryResizeFloating(4, 10, zonesManagerPropsMock.object), Moq.Times.once());
+      (returned === result.object).should.true;
+    });
+  });
+
+  describe("tryResize", () => {
+    it("should call resizeStrategy", () => {
+      const resizeStrategy = Moq.Mock.ofType<ResizeStrategy>();
+      resizeStrategy.setup((x) => x.tryResize(4, 10, Moq.It.isAny())).returns(() => TestProps.defaultProps);
+      const sut = new UpdateWindowResizeSettings(new ZonesManager(), resizeStrategy.object);
+      const returned = sut.tryResize(4, 10, TestProps.defaultProps);
+
+      resizeStrategy.verify((x) => x.tryResize(4, 10, Moq.It.isAny()), Moq.Times.once());
+      (returned === TestProps.defaultProps).should.true;
+    });
+
+    it("should set horizontal percentage mode", () => {
+      const resizeStrategy = Moq.Mock.ofType<ResizeStrategy>();
+      const resizedProps = {
+        ...TestProps.defaultProps,
+        zones: {
+          ...TestProps.defaultProps.zones,
+          4: {
+            ...TestProps.defaultProps.zones[4],
+            bounds: {
+              ...TestProps.defaultProps.zones[4].bounds,
+              right: 297,
+            },
+          },
+        },
+      };
+
+      resizeStrategy.setup((x) => x.tryResize(4, 10, Moq.It.isAny())).returns(() => resizedProps);
+      const zonesManager = new ZonesManager();
+      const sut = new UpdateWindowResizeSettings(zonesManager, resizeStrategy.object);
+      sut.tryResize(4, 10, TestProps.defaultProps);
+
+      zonesManager.getZoneManager(4).windowResize.hMode.should.eq("Percentage");
+    });
+
+    it("should set vertical percentage mode", () => {
+      const resizeStrategy = Moq.Mock.ofType<ResizeStrategy>();
+      const resizedProps = {
+        ...TestProps.defaultProps,
+        zones: {
+          ...TestProps.defaultProps.zones,
+          4: {
+            ...TestProps.defaultProps.zones[4],
+            bounds: {
+              ...TestProps.defaultProps.zones[4].bounds,
+              top: 200,
+              bottom: 421,
+            },
+          },
+        },
+      };
+
+      resizeStrategy.setup((x) => x.tryResize(4, 10, Moq.It.isAny())).returns(() => resizedProps);
+      const zonesManager = new ZonesManager();
+      const sut = new UpdateWindowResizeSettings(zonesManager, resizeStrategy.object);
+      sut.tryResize(4, 10, TestProps.defaultProps);
+
+      zonesManager.getZoneManager(4).windowResize.vMode.should.eq("Percentage");
+    });
   });
 });

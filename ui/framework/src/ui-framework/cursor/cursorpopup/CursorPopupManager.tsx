@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { UiEvent, Point, PointProps, Size, SizeProps, RectangleProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { CursorPopup } from "./CursorPopup";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../UiFramework";

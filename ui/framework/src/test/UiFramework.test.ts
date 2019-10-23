@@ -7,7 +7,7 @@ import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
 import * as moq from "typemoq";
 
@@ -118,8 +118,9 @@ describe("UiFramework", () => {
     await TestUtils.initializeUiFramework();
 
     const mockToken = new MockAccessToken();
-    UiFramework.setAccessToken(mockToken);
-    expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id);
+
+    UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
+    expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id); // tslint:disable-line: deprecation
 
     UiFramework.setDefaultRulesetId("TestRuleSet");
     expect(UiFramework.getDefaultRulesetId()).to.eq("TestRuleSet");
@@ -141,6 +142,10 @@ describe("UiFramework", () => {
     const menuData: CursorMenuData = { items: [], position: { x: 100, y: 100 } };
     UiFramework.openCursorMenu(menuData);
     expect(UiFramework.getCursorMenuData()).not.to.be.undefined;
+
+    const viewState = moq.Mock.ofType<ViewState>();
+    UiFramework.setDefaultViewState(viewState.object);
+    expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
   });
 
 });

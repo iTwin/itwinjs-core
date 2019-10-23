@@ -1668,27 +1668,8 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public createScene(context: SceneContext): void {
     super.createScene(context);
-    this.createSolarShadowMap(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-  }
-
-  private createSolarShadowMap(context: SceneContext): void {
-    let enabled = false;
-    const displayStyle = this.getDisplayStyle3d();
-    if (undefined !== displayStyle && displayStyle.wantShadows) {
-      const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
-      const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
-      const solarDirection = displayStyle.sunDirection ? displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
-      if (undefined !== viewFrustum) {
-        const shadowMap = context.target.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this);
-        if (undefined !== shadowMap) {
-          shadowMap.collectGraphics(context);
-          enabled = true;
-        }
-      }
-    }
-    if (!enabled && undefined !== context.target.solarShadowMap)
-      context.target.solarShadowMap.disable();
+    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 }
 

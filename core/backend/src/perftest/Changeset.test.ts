@@ -68,6 +68,7 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
   const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
   rootEl.userLabel = rootEl.userLabel + "changed";
   iModelPullAndPush.elements.updateElement(rootEl);
+  await iModelPullAndPush.concurrencyControl.request(requestContext);
   iModelPullAndPush.saveChanges("user changes root subject of the imodel");
   const endTime = new Date().getTime();
   const elapsedTime = (endTime - startTime) / 1000.0;

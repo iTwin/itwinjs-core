@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Implement proper flashing and hiliting of classified geometry.
+- Add new range that represents the dipslayed extents.  This is currently used to set the displayed depths.
+- Dont expand displayed extents for unbounded trees.
+- Added support for overriding feature symbology to use a hilite effect.
+- Fix display artifacts caused by interpolation of material settings.
+- Rework frustum calculation for terrain draping.
+- Fix inability to locate polylines and edges if their transparency was overridden.
+- Add GPU timing queries for devtools.
+- Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)
+- Enable display of non-spatial, spatially-located models in spatial views.
+- Geometry of planar classifier models is not required to itself be planar.
+- #165461 #183765 #184303 Fixes for getting image from readMarkup
+- Refine planar texture frustum calculation to handle parallel views.
+- Errors during shader program compilation produce exceptions.
+- Improve shadow lighting to match shadow direction
+- Fixed multiple viewport shadows
+- Refine classification frustum calculation.
+- Support transparency for terrain and planar classification.
+- #168481 Tool assistance for viewing tools. Prompt punctuation consistency.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

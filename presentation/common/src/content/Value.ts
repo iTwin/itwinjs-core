@@ -63,6 +63,7 @@ export interface ValuesArray extends Array<Value> { }
  * @public
  */
 export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
+/** @public */
 export namespace DisplayValue {
   /** Is the value a primitive */
   export function isPrimitive(value: DisplayValue): value is string | undefined { return isPrimitiveValue(value); }

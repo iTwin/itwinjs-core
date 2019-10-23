@@ -10,11 +10,11 @@ import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderMode, ViewFlag, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
+import { Batch, Branch, Graphic, GraphicsArray, isFeatureHilited } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
-import { Target } from "./Target";
+import { Target, Hilites } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic, AnimationBranchState, ClippingType } from "../System";
 import { TechniqueId } from "./TechniqueId";
@@ -98,7 +98,7 @@ export class DrawParams {
       // Shader will compute final model-view matrix based on this and the per-instance transform.
       const instancedGeom = geometry.asInstanced;
       if (undefined !== instancedGeom) {
-        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcTransform(modelMatrix), modelViewMatrix);
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), modelViewMatrix);
       } else {
         Matrix4.fromTransform(modelMatrix, this._modelMatrix);
         modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
@@ -257,8 +257,18 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
       if (undefined !== featureElementId)
         return featureElementId.toString() === flashedId.toString();
     }
-
     return Id64.isInvalid(flashedId);
+  }
+
+  public computeIsHilited(hilites: Hilites): boolean {
+    const sp = this.primitive.cachedGeometry.asSurface;
+    if (undefined !== sp && undefined !== sp.mesh.uniformFeatureId) {
+      const fi = sp.mesh.uniformFeatureId;
+      const feature = this._batch.featureTable.getPackedFeature(fi);
+      if (undefined !== feature)
+        return isFeatureHilited(feature, hilites);
+    }
+    return false;
   }
 }
 
@@ -491,6 +501,12 @@ export class RenderCommands {
       idx -= 1;
 
     return this._commands[idx];
+  }
+
+  public replaceCommands(pass: RenderPass, cmds: DrawCommands): void {
+    const idx = pass as number;
+    this._commands[idx].splice(0);
+    this._commands[idx] = cmds;
   }
 
   public addHiliteBranch(branch: Branch, batch: Batch, pass: RenderPass): void {

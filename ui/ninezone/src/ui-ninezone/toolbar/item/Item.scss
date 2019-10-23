@@ -11,7 +11,7 @@
   border-color: $buic-background-toolbutton-stroke;
   border-style: solid;
   cursor: pointer;
-  transition: all 500ms ease;
+  transition: background-color 500ms ease;
   position: relative;
   background: $buic-background-window linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
 

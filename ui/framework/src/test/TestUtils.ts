@@ -248,5 +248,6 @@ export const storageMock = () => {
 };
 
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
 export default TestUtils;   // tslint:disable-line: no-default-export

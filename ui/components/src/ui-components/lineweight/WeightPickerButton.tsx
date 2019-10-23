@@ -12,7 +12,7 @@ import ReactResizeDetector from "react-resize-detector";
 import { LineWeightSwatch } from "./Swatch";
 import "./WeightPickerButton.scss";
 
-// cSpell:ignore weightpicker
+// cSpell:ignore weightpicker lineweight
 
 /** Properties for the [[WeightPickerButton]] React component
  * @beta
@@ -209,6 +209,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               style={{ width: `${width}px` }}
               isOpen={this.state.showPopup}
               position={Position.Bottom}
+              offset={0}
+              showShadow={false}
               onClose={this._closePopup}
               onOpen={this._onPopupOpened}
               focusTarget={`#${this.buildIdForWeight(this.props.activeWeight)}`}

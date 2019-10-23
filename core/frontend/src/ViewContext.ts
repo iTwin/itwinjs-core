@@ -435,12 +435,13 @@ export class SceneContext extends RenderContext {
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   private _viewFrustum?: ViewFrustum;
   private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
+  private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
   }
 
-  public get viewFrustum(): ViewFrustum | undefined {
+  public get viewFrustum(): ViewFrustum {
     return undefined !== this._viewFrustum ? this._viewFrustum : this.viewport.viewFrustum;
   }
 
@@ -515,6 +516,9 @@ export class SceneContext extends RenderContext {
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
   }
+
+  public getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined { return this._activeVolumeClassifierProps; }
+  public setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined) { this._activeVolumeClassifierProps = properties; }
 
   public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
     const frust = undefined !== plane ? ViewFrustum.createFromViewportAndPlane(this.viewport, plane) : undefined;

@@ -10,6 +10,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
+import { imageBufferToPngDataUrl } from "../../ImageUtil";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -313,6 +314,27 @@ export abstract class TextureHandle implements IDisposable {
 
   protected constructor(glTexture: WebGLTexture) {
     this._glTexture = glTexture;
+  }
+
+  /** For debugging purposes, open a new window containing this texture as an image. */
+  public showDebugImage(): void {
+    const gl = System.instance.context;
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.getHandle()!, 0);
+    if (gl.FRAMEBUFFER_COMPLETE === gl.checkFramebufferStatus(gl.FRAMEBUFFER)) {
+      const w = this.width;
+      const h = this.height;
+      const pixels = new Uint8Array(w * h * 4);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w)!;
+      const url = imageBufferToPngDataUrl(buffer, false);
+      window.open(url!, "Classifiers");
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fbo);
   }
 }
 

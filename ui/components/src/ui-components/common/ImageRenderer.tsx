@@ -5,7 +5,8 @@
 /** @module Common */
 
 import * as React from "react";
-import { WebFontIcon, UiError, SvgSprite } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { WebFontIcon, SvgSprite } from "@bentley/ui-core";
 import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 import { UiComponents } from "../UiComponents";
 

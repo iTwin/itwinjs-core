@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d, Vector3d } from "@bentley/geometry-core";
-import { imageElementFromUrl } from "./ImageUtil";
-import { DecorateContext } from "./ViewContext";
-import { CanvasDecoration } from "./render/System";
-import { ViewRect, Viewport } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ToolTipOptions } from "./NotificationManager";
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
+import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { ColorDef } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { imageElementFromUrl } from "./ImageUtil";
+import { IModelApp } from "./IModelApp";
+import { ToolTipOptions } from "./NotificationManager";
+import { CanvasDecoration } from "./render/System";
+import { BeButtonEvent } from "./tools/Tool";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
 
 /** The types that may be used for Markers
  * @public
@@ -109,7 +110,7 @@ export class Marker implements CanvasDecoration {
   public drawFunc?(ctx: CanvasRenderingContext2D): void;
 
   /** Called when the mouse pointer enters this Marker. */
-  public onMouseEnter(ev: BeButtonEvent) { this._isHilited = true; this._hiliteColor = ev.viewport!.hilite.color; }
+  public onMouseEnter(ev: BeButtonEvent) { this._isHilited = true; this._hiliteColor = ev.viewport!.hilite.color; IModelApp.accuSnap.clear(); }
 
   /** Called when the mouse pointer leaves this Marker. */
   public onMouseLeave() { this._isHilited = false; }
@@ -314,6 +315,8 @@ export class Cluster<T extends Marker> {
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
+  private _viewport?: ScreenViewport;
+
   /** @internal */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
   /** @internal */
@@ -327,14 +330,32 @@ export abstract class MarkerSet<T extends Marker> {
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public get markers(): Set<T> { return this._markers; }
 
-  public constructor() {
+  /** Construct a new MarkerSet for a specific ScreenViewport.
+   * @param viewport the ScreenViewport for this MarkerSet. If undefined, use [[IModelApp.viewManager.selectedView]]
+   */
+  public constructor(viewport?: ScreenViewport) {
+    this._viewport = undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
     const markDirty = () => this.markDirty();
     this._markers.onAdded.addListener(markDirty);
     this._markers.onDeleted.addListener(markDirty);
     this._markers.onCleared.addListener(markDirty);
   }
 
-  /** [[addDecoration]] does not recreate the set of decoration graphics if it can detect that the previously-created set remains valid.
+  /** The ScreenViewport of this MarkerSet. */
+  public get viewport(): ScreenViewport | undefined { return this._viewport; }
+
+  /** Change the ScreenViewport for this MarkerSet.
+   * After this call, the markers from this MarkerSet will only appear in the supplied ScreenViewport.
+   * @beta
+   */
+  public changeViewport(viewport: ScreenViewport) {
+    this._viewport = viewport;
+    this.markDirty();
+  }
+
+  /** Indicate that this MarkerSet has been changed and is now *dirty*.
+   * This is necessary because [[addDecoration]] does not recreate the set of decoration graphics
+   * if it can detect that the previously-created set remains valid.
    * The set becomes invalid when the view frustum changes, or the contents of [[markers]] changes.
    * If some other criterion affecting the graphics changes, invoke this method. This should not be necessary for most use cases.
    * @public
@@ -361,8 +382,11 @@ export abstract class MarkerSet<T extends Marker> {
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
    */
-  public addDecoration(context: DecorateContext) {
+  public addDecoration(context: DecorateContext): void {
     const vp = context.viewport;
+    if (vp !== this._viewport)
+      return; // not viewport of this MarkerSet, ignore it
+
     const entries = this._entries;
 
     // Don't recreate the entries array if the view hasn't changed. This is important for performance, but also necessary for hilite of

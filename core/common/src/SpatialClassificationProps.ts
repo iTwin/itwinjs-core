@@ -11,11 +11,6 @@ import { Id64String } from "@bentley/bentleyjs-core";
  * @beta
  */
 export namespace SpatialClassificationProps {
-  /** Classification Type
-   * @beta
-   */
-  export enum Type { Planar = 0, Volume = 1 }
-
   /** Display modes
    * @beta
    */
@@ -38,18 +33,26 @@ export namespace SpatialClassificationProps {
   export interface FlagsProps {
     inside: SpatialClassificationProps.Display;
     outside: SpatialClassificationProps.Display;
-    type: number;         // Not currently implemented
+    isVolumeClassifier?: boolean;
+    /** Currently unused; leave set to zero. */
+    readonly type: number;
   }
 
   /** Flags
    * @beta
    */
   export class Flags implements FlagsProps {
-    public inside: Display = Display.ElementColor;
-    public outside: Display = Display.Dimmed;
-    public type: number = 0;         // Not currently implemented
+    public inside: Display;
+    public outside: Display;
+    public isVolumeClassifier: boolean;
+    /** Currently unused; leave set to zero. */
+    public readonly type = 0;
 
-    public constructor(inside = Display.ElementColor, outside = Display.Dimmed) { this.inside = inside; this.outside = outside; }
+    public constructor(inside = Display.ElementColor, outside = Display.Dimmed, isVolumeClassifier = false) {
+      this.inside = inside;
+      this.outside = outside;
+      this.isVolumeClassifier = isVolumeClassifier;
+    }
   }
 
   /** Describes a single classifier.
@@ -80,7 +83,7 @@ export namespace SpatialClassificationProps {
     if (lhs === rhs)
       return true;
 
-    return lhs.inside === rhs.inside && lhs.outside === rhs.outside;
+    return lhs.inside === rhs.inside && lhs.outside === rhs.outside && lhs.isVolumeClassifier === rhs.isVolumeClassifier;
   }
 
   /** Returns true if two Classifiers are equivalent.

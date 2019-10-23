@@ -7,7 +7,13 @@
 
 export * from "./ui-core/UiCore";
 
+export * from "./ui-core/badge/Badge";
+export * from "./ui-core/badge/BadgeUtilities";
+export * from "./ui-core/badge/BetaBadge";
+export * from "./ui-core/badge/NewBadge";
+
 export * from "./ui-core/base/Div";
+export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/ScrollView";
@@ -110,6 +116,9 @@ export * from "./ui-core/inputs/numericinput/ReactNumericInput";
 export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
+
+export * from "./ui-core/form/Field";
+export * from "./ui-core/form/Form";
 
 export * from "./ui-core/tabs/HorizontalTabs";
 export * from "./ui-core/tabs/VerticalTabs";

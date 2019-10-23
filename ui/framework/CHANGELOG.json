@@ -2,6 +2,36 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-framework_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for CursorMenu"
+          },
+          {
+            "comment": "Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools."
+          },
+          {
+            "comment": "Fix Tool Settings label to ensure it stays in sync with active tool."
+          },
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Close tool group panel on toolbar item click."
+          },
+          {
+            "comment": "Ability to drag and resize tool settings widget."
+          },
+          {
+            "comment": "Ignore widgetDef state in WidgetContentRenderer of tool settings."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "tag": "@bentley/ui-framework_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",

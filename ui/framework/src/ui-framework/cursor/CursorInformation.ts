@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Cursor */
 
-import { RelativePosition } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
 /** Enum for Cursor Direction parts

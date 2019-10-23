@@ -27,6 +27,8 @@ import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
 import { TileAdmin } from "./tile/TileAdmin";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { PluginAdmin } from "./plugin/Plugin";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -42,8 +44,7 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { PluginAdmin } from "./plugin/Plugin";
+import { UiAdmin } from "@bentley/ui-abstract";
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -92,6 +93,8 @@ export interface IModelAppOptions {
   terrainProvider?: TerrainProvider;
   /** @internal */
   pluginAdmin?: PluginAdmin;
+  /** If present, supplies the [[UiAdmin]] for this session. */
+  uiAdmin?: UiAdmin;
 }
 
 /**
@@ -122,6 +125,7 @@ export class IModelApp {
   private static _toolAdmin: ToolAdmin;
   private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
+  private static _uiAdmin: UiAdmin;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -176,6 +180,8 @@ export class IModelApp {
   public static get terrainProvider() { return this._terrainProvider; }
   /** @internal */
   public static get pluginAdmin() { return this._pluginAdmin; }
+  /** The [[UiAdmin]] for this session. */
+  public static get uiAdmin() { return this._uiAdmin; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -286,6 +292,7 @@ export class IModelApp {
     this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
+    this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
 
     this.renderSystem.onInitialized();
     this.viewManager.onInitialized();
@@ -298,6 +305,7 @@ export class IModelApp {
     this.quantityFormatter.onInitialized();
     if (this._terrainProvider)
       this._terrainProvider.onInitialized();
+    this.uiAdmin.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */

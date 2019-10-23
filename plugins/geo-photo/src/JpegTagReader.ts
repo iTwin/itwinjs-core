@@ -82,7 +82,7 @@ export class JpegTagReader {
     0xA401: "CustomRendered",          // Special processing
     0xA402: "ExposureMode",            // Exposure mode
     0xA403: "WhiteBalance",            // 1 = auto white balance, 2 = manual
-    0xA404: "DigitalZoomRation",       // Digital zoom ratio
+    0xA404: "DigitalZoomRatio",        // Digital zoom ratio
     0xA405: "FocalLengthIn35mmFilm",   // Equivalent focal length assuming 35mm film camera (in mm)
     0xA406: "SceneCaptureType",        // Type of scene
     0xA407: "GainControl",             // Degree of overall image gain adjustment
@@ -490,7 +490,8 @@ export class JpegTagReader {
     if (!ifd1OffsetPointer) {
       // console.log('******** IFD1Offset is empty, image thumb not found ********');
       return new Map<string, ImageTagValue>();
-    } else if (ifd1OffsetPointer > dataView.byteLength) { // this should not happen
+    } else if (ifd1OffsetPointer > dataView.byteLength) {
+      Logger.logWarning(loggerCategory, "IFD1Offset is outside the bounds of the DataView");
       // console.log('******** IFD1Offset is outside the bounds of the DataView ********');
       return new Map<string, ImageTagValue>();
     }
@@ -516,7 +517,11 @@ export class JpegTagReader {
             // extract the thumbnail
             const tOffset = tiffStart + (thumbTags.get("JpegIFOffset") as number);
             const tLength = thumbTags.get("JpegIFByteCount") as number;
-            thumbTags.set("blob", Buffer.from(dataView.buffer, tOffset, tLength));
+
+            if (tOffset + tLength > dataView.byteLength)
+              Logger.logWarning(loggerCategory, "Cannot extract thumbnail blob");
+            else
+              thumbTags.set("blob", Buffer.from(dataView.buffer, tOffset, tLength));
           }
           break;
 

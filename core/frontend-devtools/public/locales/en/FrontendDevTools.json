@@ -77,6 +77,18 @@
     },
     "FadeOut": {
       "keyin": "fdt fadeout"
+    },
+    "VCIntersectOn": {
+      "keyin": "fdt vcintersect on"
+    },
+    "VCIntersectOff": {
+      "keyin": "fdt vcintersect off"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
     }
   }
 }

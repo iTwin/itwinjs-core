@@ -1,6 +1,15 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Mon, 30 Sep 2019 22:28:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Added key-in to toggle between metric and imperial units formatting.
+- Add GPU timing queries for devtools.
+- Key-ins for modifying hilite settings.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT

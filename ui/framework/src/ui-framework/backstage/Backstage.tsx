@@ -11,6 +11,9 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
+import { UiFramework } from "../UiFramework";
+
+// cSpell:ignore safearea
 
 /** [[BackstageEvent]] arguments.
  * @public
@@ -66,6 +69,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
       iconSpec: "icon-home",
       labelKey: "UiFramework:commands.openBackstage",
       execute: () => {
+        UiFramework.backstageManager.toggle();
         if (Backstage.isBackstageVisible)
           Backstage.hide();
         else

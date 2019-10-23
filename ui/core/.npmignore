@@ -4,6 +4,7 @@
 !lib/**/*.js
 !lib/module/dev/ui-core.js.map
 !lib/**/*.*css
+!lib/**/*.svg
 !lib/public/**/*
 lib/test
 !*.md

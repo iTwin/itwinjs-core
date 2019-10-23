@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixes for making volume classifiers work.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Marc.Neely@bentley.com"
+}

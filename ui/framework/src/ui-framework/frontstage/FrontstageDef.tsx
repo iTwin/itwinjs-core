@@ -5,7 +5,7 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { NineZoneManagerProps } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "./FrontstageManager";

@@ -47,7 +47,7 @@ const options = [
   "--excludeExternals",
   "--excludeNotExported",
   "--ignoreCompilerErrors",
-  "--hideGenerator"
+  "--hideGenerator",
 ]
 
 if (argv.name) options.push("--name", argv.name);

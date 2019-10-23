@@ -5,12 +5,8 @@
 /** @module WebGL */
 import { GL } from "./GL";
 import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderSolarShadowMap, RenderGraphic, RenderClipVolume } from "../System";
-import { Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d, Geometry } from "@bentley/geometry-core";
-import { ModelSelectorState } from "../../ModelSelectorState";
-import { CategorySelectorState } from "../../CategorySelectorState";
-import { SpatialViewState } from "../../ViewState";
-import { Matrix4 } from "./Matrix";
+import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";
+import { Geometry, Vector3d, Point3d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
@@ -43,8 +39,6 @@ class SolarShadowMapDrawArgs extends Tile.DrawArgs {
     return new SolarShadowMapDrawArgs(planes, shadowMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
   }
 }
-
-const enum Status { BelowHorizon, OutOfSynch, WaitingForTiles, GraphicsReady, TextureReady }
 
 const shadowMapWidth = 4096;  // size of original depth buffer map
 const shadowMapHeight = shadowMapWidth; // TBD - Adjust for aspect ratio.
@@ -117,66 +111,32 @@ class Bundle {
 /** Describes the set of parameters which, when they change, require us to recreate the shadow map. */
 class ShadowMapParams {
   public readonly direction = new Vector3d();
-  public readonly treeRefs: TileTree.Reference[] = [];
   public readonly viewFrustum = new Frustum();
   public readonly settings: SolarShadows.Settings;
-  private _models: ModelSelectorState;
-  private _categories: CategorySelectorState;
 
-  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
+  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings) {
     direction.clone(this.direction);
     this.viewFrustum.setFrom(viewFrustum);
     this.settings = SolarShadows.Settings.fromJSON(settings);
-    this._models = view.modelSelector.clone();
-    this._categories = view.categorySelector.clone();
-
-    this.updateTreeRefs(view);
   }
 
   /** Returns true if the parameters have changed, requiring the shadow map to be recreated. */
-  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): boolean {
-    let changed = false;
-    if (!this.settings.equals(settings)) {
-      settings.clone(this.settings);
-      changed = true;
-    }
-
-    if (!this.viewFrustum.equals(viewFrustum)) {
-      changed = true;
-      this.viewFrustum.setFrom(viewFrustum);
-    }
-
-    if (!this.direction.isAlmostEqual(direction)) {
-      changed = true;
-      direction.clone(this.direction);
-    }
-
-    if (!this._models.equalState(view.modelSelector)) {
-      changed = true;
-      this._models = view.modelSelector.clone();
-      this.updateTreeRefs(view);
-    }
-
-    if (!this._categories.equalState(view.categorySelector)) {
-      changed = true;
-      this._categories = view.categorySelector.clone();
-    }
-
-    return changed;
-  }
-
-  private updateTreeRefs(view: SpatialViewState): void {
-    this.treeRefs.length = 0;
-    view.forEachModelTreeRef((ref) => this.treeRefs.push(ref));
+  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings): void {
+    settings.clone(this.settings);
+    this.viewFrustum.setFrom(viewFrustum);
+    direction.clone(this.direction);
   }
 }
 
-export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory.Consumer {
+const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
+
+export class SolarShadowMap implements RenderMemory.Consumer {
   private _bundle?: Bundle;
-  private _projectionMatrix = new Matrix4();
+  private _projectionMatrix = Matrix4d.createIdentity();
   private _graphics: RenderGraphic[] = [];
   private _shadowFrustum = new Frustum();
-  private _status = Status.OutOfSynch;
+  private _isReady = false;
+  private _enabled = false;
   private _params?: ShadowMapParams;
   private readonly _scratchRange = Range3d.createNull();
   private readonly _scratchTransform = Transform.createIdentity();
@@ -196,8 +156,9 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     return this._bundle;
   }
 
-  public get isReady() { return this._status === Status.TextureReady; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get isReady() { return this._isReady; }
+  public get isEnabled() { return this._enabled; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
   public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
   public get settings(): SolarShadows.Settings | undefined { return undefined !== this._params ? this._params.settings : undefined; }
@@ -205,8 +166,6 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
   public constructor() {
-    super();
-
     this._renderState = new RenderState();
     this._renderState.flags.depthMask = true;
     this._renderState.flags.blend = false;
@@ -218,10 +177,8 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this._batchState = new BatchState(this._branchStack);
   }
 
-  public get requiresSynch() { return this._status === Status.OutOfSynch; }
-
   public disable() {
-    this._status = Status.OutOfSynch;
+    this._enabled = this._isReady = false;
     this._bundle = dispose(this._bundle);
     this.clearGraphics();
   }
@@ -237,32 +194,6 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this.clearGraphics();
   }
 
-  public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
-    const minimumHorizonDirection = -.01;
-    if (direction.z > minimumHorizonDirection) {
-      this._status = Status.BelowHorizon;
-      return;
-    }
-
-    if (undefined === this._params)
-      this._params = new ShadowMapParams(viewFrustum, direction, settings, view);
-    else if (!this._params.update(viewFrustum, direction, settings, view))
-      return; // nothing changed.
-
-    this._status = Status.OutOfSynch;
-  }
-
-  private forEachTileTree(func: (tileTree: TileTree) => void) {
-    if (undefined === this._params)
-      return;
-
-    for (const treeRef of this._params.treeRefs) {
-      const tree = treeRef.treeOwner.load();
-      if (undefined !== tree)
-        func(tree);
-    }
-  }
-
   private clearGraphics() {
     for (const graphic of this._graphics)
       graphic.dispose();
@@ -270,38 +201,52 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this._graphics.length = 0;
   }
 
-  public collectGraphics(sceneContext: SceneContext) {
-    if (this.isReady)
-      return;
+  public update(context: SceneContext | undefined) {
+    this._isReady = false;
+    this.clearGraphics();
 
-    const iModel = sceneContext.viewport.iModel;
-    if (this._status === Status.BelowHorizon)
-      return;
-
-    if (undefined === this._params) {
-      assert(false);
+    if (undefined === context || !context.viewport.view.isSpatialView()) {
+      this.disable();
       return;
     }
 
-    for (const treeRef of this._params.treeRefs) {
-      if (treeRef.treeOwner.loadStatus < TileTree.LoadStatus.Loaded) {
-        this._status = Status.WaitingForTiles;
-        return;
-      }
-    }
+    const view = context.viewport.view;
+    const style = view.getDisplayStyle3d();
+    let sunDirection  = style.sunDirection;
+    if (undefined === sunDirection)
+      sunDirection = defaultSunDirection;
+
+    const minimumHorizonDirection = -.01;
+    if (sunDirection.z > minimumHorizonDirection)
+      return;
+
+    this._enabled = true;
+    const viewFrustum = context.viewFrustum.getFrustum();
+    const settings = style.settings.solarShadowsSettings;
+    if (undefined === this._params)
+      this._params = new ShadowMapParams(viewFrustum, sunDirection, settings);
+    else
+      this._params.update(viewFrustum, sunDirection, settings);
+
+    const iModel = view.iModel;
 
     const worldToMapTransform = Transform.createRefs(Point3d.createZero(), Matrix3d.createRigidHeadsUp(this._params.direction.negate()).inverse()!);
     const worldToMap = Matrix4d.createTransform(worldToMapTransform);
     const mapToWorld = worldToMap.createInverse()!;
 
-    const backgroundOn = sceneContext.viewFlags.backgroundMap;
+    const backgroundOn = context.viewFlags.backgroundMap;
     const shadowRange = Range3d.createTransformedArray(worldToMapTransform, this._params.viewFrustum.points);
 
     // By fitting to the actual tiles we can reduce the shadowRange and make better use of the texture pixels.
     if (!backgroundOn) {
       const viewTileRange = Range3d.createNull();
       this._scratchFrustumPlanes.init(this._params.viewFrustum);
-      this.forEachTileTree((tileTree) => tileTree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes));
+      view.forEachModelTreeRef((ref) => {
+        const tree = ref.treeOwner.load();
+        if (undefined !== tree)
+          tree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
+      });
+
       if (!viewTileRange.isNull)
         shadowRange.intersect(viewTileRange, shadowRange);
     }
@@ -322,9 +267,12 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
 
     const tileRange = Range3d.createNull();
     this._scratchFrustumPlanes.init(this._shadowFrustum);
-    const originalMissingTileCount = sceneContext.missingTiles.entries.length;
-    this.forEachTileTree(((tileTree) => {
-      const drawArgs = SolarShadowMapDrawArgs.create(sceneContext, this, tileTree, this._scratchFrustumPlanes);
+    view.forEachModelTreeRef(((ref) => {
+      const tileTree = ref.treeOwner.tileTree;
+      if (undefined === tileTree)
+        return;
+
+      const drawArgs = SolarShadowMapDrawArgs.create(context, this, tileTree, this._scratchFrustumPlanes);
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, this._scratchTransform);
       const selectedTiles = tileTree.selectTiles(drawArgs);
 
@@ -334,20 +282,18 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       }
 
       drawArgs.drawGraphics();
-      sceneContext.viewport.numSelectedTiles += selectedTiles.length;
     }));
 
-    if (tileRange.isNull || sceneContext.missingTiles.entries.length > originalMissingTileCount) {
-      this._status = Status.WaitingForTiles;
+    if (tileRange.isNull) {
       this.clearGraphics();
-    } else {
-      this._status = Status.GraphicsReady;
+    } else if (0 < this._graphics.length) {
       if (!backgroundOn) {
         shadowRange.intersect(tileRange, shadowRange);
+
+        // Avoid an uninvertible matrix on empty range...
         if (Geometry.isAlmostEqualNumber(shadowRange.low.x, shadowRange.high.x) ||
           Geometry.isAlmostEqualNumber(shadowRange.low.y, shadowRange.high.y) ||
           Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
-          this._status = Status.WaitingForTiles;
           this.clearGraphics();
           return;
         }
@@ -362,12 +308,14 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
         return;
       }
 
-      this._projectionMatrix.initFromMatrix4d(frustumMap.transform0);
+      this._projectionMatrix = frustumMap.transform0.clone();
     }
   }
 
   public draw(target: Target) {
-    if (this._status !== Status.GraphicsReady)
+    assert(this.isEnabled);
+
+    if (this.isReady || 0 === this._graphics.length)
       return;
 
     const bundle = this.getBundle(target);
@@ -438,6 +386,6 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     System.instance.applyRenderState(prevState);
     System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
     this.clearGraphics();
-    this._status = Status.TextureReady;
+    this._isReady = true;
   }
 }

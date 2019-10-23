@@ -115,6 +115,18 @@ export class I18N {
     return this.translate(fullKey, options);
   }
 
+  /** Gets the English translation.
+   * @param namespace - the namespace that identifies the particular localization file that contains the property.
+   * @param key - the key that matches a property in the JSON localization file.
+   *
+   * @internal
+   */
+  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): any {
+    const en = this._i18next.getFixedT("en", namespace);
+    const str = en(key, options);
+    return str;
+  }
+
   /** @internal */
   public loadNamespace(name: string, i18nCallback: any) { this._i18next!.loadNamespaces(name, i18nCallback); }
 

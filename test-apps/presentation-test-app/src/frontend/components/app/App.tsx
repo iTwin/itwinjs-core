@@ -14,13 +14,13 @@ import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
-import TreeWidget from "../tree-widget/TreeWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
+import { ControlledTreeWidget } from "../tree-widget/ControlledTreeWidget";
 
 export interface State {
   imodel?: IModelConnection;
@@ -182,7 +182,7 @@ export default class App extends React.Component<{}, State> {
           style={{
             gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
           }}>
-          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+          <ControlledTreeWidget imodel={imodel} rulesetId={rulesetId} />
           <div className="app-content-right-separator">
             <hr />
             <ElementSeparator

@@ -119,9 +119,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
     } else {
       const sel = () => this._itemPicked(shortcut);
       node = (
-        <ContextMenuItem key={index}
-          onSelect={sel}
-          icon={iconSpec} >
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec}>
           {label}
         </ContextMenuItem>
       );

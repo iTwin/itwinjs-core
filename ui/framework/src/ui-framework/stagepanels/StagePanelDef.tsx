@@ -57,6 +57,11 @@ export class StagePanelDef extends WidgetHost {
     });
   }
 
+  /** @internal */
+  public initializePanelState(panelState: StagePanelState) {
+    this._panelState = panelState;
+  }
+
   /** Indicates whether the panel is resizable. */
   public resizable: boolean = false;
   /** Any application data to attach to this Panel. */

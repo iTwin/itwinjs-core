@@ -1,5 +1,5 @@
 {
-  "rushVersion": "5.10.3",
+  "rushVersion": "5.14.0",
   "pnpmVersion": "3.5.3",
   "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
@@ -152,6 +152,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ui-abstract",
+      "projectFolder": "ui/abstract",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-core",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",
@@ -231,6 +238,13 @@
     {
       "packageName": "@bentley/geo-photo-plugin",
       "projectFolder": "plugins/geo-photo",
+      "reviewCategory": "plugins",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "projectFolder": "plugins/hypermodeling",
       "reviewCategory": "plugins",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -346,12 +360,6 @@
     {
       "packageName": "rpc-integration-tests",
       "projectFolder": "integration-tests/rpc",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "perf-test-app",
-      "projectFolder": "test-apps/perf-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     }
