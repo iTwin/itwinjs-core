@@ -21,6 +21,24 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 
 /**
+ * Presentation manager working mode.
+ * @beta
+ */
+export enum PresentationManagerMode {
+  /**
+   * Presentation manager assumes iModels are opened in read-only mode and avoids doing some work
+   * related to reacting to changes in iModels.
+   */
+  ReadOnly,
+
+  /**
+   * Presentation manager assumes iModels are opened in read-write mode and it may need to
+   * react to changes. This involves some additional work and gives slightly worse performance.
+   */
+  ReadWrite,
+}
+
+/**
  * Properties that can be used to configure [[PresentationManager]]
  * @public
  */
@@ -87,6 +105,16 @@ export interface PresentationManagerProps {
   taskAllocationsMap?: { [priority: number]: number };
 
   /**
+   * Presentation manager working mode. Backends that use iModels in read-write mode should
+   * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
+   *
+   * Defaults to `ReadWrite`.
+   *
+   * @beta
+   */
+  mode?: PresentationManagerMode;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -129,8 +157,12 @@ export class PresentationManager {
     if (props && props.addon) {
       this._nativePlatform = props.addon;
     } else {
-      const nativePlatformImpl = createDefaultNativePlatform(this._props.id || "",
-        createLocaleDirectoryList(props), createTaskAllocationsMap(props));
+      const nativePlatformImpl = createDefaultNativePlatform({
+        id: this._props.id || "",
+        localeDirectories: createLocaleDirectoryList(props),
+        taskAllocationsMap: createTaskAllocationsMap(props),
+        mode: (undefined !== this._props.mode) ? this._props.mode : PresentationManagerMode.ReadWrite,
+      });
       this._nativePlatform = new nativePlatformImpl();
     }
     this.setupRulesetDirectories(props);

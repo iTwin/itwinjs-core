@@ -9,6 +9,7 @@ import { PresentationError } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import { initialize, terminate } from "../IntegrationTests";
 import { IModelError } from "@bentley/imodeljs-common";
+import { PresentationManagerMode } from "@bentley/presentation-backend";
 
 describe("NativePlatform", () => {
 
@@ -27,7 +28,12 @@ describe("NativePlatform", () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = IModelDb.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
-    const TNativePlatform = createDefaultNativePlatform("", [], {}); // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+      id: "",
+      localeDirectories: [],
+      taskAllocationsMap: {},
+      mode: PresentationManagerMode.ReadWrite,
+    });
     nativePlatform = new TNativePlatform();
   });
 

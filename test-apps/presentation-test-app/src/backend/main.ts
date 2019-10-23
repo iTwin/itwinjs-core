@@ -21,12 +21,13 @@ Logger.initializeToConsole();
 IModelHost.startup();
 
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
-import { Presentation } from "@bentley/presentation-backend";
+import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 
 // initialize presentation-backend
 Presentation.initialize({
   rulesetDirectories: [path.join("assets", "presentation_rules")],
   localeDirectories: [path.join("assets", "locales")],
+  mode: PresentationManagerMode.ReadOnly,
 });
 // __PUBLISH_EXTRACT_END__
 

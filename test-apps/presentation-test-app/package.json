@@ -19,7 +19,7 @@
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "electron": "electron ./lib/backend/main.js",
     "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/",
-    "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
+    "start:backend": "node --inspect --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",
     "test": "",
     "cover": ""
