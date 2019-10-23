@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Disable filtering of table columns created by PresentationTableDataProvider until the provider supports filtering",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}
