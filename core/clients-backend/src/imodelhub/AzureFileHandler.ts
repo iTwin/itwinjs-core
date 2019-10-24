@@ -15,7 +15,7 @@ import * as https from "https";
 import * as http from "http";
 import * as path from "path";
 import * as os from "os";
-import { URL } from "url";
+import * as urllib from "url";
 
 const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
 
@@ -233,10 +233,10 @@ export class AzureFileHandler implements FileHandler {
    * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
    */
   private static getSafeUrlForLogging(url: string): string {
-    const safeToLogDownloadUrl: URL = new URL(url);
-    if (safeToLogDownloadUrl.search.length > 0)
+    const safeToLogDownloadUrl = urllib.parse(url);
+    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
       safeToLogDownloadUrl.search = "...";
-    if (safeToLogDownloadUrl.hash.length > 0)
+    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
     return safeToLogDownloadUrl.toString();
   }

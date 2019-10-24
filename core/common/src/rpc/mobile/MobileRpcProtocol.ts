@@ -71,7 +71,6 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
-
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
     } else if (endPoint === RpcEndpoint.Backend) {

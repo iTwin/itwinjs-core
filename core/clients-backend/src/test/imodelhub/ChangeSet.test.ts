@@ -15,7 +15,6 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 chai.should();
 
@@ -179,7 +178,7 @@ describe("iModelHub ChangeSetHandler (#iModelBank)", () => {
   });
 
   it("should download ChangeSets with Buffering", async () => {
-    iModelClient.setFileHandler(new AzureFileHandler(true));
+    iModelClient.setFileHandler(utils.createFileHanlder(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
 
@@ -197,7 +196,7 @@ describe("iModelHub ChangeSetHandler (#iModelBank)", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
     }
 
-    iModelClient.setFileHandler(new AzureFileHandler());
+    iModelClient.setFileHandler(utils.createFileHanlder());
   });
 
   it("should get ChangeSets skipping the first one", async () => {

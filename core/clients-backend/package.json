@@ -41,7 +41,8 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^1.7.0-dev.17",
     "@bentley/geometry-core": "^1.7.0-dev.17",
-    "@bentley/imodeljs-clients": "^1.7.0-dev.17"
+    "@bentley/imodeljs-clients": "^1.7.0-dev.17",
+    "@bentley/imodeljs-common": "^1.7.0-dev.17"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -53,6 +54,7 @@
     "@bentley/config-loader": "1.7.0-dev.17",
     "@bentley/geometry-core": "1.7.0-dev.17",
     "@bentley/imodeljs-clients": "1.7.0-dev.17",
+    "@bentley/imodeljs-common": "1.7.0-dev.17",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

@@ -5,13 +5,46 @@
 import * as fs from "fs";
 import * as path from "path";
 import { assert, should } from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelBaseHandler, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
-import { urlLogPath } from "../TestConfig";
+import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelBaseHandler, UrlDiscoveryClient, ClientsLoggerCategory, Config } from "@bentley/imodeljs-clients";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 
 should();
+const logFilePath = path.join(__dirname, "./iModelClientsTests.log");
+const logFileStream = fs.createWriteStream(logFilePath, { flags: "a" });
+console.log("Log File created at: " + logFilePath);
+
+// The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
+const urlLogPath = path.join(__dirname, "./requesturls.log");
+const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
+console.log("URL Log file created at: " + urlLogPath);
+
+function logFunction(logLevel: string, category: string, message: string) {
+  if (category === ClientsLoggerCategory.Request)
+    urlLogFileStream.write(message + "\n");
+  else
+    logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
+}
+
+// Initialize logger to file
+Logger.initialize(
+  (category: string, message: string): void => { logFunction("Error", category, message); },
+  (category: string, message: string): void => { logFunction("Warning", category, message); },
+  (category: string, message: string): void => { logFunction("Info", category, message); },
+  (category: string, message: string): void => { logFunction("Trace", category, message); });
+
+// Note: Turn this off unless really necessary - it causes Error messages on the
+// console with the existing suite of tests, and this is quite misleading,
+// especially when diagnosing CI job failures.
+const loggingConfigFile: string = Config.App.get("imjs_test_logging_config", "");
+if (!!loggingConfigFile) {
+  // tslint:disable-next-line:no-var-requires
+  Logger.configureLevels(require(loggingConfigFile));
+}
+
+// log all request URLs as this will be the input to the Hub URL whitelist test
+Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
 
 // These tests have to run last
 // TODO: Fragile test - need to re-enable this after fixing the failure.

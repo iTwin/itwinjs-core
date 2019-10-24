@@ -27,7 +27,9 @@
     "perftest:cs": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "perftest:elAspect": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
     "perftest:schema": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
-    "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
+    "copy:mobile-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
+    "build:ios-test-app": "npm run build:mobile-test && rimraf ./lib/test/ios/DerivedData && xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos  -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData",
+    "build:mobile-test": "npm run copy:mobile-test-assets && cpx \"./src/test/ios/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/ios/mobile.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -82,7 +84,9 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.6.2",
-    "webpack": "^4.20.2"
+    "webpack": "^4.20.2",
+    "source-map-loader": "^0.2.3",
+    "null-loader": "^0.1.1"
   },
   "dependencies": {
     "@bentley/imodeljs-native": "1.7.0",

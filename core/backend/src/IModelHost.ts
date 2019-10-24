@@ -459,9 +459,8 @@ export class KnownLocations {
   public static get packageAssetsDir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
-      return path.join(imodeljsMobile.knownLocations.packageAssetsDir, "imodeljs-backend");
+      return path.join(process.execPath!, "Assets", "assets");
     }
-
     // Assume that we are running in nodejs
     return path.join(__dirname, "assets");
   }
