@@ -1612,29 +1612,37 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
-      if (rows.length === 0) {
-        return [];
-      }
-      const aspects: ElementAspect[] = [];
-      for (const row of rows) {
-        aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
-      }
-      return aspects;
+      const sql = `SELECT * FROM ${aspectClassName} WHERE Element.Id=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
+        statement.bindId("elementId", elementId);
+        const aspects: ElementAspect[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const row: any = statement.getRow();
+          aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
+        }
+        return aspects;
+      });
     }
 
     /** Query for aspect by ECInstanceId
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE ECInstanceId=?`, [aspectInstanceId]);
-      if (rows.length !== 1) {
+      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
+          aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
+          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps;
+        }
+        return undefined;
+      });
+      if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId, aspectClassName }));
       }
-      const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
-      aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
-      aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
-      return this._iModel.constructEntity<ElementAspect>(aspectProps);
+      return this._iModel.constructEntity<ElementAspect>(aspect);
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.
