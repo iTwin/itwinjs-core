@@ -39,8 +39,8 @@ describe("ConfigurableUiContent", () => {
       </Provider>);
 
     const divContainer = component.getByTestId("uifw-configurableui-wrapper");
-    divContainer.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "a" }));
-    divContainer.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+    divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "a" }));
+    divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
   });
 
   it("mouse moves should be handled", () => {

@@ -59,6 +59,15 @@ describe("BackstageComposerItem", () => {
     it("should render", () => {
       shallow(<BackstageComposerActionItem item={getActionItem()} />).should.matchSnapshot();
     });
+
+    it("should invoke execute", () => {
+      const spyExecute = sinon.fake();
+      const actionItem = getActionItem({ execute: spyExecute });
+      const sut = shallow(<BackstageComposerActionItem item={actionItem} />);
+      const backstageItem = sut.find(NZ_BackstageItem);
+      backstageItem.prop("onClick")!();
+      spyExecute.calledOnce.should.true;
+    });
   });
 
   describe("BackstageComposerStageLauncher", () => {

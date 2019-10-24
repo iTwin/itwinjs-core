@@ -426,6 +426,12 @@ export enum BackstageItemType {
 }
 
 // @beta
+export class BackstageItemUtilities {
+    static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
+    static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
+}
+
+// @beta
 export class BackstageManager {
     // (undocumented)
     close(): void;

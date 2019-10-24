@@ -36,6 +36,7 @@ beta;BackstageItemsChangedArgs
 beta;BackstageItemsManager
 public;BackstageItemState
 beta;BackstageItemType
+beta;BackstageItemUtilities
 beta;BackstageManager
 public;BackstageProps 
 beta;BackstageStageLauncher 

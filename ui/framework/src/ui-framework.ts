@@ -146,6 +146,7 @@ export * from "./ui-framework/backstage/BackstageComposer";
 export * from "./ui-framework/backstage/BackstageComposerItem";
 export * from "./ui-framework/backstage/BackstageItem";
 export * from "./ui-framework/backstage/BackstageItemsManager";
+export * from "./ui-framework/backstage/BackstageItemUtilities";
 export * from "./ui-framework/backstage/BackstageManager";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/FrontstageLaunch";
