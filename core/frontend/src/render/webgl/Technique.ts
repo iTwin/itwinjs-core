@@ -154,7 +154,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addHiliteShader(gl: WebGLRenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
-    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified);
+    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified, false);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
