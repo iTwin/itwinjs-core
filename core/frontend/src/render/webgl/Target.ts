@@ -1416,14 +1416,15 @@ export class OnScreenTarget extends Target {
 
     const viewRect = this.viewRect;
 
-    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
-    if (system.canvas.width !== viewRect.width)
+    // Ensure off-screen canvas is sufficiently large for on-screen canvas.
+    // Using a portion of a larger canvas lets us avoid thrashing canvas resizes with multiple viewports.
+    if (system.canvas.width < viewRect.width)
       system.canvas.width = viewRect.width;
-    if (system.canvas.height !== viewRect.height)
+    if (system.canvas.height < viewRect.height)
       system.canvas.height = viewRect.height;
 
-    assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
-    assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferWidth >= viewRect.width, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferHeight >= viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
   private getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
@@ -1454,8 +1455,11 @@ export class OnScreenTarget extends Target {
     // Copy off-screen canvas contents to on-screen canvas
     const onscreenContext = this._2dCanvas.canvas.getContext("2d", { alpha: true });
     assert(null !== onscreenContext);
-    if (null !== onscreenContext)
-      onscreenContext.drawImage(system.canvas, 0, 0);
+    if (null !== onscreenContext) {
+      const w = this.viewRect.width, h = this.viewRect.height;
+      const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
+      onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
+    }
   }
 
   protected drawOverlayDecorations(): void {
