@@ -219,11 +219,13 @@ export class SampleAppIModelApp {
     if (ElectronRpcConfiguration.isElectron) {
       const clientId = "imodeljs-electron-test";
       const redirectUri = "electron://frontend/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+      const postSignoutRedirectUri = "electron://frontend/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " offline_access", responseType: "code" };
     } else {
       const clientId = "imodeljs-spa-test";
       const redirectUri = "http://localhost:3000/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+      const postSignoutRedirectUri = "http://localhost:3000/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
     }
     // cSpell:enable
 
