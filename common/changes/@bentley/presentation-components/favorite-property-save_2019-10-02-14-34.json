@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added logic to set the scope of Favorite Properties in DataProvider.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "vismantas.stonkus@bentley.com"
+}

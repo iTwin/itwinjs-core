@@ -17,8 +17,8 @@ describe("Rulesets roundtrip", () => {
   let nativePlatform: NativePlatformDefinition;
   let rulesets: RulesetManagerImpl;
 
-  before(() => {
-    initialize();
+  before(async () => {
+    await initialize();
 
     const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
       id: "",

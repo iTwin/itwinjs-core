@@ -25,7 +25,8 @@ import {
   ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
   PresentationError,
 } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, FavoritePropertyManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, FavoritePropertiesManager } from "@bentley/presentation-frontend";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
@@ -41,10 +42,16 @@ class Provider extends PresentationPropertyDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
-  public isFieldFavorite(field: Field) { return super.isFieldFavorite(field); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
   public sortFields(category: CategoryDescription, fields: Field[]) { return super.sortFields(category, fields); }
+
+  public get isFieldFavorite() {
+    return super.isFieldFavorite;
+  }
+  public set isFieldFavorite(value) {
+    super.isFieldFavorite = value;
+  }
 }
 
 interface MemoizedCacheSpies {
@@ -57,13 +64,13 @@ describe("PropertyDataProvider", () => {
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const favoritePropertyManagerMock = moq.Mock.ofType<FavoritePropertyManager>();
+  const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
     rulesetId = faker.random.word();
     Presentation.presentation = presentationManagerMock.object;
-    Presentation.favoriteProperties = favoritePropertyManagerMock.object;
+    Presentation.favoriteProperties = favoritePropertiesManagerMock.object;
     Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
@@ -71,8 +78,8 @@ describe("PropertyDataProvider", () => {
 
   beforeEach(() => {
     presentationManagerMock.reset();
-    favoritePropertyManagerMock.reset();
-    favoritePropertyManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
+    favoritePropertiesManagerMock.reset();
+    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
     provider = new Provider(imodelMock.object, rulesetId);
     resetMemoizedCacheSpies();
   });
@@ -91,7 +98,7 @@ describe("PropertyDataProvider", () => {
 
     it("subscribes to `Presentation.favoriteProperties.onFavoritesChanged` to invalidate cache", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
-      favoritePropertyManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
+      favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
       provider = new Provider(imodelMock.object, rulesetId);
 
       const s = sinon.spy(provider, "invalidateCache");
@@ -105,7 +112,7 @@ describe("PropertyDataProvider", () => {
 
     it("unsubscribes from `Presentation.favoriteProperties.onFavoritesChanged` event", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
-      favoritePropertyManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
+      favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
       provider = new Provider(imodelMock.object, rulesetId);
 
       expect(onFavoritesChanged.numberOfListeners).to.eq(1);
@@ -167,11 +174,26 @@ describe("PropertyDataProvider", () => {
 
   describe("isFieldFavorite", () => {
 
-    it("calls Presentation favoritePropertyManager", () => {
-      favoritePropertyManagerMock.setup((x) => x.has(moq.It.isAny())).returns(() => false);
+    let projectId: string;
+    let imodelId: string;
+
+    before(() => {
+      projectId = "project-id";
+      imodelId = "imodel-id";
+      const imodelTokenMock = moq.Mock.ofType<IModelToken>();
+      imodelTokenMock.setup((x) => x.iModelId).returns(() => imodelId);
+      imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
+
+      favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(() => false);
+    });
+
+    it("calls FavoritePropertiesManager", () => {
+      provider = new Provider(imodelMock.object, rulesetId);
+
       const field = createRandomPropertiesField();
       provider.isFieldFavorite(field);
-      favoritePropertyManagerMock.verify((x) => x.has(field), moq.Times.once());
+      favoritePropertiesManagerMock.verify((x) => x.has(field, projectId, imodelId), moq.Times.once());
     });
 
   });
@@ -542,7 +564,7 @@ describe("PropertyDataProvider", () => {
 
       it("returns favorite nested content in a separate category when it's categorized", async () => {
         field1.nestedFields[0].category = createRandomCategory();
-        favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+        favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
         const values = {
           [field1.name]: [{
             primaryKeys: [createRandomECInstanceKey()],
@@ -706,6 +728,7 @@ describe("PropertyDataProvider", () => {
         let descriptor: Descriptor;
         let field1: NestedContentField;
         let field2: Field;
+
         beforeEach(() => {
           descriptor = createRandomDescriptor();
           field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
@@ -724,7 +747,7 @@ describe("PropertyDataProvider", () => {
           descriptor = createRandomDescriptor();
           descriptor.fields = [nestedContentField];
 
-          favoritePropertyManagerMock.setup((x) => x.has(propertiesField)).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
           const propertyValue: string = faker.random.words(2);
           const nestedContentValue: NestedContentValue[] = [{
@@ -753,7 +776,7 @@ describe("PropertyDataProvider", () => {
           descriptor = createRandomDescriptor();
           descriptor.fields = [nestedContentField];
 
-          favoritePropertyManagerMock.setup((x) => x.has(propertiesField)).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
           const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
           const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -777,8 +800,8 @@ describe("PropertyDataProvider", () => {
           descriptor = createRandomDescriptor();
           descriptor.fields = [nestedContentField];
 
-          favoritePropertyManagerMock.setup((x) => x.has(propertiesField1)).returns(() => true);
-          favoritePropertyManagerMock.setup((x) => x.has(propertiesField2)).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(propertiesField1, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(propertiesField2, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
           const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
           const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -796,7 +819,7 @@ describe("PropertyDataProvider", () => {
         });
 
         it("throws if nested field values are not nested content", async () => {
-          favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
           const values = {
             [field1.name]: [{ primaryKeys: [createRandomECInstanceKey()] }],
           };
@@ -810,7 +833,7 @@ describe("PropertyDataProvider", () => {
         });
 
         it("throws if nested content does not contain a single element", async () => {
-          favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+          favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
           const values = {
             [field1.name]: [{
               primaryKeys: [createRandomECInstanceKey()],

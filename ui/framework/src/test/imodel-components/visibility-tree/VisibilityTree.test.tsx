@@ -14,7 +14,7 @@ import { IModelConnection, ViewState, Viewport, ViewState3d, SpatialViewState, P
 import { KeySet, ECInstanceNodeKey, StandardNodeTypes, BaseNodeKey, InstanceKey } from "@bentley/presentation-common";
 import { SelectionManager, Presentation, SelectionChangeEvent } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
+import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
 import { isPromiseLike } from "@bentley/ui-core";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { VisibilityTree } from "../../../ui-framework";
@@ -1311,8 +1311,8 @@ describe("VisibilityTree", () => {
     let imodel: IModelConnection;
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
-    before(() => {
-      initializePresentationTesting();
+    before(async () => {
+      await initializePresentationTesting();
     });
 
     after(() => {

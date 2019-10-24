@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added API to save favorite properties in user settings",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Vismantas.Stonkus@bentley.com"
+}

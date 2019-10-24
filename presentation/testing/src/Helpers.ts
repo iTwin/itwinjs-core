@@ -19,8 +19,17 @@ import {
   RpcInterfaceDefinition,
   RpcDefaultConfiguration,
 } from "@bentley/imodeljs-common";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { NoRenderApp, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import {
+  Presentation as PresentationFrontend,
+  PresentationManagerProps as PresentationFrontendProps,
+  FavoritePropertiesManager,
+  IFavoritePropertiesStorage,
+  FavoriteProperties,
+} from "@bentley/presentation-frontend";
+
+import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
+import { TestUsers } from "./TestUsers";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -41,6 +50,48 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 }
 
 let isInitialized = false;
+let isFrontendAppInitialized = false;
+
+/** @public */
+export interface PresentationTestingInitProps {
+  /** Properties for backend initialization */
+  backendProps?: PresentationBackendProps;
+  /** Properties for frontend initialization */
+  frontendProps?: PresentationFrontendProps;
+  /** IModelApp implementation */
+  frontendApp?: { startup: (opts?: IModelAppOptions) => void };
+  /** Whether to use authorization client */
+  useClientServices?: boolean;
+}
+
+/**
+ * Initialize the framework for presentation testing. The function sets up backend,
+ * frontend and RPC communication between them.
+ *
+ * @see `terminate`
+ *
+ * @public
+ */
+export const initializeAsync = async (props?: PresentationTestingInitProps) => {
+  if (!props)
+    props = {};
+  if (!props.frontendApp)
+    props.frontendApp = NoRenderApp;
+
+  if (!isFrontendAppInitialized && props.useClientServices) {
+    const agentConfiguration: OidcAgentClientConfiguration = {
+      clientId: TestUsers.agent.clientId,
+      clientSecret: TestUsers.agent.clientSecret,
+      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686 product-settings-service",
+    };
+    const authorizationClient = new OidcAgentClient(agentConfiguration);
+    await authorizationClient.getAccessToken();
+    props.frontendApp.startup({ authorizationClient });
+    isFrontendAppInitialized = true;
+  }
+
+  initialize(props.backendProps, props.frontendProps, props.frontendApp);
+};
 
 /**
  * Initialize the framework for presentation testing. The function sets up backend,
@@ -52,8 +103,9 @@ let isInitialized = false;
  * @see `terminate`
  *
  * @public
+ * @deprecated Functions requiring authentication will not work. Instead use [[initializeAsync]].
  */
-export const initialize = (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp = NoRenderApp) => {
+export const initialize = (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp: { startup: (opts?: IModelAppOptions) => void } = NoRenderApp) => {
   if (isInitialized)
     return;
 
@@ -69,8 +121,12 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   // set up rpc interfaces
   initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
-  // init frontend
-  frontendApp.startup();
+  if (!isFrontendAppInitialized) {
+    // init frontend
+    frontendApp.startup();
+    setCustomFavoritePropertiesManager();
+    isFrontendAppInitialized = true;
+  }
 
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],
@@ -78,6 +134,18 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
 
   isInitialized = true;
+};
+
+const setCustomFavoritePropertiesManager = () => {
+  const storage: IFavoritePropertiesStorage = {
+    loadProperties: async (_projectId?: string, _imodelId?: string) => ({
+      nestedContentInfos: new Set<string>(),
+      propertyInfos: new Set<string>(),
+      baseFieldInfos: new Set<string>(),
+    }),
+    async saveProperties(_properties: FavoriteProperties, _projectId?: string, _imodelId?: string) { },
+  };
+  PresentationFrontend.favoriteProperties = new FavoritePropertiesManager({ storage });
 };
 
 /**
@@ -107,4 +175,5 @@ export const terminate = (frontendApp = IModelApp) => {
   frontendApp.shutdown();
 
   isInitialized = false;
+  isFrontendAppInitialized = false;
 };

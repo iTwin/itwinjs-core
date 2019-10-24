@@ -67,6 +67,7 @@
     "@bentley/imodeljs-i18n": "1.7.0-dev.17",
     "@bentley/imodeljs-common": "1.7.0-dev.17",
     "@bentley/imodeljs-frontend": "1.7.0-dev.17",
+    "@bentley/imodeljs-clients": "1.7.0-dev.17",
     "@bentley/presentation-common": "1.7.0-dev.17",
     "@bentley/webpack-tools": "1.7.0-dev.17",
     "@types/chai": "^4.1.4",

@@ -13,7 +13,7 @@ describe("LabelsProvider", async () => {
   let provider: LabelsProvider;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     provider = new LabelsProvider(imodel);

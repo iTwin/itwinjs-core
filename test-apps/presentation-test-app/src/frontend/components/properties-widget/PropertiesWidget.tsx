@@ -49,11 +49,11 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     this.setState({ contextMenu: undefined });
   }
   private _onAddFavorite = async (propertyField: Field) => {
-    Presentation.favoriteProperties.add(propertyField);
+    await Presentation.favoriteProperties.add(propertyField);
     this.setState({ contextMenu: undefined });
   }
   private _onRemoveFavorite = async (propertyField: Field) => {
-    Presentation.favoriteProperties.remove(propertyField);
+    await Presentation.favoriteProperties.remove(propertyField);
     this.setState({ contextMenu: undefined });
   }
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
@@ -130,6 +130,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
       </GlobalContextMenu>
     );
   }
+
   public render() {
     return (
       <div className="PropertiesWidget">

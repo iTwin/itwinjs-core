@@ -42,6 +42,8 @@
     "@bentley/imodeljs-backend": "1.7.0-dev.17",
     "@bentley/imodeljs-common": "1.7.0-dev.17",
     "@bentley/imodeljs-frontend": "1.7.0-dev.17",
+    "@bentley/imodeljs-clients": "1.7.0-dev.17",
+    "@bentley/imodeljs-clients-backend": "1.7.0-dev.17",
     "@bentley/presentation-backend": "1.7.0-dev.17",
     "@bentley/presentation-common": "1.7.0-dev.17",
     "@bentley/presentation-components": "1.7.0-dev.17",

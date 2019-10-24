@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { initialize, terminate } from "../../IntegrationTests";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
+import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
 
@@ -16,7 +16,8 @@ describe("PropertyDataProvider", async () => {
   let physicalModelProps: ModelProps;
 
   before(async () => {
-    initialize();
+    await initialize();
+
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];

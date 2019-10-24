@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added a log in for authorization client in initialize",
+      "packageName": "@bentley/presentation-testing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "vismantas.stonkus@bentley.com"
+}

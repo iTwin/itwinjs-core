@@ -14,7 +14,7 @@ import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import { SelectionScopesManager } from "../selection/SelectionScopesManager";
 import { PresentationManager } from "../PresentationManager";
-import { FavoritePropertyManager } from "../FavoritePropertyManager";
+import { FavoritePropertiesManager } from "../favorite-properties/FavoritePropertiesManager";
 
 describe("Presentation", () => {
 
@@ -44,7 +44,7 @@ describe("Presentation", () => {
       Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
       expect(Presentation.selection).to.be.instanceof(SelectionManager);
-      expect(Presentation.favoriteProperties).to.be.instanceof(FavoritePropertyManager);
+      expect(Presentation.favoriteProperties).to.be.instanceof(FavoritePropertiesManager);
     });
 
     it("initializes PresentationManager with props", () => {
@@ -100,9 +100,7 @@ describe("Presentation", () => {
     });
 
     it("initializes SelectionScopesManager's locale callback to return PresentationManager's activeLocale", () => {
-      Presentation.initialize({
-        activeLocale: "test",
-      });
+      Presentation.initialize({ activeLocale: "test" });
       expect(Presentation.presentation.activeLocale).to.eq("test");
       expect(Presentation.selection.scopes.activeLocale).to.eq("test");
       Presentation.presentation.activeLocale = "other";
@@ -172,19 +170,19 @@ describe("Presentation", () => {
   describe("[set] favoriteProperties", () => {
 
     it("overwrites favoriteProperties instance before initialization", () => {
-      const favoritePropertyManager = new FavoritePropertyManager();
-      Presentation.favoriteProperties = favoritePropertyManager;
+      const manager = new FavoritePropertiesManager();
+      Presentation.favoriteProperties = manager;
       Presentation.initialize();
-      expect(Presentation.favoriteProperties).to.eq(favoritePropertyManager);
+      expect(Presentation.favoriteProperties).to.eq(manager);
     });
 
     it("overwrites favoriteProperties instance after initialization", () => {
-      const favoriteProperties = new FavoritePropertyManager();
+      const otherManager = new FavoritePropertiesManager();
       Presentation.initialize();
       expect(Presentation.favoriteProperties).to.be.not.null;
-      expect(Presentation.favoriteProperties).to.not.eq(favoriteProperties);
-      Presentation.favoriteProperties = favoriteProperties;
-      expect(Presentation.favoriteProperties).to.eq(favoriteProperties);
+      expect(Presentation.favoriteProperties).to.not.eq(otherManager);
+      Presentation.favoriteProperties = otherManager;
+      expect(Presentation.favoriteProperties).to.eq(otherManager);
     });
 
   });

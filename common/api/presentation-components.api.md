@@ -167,7 +167,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
     includeFieldsWithNoValues: boolean;
     protected invalidateCache(props: CacheInvalidationProps): void;
-    protected isFieldFavorite(field: Field): boolean;
+    protected isFieldFavorite: (field: Field) => boolean;
     protected isFieldHidden(field: Field): boolean;
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;

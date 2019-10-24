@@ -337,8 +337,11 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /** Should the specified field be included in the favorites category. */
-  protected isFieldFavorite(field: Field): boolean {
-    return Presentation.favoriteProperties.has(field);
+  protected isFieldFavorite = (field: Field): boolean => {
+    const projectId = this.imodel.iModelToken.contextId;
+    const imodelId = this.imodel.iModelToken.iModelId;
+
+    return Presentation.favoriteProperties.has(field, projectId, imodelId);
   }
 
   /**
