@@ -27,6 +27,10 @@ const enum MemIndex {
   None = -1,
   ViewportTileTrees,
   AllTileTrees,
+  RenderTarget,
+  Viewport, // RenderTarget + Viewed Tile Trees
+  System,
+  All, // All Tile Trees + System + (RenderTarget for each ViewManager viewport)
 
   COUNT,
 }
@@ -36,23 +40,48 @@ const memLabels = [
   "None",
   "Viewed Tile Trees",
   "All Tile Trees",
+  "Render Target",
+  "Viewport",
+  "System",
+  "All",
 ];
 
+function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
+  vp.collectStatistics(stats);
+  const trees = new TileTreeSet();
+  vp.discloseTileTrees(trees);
+  return trees.size;
+}
+
+function collectStatisticsForAllTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
+  let numTrees = 0;
+  vp.view.iModel.tiles.forEachTreeOwner((owner) => {
+    collectTileTreeMemory(stats, owner);
+    if (undefined !== owner.tileTree)
+      ++numTrees;
+  });
+  return numTrees;
+}
+
 const calcMem: CalcMem[] = [
+  (stats, vp) => collectStatisticsForViewedTileTrees(vp, stats),
+  (stats, vp) => collectStatisticsForAllTileTrees(vp, stats),
   (stats, vp) => {
-    vp.collectStatistics(stats);
-    const trees = new TileTreeSet();
-    vp.discloseTileTrees(trees);
-    return trees.size;
+    vp.target.collectStatistics(stats);
+    return 0;
   },
   (stats, vp) => {
-    let numTrees = 0;
-    vp.view.iModel.tiles.forEachTreeOwner((owner) => {
-      collectTileTreeMemory(stats, owner);
-      if (undefined !== owner.tileTree)
-        ++numTrees;
-    });
-    return numTrees;
+    vp.target.collectStatistics(stats);
+    return collectStatisticsForViewedTileTrees(vp, stats);
+  },
+  (stats, vp) => {
+    vp.target.renderSystem.collectStatistics(stats);
+    return 0;
+  },
+  (stats, vp) => {
+    vp.target.renderSystem.collectStatistics(stats);
+    IModelApp.viewManager.forEachViewport((x) => x.target.collectStatistics(stats));
+    return collectStatisticsForAllTileTrees(vp, stats);
   },
 ];
 
@@ -169,7 +198,7 @@ export class MemoryTracker {
     row1.appendChild(cell11);
     table.appendChild(row1);
 
-    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps"]);
+    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments"]);
     this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
     this._totalElem = this.addStatistics(cell10);
     this._totalTreesElem = this.addStatistics(cell11);

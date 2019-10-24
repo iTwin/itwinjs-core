@@ -4608,8 +4608,6 @@ export class NullTarget extends RenderTarget {
 export class OffScreenTarget extends Target {
     constructor(rect: ViewRect);
     // (undocumented)
-    animationFraction: number;
-    // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(): void;
@@ -4657,11 +4655,11 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
     // (undocumented)
-    animationFraction: number;
-    // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(): void;
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -5401,7 +5399,7 @@ export namespace RenderMemory {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
-        COUNT = 7,
+        COUNT = 8,
         // (undocumented)
         FeatureOverrides = 3,
         // (undocumented)
@@ -5410,6 +5408,8 @@ export namespace RenderMemory {
         PlanarClassifiers = 5,
         // (undocumented)
         ShadowMaps = 6,
+        // (undocumented)
+        TextureAttachments = 7,
         // (undocumented)
         Textures = 0,
         // (undocumented)
@@ -5449,6 +5449,8 @@ export namespace RenderMemory {
         // (undocumented)
         addTexture(numBytes: number): void;
         // (undocumented)
+        addTextureAttachment(numBytes: number): void;
+        // (undocumented)
         addVertexTable(numBytes: number): void;
         // (undocumented)
         addVisibleEdges(numBytes: number): void;
@@ -5468,6 +5470,8 @@ export namespace RenderMemory {
         readonly planarClassifiers: Consumers;
         // (undocumented)
         readonly shadowMaps: Consumers;
+        // (undocumented)
+        readonly textureAttachments: Consumers;
         // (undocumented)
         readonly textures: Consumers;
         // (undocumented)
@@ -5674,6 +5678,8 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
+    collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
@@ -5768,7 +5774,7 @@ export interface RenderSystemDebugControl {
 }
 
 // @internal
-export abstract class RenderTarget implements IDisposable {
+export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
@@ -5793,6 +5799,8 @@ export abstract class RenderTarget implements IDisposable {
     abstract changeScene(scene: GraphicList): void;
     // (undocumented)
     changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void;
+    // (undocumented)
+    collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
     // (undocumented)
@@ -6867,6 +6875,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
+    animationFraction: number;
+    // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
     readonly batchState: BatchState;
@@ -6904,6 +6914,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     clipMask: TextureHandle | undefined;
     // (undocumented)
     readonly clips: Clips;
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     readonly compositor: SceneCompositor;
     // (undocumented)

@@ -110,6 +110,7 @@ export namespace RenderMemory {
     ClipVolumes,
     PlanarClassifiers,
     ShadowMaps,
+    TextureAttachments,
     COUNT,
   }
 
@@ -133,6 +134,7 @@ export namespace RenderMemory {
     public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
     public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
     public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
+    public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -158,6 +160,7 @@ export namespace RenderMemory {
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
     public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
     public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
+    public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
 
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
     public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
@@ -783,7 +786,7 @@ export interface RenderTargetDebugControl {
  * of the RenderTarget.
  * @internal
  */
-export abstract class RenderTarget implements IDisposable {
+export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
@@ -835,6 +838,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
+  public collectStatistics(_stats: RenderMemory.Statistics): void { }
 
   /** Specify whether webgl content should be rendered directly to the screen.
    * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
@@ -1209,6 +1213,9 @@ export abstract class RenderSystem implements IDisposable {
    * @beta
    */
   public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
+
+  /** @internal */
+  public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
 /** @internal */

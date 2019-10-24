@@ -7,11 +7,22 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, AmbientOcclusionGeometry, BlurGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "./CachedGeometry";
+import {
+  AmbientOcclusionGeometry,
+  BlurGeometry,
+  BoundaryType,
+  CachedGeometry,
+  CompositeGeometry,
+  CopyPickBufferGeometry,
+  ScreenPointsGeometry,
+  SingleTexturedViewportQuadGeometry,
+  ViewportQuadGeometry,
+  VolumeClassifierGeometry,
+} from "./CachedGeometry";
 import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { PackedFeatureTable, Pixel, GraphicList } from "../System";
+import { PackedFeatureTable, Pixel, GraphicList, RenderMemory } from "../System";
 import { ViewRect } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
@@ -26,8 +37,13 @@ import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { SceneContext } from "../../ViewContext";
 
+function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
+  if (undefined !== texture)
+    stats.addTextureAttachment(texture.bytesUsed);
+}
+
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
-class Textures implements IDisposable {
+class Textures implements IDisposable, RenderMemory.Consumer {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
@@ -48,6 +64,18 @@ class Textures implements IDisposable {
     this.occlusion = dispose(this.occlusion);
     this.occlusionBlur = dispose(this.occlusionBlur);
     this.disableVolumeClassifier();
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    collectTextureStatistics(this.accumulation, stats);
+    collectTextureStatistics(this.revealage, stats);
+    collectTextureStatistics(this.color, stats);
+    collectTextureStatistics(this.featureId, stats);
+    collectTextureStatistics(this.depthAndOrder, stats);
+    collectTextureStatistics(this.hilite, stats);
+    collectTextureStatistics(this.occlusion, stats);
+    collectTextureStatistics(this.occlusionBlur, stats);
+    collectTextureStatistics(this.volClassBlend, stats);
   }
 
   public init(width: number, height: number): boolean {
@@ -191,8 +219,13 @@ class FrameBuffers implements IDisposable {
   }
 }
 
+function collectGeometryStatistics(geom: CachedGeometry | undefined, stats: RenderMemory.Statistics): void {
+  if (undefined !== geom)
+    geom.collectStatistics(stats);
+}
+
 // Maintains the geometry used to execute screenspace operations for a SceneCompositor.
-class Geometry implements IDisposable {
+class Geometry implements IDisposable, RenderMemory.Consumer {
   public composite?: CompositeGeometry;
   public volClassColorStencil?: ViewportQuadGeometry;
   public volClassCopyZ?: SingleTexturedViewportQuadGeometry;
@@ -202,6 +235,18 @@ class Geometry implements IDisposable {
   public occlusion?: AmbientOcclusionGeometry;
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    collectGeometryStatistics(this.composite, stats);
+    collectGeometryStatistics(this.volClassColorStencil, stats);
+    collectGeometryStatistics(this.volClassCopyZ, stats);
+    collectGeometryStatistics(this.volClassCopyZWithPoints, stats);
+    collectGeometryStatistics(this.volClassSetBlend, stats);
+    collectGeometryStatistics(this.volClassBlend, stats);
+    collectGeometryStatistics(this.occlusion, stats);
+    collectGeometryStatistics(this.occlusionXBlur, stats);
+    collectGeometryStatistics(this.occlusionYBlur, stats);
+  }
 
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
@@ -437,7 +482,7 @@ class PixelBuffer implements Pixel.Buffer {
  * This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
  * @internal
  */
-export abstract class SceneCompositor implements IDisposable {
+export abstract class SceneCompositor implements IDisposable, RenderMemory.Consumer {
   public readonly target: Target;
   public readonly solarShadowMap = new SolarShadowMap();
 
@@ -460,6 +505,8 @@ export abstract class SceneCompositor implements IDisposable {
   public static create(target: Target): SceneCompositor {
     return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
   }
+
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
@@ -550,6 +597,11 @@ abstract class Compositor extends SceneCompositor {
     this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     this._noDepthMaskRenderState.flags.depthMask = false;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._textures.collectStatistics(stats);
+    this._geom.collectStatistics(stats);
   }
 
   public preDraw(): boolean {
@@ -1402,6 +1454,13 @@ class MRTGeometry extends Geometry {
   public clearTranslucent?: ViewportQuadGeometry;
   public clearPickAndColor?: ViewportQuadGeometry;
 
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    super.collectStatistics(stats);
+    collectGeometryStatistics(this.copyPickBuffers, stats);
+    collectGeometryStatistics(this.clearTranslucent, stats);
+    collectGeometryStatistics(this.clearPickAndColor, stats);
+  }
+
   public init(textures: Textures): boolean {
     if (!super.init(textures))
       return false;
@@ -1562,6 +1621,11 @@ class MPFrameBuffers extends FrameBuffers {
 
 class MPGeometry extends Geometry {
   public copyColor?: SingleTexturedViewportQuadGeometry;
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    super.collectStatistics(stats);
+    collectGeometryStatistics(this.copyColor, stats);
+  }
 
   public init(textures: Textures): boolean {
     if (!super.init(textures))

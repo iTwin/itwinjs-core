@@ -35,6 +35,7 @@ import {
   Pixel,
   PlanarClassifierMap,
   PrimitiveVisibility,
+  RenderMemory,
   RenderPlan,
   RenderPlanarClassifier,
   RenderSystem,
@@ -313,6 +314,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
+  private _animationFraction: number = 0;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -367,6 +369,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
@@ -1300,6 +1305,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(): void;
   protected abstract _endPaint(): void;
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._compositor.collectStatistics(stats);
+  }
 }
 
 class CanvasState {
@@ -1337,7 +1346,6 @@ export class OnScreenTarget extends Target {
   private readonly _webglCanvas: CanvasState;
   private _usingWebGLCanvas = false;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private _animationFraction: number = 0;
   private _scratchProgParams?: ShaderProgramParams;
   private _scratchDrawParams?: DrawParams;
 
@@ -1358,8 +1366,11 @@ export class OnScreenTarget extends Target {
     super.dispose();
   }
 
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    super.collectStatistics(stats);
+    if (undefined !== this._blitGeom)
+      this._blitGeom.collectStatistics(stats);
+  }
 
   public get viewRect(): ViewRect {
     assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
@@ -1501,14 +1512,9 @@ export class OnScreenTarget extends Target {
 
 /** @internal */
 export class OffScreenTarget extends Target {
-  private _animationFraction: number = 0;
-
   public constructor(rect: ViewRect) {
     super(rect);
   }
-
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect { return this.renderRect; }
 
