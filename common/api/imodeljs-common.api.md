@@ -1998,19 +1998,15 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 // @public
 export class GeometryStreamIteratorEntry {
     constructor(category?: Id64String);
-    // @beta @deprecated
+    // @beta
     brep?: BRepEntity.DataProps;
-    // @deprecated
     geometryQuery?: AnyGeometryQuery;
     geomParams: GeometryParams;
     localRange?: Range3d;
     localToWorld?: Transform;
-    // @deprecated
     partId?: Id64String;
-    // @deprecated
     partToLocal?: Transform;
     readonly primitive: GeometryStreamIteratorEntry.Primitive;
-    // @deprecated
     textString?: TextString;
 }
 
