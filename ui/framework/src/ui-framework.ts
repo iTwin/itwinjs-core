@@ -5,11 +5,14 @@
 
 // cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
 
-export * from "./ui-framework/UiFramework";
-export * from "./ui-framework/SessionState";
-export * from "./ui-framework/FrameworkState";
+export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
+
 export * from "./ui-framework/CoreToolDefinitions";
 export * from "./ui-framework/MarkupToolDefinitions";
+
+export * from "./ui-framework/redux/SessionState";
+export * from "./ui-framework/redux/FrameworkState";
+export * from "./ui-framework/redux/connectIModel";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";

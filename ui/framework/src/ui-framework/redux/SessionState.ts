@@ -7,10 +7,10 @@
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 // import { AccessToken } from "@bentley/imodeljs-clients";
-import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
+import { createAction, ActionsUnion, DeepReadonly } from "../utils/redux-ts";
 
 import { XAndY } from "@bentley/geometry-core";
-import { MenuItemProps } from "./shared/MenuItem";
+import { MenuItemProps } from "../shared/MenuItem";
 
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 
@@ -88,6 +88,23 @@ const initialState: SessionState = {
   cursorMenuData: undefined,
 };
 
+/** An interface that allows redux connected object to dispatch changes to the SessionState reducer.
+ * @beta
+ */
+export interface SessionStateActionsProps {
+  setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
+  setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
+  setSelectionScope: (typeof SessionStateActions.setSelectionScope);
+  setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
+  setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
+  setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
+  setDefaultViewState: (typeof SessionStateActions.setDefaultViewState);
+  setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
+  setIModelConnection: (typeof SessionStateActions.setIModelConnection);
+  setAccessToken: (typeof SessionStateActions.setAccessToken);
+  updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
+}
+
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
  * @beta
  */
@@ -105,6 +122,13 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   updateCursorMenu: (cursorMenuData: CursorMenuData) => createAction(SessionStateActionId.UpdateCursorMenu, cursorMenuData),
 };
 
+/** Object that contains available actions that modify SessionState. Parent control's props should
+ * extend from SessionStateActionsProps before using this in Redux 'connect' function.
+ * @beta
+ */
+// ...SessionStateActionsProps
+export const sessionStateMapDispatchToProps = { ...SessionStateActions };
+
 /** Union of SessionState Redux actions
  * @beta
  */
@@ -113,58 +137,58 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 /** Handles actions to update SessionState.
  * @beta
  */
-export function SessionStateReducer(state: SessionState = initialState, _action: SessionStateActionsUnion): DeepReadonly<SessionState> {
-  switch (_action.type) {
+export function SessionStateReducer(state: SessionState = initialState, action: SessionStateActionsUnion): DeepReadonly<SessionState> {
+  switch (action.type) {
     case SessionStateActionId.SetNumItemsSelected: {
       // istanbul ignore else
-      if (undefined !== _action.payload)
-        return { ...state, numItemsSelected: _action.payload };
+      if (undefined !== action.payload)
+        return { ...state, numItemsSelected: action.payload };
       else
         return { ...state, numItemsSelected: 0 };
     }
     case SessionStateActionId.SetAvailableSelectionScopes: {
       const payloadArray: PresentationSelectionScope[] = [];
-      _action.payload.forEach((scope) => payloadArray.push(scope));
+      action.payload.forEach((scope) => payloadArray.push(scope));
       // istanbul ignore else
-      if (undefined !== _action.payload)
+      if (undefined !== action.payload)
         return { ...state, availableSelectionScopes: payloadArray };
       else
         return { ...state, availableSelectionScopes: [defaultSelectionScope] };
     }
     case SessionStateActionId.SetSelectionScope: {
       // istanbul ignore else
-      if (undefined !== _action.payload)
-        return { ...state, activeSelectionScope: _action.payload };
+      if (undefined !== action.payload)
+        return { ...state, activeSelectionScope: action.payload };
       else
         return { ...state, activeSelectionScope: defaultSelectionScope.id };
     }
     case SessionStateActionId.SetActiveIModelId: {
       // istanbul ignore else
-      if (undefined !== _action.payload)
-        return { ...state, iModelId: _action.payload };
+      if (undefined !== action.payload)
+        return { ...state, iModelId: action.payload };
       else
         return { ...state, iModelId: "" };
     }
     case SessionStateActionId.SetDefaultIModelViewportControlId: {
-      return { ...state, defaultIModelViewportControlId: _action.payload };
+      return { ...state, defaultIModelViewportControlId: action.payload };
     }
     case SessionStateActionId.SetDefaultViewId: {
-      return { ...state, defaultViewId: _action.payload };
+      return { ...state, defaultViewId: action.payload };
     }
     case SessionStateActionId.SetDefaultViewState: {
-      return { ...state, defaultViewState: _action.payload };
+      return { ...state, defaultViewState: action.payload };
     }
     case SessionStateActionId.SetDefaultRulesetId: {
-      return { ...state, defaultRulesetId: _action.payload };
+      return { ...state, defaultRulesetId: action.payload };
     }
     case SessionStateActionId.SetIModelConnection: {
-      return { ...state, iModelConnection: _action.payload };
+      return { ...state, iModelConnection: action.payload };
     }
     case SessionStateActionId.SetAccessToken: {
-      return { ...state, accessToken: _action.payload };
+      return { ...state, accessToken: action.payload };
     }
     case SessionStateActionId.UpdateCursorMenu: {
-      return { ...state, cursorMenuData: _action.payload };
+      return { ...state, cursorMenuData: action.payload };
     }
   }
 

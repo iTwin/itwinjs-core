@@ -11,7 +11,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId, PresentationSelectionScope } from "../SessionState";
+import { SessionStateActionId, PresentationSelectionScope } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";

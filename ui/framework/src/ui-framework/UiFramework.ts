@@ -19,9 +19,9 @@ import { DefaultProjectServices } from "./clientservices/DefaultProjectServices"
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
-import { FrameworkState } from "./FrameworkState";
+import { FrameworkState } from "./redux/FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
-import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./SessionState";
+import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./redux/SessionState";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
@@ -93,6 +93,7 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
 
+    // istanbul ignore next
     if (oidcConfig) {
       UiFramework.oidcClient = new OidcBrowserClient(oidcConfig);
       const initOidcPromise = UiFramework.oidcClient.initialize(new ClientRequestContext())
@@ -123,6 +124,7 @@ export class UiFramework {
   }
 
   /** @beta */
+  // istanbul ignore next
   public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
     if (UiFramework._removeUserStateListener)
       UiFramework._removeUserStateListener();
@@ -172,6 +174,7 @@ export class UiFramework {
 
   /** @beta */
   public static get backstageManager(): BackstageManager {
+    // istanbul ignore next
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._backstageManager;
@@ -359,6 +362,7 @@ export class UiFramework {
 
   // TODO: Need better way of determining if Mobile environment
   /** @beta */
+  // istanbul ignore next
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
     if ((/Mobi|Android/i.test(navigator.userAgent))) {

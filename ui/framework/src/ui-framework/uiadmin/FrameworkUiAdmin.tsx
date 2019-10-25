@@ -12,7 +12,7 @@ import {
 
 import { CursorInformation } from "../cursor/CursorInformation";
 import { UiFramework } from "../UiFramework";
-import { CursorMenuData } from "../SessionState";
+import { CursorMenuData } from "../redux/SessionState";
 import { PopupManager } from "../popup/PopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 

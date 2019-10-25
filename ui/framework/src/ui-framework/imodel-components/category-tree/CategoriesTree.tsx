@@ -12,6 +12,7 @@ import { treeWithFilteringSupport, PresentationTreeDataProvider } from "@bentley
 import { Tree, TreeNodeItem, SelectionMode, FilteringInput } from "@bentley/ui-components";
 import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
+import { connectIModelConnection } from "../../redux/connectIModel";
 import "./CategoriesTree.scss";
 
 /**
@@ -503,3 +504,8 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
 // selectedNodes={this._getSelectedNodes}
 // onNodesSelected={this._onNodesSelected}
 // onNodesDeselected={this._onNodesDeselected
+
+/** CategoryTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // tslint:disable-line:variable-name

@@ -50,7 +50,7 @@ export class Frontstage2 extends FrontstageProvider {
       {
         contents: [
           {
-            classId: "IModelViewport",
+            classId: "UiFramework.IModelViewportControl",
             applicationData: { label: "Content 1a", bgColor: "black" },
           },
           {
@@ -58,7 +58,7 @@ export class Frontstage2 extends FrontstageProvider {
             applicationData: { label: "Content 2a", bgColor: "black" },
           },
           {
-            classId: "IModelViewport",
+            classId: "TestApp.IModelViewport",
             applicationData: { label: "Content 3a", bgColor: "black" },
           },
           {

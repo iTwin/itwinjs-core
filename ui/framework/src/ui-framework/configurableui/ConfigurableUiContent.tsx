@@ -18,7 +18,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
-import { FrameworkState } from "../FrameworkState";
+import { FrameworkState } from "../redux/FrameworkState";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";

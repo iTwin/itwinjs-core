@@ -192,7 +192,8 @@
     "categories": "Categories",
     "containment": "Spatial Containment",
     "options": "Options",
-    "visibilityTree": "Visibility Tree"
+    "visibilityTree": "Visibility Tree",
+    "noImodelConnection": "No data to display since there is no available iModel Connection."
   },
   "visibilityTree": {
     "status": {

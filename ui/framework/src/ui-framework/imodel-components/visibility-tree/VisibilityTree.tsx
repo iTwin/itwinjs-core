@@ -18,6 +18,8 @@ import {
 } from "@bentley/ui-core";
 import { Tree as BasicTree, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import { UiFramework } from "../../UiFramework";
+import { connectIModelConnection } from "../../redux/connectIModel";
+
 import "./VisibilityTree.scss";
 
 const Tree = treeWithUnifiedSelection(BasicTree); // tslint:disable-line:variable-name naming-convention
@@ -220,6 +222,11 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     );
   }
 }
+
+/** VisibilityTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedVisibilityTree = connectIModelConnection(null, null)(VisibilityTree); // tslint:disable-line:variable-name
 
 const createDataProvider = (props: VisibilityTreeProps): IPresentationTreeDataProvider => {
   let dataProvider: IPresentationTreeDataProvider;
