@@ -788,7 +788,7 @@
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslint",
@@ -808,7 +808,7 @@
     },
     {
       "name": "tsutils",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "typedoc",
