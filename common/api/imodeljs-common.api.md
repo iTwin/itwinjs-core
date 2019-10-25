@@ -3789,6 +3789,7 @@ export class RelatedElement implements RelatedElementProps {
     static fromJSON(json?: RelatedElementProps): RelatedElement | undefined;
     readonly id: Id64String;
     static idFromJson(json: any): Id64String;
+    static readonly none: RelatedElement;
     readonly relClassName?: string;
 }
 

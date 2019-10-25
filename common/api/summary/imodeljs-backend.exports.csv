@@ -133,7 +133,9 @@ public;class FunctionalType
 public;GenericSchema 
 public;class GeometricElement 
 public;class GeometricElement2d 
+public;GeometricElement2dHasTypeDefinition 
 public;class GeometricElement3d 
+public;GeometricElement3dHasTypeDefinition 
 public;GeometricModel 
 public;class GeometricModel2d 
 public;class GeometricModel3d 

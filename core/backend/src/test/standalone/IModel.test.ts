@@ -32,7 +32,7 @@ import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -1890,6 +1890,18 @@ describe("iModel", () => {
     assert.isDefined(iModelDb.querySchemaVersion("Analytical"), "Expect Analytical to be imported");
     assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
     assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
+    // insert category
+    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue });
+    assert.isTrue(Id64.isValidId64(categoryId));
+    // insert TypeDefinition
+    const typeDefinitionProps: TypeDefinitionElementProps = {
+      classFullName: "TestAnalytical:Type",
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      userLabel: "TypeDefinition",
+    };
+    const typeDefinitionId: Id64String = iModelDb.elements.insertElement(typeDefinitionProps);
+    assert.isTrue(Id64.isValidId64(typeDefinitionId));
     // insert partition
     const partitionProps: InformationPartitionElementProps = {
       classFullName: "TestAnalytical:Partition",
@@ -1906,6 +1918,26 @@ describe("iModel", () => {
     };
     const modelId: Id64String = iModelDb.models.insertModel(modelProps);
     assert.isTrue(Id64.isValidId64(modelId));
+    // insert element
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "TestAnalytical:Element",
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      userLabel: "A1",
+      typeDefinition: { id: typeDefinitionId, relClassName: "Analytical:AnalyticalElementIsOfType" },
+    };
+    const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
+    // test typeDefinition update scenarios
+    assert.isTrue(Id64.isValidId64(elementId));
+    assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
+    elementProps.typeDefinition = undefined;
+    iModelDb.elements.updateElement(elementProps);
+    assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Still expect valid typeDefinition.id because undefined causes update to skip it");
+    elementProps.typeDefinition = RelatedElement.none;
+    iModelDb.elements.updateElement(elementProps);
+    assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
+    // close
     iModelDb.saveChanges();
     iModelDb.closeSnapshot();
   });
