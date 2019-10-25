@@ -315,6 +315,34 @@ describe("PropertyGrid", () => {
       expect(isExpanded, "Category did not get collapsed").to.be.false;
     });
 
+    it("keeps the collapsed state of PropertyCategoryBlock when data is refreshed", async () => {
+      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      const categoryBlock1 = wrapper.find(PropertyCategoryBlock).at(0);
+      const categoryBlock2 = wrapper.find(PropertyCategoryBlock).at(1);
+      expect(categoryBlock1.exists(), "First category block does not exist").to.be.true;
+      expect(categoryBlock2.exists(), "Second category block does not exist").to.be.true;
+
+      categoryBlock1.find(".header").simulate("click");
+      categoryBlock2.find(".header").simulate("click");
+
+      let isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+      let isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
+      expect(isExpanded1, "First category did not get collapsed").to.be.false;
+      expect(isExpanded2, "Second category did not get expanded").to.be.true;
+
+      // Refresh PropertyGrid data.
+      dataProvider.onDataChanged.raiseEvent();
+      await TestUtils.flushAsyncOperations();
+
+      isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+      isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
+      expect(isExpanded1, "First category did not stay collapsed").to.be.false;
+      expect(isExpanded2, "Second category did not stay expanded").to.be.true;
+    });
+
     it("rerenders if data in the provider changes", async () => {
       const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
