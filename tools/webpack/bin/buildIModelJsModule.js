@@ -299,7 +299,7 @@ class DependentTracker {
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/frontend-devtools", "frontend-devtools.js", undefined, "lib/public"),
-            // new ModuleInfo(_isDevelopment, "@bentley/ui-abstract", "ui-abstract.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, "@bentley/ui-abstract", "ui-abstract.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
