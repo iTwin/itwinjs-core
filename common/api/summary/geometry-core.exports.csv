@@ -67,6 +67,7 @@ public;ConvexClipPlaneSet
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
+internal;CurveChainWireOffsetContext
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
@@ -120,6 +121,7 @@ public;IndexedXYZCollectionInterval
 public;IndexedXYZCollectionPolygonOps
 public;InverseMatrixState
 public;IStrokeHandler
+public;JointOptions
 public;KnotVector
 public;LinearSweep 
 public;LineSegment3d 
@@ -179,6 +181,7 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonOps
+internal;PolygonWireOffsetContext
 public;PolylineOps
 internal;PowerPolynomial
 internal;Quadrature
