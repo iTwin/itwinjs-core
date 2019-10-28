@@ -1446,6 +1446,7 @@ export interface ExportGraphicsLines {
 // @public
 export interface ExportGraphicsMesh {
     indices: Int32Array;
+    isTwoSided: boolean;
     normals: Float32Array;
     params: Float32Array;
     points: Float64Array;
