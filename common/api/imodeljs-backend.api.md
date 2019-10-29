@@ -324,6 +324,8 @@ export class BisCoreSchema extends Schema {
     // @internal (undocumented)
     static registerSchema(): void;
     // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
     static readonly schemaName: string;
 }
 
@@ -665,6 +667,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
     readonly hasPendingRequests: boolean;
+    // @alpha
+    hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean>;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
@@ -1647,6 +1651,8 @@ export abstract class FunctionalType extends TypeDefinitionElement {
 export class GenericSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }

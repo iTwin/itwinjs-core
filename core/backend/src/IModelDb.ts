@@ -5,7 +5,7 @@
 /** @module iModels */
 import {
   ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
-  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration,
+  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration, ChangeSetStatus,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
@@ -842,7 +842,7 @@ export class IModelDb extends IModel {
   }
 
   /** Update the IModelProps of this iModel in the database. */
-  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
+  public updateIModelProps(): void { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -850,7 +850,7 @@ export class IModelDb extends IModel {
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
-  public saveChanges(description?: string) {
+  public saveChanges(description?: string): void {
     if (this.openParams.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
@@ -865,7 +865,7 @@ export class IModelDb extends IModel {
   }
 
   /** Abandon pending changes in this iModel */
-  public abandonChanges() {
+  public abandonChanges(): void {
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
   }
@@ -886,14 +886,20 @@ export class IModelDb extends IModel {
     this.initializeIModelDb();
   }
 
-  /** Push changes to iModelHub
+  /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
-   * @throws [[IModelError]] If the pull and merge fails.
+   * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
+   * @note This function is a no-op if there are no changes to push.
    * @beta
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
+    if (this.briefcase.nativeDb.hasUnsavedChanges()) {
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory));
+    } else if (!this.briefcase.nativeDb.hasSavedChanges()) {
+      return Promise.resolve(); // nothing to push
+    }
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
@@ -949,13 +955,13 @@ export class IModelDb extends IModel {
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
-   * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
-   * this method must first obtain the schema lock from the IModel server.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param requestContext The client request context
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
-   * @throws IModelError if the schema lock cannot be obtained.
-   * @see containsClass
+   * @throws IModelError if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * @see querySchemaVersion
    */
   public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();

@@ -40,13 +40,12 @@ import * as semver from "semver";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
   DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GenericSchema, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
+  GenericSchema, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelHost } from "../../IModelHost";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -1878,7 +1877,12 @@ describe("iModel", () => {
     // import schemas
     const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
     const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
+    assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
+    assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
+    assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
+    assert.isTrue(iModelDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+    assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
     // test querySchemaVersion
     const bisCoreSchemaVersion: string = iModelDb.querySchemaVersion(BisCoreSchema.schemaName)!;
