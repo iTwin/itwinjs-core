@@ -59,7 +59,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get isMobileBackend() { return interop !== null; }
 
   /** Check if running backend running on mobile */
-  public static get isMobileFrontend() { return this.platform !== undefined; }
+  public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
 
   /** Check if running backend running on wkwebview on ios */
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
