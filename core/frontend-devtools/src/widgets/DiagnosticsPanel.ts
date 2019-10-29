@@ -10,6 +10,7 @@ import { TileStatisticsTracker } from "./TileStatisticsTracker";
 import { Viewport } from "@bentley/imodeljs-frontend";
 import { dispose } from "@bentley/bentleyjs-core";
 import { KeyinField } from "./KeyinField";
+import { GpuProfiler } from "./GpuProfiler";
 
 /** Options for configuring a [[DiagnosticsPanel]].
  * @beta
@@ -21,6 +22,7 @@ export interface DiagnosticsPanelProps {
     fps?: boolean;
     tileStats?: boolean;
     memory?: boolean;
+    gpuProfiler?: boolean;
     toolSettings?: boolean;
   };
 }
@@ -34,11 +36,12 @@ export class DiagnosticsPanel {
   private readonly _fpsTracker?: FpsTracker;
   private readonly _memoryTracker?: MemoryTracker;
   private readonly _statsTracker?: TileStatisticsTracker;
+  private readonly _gpuProfiler?: GpuProfiler;
   private readonly _toolSettingsTracker?: ToolSettingsTracker;
   public readonly keyinField?: KeyinField;
 
   public constructor(vp: Viewport, props?: DiagnosticsPanelProps) {
-    const exclude = (undefined !== props && undefined !== props.exclude) ? props.exclude : { };
+    const exclude = (undefined !== props && undefined !== props.exclude) ? props.exclude : {};
 
     this._element = document.createElement("div");
     this._element.className = "debugPanel";
@@ -70,6 +73,11 @@ export class DiagnosticsPanel {
       this.addSeparator();
     }
 
+    if (true !== exclude.gpuProfiler) {
+      this._gpuProfiler = new GpuProfiler(this._element);
+      this.addSeparator();
+    }
+
     if (true !== exclude.toolSettings)
       this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
   }
@@ -80,6 +88,7 @@ export class DiagnosticsPanel {
     dispose(this._fpsTracker);
     dispose(this._memoryTracker);
     dispose(this._statsTracker);
+    dispose(this._gpuProfiler);
     dispose(this._toolSettingsTracker);
 
     if (undefined !== this._parentElement)

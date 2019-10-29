@@ -250,6 +250,7 @@ export interface DiagnosticsPanelProps {
         fps?: boolean;
         tileStats?: boolean;
         memory?: boolean;
+        gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
 }
@@ -269,8 +270,14 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     execute(emph: EmphasizeElements, vp: ScreenViewport): void;
     // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
     static toolId: string;
-}
+    }
 
 // @beta
 export class FpsTracker {
@@ -419,6 +426,9 @@ export interface NumericInputProps {
     value: number;
 }
 
+// @beta
+export function parseToggle(arg: string | undefined): string | boolean | undefined;
+
 // @alpha (undocumented)
 export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     constructor(iModel: IModelConnection);
@@ -550,6 +560,22 @@ export class SaveViewTool extends Tool {
 
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
+
+// @internal
+export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha (undocumented)
 export interface Slider {

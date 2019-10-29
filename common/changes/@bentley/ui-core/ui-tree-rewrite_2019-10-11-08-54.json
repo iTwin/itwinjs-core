@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added useLifecycleLogging hook to help debugging react functional components",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Saulius.Skliutas@bentley.com"
+}

@@ -40,7 +40,7 @@ export interface PropertyChangeResult {
 // istanbul ignore next
 export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> { }
 
-/** Abstract class that allow property values to be passed between hosting API and UI
+/** Abstract class that allows property values to be passed between hosting API and UI
  * @alpha
  */
 // istanbul ignore next

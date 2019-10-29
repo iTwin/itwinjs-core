@@ -24,4 +24,4 @@ To display prompts and messages correctly, the AppNotificationManager subclass o
 
 ## API Reference
 
-* [Notification]($framework:Notification)
+* [Notification]($ui-framework:Notification)

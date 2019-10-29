@@ -8,19 +8,19 @@
     },
     {
       "name": "@bentley/bentleyjs-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/config-loader",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -28,7 +28,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -36,7 +36,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -48,11 +48,11 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
@@ -60,15 +60,15 @@
     },
     {
       "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -80,7 +80,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/imodeljs-webserver",
@@ -115,24 +115,28 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@bentley/ui-abstract",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/webpack-tools",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -153,6 +157,10 @@
     {
       "name": "@testing-library/react",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "app-root-path",
@@ -188,7 +196,7 @@
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "chai-as-promised",
@@ -339,6 +347,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "file-saver",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -391,8 +403,12 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "immer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "immutable",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "imports-loader",
@@ -451,6 +467,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "lorem-ipsum",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "make-dir",
       "allowedCategories": [ "tools" ]
     },
@@ -472,7 +492,7 @@
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "mocha-junit-reporter",
@@ -576,7 +596,11 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
+    },
+    {
+      "name": "react-autosuggest",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-compound-slider",
@@ -584,6 +608,10 @@
     },
     {
       "name": "react-data-grid",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-data-grid-addons",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -639,6 +667,14 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-virtualized-auto-sizer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-window",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "readline",
       "allowedCategories": [ "tools" ]
     },
@@ -652,7 +688,11 @@
     },
     {
       "name": "request",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "request-promise",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "request-promise-native",
@@ -664,7 +704,7 @@
     },
     {
       "name": "rimraf",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "rxjs",
@@ -692,7 +732,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -752,15 +792,15 @@
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",
@@ -768,7 +808,7 @@
     },
     {
       "name": "tslint-etc",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslint-loader",
@@ -776,7 +816,7 @@
     },
     {
       "name": "tsutils",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "typedoc",
@@ -796,7 +836,7 @@
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "typescript-json-schema",
@@ -848,11 +888,11 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "webpack-dev-server",

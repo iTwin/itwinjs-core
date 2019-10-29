@@ -35,6 +35,14 @@ export const createRandomCategory = (): CategoryDescription => ({
   expand: faker.random.boolean(),
 });
 
+const createInvalidCategory = (): CategoryDescription => ({
+  name: "",
+  label: "",
+  description: "",
+  priority: 0,
+  expand: false,
+});
+
 export const createRandomPrimitiveTypeDescription = (): TypeDescription => {
   return {
     valueFormat: PropertyValueFormat.Primitive,
@@ -48,8 +56,8 @@ export const createRandomEditorDescription = (): EditorDescription => {
   } as EditorDescription;
 };
 
-export const createRandomPrimitiveFieldJSON = (): BaseFieldJSON => ({
-  category: createRandomCategory(),
+export const createRandomPrimitiveFieldJSON = (category: CategoryDescription | boolean = true): BaseFieldJSON => ({
+  category: (typeof category === "object") ? category : (category ? createRandomCategory() : createInvalidCategory()),
   name: faker.random.word(),
   label: faker.random.words(),
   type: createRandomPrimitiveTypeDescription(),
@@ -58,8 +66,8 @@ export const createRandomPrimitiveFieldJSON = (): BaseFieldJSON => ({
   editor: nullable(createRandomEditorDescription),
 });
 
-export const createRandomPrimitiveField = (): Field => {
-  return Field.fromJSON(createRandomPrimitiveFieldJSON())!;
+export const createRandomPrimitiveField = (category: CategoryDescription | boolean = true): Field => {
+  return Field.fromJSON(createRandomPrimitiveFieldJSON(category))!;
 };
 
 export const createRandomPropertyJSON = (): PropertyJSON => ({
@@ -67,17 +75,17 @@ export const createRandomPropertyJSON = (): PropertyJSON => ({
   relatedClassPath: createRandomRelationshipPathJSON(1),
 });
 
-export const createRandomPropertiesFieldJSON = (): PropertiesFieldJSON => ({
-  ...createRandomPrimitiveFieldJSON(),
+export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true): PropertiesFieldJSON => ({
+  ...createRandomPrimitiveFieldJSON(category),
   properties: [createRandomPropertyJSON()],
 });
 
-export const createRandomPropertiesField = (): PropertiesField => {
-  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON())!;
+export const createRandomPropertiesField = (category: CategoryDescription | boolean = true): PropertiesField => {
+  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category))!;
 };
 
-export const createRandomNestedFieldJSON = (): NestedContentFieldJSON => ({
-  ...createRandomPrimitiveFieldJSON(),
+export const createRandomNestedFieldJSON = (category: CategoryDescription | boolean = true): NestedContentFieldJSON => ({
+  ...createRandomPrimitiveFieldJSON(category),
   type: {
     valueFormat: PropertyValueFormat.Struct,
     typeName: faker.random.word(),
@@ -93,8 +101,8 @@ export const createRandomNestedFieldJSON = (): NestedContentFieldJSON => ({
   autoExpand: faker.random.boolean(),
 });
 
-export const createRandomNestedContentField = (nestedFields?: Field[]): NestedContentField => {
-  const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON())!;
+export const createRandomNestedContentField = (nestedFields?: Field[], category: CategoryDescription | boolean = true): NestedContentField => {
+  const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON(category))!;
   if (nestedFields)
     nestedContentField.nestedFields = nestedFields;
   nestedContentField.nestedFields.forEach((field) => field.rebuildParentship(nestedContentField));

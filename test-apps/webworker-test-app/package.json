@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "lint": "tslint -p . 1>&2",
-    "clean": "rimraf lib dist package-deps.json",
+    "clean": "rimraf lib .rush dist package-deps.json",
     "test": "",
     "cover": "",
     "docs": ""
@@ -47,17 +47,17 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/webpack-tools": "1.5.0-dev.18",
-    "@bentley/build-tools": "1.5.0-dev.18",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
+    "@bentley/build-tools": "1.7.0-dev.16",
     "rimraf": "^2.6.2",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2"
+    "typescript": "~3.6.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.18",
-    "@bentley/geometry-core": "1.5.0-dev.18",
-    "@bentley/imodeljs-frontend": "1.5.0-dev.18"
+    "@bentley/bentleyjs-core": "1.7.0-dev.16",
+    "@bentley/geometry-core": "1.7.0-dev.16",
+    "@bentley/imodeljs-frontend": "1.7.0-dev.16"
   }
 }

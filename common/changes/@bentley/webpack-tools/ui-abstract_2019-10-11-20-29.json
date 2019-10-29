@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added initial ui-abstract package setup",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "dan.east@bentley.com"
+}

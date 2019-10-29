@@ -8,7 +8,8 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
+import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
+import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
@@ -16,13 +17,14 @@ import {
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BetaBadge } from "../betabadge/BetaBadge";
 import { UiFramework } from "../UiFramework";
+import { AnyItemDef } from "../shared/AnyItemDef";
+import { GroupItemProps } from "../shared/GroupItemProps";
+import { ItemDefFactory } from "../shared/ItemDefFactory";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -50,8 +52,8 @@ export class GroupItemDef extends ActionButtonItemDef {
   private _itemMap!: ItemMap;
   private _panelLabel: string | StringGetter = "";
 
-  constructor(groupItemProps: GroupItemProps) {
-    super(groupItemProps);
+  constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc) {
+    super(groupItemProps, onItemExecuted);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
     this.directionExplicit = (groupItemProps.direction !== undefined);
@@ -59,6 +61,20 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
     this.items = groupItemProps.items;
+  }
+
+  /** @internal */
+  public static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef {
+    const groupItemDef: GroupItemProps = {
+      groupId: itemProps.groupId,
+      items: ItemDefFactory.createItemListForGroupItem(itemProps.items, onItemExecuted),
+      direction: itemProps.direction as number,
+      itemsInColumn: itemProps.itemsInColumn,
+      panelLabel: itemProps.panelLabel,
+      paneLabelKey: itemProps.paneLabelKey,
+    };
+
+    return new GroupItemDef(groupItemDef);
   }
 
   public get id(): string {
@@ -135,7 +151,7 @@ interface ToolGroupItem {
   iconSpec?: IconSpec;
   label: string;
   trayId?: string;
-  betaBadge?: boolean;
+  badgeType?: BadgeType;
 }
 type ColumnItemMap = Map<string, ToolGroupItem>;
 
@@ -166,8 +182,9 @@ interface GroupItemState extends BaseItemState {
 }
 
 /** Group Item React component.
+ * @internal
  */
-class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
+export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
 
   /** @internal */
   public readonly state: Readonly<GroupItemState>;
@@ -175,6 +192,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
   private _trayIndex = 0;
+  private _ref = React.createRef<HTMLDivElement>();
 
   constructor(props: GroupItemComponentProps) {
     super(props);
@@ -291,7 +309,10 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
 
             this._trayIndex++;
             const itemTrayId = this.generateTrayId();
-            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId, betaBadge: item.betaBadge };
+            const groupItem: ToolGroupItem = {
+              iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
+              badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
+            };
 
             columnItems.set(item.id, groupItem);
             this.processGroupItemDef(item, itemTrayId, trays);
@@ -356,6 +377,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
       className,
       groupItemDef.overflow && "nz-toolbar-item-overflow",
     );
+    const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
 
     return (
       <ExpandableItem
@@ -366,16 +388,18 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
-        <Item
-          className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-          isDisabled={!this.state.isEnabled}
-          title={this.state.groupItemDef.label}
-          onClick={() => this._toggleGroupButton()}
-          onKeyDown={this._handleKeyDown}
-          icon={icon}
-          onSizeKnown={this.props.onSizeKnown}
-          badge={groupItemDef.betaBadge && <BetaBadge />}
-        />
+        <div ref={this._ref}>
+          <Item
+            className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+            isDisabled={!this.state.isEnabled}
+            title={this.state.groupItemDef.label}
+            onClick={() => this._toggleGroupButton()}
+            onKeyDown={this._handleKeyDown}
+            icon={icon}
+            onSizeKnown={this.props.onSizeKnown}
+            badge={badge}
+          />
+        </div>
       </ExpandableItem>
     );
   }
@@ -386,6 +410,12 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
       isExtended: false,
       isPressed: !prevState.isPressed,
     }));
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
+      return;
+    this._closeGroupButton();
   }
 
   private _closeGroupButton = () => {
@@ -518,6 +548,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
             let isVisible = true;
             let isActive = false;
             let isEnabled = true;
+            const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
             if (item instanceof ItemDefBase) {
               isVisible = item.isVisible;
@@ -560,7 +591,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
-                badge={item.betaBadge && <BetaBadge />}
+                badge={badge}
               />
             );
           })}
@@ -584,7 +615,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
               backTrays,
             };
           })}
-          onOutsideClick={this._closeGroupButton}
+          onOutsideClick={this._handleOutsideClick}
           title={tray.title}
         />
       );
@@ -592,7 +623,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
     return (
       <ToolGroup
         columns={columns}
-        onOutsideClick={this._closeGroupButton}
+        onOutsideClick={this._handleOutsideClick}
         title={tray.title}
       />
     );

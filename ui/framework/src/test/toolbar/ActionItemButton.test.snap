@@ -2,7 +2,6 @@
 
 exports[`ActionItemButton enabled renders correctly 1`] = `
 <Item
-  badge={false}
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -21,7 +20,6 @@ exports[`ActionItemButton hidden renders correctly 1`] = `""`;
 
 exports[`ActionItemButton renders correctly 1`] = `
 <Item
-  badge={false}
   icon={
     <Unknown
       iconSpec="icon-placeholder"

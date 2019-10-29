@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added initial ui-abstract package setup",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "dan.east@bentley.com"
+}

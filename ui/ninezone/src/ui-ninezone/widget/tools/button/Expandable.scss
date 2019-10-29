@@ -13,6 +13,7 @@
   $arrow-shadow: $icon-shadow;
 
   position: relative;
+  pointer-events: auto;
 
   &:hover {
     > .nz-triangle {

@@ -13,10 +13,8 @@
   overflow: auto;
   padding-left: $padding;
   padding-right: $padding;
-  > .nz-container {
-    height: 100%;
-    width: 100%;
-  }
+  box-sizing: border-box;
+
   &.nz-left-anchor {
     display: flex;
     flex-direction: row-reverse;
@@ -26,6 +24,13 @@
     > .nz-container {
       direction: ltr;
     }
+  }
+
+  > .nz-container {
+    min-height: 100%;
+    min-width: 100%;
+    height: fit-content;
+    width: fit-content;
   }
 
   @include nz-scrollbar();

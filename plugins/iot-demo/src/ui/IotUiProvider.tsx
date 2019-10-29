@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { PluginUiProvider, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, UiItemNode, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
 import { ModelessDialogManager, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";

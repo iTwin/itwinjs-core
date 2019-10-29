@@ -5,14 +5,25 @@
 /** @module Table */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
 import { SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
+import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
 
 /** Type for Horizontal Alignment
  * @public
  */
 export type HorizontalAlignment = "left" | "center" | "right" | "justify";
+
+/** Filter Renderer for a Table column
+ * @alpha
+ */
+export enum FilterRenderer {
+  Numeric = 1,
+  MultiSelect,
+  SingleSelect,
+  Text,
+}
 
 /**
  * Column definition provided to Table.
@@ -28,20 +39,25 @@ export interface ColumnDescription {
 
   editable?: boolean;                   /* Defaults to false */
   resizable?: boolean;                  /* Defaults to false */
+  icon?: boolean;                       /* Defaults to false */
+
   sortable?: boolean;                   /* Defaults to false */
   secondarySortColumn?: number;
   sortIgnoreCase?: boolean;             /* Defaults to false */
 
+  filterable?: boolean;                 /* Defaults to false */
+  /** @alpha */
+  filterRenderer?: FilterRenderer;
+
+  // Not implemented yet
   alignment?: HorizontalAlignment;
   titleAlignment?: HorizontalAlignment;
-  filterable?: boolean;                  /* Defaults to false */
   groupable?: boolean;                   /* Defaults to false */
   showFieldFilters?: boolean;            /* Defaults to true */
   showDistinctValueFilters?: boolean;    /* Defaults to true */
   filterCaseSensitive?: boolean;         /* Defaults to false */
   editorAlwaysOn?: boolean;              /* Defaults to false */
   pressSelectsRow?: boolean;             /* Defaults to true */
-  icon?: boolean;                        /* Defaults to false */
 }
 
 /**
@@ -70,11 +86,15 @@ export interface RowItem {
   cells: CellItem[];
   isDisabled?: boolean;
   colorOverrides?: ItemColorOverrides;
+
   /**
    * A key-value pairs data structure that can be used by data provider
    * to store some custom data for this node item.
    */
   extendedData?: { [key: string]: any };
+
+  /** Get the value from the cell for filtering purposes */
+  getValueFromCell?: (columnKey: string) => any;
 }
 
 /** An interface table data change listeners
@@ -86,6 +106,12 @@ export declare type TableDataChangesListener = () => void;
  * @public
  */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
+
+/** @alpha */
+export interface TableDistinctValue {
+  value: Primitives.Value;
+  label: string;
+}
 
 /**
  * TableDataProvider provides data to the Table.
@@ -99,16 +125,32 @@ export interface TableDataProvider {
   getColumns(): Promise<ColumnDescription[]>;
   getRowsCount(): Promise<number>;
   getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
+
   sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
+
+  // Column Filtering methods
+
+  /** Apply a filter descriptor collection
+   * @alpha
+   */
+  applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
+
+  /** Gets distinct values in a column
+   * @alpha
+   */
+  getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
+
+  /** Gets ECExpression to get property display value.
+   * @alpha
+   */
+  getPropertyDisplayValueExpression?: (property: string) => string;
+
+  // Column Grouping methods
 
   // IsGrouped: boolean;
   // GetGroupCount(): Promise<number>;
   // GetRootGroups(): Promise<Array<IGroup>>;
   // ApplyGroupDescriptor(groupDescriptor: IGroupDescriptor): void;
-
-  // ApplyFilter(filterText: string, caseSensitive: boolean): void;
-  // ApplyFilterDescriptors(filterDescriptors: ICompositeFilterDescriptorCollection): void;
-  // GetDistinctValues(columnIndex: number, maximumValueCount?: number): Promise<DistinctValueCollection>;
 }
 
 /**

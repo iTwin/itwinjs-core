@@ -5,7 +5,12 @@
     "skipLibCheck": true,
     "module": "commonjs",
     "outDir": "./lib",
-    "jsx": "react"
+    "jsx": "react",
+    "types": [
+      "sinon-chai",
+      "chai-as-promised",
+      "@bentley/webpack-tools"
+    ]
   },
   "include": [
     "./src/**/*.ts*"

@@ -23,7 +23,7 @@ export class OverrideFormat {
 
   /** The name of this OverrideFormat.
    *
-   * This should be set to the FormatString which represents the format override.
+   * This should be set to the [FormatString]($docs/bis/ec/kindofquantity/#format-string) which represents the format override.
    */
   public readonly name: string;
 
@@ -91,7 +91,10 @@ export class OverrideFormat {
     if (undefined === unitAndLabels)
       return fullName;
     for (const [unit, unitLabel] of unitAndLabels)
-      fullName += `[${unit.fullName}|${unitLabel}]`;
+      if (undefined === unitLabel)
+        fullName += `[${unit.fullName}]`;
+      else
+        fullName += `[${unit.fullName}|${unitLabel}]`;
     return fullName;
   }
 }

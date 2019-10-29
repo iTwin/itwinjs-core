@@ -8,7 +8,7 @@ import {
   assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus,
   ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelReadRpcInterface,
@@ -81,6 +81,8 @@ export class IModelConnection extends IModel {
   public readonly geoServices: GeoServices;
   /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;
+  /** @internal The displayed extents. Union of the the project extents and all displayed models. */
+  public readonly displayedExtents: AxisAlignedBox3d;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
@@ -181,6 +183,7 @@ export class IModelConnection extends IModel {
     this.tiles = new IModelConnection.Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
+    this.displayedExtents = Range3d.fromJSON(this.projectExtents);
   }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
@@ -703,7 +706,7 @@ export namespace IModelConnection {
             this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
           }
         }
-      } catch (err) { }  // ignore error, we had nothing to do.
+      } catch (err) { } // ignore error, we had nothing to do.
     }
 
     /** Query for a set of model ranges by ModelIds. */

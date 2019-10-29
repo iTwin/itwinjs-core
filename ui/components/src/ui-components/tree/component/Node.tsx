@@ -69,7 +69,7 @@ export interface TreeNodeProps extends CommonProps {
 }
 
 /**
- * Default component for rendering a node for the [Tree]($components)
+ * Default component for rendering a node for the [Tree]($ui-components)
  * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {

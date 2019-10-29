@@ -343,6 +343,10 @@ export class SelectionTool extends PrimitiveTool {
             const pixel = pixels.getPixel(testPoint.x, testPoint.y);
             if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
               continue; // no geometry at this location...
+
+            if (undefined !== pixel.featureTable && pixel.featureTable.modelId === pixel.elementId)
+              continue; // reality model, terrain, etc - not selectable
+
             if (undefined !== outline && !offset.containsPoint(testPoint))
               outline.add(pixel.elementId.toString());
             else
@@ -473,10 +477,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit !== undefined) {
-      if (hit.isModelHit)
-        return EventHandled.Yes;    // Reality models, background maps etc... not selectable.
-
+    if (hit !== undefined && !hit.isModelHit) { // model hit = terrain, reality models, background maps, etc - not selectable
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
 
@@ -518,7 +519,12 @@ export class SelectionTool extends PrimitiveTool {
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        const nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+        let nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+        if (undefined !== nextHit && nextHit.isModelHit) {
+          // Ignore reality models, terrain, maps, etc.
+          // Let's assume we won't get 2 model hits in the same hit list.
+          nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+        }
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)

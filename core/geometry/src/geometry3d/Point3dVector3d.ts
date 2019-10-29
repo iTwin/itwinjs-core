@@ -1180,7 +1180,18 @@ export class Vector3d extends XYZ {
    * @param vectorB target vector of rotation.
    */
   public signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle { return Angle.createRadians(this.signedRadiansTo(vector1, vectorW)); }
-  /*  smallerUnorientedAngleTo(vectorB: Vector3d): Angle { }
+  /** Return the smallest (strongly typed) angle from the (bidirectional) line containing `this` to the (bidirectional) line containing `vectorB` */
+  public smallerUnorientedAngleTo(vectorB: Vector3d): Angle {
+    return Angle.createRadians(this.smallerUnorientedRadiansTo(vectorB));
+  }
+  /** Return the smallest angle (in radians) from the (bidirectional) line containing `this` to the (bidirectional) line containing `vectorB` */
+  public smallerUnorientedRadiansTo(vectorB: Vector3d): number {
+    const c = this.dotProduct(vectorB);
+    const s = this.crossProductMagnitude(vectorB);
+    return Math.atan2(Math.abs(s), Math.abs(c));
+  }
+
+  /*
     signedAngleTo(vectorB: Vector3d, upVector: Vector3d): Angle { }
     // sectors
     isInSmallerSector(vectorA: Vector3d, vectorB: Vector3d): boolean { }

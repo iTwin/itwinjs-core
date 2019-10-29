@@ -48,11 +48,11 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   private _leftPanel = {
-    allowedZones: [9, 4, 7],
+    allowedZones: [2, 4, 7, 9],
   };
 
   private _rightPanel = {
-    allowedZones: [9],
+    allowedZones: [2, 9],
     widgets: [
       <Widget element={<h2>Right panel</h2>} />,
     ],
@@ -65,7 +65,7 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   private _bottomMostPanel = {
-    allowedZones: [9, 4],
+    allowedZones: [2, 4, 9],
     widgets: [
       <Widget element={<h2>BottomMost panel</h2>} />,
     ],
@@ -89,6 +89,7 @@ export class Frontstage1 extends FrontstageProvider {
         }
         topCenter={
           <Zone
+            allowsMerging
             widgets={[
               <Widget isToolSettings={true} />,
             ]}

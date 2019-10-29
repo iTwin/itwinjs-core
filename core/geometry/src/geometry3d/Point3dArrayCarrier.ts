@@ -45,7 +45,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined {
+  public getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d {
     const source = this.data[index];
     return Point3d.create(source.x, source.y, source.z, result);
   }

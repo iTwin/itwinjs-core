@@ -29,6 +29,7 @@ export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: Cur
  * @public
  */
 export class RuledSweep extends SolidPrimitive {
+  /** String name for schema properties */
   public readonly solidPrimitiveType = "ruledSweep";
 
   private _contours: SweepContour[];

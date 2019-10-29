@@ -13,6 +13,7 @@ Object {
     "2": Object {
       "horizontalAnchor": 1,
       "id": 2,
+      "mode": 1,
       "tabIndex": -2,
       "verticalAnchor": 2,
     },
@@ -69,7 +70,7 @@ Object {
       ],
     },
     "2": Object {
-      "allowsMerging": false,
+      "allowsMerging": true,
       "bounds": Object {
         "bottom": 0,
         "left": 0,
@@ -78,9 +79,7 @@ Object {
       },
       "id": 2,
       "isLayoutChanged": false,
-      "widgets": Array [
-        2,
-      ],
+      "widgets": Array [],
     },
     "3": Object {
       "allowsMerging": false,

@@ -384,6 +384,14 @@ export class AppUi {
             key: "c",
             item: AccuDrawPopupTools.showCalculator,
           },
+          {
+            key: "m",
+            item: AccuDrawPopupTools.showContextMenu,
+          },
+          {
+            key: "t",
+            item: AccuDrawPopupTools.showToolbar,
+          },
         ],
       },
       {

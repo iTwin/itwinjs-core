@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
+
 import { PropertyDescription } from "./Description";
 import { PropertyValue } from "./Value";
 

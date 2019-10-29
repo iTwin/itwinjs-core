@@ -30,6 +30,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
+  /** String name for schema properties */
   public readonly solidPrimitiveType = "cone";
 
   private _localToWorld: Transform;       // Transform from local to global.

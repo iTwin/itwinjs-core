@@ -2,19 +2,19 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Point } from "@bentley/ui-core";
-import { MenuItemProps, CommandItemDef, AccuDrawPopupManager } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
+import { BadgeType, AbstractToolItemProps, AbstractMenuItemProps, AbstractToolbarProps } from "@bentley/ui-abstract";
+import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
 
   private static _menuButtonAdded = false;
-  private static _accudrawMenuItems: MenuItemProps[] = [
+  private static _accudrawMenuItems: AbstractMenuItemProps[] = [
     {
-      id: "Mode", label: "~Mode", iconSpec: "icon-placeholder",
+      id: "Mode", label: "~Mode", iconSpec: "icon-placeholder", badgeType: BadgeType.New,
       submenu: [
-        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", execute: () => { } } },
-        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", execute: () => { } } },
+        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } } },
+        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } } },
       ],
     },
     {
@@ -25,7 +25,7 @@ export class AccuDrawPopupTools {
       ],
     },
     {
-      id: "LockToAxis", item: { label: "~Lock to Axis", iconSpec: "icon-placeholder", execute: () => { } },
+      id: "LockToAxis", item: { label: "~Lock to Axis", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
     },
     {
       id: "MoveOrigin", item: { label: "Move ~Origin", iconSpec: "icon-placeholder", execute: () => { } },
@@ -47,7 +47,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.addMenuButton", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          AccuDrawPopupManager.showMenuButton("test1", viewport.toolTipDiv, new Point(150, 150), this._accudrawMenuItems);
+          IModelApp.uiAdmin.showMenuButton("test1", this._accudrawMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
           this._menuButtonAdded = true;
         }
       },
@@ -58,7 +58,7 @@ export class AccuDrawPopupTools {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.hideMenuButton", execute: () => {
         if (this._menuButtonAdded) {
-          AccuDrawPopupManager.hideMenuButton("test1");
+          IModelApp.uiAdmin.hideMenuButton("test1");
           this._menuButtonAdded = false;
         }
       },
@@ -75,7 +75,7 @@ export class AccuDrawPopupTools {
   }
 
   private static _closeCalculator() {
-    AccuDrawPopupManager.removeCalculator();
+    IModelApp.uiAdmin.hideCalculator();
   }
 
   public static get showCalculator() {
@@ -83,7 +83,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showCalculator", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          AccuDrawPopupManager.showCalculator(viewport.toolTipDiv, new Point(150, 150), 100, "icon-placeholder", this._calculatorOnOk, this._calculatorOnCancel);
+          IModelApp.uiAdmin.showCalculator(100, "icon-placeholder", IModelApp.uiAdmin.createXAndY(150, 150), this._calculatorOnOk, this._calculatorOnCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -99,7 +99,7 @@ export class AccuDrawPopupTools {
   }
 
   private static _closeInputEditor() {
-    AccuDrawPopupManager.removeInputEditor();
+    IModelApp.uiAdmin.hideInputEditor();
   }
 
   public static get showAngleEditor() {
@@ -107,7 +107,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showAngleEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          AccuDrawPopupManager.showAngleEditor(viewport.toolTipDiv, new Point(150, 150), 90, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -118,7 +118,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showLengthEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          AccuDrawPopupManager.showLengthEditor(viewport.toolTipDiv, new Point(150, 150), 90, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -129,8 +129,113 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showHeightEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          AccuDrawPopupManager.showHeightEditor(viewport.toolTipDiv, new Point(150, 150), 30, this._inputCommit, this._inputCancel);
+          IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
         }
+      },
+    });
+  }
+
+  public static get showContextMenu() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showContextMenu", execute: () => {
+        IModelApp.uiAdmin.showContextMenu(this._accudrawMenuItems, IModelApp.uiAdmin.cursorPosition);
+      },
+    });
+  }
+
+  public static get selectElementItemProps(): AbstractToolItemProps {
+    return {
+      toolId: SelectionTool.toolId,
+      iconSpec: SelectionTool.iconSpec,
+      label: () => SelectionTool.flyover,
+      description: () => SelectionTool.description,
+      execute: () => {
+        IModelApp.tools.run(SelectionTool.toolId);
+      },
+    };
+  }
+
+  public static get fitViewItemProps(): AbstractToolItemProps {
+    return {
+      toolId: FitViewTool.toolId,
+      iconSpec: FitViewTool.iconSpec,
+      label: () => FitViewTool.flyover,
+      description: () => FitViewTool.description,
+      execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
+    };
+  }
+
+  public static get windowAreaItemProps(): AbstractToolItemProps {
+    return {
+      toolId: WindowAreaTool.toolId,
+      iconSpec: WindowAreaTool.iconSpec,
+      label: () => WindowAreaTool.flyover,
+      description: () => WindowAreaTool.description,
+      execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
+    };
+  }
+
+  public static get zoomViewItemProps(): AbstractToolItemProps {
+    return {
+      toolId: ZoomViewTool.toolId,
+      iconSpec: ZoomViewTool.iconSpec,
+      label: () => ZoomViewTool.flyover,
+      description: () => ZoomViewTool.description,
+      execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
+    };
+  }
+
+  public static get panViewItemProps(): AbstractToolItemProps {
+    return {
+      toolId: PanViewTool.toolId,
+      iconSpec: PanViewTool.iconSpec,
+      label: () => PanViewTool.flyover,
+      description: () => PanViewTool.description,
+      execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
+    };
+  }
+
+  public static get rotateViewItemProps(): AbstractToolItemProps {
+    return {
+      toolId: RotateViewTool.toolId,
+      iconSpec: RotateViewTool.iconSpec,
+      label: () => RotateViewTool.flyover,
+      description: () => RotateViewTool.description,
+      execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
+    };
+  }
+
+  private static _markerToolbar: AbstractToolbarProps = {
+    items: [
+      AccuDrawPopupTools.selectElementItemProps,
+      AccuDrawPopupTools.fitViewItemProps,
+      AccuDrawPopupTools.windowAreaItemProps,
+      AccuDrawPopupTools.zoomViewItemProps,
+      AccuDrawPopupTools.panViewItemProps,
+      AccuDrawPopupTools.rotateViewItemProps,
+      { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+      { label: "Mode 2", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
+    ],
+  };
+
+  private static _toolbarItemExecuted = (_item: ActionButtonItemDef) => {
+    AccuDrawPopupTools._closeToolbar();
+  }
+
+  private static _toolbarCancel = () => {
+    AccuDrawPopupTools._closeToolbar();
+  }
+
+  private static _closeToolbar() {
+    IModelApp.uiAdmin.hideToolbar();
+  }
+
+  public static get showToolbar() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
+        IModelApp.uiAdmin.showToolbar(
+          this._markerToolbar, IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+          this._toolbarItemExecuted, this._toolbarCancel);
       },
     });
   }

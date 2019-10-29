@@ -1,18 +1,18 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "1.5.0-dev.18",
+  "version": "1.7.0-dev.16",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json",
+    "clean": "rimraf lib .rush ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
     "extract-api-test": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
@@ -40,12 +40,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.5.0-dev.18"
+    "@bentley/bentleyjs-core": "^1.7.0-dev.16"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.18",
-    "@bentley/build-tools": "1.5.0-dev.18",
-    "@bentley/webpack-tools": "1.5.0-dev.18",
+    "@bentley/bentleyjs-core": "1.7.0-dev.16",
+    "@bentley/build-tools": "1.7.0-dev.16",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -59,7 +59,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2"
+    "typescript": "~3.6.2"
   },
   "dependencies": {},
   "nyc": {

@@ -8,6 +8,7 @@ import { NineZoneManager, StagePanelType } from "../../ui-ninezone";
 import { NineZoneManagerTestProps } from "./TestProps";
 import { ZonesManager } from "../../ui-ninezone/zones/manager/Zones";
 import { HorizontalAnchor } from "../../ui-ninezone/widget/Stacked";
+import { ToolSettingsWidgetMode } from "../../ui-ninezone/zones/manager/Widget";
 
 describe("NineZoneManager", () => {
   describe("getNestedPanelsManager", () => {
@@ -25,6 +26,15 @@ describe("NineZoneManager", () => {
       const manager1 = sut.getZonesManager();
       const manager2 = sut.getZonesManager();
       manager1.should.eq(manager2);
+    });
+  });
+
+  describe("getHiddenWidgets", () => {
+    it("should return same hidden widgets", () => {
+      const sut = new NineZoneManager();
+      const hiddenWidgets1 = sut.getHiddenWidgets();
+      const hiddenWidgets2 = sut.getHiddenWidgets();
+      hiddenWidgets1.should.eq(hiddenWidgets2);
     });
   });
 
@@ -122,6 +132,16 @@ describe("NineZoneManager", () => {
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "zones.widgets");
       newProps.zones.widgets[4].should.not.eq(props.zones.widgets[6], "zones.widgets[4]");
       newProps.zones.widgets[4].horizontalAnchor.should.eq(HorizontalAnchor.Right, "zones.widgets[4].horizontalAnchor");
+    });
+
+    it("should set tool settings widget mode to Tab if dragging widget 2", () => {
+      const props = NineZoneManagerTestProps.draggedWidget2;
+      const sut = new NineZoneManager();
+      sut.setPanelTarget({ panelId: "0", panelType: StagePanelType.Right });
+      const setToolSettingsWidgetModeSpy = sinon.spy(sut.getZonesManager(), "setToolSettingsWidgetMode");
+      sut.handleWidgetTabDragEnd(props);
+
+      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.Tab, sinon.match.any as any).should.true;
     });
   });
 
@@ -253,6 +273,86 @@ describe("NineZoneManager", () => {
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "props.zones.widgets");
       newProps.zones.widgets[9].should.not.eq(props.zones.widgets[9], "props.zones.widgets[9]");
       newProps.zones.widgets[9].tabIndex.should.eq(5, "props.zones.widgets[9].tabIndex");
+    });
+  });
+
+  describe("showWidget", () => {
+    it("should show widget in zone", () => {
+      const sut = new NineZoneManager();
+      const props = NineZoneManagerTestProps.defaultProps;
+      const newProps = sut.showWidget(2, props);
+
+      newProps.should.not.eq(props, "props");
+      newProps.zones.should.not.eq(props.zones, "zones");
+      newProps.zones.zones.should.not.eq(props.zones.zones, "zones.zones");
+      newProps.zones.zones[2].should.not.eq(props.zones.zones[2], "zones.zones[2]");
+      newProps.zones.zones[2].widgets.should.not.eq(props.zones.zones[2].widgets, "zones.zones[2].widgets");
+      newProps.zones.zones[2].widgets[0].should.eq(2, "zones.zones[2].widgets[0]");
+    });
+
+    it("should show widget in panel", () => {
+      const sut = new NineZoneManager();
+      const hiddenWidgets = sut.getHiddenWidgets();
+      hiddenWidgets[2].panel = {
+        key: {
+          id: 0,
+          type: StagePanelType.Left,
+        },
+      };
+      const props = NineZoneManagerTestProps.defaultProps;
+      const newProps = sut.showWidget(2, props);
+
+      newProps.should.not.eq(props, "props");
+      newProps.nested.should.not.eq(props.nested, "props.nested");
+      newProps.nested.panels.should.not.eq(props.nested.panels, "props.nested.panels");
+      newProps.nested.panels[0].should.not.eq(props.nested.panels[0], "props.nested.panels[0]");
+      newProps.nested.panels[0].left.should.not.eq(props.nested.panels[0].left, "props.nested.panels[0].left");
+      newProps.nested.panels[0].left.panes.should.not.eq(props.nested.panels[0].left.panes, "props.nested.panels[0].left.panes");
+      newProps.nested.panels[0].left.panes[0].widgets[0].should.eq(2, "props.nested.panels[0].left.panes[0].widgets[0]");
+    });
+  });
+
+  describe("hideWidget", () => {
+    it("should hide widget in zone", () => {
+      const sut = new NineZoneManager();
+      const props = NineZoneManagerTestProps.visibleWidget2;
+      const newProps = sut.hideWidget(2, props);
+
+      newProps.should.not.eq(props, "props");
+      newProps.zones.should.not.eq(props.zones, "zones");
+      newProps.zones.zones.should.not.eq(props.zones.zones, "zones.zones");
+      newProps.zones.zones[2].should.not.eq(props.zones.zones[2], "zones.zones[2]");
+      newProps.zones.zones[2].widgets.should.not.eq(props.zones.zones[2].widgets, "zones.zones[2].widgets");
+      newProps.zones.zones[2].widgets.length.should.eq(0, "zones.zones[2].widgets.length");
+    });
+
+    it("should hide widget in panel", () => {
+      const sut = new NineZoneManager();
+      const props = NineZoneManagerTestProps.widget2InLeftPanel;
+      const newProps = sut.hideWidget(2, props);
+
+      newProps.should.not.eq(props, "props");
+      newProps.nested.should.not.eq(props.nested, "nested");
+      newProps.nested.panels.should.not.eq(props.nested.panels, "panels");
+      newProps.nested.panels[0].should.not.eq(props.nested.panels[0], "panels[0]");
+      newProps.nested.panels[0].left.should.not.eq(props.nested.panels[0].left, "panels[0].left");
+      newProps.nested.panels[0].left.panes.should.not.eq(props.nested.panels[0].left.panes, "panels[0].left.panes");
+      newProps.nested.panels[0].left.panes.length.should.eq(0, "panels[0].left.panes.length");
+    });
+
+    it("should not modify props", () => {
+      const sut = new NineZoneManager();
+      const props = NineZoneManagerTestProps.defaultProps;
+      const newProps = sut.hideWidget(2, props);
+      newProps.should.eq(props, "props");
+    });
+
+    it("should open widget in same pane", () => {
+      const sut = new NineZoneManager();
+      const props = NineZoneManagerTestProps.widget2and4InLeftPanelPane;
+      const newProps = sut.hideWidget(2, props);
+      newProps.should.not.eq(props, "props");
+      newProps.zones.widgets[4].tabIndex.should.eq(0, "tabIndex");
     });
   });
 });

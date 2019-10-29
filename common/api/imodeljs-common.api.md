@@ -69,30 +69,33 @@ export namespace AmbientOcclusion {
         // (undocumented)
         readonly blurTexelStepSize?: number;
         readonly intensity?: number;
+        readonly maxDistance?: number;
         readonly texelStepSize?: number;
         readonly zLengthCap?: number;
     }
     export class Settings implements Props {
         // (undocumented)
-        readonly bias?: number;
+        readonly bias: number;
         // (undocumented)
-        readonly blurDelta?: number;
+        readonly blurDelta: number;
         // (undocumented)
-        readonly blurSigma?: number;
+        readonly blurSigma: number;
         // (undocumented)
-        readonly blurTexelStepSize?: number;
+        readonly blurTexelStepSize: number;
         // (undocumented)
         static defaults: Settings;
         // (undocumented)
         static fromJSON(json?: Props): Settings;
         // (undocumented)
-        readonly intensity?: number;
+        readonly intensity: number;
         // (undocumented)
-        readonly texelStepSize?: number;
+        readonly maxDistance: number;
+        // (undocumented)
+        readonly texelStepSize: number;
         // (undocumented)
         toJSON(): Props;
         // (undocumented)
-        readonly zLengthCap?: number;
+        readonly zLengthCap: number;
     }
 }
 
@@ -1096,6 +1099,7 @@ export class ColorDef {
     getAbgr(): number;
     getAlpha(): number;
     getRgb(): number;
+    getTransparency(): number;
     static readonly green: ColorDef;
     invert(): ColorDef;
     readonly isOpaque: boolean;
@@ -1142,6 +1146,7 @@ export class ColorIndex {
 // @public
 export enum CommonLoggerCategory {
     ElementProps = "imodeljs-common.ElementProps",
+    Geometry = "imodeljs-common.Geometry",
     RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
@@ -1766,6 +1771,8 @@ export class FrustumPlanes {
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
     readonly isValid: boolean;
+    // (undocumented)
+    readonly planes: ClipPlane[] | undefined;
     }
 
 // @internal (undocumented)
@@ -1853,13 +1860,18 @@ export interface GeometricElementProps extends ElementProps {
 
 // @public
 export interface GeometricModel2dProps extends GeometricModelProps {
-    // (undocumented)
     globalOrigin?: XYProps;
 }
 
 // @public
+export interface GeometricModel3dProps extends GeometricModelProps {
+    isNotSpatiallyLocated?: boolean;
+    isPlanProjection?: boolean;
+}
+
+// @public
 export interface GeometricModelProps extends ModelProps {
-    geometryGuid?: string;
+    geometryGuid?: GuidString;
 }
 
 // @public
@@ -3332,6 +3344,7 @@ export class Placement2d implements Placement2dProps {
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point2d;
     readonly rotation: Matrix3d;
@@ -3360,6 +3373,7 @@ export class Placement3d implements Placement3dProps {
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point3d;
     readonly rotation: Matrix3d;
@@ -3666,7 +3680,7 @@ export class QPoint3d {
 export class QPoint3dList {
     // (undocumented)
     [Symbol.iterator](): {
-        next: () => IteratorResult<QPoint3d>;
+        next: () => IteratorResult<QPoint3d, any>;
     };
     constructor(paramsIn?: QParams3d);
     add(pt: Point3d): void;
@@ -4532,6 +4546,26 @@ export interface SceneLightsProps {
     sunDir?: XYZProps;
 }
 
+// @beta
+export interface SectionLocationProps extends GeometricElement3dProps {
+    categorySelectorId?: Id64String;
+    clipGeometry?: any;
+    modelSelectorId?: Id64String;
+    sectionType?: SectionType;
+}
+
+// @public
+export enum SectionType {
+    // (undocumented)
+    Detail = 4,
+    // (undocumented)
+    Elevation = 5,
+    // (undocumented)
+    Plan = 6,
+    // (undocumented)
+    Section = 3
+}
+
 // @public
 export interface SerializedRpcOperation {
     // (undocumented)
@@ -4733,8 +4767,10 @@ export namespace SolarShadows {
         constructor(props?: SolarShadowProps);
         bias: number;
         // (undocumented)
-        clone(): Settings;
+        clone(result?: SolarShadows.Settings): SolarShadows.Settings;
         color: ColorDef;
+        // (undocumented)
+        equals(other: SolarShadows.Settings): boolean;
         // (undocumented)
         static fromJSON(props?: Props): Settings;
         // (undocumented)
@@ -4761,35 +4797,27 @@ export namespace SpatialClassificationProps {
     export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
     export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
+        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
         // (undocumented)
         inside: Display;
         // (undocumented)
+        isVolumeClassifier: boolean;
+        // (undocumented)
         outside: Display;
-        // (undocumented)
-        selected: Display;
-        // (undocumented)
-        type: number;
+        readonly type = 0;
     }
     export interface FlagsProps {
         // (undocumented)
         inside: SpatialClassificationProps.Display;
         // (undocumented)
+        isVolumeClassifier?: boolean;
+        // (undocumented)
         outside: SpatialClassificationProps.Display;
-        // (undocumented)
-        selected: SpatialClassificationProps.Display;
-        // (undocumented)
-        type: number;
+        readonly type: number;
     }
     export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-    }
-    export enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
     }
 }
 

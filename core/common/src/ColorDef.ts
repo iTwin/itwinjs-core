@@ -323,6 +323,8 @@ export class ColorDef {
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
   /** True if this ColorDef is fully opaque */
   public get isOpaque(): boolean { return 255 === this.getAlpha(); }
+  /** Get the transparency value for this ColorDef (inverse of alpha). Will be between 0-255 */
+  public getTransparency(): number { return 255 - this.getAlpha(); }
   /** Change the transparency value for this ColorDef
    * @param transparency the new transparency value. Must be between 0-255, where 0 means 'fully opaque' and 255 means 'fully transparent'.
    */
@@ -404,7 +406,7 @@ export class ColorDef {
 
     if (val && val.length > 0) {   // ColorRgb value
       Object.entries(ColorByName).some((v) => {
-        if (v[1].toLowerCase() !== val)
+        if (typeof v[1] !== "string" || v[1].toLowerCase() !== val)
           return false;
         this._tbgr = Number(v[0]);
         return true;

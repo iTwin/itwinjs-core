@@ -8,7 +8,8 @@ import * as enzyme from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { PointerMessage, AppNotificationManager } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, RelativePosition } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 describe("PointerMessage", () => {
   let showMessage: sinon.SinonSpy;

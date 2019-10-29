@@ -9,7 +9,30 @@
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range3d } from "./Range";
 
+class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
+  private readonly _collection: IndexedXYZCollection;
+  private _curIndex = -1;
+
+  public constructor(collection: IndexedXYZCollection) {
+    this._collection = collection;
+  }
+
+  public next(): IteratorResult<Point3d> {
+    if (++this._curIndex >= this._collection.length) {
+      // The ECMAScript spec states that value=undefined is valid if done=true. The TypeScript interface violates the spec hence the cast to any and back below.
+      return { done: true } as any as IteratorResult<Point3d>;
+    }
+
+    return {
+      value: this._collection.getPoint3dAtUncheckedPointIndex(this._curIndex),
+      done: false,
+    };
+  }
+
+  public [Symbol.iterator](): Iterator<Point3d> { return this; }
+}
 /**
  * abstract base class for read-only access to XYZ data with indexed reference.
  * * This allows algorithms to work with Point3d[] or GrowableXYZ.
@@ -33,7 +56,7 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
   /**
    * Get from `index` as a strongly typed Vector3d.
    * @param index index of point within the array
@@ -107,7 +130,17 @@ export abstract class IndexedXYZCollection {
   public cyclicIndex(i: number): number {
     return (i % this.length);
   }
-
+  /** Return the range of the points. */
+  public getRange(): Range3d {
+    const range = Range3d.createNull();
+    const n = this.length;
+    const point = Point3d.create();
+    for (let i = 0; i < n; i++) {
+      this.getPoint3dAtUncheckedPointIndex(i, point);
+      range.extendPoint(point);
+    }
+    return range;
+  }
   /** Accumulate scale times the x,y,z values at index.
    * * No action if index is out of bounds.
    */
@@ -121,6 +154,15 @@ export abstract class IndexedXYZCollection {
 
   /** access z of indexed point */
   public abstract getZAtUncheckedPointIndex(pointIndex: number): number;
+
+  /** Return iterator over the points in this collection. Usage:
+   * ```ts
+   *  for (const point: Point3d of collection.points) { ... }
+   * ```
+   */
+  public get points(): Iterable<Point3d> {
+    return new PointsIterator(this);
+  }
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.

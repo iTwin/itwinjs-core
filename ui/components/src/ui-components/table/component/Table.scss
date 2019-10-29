@@ -34,10 +34,6 @@
     height: 100% !important;
   }
 
-  .react-grid-Viewport {
-    height: calc(100% - 27px) !important;
-  }
-
   .react-grid-Container,
   .react-grid-Canvas {
     width: 100% !important;
@@ -51,7 +47,7 @@
     border: none;
     background: transparent;
     outline: none;
-    font-size: 14px;
+    font-size: $uicore-font-size;
   }
 
   .react-grid-Row {
@@ -81,10 +77,10 @@
   }
 
   .react-grid-HeaderCell {
-    padding: 4px 0 0 8px;
+    padding: 4px 0 4px 8px;
     box-sizing: border-box;
     background: $buic-background-table-header;
-    font-size: 14px;
+    font-size: $uicore-font-size;
     border: none;
   }
 

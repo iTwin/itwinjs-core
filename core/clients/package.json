@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "1.5.0-dev.18",
+  "version": "1.7.0-dev.16",
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/imodeljs-clients.js",
   "typings": "lib/imodeljs-clients",
@@ -10,17 +10,17 @@
   },
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "npm run copy:test-assets && nyc npm test",
-    "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
+    "build:module": "buildIModelJsModule",
+    "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
-    "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
-    "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "test:settings": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep Setting",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
+    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
+    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
+    "cover": "npm test -- --cover",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "iModelJs": {
@@ -48,19 +48,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.5.0-dev.18",
-    "@bentley/geometry-core": "^1.5.0-dev.18"
+    "@bentley/bentleyjs-core": "^1.7.0-dev.16",
+    "@bentley/geometry-core": "^1.7.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.18",
-    "@bentley/build-tools": "1.5.0-dev.18",
-    "@bentley/config-loader": "1.5.0-dev.18",
-    "@bentley/geometry-core": "1.5.0-dev.18",
-    "@bentley/webpack-tools": "1.5.0-dev.18",
+    "@bentley/certa": "1.7.0-dev.16",
+    "@bentley/bentleyjs-core": "1.7.0-dev.16",
+    "@bentley/build-tools": "1.7.0-dev.16",
+    "@bentley/config-loader": "1.7.0-dev.16",
+    "@bentley/geometry-core": "1.7.0-dev.16",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
@@ -70,6 +71,7 @@
     "@types/qs": "^6.5.0",
     "@types/superagent": "^3.5.6",
     "@types/xmldom": "^0.1.29",
+    "@types/webpack": "^3.8.5",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
@@ -79,7 +81,9 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2"
+    "typescript": "~3.6.2",
+    "webpack": "^4.20.2",
+    "source-map-loader": "^0.2.3"
   },
   "dependencies": {
     "deep-assign": "^2.0.0",
@@ -88,7 +92,7 @@
     "superagent": "^3.7.0",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27",
-    "oidc-client": "1.7.1"
+    "oidc-client": "^1.9.1"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

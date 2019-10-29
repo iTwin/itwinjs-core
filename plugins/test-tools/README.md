@@ -19,7 +19,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_plugins/iotDemo directory in the web resources of the host application.
+4. Copy all the output files in the lib/build directory tree to imjs_plugins/testTools directory in the web resources of the host application.
 
 5. Start the host application - go to its directory and run:
 

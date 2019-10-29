@@ -19,6 +19,7 @@ import { AnyCurve } from "./CurveChain";
  * @public
  */
 export class ParityRegion extends CurveCollection {
+   /** String name for schema properties */
   public readonly curveCollectionType = "parityRegion";
 
   /** Test if `other` is an instance of `ParityRegion` */

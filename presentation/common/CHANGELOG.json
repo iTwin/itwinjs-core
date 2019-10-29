@@ -2,6 +2,42 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/presentation-common_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/presentation-common_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `PresentationStatus.Canceled` member"
+          },
+          {
+            "comment": "Add ability to force-load all hierarchy with the given imodel and ruleset"
+          },
+          {
+            "comment": "Added autoExpand property to RelatedPropertiesSpecification and NestedContentField"
+          },
+          {
+            "comment": "Add module descriptions"
+          },
+          {
+            "comment": "Added Ruleset and Ruleset variables to request options to support stateless presentation backend"
+          },
+          {
+            "comment": "Store navigation property classes separate from related property paths"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/presentation-common_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

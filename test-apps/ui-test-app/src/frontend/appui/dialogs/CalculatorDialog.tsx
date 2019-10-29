@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ModalDialogManager, Calculator, Icon } from "@bentley/ui-framework";
-import { Dialog } from "@bentley/ui-core";
+import { ModalDialogManager, Calculator } from "@bentley/ui-framework";
+import { Dialog, Icon } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 export interface CalculatorDialogProps {

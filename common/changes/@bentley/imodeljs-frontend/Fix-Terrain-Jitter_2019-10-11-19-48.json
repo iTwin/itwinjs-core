@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Create terrain tiles about center to correct drape jitter.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

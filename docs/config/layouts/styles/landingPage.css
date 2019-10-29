@@ -135,7 +135,7 @@ p.digital-twin {
   display: flex;
   flex-direction: row;
   -ms-flex-direction: row;
-  margin-bottom: 2em;
+  margin-bottom: 4em;
 }
 
 .middle-content-media {
@@ -144,19 +144,22 @@ p.digital-twin {
   min-width: 0;
   flex-shrink: 0;
   -ms-flex-shrink: 0;
-  max-height: 25vw;
-  max-width: 45vw;
+  max-height: 403.2px;
+  max-width: 856.4px;
   margin: 0 4vw 0 1vw;
 }
 
 .middle-content-text {
   min-width: 250px;
   margin: 0px 4vw;
+  min-height: 85vh;
+  flex-basis: 33%;
 }
 
 .middle-content-youtube {
   height: 101%;
   width: 101%;
+  margin-bottom: 2em;
 }
 
 .feature-header {
@@ -234,70 +237,84 @@ body.layout-full-width #main-landing-wrapper {
   #main-landing-wrapper #middle-content-wrapper {
     margin: 2em 1% !important;
   }
+
   #demo-container {
     width: 102%;
   }
+
   .middle-content-text {
     margin: 0 1vw 0 4vw;
+    flex-basis: 50%;
   }
-  +98888
 }
 
 @media screen and (max-width: 767px) {
   #bottom-content-container {
     -ms-flex-direction: column !important;
   }
+
   .nav-landing-container .navbar-nav {
     padding-right: 15px;
     max-width: 38%;
   }
+
   #navbar7 li:hover {
     height: 35px;
     border-bottom: none;
     font-weight: 700;
     transition: none;
   }
+
   .iframe-viewer {
     width: 500px;
     height: 313px;
   }
+
   .example-view-demonstrator {
     width: 500px;
     height: 313px;
   }
+
   .middle-content-media {
     width: 75vw;
     height: 42vw;
     max-width: 75vw;
     max-height: 42vw;
-    margin: 0 10% 3em 10%;
+    margin: 0 10% 25em 10%;
     order: 1 !important;
   }
+
   .landing-bottom-content-item {
     min-width: 250px;
     height: auto;
     padding: 20px 5px 0px 5px;
     margin: 20px 5px 0px 5px;
   }
+
   .middle-content-group {
     flex-flow: column;
     -ms-flex-flow: row wrap;
     align-items: center;
   }
+
   .middle-content-text {
     order: 2 !important;
   }
+
   .imodeljs-header-tagline p {
     font-size: 29px;
   }
+
   .iframe-viewer {
     width: 300px;
     height: 188px;
   }
+
   .example-view-demonstrator {
     width: 300px;
     height: 188px;
   }
+
   .imodeljs-header-tagline {
     max-width: 80%;
   }

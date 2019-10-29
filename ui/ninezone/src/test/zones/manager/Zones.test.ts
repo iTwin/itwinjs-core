@@ -7,10 +7,10 @@ import * as sinon from "sinon";
 import { RectangleProps, PointProps, Rectangle } from "@bentley/ui-core";
 import {
   ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
-  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager,
+  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager, ToolSettingsWidgetMode,
 } from "../../../ui-ninezone";
 import { TestProps } from "./TestProps";
-import { widgetZoneIds } from "../../../ui-ninezone/zones/manager/Zones";
+import { widgetZoneIds, getColumnZones } from "../../../ui-ninezone/zones/manager/Zones";
 import { ResizeHandle } from "../../../ui-ninezone/widget/Stacked";
 import { ResizeStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
 
@@ -352,6 +352,43 @@ describe("ZonesManager", () => {
       const newProps = sut.handleWidgetTabDragEnd(props);
       newProps.should.eq(props);
     });
+
+    it("should reset tool settings widget mode when merging back", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.draggedOpenedZone6,
+        draggedWidget: {
+          ...TestProps.draggedOpenedZone6.draggedWidget,
+          id: 2 as WidgetZoneId,
+        },
+        target: { zoneId: 2, type: ZoneTargetType.Back },
+        zones: {
+          ...TestProps.draggedOpenedZone6.zones,
+          2: {
+            ...TestProps.draggedOpenedZone6.zones[2],
+            widgets: [
+              2,
+            ],
+          },
+        },
+      };
+      const sut = new ZonesManager();
+      const setToolSettingsWidgetModeSpy = sinon.spy(sut, "setToolSettingsWidgetMode");
+      sut.handleWidgetTabDragEnd(props);
+
+      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.TitleBar, sinon.match.any as any).should.true;
+    });
+
+    it("should save window settings on merge", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.draggedOpenedZone6,
+        target: { zoneId: 9, type: ZoneTargetType.Merge },
+      };
+      const sut = new ZonesManager();
+      const spy = sinon.spy(sut, "saveWindowSettings");
+      sut.handleWidgetTabDragEnd(props);
+
+      spy.calledOnceWithExactly(9, sinon.match.any as any).should.true;
+    });
   });
 
   describe("handleWidgetTabDragStart", () => {
@@ -651,6 +688,16 @@ describe("ZonesManager", () => {
 
       newProps.should.eq(props);
     });
+
+    it("should save window settings of unmerged zones", () => {
+      const sut = new ZonesManager();
+      const spy = sinon.spy(sut, "saveWindowSettings");
+      sut.handleWidgetTabDragStart(7, 1, { x: 0, y: 0 }, new Rectangle(), TestProps.merged7To4);
+
+      spy.callCount.should.eq(2);
+      spy.firstCall.calledWithExactly(4, sinon.match.any as any).should.true;
+      spy.secondCall.calledWithExactly(7, sinon.match.any as any).should.true;
+    });
   });
 
   describe("handleTargetChanged", () => {
@@ -719,6 +766,49 @@ describe("ZonesManager", () => {
 
       const newProps = sut.object.mergeZone(4, 6, props.object);
       (newProps === props.object).should.true;
+    });
+
+    it("should update window resize vStart setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(6, 9, TestProps.defaultProps);
+      const managerSettings = sut.getZoneManager(9).windowResize;
+      managerSettings.vStart.should.eq(1 / 3);
+    });
+
+    it("should update window resize vEnd setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(9, 6, TestProps.defaultProps);
+      const managerSettings = sut.getZoneManager(6).windowResize;
+      managerSettings.vEnd.should.eq(1);
+    });
+
+    it("should update window resize hStart setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(8, 9, TestProps.inWidgetMode);
+      const managerSettings = sut.getZoneManager(9).windowResize;
+      managerSettings.hStart.should.eq(1 / 3);
+    });
+
+    it("should update window resize hEnd setting", () => {
+      const sut = new ZonesManager();
+
+      sut.mergeZone(9, 8, TestProps.inWidgetMode);
+      const managerSettings = sut.getZoneManager(8).windowResize;
+      managerSettings.hEnd.should.eq(1);
+    });
+
+    it("should merge bounds", () => {
+      const sut = new ZonesManager();
+      const newProps = sut.mergeZone(9, 6, TestProps.openedZone6);
+
+      const bounds = newProps.zones[6].bounds;
+      bounds.left.should.eq(10);
+      bounds.top.should.eq(20);
+      bounds.right.should.eq(99);
+      bounds.bottom.should.eq(110);
     });
   });
 
@@ -1099,12 +1189,19 @@ describe("ZonesManager", () => {
         setZoneIsLayoutChanged.calledWithExactly(zId, sinon.match.any as any, sinon.match.any as any).should.eq(true, `setZoneIsLayoutChanged(${zId})`);
       });
     });
+
+    it("should restore window resize settings", () => {
+      const sut = new ZonesManager();
+      sut.getZoneManager(1).windowResize.vMode = "Minimum";
+      sut.restoreLayout(TestProps.defaultProps);
+      sut.getZoneManager(1).windowResize.vMode.should.eq("Percentage");
+    });
   });
 
   describe("getInitialBounds", () => {
     it("should return initial bounds", () => {
       const zone = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
-      const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][WidgetZoneId]>();
+      const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][2]>();
       managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
       widgets.setup((x) => x[2]).returns(() => widget.object);
       zones.setup((x) => x[2]).returns(() => zone.object);
@@ -1157,7 +1254,7 @@ describe("ZonesManager", () => {
     it("should set zone props", () => {
       const props = TestProps.defaultProps;
       const sut = new ZonesManager();
-      const setAllowsMerging = sinon.spy(sut.zoneManager, "setAllowsMerging");
+      const setAllowsMerging = sinon.spy(sut.getZoneManager(1), "setAllowsMerging");
       const setZoneProps = sinon.spy(sut, "setZoneProps");
 
       const newProps = sut.setAllowsMerging(1, true, props);
@@ -1306,14 +1403,14 @@ describe("ZonesManager", () => {
   describe("getZoneManager", () => {
     it("should return default zone manager", () => {
       const sut = new ZonesManager();
-      const zoneManager = sut.zoneManager;
+      const zoneManager = sut.getZoneManager(1);
       (zoneManager instanceof ZoneManager).should.true;
     });
 
     it("should return same instance of default manager", () => {
       const sut = new ZonesManager();
-      const zoneManager1 = sut.zoneManager;
-      const zoneManager2 = sut.zoneManager;
+      const zoneManager1 = sut.getZoneManager(1);
+      const zoneManager2 = sut.getZoneManager(1);
       zoneManager1.should.eq(zoneManager2);
     });
   });
@@ -1390,6 +1487,212 @@ describe("ZonesManager", () => {
       sut.isResizable(3).should.false;
     });
   });
+
+  describe("getWindowResizeBounds", () => {
+    describe("vertical", () => {
+      it("should return bounds in percentage mode", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 999),
+        };
+        const sut = new ZonesManager();
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].top.should.eq(333);
+        resizeBounds[4].bottom.should.eq(666);
+      });
+
+      it("should return bounds in minimum vertical mode", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 999),
+        };
+        const sut = new ZonesManager();
+        const zoneManager = sut.getZoneManager(4);
+        zoneManager.windowResize.vMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].top.should.eq(333);
+        resizeBounds[4].bottom.should.eq(333 + 220);
+      });
+
+      it("should shrink below min height in minimum mode", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 600),
+        };
+        const sut = new ZonesManager();
+        const zoneManager = sut.getZoneManager(4);
+        zoneManager.windowResize.vMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].top.should.eq(200);
+        resizeBounds[4].bottom.should.eq(400);
+      });
+
+      it("should offset the zone", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 1000),
+        };
+        const sut = new ZonesManager();
+        const zoneManager = sut.getZoneManager(7);
+        zoneManager.windowResize.vStart = 0.75;
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[7].top.should.eq(750);
+        resizeBounds[7].bottom.should.eq(1000);
+      });
+
+      it("should shrink single zone", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 900),
+        };
+        const sut = new ZonesManager();
+        const zoneManager1 = sut.getZoneManager(1);
+        zoneManager1.windowResize.vMode = "Minimum";
+        zoneManager1.windowResize.vEnd = 0.1;
+        const zoneManager4 = sut.getZoneManager(4);
+        zoneManager4.windowResize.vStart = 0.1;
+        zoneManager4.windowResize.vEnd = 0.9;
+        const zoneManager7 = sut.getZoneManager(7);
+        zoneManager7.windowResize.vStart = 0.9;
+        zoneManager7.windowResize.vMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[1].top.should.eq(0, "z1.top");
+        resizeBounds[1].bottom.should.eq(220, "z1.bottom");
+        resizeBounds[4].top.should.eq(220, "z4.top");
+        resizeBounds[4].bottom.should.eq(680, "z4.bottom");
+        resizeBounds[7].top.should.eq(680, "z7.top");
+        resizeBounds[7].bottom.should.eq(900, "z7.bottom");
+      });
+
+      it("should leave bottom spacing for bottom zone", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 0, 900),
+        };
+        const sut = new ZonesManager();
+        const zoneManager7 = sut.getZoneManager(7);
+        zoneManager7.windowResize.vMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[7].top.should.eq(600, "z7.top");
+        resizeBounds[7].bottom.should.eq(820, "z7.bottom");
+      });
+
+      it("should not include merged zones", () => {
+        const props = {
+          ...TestProps.merged7To4,
+          zonesBounds: new Rectangle(0, 0, 0, 500),
+        };
+        const sut = new ZonesManager();
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].top.should.eq(220, "z4.top");
+        resizeBounds[4].bottom.should.eq(440, "z4.bottom");
+      });
+
+      it("should offset first zone", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zones: {
+            ...TestProps.defaultProps.zones,
+            2: {
+              ...TestProps.defaultProps.zones[2],
+              widgets: [],
+            },
+          },
+          zonesBounds: new Rectangle(0, 0, 0, 900),
+        };
+        const sut = new ZonesManager();
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[8].top.should.eq(600, "z8.top");
+        resizeBounds[8].bottom.should.eq(900, "z8.bottom");
+      });
+    });
+
+    describe("horizontal", () => {
+      it("should return bounds in percentage mode", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 999, 0),
+        };
+        const sut = new ZonesManager();
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].left.should.eq(0);
+        resizeBounds[4].right.should.eq(333);
+      });
+
+      it("should return bounds in minimum mode", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 900, 0),
+        };
+        const sut = new ZonesManager();
+        const zoneManager = sut.getZoneManager(4);
+        zoneManager.windowResize.hMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[4].left.should.eq(0);
+        resizeBounds[4].right.should.eq(296);
+      });
+
+      it("should anchor to the right", () => {
+        const props = {
+          ...TestProps.defaultProps,
+          zonesBounds: new Rectangle(0, 0, 900, 0),
+        };
+        const sut = new ZonesManager();
+        const zoneManager = sut.getZoneManager(6);
+        zoneManager.windowResize.hMode = "Minimum";
+
+        const resizeBounds = sut.getWindowResizeBounds(props);
+        resizeBounds[6].left.should.eq(604);
+        resizeBounds[6].right.should.eq(900);
+      });
+    });
+  });
+
+  describe("saveWindowSettings", () => {
+    it("should save window settings", () => {
+      const props = {
+        ...TestProps.defaultProps,
+        zones: {
+          ...TestProps.defaultProps.zones,
+          1: {
+            ...TestProps.defaultProps.zones[1],
+            bounds: {
+              left: 100,
+              top: 100,
+              right: 200,
+              bottom: 300,
+            },
+          },
+        },
+        zonesBounds: {
+          left: 0,
+          top: 0,
+          right: 500,
+          bottom: 1000,
+        },
+      };
+      const sut = new ZonesManager();
+      sut.saveWindowSettings(1, props);
+
+      const zoneManager1 = sut.getZoneManager(1);
+      zoneManager1.windowResize.hMode.should.eq("Percentage", "hMode");
+      zoneManager1.windowResize.hStart.should.eq(0.2, "hStart");
+      zoneManager1.windowResize.hEnd.should.eq(0.4, "hEnd");
+      zoneManager1.windowResize.vMode.should.eq("Percentage", "vMode");
+      zoneManager1.windowResize.vStart.should.eq(0.1, "vStart");
+      zoneManager1.windowResize.vEnd.should.eq(0.3, "vEnd");
+    });
+  });
 });
 
 describe("getZoneCell", () => {
@@ -1445,6 +1748,48 @@ describe("getZoneCell", () => {
     const cell = getZoneCell(9);
     cell.row.should.eq(2);
     cell.col.should.eq(2);
+  });
+});
+
+describe("getColumnZones", () => {
+  it("should return zone 1 column zones", () => {
+    const zones = getColumnZones(1);
+    zones.should.deep.eq([1, 4, 7]);
+  });
+
+  it("should return zone 2 column zones", () => {
+    const zones = getColumnZones(2);
+    zones.should.deep.eq([2, 8]);
+  });
+
+  it("should return zone 3 column zones", () => {
+    const zones = getColumnZones(3);
+    zones.should.deep.eq([3, 6, 9]);
+  });
+
+  it("should return zone 4 column zones", () => {
+    const zones = getColumnZones(4);
+    zones.should.deep.eq([1, 4, 7]);
+  });
+
+  it("should return zone 6 column zones", () => {
+    const zones = getColumnZones(6);
+    zones.should.deep.eq([3, 6, 9]);
+  });
+
+  it("should return zone 7 column zones", () => {
+    const zones = getColumnZones(7);
+    zones.should.deep.eq([1, 4, 7]);
+  });
+
+  it("should return zone 8 column zones", () => {
+    const zones = getColumnZones(8);
+    zones.should.deep.eq([2, 8]);
+  });
+
+  it("should return zone 9 column zones", () => {
+    const zones = getColumnZones(9);
+    zones.should.deep.eq([3, 6, 9]);
   });
 });
 

@@ -272,11 +272,11 @@ export class Transform implements BeJSONFunctions {
   }
 
   /** Transform the input point.  Return as a new point or in the pre-allocated result (if result is given) */
-  public multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d {
+  public multiplyXYZ(x: number, y: number, z: number = 0, result?: Point3d): Point3d {
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
   /** Multiply a specific row of the transform times xyz. Return the (number). */
-  public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number): number {
+  public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number = 0): number {
     const coffs = this._matrix.coffs;
     const i0 = 3 * componentIndex;
     return this.origin.at(componentIndex) + coffs[i0] * x + coffs[i0 + 1] * y + coffs[i0 + 2] * z;
@@ -514,8 +514,11 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
 
-  /** transform each of the 8 corners of a range. Return the range of the transformed corers */
+  /** transform each of the 8 corners of a range. Return the range of the transformed corners */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
+    if (range.isNull)
+      return range.clone(result);
+
     // snag current values to allow aliasing.
     const lowX = range.low.x;
     const lowY = range.low.y;

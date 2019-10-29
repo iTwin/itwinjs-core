@@ -2,6 +2,123 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-framework_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for CursorMenu"
+          },
+          {
+            "comment": "Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools."
+          },
+          {
+            "comment": "Fix Tool Settings label to ensure it stays in sync with active tool."
+          },
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Close tool group panel on toolbar item click."
+          },
+          {
+            "comment": "Ability to drag and resize tool settings widget."
+          },
+          {
+            "comment": "Ignore widgetDef state in WidgetContentRenderer of tool settings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-framework_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core."
+          },
+          {
+            "comment": "Backport Sections and ViewAttributes Status Fields from Design Review for use with plugins."
+          },
+          {
+            "comment": "Cursor Prompt no longer displays as small blank popup when Tool Assistance instruction is blank"
+          },
+          {
+            "comment": "Fixed Frontstage resizing problem exposed by Chrome update"
+          },
+          {
+            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+          },
+          {
+            "comment": "Changed ToolWidget, NavigatonWidget, and Toolbar render method to only render items in state and to not generate them during render."
+          },
+          {
+            "comment": "Add support for panelLabel property for a GoupButton. This is the title that is shown when the group is opened."
+          },
+          {
+            "comment": "Added FrontstageProvider.initializeDef param for FrontstageDef"
+          },
+          {
+            "comment": "Correct ViewClipByPlaneTool icon."
+          },
+          {
+            "comment": "UiDataProvider class, work on PluginUiProvider"
+          },
+          {
+            "comment": "Change BackstageItemSpec to use localized strings not keys to be localized due to the way Plugins provide localization."
+          },
+          {
+            "comment": "Create a common IModelViewPort control that supports Design Review and ui-test-app."
+          },
+          {
+            "comment": "Add ability to pre-load hierarchies in Visibility Widget"
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Support for Modifier key + wide SVG"
+          },
+          {
+            "comment": "Tool Assistance for Ctrl+Z and other chars"
+          },
+          {
+            "comment": "Fixed ToolAssistanceField pin problem"
+          },
+          {
+            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+          },
+          {
+            "comment": "Added touch entries to ToolAssistanceImage"
+          },
+          {
+            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+          },
+          {
+            "comment": "In the Model/Category/Spatial trees, center the error message"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Ability to collapse stage panel using StagePanelDef."
+          },
+          {
+            "comment": "Stage panel header."
+          },
+          {
+            "comment": "Make components aware of safe area insets."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/ui-framework_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

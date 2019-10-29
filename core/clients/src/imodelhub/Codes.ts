@@ -10,10 +10,10 @@ import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContex
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
+import { WsgQuery } from "../WsgQuery";
 import { WsgRequestOptions } from "./../WsgClient";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
-import { Query } from "./Query";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -197,7 +197,7 @@ export class ConflictingCodesError extends IModelHubError {
  * Query object for getting [Code]($common)s. You can use this to modify the query. See [[CodeHandler.get]].
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
-export class CodeQuery extends Query {
+export class CodeQuery extends WsgQuery {
   private _isMultiCodeQuery = true;
 
   /**

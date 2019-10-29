@@ -12,6 +12,7 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 
 |Package Name|Description
 |-----|-----
+|ui&#8209;abstract|Abstractions for UI controls, such as toolbars, buttons and menus.
 |ui&#8209;core|General purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
 |ui&#8209;components|React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
 |[ui&#8209;ninezone](./ninezone/index)|React components for application user interface layouts following the Bentley 9&#8209;Zone pattern.

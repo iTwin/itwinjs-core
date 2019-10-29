@@ -4,31 +4,220 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType, ShaderBuilder, VertexShaderComponent, ProgramBuilder } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FloatRgba } from "../FloatRGBA";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "../CachedGeometry";
+import { Texture2DHandle } from "../Texture";
+import { TextureUnit } from "../RenderFlags";
+import { AttributeMap } from "../AttributeMap";
+import { TechniqueId } from "../TechniqueId";
+import { unquantizeVertexPosition } from "./Vertex";
 
-const computeColor = "return vec4(u_hilite_color.rgb, 1.0);";
+const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 
-const scratchHiliteColor = FloatRgba.fromColorDef(ColorDef.white);
+const computeSetBlendColor = "return u_blend_color;";
+
+const computeBlendTextureColor = "return TEXTURE(u_blendTexture, v_texCoord);";
+
+const computeTexCoord = "v_texCoord = (rawPosition.xy + 1.0) * 0.5;";
+
+const checkDiscardBackgroundByZ = `
+  if (u_boundaryType == kBoundaryType_Out)
+    return TEXTURE(u_depthTexture, v_texCoord).r == 1.0;
+  return false;
+`;
+
+const depthFromTexture = `
+  return TEXTURE(u_depthTexture, v_texCoord).r;
+`;
+
+const computePosition = `
+  gl_PointSize = 1.0; // Need to set the point size since we are drawing points with this.
+  float z = TEXTURE(u_depthTexture, (rawPos.xy + 1.0) * 0.5).r * 2.0 - 1.0;
+  return vec4(rawPos.x, rawPos.y, z, 1.0);
+`;
+
+const unquantizeVertexPosition2d = `
+vec4 unquantizeVertexPosition(vec2 pos, vec3 origin, vec3 scale) { return unquantizePosition(vec3(pos.x, pos.y, 0.0), origin, scale); }
+`;
+
+const scratchColor = FloatRgba.fromColorDef(ColorDef.white);
 
 /** @internal */
-export function createCopyStencilProgram(context: WebGLRenderingContext): ShaderProgram {
-  const builder = createViewportQuadBuilder(true);
+function addBoundaryTypeConstants(builder: ShaderBuilder): void {
+  // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
+  builder.addConstant("kBoundaryType_Out", VariableType.Int, "0");
+  builder.addConstant("kBoundaryType_In", VariableType.Int, "1");
+  builder.addConstant("kBoundaryType_Selected", VariableType.Int, "2");
+}
+
+/** @internal */
+function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgba, hAlpha: number): void {
+  switch (display) {
+    case SpatialClassificationProps.Display.Dimmed:
+      scratchColor.set(0.0, 0.0, 0.0, 0.3);
+      break;
+    case SpatialClassificationProps.Display.Off:
+      scratchColor.set(0.0, 0.0, 0.0, 0.8);
+      break;
+    case SpatialClassificationProps.Display.On:
+      scratchColor.set(0.0, 0.0, 0.0, 0.0);
+      break;
+    default: // Hilite or ByElementColor (though ByElementColor should never use this shader)
+      scratchColor.set(hilite.red, hilite.green, hilite.blue, hAlpha);
+      break;
+  }
+}
+
+/** @internal */
+export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true); // TODO: I think this should pass in false since there are no textures being used.
   const frag = builder.frag;
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeColor);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
-      const vf = params.target.currentViewFlags;
-      const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
-      const hiliteColor = params.target.hiliteColor;
-      scratchHiliteColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
-      scratchHiliteColor.bind(uniform);
+      const useLighting = params.geometry.getFlashMode(params);
+      if (useLighting) {
+        const hiliteColor = params.target.hiliteColor;
+        scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
+      } else
+        scratchColor.set(1.0, 1.0, 1.0, 0.0);
+      scratchColor.bind(uniform);
     });
   });
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createVolClassCopyZProgram(context: WebGLRenderingContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+
+  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
+
+  const frag = builder.frag;
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_blend_color", (uniform, _params) => {
+      scratchColor.set(0.0, 0.0, 0.0, 0.0);
+      scratchColor.bind(uniform);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as SingleTexturedViewportQuadGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addExtension("GL_EXT_frag_depth");
+  frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
+
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingContext): ShaderProgram {
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.VolClassCopyZ, false);
+  const builder = new ProgramBuilder(attrMap);
+
+  const vert = builder.vert;
+  vert.replaceFunction(unquantizeVertexPosition, unquantizeVertexPosition2d);
+  vert.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as ScreenPointsGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.zTexture, TextureUnit.Zero);
+    });
+  });
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
+
+  const frag = builder.frag;
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_blend_color", (uniform, _params) => {
+      scratchColor.set(0.0, 0.0, 0.0, 0.0);
+      scratchColor.bind(uniform);
+    });
+  });
+
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createVolClassSetBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+
+  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+
+  const frag = builder.frag;
+  addBoundaryTypeConstants(frag);
+  frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkDiscardBackgroundByZ);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_boundaryType", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_boundaryType", (uniform, params) => {
+      const geom = params.geometry as VolumeClassifierGeometry;
+      uniform.setUniform1i(geom.boundaryType);
+    });
+  });
+
+  frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_blend_color", (uniform, params) => {
+      const geom = params.geometry as VolumeClassifierGeometry;
+      const hiliteColor = params.target.hiliteColor;
+      const hiliteAlpha = params.target.hiliteSettings.visibleRatio;
+      switch (geom.boundaryType) {
+        case BoundaryType.Outside:
+          setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);
+          break;
+        case BoundaryType.Inside:
+          setScratchColor(params.target.activeVolumeClassifierProps!.flags.inside, hiliteColor, hiliteAlpha);
+          break;
+        case BoundaryType.Selected:
+          // setScratchColor(params.target.activeVolumeClassifierProps!.flags.selected, hiliteColor, hiliteAlpha);
+          setScratchColor(SpatialClassificationProps.Display.Hilite, hiliteColor, hiliteAlpha); // option for how to display selected classifiers has been removed, always just hilite
+          break;
+      }
+      scratchColor.bind(uniform);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as VolumeClassifierGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
+    });
+  });
+
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createVolClassBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+
+  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+
+  const frag = builder.frag;
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlendTextureColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_blendTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_blendTexture", (uniform, params) => {
+      const geom = params.geometry as SingleTexturedViewportQuadGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
+    });
+  });
+
   return builder.buildProgram(context);
 }

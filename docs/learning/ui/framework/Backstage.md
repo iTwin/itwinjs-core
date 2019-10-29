@@ -7,8 +7,6 @@ The backstage is opened by clicking or pressing the App button and displays alon
 
 ## Defining a Backstage
 
-
-
 ## Specifying a Backstage to ConfigurableUiContent
 
 ```TSX
@@ -31,4 +29,4 @@ class IModelComponents extends React.PureComponent {
 
 ## API Reference
 
-* [Backstage]($framework:Backstage)
+* [Backstage]($ui-framework:Backstage)

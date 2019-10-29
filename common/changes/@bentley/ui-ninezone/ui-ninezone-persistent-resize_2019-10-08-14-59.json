@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Persist zones layout on window resize.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

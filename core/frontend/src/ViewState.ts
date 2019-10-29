@@ -28,7 +28,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, SpatialModelState, GeometricModel3dState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -1536,7 +1536,7 @@ export class SpatialModelTileTrees {
       }
 
       const model = this._iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asSpatialModel : undefined;
+      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
       if (undefined !== model3d) {
         const ref = this.createTileTreeReference(model3d);
         if (undefined !== ref)
@@ -1551,7 +1551,7 @@ export class SpatialModelTileTrees {
       func(value);
   }
 
-  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: GeometricModel3dState): TileTree.Reference | undefined {
     return model.createTileTreeReference(this._view);
   }
 
@@ -1632,7 +1632,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
@@ -1668,22 +1668,8 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public createScene(context: SceneContext): void {
     super.createScene(context);
-    this.createSolarShadowMap(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-  }
-
-  private createSolarShadowMap(context: SceneContext): void {
-    context.solarShadowMap = undefined;
-    const displayStyle = this.getDisplayStyle3d();
-    if (undefined !== displayStyle && displayStyle.wantShadows) {
-      const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
-      const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
-      const solarDirection = displayStyle.sunDirection ? displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
-      if (undefined !== viewFrustum) {
-        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this);
-        context.solarShadowMap!.collectGraphics(context);
-      }
-    }
+    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 }
 

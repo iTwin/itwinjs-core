@@ -5,13 +5,19 @@
 /** @module Backstage */
 
 import * as React from "react";
+
 import { Logger } from "@bentley/bentleyjs-core";
+import { CommandHandler } from "@bentley/ui-abstract";
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { CommandHandler } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps, BackstageItem } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
+
+// tslint:disable-next-line:variable-name
+const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public

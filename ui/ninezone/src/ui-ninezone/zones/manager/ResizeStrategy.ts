@@ -8,8 +8,10 @@ import { Rectangle, RectangleProps } from "@bentley/ui-core";
 import { HorizontalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId, ZonesManagerProps, ZonesManager } from "./Zones";
 
-const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
-const RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
+/** @internal */
+export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
+/** @internal */
+export const RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
 
 /** @internal */
 export interface ResizeStrategy {
@@ -439,5 +441,50 @@ export class ShrinkRight extends ShrinkHorizontalStrategy {
   public resize(bounds: RectangleProps, shrinkBy: number, moveBy: number) {
     const shrunk = Rectangle.create(bounds).inset(0, 0, shrinkBy, 0);
     return shrunk.offsetX(-moveBy).toProps();
+  }
+}
+
+/** @internal */
+export class UpdateWindowResizeSettings implements ResizeStrategy {
+  public constructor(
+    public readonly manager: ZonesManager,
+    public readonly resizeStrategy: ResizeStrategy,
+  ) {
+  }
+
+  public getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number {
+    return this.resizeStrategy.getMaxResize(zoneId, props);
+  }
+  public tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps {
+    return this.resizeStrategy.tryResizeFloating(zoneId, resizeBy, props);
+  }
+
+  public tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps) {
+    props = this.resizeStrategy.tryResize(zoneId, resizeBy, props);
+
+    const manager = this.manager.getZoneManager(zoneId);
+    const zonesBoundsRect = Rectangle.create(props.zonesBounds);
+    const bounds = Rectangle.create(props.zones[zoneId].bounds);
+    const width = Math.floor(bounds.getWidth());
+    if (width <= manager.windowResize.minWidth) {
+      manager.windowResize.hMode = "Minimum";
+    } else {
+      manager.windowResize.hMode = "Percentage";
+    }
+    const zonesWidth = zonesBoundsRect.getWidth();
+    manager.windowResize.hStart = bounds.left / zonesWidth;
+    manager.windowResize.hEnd = bounds.right / zonesWidth;
+
+    const height = Math.floor(bounds.getHeight());
+    if (height <= manager.windowResize.minHeight) {
+      manager.windowResize.vMode = "Minimum";
+    } else {
+      manager.windowResize.vMode = "Percentage";
+    }
+    const zonesHeight = zonesBoundsRect.getHeight();
+    manager.windowResize.vStart = bounds.top / zonesHeight;
+    manager.windowResize.vEnd = bounds.bottom / zonesHeight;
+
+    return props;
   }
 }

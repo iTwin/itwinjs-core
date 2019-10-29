@@ -43,9 +43,13 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 }
 
 describe("Render Compatibility", () => {
-  const overriddenFunctions = new OverriddenFunctions();
+  let overriddenFunctions: OverriddenFunctions;
 
-  after(async () => {
+  before(() => {
+    overriddenFunctions = new OverriddenFunctions();
+  });
+
+  after(() => {
     overriddenFunctions.restore();
   });
 
@@ -174,7 +178,7 @@ describe("Instancing", () => {
     }
   }
 
-  after(async () => {
+  after(() => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
       TestApp.shutdown();

@@ -223,11 +223,13 @@ export abstract class GraphicBuilder {
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
-  /** Add Range3d edges. Useful for debugging.
-   * @public
-   */
+  /** Add Range3d edges. Useful for debugging. */
   public addRangeBox(range: Range3d) {
-    const frustum = Frustum.fromRange(range);
+    this.addFrustum(Frustum.fromRange(range));
+  }
+
+  /** Add Frustum edges. Useful for debugging. */
+  public addFrustum(frustum: Frustum) {
     const p = frustum.points;
 
     this.addLineString([
@@ -259,8 +261,12 @@ export abstract class GraphicBuilder {
     this.activateGraphicParams(GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels));
   }
 
-  /** Set blanking fill symbology for decoration.
-   * @internal
+  /** Set the current active symbology for this builder to be a blanking fill before adding a planar region.
+   * A planar region drawn with blanking fill renders behind other geometry in the same graphic.
+   * Blanking fill is not affected by the fill [[ViewFlags]] being disabled.
+   * An example would be to add a line to a graphic containing a shape with blanking fill so that the line is always shown in front of the fill.
+   * @param fillColor The color in which to draw filled regions.
+   * @beta
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

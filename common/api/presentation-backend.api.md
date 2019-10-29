@@ -82,6 +82,12 @@ export class PresentationManager {
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
+// @beta
+export enum PresentationManagerMode {
+    ReadOnly = 0,
+    ReadWrite = 1
+}
+
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
@@ -91,6 +97,8 @@ export interface PresentationManagerProps {
     // @internal
     id?: string;
     localeDirectories?: string[];
+    // @beta
+    mode?: PresentationManagerMode;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     // @alpha

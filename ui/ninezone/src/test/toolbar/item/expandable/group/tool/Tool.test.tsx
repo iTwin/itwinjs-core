@@ -44,7 +44,7 @@ describe("<GroupTool />", () => {
   });
 
   it("renders with badge correctly", () => {
-    const sut = mount(<GroupTool badge={true} />);
+    const sut = mount(<GroupTool badge />);
     const badge = sut.find("div.nz-badge");
     badge.length.should.eq(1);
   });

@@ -33,6 +33,7 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "bezierCurve";
 
   /** Control points */

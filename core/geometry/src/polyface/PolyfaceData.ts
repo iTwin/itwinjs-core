@@ -63,7 +63,9 @@ export class PolyfaceData {
   /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
   private _twoSided: boolean;
+  /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
+  /** boolean tag indicating if the facets are viewable from the back */
   public set twoSided(value: boolean) { this._twoSided = value; }
   /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false) {

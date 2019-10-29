@@ -10,7 +10,7 @@ import {
   Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
   Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1268,6 +1268,7 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
+  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
 
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -1317,7 +1318,17 @@ export abstract class Viewport implements IDisposable {
   public get hilite(): Hilite.Settings { return this._hilite; }
   public set hilite(hilite: Hilite.Settings) {
     this._hilite = hilite;
-    this._selectionSetDirty = true;
+    this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
+   * @see [FeatureSymbology.Appearance.emphasized].
+   * @beta
+   */
+  public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
+  public set emphasisSettings(settings: Hilite.Settings) {
+    this._emphasis = settings;
+    this.invalidateRenderPlan();
   }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
@@ -1602,11 +1613,6 @@ export abstract class Viewport implements IDisposable {
         this.view.markModelSelectorChanged();
     });
   }
-
-  /** @internal */
-  public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
-  /** @internal */
-  public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
    * @see [[Tile.DebugBoundingBoxes]]
@@ -2221,7 +2227,7 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored (e.g., those having null range of nonsensical origin). If no valid placements are supplied, this function does nothing.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
@@ -2256,7 +2262,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2288,7 +2294,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
@@ -2599,7 +2605,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
-        target.changeSolarShadowMap(context.solarShadowMap);
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;

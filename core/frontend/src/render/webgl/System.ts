@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
 import {
   GraphicBranch,
@@ -18,12 +18,12 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
-  RenderPlanarClassifier,
-  RenderSolarShadowMap,
+  RenderGraphicOwner,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
+  GLTimerResultCallback,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -32,7 +32,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { Branch, Batch, GraphicsArray } from "./Graphic";
+import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -44,6 +44,7 @@ import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
+import { GLTimer } from "./GLTimer";
 import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
 import { MeshGraphic } from "./Mesh";
@@ -53,14 +54,10 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { SolarShadowMap } from "./SolarShadowMap";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
-import { PlanarClassifier } from "./PlanarClassifier";
 import { TileTree } from "../../tile/TileTree";
-import { SceneContext } from "../../ViewContext";
-import { SpatialViewState } from "../../ViewState";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
@@ -113,6 +110,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "ANGLE_instanced_arrays",
   "OES_vertex_array_object",
   "WEBGL_lose_context",
+  "EXT_disjoint_timer_query",
 ];
 
 /** Describes the rendering capabilities of the host system.
@@ -159,6 +157,7 @@ export class Capabilities {
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
   public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
   public get supportsFragDepth(): boolean { return this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
+  public get supportsDisjointTimerQuery(): boolean { return this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -358,6 +357,7 @@ export class Capabilities {
     Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
     Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
     Debug.print(() => "               fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
+    Debug.print(() => "      disjointTimerQuery : " + (this.supportsDisjointTimerQuery ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
@@ -400,7 +400,6 @@ export class IdMap implements IDisposable {
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Solar shadow map (one for IModel) */
-  private _solarShadowMap?: RenderSolarShadowMap;
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
@@ -418,7 +417,6 @@ export class IdMap implements IDisposable {
 
     this.textures.clear();
     this.gradients.clear();
-    this._solarShadowMap = dispose(this._solarShadowMap);
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -517,16 +515,6 @@ export class IdMap implements IDisposable {
     this.addGradient(grad, texture);
     return texture;
   }
-
-  /** @internal */
-  /** Get solar shadow map */
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
-    if (undefined === this._solarShadowMap)
-      this._solarShadowMap = new SolarShadowMap();
-
-    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, view);
-    return this._solarShadowMap;
-  }
 }
 
 export type TextureBinding = WebGLTexture | undefined;
@@ -546,9 +534,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  public readonly glTimer: GLTimer;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
+  private _removeEventListener?: () => void;
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
   private readonly _curVertexAttribStates: VertexAttribState[] = [
@@ -587,7 +577,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
     let context = canvas.getContext("webgl", contextAttributes);
     if (null === context) {
-      context = canvas.getContext("experimental-webgl", contextAttributes); // IE, Edge...
+      context = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
       if (null === context) {
         return undefined;
       }
@@ -668,7 +658,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     });
 
     this.resourceCache.clear();
-    IModelConnection.onClose.removeListener(this.removeIModelMap);
+    if (undefined !== this._removeEventListener) {
+      this._removeEventListener();
+      this._removeEventListener = undefined;
+    }
   }
 
   public onInitialized(): void {
@@ -698,6 +691,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
 
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
+
+  public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
+    return new GraphicOwner(owned as Graphic);
+  }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
@@ -810,9 +807,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
 
     return clipVolume;
   }
-  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedTree, sceneContext); }
-  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) { return BackgroundMapDrape.create(drapedTree, mapTree); }
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined { return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view); }
+  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
+    return BackgroundMapDrape.create(drapedTree, mapTree);
+  }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
@@ -822,9 +819,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
+    this.glTimer = GLTimer.create(this);
 
     // Make this System a subscriber to the the IModelConnection onClose event
-    IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+    this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
     canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
   }
@@ -1057,6 +1055,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
 
   // RenderSystemDebugControl
+  public get debugControl(): RenderSystemDebugControl { return this; }
   private _drawSurfacesAsWiremesh = false;
   public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
   public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
@@ -1069,4 +1068,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     return true;
   }
 
+  public get isGLTimerSupported(): boolean { return this.glTimer.isSupported; }
+  public set resultsCallback(callback: GLTimerResultCallback | undefined) {
+    this.glTimer.resultsCallback = callback;
+  }
 }

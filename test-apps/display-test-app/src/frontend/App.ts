@@ -26,6 +26,7 @@ import { showError, showStatus } from "./Utils";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import {
   CloneViewportTool,
@@ -166,6 +167,17 @@ class RefreshTilesTool extends Tool {
   }
 }
 
+class ShutDownTool extends Tool {
+  public static toolId = "ShutDown";
+
+  public run(_args: any[]): boolean {
+    DisplayTestApp.surface.closeAllViewers();
+    IModelApp.shutdown();
+    debugger; // tslint:disable-line:no-debugger
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -189,6 +201,7 @@ export class DisplayTestApp {
     SVTSelectionTool.register(svtToolNamespace);
     ResizeWindowTool.register(svtToolNamespace);
     RefreshTilesTool.register(svtToolNamespace);
+    ShutDownTool.register(svtToolNamespace);
 
     CreateWindowTool.register(svtToolNamespace);
     FocusWindowTool.register(svtToolNamespace);
@@ -203,6 +216,7 @@ export class DisplayTestApp {
     MarkupTool.register(svtToolNamespace);
     ZoomToSelectedElementsTool.register(svtToolNamespace);
     IncidentMarkerDemoTool.register(svtToolNamespace);
+    ToggleFrustumIntersectionTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 

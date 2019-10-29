@@ -79,6 +79,7 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
+  target: HTMLElement | null;
 }
 
 /** Tool Assistance Field React component.
@@ -89,7 +90,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
   private _className: string;
-  private _target = React.createRef<HTMLDivElement>();
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
 
@@ -121,6 +121,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
+      target: null,
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
@@ -326,7 +327,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
     return (
       <>
-        <div ref={this._target} title={tooltip}>
+        <div ref={this._handleTargetRef} title={tooltip}>
           <ToolAssistance
             icons={
               <>
@@ -345,7 +346,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
-          target={this._target}
+          target={this.state.target}
           isPinned={this.state.isPinned}
         >
           <ToolAssistanceDialog
@@ -370,6 +371,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         </FooterPopup>
       </>
     );
+  }
+
+  private _handleTargetRef = (target: HTMLElement | null) => {
+    this.setState({ target });
   }
 
   private _onPromptAtCursorChange = (checked: boolean) => {

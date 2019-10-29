@@ -142,18 +142,6 @@ export interface CellProps {
 }
 
 // @alpha
-export class Chevron extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ChevronProps extends CommonProps, NoChildrenProps {
-    direction: Direction;
-    onClick?: () => void;
-}
-
-// @alpha
 export class Columns extends React.PureComponent<ColumnsProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -294,15 +282,11 @@ export interface FooterIndicatorProps extends CommonProps {
 }
 
 // @beta
-export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPopupState> {
-    // (undocumented)
-    componentDidMount(): void;
+export class FooterPopup extends React.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
     // (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: FooterPopupState;
 }
 
 // @beta
@@ -322,7 +306,7 @@ export interface FooterPopupProps extends CommonProps {
     isPinned?: boolean;
     onClose?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
-    target?: React.RefObject<HTMLElement>;
+    target?: HTMLElement | null;
 }
 
 // @beta
@@ -349,6 +333,9 @@ export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 export const getClosedWidgetTabIndex: (tabIndex: number) => number;
 
 // @internal (undocumented)
+export const getColumnZones: (id: WidgetZoneId) => WidgetZoneId[];
+
+// @internal (undocumented)
 export const getDefaultAllowsMerging: (id: WidgetZoneId) => boolean;
 
 // @alpha
@@ -365,6 +352,9 @@ export const getDefaultStagePanelManagerProps: () => StagePanelManagerProps;
 
 // @beta
 export const getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps;
+
+// @internal (undocumented)
+export const getDefaultToolSettingsWidgetManagerProps: () => ToolSettingsWidgetManagerProps;
 
 // @internal (undocumented)
 export const getDefaultWidgetHorizontalAnchor: (id: WidgetZoneId) => HorizontalAnchor;
@@ -392,6 +382,9 @@ export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
 // @alpha
 export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarItemProps<ToolbarItem>;
+
+// @internal (undocumented)
+export const getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings;
 
 // @internal (undocumented)
 export const getZoneCell: (id: ZoneId) => Cell;
@@ -743,6 +736,8 @@ export interface NestedToolSettingsProps extends CommonProps {
 
 // @alpha
 export class NineZoneManager {
+    // @internal (undocumented)
+    getHiddenWidgets(): NineZoneManagerHiddenWidgets;
     // (undocumented)
     getNestedPanelsManager(): NineZoneNestedStagePanelsManager;
     // (undocumented)
@@ -758,10 +753,33 @@ export class NineZoneManager {
     // (undocumented)
     handleWidgetTabDragStart<TProps extends NineZoneManagerProps>(args: WidgetTabDragStartArguments, props: TProps): TProps;
     // (undocumented)
+    hideWidget<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps;
+    // @internal (undocumented)
+    setNested<TProps extends NineZoneManagerProps>(nested: TProps["nested"], props: TProps): TProps;
+    // (undocumented)
     setPanelTarget(target: NineZoneManagerPanelTarget | undefined): void;
     // (undocumented)
     setPaneTarget(target: NineZoneManagerPaneTarget | undefined): void;
+    // @internal (undocumented)
+    setProp<TProps extends NineZoneManagerProps, TKey extends keyof TProps>(value: TProps[TKey], key: TKey, props: TProps): TProps;
+    // @internal (undocumented)
+    setZones<TProps extends NineZoneManagerProps>(zones: TProps["zones"], props: TProps): TProps;
+    // (undocumented)
+    showWidget<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps;
     }
+
+// @internal (undocumented)
+export interface NineZoneManagerHiddenWidget {
+    // (undocumented)
+    panel?: {
+        key: NestedStagePanelKey<NestedStagePanelsManagerProps>;
+    };
+}
+
+// @internal (undocumented)
+export type NineZoneManagerHiddenWidgets = {
+    readonly [id in WidgetZoneId]: NineZoneManagerHiddenWidget;
+};
 
 // @alpha
 export interface NineZoneManagerPanelTarget {
@@ -938,9 +956,9 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 // @alpha
 export interface PanelsProviderProps {
     children?: (items: React.ReactNode) => React.ReactNode;
-    histories: React.RefObject<HTMLElement>;
+    histories: HTMLElement | null;
     items?: React.ReactNode;
-    panels: React.RefObject<HTMLElement>;
+    panels: HTMLElement | null;
 }
 
 // @beta
@@ -972,9 +990,11 @@ export class ResizeDirectionHelpers {
 }
 
 // @alpha
-export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
+export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
     // (undocumented)
     render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: ResizeGripState;
 }
 
 // @alpha
@@ -1039,27 +1059,6 @@ export class SafeAreaInsetsHelpers {
     static isTop(flags: SafeAreaInsets): boolean;
 }
 
-// @alpha
-export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
-    // (undocumented)
-    componentDidUpdate(prevProps: Readonly<ScrollableProps>): void;
-    // (undocumented)
-    static readonly defaultProps: ScrollableDefaultProps;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<ScrollableState>;
-}
-
-// @alpha
-export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
-
-// @alpha
-export interface ScrollableProps extends ToolbarProps {
-    onScroll?: () => void;
-    visibleItemThreshold: number;
-}
-
 // @beta
 export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
     // (undocumented)
@@ -1075,12 +1074,6 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
 // @beta
 export interface ScrollableToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
-}
-
-// @alpha
-export class ScrollIndicator extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
 }
 
 // @beta
@@ -1461,7 +1454,7 @@ export type ToastDefaultProps = Pick<ToastProps, "timeout">;
 
 // @alpha
 export interface ToastProps extends CommonProps, NoChildrenProps {
-    animateOutTo?: React.RefObject<HTMLElement>;
+    animateOutTo?: HTMLElement | null;
     content?: React.ReactNode;
     onAnimatedOut?: () => void;
     timeout: number;
@@ -1533,7 +1526,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
 }
 
 // @beta
-export class Toolbar extends React.PureComponent<ToolbarProps> {
+export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     // (undocumented)
     static readonly defaultProps: {
         expandsTo: Direction;
@@ -1541,7 +1534,12 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
     };
     // (undocumented)
     render(): JSX.Element;
-    }
+    // @internal (undocumented)
+    readonly state: {
+        histories: null;
+        panels: null;
+    };
+}
 
 // @alpha
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
@@ -1612,19 +1610,15 @@ export class Tools extends React.PureComponent<ToolsProps> {
 // @beta
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     // (undocumented)
+    getBounds(): RectangleProps;
+    // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @beta
-export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(): void;
+export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps> {
     // (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: ToolSettingsPopupState;
 }
 
 // @beta
@@ -1632,15 +1626,22 @@ export interface ToolSettingsPopupProps extends CommonProps {
     children?: React.ReactNode;
     isOpen?: boolean;
     onClose?: () => void;
-    target?: React.RefObject<HTMLElement>;
+    target?: HTMLElement | null;
 }
 
 // @beta
 export interface ToolSettingsProps extends CommonProps {
     buttons?: React.ReactNode;
     children?: React.ReactNode;
+    contentRef?: React.Ref<HTMLDivElement>;
+    fillZone?: boolean;
+    lastPosition?: PointProps;
+    onDrag?: (dragged: PointProps) => void;
+    onDragEnd?: () => void;
+    onDragStart?: (initialPosition: PointProps) => void;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onResize?: (resizeBy: number, handle: ResizeHandle) => void;
     title?: string;
 }
 
@@ -1658,6 +1659,20 @@ export interface ToolSettingsTabProps extends CommonProps {
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     title?: string;
+}
+
+// @beta
+export interface ToolSettingsWidgetManagerProps extends WidgetManagerProps {
+    // (undocumented)
+    readonly mode: ToolSettingsWidgetMode;
+}
+
+// @beta
+export enum ToolSettingsWidgetMode {
+    // (undocumented)
+    Tab = 0,
+    // (undocumented)
+    TitleBar = 1
 }
 
 // @alpha
@@ -1767,6 +1782,9 @@ export interface WidgetTabDragStartArguments {
     readonly widgetId: WidgetZoneId;
 }
 
+// @internal (undocumented)
+export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId>;
+
 // @beta
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 
@@ -1792,6 +1810,17 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithContainInProps, context?: any): {
         ref: React.RefObject<HTMLDivElement>;
@@ -1810,13 +1839,24 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
 
 // @alpha
 export interface WithContainInProps {
-    container?: React.RefObject<HTMLElement>;
+    container?: HTMLElement | null;
     containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 }
 
@@ -1831,6 +1871,7 @@ export type ZoneId = WidgetZoneId | ContentZoneId;
 
 // @internal
 export class ZoneManager {
+    constructor(windowResize?: ZoneWindowResizeSettings);
     // (undocumented)
     setAllowsMerging(allowsMerging: boolean, props: ZoneManagerProps): ZoneManagerProps;
     // (undocumented)
@@ -1841,6 +1882,8 @@ export class ZoneManager {
     setFloatingProps(floating: ZoneManagerFloatingProps | undefined, props: ZoneManagerProps): ZoneManagerProps;
     // (undocumented)
     setIsLayoutChanged(isLayoutChanged: boolean, props: ZoneManagerProps): ZoneManagerProps;
+    // (undocumented)
+    windowResize: ZoneWindowResizeSettings;
 }
 
 // @beta
@@ -1910,13 +1953,19 @@ export class ZonesManager {
         bounds: RectangleProps;
     }>;
     // @internal (undocumented)
-    readonly growBottom: GrowBottom;
+    getWindowResizeBounds(props: ZonesManagerProps): {
+        [id in WidgetZoneId]: RectangleProps;
+    };
     // @internal (undocumented)
-    readonly growLeft: GrowLeft;
+    getZoneManager(id: WidgetZoneId): ZoneManager;
     // @internal (undocumented)
-    readonly growRight: GrowRight;
+    readonly growBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly growTop: GrowTop;
+    readonly growLeft: UpdateWindowResizeSettings;
+    // @internal (undocumented)
+    readonly growRight: UpdateWindowResizeSettings;
+    // @internal (undocumented)
+    readonly growTop: UpdateWindowResizeSettings;
     // (undocumented)
     handleTargetChanged(target: ZonesManagerTargetProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
@@ -1947,6 +1996,8 @@ export class ZonesManager {
     restoreLayout(props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     readonly rightZones: RightZones;
+    // @internal (undocumented)
+    saveWindowSettings(id: WidgetZoneId, props: ZonesManagerProps): void;
     // (undocumented)
     setAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
@@ -1955,6 +2006,8 @@ export class ZonesManager {
     setDraggedWidgetProps(draggedWidget: DraggedWidgetManagerProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
     setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps;
+    // @internal (undocumented)
+    setToolSettingsWidgetMode<TProps extends ZonesManagerProps>(mode: ToolSettingsWidgetMode, props: TProps): TProps;
     // @internal (undocumented)
     setWidgetHorizontalAnchor<TProps extends ZonesManagerProps>(widgetId: WidgetZoneId, horizontalAnchor: HorizontalAnchor, props: TProps): TProps;
     // @internal (undocumented)
@@ -1970,19 +2023,17 @@ export class ZonesManager {
     // @internal (undocumented)
     setZoneProps(zoneProps: ZoneManagerProps, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
-    setZonesBounds(bounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
+    setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
-    readonly shrinkBottom: ShrinkBottom;
+    readonly shrinkBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkLeft: ShrinkLeft;
+    readonly shrinkLeft: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkRight: ShrinkRight;
+    readonly shrinkRight: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkTop: ShrinkTop;
+    readonly shrinkTop: UpdateWindowResizeSettings;
     // @internal (undocumented)
     readonly topZones: TopZones;
-    // @internal (undocumented)
-    readonly zoneManager: ZoneManager;
     }
 
 // @beta
@@ -2023,7 +2074,9 @@ export interface ZonesManagerWidgetResizeArgs {
 
 // @beta
 export type ZonesManagerWidgetsProps = {
-    readonly [id in WidgetZoneId]: WidgetManagerProps;
+    readonly [id in Exclude<WidgetZoneId, 2>]: WidgetManagerProps;
+} & {
+    readonly [2]: ToolSettingsWidgetManagerProps;
 };
 
 // @beta
@@ -2043,6 +2096,26 @@ export enum ZoneTargetType {
     Back = 1,
     // (undocumented)
     Merge = 2
+}
+
+// @internal (undocumented)
+export interface ZoneWindowResizeSettings {
+    // (undocumented)
+    hEnd: number;
+    // (undocumented)
+    hMode: "Minimum" | "Percentage";
+    // (undocumented)
+    hStart: number;
+    // (undocumented)
+    minHeight: number;
+    // (undocumented)
+    minWidth: number;
+    // (undocumented)
+    vEnd: number;
+    // (undocumented)
+    vMode: "Minimum" | "Percentage";
+    // (undocumented)
+    vStart: number;
 }
 
 

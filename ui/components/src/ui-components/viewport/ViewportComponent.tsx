@@ -17,7 +17,8 @@ import {
   TentativePoint,
 } from "@bentley/imodeljs-frontend";
 import { Transform, Point3d } from "@bentley/geometry-core";
-import { CommonProps, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { CommonProps } from "@bentley/ui-core";
 
 import {
   ViewportComponentEvents,

@@ -26,8 +26,15 @@ function failBuild() {
   }
 }
 
+function throwAfterTimeout(timeout, message) {
+  return new Promise((_resolve, reject) => {
+    setTimeout(() => reject(message), timeout);
+  });
+}
+
 module.exports = {
   logBuildWarning,
   logBuildError,
-  failBuild
+  failBuild,
+  throwAfterTimeout
 }

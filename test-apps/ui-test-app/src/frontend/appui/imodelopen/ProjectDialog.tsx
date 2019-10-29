@@ -5,7 +5,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { UiFramework, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { ProjectTabs, ProjectTab } from "./ProjectTabs";
 import { SearchBox, Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
@@ -13,7 +12,6 @@ import "./ProjectDialog.scss";
 
 /** Properties for the [[ProjectDialog]] component */
 export interface ProjectDialogProps {
-  accessToken: AccessToken;
   filterType?: ProjectScope;
   onClose: () => void;
   onProjectSelected?: (project: ProjectInfo) => void;
@@ -48,7 +46,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   private getRecentProjects(projectScope: ProjectScope) {
     this.setState({ isLoading: true, projects: undefined, activeFilter: projectScope });
-    UiFramework.projectServices.getProjects(this.props.accessToken, projectScope, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
+    UiFramework.projectServices.getProjects(projectScope, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
       this.setState({ isLoading: false, projects: projectInfos });
     });
   }
@@ -87,7 +85,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     } else {
       const filter = "Name like '" + value + "'";
       this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
-      UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
+      UiFramework.projectServices.getProjects(ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
         this.setState({ isLoading: false, projects: projectInfos, filter: value });
       });
     }

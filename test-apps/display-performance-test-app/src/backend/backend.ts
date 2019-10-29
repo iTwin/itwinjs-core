@@ -2,10 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, IModelJsFs } from "@bentley/imodeljs-backend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import * as fs from "fs";
+import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
@@ -30,7 +29,7 @@ function setupStandaloneConfiguration() {
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
     const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-    fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
+    IModelJsFs.writeFileSync(configPathname, JSON.stringify(configuration));
   }
 }
 
@@ -38,11 +37,13 @@ export function initializeBackend() {
   setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
-  // tslint:disable-next-line:no-var-requires
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-  const svtConfig: SVTConfiguration = require(configPathname);
-  if (svtConfig.customOrchestratorUri)
-    hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+  if (!MobileRpcConfiguration.isMobileBackend) {
+    // tslint:disable-next-line:no-var-requires
+    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+    const svtConfig: SVTConfiguration = require(configPathname);
+    if (svtConfig.customOrchestratorUri)
+      hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+  }
 
   IModelHost.startup(hostConfig);
 

@@ -236,3 +236,63 @@ it("PartitionFacetsByConnectivity", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "PartitionFacetsByConnectivity");
   expect(ck.getNumErrors()).equals(0);
 });
+
+it("cloneWithTVertexFixup", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const builder = PolyfaceBuilder.create();
+  addSquareFacet(builder, 0, 0, 1);
+  const sectorRadius = 0.02;
+  const x0 = 0;
+  const y0 = 0;
+  const dy = 3.0;
+  addSquareFacet(builder, 1, 0, 0.5);
+  addSquareFacet(builder, 0, 1, 0.3);
+  addSquareFacet(builder, 1, 0.5, 1);
+  const a = 0.10;
+  addSquareFacet(builder, -a, 0, a);
+  addSquareFacet(builder, -a, a, a);
+  addSquareFacet(builder, -a, 2 * a, a);
+  const mesh0 = builder.claimPolyface();
+  const mesh1 = PolyfaceQuery.cloneWithTVertexFixup(mesh0);
+  const mesh2 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh1);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
+  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
+  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
+  // !!! this does NOT remove the T vertex additions !!!
+  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh2, sectorRadius, true, x0 + dy, y0 + 2 * dy);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithTVertexFixup");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+it("cloneWithColinearEdgeFixup", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const x0 = 0;
+  const y0 = 0;
+  const dy = 5.0;
+  const sectorRadius = 0.02;
+  const builder = PolyfaceBuilder.create();
+  const pointsA = Sample.createInterpolatedPoints(Point3d.create(0, 2), Point3d.create(0, 0), 3);
+  const pointsB = Sample.createInterpolatedPoints(Point3d.create(4, 2), Point3d.create(4, 0), 3);
+
+  const polygon0: Point3d[] = [];
+  Sample.createInterpolatedPoints(pointsA[1], pointsB[1], 4, polygon0);
+  Sample.createInterpolatedPoints(pointsB[0], pointsA[0], 3, polygon0);
+  builder.addPolygon(polygon0);
+
+  const polygon1: Point3d[] = [];
+  Sample.createInterpolatedPoints(pointsB[1], pointsA[1], 4, polygon1);
+  Sample.createInterpolatedPoints(pointsA[2], pointsB[2], 2, polygon1);
+  builder.addPolygon(polygon1);
+
+  const mesh0 = builder.claimPolyface();
+  const mesh1 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
+  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
+  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithColinearEdgeFixup");
+  expect(ck.getNumErrors()).equals(0);
+});

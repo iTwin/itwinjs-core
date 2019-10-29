@@ -5,10 +5,12 @@
 
 import * as React from "react";
 import { expect } from "chai";
-import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
 import { render } from "@testing-library/react";
+
+import { UiError } from "@bentley/ui-abstract";
+
+import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
 import { ImageRenderer } from "../../ui-components/common/ImageRenderer";
-import { UiError } from "@bentley/ui-core";
 
 describe("ImageRenderer", () => {
   const imageRenderer = new ImageRenderer();

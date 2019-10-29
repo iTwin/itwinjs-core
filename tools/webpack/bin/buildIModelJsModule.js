@@ -299,6 +299,7 @@ class DependentTracker {
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/frontend-devtools", "frontend-devtools.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, "@bentley/ui-abstract", "ui-abstract.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
@@ -499,7 +500,7 @@ class PseudoLocalizer {
     convertString(inputString) {
         let inReplace = 0;
         let outString = "";
-        let replaceIndex = 0; // Note: the pseudoLocalize algorithm in Bim02 uses random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
+        let replaceIndex = 0; // Note: the pseudoLocalize algorithm would normally use random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
         for (let iChar = 0; iChar < inputString.length; iChar++) {
             let thisChar = inputString.charAt(iChar);
             let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;

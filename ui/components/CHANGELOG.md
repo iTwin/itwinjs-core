@@ -1,6 +1,34 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools.
+- Allow width defined in ColumnDescription to be passed into <Table> component to set initial column width.
+- Added AutoSuggest component and improved KeyinBrowser component
+- Focus EnumButtonGroupEditor without scrolling.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
+- Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core.
+- Added ability to automatically expand non primitive properties
+- Ability to Scroll to Table row via scrollToRow Prop
+- Add alwaysMinimized prop to TimelineComponent.
+- Tool Assistance changes per UX Design
+- Joe G required the tree (empty data) be more descriptive and generic.
+- In the Model/Category/Spatial trees, center the error message
+- upgrade to TypeScript 3.6.2
+- Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment
+- Tree: Clear page caches when reloading tree data
+- this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -260,7 +288,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component.
+- Simplified struct and array tooltips in Table component. 
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -336,7 +364,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 - Added specialized property value renderers for nonprimitive types when their container is a table.
 - Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
 - Changed the way PropertyCategoryBlock looks.
-- Enabled table to contain popups and dialog and slightly cleaned up its CSS.
+- Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
 - Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 - Implement pagination in Tree component
@@ -350,7 +378,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 - Added specialized property value renderers for nonprimitive types when their container is a table.
 - Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
 - Changed the way PropertyCategoryBlock looks.
-- Enabled table to contain popups and dialog and slightly cleaned up its CSS.
+- Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -391,7 +419,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

@@ -4,21 +4,21 @@ exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
 Array [
   Object {
     "editable": true,
-    "filterable": true,
+    "filterable": false,
     "key": "Engineer",
     "label": "monitor",
     "sortable": true,
   },
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "Home Loan Account",
     "label": "Refined rich",
     "sortable": true,
   },
   Object {
     "editable": true,
-    "filterable": true,
+    "filterable": false,
     "key": "executive",
     "label": "Director Chicken",
     "sortable": true,

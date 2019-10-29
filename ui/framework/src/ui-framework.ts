@@ -3,13 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
 
 export * from "./ui-framework/UiFramework";
-
 export * from "./ui-framework/SessionState";
 export * from "./ui-framework/FrameworkState";
-export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
 export * from "./ui-framework/MarkupToolDefinitions";
 
@@ -73,16 +71,20 @@ export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
 
+export * from "./ui-framework/shared/ActionButtonItemDef";
+export * from "./ui-framework/shared/AnyItemDef";
+export * from "./ui-framework/shared/CommandItemDef";
+export * from "./ui-framework/shared/ConditionalItemDef";
+export * from "./ui-framework/shared/ConditionalItemProps";
+export * from "./ui-framework/shared/CustomItemDef";
+export * from "./ui-framework/shared/CustomItemProps";
+export * from "./ui-framework/shared/GroupItemProps";
 export * from "./ui-framework/shared/IconComponent";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
-export * from "./ui-framework/shared/ActionButtonItemDef";
-export * from "./ui-framework/shared/CommandItemDef";
-export * from "./ui-framework/shared/ConditionalItemDef";
-export * from "./ui-framework/shared/CustomItemDef";
-export * from "./ui-framework/shared/ToolItemDef";
 export * from "./ui-framework/shared/MenuItem";
+export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -100,6 +102,7 @@ export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";
+export * from "./ui-framework/widgets/DefaultNavigationWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -132,19 +135,23 @@ export * from "./ui-framework/cursor/CursorInformation";
 export * from "./ui-framework/cursor/cursorprompt/CursorPrompt";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopupManager";
+export * from "./ui-framework/cursor/cursormenu/CursorMenu";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
 export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
 export * from "./ui-framework/backstage/Backstage";
-export * from "./ui-framework/backstage/BackstageItem";
-export * from "./ui-framework/backstage/FrontstageLaunch";
-export * from "./ui-framework/backstage/CommandLaunch";
-export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/BackstageComposer";
-export * from "./ui-framework/backstage/BackstageItemManager";
+export * from "./ui-framework/backstage/BackstageComposerItem";
+export * from "./ui-framework/backstage/BackstageItem";
+export * from "./ui-framework/backstage/BackstageItemsManager";
+export * from "./ui-framework/backstage/BackstageManager";
+export * from "./ui-framework/backstage/CommandLaunch";
+export * from "./ui-framework/backstage/FrontstageLaunch";
+export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/TaskLaunch";
+export * from "./ui-framework/backstage/UserProfile";
 
 export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/CubeNavigationAid";
@@ -161,8 +168,13 @@ export * from "./ui-framework/statusfields/SelectionInfo";
 export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/SelectionScope";
 export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
+export * from "./ui-framework/statusfields/Indicator";
+export * from "./ui-framework/statusfields/SectionsField";
+export * from "./ui-framework/statusfields/ViewAttributes";
 
 export * from "./ui-framework/theme/ThemeManager";
+
+export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
@@ -173,10 +185,12 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
 
-export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
 export * from "./ui-framework/accudraw/MenuButton";
+
+export * from "./ui-framework/popup/PopupManager";
+export * from "./ui-framework/popup/PositionPopup";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -191,6 +205,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
+ */
+/**
+ * @docs-group-description Admin
+ * APIs for various UI components, such as toolbars, buttons and menus.
  */
 /**
  * @docs-group-description Backstage

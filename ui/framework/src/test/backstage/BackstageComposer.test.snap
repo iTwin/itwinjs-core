@@ -1,858 +1,186 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`BackstageComposer renders correctly - !isVisible 1`] = `
+exports[`BackstageComposer should close the backstage 1`] = `
 <Backstage
-  isVisible={false}
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`BackstageComposer should render 1`] = `
+<Backstage
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`BackstageComposer should render backstage separators 1`] = `
+<Backstage
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
 >
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test1"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test1"
-    label="TestApp:backstage.testFrontstage1"
+  <BackstageComposerItem
+    item={
+      Object {
+        "groupPriority": 100,
+        "id": "Stage",
+        "isEnabled": true,
+        "isVisible": true,
+        "itemPriority": 50,
+        "label": "Custom Label",
+        "stageId": "stage-1",
+        "type": 2,
+      }
+    }
+    key="Stage"
   />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test2"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test2"
-    label="TestApp:backstage.testFrontstage2"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test3"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test3"
-    label="TestApp:backstage.testFrontstage3"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test4"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test4"
-    label="TestApp:backstage.testFrontstage4"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-100-200"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="IModelOpen"
-    iconSpec="icon-folder-opened"
-    isEnabled={true}
-    key="IModelOpen"
-    label="TestApp:backstage.imodelopen"
-  />
-  <CommandLaunchBackstageItem
-    commandId="IModelIndex"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="IModelIndex"
-    label="TestApp:teat.label"
-  />
-  <CommandLaunchBackstageItem
-    commandId="CmdTest"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="CmdTest"
-    label="TestApp:teat.label"
-    tooltip="TestApp:tool-tip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-200-400"
-  />
-  <FrontstageLaunchBackstageItem
-    description="TestApp:backstage.iModelStage"
-    frontstageId="ViewsFrontstage"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="ViewsFrontstage"
-    label="TestApp:backstage.viewIModel"
-    tooltip="TestApp:backstage.tooltip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-400-500"
-  />
-  <CommandLaunchBackstageItem
-    commandId="custom-test"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="TestApp:icon"
-    key="custom-test"
-    label="TestApp:backstage.custom"
-    tooltip="TestApp:tool-tip"
+  <BackstageSeparator />
+  <BackstageComposerItem
+    item={
+      Object {
+        "execute": [Function],
+        "groupPriority": 200,
+        "id": "Action",
+        "isEnabled": true,
+        "isVisible": true,
+        "itemPriority": 50,
+        "label": "Custom Label",
+        "type": 1,
+      }
+    }
+    key="Action"
   />
 </Backstage>
 `;
 
-exports[`BackstageComposer renders correctly - isVisible 1`] = `
-<Backstage
-  isVisible={true}
->
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test1"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test1"
-    label="TestApp:backstage.testFrontstage1"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test2"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test2"
-    label="TestApp:backstage.testFrontstage2"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test3"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test3"
-    label="TestApp:backstage.testFrontstage3"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test4"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test4"
-    label="TestApp:backstage.testFrontstage4"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-100-200"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="IModelOpen"
-    iconSpec="icon-folder-opened"
-    isEnabled={true}
-    key="IModelOpen"
-    label="TestApp:backstage.imodelopen"
-  />
-  <CommandLaunchBackstageItem
-    commandId="IModelIndex"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="IModelIndex"
-    label="TestApp:teat.label"
-  />
-  <CommandLaunchBackstageItem
-    commandId="CmdTest"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="CmdTest"
-    label="TestApp:teat.label"
-    tooltip="TestApp:tool-tip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-200-400"
-  />
-  <FrontstageLaunchBackstageItem
-    description="TestApp:backstage.iModelStage"
-    frontstageId="ViewsFrontstage"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="ViewsFrontstage"
-    label="TestApp:backstage.viewIModel"
-    tooltip="TestApp:backstage.tooltip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-400-500"
-  />
-  <CommandLaunchBackstageItem
-    commandId="custom-test"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="TestApp:icon"
-    key="custom-test"
-    label="TestApp:backstage.custom"
-    tooltip="TestApp:tool-tip"
-  />
-</Backstage>
-`;
-
-exports[`BackstageComposer renders correctly with AccessToken 1`] = `
-<Backstage>
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test1"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test1"
-    label="TestApp:backstage.testFrontstage1"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test2"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test2"
-    label="TestApp:backstage.testFrontstage2"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test3"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test3"
-    label="TestApp:backstage.testFrontstage3"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test4"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test4"
-    label="TestApp:backstage.testFrontstage4"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-100-200"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="IModelOpen"
-    iconSpec="icon-folder-opened"
-    isEnabled={true}
-    key="IModelOpen"
-    label="TestApp:backstage.imodelopen"
-  />
-  <CommandLaunchBackstageItem
-    commandId="IModelIndex"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="IModelIndex"
-    label="TestApp:teat.label"
-  />
-  <CommandLaunchBackstageItem
-    commandId="CmdTest"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="CmdTest"
-    label="TestApp:teat.label"
-    tooltip="TestApp:tool-tip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-200-400"
-  />
-  <FrontstageLaunchBackstageItem
-    description="TestApp:backstage.iModelStage"
-    frontstageId="ViewsFrontstage"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="ViewsFrontstage"
-    label="TestApp:backstage.viewIModel"
-    tooltip="TestApp:backstage.tooltip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-400-500"
-  />
-  <CommandLaunchBackstageItem
-    commandId="custom-test"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="TestApp:icon"
-    key="custom-test"
-    label="TestApp:backstage.custom"
-    tooltip="TestApp:tool-tip"
-  />
-</Backstage>
-`;
-
-exports[`BackstageComposer renders correctly with header 1`] = `
-<Backstage
-  header={
-    <div>
-       Hello World! 
-    </div>
+exports[`BackstageComposerActionItem should render 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec={undefined}
+    />
   }
+  isDisabled={false}
+  onClick={[Function]}
 >
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test1"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test1"
-    label="TestApp:backstage.testFrontstage1"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test2"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test2"
-    label="TestApp:backstage.testFrontstage2"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test3"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test3"
-    label="TestApp:backstage.testFrontstage3"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="Test4"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="Test4"
-    label="TestApp:backstage.testFrontstage4"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-100-200"
-  />
-  <FrontstageLaunchBackstageItem
-    frontstageId="IModelOpen"
-    iconSpec="icon-folder-opened"
-    isEnabled={true}
-    key="IModelOpen"
-    label="TestApp:backstage.imodelopen"
-  />
-  <CommandLaunchBackstageItem
-    commandId="IModelIndex"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="IModelIndex"
-    label="TestApp:teat.label"
-  />
-  <CommandLaunchBackstageItem
-    commandId="CmdTest"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="CmdTest"
-    label="TestApp:teat.label"
-    tooltip="TestApp:tool-tip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-200-400"
-  />
-  <FrontstageLaunchBackstageItem
-    description="TestApp:backstage.iModelStage"
-    frontstageId="ViewsFrontstage"
-    iconSpec="icon-placeholder"
-    isEnabled={true}
-    key="ViewsFrontstage"
-    label="TestApp:backstage.viewIModel"
-    tooltip="TestApp:backstage.tooltip"
-  />
-  <SeparatorBackstageItem
-    key="backstage-item-separator-400-500"
-  />
-  <CommandLaunchBackstageItem
-    commandId="custom-test"
-    description="TestApp:subtitle"
-    execute={[Function]}
-    iconSpec="TestApp:icon"
-    key="custom-test"
-    label="TestApp:backstage.custom"
-    tooltip="TestApp:tool-tip"
-  />
-</Backstage>
+  Custom Label
+</BackstageItem>
 `;
 
-exports[`BackstageComposer should handle sync events 1`] = `
-<BackstageComposer
-  isVisible={true}
+exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec={undefined}
+    />
+  }
+  isDisabled={false}
+  onClick={[Function]}
 >
-  <Backstage
-    isVisible={true}
-  >
-    <Backstage
-      header={null}
-      isOpen={true}
-      onClose={[Function]}
-      safeAreaInsets={0}
-      showOverlay={true}
-    >
-      <div
-        className="nz-backstage-backstage_overlay nz-open nz-overlay"
-        onClick={[Function]}
-      />
-      <div
-        className="nz-backstage-backstage nz-open"
-      >
-        <ul>
-          <FrontstageLaunchBackstageItem
-            frontstageId="Test1"
-            iconSpec="icon-placeholder"
-            isEnabled={true}
-            key="Test1"
-            label="TestApp:backstage.testFrontstage1"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="Test1"
-              onClick={[Function]}
-              subtitle=""
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-                subtitle=""
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.testFrontstage1
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </FrontstageLaunchBackstageItem>
-          <FrontstageLaunchBackstageItem
-            frontstageId="Test2"
-            iconSpec="icon-placeholder"
-            isEnabled={true}
-            key="Test2"
-            label="TestApp:backstage.testFrontstage2"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="Test2"
-              onClick={[Function]}
-              subtitle=""
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-                subtitle=""
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.testFrontstage2
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </FrontstageLaunchBackstageItem>
-          <FrontstageLaunchBackstageItem
-            frontstageId="Test4"
-            iconSpec="icon-placeholder"
-            isEnabled={false}
-            key="Test4"
-            label="TestApp:backstage.testFrontstage4"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={true}
-              key="Test4"
-              onClick={[Function]}
-              subtitle=""
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={true}
-                onClick={[Function]}
-                safeAreaInsets={0}
-                subtitle=""
-              >
-                <li
-                  className="nz-backstage-item nz-disabled"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.testFrontstage4
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </FrontstageLaunchBackstageItem>
-          <SeparatorBackstageItem
-            key="backstage-item-separator-100-200"
-          >
-            <BackstageSeparator
-              key="NaN"
-            >
-              <li
-                className="nz-backstage-separator"
-              />
-            </BackstageSeparator>
-          </SeparatorBackstageItem>
-          <FrontstageLaunchBackstageItem
-            frontstageId="IModelOpen"
-            iconSpec="icon-folder-opened"
-            isEnabled={true}
-            key="IModelOpen"
-            label="TestApp:backstage.imodelopen"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-folder-opened"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="IModelOpen"
-              onClick={[Function]}
-              subtitle=""
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-folder-opened"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-                subtitle=""
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-folder-opened"
-                    >
-                      <i
-                        className="icon icon-folder-opened"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.imodelopen
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </FrontstageLaunchBackstageItem>
-          <CommandLaunchBackstageItem
-            commandId="IModelIndex"
-            execute={[Function]}
-            iconSpec="icon-placeholder"
-            isEnabled={true}
-            key="IModelIndex"
-            label="TestApp:teat.label"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="IModelIndex"
-              onClick={[Function]}
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:teat.label
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </CommandLaunchBackstageItem>
-          <CommandLaunchBackstageItem
-            commandId="CmdTest"
-            description="TestApp:subtitle"
-            execute={[Function]}
-            iconSpec="icon-placeholder"
-            isEnabled={true}
-            key="CmdTest"
-            label="TestApp:teat.label"
-            tooltip="TestApp:tool-tip"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="CmdTest"
-              onClick={[Function]}
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:teat.label
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </CommandLaunchBackstageItem>
-          <SeparatorBackstageItem
-            key="backstage-item-separator-200-400"
-          >
-            <BackstageSeparator
-              key="NaN"
-            >
-              <li
-                className="nz-backstage-separator"
-              />
-            </BackstageSeparator>
-          </SeparatorBackstageItem>
-          <FrontstageLaunchBackstageItem
-            description="TestApp:backstage.iModelStage"
-            frontstageId="ViewsFrontstage"
-            iconSpec="icon-placeholder"
-            isEnabled={true}
-            key="ViewsFrontstage"
-            label="TestApp:backstage.viewIModel"
-            tooltip="TestApp:backstage.tooltip"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="icon-placeholder"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="ViewsFrontstage"
-              onClick={[Function]}
-              subtitle="TestApp:backstage.iModelStage"
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="icon-placeholder"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-                subtitle="TestApp:backstage.iModelStage"
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="icon-placeholder"
-                    >
-                      <i
-                        className="icon icon-placeholder"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.viewIModel
-                    </span>
-                    <span>
-                      TestApp:backstage.iModelStage
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </FrontstageLaunchBackstageItem>
-          <SeparatorBackstageItem
-            key="backstage-item-separator-400-500"
-          >
-            <BackstageSeparator
-              key="NaN"
-            >
-              <li
-                className="nz-backstage-separator"
-              />
-            </BackstageSeparator>
-          </SeparatorBackstageItem>
-          <CommandLaunchBackstageItem
-            commandId="custom-test"
-            description="TestApp:subtitle"
-            execute={[Function]}
-            iconSpec="TestApp:icon"
-            key="custom-test"
-            label="TestApp:backstage.custom"
-            tooltip="TestApp:tool-tip"
-          >
-            <Component
-              icon={
-                <Unknown
-                  iconSpec="TestApp:icon"
-                />
-              }
-              isActive={false}
-              isDisabled={false}
-              key="custom-test"
-              onClick={[Function]}
-            >
-              <BackstageItem
-                icon={
-                  <Unknown
-                    iconSpec="TestApp:icon"
-                  />
-                }
-                isActive={false}
-                isDisabled={false}
-                onClick={[Function]}
-                safeAreaInsets={0}
-              >
-                <li
-                  className="nz-backstage-item"
-                  onClick={[Function]}
-                >
-                  <div
-                    className="nz-icon"
-                  >
-                    <Component
-                      iconSpec="TestApp:icon"
-                    >
-                      <i
-                        className="icon TestApp:icon"
-                      />
-                    </Component>
-                  </div>
-                  <div>
-                    <span>
-                      TestApp:backstage.custom
-                    </span>
-                  </div>
-                </li>
-              </BackstageItem>
-            </Component>
-          </CommandLaunchBackstageItem>
-        </ul>
-      </div>
-    </Backstage>
-  </Backstage>
-</BackstageComposer>
+  Custom Label
+</BackstageItem>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render action item 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "isEnabled": true,
+      "isVisible": true,
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render stage launcher 1`] = `
+<BackstageComposerStageLauncher
+  item={
+    Object {
+      "groupPriority": 100,
+      "id": "Stage",
+      "isEnabled": true,
+      "isVisible": true,
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "stageId": "stage-1",
+      "type": 2,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec={undefined}
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  onClick={[Function]}
+>
+  Custom Label
+</BackstageItem>
+`;
+
+exports[`BackstageComposerItem should render action item 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "isEnabled": true,
+      "isVisible": true,
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem should render stage launcher 1`] = `
+<BackstageComposerStageLauncher
+  item={
+    Object {
+      "groupPriority": 100,
+      "id": "Stage",
+      "isEnabled": true,
+      "isVisible": true,
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "stageId": "stage-1",
+      "type": 2,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerStageLauncher should render 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec={undefined}
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  onClick={[Function]}
+>
+  Custom Label
+</BackstageItem>
 `;

@@ -10,7 +10,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId, Backstage,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
+  SyncUiEventId, UiFramework, Backstage, BackstageItem,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -21,8 +22,15 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
+import { createActionItem } from "../appui/AppBackstageItemProvider";
 
 export class AppTools {
+  public static getItems(): BackstageItem[] {
+    return [
+      createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
+    ];
+  }
+
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
@@ -31,6 +39,8 @@ export class AppTools {
       description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
+        const items = AppTools.getItems();
+        UiFramework.backstageManager.itemsManager.add(items);
       },
     });
   }
@@ -41,7 +51,11 @@ export class AppTools {
       iconSpec: Tool2.iconSpec,
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
-      execute: () => { IModelApp.tools.run(Tool2.toolId); },
+      execute: () => {
+        IModelApp.tools.run(Tool2.toolId);
+        const items = AppTools.getItems().map((item) => item.id);
+        UiFramework.backstageManager.itemsManager.remove(items);
+      },
     });
   }
 

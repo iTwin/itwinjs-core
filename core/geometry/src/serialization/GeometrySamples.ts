@@ -571,24 +571,31 @@ export class Sample {
   }
 
   /**
-   * Return an array of rigid transforms.  This includes (at least)
-   * * Identity
-   * * translation with identity matrix
-   * * rotation around origin and arbitrary vector
-   * * rotation around space point and arbitrary vector
+   * * Return an array of rigid transforms.  This includes (at least)
+   *   * Identity
+   *   * translation with identity matrix
+   *   * rotation around origin and arbitrary vector
+   *   * rotation around space point and arbitrary vector
+   * * use given refDistance is crude distance of translation and distance to fixed point.
    */
-  public static createRigidTransforms(): Transform[] {
+  public static createRigidTransforms(distanceScale: number = 4.0): Transform[] {
+    const distanceScale3 = distanceScale / 3.0;
+    const distanceScale4 = distanceScale / 4.0;
     return [
       Transform.createIdentity(),
-      Transform.createTranslationXYZ(1, 2, 3),
+      Transform.createTranslationXYZ(distanceScale3 * 1, distanceScale3 * 2, distanceScale3 * 3),
       Transform.createFixedPointAndMatrix(
         Point3d.create(0, 0, 0),
         Matrix3d.createRotationAroundVector(
           Vector3d.unitY(), Angle.createDegrees(10)) as Matrix3d),
       Transform.createFixedPointAndMatrix(
-        Point3d.create(4, 1, -2),
+        Point3d.create(distanceScale4 * 4, distanceScale4 * 1, -distanceScale4 * 2),
         Matrix3d.createRotationAroundVector(
-          Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d)];
+          Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d),
+      Transform.createFixedPointAndMatrix(
+        Point3d.create(distanceScale4 * 4, distanceScale4 * 1, -distanceScale4 * 2),
+        Matrix3d.createRotationAroundVector(
+          Vector3d.create(-2, 1, 4), Angle.createDegrees(35)) as Matrix3d)];
   }
   /**
    * Return a single rigid transform with all terms nonzero.
@@ -770,6 +777,32 @@ export class Sample {
     }
     return result;
   }
+
+  /**
+   * Create multiple interpolated points between two points
+   * @param point0 start point (at fraction0)
+   * @param point1 end point (at fraction1)
+   * @param numPoints total number of points.  This is force to at least 2.
+   * @param result optional existing array to receive points.
+   * @param index0 optional index of first point.  Default is 0.
+   * @param index1 optional index of final point.  Default is numPoints
+   */
+  public static createInterpolatedPoints(point0: Point3d, point1: Point3d, numPoints: number, result?: Point3d[], index0?: number, index1?: number): Point3d[] {
+    if (numPoints < 2)
+      numPoints = 2;
+    if (result === undefined)
+      result = [];
+    if (index0 === undefined)
+      index0 = 0;
+    if (index1 === undefined)
+      index1 = numPoints;
+
+    for (let i = index0; i <= index1; i++) {
+      result.push(point0.interpolate(i / numPoints, point1));
+    }
+    return result;
+  }
+
   /**
    * Append numPhase teeth.  Each tooth starts with dxLow dwell at initial y, then sloped rise, then dwell at top, then sloped fall
    * * If no points are present, start with 000.  (this happens in pushMove) Otherwise start from final point.
@@ -2117,19 +2150,22 @@ export class Sample {
   /**
    * Create a star by alternating radii (with equal angular steps)
    * @param r0 first point radius
-   * @param r1 second point radius
+   * @param r1 second point radius (if undefined, this is skipped and the result is points on a circle.)
    * @param numPoint number of points
    * @param close true to add closure edge.
    */
-  public static createStar(cx: number, cy: number, cz: number, r0: number, r1: number, numPoint: number, close: boolean): Point3d[] {
+  public static createStar(cx: number, cy: number, cz: number, r0: number, r1: number | undefined, numPoint: number, close: boolean, theta0?: Angle): Point3d[] {
     const points = [];
     const angleStepRadians = Math.PI / numPoint;
+    const radians0 = theta0 === undefined ? 0.0 : theta0.radians;
     let radians;
     for (let i = 0; i < numPoint; i++) {
-      radians = 2 * i * angleStepRadians;
+      radians = radians0 + 2 * i * angleStepRadians;
       points.push(Point3d.create(cx + r0 * Math.cos(radians), cy + r0 * Math.sin(radians), cz));
-      radians = (2 * i + 1) * angleStepRadians;
-      points.push(Point3d.create(cx + r1 * Math.cos(radians), cy + r1 * Math.sin(radians), cz));
+      if (r1 !== undefined) {
+        radians = radians0 + (2 * i + 1) * angleStepRadians;
+        points.push(Point3d.create(cx + r1 * Math.cos(radians), cy + r1 * Math.sin(radians), cz));
+      }
     }
     if (close)
       points.push(points[0].clone());

@@ -9,6 +9,8 @@ import {
   ToggleLogZTool,
   TogglePrimitiveVisibilityTool,
   ToggleReadPixelsTool,
+  SetVolClassIntersectOn,
+  SetVolClassIntersectOff,
 } from "./tools/RenderTargetTools";
 import {
   LoseWebGLContextTool,
@@ -31,12 +33,18 @@ import {
   ToggleSelectedViewFrustumTool,
 } from "./tools/FrustumDecoration";
 import {
+  ChangeEmphasisSettingsTool,
+  ChangeHiliteSettingsTool,
+  FadeOutTool,
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
+import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
+import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -88,7 +96,17 @@ export class FrontendDevTools {
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
+    ChangeHiliteSettingsTool.register(i18n);
+    ChangeEmphasisSettingsTool.register(i18n);
+    FadeOutTool.register(i18n);
+
     RealityTransitionTool.register(i18n);
+    ChangeUnitsTool.register(i18n);
+    ToggleTileRequestDecorationTool.register(i18n);
+    MeasureTileLoadTimeTool.register(i18n);
+
+    SetVolClassIntersectOn.register(i18n);
+    SetVolClassIntersectOff.register(i18n);
 
     return i18n.readFinished;
   }

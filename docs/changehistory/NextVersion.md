@@ -3,187 +3,32 @@ ignore: true
 ---
 # NextVersion
 
-## Display system enhancements
+## Display system startup options
 
-### Performance enhancements
+The following changes have been made to `RenderSystem.Options`:
 
-* Made display system enhancement for rendering directly to screen. This significantly improves performance on iOS and some non-Chrome browsers. For models that aren't bound by primitive count, this can be a more than doubling of FPS.
-  * To enable this enhancement, see `RenderSystem.Options.directScreenRendering`.
-
-## Blank IModelConnections
-
-The new method `IModelConnection.createBlank` provides a way for applications to create an `IModelConnection` that is not connected to an iModel or a backend. This is useful for using iModel.js to show *just* Reality data (reality meshes, point clouds, terrain, etc.), background maps, and other non-iModel-based graphics without requiring a backend server. There is also a new convenience method `SpatialViewState.createBlank` to create a *blank* spatial view appropriate for these non-iModel based visualizations. See the BlankConnections learning article for further details.
+* `displaySolarShadows` now defaults to `true` if not defined, instead of false.
+* `directScreenRendering` has been deprecated; it no longer has any effect.
 
 ## Geometry
 
-* PolyfaceQuery method to partition by connectivity.  Delauney triangle performance is comparable to native.
-* Optimize triangle flipping
-* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
-* `PolyfaceBuilder` method to build triangles "between" loosely related linestrings.
+* [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.
+* [RegionOps.consolidateAdjacentPrimitives]($geometry) method to consolidate adjacent lines and linestrings, and adjacent arcs of the same underlying circle or ellipse.
+* [RegionOps.rectangleEdgeTransform]($geometry) method to decide if a Loop object or point array is a simple rectangle.
+* [Range2d.corners3d]($geometry) method to get a `Point3d[]` containing the range corners.
+* [GrowableXYArray.length]($geometry) property is writable (e.g. to trim the array)
+* [IndexedXYZCollection.getRange]($geometry) -- return the range of data in the collection.
+* Support methods for using `PolyfaceVisitor` as staging area for new facets to be given to a `PolyfaceBuilder`
+  * [PolyfaceVisitor.clearArray]($geometry) -- empty all arrays
+  * [PolyfaceVisitor.pushDataFrom]($geometry) -- add new point, param, normal, color from indexed position in another `PolyfaceVisitor`
+* [PolyfaceVisitor.pushInterpolatedDataFrom]($geometry) -- add new point, param, normal, color interpolated between two indexed positions in another `PolyfaceVisitor`
+* `[PolyfaceQuery.cloneWithTVertexFixup]($geometry) -- clone a polyface, inserting vertices within edges that are incident to points on other facets.
+* `[PolyfaceQuery.cloneWithColinearEdgeCleanup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
 
-### Details
+## Presentation
 
-* `PolyfaceQuery` methods
-  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has an edge in common with others in the same array.
-  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has (at least) a vertex in common with others in the same array.
-  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
-    * Return an array of polyfaces
-    * Each polyface has all the facets from one of the input facet index arrays.
-  * `PolyfaceVisitor`
-    * `myVisitor.setNumWrap (numWrap: number)`
-      * set numWrap for subsequent visits.
-  * `PolyfaceBuilder`
-    * `myBuilder.reversed: boolean`
-      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
-      * Carry `twoSided` flag through polyface builder actions.
-    * new method  [PolyfaceBuilder.addTriangulatedRegion]($geometry)
-    * new method  [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry)
-  * `PolyfaceQuery`
-    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-  * `UnionFindContext`
-    * New class to implement the UnionFind algorithm on a set of integers.
-  * `HalfEdge`
-    * [HalfEdge.setMaskAroundEdge]($geometry)
-    * [HalfEdge.clearMaskAroundEdge]($geometry)
-  * `HalfEdgeGraph`
-    * [HalfEdgeGraph.grabMask]($geometry)
-    * [HalfEdgeGraph.grabMask]($geometry)
-  * `Triangulation`
-    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
- * Classes for 2d range searching.
-    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
-    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
-    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
-    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
-  * Refactoring to make [ClipPlane]($geometry) less aware of collection APIs:
-    * Move polygon clip logic from `ClipPlane` to new classes [Point3dArrayPolygonOps]($geometry) and [IndexedXYZPolygonOps]($geometry).
-      * `ClipPlane`methods move to the static classes:
-        * `convexPolygonClipInPlace`
-        * `convexPolygonSplitInsideOutsideGrowableArrays`
-        * `convexPolygonSplitInsideOutsideGrowableArrays`
-    * Clip plane implements formal interface `PlaneAltitudeEvaluator`
-      * Preferred small method names:
-         * `altitude` instead of `evaluatePoint`
-         * `velocity` instead of `dotProductVector`
-  * Incidental methods
-    * (new method) [Point3d.crossProductToPointsMagnitude]($geometry)
-    * (new method) [Vector3d.angleFromPerpendicular]($geometry)
-    * (new class) BarycentricTriangle
-    * (new class) IndexedCollectionInterval
+### Read-Only Mode
 
-
-## Favorite Properties
-
-### Summary
-
-* Favorite properties manager stores favorite properties and determines whether a given field should be displayed as favorite.
-* `PresentationPropertyDataProvider` puts all favorite properties into an additional 'Favorite' category that's displayed
-at the top and is auto-expanded.
-
-### Details
-
-* `FavoritePropertyManager` (accessed through singleton `Presentation.favoriteProperties`) in `@bentley/presentation-frontend`
-  * `add(field: Field): void`
-    * For `PropertiesField` and `NestedContentField` - marks all properties in the field as favorite.
-    * For other types of fields - marks the field as favorite by its name.
-  * `remove(field: Field): void`
-    * For `PropertiesField` and `NestedContentField` - removes all properties in the field from favorites list.
-    * For other types of fields - removes the field from favorites list.
-  * `has(field: Field): boolean`
-    * For `PropertiesField` and `NestedContentField` - returns true if field contains at least one favorite property.
-    * For other types of fields - returns true if field's name is in the favorites list.
-  * `onFavoritesChanged: BeEvent<() => void>`
-    * Event that's raised when favorite properties change.
-
-* `ContentDataProvider` (base of `PresentationPropertyDataProvider` and `PresentationTableDataProvider`) in `@bentley/presentation-components`
-  * `getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>`
-    * Returns a field object that was used to create the given `PropertyRecord`. The field contains meta-data about the properties whose values are stored in the `PropertyRecord`.
-
-### Usage example
-
-```ts
-// needs to be called once before working with `Presentation` API
-Presentation.initialize();
-
-<...>
-
-private _onAddFavorite = (propertyField: Field) => {
-  Presentation.favoriteProperties.add(propertyField);
-  this.setState({ contextMenu: undefined });
-}
-private _onRemoveFavorite = (propertyField: Field) => {
-  Presentation.favoriteProperties.remove(propertyField);
-  this.setState({ contextMenu: undefined });
-}
-
-private async buildContextMenu(args: PropertyGridContextMenuArgs) {
-  const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
-  const items: ContextMenuItemInfo[] = [];
-  if (field !== undefined) {
-    if (Presentation.favoriteProperties.has(field)) {
-      items.push({
-        key: "remove-favorite",
-        onSelect: () => this._onRemoveFavorite(field),
-        title: "Add this property to Favorite category",
-        label: "Add to Favorite",
-      });
-    } else {
-      items.push({
-        key: "add-favorite",
-        onSelect: () => this._onAddFavorite(field),
-        title: "Remove this property from Favorite category",
-        label: "Remove from Favorite",
-      });
-    }
-  }
-}
-```
-## Geometry
-
-### Summary
-
-* PolyfaceQuery method to partition by connectivity
-* Optimize triangle flipping
-* `PolyfaceQuery.cutFill` uses GriddedRaggedRange2dSet (rather than prior `LinearSearchRange2dGrid`)
-
-### Details
-
-* `PolyfaceQuery` methods
-  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has an edge in common with others in the same array.
-  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-    * Return arrays of facet indices
-    * Within each array, each facet has (at least) a vertex in common with others in the same array.
-  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
-    * Return an array of polyfaces
-    * Each polyface has all the facets from one of the input facet index arrays.
-  * `PolyfaceVisitor`
-    * `myVisitor.setNumWrap (numWrap: number)`
-      * set numWrap for subsequent visits.
-  * `PolyfaceBuilder`
-    * `myBuilder.reversed: boolean`
-      * read property to query the state controlled by `myBuilder.toggleReversedFlag`
-      * Carry `twoSided` flag through polyface builder actions.
-  * `PolyfaceQuery`
-    * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-  * `UnionFindContext`
-    * New class to implement the UnionFind algorithm on a set of integers.
-  * `HalfEdge`
-    * [HalfEdge.setMaskAroundEdge]($geometry)
-    * [HalfEdge.clearMaskAroundEdge]($geometry)
-  * `HalfEdgeGraph`
-    * [HalfEdgeGraph.grabMask]($geometry)
-    * [HalfEdgeGraph.grabMask]($geometry)
-  * `Triangulation`
-    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
- * Classes for 2d range searching.
-    * `RangeLengthData, UsageSums` -- carrier interface for computing average range sizes.
-    * `LinearSearchRange2dArray` -- array of Range2d for linear search.
-    * `GriddedRaggedRange2dSet` -- grid of LinearSearchRange2dArray
-    * `GriddedRaggedRange2dSetWithOverflow` -- GriddedRaggedRange2dSet for typical ranges, `LinearSearchRange2dArray` for larger overflow ranges.
-
+Added a flag [PresentationManagerProps.mode]($presentation-backend) to indicate that the backend always opens iModels in read-only mode and presentation manager
+can make some optimizations related to reacting to changes in iModels. This is an optional property that defaults to previous behavior (read-write), but it's
+strongly encouraged to set it to [PresentationManagerMode.ReadOnly]($presentation-backend) on read-only backends.

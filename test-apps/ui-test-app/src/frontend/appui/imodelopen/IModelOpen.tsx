@@ -7,7 +7,6 @@ import * as classnames from "classnames";
 import { UiFramework, IModelInfo, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
 import { IModelList } from "./IModelList";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
 import "./IModelOpen.scss";
@@ -16,7 +15,6 @@ import { AppTools } from "../../tools/ToolSpecifications";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
-  accessToken: AccessToken;
   onIModelSelected?: (iModelInfo: IModelInfo) => void;
   initialIModels?: IModelInfo[];
 }
@@ -61,7 +59,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return;
     }
 
-    UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
+    UiFramework.projectServices.getProjects(ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
       this.setState(Object.assign({}, this.state, {
         isLoadingProjects: false,
         isLoadingiModels: true,
@@ -80,7 +78,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingProjects: false,
       currentProject: project,
     }));
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(this.props.accessToken, project, 40, 0);
+    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 40, 0);
     // tslint:disable-next-line:no-console
     // console.log(JSON.stringify(iModelInfos));
     this.setState(Object.assign({}, this.state, {
@@ -116,7 +114,6 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return (
         <>
           <IModelList iModels={this.state.iModels}
-            accessToken={this.props.accessToken}
             onIModelSelected={this._handleIModelSelected} />
           {this.state.isLoadingiModel &&
             <BlockingPrompt prompt={this.state.prompt} />
@@ -137,7 +134,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
           <div className="project-picker-content">
             <span className="projects-label">Projects</span>
             <div className="project-picker">
-              <ProjectDropdown accessToken={this.props.accessToken} currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
+              <ProjectDropdown currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
             </div>
           </div>
         </div>

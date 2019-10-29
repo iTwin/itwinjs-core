@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-clients_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Setup imodeljs-clients tests to be run in chrome (and not node.js)."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-clients_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added iModel extent property"
+          },
+          {
+            "comment": "Added ProjectShareClient"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/imodeljs-clients_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

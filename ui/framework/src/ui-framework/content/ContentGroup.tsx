@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 

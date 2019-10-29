@@ -11,7 +11,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, RequestOptions } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./Query";
+import { InstanceIdQuery } from "./HubQuery";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -132,7 +132,7 @@ export class ThumbnailHandler {
       return Promise.reject(new Error("Expected an image to be returned from the query"));
     }
 
-    const base64Data = Base64.btoa(String.fromCharCode(...byteArray));
+    const base64Data = Base64.btoa(byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
     return "data:image/png;base64," + base64Data;
   }
 

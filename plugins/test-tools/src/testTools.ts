@@ -7,7 +7,7 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
 
 /** An Immediate Tool that adds the specified plugin to the list to be started at runtime. */
-export class PluginSave extends Tool {
+class PluginSave extends Tool {
   public static toolId = "PluginSave";
   public static get maxArgs() { return undefined; }
   public static get minArgs() { return 1; }
@@ -43,7 +43,7 @@ export class PluginSave extends Tool {
 }
 
 /** An Immediate Tool that deletes the specified plugin from the list to be started at runtime. */
-export class PluginRemove extends Tool {
+class PluginRemove extends Tool {
   public static toolId = "PluginRemove";
   public static get maxArgs() { return 2; }
   public static get minArgs() { return 1; }
@@ -73,7 +73,7 @@ export class PluginRemove extends Tool {
   }
 }
 
-export class TestToolsPlugin extends Plugin {
+class TestToolsPlugin extends Plugin {
   private _i18NNamespace?: I18NNamespace;
 
   public constructor(name: string) {
@@ -90,7 +90,7 @@ export class TestToolsPlugin extends Plugin {
   }
 
   /** Invoked each time this plugin is loaded. */
-  public async onExecute(_args: string[]): Promise<void> {
+  public onExecute(_args: string[]): void {
     // currently, everything is done in onLoad.
   }
 }

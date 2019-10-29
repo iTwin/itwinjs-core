@@ -7,11 +7,9 @@
 process.env.NODE_ENV = "test";
 
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
-const isCI = (process.env.TF_BUILD);
 
 const paths = require("./config/paths");
 const path = require("path");
-const fs = require("fs");
 const {
   spawn,
   handleInterrupts
@@ -28,17 +26,15 @@ process.on("unhandledRejection", err => {
 const packageRoot = (argv.packageRoot !== undefined) ? argv.packageRoot : process.cwd();
 const testDir = (argv.testDir !== undefined) ? argv.testDir : paths.appLibTests;
 const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
-
-// use the --defineWindow argument if your test needs jsdom-global/register to define a window for compilation purposes.
-const defineWindow = (argv.defineWindow !== undefined);
+const defineWindow = argv.defineWindow !== undefined;
 
 const options = [
   "--check-leaks",
   "--require", "source-map-support/register",
   "--watch-extensions", "ts",
   "-u", "tdd",
-  "--timeout", timeout,
   "--colors",
+  "--timeout", timeout,
   "--reporter", require.resolve("../mocha-reporter"),
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
@@ -58,9 +54,9 @@ const debugOptions = argv.debug ? [
 ] : []
 
 let grepOptions = [];
-if (argv.grep) {
+if (undefined !== argv.grep) {
   grepOptions = ["--grep", argv.grep];
-  if (argv.invert)
+  if (undefined !== argv.invert)
     grepOptions.push("--invert");
 }
 
@@ -76,6 +72,9 @@ const args = [
 
 if (isCoverage)
   args.push(path.resolve(paths.appSrc, "**/*!(.d).ts"));
+
+if (undefined !== argv.opts)
+  args.push(argv.opts);
 
 const checkOnline = async () => {
   return new Promise((resolve) => {

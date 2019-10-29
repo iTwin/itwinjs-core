@@ -47,6 +47,7 @@ alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
+beta;parseToggle(arg: string | undefined): string | boolean | undefined
 alpha;ProjectExtentsDecoration 
 alpha;ProjectExtentsResizeTool 
 alpha;RadioBox
@@ -58,6 +59,8 @@ beta;class RenderTargetDebugControlTool
 beta;ReportWebGLCompatibilityTool 
 beta;SaveViewTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
+internal;SetVolClassIntersectOff 
+internal;SetVolClassIntersectOn 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps

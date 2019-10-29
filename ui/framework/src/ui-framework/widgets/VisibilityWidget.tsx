@@ -5,12 +5,15 @@
 /** @module Widget */
 
 import * as React from "react";
+
 import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
 import { SelectionMode, ContextMenu, ContextMenuItem } from "@bentley/ui-components";
+
 import { CategoryTree } from "../imodel-components/category-tree/CategoriesTree";
 import { VisibilityTree } from "../imodel-components/visibility-tree/VisibilityTree";
 import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
-import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -163,7 +166,7 @@ export class VisibilityWidget extends WidgetControl {
   private _maintainScrollPosition?: ScrollPositionMaintainer;
 
   public static get iconSpec() {
-    return `svg:${widgetIconSvg}`;
+    return IconSpecUtilities.createSvgIconSpec(widgetIconSvg);
   }
 
   public static get label() {

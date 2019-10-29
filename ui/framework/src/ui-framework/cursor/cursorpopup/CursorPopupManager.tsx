@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { UiEvent, Point, PointProps, Size, SizeProps, RectangleProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { CursorPopup } from "./CursorPopup";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../UiFramework";
@@ -82,6 +82,11 @@ export class CursorPopupManager {
   public static readonly onCursorPopupFadeOutEvent = new CursorPopupFadeOutEvent();
   /** @internal */
   public static readonly onCursorPopupsChangedEvent = new CursorPopupsChangedEvent();
+  /** @internal */
+  public static clearPopups() {
+    this._popups.length = 0;
+    CursorPopupManager._emitPopupsChangedEvent();
+  }
 
   public static get popups() { return this._popups; }
 

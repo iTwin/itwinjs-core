@@ -115,10 +115,12 @@ describe("iModelHub VersionHandler", () => {
         await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
       }
       // Cleanup baseline version's iModels if they left undeleted
-      const baselineiModelsQuery = new IModelQuery().filter(`Name+like+'${baselineVersionsiModelNamePrefix}%'`);
-      const imodels = await iModelClient.iModels.get(requestContext, contextId, baselineiModelsQuery);
-      for (const imodel of imodels)
-        await iModelClient.iModels.delete(requestContext, contextId, imodel.id!);
+      if (!TestConfig.enableIModelBank) {
+        const baselineiModelsQuery = new IModelQuery().filter(`Name+like+'${baselineVersionsiModelNamePrefix}%'`);
+        const imodels = await iModelClient.iModels.get(requestContext, contextId, baselineiModelsQuery);
+        for (const imodel of imodels)
+          await iModelClient.iModels.delete(requestContext, contextId, imodel.id!);
+      }
     }
   });
 
@@ -136,7 +138,7 @@ describe("iModelHub VersionHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should create named version", async () => {
+  it("should create named version (#iModelBank)", async () => {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(imodelId, false, "?$top=1000", ...mockedChangeSets);
     const changeSetsCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
@@ -183,7 +185,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(existingBaselineVersion[0].changeSetId).to.be.empty;
   });
 
-  it("should get named versions", async () => {
+  it("should get named versions (#iModelBank)", async () => {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
     // Needs to create before expecting more than 0
@@ -198,7 +200,7 @@ describe("iModelHub VersionHandler", () => {
     }
   });
 
-  it("should query named versions by ChangeSet id", async () => {
+  it("should query named versions by ChangeSet id (#iModelBank)", async () => {
     const mockedVersion = utils.generateVersion();
     utils.mockGetVersions(imodelId, undefined, mockedVersion);
     utils.mockGetVersions(imodelId, `?$filter=ChangeSetId+eq+%27${mockedVersion.changeSetId!}%27`, mockedVersion);
@@ -212,12 +214,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version[0].changeSetId).to.be.equal(expectedVersion.changeSetId);
   });
 
-  it("should get named versions with thumbnail id", async function () {
-    if (TestConfig.enableIModelBank) {
-      this.skip();
-      return;
-    }
-
+  it("should get named versions with thumbnail id", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
     let versions: Version[] = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersionName));
@@ -254,7 +251,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());
   });
 
-  it("should update named version", async () => {
+  it("should update named version (#iModelBank)", async () => {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
 

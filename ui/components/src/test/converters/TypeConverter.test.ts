@@ -88,8 +88,8 @@ describe("TypeConverter", () => {
   it("Type methods", () => {
     expect(converter.isStringType).to.be.false;
     expect(converter.isLessGreaterType).to.be.false;
-    expect(converter.isNullableType).to.be.false;
     expect(converter.isBooleanType).to.be.false;
+    expect(converter.isNullableType).to.be.true;
   });
 
 });

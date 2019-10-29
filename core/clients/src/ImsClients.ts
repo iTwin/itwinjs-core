@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @module BaseClients */
 
 import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { DOMParser } from "xmldom";
@@ -173,8 +173,7 @@ export class ImsDelegationSecureTokenClient extends Client {
     const options: RequestOptions = {
       method: "POST",
       headers: {
-        "authorization": authorizationToken.toTokenString(),
-        "User-Agent": imjsAppId,
+        authorization: authorizationToken.toTokenString(),
       },
       body: {
         ActAs: authorizationToken.getSamlAssertion(),
@@ -185,6 +184,11 @@ export class ImsDelegationSecureTokenClient extends Client {
         Lifetime: 60, // 60 minutes
       },
     };
+
+    if (typeof window === undefined) {
+      options.headers["User-Agent"] = imjsAppId; // Avoid User-Agent in web browsers
+    }
+
     await this.setupOptionDefaults(options);
 
     return request(requestContext, url, options)

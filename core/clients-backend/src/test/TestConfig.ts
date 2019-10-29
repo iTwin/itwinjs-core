@@ -63,7 +63,7 @@ export class TestConfig {
   public static readonly projectName: string = Config.App.get("imjs_test_project_name", "iModelJsTest");
   public static readonly assetName: string = Config.App.get("imjs_test_asset_name", "iModelJsAssetTest");
   public static readonly enableMocks: boolean = isOfflineSet();
-  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank_run_orchestrator");
+  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && Config.App.get("imjs_test_imodel_bank");
 
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: ImsUserCredentials = TestUsers.regular): Promise<AuthorizationToken> {

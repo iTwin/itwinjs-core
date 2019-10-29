@@ -13,243 +13,243 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "molar volume",
-      "name": "molar__x0020__volumeElementAspect",
+      "label": "area per time squared temperature",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared__x0020__temperature",
     },
     Object {
       "expand": false,
       "label": "workingUnitsProp",
-      "name": "workingUnitsPropElementAspect",
-    },
-    Object {
-      "expand": false,
-      "label": "area per time squared",
-      "name": "area__x0020__per__x0020__time__x0020__squaredElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__workingUnitsProp",
     },
     Object {
       "expand": false,
       "label": "area per time",
-      "name": "area__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "area",
-      "name": "areaElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area",
     },
     Object {
       "expand": false,
       "label": "cube root length per time",
-      "name": "cube__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__cube__x0020__root__x0020__length__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "dimensionless",
-      "name": "dimensionlessElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__dimensionless",
     },
     Object {
       "expand": false,
       "label": "electric current",
-      "name": "electric__x0020__currentElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__electric__x0020__current",
     },
     Object {
       "expand": false,
       "label": "length per plane angle",
-      "name": "length__x0020__per__x0020__plane__x0020__angleElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length__x0020__per__x0020__plane__x0020__angle",
     },
     Object {
       "expand": false,
       "label": "length per time",
-      "name": "length__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "length time squared per mass",
-      "name": "length__x0020__time__x0020__squared__x0020__per__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length__x0020__time__x0020__squared__x0020__per__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "length to the six power",
-      "name": "length__x0020__to__x0020__the__x0020__six__x0020__powerElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length__x0020__to__x0020__the__x0020__six__x0020__power",
     },
     Object {
       "expand": false,
       "label": "length",
-      "name": "lengthElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length",
     },
     Object {
       "expand": false,
       "label": "lenic mass",
-      "name": "lenic__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__lenic__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "luminous flux per area",
-      "name": "luminous__x0020__flux__x0020__per__x0020__areaElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux__x0020__per__x0020__area",
     },
     Object {
       "expand": false,
       "label": "luminous flux",
-      "name": "luminous__x0020__fluxElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux",
     },
     Object {
       "expand": false,
       "label": "mass area per time cubed electric current",
-      "name": "mass__x0020__area__x0020__per__x0020__time__x0020__cubed__x0020__electric__x0020__currentElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__cubed__x0020__electric__x0020__current",
     },
     Object {
       "expand": false,
       "label": "mass area per time squared plane angle",
-      "name": "mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__plane__x0020__angleElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__plane__x0020__angle",
     },
     Object {
       "expand": false,
       "label": "mass area per time squared temperature mole",
-      "name": "mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__temperature__x0020__moleElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__temperature__x0020__mole",
     },
     Object {
       "expand": false,
       "label": "mass length per time cubed temperature",
-      "name": "mass__x0020__length__x0020__per__x0020__time__x0020__cubed__x0020__temperatureElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__length__x0020__per__x0020__time__x0020__cubed__x0020__temperature",
     },
     Object {
       "expand": false,
       "label": "mass per time squared",
-      "name": "mass__x0020__per__x0020__time__x0020__squaredElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__per__x0020__time__x0020__squared",
     },
     Object {
       "expand": false,
       "label": "mass per volume",
-      "name": "mass__x0020__per__x0020__volumeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__per__x0020__volume",
     },
     Object {
       "expand": false,
       "label": "mass volume per time squared",
-      "name": "mass__x0020__volume__x0020__per__x0020__time__x0020__squaredElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass__x0020__volume__x0020__per__x0020__time__x0020__squared",
     },
     Object {
       "expand": false,
       "label": "mass",
-      "name": "massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass",
     },
     Object {
       "expand": false,
-      "label": "area per time squared temperature",
-      "name": "area__x0020__per__x0020__time__x0020__squared__x0020__temperatureElementAspect",
+      "label": "molar volume",
+      "name": "DgnCustomItemTypes_MyProp__x003A__molar__x0020__volume",
+    },
+    Object {
+      "expand": false,
+      "label": "area per time squared",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared",
     },
     Object {
       "expand": false,
       "label": "mole per time",
-      "name": "mole__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mole__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "mole per volume",
-      "name": "mole__x0020__per__x0020__volumeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mole__x0020__per__x0020__volume",
     },
     Object {
       "expand": false,
       "label": "plane angle per time",
-      "name": "plane__x0020__angle__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "plane angle",
-      "name": "plane__x0020__angleElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle",
     },
     Object {
       "expand": false,
       "label": "quartic length",
-      "name": "quartic__x0020__lengthElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__quartic__x0020__length",
     },
     Object {
       "expand": false,
       "label": "reciprocal area",
-      "name": "reciprocal__x0020__areaElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__area",
     },
     Object {
       "expand": false,
       "label": "reciprocal length",
-      "name": "reciprocal__x0020__lengthElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__length",
     },
     Object {
       "expand": false,
       "label": "reciprocal mass",
-      "name": "reciprocal__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "reciprocal temperature",
-      "name": "reciprocal__x0020__temperatureElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__temperature",
     },
     Object {
       "expand": false,
       "label": "reciprocal time",
-      "name": "reciprocal__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__time",
     },
     Object {
       "expand": false,
       "label": "reciprocal volume",
-      "name": "reciprocal__x0020__volumeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__volume",
     },
     Object {
       "expand": false,
       "label": "square root length per time",
-      "name": "square__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__square__x0020__root__x0020__length__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
       "label": "square root length to the seventh power per square root mass",
-      "name": "square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "temperature per length",
-      "name": "temperature__x0020__per__x0020__lengthElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__temperature__x0020__per__x0020__length",
     },
     Object {
       "expand": false,
       "label": "temperature",
-      "name": "temperatureElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__temperature",
     },
     Object {
       "expand": false,
       "label": "time cubed per mass area",
-      "name": "time__x0020__cubed__x0020__per__x0020__mass__x0020__areaElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time__x0020__cubed__x0020__per__x0020__mass__x0020__area",
     },
     Object {
       "expand": false,
       "label": "time cubed temperature",
-      "name": "time__x0020__cubed__x0020__temperatureElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time__x0020__cubed__x0020__temperature",
     },
     Object {
       "expand": false,
       "label": "time squared per length",
-      "name": "time__x0020__squared__x0020__per__x0020__lengthElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time__x0020__squared__x0020__per__x0020__length",
     },
     Object {
       "expand": false,
       "label": "time squared per mass",
-      "name": "time__x0020__squared__x0020__per__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time__x0020__squared__x0020__per__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "time",
-      "name": "timeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time",
     },
     Object {
       "expand": false,
       "label": "volume per mass",
-      "name": "volume__x0020__per__x0020__massElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__volume__x0020__per__x0020__mass",
     },
     Object {
       "expand": false,
       "label": "volume per Time",
-      "name": "volume__x0020__per__x0020__TimeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__volume__x0020__per__x0020__Time",
     },
     Object {
       "expand": false,
       "label": "volume",
-      "name": "volumeElementAspect",
+      "name": "DgnCustomItemTypes_MyProp__x003A__volume",
     },
     Object {
       "expand": false,
@@ -260,61 +260,7 @@ Object {
   "description": "Physical Object",
   "label": "Physical Object [0-39]",
   "records": Object {
-    "General": Array [
-      PropertyRecord {
-        "description": "Properties_60InstancesWithUrl2",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Model",
-          "name": "PhysicalObject_Model",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "Code",
-          "name": "PhysicalObject_CodeValue",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "User Label",
-          "name": "PhysicalObject_UserLabel",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "description": "Uncategorized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Category",
-          "name": "PhysicalObject_Category",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Uncategorized",
-          "value": 23,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "areaElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__area": Array [
       PropertyRecord {
         "description": "150.1235 cm²",
         "property": Object {
@@ -537,7 +483,7 @@ Object {
         },
       },
     ],
-    "area__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time": Array [
       PropertyRecord {
         "description": "150.1235 cSt",
         "property": Object {
@@ -565,7 +511,7 @@ Object {
         },
       },
     ],
-    "area__x0020__per__x0020__time__x0020__squaredElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared": Array [
       PropertyRecord {
         "description": "1475.699 Btu/lb",
         "property": Object {
@@ -580,7 +526,7 @@ Object {
         },
       },
     ],
-    "area__x0020__per__x0020__time__x0020__squared__x0020__temperatureElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared__x0020__temperature": Array [
       PropertyRecord {
         "description": "14759.0 Btu/(lbm·Δ°R)",
         "property": Object {
@@ -595,22 +541,22 @@ Object {
         },
       },
     ],
-    "cube__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__cube__x0020__root__x0020__length__x0020__per__x0020__time": Array [
       PropertyRecord {
-        "description": "14758.985000000001",
+        "description": "14758.99",
         "property": Object {
           "displayLabel": "ft^(1/3)/s [ft^(1/3)/s]",
           "name": "cube__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect_ft__x005E____x0028__1__x002F__3__x0029____x002F__s__x0020____x005B__ft__x005E____x0028__1__x002F__3__x0029____x002F__s__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "14758.985000000001",
+          "displayValue": "14758.99",
           "value": 14758.985,
           "valueFormat": 0,
         },
       },
     ],
-    "dimensionlessElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__dimensionless": Array [
       PropertyRecord {
         "description": "15845.0 $",
         "property": Object {
@@ -625,7 +571,7 @@ Object {
         },
       },
     ],
-    "electric__x0020__currentElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__electric__x0020__current": Array [
       PropertyRecord {
         "description": "1475.65 KA",
         "property": Object {
@@ -640,7 +586,7 @@ Object {
         },
       },
     ],
-    "lengthElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__length": Array [
       PropertyRecord {
         "description": "1475.96 µin",
         "property": Object {
@@ -655,7 +601,7 @@ Object {
         },
       },
     ],
-    "length__x0020__per__x0020__plane__x0020__angleElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__length__x0020__per__x0020__plane__x0020__angle": Array [
       PropertyRecord {
         "description": "123654.47 in/degree",
         "property": Object {
@@ -670,7 +616,7 @@ Object {
         },
       },
     ],
-    "length__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__length__x0020__per__x0020__time": Array [
       PropertyRecord {
         "description": "15896.698 ft³/(ft²·min)",
         "property": Object {
@@ -685,16 +631,16 @@ Object {
         },
       },
     ],
-    "length__x0020__time__x0020__squared__x0020__per__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__length__x0020__time__x0020__squared__x0020__per__x0020__mass": Array [
       PropertyRecord {
-        "description": "14851",
+        "description": "14851.00",
         "property": Object {
           "displayLabel": "1/Bar [1/Bar]",
           "name": "length__x0020__time__x0020__squared__x0020__per__x0020__massElementAspect___x0031____x002F__Bar__x0020____x005B__1__x002F__Bar__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "14851",
+          "displayValue": "14851.00",
           "value": 14851,
           "valueFormat": 0,
         },
@@ -712,7 +658,7 @@ Object {
         },
       },
     ],
-    "length__x0020__to__x0020__the__x0020__six__x0020__powerElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__length__x0020__to__x0020__the__x0020__six__x0020__power": Array [
       PropertyRecord {
         "description": "14758.964 mm⁶",
         "property": Object {
@@ -727,7 +673,7 @@ Object {
         },
       },
     ],
-    "lenic__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__lenic__x0020__mass": Array [
       PropertyRecord {
         "description": "147.158 lb/ft",
         "property": Object {
@@ -742,7 +688,7 @@ Object {
         },
       },
     ],
-    "luminous__x0020__fluxElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux": Array [
       PropertyRecord {
         "description": "1589.741 lm",
         "property": Object {
@@ -757,7 +703,7 @@ Object {
         },
       },
     ],
-    "luminous__x0020__flux__x0020__per__x0020__areaElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux__x0020__per__x0020__area": Array [
       PropertyRecord {
         "description": "1485.9 lm/ft²",
         "property": Object {
@@ -772,7 +718,7 @@ Object {
         },
       },
     ],
-    "massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass": Array [
       PropertyRecord {
         "description": "14785.5896 µg",
         "property": Object {
@@ -787,7 +733,7 @@ Object {
         },
       },
     ],
-    "mass__x0020__area__x0020__per__x0020__time__x0020__cubed__x0020__electric__x0020__currentElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__cubed__x0020__electric__x0020__current": Array [
       PropertyRecord {
         "description": "1478.5 KV",
         "property": Object {
@@ -802,7 +748,7 @@ Object {
         },
       },
     ],
-    "mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__plane__x0020__angleElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__plane__x0020__angle": Array [
       PropertyRecord {
         "description": "14758.36 N·m/deg",
         "property": Object {
@@ -817,7 +763,7 @@ Object {
         },
       },
     ],
-    "mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__temperature__x0020__moleElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__area__x0020__per__x0020__time__x0020__squared__x0020__temperature__x0020__mole": Array [
       PropertyRecord {
         "description": "14758.5 Btu/(lb-mol·Δ°R)",
         "property": Object {
@@ -832,22 +778,22 @@ Object {
         },
       },
     ],
-    "mass__x0020__length__x0020__per__x0020__time__x0020__cubed__x0020__temperatureElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__length__x0020__per__x0020__time__x0020__cubed__x0020__temperature": Array [
       PropertyRecord {
-        "description": "123456799",
+        "description": "123456799.00",
         "property": Object {
           "displayLabel": "(in·lbf)/(s·in·°F) [inch pound force per second inch fahrenheit]",
           "name": "mass__x0020__length__x0020__per__x0020__time__x0020__cubed__x0020__temperatureElementAspect___x0028__in__x00B7__lbf__x0029____x002F____x0028__s__x00B7__in__x00B7____x00B0__F__x0029____x0020____x005B__inch__x0020__pound__x0020__force__x0020__per__x0020__second__x0020__inch__x0020__fahrenheit__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "123456799",
+          "displayValue": "123456799.00",
           "value": 123456799,
           "valueFormat": 0,
         },
       },
     ],
-    "mass__x0020__per__x0020__time__x0020__squaredElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__per__x0020__time__x0020__squared": Array [
       PropertyRecord {
         "description": "1232584.897489 lbf/in",
         "property": Object {
@@ -862,7 +808,7 @@ Object {
         },
       },
     ],
-    "mass__x0020__per__x0020__volumeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__per__x0020__volume": Array [
       PropertyRecord {
         "description": "45896318.0 µg/L",
         "property": Object {
@@ -877,22 +823,22 @@ Object {
         },
       },
     ],
-    "mass__x0020__volume__x0020__per__x0020__time__x0020__squaredElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mass__x0020__volume__x0020__per__x0020__time__x0020__squared": Array [
       PropertyRecord {
-        "description": "15789.458000000001",
+        "description": "15789.46",
         "property": Object {
           "displayLabel": "lbf·ft² [pound force foot squared]",
           "name": "mass__x0020__volume__x0020__per__x0020__time__x0020__squaredElementAspect_lbf__x00B7__ft__x00B2____x0020____x005B__pound__x0020__force__x0020__foot__x0020__squared__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "15789.458000000001",
+          "displayValue": "15789.46",
           "value": 15789.458,
           "valueFormat": 0,
         },
       },
     ],
-    "molar__x0020__volumeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__molar__x0020__volume": Array [
       PropertyRecord {
         "description": "0.5689 ft³/lb-mol",
         "property": Object {
@@ -907,7 +853,7 @@ Object {
         },
       },
     ],
-    "mole__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mole__x0020__per__x0020__time": Array [
       PropertyRecord {
         "description": "123456.78 kmol/s",
         "property": Object {
@@ -922,22 +868,22 @@ Object {
         },
       },
     ],
-    "mole__x0020__per__x0020__volumeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__mole__x0020__per__x0020__volume": Array [
       PropertyRecord {
-        "description": "0.123456",
+        "description": "0.12",
         "property": Object {
           "displayLabel": "lb-mol/ft³ [pound mole per foot cubed]",
           "name": "mole__x0020__per__x0020__volumeElementAspect_lb__x002D__mol__x002F__ft__x00B3____x0020____x005B__pound__x0020__mole__x0020__per__x0020__foot__x0020__cubed__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "0.123456",
+          "displayValue": "0.12",
           "value": 0.123456,
           "valueFormat": 0,
         },
       },
     ],
-    "plane__x0020__angleElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle": Array [
       PropertyRecord {
         "description": "0.01233 quadrants",
         "property": Object {
@@ -952,7 +898,7 @@ Object {
         },
       },
     ],
-    "plane__x0020__angle__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle__x0020__per__x0020__time": Array [
       PropertyRecord {
         "description": "0.02 cycle/sec",
         "property": Object {
@@ -967,7 +913,7 @@ Object {
         },
       },
     ],
-    "quartic__x0020__lengthElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__quartic__x0020__length": Array [
       PropertyRecord {
         "description": "123456789.12345 ft⁴",
         "property": Object {
@@ -982,7 +928,7 @@ Object {
         },
       },
     ],
-    "reciprocal__x0020__areaElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__area": Array [
       PropertyRecord {
         "description": "1234567.89 p/ft²",
         "property": Object {
@@ -997,7 +943,7 @@ Object {
         },
       },
     ],
-    "reciprocal__x0020__lengthElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__length": Array [
       PropertyRecord {
         "description": "12345.6789 1/mile",
         "property": Object {
@@ -1012,22 +958,22 @@ Object {
         },
       },
     ],
-    "reciprocal__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__mass": Array [
       PropertyRecord {
-        "description": "123.456789",
+        "description": "123.46",
         "property": Object {
           "displayLabel": "1/tn(short) [one per short ton]",
           "name": "reciprocal__x0020__massElementAspect___x0031____x002F__tn__x0028__short__x0029____x0020____x005B__one__x0020__per__x0020__short__x0020__ton__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "123.456789",
+          "displayValue": "123.46",
           "value": 123.456789,
           "valueFormat": 0,
         },
       },
     ],
-    "reciprocal__x0020__temperatureElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__temperature": Array [
       PropertyRecord {
         "description": "0.0 1/Δ°R",
         "property": Object {
@@ -1042,67 +988,67 @@ Object {
         },
       },
     ],
-    "reciprocal__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__time": Array [
       PropertyRecord {
-        "description": "123456.789",
+        "description": "123456.79",
         "property": Object {
           "displayLabel": "grf/(h·ft²·inHg) [Grain mass per hour per foot squared per inch Mercury conventional]",
           "name": "reciprocal__x0020__timeElementAspect_grf__x002F____x0028__h__x00B7__ft__x00B2____x00B7__inHg__x0029____x0020____x005B__Grain__x0020__mass__x0020__per__x0020__hour__x0020__per__x0020__foot__x0020__squared__x0020__per__x0020__inch__x0020__Mercury__x0020__conventional__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "123456.789",
+          "displayValue": "123456.79",
           "value": 123456.789,
           "valueFormat": 0,
         },
       },
     ],
-    "reciprocal__x0020__volumeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__reciprocal__x0020__volume": Array [
       PropertyRecord {
-        "description": "1.2345999999999999",
+        "description": "1.23",
         "property": Object {
           "displayLabel": "1/ million gal",
           "name": "reciprocal__x0020__volumeElementAspect___x0031____x002F____x0020__million__x0020__gal",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1.2345999999999999",
+          "displayValue": "1.23",
           "value": 1.2346,
           "valueFormat": 0,
         },
       },
     ],
-    "square__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__square__x0020__root__x0020__length__x0020__per__x0020__time": Array [
       PropertyRecord {
-        "description": "1234.56789",
+        "description": "1234.57",
         "property": Object {
           "displayLabel": "ft^(1/2)/s [ft^(1/2)/s]",
           "name": "square__x0020__root__x0020__length__x0020__per__x0020__timeElementAspect_ft__x005E____x0028__1__x002F__2__x0029____x002F__s__x0020____x005B__ft__x005E____x0028__1__x002F__2__x0029____x002F__s__x005D__",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1234.56789",
+          "displayValue": "1234.57",
           "value": 1234.56789,
           "valueFormat": 0,
         },
       },
     ],
-    "square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__mass": Array [
       PropertyRecord {
-        "description": "1.2345999999999999",
+        "description": "1.23",
         "property": Object {
           "displayLabel": "Gallon per minute per square root pounds per inch squared",
           "name": "square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__massElementAspect_Gallon__x0020__per__x0020__minute__x0020__per__x0020__square__x0020__root__x0020__pounds__x0020__per__x0020__inch__x0020__squared",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1.2345999999999999",
+          "displayValue": "1.23",
           "value": 1.2346,
           "valueFormat": 0,
         },
       },
     ],
-    "temperatureElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__temperature": Array [
       PropertyRecord {
         "description": "0.0 Δ°C",
         "property": Object {
@@ -1117,7 +1063,7 @@ Object {
         },
       },
     ],
-    "temperature__x0020__per__x0020__lengthElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__temperature__x0020__per__x0020__length": Array [
       PropertyRecord {
         "description": "123.456789 ΔK/m",
         "property": Object {
@@ -1132,7 +1078,7 @@ Object {
         },
       },
     ],
-    "timeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__time": Array [
       PropertyRecord {
         "description": "1234.56789 days",
         "property": Object {
@@ -1147,22 +1093,22 @@ Object {
         },
       },
     ],
-    "time__x0020__cubed__x0020__per__x0020__mass__x0020__areaElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__time__x0020__cubed__x0020__per__x0020__mass__x0020__area": Array [
       PropertyRecord {
-        "description": "1234.56789",
+        "description": "1234.57",
         "property": Object {
           "displayLabel": "one per kilowat",
           "name": "time__x0020__cubed__x0020__per__x0020__mass__x0020__areaElementAspect_one__x0020__per__x0020__kilowat",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1234.56789",
+          "displayValue": "1234.57",
           "value": 1234.56789,
           "valueFormat": 0,
         },
       },
     ],
-    "time__x0020__cubed__x0020__temperatureElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__time__x0020__cubed__x0020__temperature": Array [
       PropertyRecord {
         "description": "1.2346 ft²·h·Δ°F/Btu",
         "property": Object {
@@ -1177,37 +1123,37 @@ Object {
         },
       },
     ],
-    "time__x0020__squared__x0020__per__x0020__lengthElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__time__x0020__squared__x0020__per__x0020__length": Array [
       PropertyRecord {
-        "description": "1.2345999999999999",
+        "description": "1.23",
         "property": Object {
           "displayLabel": "kg/kW h",
           "name": "time__x0020__squared__x0020__per__x0020__lengthElementAspect_kg__x002F__kW__x0020__h",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1.2345999999999999",
+          "displayValue": "1.23",
           "value": 1.2346,
           "valueFormat": 0,
         },
       },
     ],
-    "time__x0020__squared__x0020__per__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__time__x0020__squared__x0020__per__x0020__mass": Array [
       PropertyRecord {
-        "description": "1.2345999999999999",
+        "description": "1.23",
         "property": Object {
           "displayLabel": "1/Btu",
           "name": "time__x0020__squared__x0020__per__x0020__massElementAspect___x0031____x002F__Btu",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1.2345999999999999",
+          "displayValue": "1.23",
           "value": 1.2346,
           "valueFormat": 0,
         },
       },
     ],
-    "volumeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__volume": Array [
       PropertyRecord {
         "description": "1.2346 thousand gal",
         "property": Object {
@@ -1222,7 +1168,7 @@ Object {
         },
       },
     ],
-    "volume__x0020__per__x0020__TimeElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__volume__x0020__per__x0020__Time": Array [
       PropertyRecord {
         "description": "123456789.0 acre·ft/day",
         "property": Object {
@@ -1367,14 +1313,14 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "123.456789",
+        "description": "123.46",
         "property": Object {
           "displayLabel": "gpd/capita",
           "name": "volume__x0020__per__x0020__TimeElementAspect_gpd__x002F__capita",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "123.456789",
+          "displayValue": "123.46",
           "value": 123.456789,
           "valueFormat": 0,
         },
@@ -1406,33 +1352,33 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "123456.789",
+        "description": "123456.79",
         "property": Object {
           "displayLabel": "million gal(impl)/day",
           "name": "volume__x0020__per__x0020__TimeElementAspect_million__x0020__gal__x0028__impl__x0029____x002F__day",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "123456.789",
+          "displayValue": "123456.79",
           "value": 123456.789,
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "1234567.8899999999",
+        "description": "1234567.89",
         "property": Object {
           "displayLabel": "ML/day",
           "name": "volume__x0020__per__x0020__TimeElementAspect_ML__x002F__day",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "1234567.8899999999",
+          "displayValue": "1234567.89",
           "value": 1234567.89,
           "valueFormat": 0,
         },
       },
     ],
-    "volume__x0020__per__x0020__massElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__volume__x0020__per__x0020__mass": Array [
       PropertyRecord {
         "description": "1.234568 ft³/lm",
         "property": Object {
@@ -1447,56 +1393,110 @@ Object {
         },
       },
     ],
-    "workingUnitsPropElementAspect": Array [
+    "DgnCustomItemTypes_MyProp__x003A__workingUnitsProp": Array [
       PropertyRecord {
-        "description": "150.123456",
+        "description": "150.12",
         "property": Object {
           "displayLabel": "Distance",
           "name": "workingUnitsPropElementAspect_Distance",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "150.123456",
+          "displayValue": "150.12",
           "value": 150.123456,
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "2.6201485916728364",
+        "description": "2.62",
         "property": Object {
           "displayLabel": "Angle",
           "name": "workingUnitsPropElementAspect_Angle",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "2.6201485916728364",
+          "displayValue": "2.62",
           "value": 2.6201485916728364,
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "150.123456",
+        "description": "150.12",
         "property": Object {
           "displayLabel": "Area",
           "name": "workingUnitsPropElementAspect_Area",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "150.123456",
+          "displayValue": "150.12",
           "value": 150.123456,
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "150.123456",
+        "description": "150.12",
         "property": Object {
           "displayLabel": "Volume",
           "name": "workingUnitsPropElementAspect_Volume",
           "typename": "double",
         },
         "value": Object {
-          "displayValue": "150.123456",
+          "displayValue": "150.12",
           "value": 150.123456,
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "General": Array [
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Model",
+          "name": "PhysicalObject_Model",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Code",
+          "name": "PhysicalObject_CodeValue",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "User Label",
+          "name": "PhysicalObject_UserLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Uncategorized",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Category",
+          "name": "PhysicalObject_Category",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Uncategorized",
+          "value": 23,
           "valueFormat": 0,
         },
       },

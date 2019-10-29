@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -60,7 +60,7 @@ export class ConfigurableUiManager {
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
    * [[WidgetControl]] or
-   * [ToolUiProvider]($framework).
+   * [ToolUiProvider]($ui-framework).
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
@@ -192,4 +192,12 @@ export class ConfigurableUiManager {
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
     KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
   }
+
+  /** Gets the HTML wrapper element for Configurable UI */
+  public static getWrapperElement(): HTMLElement {
+    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    const htmlElement = wrapper!;
+    return htmlElement;
+  }
+
 }

@@ -22,10 +22,15 @@ describe("<Panel />", () => {
   });
 
   it("isPanelOpen should return true", () => {
-    const wrapper = mount(<Panel />, { attachTo: document.body });
+    const attachTo = document.createElement("div");
+    document.body.appendChild(attachTo);
+
+    const wrapper = mount(<Panel />, { attachTo });
     expect(Panel.isPanelOpen).to.be.true;
     wrapper.detach();
     wrapper.unmount();
+
+    document.body.removeChild(attachTo);
   });
 
 });

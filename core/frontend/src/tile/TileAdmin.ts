@@ -85,6 +85,12 @@ export abstract class TileAdmin {
    */
   public abstract getNumRequestsForViewport(vp: Viewport): number;
 
+  /** Returns the current set of Tiles requested by the specified Viewport.
+   * Do not modify the set or the Tiles.
+   * @internal
+   */
+  public abstract getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
+
   /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
    * Any requests which are of interest only to the specified viewport will be canceled.
    * @internal
@@ -547,8 +553,12 @@ class Admin extends TileAdmin {
   }
 
   public getNumRequestsForViewport(vp: Viewport): number {
-    const requests = this._requestsPerViewport.get(vp);
+    const requests = this.getRequestsForViewport(vp);
     return undefined !== requests ? requests.size : 0;
+  }
+
+  public getRequestsForViewport(vp: Viewport): Set<Tile> | undefined {
+    return this._requestsPerViewport.get(vp);
   }
 
   public requestTiles(vp: Viewport, tiles: Set<Tile>): void {

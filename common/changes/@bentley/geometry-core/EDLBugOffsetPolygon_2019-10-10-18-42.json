@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#193588 bugs in PolygonOffsetContext",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

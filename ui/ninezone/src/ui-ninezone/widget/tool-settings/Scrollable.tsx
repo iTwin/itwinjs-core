@@ -79,17 +79,17 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
   }
 
   private _updateScrollIndicatorVisibility = () => {
-    this.setState(() => {
-      const content = this._content.current;
-      if (!content)
-        return;
+    const content = this._content.current;
+    if (!content)
+      return;
 
-      const bottomOverflow = Math.floor(content.scrollHeight - content.clientHeight - content.scrollTop);
-      return {
-        isBottomIndicatorVisible: (bottomOverflow > 0),
-        isTopIndicatorVisible: (content.scrollTop > 0),
-      };
-    });
+    const bottomOverflow = Math.floor(content.scrollHeight - content.clientHeight - content.scrollTop);
+    const isBottomIndicatorVisible = (bottomOverflow > 0);
+    const isTopIndicatorVisible = (content.scrollTop > 0);
+    return {
+      isBottomIndicatorVisible,
+      isTopIndicatorVisible,
+    };
   }
 
   private _scrollTop = () => {

@@ -31,7 +31,6 @@ exports[`WidgetStack should not be resizable in stage panel 1`] = `
           "4": Array [],
           "6": Array [
             Object {
-              "betaBadge": false,
               "title": "W6T1",
             },
           ],
@@ -55,7 +54,7 @@ exports[`WidgetStack should not render w/o tabs 1`] = `""`;
 
 exports[`WidgetStackTab should render with beta badge 1`] = `
 <Tab
-  badge={<BetaBadge />}
+  badge={<Unknown />}
   horizontalAnchor={0}
   isCollapsed={false}
   isProtruding={false}
@@ -81,7 +80,6 @@ exports[`WidgetStackTabGroup should render with HandleMode.Hovered 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={0}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-0"
@@ -101,7 +99,6 @@ exports[`WidgetStackTabGroup should render with HandleMode.Hovered 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={1}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-1"
@@ -126,7 +123,6 @@ exports[`WidgetStackTabGroup should render with HandleMode.Visible 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={0}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-0"
@@ -152,7 +148,6 @@ exports[`WidgetStackTabGroup should render with HandleMode.Visible 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={1}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-1"
@@ -183,7 +178,6 @@ exports[`WidgetStackTabGroup should render with draggedWidget 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={0}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-0"
@@ -209,7 +203,6 @@ exports[`WidgetStackTabGroup should render with draggedWidget 1`] = `
   <WidgetStackTab
     horizontalAnchor={0}
     index={1}
-    isBetaBadgeVisible={false}
     isCollapsed={false}
     isProtruding={false}
     key="6-1"

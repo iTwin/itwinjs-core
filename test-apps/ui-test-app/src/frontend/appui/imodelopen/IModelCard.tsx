@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import { UiFramework, IModelInfo } from "@bentley/ui-framework";
 
@@ -14,7 +13,6 @@ import "./IModelCard.scss";
 export interface IModelCardProps {
   showDescription?: boolean;
   iModel: IModelInfo;
-  accessToken: AccessToken;
   onSelectIModel?: (iModelInfo: IModelInfo) => void;
 }
 
@@ -47,7 +45,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   private async startRetrieveThumbnail(thisIModel: IModelInfo) {
     this.setState({ waitingForThumbnail: true });
-    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(this.props.accessToken, thisIModel.projectInfo.wsgId, thisIModel.wsgId);
+    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.projectInfo.wsgId, thisIModel.wsgId);
     this.setState({ waitingForThumbnail: false });
   }
 

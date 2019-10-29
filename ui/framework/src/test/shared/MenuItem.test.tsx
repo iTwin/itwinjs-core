@@ -7,10 +7,10 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
+import { BadgeType } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
 
-import { MenuItem, MenuItemHelpers } from "../../ui-framework/shared/MenuItem";
-import { MenuItemProps } from "../../ui-framework/shared/ItemProps";
+import { MenuItem, MenuItemProps, MenuItemHelpers } from "../../ui-framework/shared/MenuItem";
 import { render, cleanup } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 
@@ -109,7 +109,7 @@ describe("MenuItem", () => {
   it("createMenuItemNodes should create a valid MenuItem", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+        id: "test", badgeType: BadgeType.New, item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
       },
     ];
 
@@ -121,20 +121,22 @@ describe("MenuItem", () => {
 
     const wrapper = mount(<div>{menuItemNodes}</div>);
     expect(wrapper.find(ContextMenuItem).length).to.eq(1);
+    expect(wrapper.find(".core-badge").length).to.eq(1);
 
     wrapper.unmount();
   });
 
   it("onSelect handled correctly on click", async () => {
     const handleSelect = sinon.fake();
+    const handleSelect2 = sinon.fake();
 
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: handleSelect },
+        id: "test", item: { label: "test label", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: handleSelect },
       },
     ];
 
-    const menuItems = MenuItemHelpers.createMenuItems(menuItemProps);
+    const menuItems = MenuItemHelpers.createMenuItems(menuItemProps, handleSelect2);
     expect(menuItems.length).to.eq(1);
 
     const menuItemNodes = MenuItemHelpers.createMenuItemNodes(menuItems);
@@ -146,6 +148,8 @@ describe("MenuItem", () => {
 
     await TestUtils.flushAsyncOperations();
     handleSelect.should.have.been.calledOnce;
+    handleSelect2.should.have.been.calledOnce;
+    expect(component.container.querySelector(".core-badge")).not.to.be.null;
 
     cleanup();
   });

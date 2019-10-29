@@ -15,7 +15,7 @@ export interface WithContainInProps {
   /** Function called to determine the actual bounds of wrapped component. See: [[contain]], [[containHorizontally]], [containVertically]. */
   containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
   /** Container in which the wrapped component is contained. By default contains component in viewport. */
-  container?: React.RefObject<HTMLElement>;
+  container?: HTMLElement | null;
 }
 
 /** Contains the component bounds both vertically and horizontally. This is default containment method for [[withContainIn]].
@@ -59,10 +59,10 @@ export const withContainIn = <ComponentProps extends {}>(
 
     /** @internal */
     public getContainerBounds(): Rectangle {
-      if (!this.props.container || !this.props.container.current)
+      if (!this.props.container)
         return new Rectangle(0, 0, window.innerWidth, window.innerHeight);
 
-      const containerBounds = this.props.container.current.getBoundingClientRect();
+      const containerBounds = this.props.container.getBoundingClientRect();
       return new Rectangle(containerBounds.left, containerBounds.top, containerBounds.right, containerBounds.bottom);
     }
 

@@ -76,7 +76,7 @@ describe("Favorite Properties", () => {
   it("favorites all properties under nested content field when merged property record is favorited", async () => {
     propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }, { className: "Generic:PhysicalObject", id: "0x74" }]);
     let propertyData = await propertiesDataProvider.getData();
-    expect(propertyData.categories.length).to.be.eq(7);
+    expect(propertyData.categories.length).to.be.eq(10);
     expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.false;
 
     // find the property record to make the property favorite
@@ -87,7 +87,7 @@ describe("Favorite Properties", () => {
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     propertyData = await propertiesDataProvider.getData();
 
-    expect(propertyData.categories.length).to.eq(5);
+    expect(propertyData.categories.length).to.eq(6);
     expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
     expect(propertyData.records[favoritesCategoryName].length).to.eq(17);
   });

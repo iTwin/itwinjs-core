@@ -65,6 +65,30 @@
     },
     "ToggleToolTips": {
       "keyin": "fdt tooltips"
+    },
+    "ChangeHiliteSettings": {
+      "keyin": "fdt hilite settings"
+    },
+    "ChangeEmphasisSettings": {
+      "keyin": "fdt emphasis settings"
+    },
+    "ChangeUnits": {
+      "keyin": "fdt metric"
+    },
+    "FadeOut": {
+      "keyin": "fdt fadeout"
+    },
+    "VCIntersectOn": {
+      "keyin": "fdt vcintersect on"
+    },
+    "VCIntersectOff": {
+      "keyin": "fdt vcintersect off"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
     }
   }
 }

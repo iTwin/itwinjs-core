@@ -9,7 +9,6 @@ exports[`<ToolSettingsPopup /> renders correctly 1`] = `
   position={5}
   showArrow={true}
   showShadow={false}
-  target={null}
   top={-1}
 >
   <div

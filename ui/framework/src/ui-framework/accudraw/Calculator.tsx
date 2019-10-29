@@ -6,6 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+
+import { OnNumberCommitFunc, OnCancelFunc } from "@bentley/ui-abstract";
 import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput, Icon } from "@bentley/ui-core";
 
 import { SquareButton, SquareButtonProps } from "./SquareButton";
@@ -18,18 +20,13 @@ import backspaceIcon from "./backspace.svg";
 // cSpell:ignore plusmn
 
 /** @alpha */
-export type OnCommitFunc = (value: number) => void;
-/** @alpha */
-export type OnCancelFunc = () => void;
-
-/** @alpha */
 export interface CalculatorProps extends CommonProps {
   /** Initial value */
   initialValue?: number;
   /** Icon to display beside the calculated result */
   resultIcon?: React.ReactNode;
   /** A function to be run when the OK button is clicked */
-  onOk?: OnCommitFunc;
+  onOk?: OnNumberCommitFunc;
   /** A function to be run when the Cancel button is clicked */
   onCancel?: OnCancelFunc;
 

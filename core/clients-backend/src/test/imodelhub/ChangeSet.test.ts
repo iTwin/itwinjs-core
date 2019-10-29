@@ -56,7 +56,7 @@ function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   mockPostUpdatedChangeSet(imodelId, changeSet);
 }
 
-describe("iModelHub ChangeSetHandler", () => {
+describe("iModelHub ChangeSetHandler (#iModelBank)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -140,7 +140,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://"));
+      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
@@ -248,7 +248,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://"));
+      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 

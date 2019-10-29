@@ -18,6 +18,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   BeTimePoint,
+  IDisposable,
   Id64,
   Id64String,
   StopWatch,
@@ -35,10 +36,11 @@ import {
   PlanarClassifierMap,
   PrimitiveVisibility,
   RenderPlan,
-  RenderSolarShadowMap,
+  RenderPlanarClassifier,
   RenderSystem,
   RenderTarget,
   RenderTargetDebugControl,
+  RenderTextureDrape,
   TextureDrapeMap,
 } from "../System";
 import {
@@ -52,8 +54,11 @@ import {
   Npc,
   RenderMode,
   RenderTexture,
+  SpatialClassificationProps,
   ViewFlags,
 } from "@bentley/imodeljs-common";
+import { freeDrawParams } from "./ScratchDrawParams";
+import { Primitive } from "./Primitive";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -72,7 +77,6 @@ import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { PlanarClassifier } from "./PlanarClassifier";
-import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { TextureDrape } from "./TextureDrape";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ClipDef } from "./TechniqueFlags";
@@ -81,6 +85,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
+import { SceneContext } from "../../ViewContext";
 
 // tslint:disable:no-const-enum
 
@@ -172,32 +177,6 @@ export class Clips {
     if (this._clipActive > 0)
       this._clipActive--;
   }
-}
-
-/** Active classifiers (used during draw) - only the innermost is used.
- * @internal
- */
-export class PlanarClassifiers {
-  private _classifiers: PlanarClassifier[] = new Array<PlanarClassifier>();
-
-  public get classifier(): PlanarClassifier | undefined { return this._classifiers.length === 0 ? undefined : this._classifiers[this._classifiers.length - 1]; }
-  public get isValid(): boolean { return this._classifiers.length > 0; }
-
-  public push(texture: PlanarClassifier) { this._classifiers.push(texture); }
-  public pop() { this._classifiers.pop(); }
-}
-
-/** Active texture drapes (used during draw) - only the innermost is used.
- * @internal
- */
-export class TextureDrapes {
-  private _drapes: TextureDrape[] = new Array<TextureDrape>();
-
-  public get drape(): TextureDrape | undefined { return this._drapes.length === 0 ? undefined : this._drapes[this._drapes.length - 1]; }
-  public get isValid(): boolean { return this._drapes.length > 0; }
-
-  public push(texture: TextureDrape) { this._drapes.push(texture); }
-  public pop() { this._drapes.pop(); }
 }
 
 /** @internal */
@@ -303,8 +282,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _activeClipVolume?: ClipVolume;
   private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
-  public readonly activePlanarClassifiers = new PlanarClassifiers();
-  public readonly activeTextureDrapes = new TextureDrapes();
   protected _fbo?: FrameBuffer;
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
@@ -314,6 +291,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readonly monoColor = FloatRgba.fromColorDef(ColorDef.white);
   public hiliteSettings = new Hilite.Settings();
   public hiliteColor = FloatRgba.fromColorDef(this.hiliteSettings.color);
+  public emphasisSettings = new Hilite.Settings();
+  public emphasisColor = FloatRgba.fromColorDef(this.emphasisSettings.color);
   public readonly planFrustum = new Frustum();
   public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
@@ -333,12 +312,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
+  private _currentlyDrawingClassifier?: PlanarClassifier;
   public isFadeOutActive = false;
-  private _solarShadowMap?: SolarShadowMap;
-  private _backgroundMapDrape?: BackgroundMapDrape;
+  public activeVolumeClassifierTexture?: WebGLTexture;
+  public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
 
   // RenderTargetDebugControl
   public useLogZ = true;
+  public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public get debugControl(): RenderTargetDebugControl { return this; }
@@ -363,7 +344,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   public set currentOverrides(ovr: FeatureOverrides | undefined) {
     // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
-    this._currentOverrides = (undefined !== ovr && ovr.anyOverridden) ? ovr : undefined;
+    if (undefined !== ovr && ovr.anyOverridden)
+      this._currentOverrides = ovr;
+    else
+      this._currentOverrides = undefined;
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -383,7 +367,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
-  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
+  public get solarShadowMap(): SolarShadowMap | undefined { return this.compositor.solarShadowMap; }
+  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
+    return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
+  }
+  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier {
+    return PlanarClassifier.create(properties, this);
+  }
+  public getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
+    return undefined !== this._textureDrapes ? this._textureDrapes.get(id) : undefined;
+  }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
@@ -394,6 +387,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       vf.clipVolume = false;
 
       vf.lighting = !this.is2d;
+      vf.shadows = false; // don't want shadows applied to these
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -406,6 +400,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
+  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this._stack.top.planarClassifier; }
+  public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
+  public get currentTextureDrape(): TextureDrape | undefined {
+    const drape = this._stack.top.textureDrape;
+    return undefined !== drape && drape.isReady ? drape : undefined;
+  }
+  public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
+    const drape = this.currentTextureDrape;
+    return undefined === drape ? this.currentPlanarClassifier : drape;
+  }
 
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
@@ -438,15 +442,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
     this._stack.pushBranch(branch);
     const clip = this._stack.top.clipVolume;
-    if (undefined !== clip) {
+    if (undefined !== clip)
       clip.pushToShaderExecutor(exec);
-    }
-    const planarClassifier = this._stack.top.planarClassifier;
-    if (undefined !== planarClassifier)
-      planarClassifier.push(exec);
-    const textureDrape = this._stack.top.textureDrape;
-    if (undefined !== textureDrape && textureDrape.isReady)
-      textureDrape.push(exec);
   }
   public pushState(state: BranchState) {
     assert(undefined === state.clipVolume);
@@ -455,16 +452,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
   public popBranch(): void {
     const clip = this._stack.top.clipVolume;
-    if (undefined !== clip) {
+    if (undefined !== clip)
       clip.pop(this);
-    }
-    const planarClassifier = this._stack.top.planarClassifier;
-    if (undefined !== planarClassifier)
-      planarClassifier.pop(this);
-
-    const textureDrape = this._stack.top.textureDrape;
-    if (undefined !== textureDrape && textureDrape.isReady)
-      textureDrape.pop(this);
 
     this._stack.pop();
   }
@@ -566,6 +555,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._wantAmbientOcclusion;
   }
 
+  public updateSolarShadows(context: SceneContext | undefined): void {
+    this.compositor.updateSolarShadows(context);
+  }
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -587,22 +580,33 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changeOverlayGraphics(overlayGraphics: GraphicList) {
     this._overlayGraphics = overlayGraphics;
   }
-  public changeTextureDrapes(textureDrapes: TextureDrapeMap) {
-    if (this._textureDrapes)
-      for (const textureDrape of this._textureDrapes)
-        textureDrape[1].dispose();
 
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
+    if (undefined === newMap) {
+      if (undefined !== oldMap)
+        for (const value of oldMap.values())
+          value.dispose();
+
+      return;
+    }
+
+    if (undefined !== oldMap) {
+      for (const entry of oldMap)
+        if (newMap.get(entry[0]) !== entry[1])
+          entry[1].dispose();
+    }
+  }
+  public changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined) {
+    this.changeDrapesOrClassifiers<RenderTextureDrape>(this._textureDrapes, textureDrapes);
     this._textureDrapes = textureDrapes;
   }
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
-    if (this._planarClassifiers)
-      for (const planarClassifier of this._planarClassifiers)
-        planarClassifier[1].dispose();
-
+    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
+
   }
-  public changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void {
-    this._solarShadowMap = solarShadowMap as SolarShadowMap;
+  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void {
+    this.activeVolumeClassifierProps = props;
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -716,6 +720,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
       this._worldDecorations = dispose(this._worldDecorations);
+
+      // Turn off shadows if switching from 3d to 2d
+      if (!plan.is3d)
+        this.updateSolarShadows(undefined);
     }
 
     if (!this.assignDC()) {
@@ -727,6 +735,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.monoColor.setColorDef(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
     this.hiliteColor.setColorDef(this.hiliteSettings.color);
+    this.emphasisSettings = plan.emphasisSettings;
+    this.emphasisColor.setColorDef(this.emphasisSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
@@ -739,6 +749,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+    if (!plan.is3d)
+      vf.renderMode = RenderMode.Wireframe;
+
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
@@ -823,7 +836,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._decorations = dispose(this._decorations);
     this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
-    this._backgroundMapDrape = dispose(this._backgroundMapDrape);
+
+    this.changePlanarClassifiers(undefined);
+    this.changeTextureDrapes(undefined);
 
     // Clear render commands
     this._renderCommands.clear();
@@ -837,6 +852,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._batches = [];
 
     this._activeClipVolume = dispose(this._activeClipVolume);
+
+    freeDrawParams();
+    ShaderProgramExecutor.freeParams();
+    Primitive.freeParams();
   }
 
   public get wantInvertBlackBackground(): boolean { return false; }
@@ -887,6 +906,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
     }
 
+    const glTimer = System.instance.glTimer;
+    glTimer.beginFrame();
     if (this.performanceMetrics) this.performanceMetrics.startNewFrame(sceneMilSecElapsed);
     this._beginPaint();
 
@@ -918,20 +939,32 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.compositor.preDraw();
 
       this.recordPerformanceMetric("Begin Draw Planar Classifiers");
+      glTimer.beginOperation("Planar Classifiers");
       this.drawPlanarClassifiers();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Draw Shadow Maps");
+      glTimer.beginOperation("Shadow Maps");
       this.drawSolarShadowMap();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Draw Texture Drapes");
+      glTimer.beginOperation("Texture Drapes");
       this.drawTextureDrapes();
+      glTimer.endOperation();
       this.recordPerformanceMetric("Begin Paint");
+      glTimer.beginOperation("Init Commands");
       this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
+      glTimer.endOperation();
 
       this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this._stack.pushState(this.decorationState);
+      glTimer.beginOperation("World Overlays");
       this.drawPass(RenderPass.WorldOverlay);
+      glTimer.endOperation();
+      glTimer.beginOperation("View Overlays");
       this.drawPass(RenderPass.ViewOverlay);
+      glTimer.endOperation();
       this._stack.pop();
 
       this.recordPerformanceMetric("Overlay Draws");
@@ -942,6 +975,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this._endPaint();
     this.recordPerformanceMetric("End Paint");
+    glTimer.endFrame();
 
     if (this.performanceMetrics) {
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {
@@ -1240,12 +1274,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public drawPlanarClassifiers() {
-    if (this._planarClassifiers)
-      this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
+    if (this._planarClassifiers) {
+      this._planarClassifiers.forEach((classifier) => {
+        this._currentlyDrawingClassifier = classifier as PlanarClassifier;
+        this._currentlyDrawingClassifier.draw(this);
+        this._currentlyDrawingClassifier = undefined;
+      });
+    }
   }
   public drawSolarShadowMap() {
-    if (this._solarShadowMap)
-      (this._solarShadowMap as SolarShadowMap).draw(this);
+    if (this.solarShadowMap && this.solarShadowMap.isEnabled)
+      this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {
     if (this._textureDrapes)
@@ -1295,6 +1334,8 @@ export class OnScreenTarget extends Target {
   private _usingWebGLCanvas = false;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private _animationFraction: number = 0;
+  private _scratchProgParams?: ShaderProgramParams;
+  private _scratchDrawParams?: DrawParams;
 
   private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
@@ -1307,6 +1348,9 @@ export class OnScreenTarget extends Target {
   public dispose() {
     this._fbo = dispose(this._fbo);
     this._blitGeom = dispose(this._blitGeom);
+    this._scratchProgParams = undefined;
+    this._scratchDrawParams = undefined;
+
     super.dispose();
   }
 
@@ -1367,17 +1411,15 @@ export class OnScreenTarget extends Target {
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
-  private static _progParams?: ShaderProgramParams;
-  private static _drawParams?: DrawParams;
-  private static getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
-    if (undefined === this._progParams) {
-      this._progParams = new ShaderProgramParams();
-      this._drawParams = new DrawParams();
+  private getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
+    if (undefined === this._scratchProgParams) {
+      this._scratchProgParams = new ShaderProgramParams();
+      this._scratchDrawParams = new DrawParams();
     }
 
-    this._progParams.init(target);
-    this._drawParams!.init(this._progParams, geom);
-    return this._drawParams!;
+    this._scratchProgParams.init(target);
+    this._scratchDrawParams!.init(this._scratchProgParams, geom);
+    return this._scratchDrawParams!;
   }
 
   protected _endPaint(): void {
@@ -1385,7 +1427,7 @@ export class OnScreenTarget extends Target {
       return;
 
     const system = System.instance;
-    const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
+    const drawParams = this.getDrawParams(this, this._blitGeom);
 
     system.frameBufferStack.pop();
     system.applyRenderState(RenderState.defaults);

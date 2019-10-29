@@ -16,13 +16,13 @@ import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
-import { createCopyStencilProgram } from "./glsl/CopyStencil";
+import { createVolClassCopyZProgram, createVolClassSetBlendProgram, createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZUsingPointsProgram } from "./glsl/CopyStencil";
 import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
+import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
@@ -109,7 +109,6 @@ export abstract class VariedTechnique implements Technique {
     this._basicPrograms.length = 0;
     for (const clipShaderObj of this._clippingPrograms) {
       assert(undefined !== clipShaderObj);
-      assert(undefined !== clipShaderObj.maskShader);
       dispose(clipShaderObj.maskShader);
 
       for (const clipShader of clipShaderObj.shaders) {
@@ -135,21 +134,21 @@ export abstract class VariedTechnique implements Technique {
     builder.setDebugDescription(descr);
 
     const index = this.getShaderIndex(flags);
-    this.addProgram(builder, index, gl);
+    this.addProgram(builder, index, gl, !flags.isClassified);
     if (System.instance.supportsLogZBuffer) {
       const withLogZ = builder.clone();
       addLogDepth(withLogZ);
-      this.addProgram(withLogZ, index + this._offsetToLogZPrograms, gl);
+      this.addProgram(withLogZ, index + this._offsetToLogZPrograms, gl, !flags.isClassified);
     }
   }
 
-  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext, wantClippingMask: boolean): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
 
     assert(this._clippingPrograms[index] === undefined);
-    this._clippingPrograms[index] = new ClippingShaders(builder, gl);
+    this._clippingPrograms[index] = new ClippingShaders(builder, gl, wantClippingMask);
     assert(this._clippingPrograms[index] !== undefined);
   }
 
@@ -217,11 +216,12 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kFeature = 32;
   private static readonly _kEdgeTestNeeded = 96; // only when hasFeatures
   private static readonly _kHilite = 160;
-  // Classifiers are a special case - they are never translucent, animated, or instanced. We have 4 variants: 1 for each of the 3 feature modes, plus 1 for hilite.
+  // Classifiers are never animated or instanced. They do support shadows and translucency.
+  // There are 3 base variations - 1 per feature mode - each with translucent and/or shadowed variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(SurfaceTechnique._kClassified + numFeatureVariants(2) + 1);
+    super(SurfaceTechnique._kClassified + 13);
     const flags = scratchTechniqueFlags;
 
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -231,21 +231,17 @@ class SurfaceTechnique extends VariedTechnique {
           for (let hasMaterialAtlas = HasMaterialAtlas.No; hasMaterialAtlas <= HasMaterialAtlas.Yes; hasMaterialAtlas++) {
             for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
               for (const featureMode of featureModes) {
-                if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-                  flags.reset(featureMode, instanced, shadowable);
-                  flags.isAnimated = iAnimate;
-                  flags.isEdgeTestNeeded = edgeTestNeeded;
-                  flags.hasMaterialAtlas = hasMaterialAtlas;
+                for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+                  if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                    flags.reset(featureMode, instanced, shadowable);
+                    flags.isAnimated = iAnimate;
+                    flags.isEdgeTestNeeded = edgeTestNeeded;
+                    flags.hasMaterialAtlas = hasMaterialAtlas;
+                    flags.isTranslucent = 1 === iTranslucent;
 
-                  const builder = createSurfaceBuilder(flags);
-                  addMonochrome(builder.frag);
-                  addMaterial(builder, hasMaterialAtlas);
-
-                  addSurfaceDiscardByAlpha(builder.frag);
-                  this.addShader(builder, flags, gl);
-
-                  builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-                  this.addTranslucentShader(builder, flags, gl);
+                    const builder = createSurfaceBuilder(flags);
+                    this.addShader(builder, flags, gl);
+                  }
                 }
               }
             }
@@ -255,17 +251,19 @@ class SurfaceTechnique extends VariedTechnique {
     }
 
     this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createSurfaceHiliter);
-    for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-      for (const featureMode of featureModes) {
-        flags.reset(featureMode, IsInstanced.No, shadowable);
-        flags.isClassified = IsClassified.Yes;
+    for (let translucent = 0; translucent < 2; translucent++) {
+      for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+        for (const featureMode of featureModes) {
+          flags.reset(featureMode, IsInstanced.No, shadowable);
+          flags.isClassified = IsClassified.Yes;
+          flags.isTranslucent = (0 !== translucent);
 
-        const builder = createSurfaceBuilder(flags);
-        addMonochrome(builder.frag);
-        addMaterial(builder, HasMaterialAtlas.No);
-        addSurfaceDiscardByAlpha(builder.frag);
+          const builder = createSurfaceBuilder(flags);
+          if (flags.isTranslucent)
+            addTranslucency(builder);
 
-        this.addShader(builder, flags, gl);
+          this.addShader(builder, flags, gl);
+        }
       }
     }
 
@@ -277,12 +275,23 @@ class SurfaceTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isClassified) {
       assert(!flags.isAnimated);
-      assert(!flags.isTranslucent);
       assert(!flags.isInstanced);
       assert(!flags.isEdgeTestNeeded);
 
-      const baseIndex = SurfaceTechnique._kClassified;
-      return baseIndex + (flags.isHilite ? numFeatureVariants(2) : (flags.isShadowable ? numFeatureVariants(1) : 0) + flags.featureMode);
+      // First classified shader is for hilite
+      if (flags.isHilite)
+        return SurfaceTechnique._kClassified;
+
+      // The rest are organized in 3 groups of four - one group per feature mode.
+      // Each group contains opaque, translucent, shadowable, and translucent+shadowable variants.
+      let baseIndex = SurfaceTechnique._kClassified + 1;
+      if (flags.isTranslucent)
+        baseIndex += 1;
+      if (flags.isShadowable)
+        baseIndex += 2;
+
+      const featureOffset = 4 * flags.featureMode;
+      return baseIndex + featureOffset;
     } else if (flags.isHilite) {
       assert(flags.hasFeatures);
       return SurfaceTechnique._kHilite + flags.isInstanced;
@@ -550,9 +559,9 @@ export class Techniques implements IDisposable {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
 
-          const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap !== undefined && target.solarShadowMap.isReady;   // TBD - Avoid shadows for pick?
+          const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap !== undefined && target.solarShadowMap.isReady && target.currentViewFlags.shadows;   // TBD - Avoid shadows for pick?
           const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
-          const isClassified = (target.activePlanarClassifiers.isValid || target.activeTextureDrapes.isValid) ? IsClassified.Yes : IsClassified.No;
+          const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
 
           flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, isShadowable);
           flags.setAnimated(command.hasAnimation);
@@ -575,17 +584,16 @@ export class Techniques implements IDisposable {
     });
   }
 
-  /** Execute the commands for a single given classification primitive */
-  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+  /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, techId?: TechniqueId) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
-    // There should be 3 commands per classifier in the cmdsByIndex array.
-    index *= 3;
-    if (index < 0 || index > cmdsByIndex.length - 3)
-      return; // index out of range
+    // There should be at least 3 commands in the cmdsByIndex array.
+    if (cmdsByIndex.length < 3)
+      return; // not enough commands
 
-    const pushCmd = cmdsByIndex[index];
-    const primCmd = cmdsByIndex[index + 1];
-    const popCmd = cmdsByIndex[index + 2];
+    const pushCmd = cmdsByIndex[0];
+    const primCmd = cmdsByIndex[1];
+    const popCmd = cmdsByIndex[2];
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
@@ -604,8 +612,11 @@ export class Techniques implements IDisposable {
       assert(TechniqueId.Invalid !== techniqueId);
       // A primitive command.
       assert(primCmd.isPrimitiveCommand, "expected primitive command");
-      flags.init(target, renderPass, IsInstanced.No);
+      const isClassified = (undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
+      flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, IsShadowable.No);
       flags.setAnimated(primCmd.hasAnimation);
+      flags.setInstanced(primCmd.isInstanced);
+      flags.setHasMaterialAtlas(target.currentViewFlags.materials && primCmd.hasMaterialAtlas);
       const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
       const program = tech.getShader(flags);
       if (executor.setProgram(program)) {
@@ -662,7 +673,6 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
     this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
-    this._list[TechniqueId.CopyStencil] = new SingularTechnique(createCopyStencilProgram(gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
@@ -677,6 +687,13 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+    if (System.instance.capabilities.supportsFragDepth)
+      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
+    else
+      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
+    this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
+    this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
+    this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));
 
     for (let compositeFlags = 1; compositeFlags <= 7; compositeFlags++) {
       const techId = computeCompositeTechniqueId(compositeFlags);

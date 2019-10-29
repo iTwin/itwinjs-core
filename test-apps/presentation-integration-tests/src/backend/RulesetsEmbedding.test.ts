@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { Ruleset } from "@bentley/presentation-common";
-import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "@bentley/presentation-backend";
+import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy, PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
 import { tweakRuleset } from "./Helpers";
 import { initialize, terminate } from "../IntegrationTests";
@@ -40,7 +40,13 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     initialize();
-    nativePlatform = new (createDefaultNativePlatform("", [], {}))();
+    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+      id: "",
+      localeDirectories: [],
+      taskAllocationsMap: {},
+      mode: PresentationManagerMode.ReadWrite,
+    });
+    nativePlatform = new TNativePlatform();
     imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });

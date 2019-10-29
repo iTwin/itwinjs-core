@@ -99,6 +99,8 @@ export class EditTextTool extends MarkupTool {
     editDiv?: HTMLDivElement;
     // (undocumented)
     editor?: HTMLTextAreaElement;
+    // (undocumented)
+    static iconSpec: string;
     onCleanup(): void;
     // (undocumented)
     onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
@@ -108,6 +110,8 @@ export class EditTextTool extends MarkupTool {
     onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected showPrompt(): void;
     startEditor(): void;
     // (undocumented)
     text?: G | Text | undefined;
@@ -592,6 +596,8 @@ export abstract class RedlineTool extends MarkupTool {
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
+    protected provideToolAssistance(mainInstrKey: string, singlePoint?: boolean): void;
+    // (undocumented)
     protected setupAndPromptForNextAction(): void;
 }
 
@@ -605,6 +611,8 @@ export class SelectTool extends MarkupTool {
     protected boxSelectStart(ev: BeButtonEvent): boolean;
     // (undocumented)
     flashedElement: Element | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onCleanup(): void;
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;

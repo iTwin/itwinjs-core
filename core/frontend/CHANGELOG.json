@@ -2,6 +2,213 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-frontend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement proper flashing and hiliting of classified geometry."
+          },
+          {
+            "comment": "Add new range that represents the dipslayed extents.  This is currently used to set the displayed depths."
+          },
+          {
+            "comment": "Dont expand displayed extents for unbounded trees."
+          },
+          {
+            "comment": "Added support for overriding feature symbology to use a hilite effect."
+          },
+          {
+            "comment": "Fix display artifacts caused by interpolation of material settings."
+          },
+          {
+            "comment": "Rework frustum calculation for terrain draping."
+          },
+          {
+            "comment": "Fix inability to locate polylines and edges if their transparency was overridden."
+          },
+          {
+            "comment": "Add GPU timing queries for devtools."
+          },
+          {
+            "comment": "Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)"
+          },
+          {
+            "comment": "Enable display of non-spatial, spatially-located models in spatial views."
+          },
+          {
+            "comment": "Geometry of planar classifier models is not required to itself be planar."
+          },
+          {
+            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+          },
+          {
+            "comment": "Refine planar texture frustum calculation to handle parallel views."
+          },
+          {
+            "comment": "Errors during shader program compilation produce exceptions."
+          },
+          {
+            "comment": "Improve shadow lighting to match shadow direction"
+          },
+          {
+            "comment": "Fixed multiple viewport shadows"
+          },
+          {
+            "comment": "Refine classification frustum calculation."
+          },
+          {
+            "comment": "Support transparency for terrain and planar classification."
+          },
+          {
+            "comment": "#168481 Tool assistance for viewing tools. Prompt punctuation consistency."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-frontend_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Support animation and classification in same tiles."
+          },
+          {
+            "comment": "Always adjust y dimension for aspectRatioSkew"
+          },
+          {
+            "comment": "added support for blank IModelConnections"
+          },
+          {
+            "comment": "Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled."
+          },
+          {
+            "comment": "add checkbrowser.js, refine i18n in Tool"
+          },
+          {
+            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+          },
+          {
+            "comment": "Refine frustum calculation for planar projection to create a tighter fit. "
+          },
+          {
+            "comment": "#136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip."
+          },
+          {
+            "comment": "Various EVSM shadow tweaks"
+          },
+          {
+            "comment": "Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue."
+          },
+          {
+            "comment": "Fixed elements failing to draw if transparency was overridden to be exactly 15."
+          },
+          {
+            "comment": "Fix marker decorations not updating when markers are added or deleted; fix canvas decorations sometimes failing to display in Firefox."
+          },
+          {
+            "comment": "Fix a problem with direct-screen rendering (black viewport in certain situations)."
+          },
+          {
+            "comment": "Fix edges of instanced geometry failing to respect edge color override defined by display style."
+          },
+          {
+            "comment": "Fix transparency for some shaders"
+          },
+          {
+            "comment": "Added Viewport.readImageToCanvas() to obtain viewport image as a HTMLCanvasElement with a 2d rendering context."
+          },
+          {
+            "comment": "Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails."
+          },
+          {
+            "comment": "Fix failure to locate an element if it also serves as a modeled element for a sub-model."
+          },
+          {
+            "comment": "#168481 Added missing iconSpec to measure and clipping tools."
+          },
+          {
+            "comment": "Correct ViewClipByPlaneTool icon."
+          },
+          {
+            "comment": "Add minArgs, maxArgs, and parseAndRun to PluginTool"
+          },
+          {
+            "comment": "Added ToolTipProvider interface to augment tool tips."
+          },
+          {
+            "comment": "Fix tool tip formatting for terrain."
+          },
+          {
+            "comment": "Enable display of non-spatial, spatially-located models in spatial views."
+          },
+          {
+            "comment": "Add public Tool method translateWithNamespace to allow plugins to supply their own localization."
+          },
+          {
+            "comment": "Support animation of models within RenderSchedule."
+          },
+          {
+            "comment": "Added support for iterating a Viewport's per-model category visibility overrides."
+          },
+          {
+            "comment": "Refine planar projection frustum"
+          },
+          {
+            "comment": "Added autoExpand property to PropertyRecord"
+          },
+          {
+            "comment": "Add QuantityFormatter.onInitialized method to set up default formatting and parsing Specs. Update SetupCameraTool to use new LengthDescription (PropertyDescription)"
+          },
+          {
+            "comment": "Only apply pseudo-rtc workaround if no true RTC exist in GLTF"
+          },
+          {
+            "comment": "Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport."
+          },
+          {
+            "comment": "#168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs."
+          },
+          {
+            "comment": "Fix for pinch zoom not being smooth."
+          },
+          {
+            "comment": "Added facility to load plugins specified in settings at startup"
+          },
+          {
+            "comment": "Add ability for QuantityFormatter to generate station formatting."
+          },
+          {
+            "comment": "Allow cached tiles to be used across revisions as long as the model geometry has not changed."
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+          },
+          {
+            "comment": "Added touch entries to ToolAssistanceImage"
+          },
+          {
+            "comment": "Only force update of tool assistance for touch tap that creates the touch cursor."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/imodeljs-frontend_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

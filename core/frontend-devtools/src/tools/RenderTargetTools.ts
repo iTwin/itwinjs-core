@@ -85,3 +85,25 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     return this.run(args);
   }
 }
+
+/** Sets support for intersecting volume classifiers.
+ * @internal
+ */
+export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
+  public static toolId = "VCIntersectOn";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.vcSupportIntersectingVolumes = true;
+    vp.invalidateRenderPlan();
+  }
+}
+
+/** Sets support for intersecting volume classifiers.
+ * @internal
+ */
+export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
+  public static toolId = "VCIntersectOff";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.vcSupportIntersectingVolumes = false;
+    vp.invalidateRenderPlan();
+  }
+}

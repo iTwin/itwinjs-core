@@ -76,6 +76,8 @@ export interface ExportGraphicsMesh {
   normals: Float32Array;
   /** Parameters (uvs) for this mesh, laid out in the pattern XYXY */
   params: Float32Array;
+  /** If true, clients should assume both sides of the mesh are visible and not cull backfaces. */
+  isTwoSided: boolean;
 }
 
 /** Info provided to ExportGraphicsFunction about graphics.

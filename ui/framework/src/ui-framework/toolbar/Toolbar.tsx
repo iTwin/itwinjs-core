@@ -17,9 +17,9 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { GroupItemDef } from "./GroupItem";
-import { AnyItemDef } from "../shared/ItemProps";
 import { ConditionalItemDef } from "../shared/ConditionalItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
+import { AnyItemDef } from "../shared/AnyItemDef";
 
 /** Properties of [[Toolbar]] component.
  * @internal

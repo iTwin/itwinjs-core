@@ -62,7 +62,6 @@
   > .nz-horizontal-toolbar {
     grid-area: htools;
     width: 100%;
-    pointer-events: auto;
     @include nz-widget-opacity;
   }
 
@@ -71,7 +70,6 @@
     display: inline-flex;
     flex-direction: column;
     grid-area: vtools;
-    pointer-events: auto;
     @include nz-widget-opacity;
   }
 }

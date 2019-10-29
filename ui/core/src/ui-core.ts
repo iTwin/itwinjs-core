@@ -7,7 +7,13 @@
 
 export * from "./ui-core/UiCore";
 
+export * from "./ui-core/badge/Badge";
+export * from "./ui-core/badge/BadgeUtilities";
+export * from "./ui-core/badge/BetaBadge";
+export * from "./ui-core/badge/NewBadge";
+
 export * from "./ui-core/base/Div";
+export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/ScrollView";
@@ -95,8 +101,10 @@ export * from "./ui-core/utils/ScrollPositionMaintainer";
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";
 
+export * from "./ui-core/inputs/autosuggest/AutoSuggest";
 export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
+export * from "./ui-core/inputs/InputLabel";
 export * from "./ui-core/inputs/InputStatus";
 export * from "./ui-core/inputs/iconinput/IconInput";
 export * from "./ui-core/inputs/LabeledComponentProps";
@@ -108,6 +116,9 @@ export * from "./ui-core/inputs/numericinput/ReactNumericInput";
 export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
+
+export * from "./ui-core/form/Field";
+export * from "./ui-core/form/Form";
 
 export * from "./ui-core/tabs/HorizontalTabs";
 export * from "./ui-core/tabs/VerticalTabs";

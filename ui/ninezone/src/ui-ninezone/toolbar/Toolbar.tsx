@@ -45,12 +45,12 @@ export class ToolbarPanelAlignmentHelpers {
 export interface PanelsProviderProps {
   /** Render prop that provides item panels. */
   children?: (items: React.ReactNode) => React.ReactNode;
-  /** Ref to histories container. */
-  histories: React.RefObject<HTMLElement>;
+  /** Histories container. */
+  histories: HTMLElement | null;
   /** Items of the toolbar. */
   items?: React.ReactNode;
-  /** Ref to panels container. */
-  panels: React.RefObject<HTMLElement>;
+  /** Panels container. */
+  panels: HTMLElement | null;
 }
 
 /** Provides panels and histories of toolbar items.
@@ -61,7 +61,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   private _refs = new Array<React.RefObject<ToolbarItem>>();
 
   private appendPanels() {
-    const panels = this.props.panels.current;
+    const panels = this.props.panels;
     if (!panels)
       return;
 
@@ -77,7 +77,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   }
 
   private appendHistories() {
-    const histories = this.props.histories.current;
+    const histories = this.props.histories;
     if (!histories)
       return;
 
@@ -153,25 +153,32 @@ export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection =
   return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
 };
 
-/** A toolbar that may contain items.
- * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
+interface ToolbarState {
+  histories: HTMLElement | null;
+  panels: HTMLElement | null;
+}
+
+/** A toolbar that contains toolbar items.
  * @beta
  */
-export class Toolbar extends React.PureComponent<ToolbarProps> {
+export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
   public static readonly defaultProps = {
     expandsTo: Direction.Bottom,
     panelAlignment: ToolbarPanelAlignment.Start,
   };
 
-  private _histories = React.createRef<HTMLDivElement>();
-  private _panels = React.createRef<HTMLDivElement>();
+  /** @internal */
+  public readonly state = {
+    histories: null,
+    panels: null,
+  };
 
   public render() {
     return (
       <PanelsProvider
-        histories={this._histories}
+        histories={this.state.histories}
         items={this.props.items}
-        panels={this._panels}
+        panels={this.state.panels}
       >
         {this._renderItems}
       </PanelsProvider>
@@ -194,11 +201,11 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
       >
         <div
           className="nz-expanded nz-histories"
-          ref={this._histories}
+          ref={this._handleHistoriesRef}
         />
         <div
           className="nz-expanded nz-panels"
-          ref={this._panels}
+          ref={this._handlePanelsRef}
         />
         <Items
           className="nz-items"
@@ -208,6 +215,14 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
         </Items>
       </div >
     );
+  }
+
+  private _handleHistoriesRef = (histories: HTMLElement | null) => {
+    this.setState({ histories });
+  }
+
+  private _handlePanelsRef = (panels: HTMLElement | null) => {
+    this.setState({ panels });
   }
 }
 

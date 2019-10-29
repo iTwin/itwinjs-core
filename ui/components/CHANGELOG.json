@@ -2,6 +2,72 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-components_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools."
+          },
+          {
+            "comment": "Allow width defined in ColumnDescription to be passed into <Table> component to set initial column width."
+          },
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Focus EnumButtonGroupEditor without scrolling."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-components_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core."
+          },
+          {
+            "comment": "Added ability to automatically expand non primitive properties"
+          },
+          {
+            "comment": "Ability to Scroll to Table row via scrollToRow Prop"
+          },
+          {
+            "comment": "Add alwaysMinimized prop to TimelineComponent."
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+          },
+          {
+            "comment": "In the Model/Category/Spatial trees, center the error message"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment"
+          },
+          {
+            "comment": "Tree: Clear page caches when reloading tree data"
+          },
+          {
+            "comment": "this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/ui-components_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

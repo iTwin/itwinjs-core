@@ -6,7 +6,7 @@
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
-import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -298,7 +298,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     return this._userManager;
   }
 
-  private async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
+  /**
+   * Override to customize the user manager settings used by the underlying oidc-client-js.
+   * This allows setting additional fields that are not exposed by [[OidcFrontendClientConfiguration]] or customizing the defaults.
+   * @internal
+   */
+  protected async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
       authority: this._configuration.authority || await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
@@ -310,9 +315,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       query_status_response_type: this._configuration.responseType || "id_token token",
       scope: this._configuration.scope,
       loadUserInfo: true,
-      // userStore: new WebStorageStateStore({ store: window.localStorage }),
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
       clockSkew: this._configuration.clockSkew,
       metadata: this._configuration.metadata,
+      accessTokenExpiringNotificationTime: 60, // 60 seconds before expiry
+      monitorSession: false,
+      silentRequestTimeout: 20000,
     };
     return userManagerSettings;
   }

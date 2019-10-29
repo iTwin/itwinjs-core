@@ -6,13 +6,17 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
+
 import { XAndY } from "@bentley/geometry-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
-import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import "./Pointer.scss";
+
 import { MessageSpan, MessageDiv } from "./MessageSpan";
 import { MessageManager } from "./MessageManager";
+
+import "./Pointer.scss";
 
 // cSpell:ignore noicon
 

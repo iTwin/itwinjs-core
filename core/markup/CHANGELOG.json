@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-markup_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#168481 Tool assistance for markup tools"
+          },
+          {
+            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-markup_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#168481 Added missing iconSpec to measure and clipping tools."
+          },
+          {
+            "comment": "Correct ViewClipByPlaneTool icon."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/imodeljs-markup_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

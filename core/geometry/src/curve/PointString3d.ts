@@ -22,6 +22,7 @@ import { GeometryQuery } from "./GeometryQuery";
  * @public
  */
 export class PointString3d extends GeometryQuery implements BeJSONFunctions {
+  /** String name for schema properties */
   public readonly geometryCategory = "pointCollection";
 
   /** Test if `other` is a PointString3d */

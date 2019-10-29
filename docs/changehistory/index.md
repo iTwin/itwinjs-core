@@ -1,63 +1,13 @@
-# 1.4.0 Change Notes
+# 1.6.0 Change Notes
+
+## Silhouettes for emphasis
+
+The [Hilite]($common) effect can now be applied to individual features (elements, models, subcategories, etc) using [FeatureSymbology.Overrides]($frontend). The color, color ratios, and silhouette width can all be customized using [Viewport.emphasisSettings]($frontend) - the default settings apply a thick black silhouette to emphasized features with no effect on the features' own colors. If you are using [EmphasizeElements]($frontend), set its `wantEmphasis` property to control whether or not the emphasis settings are applied. Otherwise, have your [FeatureOverrideProvider]($frontend) specify which features are emphasized using [FeatureSymbology.Appearance.emphasized]($frontend) and optionally override [Viewport.emphasisSettings]($frontend).
+
+![emphasis example](./assets/emphasized_elements.png "Example showing default emphasis settings")
 
 ## Geometry
 
-### Summary
-  * New class `CurveFactory` to hold future static methods that construct multi-component curves.
-     * First method: CurveFactory.createFilletsInLineString
-  * `PolyfaceBuilder` static method to build xy triangulation of array of points.
-  * `PolyfaceClip` static method to compute cut-fill between 2.5D meshes.
-### Details
-  * `Arc3d`
-    * (static) `Arc3d.createFilletArc(point0: Point3d, point1: Point3d, point2: Point3d, radius: number): ArcBlendData;`
-      * Create (if possible) a single arc that is a fillet between line segment from `point0` to `point` and `point1` to `point`.
-      * Annotated return with fractional position of tangent, fractions from middle point outward along segments.
-      * `point1` (middle points) is commonly called the PI (point of inflection) for the linestring being filleted.
-      * See new support interface `ArcBlendData`
-  * `CurveFactory`
-    * (static) `CurveFactory.createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge?: boolean): Path | undefined;`
-      * Create a path with alternating lines and tangent arcs.
-  * `CurveCollection`
-    * (static) `static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;`
-      * Find any curve primitive in the collection.  Evaluate it at a fractional position.
-  * `CurveCurve`
-    * (static) `CurveCurve.intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[]`
-      * Same as existing (deprecated) `CurveCurve.intersectionXY`, but bundles pairs of `CurveLocationDetailPair` in single array more useful for processing.
-  * `Point3dArray`
-    * (static) `Point3dArray.static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;`
-      * Return `hullPoints` in CCW order around the hull
-      * Return all non-hull points in `insidePoints`
-  * `PolyfaceBuilder`
-    * (static) `PolyfaceBuilder.pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;`
-      * Return triangulated mesh within the convex hull around the points.
-  * `PolyfaceClip`
-    * (static)
-  * `ClipPlane` and `ConvexClipPlaneSet` support
-    * `myClipPlane.convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d): void;`
-       * Split a polygon across a plane; optimized for `GrowableXYZArray` storage.
-    * (static) `ClipPlane.createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;`
-       * (preexisting) added optional `result` parameter
-  * `Ray3d`
-    * `interval = myRay.intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d`
-      * return fractions (along the ray `myRay`) where the `myRay` enters and exits a `Range3d`, or null `Range1d` if no in intersection.
-
-## Enhancements to IModelDb.exportGraphics
-
-  * IModelDb.exportGraphics and associated functions are now out of beta and tagged as public.
-  * Added [ExportGraphicsOptions.minBRepFeatureSize]($backend) to improve performance when exporting graphics for breps.
-
-## Authorization Changes
-
-### Changes to Agent authorization
-
-[OidcAgentClient]($clients-backend) now implements [IAuthorizationClient]($clients). The following methods are now marked deprecated -
-* [OidcAgentClient.getToken]($clients-backend)
-* [OidcAgentClient.refreshToken]($clients-backend)
-
-The access token is now stored in the client, and can be accessed by calling [OidcAgentClient.getAccessToken]($clients-backend). This method
-validates and refreshes the token as necessary.
-
-### Swapping backend authorization to use agents
-
-The API now allows swapping the authorization client used for backend operations like downloading a briefcase or change sets of an iModel.
-Set [IModelHost.authorizationClient]($backend) to the required authorization client - e.g., an instance of [OidcAgentClient]($clients-backend).
+* [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.
+* [RegionOps.consolidateAdjacentPrimitives]($geometry) method to consolidate adjacent lines and linestrings, and adjacent arcs of the same underlying circle or ellipse.
+* [RegionOps.rectangleEdgeTransform]($geometry) method to decide if a Loop object or point array is a simple rectangle.

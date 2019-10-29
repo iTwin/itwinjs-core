@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix footer offset in widget mode.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

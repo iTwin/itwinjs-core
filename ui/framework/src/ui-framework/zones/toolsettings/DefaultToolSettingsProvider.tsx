@@ -224,11 +224,18 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
       /* istanbul ignore else */
       if (record) {
         const editor = this.getEditor(record);
+        const alignStyle: React.CSSProperties = {
+          display: "flex",
+          alignItems: "center",
+        };
         let spanStyle: React.CSSProperties | undefined;
         if (record.editorPosition.columnSpan && record.editorPosition.columnSpan > 1) {
           spanStyle = {
             gridColumn: `span ${record.editorPosition.columnSpan}`,
-          } as React.CSSProperties;
+            ...alignStyle,
+          };
+        } else {
+          spanStyle = alignStyle;
         }
 
         return (

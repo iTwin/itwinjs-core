@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
 
+import { RelativePosition } from "@bentley/ui-abstract";
 import {
   ActivityMessageDetails,
   ActivityMessageEndReason,
@@ -16,7 +17,6 @@ import {
   OutputMessageType,
   ToolAssistanceInstructions,
   ToolAssistance,
-  RelativePosition,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";

@@ -49,6 +49,7 @@ interface StatusBarState {
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
   toastMessageKey: number;
+  toastTarget: HTMLElement | null;
 }
 
 /** Properties for the [[StatusBar]] React component
@@ -63,12 +64,6 @@ export interface StatusBarProps extends CommonProps {
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
-  private _toastTarget = React.createRef<HTMLDivElement>();
-
-  constructor(props: StatusBarProps) {
-    super(props);
-  }
-
   public static severityToStatus(severity: MessageSeverity): Status {
     let status = Status.Information;
 
@@ -99,6 +94,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     activityMessageInfo: undefined,
     isActivityMessageVisible: false,
     toastMessageKey: 0,
+    toastTarget: null,
   };
 
   public render(): React.ReactNode {
@@ -110,7 +106,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       footerSections = widgetControl.getReactNode({
         isInFooterMode: this.props.isInFooterMode,
         openWidget: this.state.openWidget,
-        toastTargetRef: this._toastTarget,
+        toastTargetRef: this._handleToastTargetRef,
         onOpenWidget: this._handleOpenWidget,
       });
     }
@@ -198,7 +194,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       case (StatusBarMessageType.Toast): {
         return (
           <ToastMessage
-            animateOutTo={this._toastTarget}
+            animateOutTo={this.state.toastTarget}
             onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
             content={
@@ -331,6 +327,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       visibleMessage,
       messageDetails,
     });
+  }
+
+  private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
+    this.setState({ toastTarget });
   }
 }
 

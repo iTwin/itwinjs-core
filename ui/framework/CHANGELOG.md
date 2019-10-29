@@ -1,6 +1,51 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2019 20:28:43 GMT and should not be manually modified.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:43 GMT
+
+### Updates
+
+- Add support for CursorMenu
+- Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools.
+- Fix Tool Settings label to ensure it stays in sync with active tool.
+- Added AutoSuggest component and improved KeyinBrowser component
+- Close tool group panel on toolbar item click.
+- Ability to drag and resize tool settings widget.
+- Ignore widgetDef state in WidgetContentRenderer of tool settings.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
+- Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core.
+- Backport Sections and ViewAttributes Status Fields from Design Review for use with plugins.
+- Cursor Prompt no longer displays as small blank popup when Tool Assistance instruction is blank
+- Fixed Frontstage resizing problem exposed by Chrome update
+- #168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
+- Changed ToolWidget, NavigatonWidget, and Toolbar render method to only render items in state and to not generate them during render.
+- Add support for panelLabel property for a GoupButton. This is the title that is shown when the group is opened.
+- Added FrontstageProvider.initializeDef param for FrontstageDef
+- Correct ViewClipByPlaneTool icon.
+- UiDataProvider class, work on PluginUiProvider
+- Change BackstageItemSpec to use localized strings not keys to be localized due to the way Plugins provide localization.
+- Create a common IModelViewPort control that supports Design Review and ui-test-app.
+- Add ability to pre-load hierarchies in Visibility Widget
+- Tool Assistance changes per UX Design
+- Support for Modifier key + wide SVG
+- Tool Assistance for Ctrl+Z and other chars
+- Fixed ToolAssistanceField pin problem
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- Added touch entries to ToolAssistanceImage
+- Joe G required the tree (empty data) be more descriptive and generic.
+- In the Model/Category/Spatial trees, center the error message
+- upgrade to TypeScript 3.6.2
+- Ability to collapse stage panel using StagePanelDef.
+- Stage panel header.
+- Make components aware of safe area insets.
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT

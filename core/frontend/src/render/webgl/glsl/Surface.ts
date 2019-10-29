@@ -6,7 +6,6 @@
 
 import {
   ProgramBuilder,
-  FragmentShaderBuilder,
   VariableType,
   FragmentShaderComponent,
   VertexShaderComponent,
@@ -14,26 +13,29 @@ import {
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
 import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
-import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
+import { assignFragColor, addFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
+import { addMaxAlpha, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, extractNthBit } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
-import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { addOverrideClassifierColor, addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unpackFloat } from "./Clipping";
+import { addRenderPass } from "./RenderPass";
+import { addTranslucency } from "./Translucency";
+import { addMonochrome } from "./Monochrome";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -117,8 +119,7 @@ void readMaterialAtlas() {
 }`;
 const getAtlasMaterialParams = `vec4 getMaterialParams() { return g_materialParams; }`;
 
-/** @internal */
-export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
+function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
   const frag = builder.frag;
   assert(undefined !== frag.find("v_surfaceFlags"));
 
@@ -191,15 +192,14 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified, shadowable: IsShadowable): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
   const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)
     addAnimation(vert, true);
-  if (classified)
-    addColorPlanarClassifier(builder);
+
   if (shadowable)
     addSolarShadowMap(builder);
 
@@ -213,7 +213,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No);
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No);
@@ -221,8 +221,9 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
     builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-  } else
+  } else {
     addSurfaceHiliter(builder);
+  }
 
   return builder;
 }
@@ -432,18 +433,36 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
 const scratchBgColor = FloatRgb.fromColorDef(ColorDef.white);
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
+const discardClassifiedByAlpha = `
+  if (u_no_classifier_discard)
+    return false;
+
+  bool hasAlpha = alpha <= s_maxAlpha;
+  bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
+  bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+  return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
+`;
+
+// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
+// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
+// non-transparent pixel of it.
+const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
+
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
-  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
-  const computeFeatureIdInFrag = 0 !== flags.isShadowable && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+  let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  if (flags.isClassified) {
+    opts &= ~FeatureSymbologyOptions.Alpha;
+    addColorPlanarClassifier(builder, flags.isTranslucent);
+  }
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
-  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified, computeFeatureIdInFrag);
+  addSurfaceDiscard(builder, flags);
   addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
@@ -478,30 +497,49 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat) {
-    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
+  if (flags.isTranslucent) {
+    addTranslucency(builder);
   } else {
-    if (flags.isClassified)
-      addFeaturePlanarClassifier(builder);
-    builder.frag.addFunction(decodeDepthRgb);
-    if (flags.isEdgeTestNeeded || flags.isClassified)
-      addPickBufferOutputs(builder.frag);
-    else
-      addAltPickBufferOutputs(builder.frag);
+    if (FeatureMode.None === feat) {
+      addFragColorWithPreMultipliedAlpha(builder.frag);
+    } else {
+      builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+      if (!flags.isClassified)
+        addOverrideClassifierColor(builder);
+      else
+        addFeaturePlanarClassifier(builder);
+
+      builder.frag.addFunction(decodeDepthRgb);
+      if (flags.isEdgeTestNeeded || flags.isClassified)
+        addPickBufferOutputs(builder.frag);
+      else
+        addAltPickBufferOutputs(builder.frag);
+    }
   }
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
+  if (flags.isClassified) {
+    // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
+    // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
+    // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
+    // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
+    addMaxAlpha(builder.frag);
+    addRenderPass(builder.frag);
+
+    // Do not discard transparent classified geometry if we're trying to do a pick...
+    builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
+      prog.addGraphicUniform("u_no_classifier_discard", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    });
+
+    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
+  }
+
+  addMonochrome(builder.frag);
+  addMaterial(builder, flags.hasMaterialAtlas);
+
   return builder;
-}
-
-// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
-// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
-// non-transparent pixel of it.
-const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
-
-/** @internal */
-export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
-  frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
 }

@@ -5,14 +5,14 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import {
   ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType, getDefaultZonesManagerProps,
-  getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds,
+  getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds, StagePanelsManager,
 } from "@bentley/ui-ninezone";
-import { StagePanelLocation, getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { StagePanelLocation, getNestedStagePanelKey, stagePanelLocations } from "../stagepanels/StagePanel";
 import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
@@ -147,6 +147,16 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           },
         },
       };
+      for (const location of stagePanelLocations) {
+        const stagePanel = frontstageDef && frontstageDef.getStagePanelDef(location);
+        if (!stagePanel)
+          continue;
+
+        const isCollapsed = panelStateToIsCollapsed(stagePanel.panelState);
+        const panelKey = getNestedStagePanelKey(location);
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setIsCollapsed(panelKey, isCollapsed, nineZone.nested);
+        nineZone = FrontstageManager.NineZoneManager.setNested(nested, nineZone);
+      }
     }
     return nineZone;
   }
@@ -160,8 +170,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       const visibleWidgetDefs = zoneDef.widgetDefs.filter((widgetDef: WidgetDef) => {
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
-      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef) => ({
-        betaBadge: widgetDef.betaBadge === undefined ? false : widgetDef.betaBadge,
+      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef: WidgetDef) => ({
+        badgeType: BadgeUtilities.determineBadgeType(widgetDef.badgeType, widgetDef.betaBadge), // tslint:disable-line: deprecation
         iconSpec: widgetDef.iconSpec,
         title: widgetDef.label,
         widgetName: widgetDef.id,
@@ -310,6 +320,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount(): void {
@@ -457,11 +468,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   /** @alpha */
   public handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void {
-    const panel = getNestedStagePanelKey(panelLocation);
-    // istanbul ignore else
+    const nestedPanelKey = getNestedStagePanelKey(panelLocation);
+    // istanbul ignore next
     if (this._isMounted)
       this.setState((prevState) => {
-        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().resize(panel, resizeBy, prevState.nineZone.nested);
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().resize(nestedPanelKey, resizeBy, prevState.nineZone.nested);
         if (nested === prevState.nineZone.nested)
           return null;
         return {
@@ -470,6 +481,15 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
             nested,
           },
         };
+      }, () => {
+        const frontstage = FrontstageManager.activeFrontstageDef;
+        const stagePanel = frontstage && frontstage.getStagePanelDef(panelLocation);
+        if (stagePanel) {
+          const panels = this.state.nineZone.nested.panels[nestedPanelKey.id];
+          const panel = StagePanelsManager.getPanel(nestedPanelKey.type, panels);
+          const panelState = isCollapsedToPanelState(panel.isCollapsed);
+          stagePanel.panelState = panelState;
+        }
       });
   }
 
@@ -610,6 +630,26 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this.setPanelState(panelDef.location, panelState);
   }
 
+  private _handleToolActivatedEvent = () => {
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+        const manager = FrontstageManager.NineZoneManager;
+        let nineZone = prevState.nineZone;
+        if (activeToolSettingsNode) {
+          nineZone = manager.showWidget(2, prevState.nineZone);
+        } else {
+          nineZone = manager.hideWidget(2, prevState.nineZone);
+        }
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
+  }
+
   private setPanelState(location: StagePanelLocation, panelState: StagePanelState) {
     const panelKey = getNestedStagePanelKey(location);
     const isCollapsed = panelStateToIsCollapsed(panelState);
@@ -637,5 +677,15 @@ export const panelStateToIsCollapsed = (panelState: StagePanelState) => {
       return true;
     default:
       return false;
+  }
+};
+
+/** @internal */
+export const isCollapsedToPanelState = (isCollapsed: boolean) => {
+  switch (isCollapsed) {
+    case true:
+      return StagePanelState.Minimized;
+    default:
+      return StagePanelState.Open;
   }
 };

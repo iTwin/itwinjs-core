@@ -86,6 +86,11 @@ export class BIMReviewShareClient extends WsgClient {
    * @returns The posted instance that's returned back from the server.
    */
   private async postInstanceAndData<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, _typedConstructor: new () => T, relativeUrlPath: string, instance: T, data: any, requestOptions?: WsgRequestOptions): Promise<T> {
+    requestContext.enter();
+
+    if (typeof window !== undefined)
+      return Promise.reject(new Error(`Method cannot be used in the browser`));
+
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
@@ -172,6 +177,10 @@ export class BIMReviewShareClient extends WsgClient {
    */
   private async getBlob(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<any> {
     requestContext.enter();
+
+    if (typeof window !== undefined)
+      return Promise.reject(new Error(`Method cannot be used in the browser`));
+
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));

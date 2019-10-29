@@ -1,4 +1,9 @@
 {
+  "form": {
+    "submitButtonLabel": "Submit",
+    "errorPrefix": "Error:",
+    "errorSuffix": "Please review input and try again."
+  },
   "general": {
     "search": "Search"
   },

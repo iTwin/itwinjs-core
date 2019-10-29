@@ -21,6 +21,24 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 
 /**
+ * Presentation manager working mode.
+ * @beta
+ */
+export enum PresentationManagerMode {
+  /**
+   * Presentation manager assumes iModels are opened in read-only mode and avoids doing some work
+   * related to reacting to changes in iModels.
+   */
+  ReadOnly,
+
+  /**
+   * Presentation manager assumes iModels are opened in read-write mode and it may need to
+   * react to changes. This involves some additional work and gives slightly worse performance.
+   */
+  ReadWrite,
+}
+
+/**
  * Properties that can be used to configure [[PresentationManager]]
  * @public
  */
@@ -87,6 +105,16 @@ export interface PresentationManagerProps {
   taskAllocationsMap?: { [priority: number]: number };
 
   /**
+   * Presentation manager working mode. Backends that use iModels in read-write mode should
+   * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
+   *
+   * Defaults to `ReadWrite`.
+   *
+   * @beta
+   */
+  mode?: PresentationManagerMode;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -129,8 +157,12 @@ export class PresentationManager {
     if (props && props.addon) {
       this._nativePlatform = props.addon;
     } else {
-      const nativePlatformImpl = createDefaultNativePlatform(this._props.id || "",
-        createLocaleDirectoryList(props), createTaskAllocationsMap(props));
+      const nativePlatformImpl = createDefaultNativePlatform({
+        id: this._props.id || "",
+        localeDirectories: createLocaleDirectoryList(props),
+        taskAllocationsMap: createTaskAllocationsMap(props),
+        mode: (undefined !== this._props.mode) ? this._props.mode : PresentationManagerMode.ReadWrite,
+      });
       this._nativePlatform = new nativePlatformImpl();
     }
     this.setupRulesetDirectories(props);
@@ -593,6 +625,32 @@ export class PresentationManager {
     return modelKeys;
   }
 
+  private async computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    const nonTransientIds = new Array<Id64String>();
+    ids.forEach(skipTransients((id) => {
+      nonTransientIds.push(id);
+    }));
+    const query = `
+      SELECT e.ECClassId, e.ECInstanceId elId, funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
+        FROM bis.Element e
+        LEFT JOIN func.PhysicalElementFulfillsFunction rel1 ON rel1.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.DrawingGraphicRepresentsFunctionalElement rel2 ON rel2.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.FunctionalElement fe ON fe.ECInstanceId IN (rel1.TargetECInstanceId, rel2.TargetECInstanceId)
+        LEFT JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
+        LEFT JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
+       WHERE e.ECInstanceId IN (${nonTransientIds.map(() => "?").join(",")})
+      `;
+    const iter = requestOptions.imodel.query(query, nonTransientIds);
+    for await (const row of iter) {
+      if (row.funcElClassName && row.funcElId)
+        keys.add({ className: row.funcElClassName.replace(".", ":"), id: row.funcElId });
+      else
+        keys.add({ className: row.className.replace(".", ":"), id: row.elId });
+    }
+    return keys;
+  }
+
   /**
    * Computes selection set based on provided selection scope.
    * @param requestContext The client request context
@@ -610,6 +668,7 @@ export class PresentationManager {
       case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
       case "category": return this.computeCategorySelection(requestOptions, ids);
       case "model": return this.computeModelSelection(requestOptions, ids);
+      case "functional": return this.computeFunctionalElementSelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");

@@ -208,10 +208,6 @@ export class ViewManager {
 
   /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
   private updateRenderToScreen() {
-    // Feature gate.
-    if (!IModelApp.renderSystem.options.directScreenRendering)
-      return;
-
     const renderToScreen = 1 === this._viewports.length;
     this.forEachViewport((vp) => vp.rendersToScreen = renderToScreen);
   }

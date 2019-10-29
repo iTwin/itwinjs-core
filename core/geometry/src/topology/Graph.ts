@@ -1109,7 +1109,7 @@ export enum HalfEdgeMask {
 
   /** no mask bits */
   NULL_MASK = 0x00000000,
-
+/** The "upper 12 " bits of 32 bit integer. */
   ALL_GRAB_DROP_MASKS = 0xffF00000,  // 12 masks reserved for grab/drop.
   /** all mask bits */
   ALL_MASK = 0xFFFFFFFF,

@@ -7,10 +7,10 @@
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
+import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
-import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
@@ -106,6 +106,30 @@ export type PlacementProps = Placement2dProps | Placement3dProps;
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
   typeDefinition?: RelatedElementProps;
+}
+
+/** An enumeration of the different types of sections.
+ * @public
+ */
+export enum SectionType {
+  Section = 3,
+  Detail = 4,
+  Elevation = 5,
+  Plan = 6,
+}
+
+/** Properties that define a [SectionLocation]($backend)
+ * @beta
+ */
+export interface SectionLocationProps extends GeometricElement3dProps {
+  /** Section type */
+  sectionType?: SectionType;
+  /** Details on how this section was clipped. A placement local ClipVector stored as a json string. */
+  clipGeometry?: any;
+  /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
+  modelSelectorId?: Id64String;
+  /** The element Id of the [CategorySelector]($backend) for this SectionLocation */
+  categorySelectorId?: Id64String;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)

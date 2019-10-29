@@ -14,15 +14,16 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   OutputMessageType,
-  RelativePosition,
   ViewState,
 } from "@bentley/imodeljs-frontend";
+
+import { BadgeType, RelativePosition } from "@bentley/ui-abstract";
+import { ScrollView, Point } from "@bentley/ui-core";
 
 import {
   FrontstageProvider,
   ToolWidget,
   ZoneState,
-  NavigationWidget,
   ContentLayoutDef,
   ContentLayoutProps,
   ContentGroup,
@@ -63,6 +64,8 @@ import {
   ZoneLocation,
   StagePanelHeader,
   StagePanelLocation,
+  DefaultNavigationWidget,
+  StagePanelState,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -86,12 +89,12 @@ import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionT
 import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+import { ExampleForm } from "../forms/ExampleForm";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
+// import rotateIcon from "../icons/rotate.svg";
 
-import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
-import rotateIcon from "../icons/rotate.svg";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
@@ -103,15 +106,33 @@ export class ViewsFrontstage extends FrontstageProvider {
         labelKey="SampleApp:widgets.VisibilityTree"
         control={VisibilityTreeWidgetControl}
         applicationData={{ iModelConnection: this.iModelConnection }}
-      />],
+      />,
+    ],
   };
 
   private _rightPanel = {
-    allowedZones: [6, 9],
+    allowedZones: [2, 6, 9],
+  };
+
+  private _bottomPanel = {
+    allowedZones: [2],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
+  }
+
+  /** Get the CustomItemDef for ViewSelector  */
+  private get _viewSelectorItemDef() {
+    return new CustomItemDef({
+      customId: "sampleApp:viewSelector",
+      reactElement: (
+        <ViewSelector
+          imodel={UiFramework.getIModelConnection()}
+          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
+        />
+      ),
+    });
   }
 
   public get frontstage() {
@@ -133,7 +154,6 @@ export class ViewsFrontstage extends FrontstageProvider {
       contentProps.push(thisContentProps);
     }
     const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
-
     return (
       <Frontstage id="ViewsFrontstage"
         defaultTool={CoreTools.selectElementCommand}
@@ -148,15 +168,19 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         topCenter={
           <Zone
+            allowsMerging
             widgets={[
-              <Widget isToolSettings={true} defaultState={WidgetState.Open} />,
+              <Widget
+                iconSpec="icon-placeholder"
+                isToolSettings={true}
+              />,
             ]}
           />
         }
         topRight={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
+              <Widget isFreeform={true} element={<DefaultNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />} />,
             ]}
           />
         }
@@ -197,7 +221,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
               <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
                 applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
@@ -236,6 +260,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               location={StagePanelLocation.Left}
               title="Visibility tree"
             />}
+            defaultState={StagePanelState.Minimized}
             size={280}
             widgets={this._leftPanel.widgets}
           />
@@ -243,6 +268,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         rightPanel={
           <StagePanel
             allowedZones={this._rightPanel.allowedZones}
+          />
+        }
+        bottomPanel={
+          <StagePanel
+            allowedZones={this._bottomPanel.allowedZones}
           />
         }
       />
@@ -395,23 +425,16 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  private get _clearSelectionItem() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
-      execute: () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (iModelConnection) {
-          iModelConnection.selectionSet.emptyAll();
-        }
-        IModelApp.toolAdmin.startDefaultTool();
-      },
-    });
-  }
-
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
       execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test")); },
+    });
+  }
+
+  private get _exampleFormItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-annotation", label: "Open Example Form", execute: () => { ExampleForm.open(); },
     });
   }
 
@@ -482,7 +505,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _restoreContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
           // Parse SavedViewLayoutProps
@@ -622,7 +645,7 @@ class FrontstageToolWidget extends React.Component {
   private get _viewportPopupButtonItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
+        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" badgeType={BadgeType.New}>
           <div style={{ width: "400px", height: "300px" }}>
             <ScrollView>
               <div>
@@ -662,7 +685,7 @@ class FrontstageToolWidget extends React.Component {
       items: [AppTools.tool2, this._viewportPopupButtonItemDef],
       stateSyncIds: [SampleAppUiActionId.setTestProperty],
       stateFunc: this._enabledTestStateFunc,
-      betaBadge: true,
+      badgeType: BadgeType.New,
     }),
     AppTools.toolWithSettings,
     AppTools.toggleHideShowItemsCommand,
@@ -673,7 +696,7 @@ class FrontstageToolWidget extends React.Component {
           groupId: "tool-formatting-setting",
           labelKey: "SampleApp:buttons.toolGroup",
           iconSpec: "icon-placeholder",
-          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
+          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, CoreTools.clearSelectionItemDef],
           itemsInColumn: 4,
         }),
       ],
@@ -684,6 +707,7 @@ class FrontstageToolWidget extends React.Component {
   ]);
 
   private _verticalToolbarItems = new ItemList([
+    CoreTools.measureToolGroup,
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
       panelLabel: "Open Close Properties",
@@ -701,7 +725,8 @@ class FrontstageToolWidget extends React.Component {
       labelKey: "SampleApp:buttons.dialogDemos",
       panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      items: [this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      badgeType: BadgeType.New,
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.anotherGroup",
@@ -723,76 +748,6 @@ class FrontstageToolWidget extends React.Component {
     return (
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
-        horizontalItems={this._horizontalToolbarItems}
-        verticalItems={this._verticalToolbarItems}
-      />
-    );
-  }
-}
-
-/** Define a NavigationWidget with Buttons to display in the TopRight zone.
- */
-class FrontstageNavigationWidget extends React.Component {
-
-  /** SVG Icon to use for the Rotate tool */
-  // private get _rotateSvgIcon(): React.ReactNode {
-  //   return (
-  //     <SvgPath viewBoxWidth={91} viewBoxHeight={91} paths={[
-  //       "M86.734,49.492c-4.305,0.01-17.991,1.527-20.508,1.943c-1.589,0.261-3.454,0.267-4.732,1.335   c-1.173,0.98-0.649,2.788,0.453,3.52c1.182,0.78,17.18,0.641,19.686,0.645c-0.216,0.404-4.764,8.202-7.226,11.423   c-4.994,6.53-12.322,11.926-20.213,14.39c-9.906,3.093-21.47,0.982-30.055-4.716c-4.252-2.82-7.595-6.813-10.364-11.047   c-2.37-3.625-4.53-8.918-8.038-11.526c-0.238-0.18-0.687-0.002-0.732,0.298c-0.548,3.663,1.414,7.707,2.843,10.992   c1.7,3.904,4.146,7.539,6.933,10.755c5.891,6.799,14.97,10.758,23.738,12.057c15.313,2.272,30.362-4.708,39.961-16.643   c2.182-2.715,4.058-5.652,5.88-8.618c-0.04,4.63-0.08,9.262-0.109,13.891c-0.026,4.004,6.195,4.008,6.222,0   c0.054-8.303,0.122-16.604,0.122-24.907C90.594,51.061,87.978,49.49,86.734,49.492z",
-  //       "M17.98,20.688c5.096-5.933,12.107-11.209,19.818-13.11c10.523-2.591,23.726,1.216,31.448,8.788   c3.523,3.45,6.227,7.538,8.734,11.751c2.084,3.496,4.084,8.505,7.364,11.009c0.244,0.187,0.678-0.004,0.731-0.296   c0.637-3.572-1.238-7.563-2.511-10.82c-1.516-3.889-3.713-7.637-6.163-11.013C72.166,9.786,64.534,5.113,56.037,2.605   C39.996-2.125,24.416,4.048,13.693,16.4c-2.328,2.684-4.36,5.616-6.345,8.567c0.256-3.586,0.517-7.172,0.765-10.759   c0.278-3.995-5.944-3.977-6.221,0c-0.492,7.064-1.519,21.896-1.484,22.229c0.013,0.612-0.002,3.301,2.793,3.301   c3.233,0.002,10.855-0.29,14.028-0.466c2.881-0.16,5.805-0.179,8.675-0.475c1.158-0.121,3.727-0.079,3.836-1.451   c0.175-2.197-3.893-3.01-4.988-3.118c-3.061-0.304-13.198-1.281-15.208-1.447c0.288-0.488,0.571-0.964,0.853-1.389   C12.798,27.753,15.135,24.001,17.98,20.688z",
-  //     ]} />
-  //   );
-  // }
-
-  /** SVG Icon to use for the Rotate tool */
-  private get _rotateSvgIcon2(): React.ReactNode {
-    return (
-      <SvgSprite src={rotateIcon} />
-    );
-  }
-
-  /** Get CoreTools rotate tool but override the icon with an SVG Icon */
-  private get _rotateViewCommand() {
-    const toolItemDef = CoreTools.rotateViewCommand;
-    toolItemDef.iconSpec = this._rotateSvgIcon2;
-    toolItemDef.betaBadge = true;
-    return toolItemDef;
-  }
-
-  /** Get the CustomItemDef for ViewSelector  */
-  private get _viewSelectorItemDef() {
-    return new CustomItemDef({
-      customId: "sampleApp:viewSelector",
-      reactElement: (
-        <ViewSelector
-          imodel={UiFramework.getIModelConnection()}
-          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
-        />
-      ),
-    });
-  }
-
-  private _horizontalToolbarItems = new ItemList([
-    CoreTools.fitViewCommand,
-    CoreTools.windowAreaCommand,
-    CoreTools.zoomViewCommand,
-    CoreTools.panViewCommand,
-    CoreTools.sectionByPlaneCommand,
-    this._rotateViewCommand,  /* Use an SVG icon  */
-  ]);
-
-  private _verticalToolbarItems = new ItemList([
-    CoreTools.walkViewCommand,
-    CoreTools.flyViewCommand,
-    CoreTools.toggleCameraViewCommand,
-    this._viewSelectorItemDef,
-  ]);
-
-  public render() {
-    return (
-      <NavigationWidget
-        navigationAidId="CubeNavigationAid"
-        iModelConnection={UiFramework.getIModelConnection()}
         horizontalItems={this._horizontalToolbarItems}
         verticalItems={this._verticalToolbarItems}
       />

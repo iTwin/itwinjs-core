@@ -24,6 +24,10 @@ All property types may have a single base property determined using the base cla
 
 **category** the name of the [Property Category](./property-category.md) to that classify this property.
 
+### Custom Attributes
+
+ECProperties may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to any property they override.  Custom attributes applied to a base property may be overriden by applying the same custom attribute applied to a derived property.
+
 ### Common Sub-Elements
 
 [ECCustomAttributes](./ec-custom-attributes.md) _(0..1)_

@@ -161,6 +161,7 @@ export interface BSplineSurface3dQuery {
  * @public
  */
 export abstract class BSpline2dNd extends GeometryQuery {
+  /** String name for schema properties */
   public readonly geometryCategory = "bsurf";
 
   /** Array of (exactly 2) knot vectors for the u, v directions */

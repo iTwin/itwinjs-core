@@ -4,9 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles, Range3dProps } from "@bentley/geometry-core";
+import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { CommonLoggerCategory } from "../CommonLoggerCategory";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
+import { IModelError } from "../IModelError";
 
 /** A Range3d that is aligned with the axes of spatial coordinates.
  * @public
@@ -79,6 +82,19 @@ export class Placement3d implements Placement3dProps {
     range.ensureMinLengths();
     return range;
   }
+
+  /** Multiply the Transform of this Placement3d by the specified *other* Transform.
+   * @throws [[IModelError]] if the Transform is invalid for a GeometricElement3d.
+   */
+  public multiplyTransform(other: Transform): void {
+    const transform: Transform = this.transform.multiplyTransformTransform(other);
+    const angles: YawPitchRollAngles | undefined = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
+    if (undefined === angles) {
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+    }
+    this.angles = angles;
+    this.origin.setFrom(transform.origin);
+  }
 }
 
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element.
@@ -106,7 +122,7 @@ export class Placement2d implements Placement2dProps {
   /** Determine whether this Placement2d is valid. */
   public get isValid(): boolean { return !this.bbox.isNull && Math.max(this.origin.maxAbs(), this.bbox.maxAbs()) < Constant.circumferenceOfEarth; }
 
-  /** Set the contents of this Placement3d from another Placement3d */
+  /** Set the contents of this Placement2d from another Placement2d */
   public setFrom(other: Placement2d) {
     this.origin.setFrom(other.origin);
     this.angle.setFrom(other.angle);
@@ -126,5 +142,18 @@ export class Placement2d implements Placement2dProps {
     range.low.z = - 1.0;  // is the 2dFrustumDepth, which === 1 meter
     range.high.z = 1.0;
     return range;
+  }
+
+  /** Multiply the Transform of this Placement2d by the specified *other* Transform.
+   * @throws [[IModelError]] if the Transform is invalid for a GeometricElement2d.
+   */
+  public multiplyTransform(other: Transform): void {
+    const transform: Transform = this.transform.multiplyTransformTransform(other);
+    const angles: YawPitchRollAngles | undefined = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
+    if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero) {
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+    }
+    this.angle = angles.yaw;
+    this.origin.setFrom(transform.origin);
   }
 }

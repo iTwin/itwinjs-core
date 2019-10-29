@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "1.5.0-dev.18",
+  "version": "1.7.0-dev.16",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -11,10 +11,10 @@
   },
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=bentleyjs-core",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
@@ -39,8 +39,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "1.5.0-dev.18",
-    "@bentley/webpack-tools": "1.5.0-dev.18",
+    "@bentley/build-tools": "1.7.0-dev.16",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -51,7 +51,7 @@
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2",
+    "typescript": "~3.6.2",
     "ts-node": "^7.0.1",
     "nyc": "^14.0.0"
   },

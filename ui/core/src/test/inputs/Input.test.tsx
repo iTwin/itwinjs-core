@@ -10,9 +10,9 @@ import { Input } from "../../ui-core";
 
 describe("<Input />", () => {
   it("renders", () => {
-    const checkbox = render(<Input />);
+    const input = render(<Input />);
 
-    expect(checkbox.container.querySelector("input[type='text']")).not.to.be.null;
+    expect(input.container.querySelector("input[type='text']")).not.to.be.null;
   });
 
   it("focus into input with setFocus prop", () => {

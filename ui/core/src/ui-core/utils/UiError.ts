@@ -4,15 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-import { BentleyError, LogFunction, GetMetaDataFunction, Logger, BentleyStatus } from "@bentley/bentleyjs-core";
+import { UiError as Abstract_UiError } from "@bentley/ui-abstract";
 
 /** iModel.js UI UiError class is a subclass of BentleyError. Errors are logged.
+ * Deprecated - use UiError in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use UiError in bentley/ui-abstract instead
  */
-export class UiError extends BentleyError {
-
-  /** Constructs UiError using BentleyError. */
-  public constructor(category: string, message: string, errorNumber: number = BentleyStatus.ERROR, log: LogFunction = Logger.logError, getMetaData?: GetMetaDataFunction | undefined) {
-    super(errorNumber, message, log, category, getMetaData);
-  }
-}
+export const UiError = Abstract_UiError;      // tslint:disable-line: variable-name

@@ -13,8 +13,11 @@ interface CollectionWithLength {
  * @public
  */
 export class IndexedCollectionInterval<T extends CollectionWithLength> {
+  /** Any collection that has a .length member or property */
   public points: T;
+  /** lower limit of index range */
   public begin: number;
+  /** upper limit (beyond) index range. */
   public end: number;
   protected constructor(points: T, base: number, limit: number) {
     this.points = points;

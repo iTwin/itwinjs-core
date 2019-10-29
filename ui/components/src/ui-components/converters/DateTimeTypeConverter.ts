@@ -5,7 +5,7 @@
 /** @module TypeConverters */
 
 import { TimeFormat } from "@bentley/ui-core";
-import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
+import { TypeConverter, LessGreaterOperatorProcessor, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
@@ -84,7 +84,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
 export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Short; }
 }
-TypeConverterManager.registerConverter("shortdate", ShortDateTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.ShortDate, ShortDateTypeConverter);
 
 /**
  * Date Time Type Converter.
@@ -93,4 +93,4 @@ TypeConverterManager.registerConverter("shortdate", ShortDateTypeConverter);
 export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Long; }
 }
-TypeConverterManager.registerConverter("dateTime", DateTimeTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.DateTime, DateTimeTypeConverter);

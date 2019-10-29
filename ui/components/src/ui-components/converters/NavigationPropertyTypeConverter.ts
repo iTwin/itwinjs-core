@@ -23,4 +23,5 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
     return TypeConverterManager.getConverter(StandardTypeConverterTypeNames.Hexadecimal).sortCompare(a, b, ignoreCase);
   }
 }
-TypeConverterManager.registerConverter("navigation", NavigationPropertyTypeConverter);
+
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Navigation, NavigationPropertyTypeConverter);

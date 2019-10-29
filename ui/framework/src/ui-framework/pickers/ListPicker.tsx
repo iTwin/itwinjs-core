@@ -155,6 +155,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
   private _isMounted = false;
+  private _ref = React.createRef<HTMLDivElement>();
 
   /** Creates a ListPickerBase */
   constructor(props: any) {
@@ -222,12 +223,14 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <ExpandableItem
         {...this.props}
         panel={this.getExpandedContent()}>
-        <Item
-          title={this.props.title}
-          onClick={this._toggleIsExpanded}
-          icon={icon}
-          onSizeKnown={this.props.onSizeKnown}
-        />
+        <div ref={this._ref}>
+          <Item
+            title={this.props.title}
+            onClick={this._toggleIsExpanded}
+            icon={icon}
+            onSizeKnown={this.props.onSizeKnown}
+          />
+        </div>
       </ExpandableItem>
     );
   }
@@ -296,7 +299,10 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     );
   }
 
-  private _handleOnOutsideClick = () => {
+  private _handleOnOutsideClick = (e: MouseEvent) => {
+    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
+      return;
+
     this.setState((prevState) => {
       return {
         ...prevState,

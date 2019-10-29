@@ -16,6 +16,7 @@ import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import { StagePanelLocation, getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
+import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -34,14 +35,18 @@ class TestModalFrontstage implements ModalFrontstageInfo {
 }
 
 describe("FrontstageComposer", () => {
-  let handleTabClickStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
   beforeEach(() => {
-    handleTabClickStub && handleTabClickStub.restore();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("FrontstageComposer support of ModalFrontstage", () => {
@@ -78,7 +83,7 @@ describe("FrontstageComposer", () => {
         },
       },
     };
-    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
+    const handleTabClickStub = sandbox.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     wrapper.instance().handleTabClick(6, 0);
 
@@ -220,5 +225,28 @@ describe("FrontstageComposer", () => {
     expect(panel.isCollapsed).to.be.true;
 
     wrapper.unmount();
+  });
+
+  it("should hide tool settings widget", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    const hideWidgetSpy = sandbox.spy(FrontstageManager.NineZoneManager, "hideWidget");
+
+    FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
+
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  describe("isCollapsedToPanelState", () => {
+    it("should return Minimized if is collapsed", () => {
+      expect(isCollapsedToPanelState(true)).to.eq(StagePanelState.Minimized);
+    });
+
+    it("should return Open if not collapsed", () => {
+      expect(isCollapsedToPanelState(false)).to.eq(StagePanelState.Open);
+    });
   });
 });

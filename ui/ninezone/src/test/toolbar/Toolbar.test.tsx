@@ -77,7 +77,7 @@ describe("<PanelsProvider />", () => {
     const appendChild = sinon.stub(panels, "appendChild").callsFake((newChild: Node) => newChild);
     mount(
       <PanelsProvider
-        histories={React.createRef<HTMLElement>()}
+        histories={null}
         items={
           <>
             <ExpandableItem />
@@ -85,7 +85,7 @@ describe("<PanelsProvider />", () => {
             <ExpandableItem />
           </>
         }
-        panels={{ current: panels }}
+        panels={panels}
       >
         {(items) => items}
       </PanelsProvider>,
@@ -100,11 +100,11 @@ describe("<PanelsProvider />", () => {
     const removeChild = sinon.spy(panels, "removeChild");
     mount(
       <PanelsProvider
-        histories={React.createRef<HTMLElement>()}
+        histories={null}
         items={
           <ExpandableItem />
         }
-        panels={{ current: panels }}
+        panels={panels}
       >
         {(items) => items}
       </PanelsProvider>,
@@ -117,7 +117,7 @@ describe("<PanelsProvider />", () => {
     const appendChild = sinon.stub(histories, "appendChild").callsFake((newChild: Node) => newChild);
     mount(
       <PanelsProvider
-        histories={{ current: histories }}
+        histories={histories}
         items={
           <>
             <ExpandableItem />
@@ -125,7 +125,7 @@ describe("<PanelsProvider />", () => {
             <ExpandableItem />
           </>
         }
-        panels={React.createRef<HTMLElement>()}
+        panels={null}
       >
         {(items) => items}
       </PanelsProvider>,
@@ -140,11 +140,11 @@ describe("<PanelsProvider />", () => {
     const removeChild = sinon.spy(histories, "removeChild");
     mount(
       <PanelsProvider
-        histories={{ current: histories }}
+        histories={histories}
         items={
           <ExpandableItem />
         }
-        panels={React.createRef<HTMLElement>()}
+        panels={null}
       >
         {(items) => items}
       </PanelsProvider>,
@@ -156,9 +156,9 @@ describe("<PanelsProvider />", () => {
     const children = sinon.fake(() => null);
     mount(
       <PanelsProvider
-        histories={React.createRef<HTMLElement>()}
+        histories={null}
         items={"!element"}
-        panels={React.createRef<HTMLElement>()}
+        panels={null}
       >
         {children}
       </PanelsProvider>,
@@ -170,7 +170,7 @@ describe("<PanelsProvider />", () => {
   it("should force update", () => {
     const sut = mount(
       <PanelsProvider
-        histories={React.createRef<HTMLElement>()}
+        histories={null}
         items={
           <>
             <ExpandableItem />
@@ -178,7 +178,7 @@ describe("<PanelsProvider />", () => {
             <ExpandableItem />
           </>
         }
-        panels={React.createRef<HTMLElement>()}
+        panels={null}
       >
         {(items) => items}
       </PanelsProvider>,

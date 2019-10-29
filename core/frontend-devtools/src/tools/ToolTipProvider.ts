@@ -21,7 +21,7 @@ class DebugToolTipProvider implements ToolTipProvider {
     // discard and overwrite
     await tooltipPromise;
 
-    const keys: Array<keyof HitDetail> = [ "modelId", "subCategoryId", "tileId" ];
+    const keys: Array<keyof HitDetail> = [ "sourceId", "modelId", "subCategoryId", "tileId", "geometryClass" ];
     let html = "";
     for (const key of keys) {
       const value = hit[key];

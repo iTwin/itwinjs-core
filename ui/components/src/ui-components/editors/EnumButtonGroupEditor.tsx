@@ -103,7 +103,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     const button = this._btnRefs.get(this.state.selectValue);
     // istanbul ignore else
     if (button)
-      button.focus();
+      button.focus({ preventScroll: true });
   }
 
   /** @internal */
@@ -128,7 +128,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       const button = this._btnRefs.get(state!.selectValue);
       // istanbul ignore else
       if (button)
-        button.focus();
+        button.focus({ preventScroll: true });
     }
   }
 

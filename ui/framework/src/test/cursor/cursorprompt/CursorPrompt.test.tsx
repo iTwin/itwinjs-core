@@ -6,17 +6,22 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
-import { ToolAssistance, RelativePosition } from "@bentley/imodeljs-frontend";
+import { ToolAssistance } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 
+import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
 import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
 import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";
 import { CursorPopupRenderer, CursorPopupManager } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
 
 import TestUtils from "../../TestUtils";
-import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
 
 describe("CursorPrompt", () => {
+
+  beforeEach(() => {
+    CursorPopupManager.clearPopups();
+  });
 
   it("should display", async () => {
     const wrapper = mount(<CursorPopupRenderer />);

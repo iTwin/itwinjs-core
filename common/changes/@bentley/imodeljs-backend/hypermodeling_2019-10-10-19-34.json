@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "New wip plugin for hypermodeling support.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Brien.Bastings@bentley.com"
+}

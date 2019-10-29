@@ -22,7 +22,7 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
 import { DisplayParams } from "../primitives/DisplayParams";
 
-function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
     return false;
 
@@ -95,10 +95,9 @@ export class FeatureOverrides implements IDisposable {
 
     // NB: We currently use 2 RGBA values per feature as follows:
     //  [0]
-    //      R = override flags (see FeatureOverrides::Flags)
-    //      G = line weight
+    //      RG = override flags (see OvrFlags enum)
     //      B = line code
-    //      A = 1 if no-locatable
+    //      A = line weight (if we need an extra byte in future, could combine code+weight into a single byte).
     //  [1]
     //      RGB = rgb
     //      A = alpha
@@ -120,9 +119,14 @@ export class FeatureOverrides implements IDisposable {
         continue;
       }
 
-      let flags = OvrFlags.None;
+      let flags = app.nonLocatable ? OvrFlags.NonLocatable : OvrFlags.None;
       if (isModelHilited || isFeatureHilited(feature, hilites)) {
         flags |= OvrFlags.Hilited;
+        this.anyHilited = true;
+      }
+
+      if (app.emphasized) {
+        flags |= OvrFlags.Emphasized;
         this.anyHilited = true;
       }
 
@@ -154,7 +158,7 @@ export class FeatureOverrides implements IDisposable {
         let weight = app.weight;
         weight = Math.min(31, weight);
         weight = Math.max(1, weight);
-        data.setByteAtIndex(dataIndex + 1, weight);
+        data.setByteAtIndex(dataIndex + 3, weight);
       }
 
       if (app.overridesLinePixels && app.linePixels) {
@@ -169,10 +173,8 @@ export class FeatureOverrides implements IDisposable {
       if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
         flags |= OvrFlags.Flashed;
 
-      data.setByteAtIndex(dataIndex + 3, app.nonLocatable ? 1 : 0);
-
       data.setOvrFlagsAtIndex(dataIndex, flags);
-      if (OvrFlags.None !== flags || app.nonLocatable)
+      if (OvrFlags.None !== flags)
         nOverridden++;
     }
 
@@ -196,7 +198,7 @@ export class FeatureOverrides implements IDisposable {
 
     for (let i = 0; i < map.numFeatures; i++) {
       const dataIndex = i * 4 * 2;
-      const oldFlags = data.getFlagsAtIndex(dataIndex);
+      const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // Do the same thing as when applying feature overrides - if it's invisible, none of the other flags matter
         // (and if we don't check this we can end up rendering silhouettes around invisible elements in selection set)
@@ -227,7 +229,7 @@ export class FeatureOverrides implements IDisposable {
       data.setOvrFlagsAtIndex(dataIndex, newFlags);
       if (OvrFlags.None !== newFlags) {
         this.anyOverridden = true;
-        this.anyHilited = this.anyHilited || isHilited;
+        this.anyHilited = this.anyHilited || isHilited || OvrFlags.None !== (newFlags & OvrFlags.Emphasized);
       }
     }
   }
@@ -286,6 +288,38 @@ export abstract class Graphic extends RenderGraphic {
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
+}
+
+export class GraphicOwner extends Graphic {
+  private readonly _graphic: Graphic;
+
+  public constructor(graphic: Graphic) {
+    super();
+    this._graphic = graphic;
+  }
+
+  public get graphic(): RenderGraphic { return this._graphic; }
+
+  public dispose(): void { }
+  public disposeGraphic(): void {
+    this.graphic.dispose();
+  }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+  }
+
+  public addCommands(commands: RenderCommands): void {
+    this._graphic.addCommands(commands);
+  }
+  public get isPickable(): boolean {
+    return this._graphic.isPickable;
+  }
+  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
+    this._graphic.addHiliteCommands(commands, batch, pass);
+  }
+  public toPrimitive(): Primitive | undefined {
+    return this._graphic.toPrimitive();
+  }
 }
 
 /** Transiently assigned to a Batch while rendering a frame, reset afterward. Used to provide context for pick IDs.

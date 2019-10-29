@@ -42,6 +42,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * @public
  */
 export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
+  /** String name for schema properties */
   public readonly solidPrimitiveType = "torusPipe";
 
   private _localToWorld: Transform;

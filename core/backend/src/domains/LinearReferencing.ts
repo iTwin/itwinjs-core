@@ -21,6 +21,7 @@ import * as relationshipsModule from "./LinearReferencingRelationships";
  */
 export class LinearReferencingSchema extends Schema {
   public static get schemaName(): string { return "LinearReferencing"; }
+  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/LinearReferencing.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -32,6 +33,7 @@ export class LinearReferencingSchema extends Schema {
     }
   }
 
+  /** @deprecated Use [[schemaFilePath]] and IModelDb.importSchemas instead */
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
@@ -42,6 +44,6 @@ export class LinearReferencingSchema extends Schema {
       requestContext.enter();
     }
 
-    await iModelDb.importSchema(requestContext, path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/LinearReferencing.ecschema.xml"));
+    await iModelDb.importSchema(requestContext, this.schemaFilePath);
   }
 }

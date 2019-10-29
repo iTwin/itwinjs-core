@@ -462,8 +462,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
-    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
+    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
+      this._childrenLastUsed = args.now;
+    }
 
     if (undefined !== children) {
       // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.
@@ -670,16 +672,16 @@ export namespace Tile {
    * @internal
    */
   export const enum LoadPriority {
+    /** Background map tiles. */
+    Map = 1,
     /** Typically, tiles generated from the contents of geometric models. */
-    Primary = 0,
-    /** Typically, map tiles. */
-    Background = 1,
+    Primary = 20,
     /** Terrain -- requires background/map tiles for drape. */
-    Terrain = 2,
-    /** Supplementary tiles used to classify the contents of geometric or reality models. */
-    Classifier = 3,
+    Terrain = 30,
     /** Typically, context reality models. */
-    Context = 4,
+    Context = 40,
+    /** Supplementary tiles used to classify the contents of geometric or reality models. */
+    Classifier = 50,
   }
 
   /**
@@ -756,7 +758,7 @@ export namespace Tile {
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 
       this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
-      this.drape = context.getTextureDrape(root.modelId);
+      this.drape = context.getTextureDrapeForModel(root.modelId);
 
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
       if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)

@@ -9,6 +9,9 @@
 // import { AccessToken } from "@bentley/imodeljs-clients";
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
+import { XAndY } from "@bentley/geometry-core";
+import { MenuItemProps } from "./shared/MenuItem";
+
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 
 /** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
@@ -18,6 +21,15 @@ import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 export interface PresentationSelectionScope {
   id: string;
   label: string;
+}
+
+/** Definition of data added to Redux store to define cursor menu.  If menuItems are empty the menu control is not displayed.
+ * To close the menu clear the menuItems or pass in undefined as the CursorData.
+ * @beta
+ */
+export interface CursorMenuData {
+  items: MenuItemProps[];
+  position: XAndY;
 }
 
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -35,6 +47,7 @@ export enum SessionStateActionId {
   SetDefaultViewId = "sessionstate:set-default-viewid",
   SetDefaultViewState = "sessionstate:set-default-view-state",
   SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
+  UpdateCursorMenu = "sessionstate:update-cursor-menu",
 }
 
 /** The portion of state managed by the SessionStateReducer.
@@ -51,6 +64,7 @@ export interface SessionState {
   defaultRulesetId: string | undefined;
   iModelConnection: any | undefined;
   accessToken: any | undefined;
+  cursorMenuData: CursorMenuData | undefined;
 }
 
 const defaultSelectionScope = { id: "element", label: "Element" } as PresentationSelectionScope;
@@ -71,6 +85,7 @@ const initialState: SessionState = {
   defaultRulesetId: undefined,
   iModelConnection: undefined,
   accessToken: undefined,
+  cursorMenuData: undefined,
 };
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
@@ -87,6 +102,7 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
   setIModelConnection: (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
   setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
+  updateCursorMenu: (cursorMenuData: CursorMenuData) => createAction(SessionStateActionId.UpdateCursorMenu, cursorMenuData),
 };
 
 /** Union of SessionState Redux actions
@@ -146,6 +162,9 @@ export function SessionStateReducer(state: SessionState = initialState, _action:
     }
     case SessionStateActionId.SetAccessToken: {
       return { ...state, accessToken: _action.payload };
+    }
+    case SessionStateActionId.UpdateCursorMenu: {
+      return { ...state, cursorMenuData: _action.payload };
     }
   }
 

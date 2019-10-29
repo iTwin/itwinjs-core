@@ -2,11 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import { mount } from "enzyme";
-
-import TestUtils from "../../TestUtils";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
+import { Rectangle } from "@bentley/ui-core";
+import { getDefaultZoneManagerProps, ToolSettings, ResizeHandle } from "@bentley/ui-ninezone";
 import {
   ConfigurableUiManager,
   ToolUiProvider,
@@ -19,11 +20,44 @@ import {
   FrontstageManager,
   FrontstageComposer,
   CoreTools,
+  ToolSettingsZone,
+  ToolSettingsZoneProps,
 } from "../../../ui-framework";
 import { Tool1 } from "../../tools/Tool1";
 import { WidgetState } from "../../../ui-framework/widgets/WidgetDef";
+import TestUtils, { ReactWrapper } from "../../TestUtils";
 
 describe("ToolSettingsZone", () => {
+  const sandbox = sinon.createSandbox();
+
+  const widgetChangeHandler: ToolSettingsZoneProps["widgetChangeHandler"] = {
+    handleResize: () => { },
+    handleTabClick: () => { },
+    handleTabDrag: () => { },
+    handleTabDragEnd: () => { },
+    handleTabDragStart: () => { },
+    handleWidgetStateChange: () => { },
+  };
+
+  const targetChangeHandler = {} as ToolSettingsZoneProps["targetChangeHandler"];
+  const getWidgetContentRef: ToolSettingsZoneProps["getWidgetContentRef"] = () => React.createRef();
+  const zone = getDefaultZoneManagerProps(2);
+
+  const props = {
+    dropTarget: undefined,
+    getWidgetContentRef,
+    isHidden: false,
+    isClosed: false,
+    lastPosition: undefined,
+    targetChangeHandler,
+    targetedBounds: undefined,
+    widgetChangeHandler,
+    zone,
+  };
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   class Tool1UiProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -178,4 +212,85 @@ describe("ToolSettingsZone", () => {
     wrapper.unmount();
   });
 
+  it("should hide title bar buttons when floating", async () => {
+    const floatingZone = {
+      ...zone,
+      floating: {
+        bounds: new Rectangle(),
+        stackId: 0,
+      },
+    };
+    shallow(<ToolSettingsZone
+      {...props}
+      zone={floatingZone}
+    />).dive().should.matchSnapshot();
+  });
+
+  it("should fill zone", async () => {
+    const floatingZone = {
+      ...zone,
+      floating: {
+        bounds: new Rectangle(),
+        stackId: 0,
+      },
+      isLayoutChanged: true,
+    };
+    shallow(<ToolSettingsZone
+      {...props}
+      zone={floatingZone}
+    />).dive().should.matchSnapshot();
+  });
+
+  it("should handle drag start", () => {
+    const spy = sandbox.spy(props.widgetChangeHandler, "handleTabDragStart");
+    const sut = mount<ToolSettingsZone>(<ToolSettingsZone
+      {...props}
+    />);
+    const toolSettings = sut.find(ToolSettings) as ReactWrapper<ToolSettings>;
+
+    const widgetBounds = { left: 980, top: 0, right: 1000, bottom: 20 };
+    sinon.stub(toolSettings.instance(), "getBounds").returns(widgetBounds);
+
+    const initialPosition = { x: 2, y: 4 };
+    toolSettings.prop("onDragStart")!(initialPosition);
+
+    expect(spy.calledOnceWithExactly(2, 0, sinon.match(initialPosition) as any, sinon.match(widgetBounds) as any)).to.true;
+  });
+
+  it("should not handle drag start with unset ref", () => {
+    const spy = sandbox.spy(props.widgetChangeHandler, "handleTabDragStart");
+    const ref = {
+      current: null,
+    };
+    sinon.stub(ref, "current").set(() => { });
+    sandbox.stub(React, "createRef").returns(ref);
+    const sut = mount<ToolSettingsZone>(<ToolSettingsZone
+      {...props}
+    />);
+    const toolSettings = sut.find(ToolSettings);
+
+    const initialPosition = { x: 2, y: 4 };
+    toolSettings.prop("onDragStart")!(initialPosition);
+
+    expect(spy.called).to.false;
+  });
+
+  it("should handle resize", () => {
+    const floatingZone = {
+      ...zone,
+      floating: {
+        bounds: new Rectangle(),
+        stackId: 0,
+      },
+    };
+    const spy = sandbox.spy(props.widgetChangeHandler, "handleResize");
+    const sut = mount<ToolSettingsZone>(<ToolSettingsZone
+      {...props}
+      zone={floatingZone}
+    />);
+    const toolSettings = sut.find(ToolSettings);
+    toolSettings.prop("onResize")!(20, ResizeHandle.Left);
+
+    expect(spy.calledOnceWithExactly(2, 20, ResizeHandle.Left, 0)).to.true;
+  });
 });

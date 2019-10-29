@@ -342,136 +342,11 @@ describe("PropertyDataProvider", () => {
         field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
-          [createRandomPrimitiveField(), createRandomPrimitiveField()], undefined, faker.random.boolean());
+          [createRandomPrimitiveField(false), createRandomPrimitiveField(false)], undefined, faker.random.boolean());
         field1.rebuildParentship();
         field2 = createRandomPrimitiveField();
         field1.category = field2.category = createRandomCategory();
         descriptor.fields = [field1, field2];
-      });
-
-      describe("favorite category", () => {
-
-        beforeEach(() => {
-          favoritePropertyManagerMock.setup((x) => x.has(moq.It.isAny())).returns(() => true);
-        });
-
-        it("makes non-struct records of struct fields in favorite category", async () => {
-          const propertiesField = createRandomPropertiesField();
-          const nestedContentField = createRandomNestedContentField([propertiesField]);
-
-          descriptor = createRandomDescriptor();
-          descriptor.fields = [nestedContentField];
-
-          const propertyValue: string = faker.random.words(2);
-          const nestedContentValue: NestedContentValue[] = [{
-            primaryKeys: [],
-            values: { [propertiesField.name]: propertyValue },
-            displayValues: {},
-            mergedFieldNames: [],
-          }];
-
-          const values: ValuesDictionary<any> = { [nestedContentField.name]: nestedContentValue };
-          const displayValues: ValuesDictionary<any> = {};
-          const record = new Item([createRandomECInstanceKey()],
-            faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-
-          const data = await provider.getData();
-          expect(data.categories.length).to.eq(2);
-          expect(data.records[favoritesCategoryName].length).to.eq(1);
-          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(propertiesField.name);
-          expect((data.records[favoritesCategoryName][0].value as PrimitiveValue).value as string).to.be.eq(propertyValue);
-        });
-
-        it("makes properties field parent record if property is merged in favorite category", async () => {
-          const propertiesField = createRandomPropertiesField();
-          const nestedContentField = createRandomNestedContentField([propertiesField]);
-
-          descriptor = createRandomDescriptor();
-          descriptor.fields = [nestedContentField];
-
-          const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
-          const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
-          const record = new Item([createRandomECInstanceKey()],
-            faker.random.words(), faker.random.word(), undefined, values, displayValues, [nestedContentField.name]);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-
-          const data = await provider.getData();
-          expect(data.categories.length).to.eq(2);
-          expect(data.records[favoritesCategoryName].length).to.eq(1);
-          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(nestedContentField.name);
-          const nestedContentRecordValue = data.records[favoritesCategoryName][0].value as PrimitiveValue;
-          expect(nestedContentRecordValue.value).to.be.undefined;
-          expect(nestedContentRecordValue.displayValue).to.be.eq("*** Varies ***");
-        });
-
-        it("makes no duplicate records for merged nested conted fields that have multiple favorite properties", async () => {
-          const propertiesField1 = createRandomPropertiesField();
-          const propertiesField2 = createRandomPropertiesField();
-          const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2]);
-
-          descriptor = createRandomDescriptor();
-          descriptor.fields = [nestedContentField];
-
-          const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
-          const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
-          const record = new Item([createRandomECInstanceKey()],
-            faker.random.words(), faker.random.word(), undefined, values, displayValues, [nestedContentField.name]);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-
-          const data = await provider.getData();
-          expect(data.categories.length).to.eq(2);
-          expect(data.records[favoritesCategoryName].length).to.eq(1);
-          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(nestedContentField.name);
-          const nestedContentRecordValue = data.records[favoritesCategoryName][0].value as PrimitiveValue;
-          expect(nestedContentRecordValue.value).to.be.undefined;
-          expect(nestedContentRecordValue.displayValue).to.be.eq("*** Varies ***");
-        });
-
-        it("throws if nested field values are not nested content", async () => {
-          const values = {
-            [field1.name]: [{ primaryKeys: [createRandomECInstanceKey()] }],
-          };
-          const displayValues = {
-            [field1.name]: faker.random.words(),
-          };
-          const record = new Item([createRandomECInstanceKey()], faker.random.words(),
-            faker.random.uuid(), undefined, values, displayValues, []);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-          expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "value should be nested content");
-        });
-
-        it("throws if nested content does not contain a single element", async () => {
-          const values = {
-            [field1.name]: [{
-              primaryKeys: [createRandomECInstanceKey()],
-              values: {
-                [field1.nestedFields[0].name]: faker.random.word(),
-              },
-              displayValues: {
-                [field1.nestedFields[0].name]: faker.random.words(),
-              },
-              mergedFieldNames: [],
-            }, {
-              primaryKeys: [createRandomECInstanceKey()],
-              values: {
-                [field1.nestedFields[0].name]: faker.random.word(),
-              },
-              displayValues: {
-                [field1.nestedFields[0].name]: faker.random.words(),
-              },
-              mergedFieldNames: [],
-            }] as NestedContentValue[],
-          };
-          const displayValues = {
-            [field1.name]: undefined,
-          };
-          const record = new Item([createRandomECInstanceKey()], faker.random.words(),
-            faker.random.uuid(), undefined, values, displayValues, []);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-          expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "nested content should have a single element");
-        });
-
       });
 
       it("returns nested content with multiple nested records", async () => {
@@ -507,7 +382,7 @@ describe("PropertyDataProvider", () => {
         expect(await provider.getData()).to.matchSnapshot();
       });
 
-      it("returns nested content with multiple nested records when there's only one record in caregory", async () => {
+      it("returns nested content with multiple nested records when there's only one record in category", async () => {
         descriptor.fields = [field1];
         const values = {
           [field1.name]: [{
@@ -640,6 +515,109 @@ describe("PropertyDataProvider", () => {
         expect(await provider.getData()).to.matchSnapshot();
       });
 
+      it("returns nested content in a separate category when it's categorized", async () => {
+        field1.nestedFields[0].category = createRandomCategory();
+        const values = {
+          [field1.name]: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }] as NestedContentValue[],
+          [field2.name]: faker.random.word(),
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+          [field2.name]: faker.random.words(),
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
+      it("returns favorite nested content in a separate category when it's categorized", async () => {
+        field1.nestedFields[0].category = createRandomCategory();
+        favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+        const values = {
+          [field1.name]: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }] as NestedContentValue[],
+          [field2.name]: faker.random.word(),
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+          [field2.name]: faker.random.words(),
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
+      it("removes nested content record when the only nested field is moved into a separate category and there are other records in nested content record category", async () => {
+        field1.nestedFields[0].category = createRandomCategory();
+        field1.nestedFields.splice(1);
+        const values = {
+          [field1.name]: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }] as NestedContentValue[],
+          [field2.name]: faker.random.word(),
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+          [field2.name]: faker.random.words(),
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
+      it("removes nested content record when the only nested field is moved into a separate category and nested content record is the only record in category", async () => {
+        descriptor.fields = [field1];
+        field1.nestedFields[0].category = createRandomCategory();
+        const values = {
+          [field1.name]: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+              [field1.nestedFields[1].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+              [field1.nestedFields[1].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }] as NestedContentValue[],
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
     });
 
     describe("includeFieldsWithNoValues handling", () => {
@@ -700,6 +678,169 @@ describe("PropertyDataProvider", () => {
         expect(data.categories.length).to.eq(1);
         expect(data.records[data.categories[0].name].length).to.eq(1);
         expect(data.records[data.categories[0].name][0].property.name).to.eq(descriptor.fields[0].name);
+      });
+
+    });
+
+    describe("favorite properties handling", () => {
+
+      it("makes records favorite according to isFieldFavorite callback", async () => {
+        provider.isFieldFavorite = (_field: Field) => true;
+        const descriptor = createRandomDescriptor();
+        descriptor.fields.forEach((field, index) => {
+          field.category = { ...field.category, name: `category_${index}` };
+        });
+        const values: ValuesDictionary<any> = {};
+        const displayValues: ValuesDictionary<any> = {};
+        const record = new Item([createRandomECInstanceKey()],
+          faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+        const data = await provider.getData();
+        expect(data.categories.length).to.eq(4);
+        expect(data.records[favoritesCategoryName].length).to.eq(descriptor.fields.length);
+      });
+
+      describe("with nested content", () => {
+
+        let descriptor: Descriptor;
+        let field1: NestedContentField;
+        let field2: Field;
+        beforeEach(() => {
+          descriptor = createRandomDescriptor();
+          field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
+            faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+            faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
+            [createRandomPrimitiveField(false), createRandomPrimitiveField(false)], undefined, faker.random.boolean());
+          field1.rebuildParentship();
+          field2 = createRandomPrimitiveField();
+          field1.category = field2.category = createRandomCategory();
+          descriptor.fields = [field1, field2];
+        });
+
+        it("makes non-struct records of struct fields in favorite category", async () => {
+          const propertiesField = createRandomPropertiesField(false);
+          const nestedContentField = createRandomNestedContentField([propertiesField]);
+          descriptor = createRandomDescriptor();
+          descriptor.fields = [nestedContentField];
+
+          favoritePropertyManagerMock.setup((x) => x.has(propertiesField)).returns(() => true);
+
+          const propertyValue: string = faker.random.words(2);
+          const nestedContentValue: NestedContentValue[] = [{
+            primaryKeys: [],
+            values: { [propertiesField.name]: propertyValue },
+            displayValues: {},
+            mergedFieldNames: [],
+          }];
+
+          const values: ValuesDictionary<any> = { [nestedContentField.name]: nestedContentValue };
+          const displayValues: ValuesDictionary<any> = {};
+          const record = new Item([createRandomECInstanceKey()],
+            faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+          const data = await provider.getData();
+          expect(data.categories.length).to.eq(2);
+          expect(data.records[favoritesCategoryName].length).to.eq(1);
+          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(propertiesField.name);
+          expect((data.records[favoritesCategoryName][0].value as PrimitiveValue).value as string).to.be.eq(propertyValue);
+        });
+
+        it("makes properties field parent record if property is merged in favorite category", async () => {
+          const propertiesField = createRandomPropertiesField(false);
+          const nestedContentField = createRandomNestedContentField([propertiesField]);
+          descriptor = createRandomDescriptor();
+          descriptor.fields = [nestedContentField];
+
+          favoritePropertyManagerMock.setup((x) => x.has(propertiesField)).returns(() => true);
+
+          const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
+          const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
+          const record = new Item([createRandomECInstanceKey()],
+            faker.random.words(), faker.random.word(), undefined, values, displayValues, [nestedContentField.name]);
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+          const data = await provider.getData();
+          expect(data.categories.length).to.eq(2);
+          expect(data.records[favoritesCategoryName].length).to.eq(1);
+          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(nestedContentField.name);
+          const nestedContentRecordValue = data.records[favoritesCategoryName][0].value as PrimitiveValue;
+          expect(nestedContentRecordValue.value).to.be.undefined;
+          expect(nestedContentRecordValue.displayValue).to.be.eq("*** Varies ***");
+        });
+
+        it("makes no duplicate records for merged nested content fields that have multiple favorite properties", async () => {
+          const propertiesField1 = createRandomPropertiesField(false);
+          const propertiesField2 = createRandomPropertiesField(false);
+          const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2]);
+          descriptor = createRandomDescriptor();
+          descriptor.fields = [nestedContentField];
+
+          favoritePropertyManagerMock.setup((x) => x.has(propertiesField1)).returns(() => true);
+          favoritePropertyManagerMock.setup((x) => x.has(propertiesField2)).returns(() => true);
+
+          const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
+          const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
+          const record = new Item([createRandomECInstanceKey()],
+            faker.random.words(), faker.random.word(), undefined, values, displayValues, [nestedContentField.name]);
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+          const data = await provider.getData();
+          expect(data.categories.length).to.eq(2);
+          expect(data.records[favoritesCategoryName].length).to.eq(1);
+          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(nestedContentField.name);
+          const nestedContentRecordValue = data.records[favoritesCategoryName][0].value as PrimitiveValue;
+          expect(nestedContentRecordValue.value).to.be.undefined;
+          expect(nestedContentRecordValue.displayValue).to.be.eq("*** Varies ***");
+        });
+
+        it("throws if nested field values are not nested content", async () => {
+          favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+          const values = {
+            [field1.name]: [{ primaryKeys: [createRandomECInstanceKey()] }],
+          };
+          const displayValues = {
+            [field1.name]: faker.random.words(),
+          };
+          const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+            faker.random.uuid(), undefined, values, displayValues, []);
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+          await expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "value should be nested content");
+        });
+
+        it("throws if nested content does not contain a single element", async () => {
+          favoritePropertyManagerMock.setup((x) => x.has(field1.nestedFields[0])).returns(() => true);
+          const values = {
+            [field1.name]: [{
+              primaryKeys: [createRandomECInstanceKey()],
+              values: {
+                [field1.nestedFields[0].name]: faker.random.word(),
+              },
+              displayValues: {
+                [field1.nestedFields[0].name]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            }, {
+              primaryKeys: [createRandomECInstanceKey()],
+              values: {
+                [field1.nestedFields[0].name]: faker.random.word(),
+              },
+              displayValues: {
+                [field1.nestedFields[0].name]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            }] as NestedContentValue[],
+          };
+          const displayValues = {
+            [field1.name]: undefined,
+          };
+          const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+            faker.random.uuid(), undefined, values, displayValues, []);
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+          await expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "nested content should have a single element");
+        });
+
       });
 
     });
@@ -791,23 +932,6 @@ describe("PropertyDataProvider", () => {
 
       const data = await provider.getData();
       expect(data.categories.length).to.eq(0);
-    });
-
-    it("makes records favorite according to has callback", async () => {
-      provider.isFieldFavorite = (_field: Field) => true;
-      const descriptor = createRandomDescriptor();
-      descriptor.fields.forEach((field, index) => {
-        field.category = { ...field.category, name: `category_${index}` };
-      });
-      const values: ValuesDictionary<any> = {};
-      const displayValues: ValuesDictionary<any> = {};
-      const record = new Item([createRandomECInstanceKey()],
-        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      (provider as any).getContent = async () => new Content(descriptor, [record]);
-
-      const data = await provider.getData();
-      expect(data.categories.length).to.eq(4);
-      expect(data.records[favoritesCategoryName].length).to.eq(descriptor.fields.length);
     });
 
   });

@@ -167,6 +167,7 @@ export class TransitionConditionalProperties {
  * @alpha
  */
 export class TransitionSpiral3d extends CurvePrimitive {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "transitionSpiral";
 
   /** Return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line) */

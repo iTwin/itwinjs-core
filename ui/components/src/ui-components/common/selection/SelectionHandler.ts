@@ -192,8 +192,10 @@ export class DragAction<Item> {
   }
 
   private findItem(itemSelectionHandlers: Array<Array<SingleSelectionHandler<Item>>>, item: Item): { x: number, y: number } {
-    if (this._previousRow !== undefined && this._previousColumn !== undefined && this._componentSelectionHandler.areEqual(itemSelectionHandlers[this._previousRow][this._previousColumn].item(), item))
+    if (this._previousRow !== undefined && this._previousRow !== -1 && this._previousColumn !== undefined && this._previousColumn !== -1 &&
+      this._componentSelectionHandler.areEqual(itemSelectionHandlers[this._previousRow][this._previousColumn].item(), item)) {
       return { y: this._previousRow, x: this._previousColumn };
+    }
     for (let row = 0; row < itemSelectionHandlers.length; row++) {
       for (let column = 0; column < itemSelectionHandlers[row].length; column++) {
         if (this._componentSelectionHandler.areEqual(itemSelectionHandlers[row][column].item(), item))

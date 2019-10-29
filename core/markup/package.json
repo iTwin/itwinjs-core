@@ -1,13 +1,13 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "1.5.0-dev.18",
+  "version": "1.7.0-dev.16",
   "description": "iModel.js markup package",
   "license": "MIT",
   "main": "lib/imodeljs-markup.js",
   "scripts": {
     "build": "buildIModelJsModule",
-    "clean": "rimraf lib package-deps.json",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
+    "clean": "rimraf lib .rush package-deps.json",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
     "lint": "tslint --project . 1>&2",
     "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
@@ -50,21 +50,21 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.5.0-dev.18",
-    "@bentley/imodeljs-frontend": "^1.5.0-dev.18",
-    "@bentley/imodeljs-common": "^1.5.0-dev.18",
-    "@bentley/geometry-core": "^1.5.0-dev.18",
-    "@bentley/imodeljs-i18n": "^1.5.0-dev.18"
+    "@bentley/bentleyjs-core": "^1.7.0-dev.16",
+    "@bentley/imodeljs-frontend": "^1.7.0-dev.16",
+    "@bentley/imodeljs-common": "^1.7.0-dev.16",
+    "@bentley/geometry-core": "^1.7.0-dev.16",
+    "@bentley/imodeljs-i18n": "^1.7.0-dev.16"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.18",
-    "@bentley/imodeljs-frontend": "1.5.0-dev.18",
-    "@bentley/imodeljs-common": "1.5.0-dev.18",
-    "@bentley/geometry-core": "1.5.0-dev.18",
-    "@bentley/imodeljs-i18n": "1.5.0-dev.18",
-    "@bentley/build-tools": "1.5.0-dev.18",
-    "@bentley/webpack-tools": "1.5.0-dev.18",
-    "@bentley/certa": "1.5.0-dev.18",
+    "@bentley/bentleyjs-core": "1.7.0-dev.16",
+    "@bentley/imodeljs-frontend": "1.7.0-dev.16",
+    "@bentley/imodeljs-common": "1.7.0-dev.16",
+    "@bentley/geometry-core": "1.7.0-dev.16",
+    "@bentley/imodeljs-i18n": "1.7.0-dev.16",
+    "@bentley/build-tools": "1.7.0-dev.16",
+    "@bentley/webpack-tools": "1.7.0-dev.16",
+    "@bentley/certa": "1.7.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -76,7 +76,7 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2",
+    "typescript": "~3.6.2",
     "webpack": "^4.20.2"
   },
   "nyc": {

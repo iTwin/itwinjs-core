@@ -121,8 +121,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* SVT_DISABLE_DIRECT_SCREEN_RENDERING
-  * If defined, we will not render webgl content directly to the screen when only 1 on-screen viewport is open.
 * SVT_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
@@ -144,3 +142,4 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta markup** - toggle markup on the selected viewport.
 * **dta drawing aid points** - start tool for testing AccuSnap.
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.

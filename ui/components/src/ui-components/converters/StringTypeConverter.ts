@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { TypeConverter } from "./TypeConverter";
+import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
@@ -105,5 +105,5 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 }
 
-TypeConverterManager.registerConverter("text", StringTypeConverter);
-TypeConverterManager.registerConverter("string", StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Text, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.String, StringTypeConverter);

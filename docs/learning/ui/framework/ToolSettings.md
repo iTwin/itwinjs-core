@@ -29,4 +29,4 @@ The following classes defined within the imodeljs-frontend package are used by t
 
 ## API Reference
 
-* [ToolSettings]($framework:ToolSettings)
+* [ToolSettings]($ui-framework:ToolSettings)

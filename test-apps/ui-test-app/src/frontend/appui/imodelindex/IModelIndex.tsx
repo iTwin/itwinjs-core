@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Tab, Tabs } from "./Tabs";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AccessToken, IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version } from "@bentley/imodeljs-clients";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { UiFramework } from "@bentley/ui-framework";
@@ -25,8 +25,6 @@ interface Category {
 export interface IModelIndexProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
-  /** AccessToken */
-  accessToken: AccessToken;
   /* Open function */
   onOpen?: (viewIds: Id64String[]) => void;
 }
@@ -66,11 +64,10 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public async componentDidMount() {
-    const accessToken = this.props.accessToken;
     const projectId = this.props.iModelConnection.iModelToken.contextId!;
     const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
 
-    await this.startRetrieveThumbnail(accessToken, projectId, iModelId);
+    await this.startRetrieveThumbnail(projectId, iModelId);
     await this.startRetrieveIModelInfo();
   }
 
@@ -93,16 +90,15 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* retrieves the iModel thumbnail. */
-  private async startRetrieveThumbnail(accessToken: AccessToken, projectId: string, iModelId: string) {
-    const _thumbnail = await UiFramework.iModelServices.getThumbnail(accessToken, projectId, iModelId);
+  private async startRetrieveThumbnail(projectId: string, iModelId: string) {
+    const _thumbnail = await UiFramework.iModelServices.getThumbnail(projectId, iModelId);
     this.setState({ thumbnail: _thumbnail });
   }
 
   /* retrieve version information */
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
-    const accessToken = this.props.accessToken!;
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
     const contextId = this.props.iModelConnection.iModelToken.contextId!;
     const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
 
@@ -161,7 +157,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* render the Sheets tab */
   private _renderSheets = () => {
     return (
-      <SheetsTab key={1} iModelConnection={this.props.iModelConnection} accessToken={this.props.accessToken}
+      <SheetsTab key={1} iModelConnection={this.props.iModelConnection}
         showSheets={true} onAddHeader={this._onAddHeader} onSetCategory={this._onSetCategory}
         onEnter={this._onEnter} />
     );
@@ -169,7 +165,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* render the 3d Models tab */
   private _render3dModels = () => {
-    return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection} accessToken={this.props.accessToken}
+    return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection}
       showFlatList={true} onEnter={this._onEnter} showToast={false} />);
   }
 

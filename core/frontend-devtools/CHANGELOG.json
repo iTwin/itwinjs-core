@@ -2,6 +2,63 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.6.0",
+      "tag": "@bentley/frontend-devtools_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added key-in to toggle between metric and imperial units formatting."
+          },
+          {
+            "comment": "Add GPU timing queries for devtools."
+          },
+          {
+            "comment": "Key-ins for modifying hilite settings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/frontend-devtools_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added support for blank IModelConnections"
+          },
+          {
+            "comment": "Improved configurability of KeyinField."
+          },
+          {
+            "comment": "DiagnosticsPanel can now be configured to exclude specific components."
+          },
+          {
+            "comment": "Added tool to get geometry summary"
+          },
+          {
+            "comment": "Added ability to cycle through previously-entered key-ins in KeyinField."
+          },
+          {
+            "comment": "Add tool to transition between reality and BIM models (demonstrate model animation)."
+          },
+          {
+            "comment": "Added key-in to toggle debugging tooltips."
+          },
+          {
+            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.4.0",
       "tag": "@bentley/frontend-devtools_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",

@@ -12,10 +12,11 @@ iModel.js is a platform for creating, accessing, leveraging and integrating infr
 The heart of an Infrastructure Digital Twin is a relational database — known as an iModel — that contains components assembled from many sources. Changes to an iModel are managed by iModelHub and synchronized with distributed copies — creating a distributed database. The iModel.js platform can be used to integrate your infrastructure digital twin into your digital workflows, and contains tools for creating, visualizing, querying, mining, synchronizing, aligning, and securing your digital twin.
 <br/>
 <br/>
+<br/>
 <b>Open for Business and Innovation</b>
 <br/>
 iModel.js was designed to be both flexible and open, so that it can be easily used and integrated with other systems. It makes use of standard cloud and web technologies chosen to reduce input impedance with your codebase, and to preserve flexibility over time. A primary reason for open-sourcing the iModel.js platform is to foster innovation and novel uses of the technology. The opportunities for connecting infrastructure digital twins are vast and diverse, and we strongly encourage your involvement and suggestions for enhancing iModel.js and the iModel.js community.",
-        video: "https://www.youtube.com/embed/5iglYhQmv6U"
+        video: [{url: "https://www.youtube.com/embed/5iglYhQmv6U"}, {url: "https://www.youtube.com/embed/-e4T-otv-QA"}]
     }
 ]
 features:

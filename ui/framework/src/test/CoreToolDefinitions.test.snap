@@ -17,7 +17,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -42,7 +44,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -67,7 +71,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -92,7 +98,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -117,7 +125,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -142,7 +152,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -167,7 +179,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -192,7 +206,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -217,7 +233,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -242,7 +260,9 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": [Function],
                 "_label": [Function],
+                "_onItemExecuted": undefined,
                 "_tooltip": "",
+                "badgeType": undefined,
                 "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
@@ -254,6 +274,87 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isVisible": true,
                 "stateSyncIds": Array [],
                 "toolId": "ViewClip.ByPlane",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-element",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByElement",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-shape",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByShape",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": [Function],
+                "_label": [Function],
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-range",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByRange",
               }
             }
           />
@@ -296,7 +397,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
 
 exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
 <ExpandableItem
-  betaBadge={true}
   iconSpec="icon-process"
   labelKey="UiFramework:keyinbrowser.label"
   panel={
@@ -305,22 +405,23 @@ exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
       onOutsideClick={[Function]}
     >
       <KeyinBrowser
+        onCancel={[Function]}
         onExecute={[Function]}
       />
     </WithOnOutsideClick>
   }
-  tooltip="keyinbrowser (tooltip)"
 >
-  <Item
-    badge={<BetaBadge />}
-    icon={
-      <Unknown
-        iconSpec="icon-process"
-      />
-    }
-    onClick={[Function]}
-    onKeyDown={[Function]}
-    title="keyinbrowser.label"
-  />
+  <div>
+    <Item
+      icon={
+        <Unknown
+          iconSpec="icon-process"
+        />
+      }
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      title="keyinbrowser.label"
+    />
+  </div>
 </ExpandableItem>
 `;

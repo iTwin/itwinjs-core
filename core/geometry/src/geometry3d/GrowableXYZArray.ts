@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d, Range1d } from "./Range";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -182,6 +182,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       const n = p.length;
       for (let i = 0; i + 2 < n; i += 3)
         this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    } else if (p instanceof IndexedXYZCollection) {
+      for (let i = 0; i < p.length; i++)
+        this.pushXYZ(p.getXAtUncheckedPointIndex(i), p.getYAtUncheckedPointIndex(i), p.getZAtUncheckedPointIndex(i));
     }
   }
   /**
@@ -712,7 +715,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
     const i = pointIndex * 3;
     const data = this._data;
-    return plane.altitudeXYZ (data[i], data[i + 1], data[i + 2]);
+    return plane.altitudeXYZ(data[i], data[i + 1], data[i + 2]);
   }
 
   /**

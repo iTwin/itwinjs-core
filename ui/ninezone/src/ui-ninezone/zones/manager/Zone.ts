@@ -5,7 +5,8 @@
 /** @module Zone */
 
 import { RectangleProps, Rectangle } from "@bentley/ui-core";
-import { WidgetZoneId } from "./Zones";
+import { WidgetZoneId, getZoneCell } from "./Zones";
+import { RECTANGULAR_DEFAULT_MIN_WIDTH, RECTANGULAR_DEFAULT_MIN_HEIGHT } from "./ResizeStrategy";
 
 /** Zone properties used in [[ZonesManagerProps]].
  * @beta
@@ -30,6 +31,7 @@ export interface ZoneManagerFloatingProps {
 /** @internal */
 export const getDefaultAllowsMerging = (id: WidgetZoneId): boolean => {
   switch (id) {
+    case 2:
     case 4:
     case 6:
     case 7:
@@ -51,13 +53,45 @@ export const getDefaultZoneManagerProps = (id: WidgetZoneId): ZoneManagerProps =
     bottom: 0,
   },
   isLayoutChanged: false,
-  widgets: [id],
+  widgets: id === 2 ? [] : [id],
 });
+
+/** @internal */
+export interface ZoneWindowResizeSettings {
+  hMode: "Minimum" | "Percentage";  // Horizontal resize mode
+  hEnd: number;                     // Ratio of zone right bound to zones width
+  hStart: number;                   // Ratio of zone left bound to zones width
+  minHeight: number;
+  minWidth: number;
+  vMode: "Minimum" | "Percentage";  // Vertical resize mode
+  vEnd: number;                     // Ratio of zone bottom bound to zones height
+  vStart: number;                   // Ratio of zone top bound to zones height
+}
+
+/** @internal */
+export const getWindowResizeSettings = (zoneId: WidgetZoneId): ZoneWindowResizeSettings => {
+  const cell = getZoneCell(zoneId);
+  return {
+    hMode: "Percentage",
+    hEnd: (cell.col + 1) * 1 / 3,
+    hStart: cell.col * 1 / 3,
+    minHeight: RECTANGULAR_DEFAULT_MIN_HEIGHT,
+    minWidth: RECTANGULAR_DEFAULT_MIN_WIDTH,
+    vMode: "Percentage",
+    vEnd: (cell.row + 1) * 1 / 3,
+    vStart: cell.row * 1 / 3,
+  };
+};
 
 /** Class used to manage [[ZoneManagerProps]].
  * @internal
  */
 export class ZoneManager {
+  public constructor(
+    public windowResize: ZoneWindowResizeSettings = getWindowResizeSettings(1),
+  ) {
+  }
+
   public setAllowsMerging(allowsMerging: boolean, props: ZoneManagerProps): ZoneManagerProps {
     if (allowsMerging === props.allowsMerging)
       return props;

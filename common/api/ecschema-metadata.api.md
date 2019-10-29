@@ -361,7 +361,7 @@ export class DelayedPromise<T> implements Promise<T> {
 // @beta (undocumented)
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
-// @beta (undocumented)
+// @beta
 export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
 
 // @beta (undocumented)
@@ -721,6 +721,8 @@ export enum ECObjectsStatus {
     InvalidPrimitiveType = 35064,
     // (undocumented)
     InvalidRelationshipEnd = 35068,
+    // (undocumented)
+    InvalidSchemaAlias = 35078,
     // (undocumented)
     InvalidSchemaComparisonArgument = 35077,
     // (undocumented)
@@ -1723,6 +1725,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     readonly fullName: string;
     // (undocumented)
     getCategorySync(): PropertyCategory | undefined;
+    getCustomAttributes(): Promise<CustomAttributeSet>;
+    getCustomAttributesSync(): CustomAttributeSet;
     // (undocumented)
     getKindOfQuantitySync(): KindOfQuantity | undefined;
     // (undocumented)
@@ -2047,9 +2051,7 @@ export class RelationshipMultiplicity {
 export class Schema implements CustomAttributeContainerProps {
     // @internal
     constructor(context: SchemaContext);
-    // @internal
     constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
-    // @internal
     constructor(context: SchemaContext, key: SchemaKey);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
@@ -2284,14 +2286,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined]): {
+        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+            messageArgs?: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -2447,14 +2449,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat]): {
+        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [Format | OverrideFormat] | undefined;
+            messageArgs?: [OverrideFormat | Format] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };

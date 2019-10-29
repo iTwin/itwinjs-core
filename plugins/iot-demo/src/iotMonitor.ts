@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 import {
   FeatureOverrideProvider,
   FeatureSymbology,
@@ -54,7 +59,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
 
     this._animation = this.plugin.createAnimation(this._animationView, animationType, "Floor 1", -1);
     this._latestReadingTime = 0;
-    this._showLatestReadings().catch((_err) => {});
+    this._showLatestReadings().catch((_err) => { });
     this._intervalHandle = setInterval(this._showLatestReadings.bind(this), 2 * 1000);
     this._oldFeatureOverrideProvider = this._animationView.featureOverrideProvider;
   }

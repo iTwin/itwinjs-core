@@ -16,6 +16,13 @@ import { Orientation } from "@bentley/ui-core";
 
 describe("<Toolbar  />", async () => {
 
+  const testItemEventId = "test-event";
+  const testItemStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
+    const returnState: BaseItemState = { ...currentState };
+    returnState.isEnabled = true;
+    return returnState;
+  };
+
   const tool1 = new CommandItemDef({
     commandId: "test.tool1",
     label: "Tool_1",
@@ -58,11 +65,29 @@ describe("<Toolbar  />", async () => {
     isEnabled: true,
   });
 
+  const tool1c = new CommandItemDef({
+    commandId: "test.tool1_c",
+    label: "Tool_1",
+    iconSpec: "icon-placeholder",
+    isEnabled: false,
+    stateSyncIds: [testItemEventId],
+    stateFunc: testItemStateFunc,
+  });
+
+  const tool1d = new CommandItemDef({
+    commandId: "test.tool1_d",
+    label: "Tool_1",
+    iconSpec: "icon-placeholder",
+    isEnabled: false,
+    stateSyncIds: [testItemEventId],
+    stateFunc: testItemStateFunc,
+  });
+
   const group1 = new GroupItemDef({
     groupId: "test.group",
     label: "Tool_Group",
     iconSpec: "icon-placeholder",
-    items: [tool1a, tool2a],
+    items: [tool1a, tool2a, tool1c],
     itemsInColumn: 4,
   });
 
@@ -77,16 +102,19 @@ describe("<Toolbar  />", async () => {
     ),
   });
 
-  const testItemEventId = "test-event";
-  const testItemStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    returnState.isEnabled = true;
-    return returnState;
-  };
-
   const conditional1 = new ConditionalItemDef({
     items: [tool1b, tool2b],
     isEnabled: false,
+    stateSyncIds: [testItemEventId],
+    stateFunc: testItemStateFunc,
+  });
+
+  const group2 = new GroupItemDef({
+    groupId: "test.group2",
+    label: "Tool_Group_2",
+    iconSpec: "icon-placeholder",
+    isEnabled: false,
+    items: [tool1d],
     stateSyncIds: [testItemEventId],
     stateFunc: testItemStateFunc,
   });
@@ -169,6 +197,7 @@ describe("<Toolbar  />", async () => {
           tool1,
           tool2,
           group1,
+          group2,
           conditional1,
           custom1,
         ])}
@@ -178,10 +207,18 @@ describe("<Toolbar  />", async () => {
     expect(tool1b.isEnabled).to.be.false;
     expect(tool2b.isEnabled).to.be.true;
 
+    expect(group2.isEnabled).to.be.false;
+    expect(tool1c.isEnabled).to.be.false;
+    expect(tool1d.isEnabled).to.be.false;
+
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
     expect(tool1b.isEnabled).to.be.true;
     expect(tool2b.isEnabled).to.be.true;
+
+    expect(group2.isEnabled).to.be.true;
+    expect(tool1c.isEnabled).to.be.true;
+    expect(tool1d.isEnabled).to.be.true;
   });
 
 });

@@ -20,7 +20,7 @@ export interface ItemsProps extends CommonProps {
   direction: OrthogonalDirection;
 }
 
-/** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components.
+/** Toolbar items container. Used in [[Toolbar]] component.
  * @alpha
  */
 export class Items extends React.PureComponent<ItemsProps> {

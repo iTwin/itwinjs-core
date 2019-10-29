@@ -34,7 +34,7 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
         this.props.className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)}> {label} </div>
+          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <Textarea disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
         {message &&

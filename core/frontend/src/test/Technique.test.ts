@@ -6,30 +6,35 @@ import { expect, assert } from "chai";
 import { IModelApp } from "../IModelApp";
 import { ClippingType } from "../render/System";
 import {
-  ProgramBuilder,
-  VertexShaderComponent,
-  FragmentShaderComponent,
-  Target,
-  System,
-  TechniqueId,
-  TechniqueFlags,
-  FeatureMode,
-  SingularTechnique,
-  ViewportQuadGeometry,
-  DrawParams,
-  ShaderProgramParams,
   AttributeMap,
+  DrawParams,
+  FeatureMode,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  ShaderProgramParams,
+  SingularTechnique,
+  System,
+  Target,
+  TechniqueFlags,
+  TechniqueId,
+  VariableType,
+  VertexShaderComponent,
+  ViewportQuadGeometry,
 } from "../webgl";
 
-function createPurpleQuadTechnique(target: Target): TechniqueId {
+function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   builder.vert.set(VertexShaderComponent.ComputePosition, "return rawPos;");
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
+  return builder;
+}
 
+function createPurpleQuadTechnique(): TechniqueId {
+  const builder = createPurpleQuadBuilder();
   const prog = builder.buildProgram(System.instance.context);
   const technique = new SingularTechnique(prog);
-  return target.techniques.addDynamicTechnique(technique, "PurpleQuad");
+  return System.instance.techniques.addDynamicTechnique(technique, "PurpleQuad");
 }
 
 function createTarget(): Target | undefined {
@@ -48,7 +53,7 @@ function createTarget(): Target | undefined {
   return System.instance!.createTarget(canvas!) as Target;
 }
 
-describe("Technique tests", () => {
+describe("Techniques", () => {
   before(() => IModelApp.startup());
   after(() => IModelApp.shutdown());
 
@@ -56,7 +61,7 @@ describe("Technique tests", () => {
     const target = createTarget();
     assert(undefined !== target);
 
-    const techId = createPurpleQuadTechnique(target!);
+    const techId = createPurpleQuadTechnique();
     expect(techId).to.equal(TechniqueId.NumBuiltIn);
   });
 
@@ -67,7 +72,7 @@ describe("Technique tests", () => {
       return;
     }
 
-    const techId = createPurpleQuadTechnique(target);
+    const techId = createPurpleQuadTechnique();
     const geom = ViewportQuadGeometry.create(techId);
     assert.isDefined(geom);
 
@@ -78,20 +83,25 @@ describe("Technique tests", () => {
     target.techniques.draw(drawParams);
   });
 
-  it("should compile material atlas program", () => {
-    const flags = new TechniqueFlags();
-    flags.setHasMaterialAtlas(true);
-    const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
-    const prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
-  });
-
   // NB: this can potentially take a long time, especially on our mac build machines.
   it("should successfully compile all shader programs", () => {
-    if (IModelApp.initialized) {
+    const haveMRT = System.instance.capabilities.supportsDrawBuffers;
+    expect(System.instance.techniques.compileShaders()).to.be.true;
+
+    if (haveMRT) {
+      // Compile the multi-pass versions of the shaders too.
+      IModelApp.shutdown();
+      IModelApp.startup({
+        renderSys: {
+          disabledExtensions: ["WEBGL_draw_buffers"],
+        },
+      });
+
       expect(System.instance.techniques.compileShaders()).to.be.true;
+      IModelApp.shutdown();
+      IModelApp.startup();
     }
-  }).timeout("80000");
+  }).timeout("160000");
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
@@ -104,25 +114,48 @@ describe("Technique tests", () => {
     expect(prog.compile()).to.be.true;
   });
 
-  it("should successfully compile animation shaders", () => {
-    const flags = new TechniqueFlags();
-    flags.setAnimated(true);
-    let tech = System.instance.techniques.getTechnique(TechniqueId.Edge);
-    let prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+  it("should produce exception on syntax error", () => {
+    const builder = createPurpleQuadBuilder();
+    builder.vert.headerComment = "// My Naughty Program";
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "blah blah blah");
+    const prog = builder.buildProgram(System.instance.context);
+    let compiled = false;
+    let ex: Error | undefined;
+    try {
+      compiled = prog.compile();
+    } catch (err) {
+      ex = err;
+    }
 
-    tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
-    prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+    expect(compiled).to.be.false;
+    expect(ex).not.to.be.undefined;
+    const msg = ex!.toString();
+    expect(msg.includes("blah")).to.be.true;
+    expect(msg.includes("Fragment shader failed to compile")).to.be.true;
+    expect(msg.includes("Program description: // My Naughty Program")).to.be.true;
+  });
 
-    flags.isTranslucent = true;
-    flags.featureMode = FeatureMode.Overrides;
-    prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+  // NB: We may run across some extremely poor webgl implementation that fails to remove clearly-unused uniforms, which would cause this test to fail.
+  // If such an implementation exists, we'd like to know about it.
+  it("should produce exception on unused uniform", () => {
+    const builder = createPurpleQuadBuilder();
+    builder.frag.addUniform("u_unused", VariableType.Float, (prog) => {
+      prog.addProgramUniform("u_unused", (uniform, _params) => {
+        uniform.setUniform1f(123.45);
+      });
+    });
 
-    flags.clip.type = ClippingType.Planes;
-    flags.clip.numberOfPlanes = 6;
-    prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+    const program = builder.buildProgram(System.instance.context);
+    let compiled = false;
+    let ex: Error | undefined;
+    try {
+      compiled = program.compile();
+    } catch (err) {
+      ex = err;
+    }
+
+    expect(compiled).to.be.false;
+    expect(ex).not.to.be.undefined;
+    expect(ex!.toString().includes("uniform u_unused not found.")).to.be.true;
   });
 });

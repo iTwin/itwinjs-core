@@ -14,7 +14,9 @@ import "./PointerCaptor.scss";
  */
 export interface PointerCaptorProps extends CommonProps {
   /** Describes if the mouse is down. */
-  isMouseDown?: boolean;
+  isMouseDown: boolean;
+  /** Function called when component is clicked. */
+  onClick?: () => void;
   /** Function called when the mouse is pressed. */
   onMouseDown?: (e: MouseEvent) => void;
   /** Function called when the mouse is moved. */
@@ -23,20 +25,10 @@ export interface PointerCaptorProps extends CommonProps {
   onMouseUp?: (e: MouseEvent) => void;
 }
 
-/** State of [[PointerCaptor]] component. */
-interface PointerCaptorState {
-  isMouseDown: boolean;
-}
-
 /** A component which will capture the pointer down event.
- * @note While captured will overlay the screen to capture iframe events too.
  * @internal
  */
-export class PointerCaptor extends React.PureComponent<PointerCaptorProps, PointerCaptorState> {
-  public readonly state: PointerCaptorState = {
-    isMouseDown: false,
-  };
-
+export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
   public componentDidMount() {
     document.addEventListener("mouseup", this._handleDocumentMouseUp);
     document.addEventListener("mousemove", this._handleDocumentMouseMove);
@@ -50,13 +42,13 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
   public render() {
     const className = classnames(
       "nz-base-pointerCaptor",
-      this.isMouseDown() && "nz-captured",
+      this.props.isMouseDown && "nz-captured",
       this.props.className);
-
     return (
       <div
         className={className}
         onMouseDown={this._handleMouseDown}
+        onClick={this.props.onClick}
         style={this.props.style}
       >
         <div className="nz-overlay" />
@@ -65,37 +57,19 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
     );
   }
 
-  private isMouseDown() {
-    if (this.props.isMouseDown === undefined)
-      return this.state.isMouseDown;
-    return this.props.isMouseDown;
-  }
-
-  private setIsMouseDown(isMouseDown: boolean) {
-    this.setState(() => {
-      return {
-        isMouseDown,
-      };
-    });
-  }
-
   private _handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    this.setIsMouseDown(true);
     this.props.onMouseDown && this.props.onMouseDown(e.nativeEvent);
   }
 
   private _handleDocumentMouseUp = (e: MouseEvent) => {
-    if (!this.isMouseDown())
+    if (!this.props.isMouseDown)
       return;
-
-    this.setIsMouseDown(false);
     this.props.onMouseUp && this.props.onMouseUp(e);
   }
 
   private _handleDocumentMouseMove = (e: MouseEvent) => {
-    if (!this.isMouseDown())
+    if (!this.props.isMouseDown)
       return;
-
     this.props.onMouseMove && this.props.onMouseMove(e);
   }
 }

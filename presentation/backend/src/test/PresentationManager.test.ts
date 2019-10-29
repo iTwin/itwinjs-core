@@ -37,7 +37,7 @@ import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
 import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
 import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
-import { PresentationManager } from "../PresentationManager";
+import { PresentationManager, PresentationManagerMode } from "../PresentationManager";
 import { RulesetManagerImpl } from "../RulesetManager";
 import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 
@@ -85,10 +85,11 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         using(new PresentationManager(), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWith(
+          expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
             [path.join(__dirname, "../assets/locales")],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            IModelHost.platform.ECPresentationManagerMode.ReadWrite,
           );
         });
       });
@@ -101,13 +102,15 @@ describe("PresentationManager", () => {
           id: faker.random.uuid(),
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
+          mode: PresentationManagerMode.ReadOnly,
         };
         using(new PresentationManager(props), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWith(
+          expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
             [path.join(__dirname, "../assets/locales"), testLocale],
             testTaskAllocations,
+            IModelHost.platform.ECPresentationManagerMode.ReadOnly,
           );
         });
       });
@@ -1930,6 +1933,52 @@ describe("PresentationManager", () => {
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "model");
           expect(result.size).to.eq(1);
           expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
+        });
+
+      });
+
+      describe("scope: 'functional'", () => {
+
+        async function* createQueryResult(graphicalElementKey: InstanceKey, functionalElementKey?: InstanceKey) {
+          yield {
+            className: graphicalElementKey.className,
+            elId: graphicalElementKey.id,
+            funcElClassName: functionalElementKey ? functionalElementKey.className : undefined,
+            funcElId: functionalElementKey ? functionalElementKey.id : undefined,
+          };
+        }
+
+        it("returns element key if it doesn't have an associated functional element", async () => {
+          const elementClass = faker.random.word();
+          const elementId = createRandomId();
+          imodelMock.setup((x) => x.query(moq.It.isAnyString(), [elementId]))
+            .returns(() => createQueryResult({ className: elementClass, id: elementId }));
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "functional");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: elementClass, id: elementId })).to.be.true;
+        });
+
+        it("returns functional element key if element has an associated functional element", async () => {
+          const functionalElementClass = faker.random.word();
+          const functionalElementId = createRandomId();
+          const elementClass = faker.random.word();
+          const elementId = createRandomId();
+          imodelMock.setup((x) => x.query(moq.It.isAnyString(), [elementId]))
+            .returns(() => createQueryResult({ className: elementClass, id: elementId }, { className: functionalElementClass, id: functionalElementId }));
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "functional");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: functionalElementClass, id: functionalElementId })).to.be.true;
+        });
+
+        it("skips transient element ids", async () => {
+          const elementClass = faker.random.word();
+          const elementId = createRandomId();
+          imodelMock.setup((x) => x.query(moq.It.isAnyString(), [elementId]))
+            .returns(() => createQueryResult({ className: elementClass, id: elementId }));
+          const ids = [elementId, createTransientElementId()];
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "functional");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: elementClass, id: elementId })).to.be.true;
         });
 
       });

@@ -15,7 +15,6 @@ import { Overflow } from "@src/toolbar/item/Overflow";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
 import { Item } from "@src/toolbar/item/Item";
 import { Toolbar } from "@src/toolbar/Toolbar";
-import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { ToolbarButton } from "@src/widget/tools/button/Button";
 import { AppButton } from "@src/widget/tools/button/App";
@@ -87,19 +86,6 @@ export default class Tools extends React.PureComponent<{}, State> {
           }
         />
         <br />
-        <div style={cols2}>
-          <Scrollable
-            expandsTo={Direction.Left}
-            items={this.getItems2(Direction.Left)}
-          />
-          <Scrollable
-            items={this.getItems2(Direction.Bottom)}
-          />
-          <Scrollable
-            expandsTo={Direction.Right}
-            items={this.getItems2(Direction.Right)}
-          />
-        </div>
         <h1>Tool Buttons</h1>
         <div style={cols2}>
           <ToolbarButton>
@@ -171,7 +157,7 @@ export default class Tools extends React.PureComponent<{}, State> {
   }
 
   private _handleExpandableButtonRef = (expandableButton: HTMLDivElement | null) => {
-    this.setState(() => ({ expandableButton }));
+    this.setState({ expandableButton });
   }
 
   private getItems1(direction: Direction) {
@@ -280,30 +266,6 @@ export default class Tools extends React.PureComponent<{}, State> {
         icon={
           <i className="icon icon-placeholder" />
         } />,
-    ];
-  }
-
-  private getItems2(direction: Direction) {
-    return [
-      ...this.getItems1(direction),
-      <Item
-        key={10}
-        icon={
-          <i className="icon icon-placeholder" />
-        }
-      />,
-      <Item
-        key={11}
-        icon={
-          <i className="icon icon-placeholder" />
-        }
-      />,
-      <Item
-        key={12}
-        icon={
-          <i className="icon icon-placeholder" />
-        }
-      />,
     ];
   }
 
