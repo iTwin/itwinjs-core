@@ -839,10 +839,16 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public dispose() {
+    this.reset();
+    dispose(this.solarShadowMap);
+  }
+
+  // Resets anything that depends on the dimensions of the render target.
+  // Does *not* dispose the solar shadow map.
+  private reset() {
     this._depth = dispose(this._depth);
     this._vcAltDepthStencil = dispose(this._vcAltDepthStencil);
     this._includeOcclusion = false;
-    dispose(this.solarShadowMap);
     dispose(this._textures);
     dispose(this._frameBuffers);
     dispose(this._geom);
@@ -850,7 +856,7 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private init(): boolean {
-    this.dispose();
+    this.reset();
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
     if (this._depth !== undefined) {
       return this._textures.init(this._width, this._height)
