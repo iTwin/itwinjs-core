@@ -2905,8 +2905,14 @@ export class GeoServices {
     getConverter(datum?: string): GeoConverter | undefined;
     }
 
+// @beta
+export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
+
 // @internal (undocumented)
 export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise<TerrainTileLoaderBase | undefined>;
+
+// @beta
+export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;

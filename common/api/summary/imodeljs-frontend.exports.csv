@@ -148,7 +148,9 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
+beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
+beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string

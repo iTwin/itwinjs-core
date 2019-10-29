@@ -16,8 +16,8 @@ import { COLOR_THEME_DEFAULT } from "../theme/ThemeManager";
  */
 export enum ConfigurableUiActionId {
   SetSnapMode = "configurableui:set_snapmode",
-  SetToolPrompt = "configurableui:set_toolprompt",
   SetTheme = "configurableui:set_theme",
+  SetToolPrompt = "configurableui:set_toolprompt",
   SetWidgetOpacity = "configurableui:set_widget_opacity",
 }
 
@@ -44,8 +44,8 @@ const initialState: ConfigurableUiState = {
  */
 export const ConfigurableUiActions = {   // tslint:disable-line:variable-name
   setSnapMode: (snapMode: number) => createAction(ConfigurableUiActionId.SetSnapMode, snapMode),
-  setToolPrompt: (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
   setTheme: (theme: string) => createAction(ConfigurableUiActionId.SetTheme, theme),
+  setToolPrompt: (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
   setWidgetOpacity: (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
 };
 

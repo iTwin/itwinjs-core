@@ -12,6 +12,7 @@ import {
   ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
+import { ViewRect } from "./Viewport";
 
 interface Rgba {
   r: number;
@@ -269,4 +270,46 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
     if (undefined !== title)
       win.document.title = title;
   }
+}
+
+/** Determine maximum ViewRect that can be fitted and centered in specified ViewRect given a required aspect ratio.
+ * @param viewRect view rectangle
+ * @param aspectRatio width/height ratio
+ * @returns A ViewRect centered in the input rectangle.
+ * @beta
+ */
+export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4) {
+  // Determine scale that ensures ability to return an image with the prescribed aspectRatio
+  const scale = Math.min(viewRect.width / aspectRatio, viewRect.height);
+  const finalWidth = scale * aspectRatio;
+  const finalHeight = scale;
+  const left = (viewRect.width - finalWidth) / 2.0;
+  const right = left + finalWidth;
+  const top = (viewRect.height - finalHeight) / 2.0;
+  const bottom = top + finalHeight;
+  return new ViewRect(left, top, right, bottom);
+}
+
+/** Produce a jpeg compressed to no more than specified bytes and of no less than specified quality.
+ * @param canvas image source
+ * @param maxBytes Maximum size of output image in bytes.
+ * @param minCompressionQuality A Number between 0 and 1 indicating the image quality.
+ * @returns Data URL for compressed jpeg or undefined if criteria could not be met.
+ * @beta
+ */
+export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes = 60000, minCompressionQuality = 0.1): string | undefined {
+  const decrements = 0.1; // Decrements of quality
+  const bytesPerCharacter = 2; // Assume 16-bit per character
+  let quality = 1.0; // JPEG Compression quality
+
+  while (quality > minCompressionQuality) {
+    const data = canvas.toDataURL("image/jpeg", quality);
+    // If we are less than 60 Kb, we are good
+    if (data.length * bytesPerCharacter < maxBytes)
+      return data;
+
+    quality -= decrements;
+  }
+
+  return undefined;
 }

@@ -92,16 +92,16 @@ const initialState: SessionState = {
  * @beta
  */
 export interface SessionStateActionsProps {
-  setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
-  setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
-  setSelectionScope: (typeof SessionStateActions.setSelectionScope);
+  setAccessToken: (typeof SessionStateActions.setAccessToken);
   setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
+  setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
   setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
+  setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
   setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
   setDefaultViewState: (typeof SessionStateActions.setDefaultViewState);
-  setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
   setIModelConnection: (typeof SessionStateActions.setIModelConnection);
-  setAccessToken: (typeof SessionStateActions.setAccessToken);
+  setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
+  setSelectionScope: (typeof SessionStateActions.setSelectionScope);
   updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
@@ -109,16 +109,16 @@ export interface SessionStateActionsProps {
  * @beta
  */
 export const SessionStateActions = {  // tslint:disable-line:variable-name
-  setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
-  setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
-  setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
+  setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
+  setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
+  setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
   setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
   setDefaultViewState: (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
-  setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
+  setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
   setIModelConnection: (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
-  setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
+  setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
   updateCursorMenu: (cursorMenuData: CursorMenuData) => createAction(SessionStateActionId.UpdateCursorMenu, cursorMenuData),
 };
 
