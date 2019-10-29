@@ -3016,6 +3016,7 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
+    static readonly args: any;
     static readonly isIOSFrontend: any;
     static readonly isMobileBackend: boolean;
     static readonly isMobileFrontend: boolean;

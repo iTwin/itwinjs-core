@@ -82,8 +82,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     if (typeof (WebSocket) === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
     }
-
-    this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
+    if (!MobileRpcConfiguration.args.port) {
+      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol require 'port' parameter");
+    }
+    this.socket = new WebSocket(`ws://localhost:${MobileRpcConfiguration.args.port}`);
     this.socket.binaryType = "arraybuffer";
     this.socket.addEventListener("message", async (event) => this.handleMessageFromBackend(event.data));
     this.socket.addEventListener("open", (_event) => this.scheduleSend());
