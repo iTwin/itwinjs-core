@@ -324,6 +324,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
+  public displayDrapeFrustum = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;

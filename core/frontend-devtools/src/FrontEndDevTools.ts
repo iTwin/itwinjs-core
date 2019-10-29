@@ -11,6 +11,7 @@ import {
   ToggleReadPixelsTool,
   SetVolClassIntersectOn,
   SetVolClassIntersectOff,
+  ToggleDrapeFrustumTool,
 } from "./tools/RenderTargetTools";
 import {
   LoseWebGLContextTool,
@@ -78,6 +79,7 @@ export class FrontendDevTools {
     ToggleReadPixelsTool.register(i18n);
     ToggleLogZTool.register(i18n);
     TogglePrimitiveVisibilityTool.register(i18n);
+    ToggleDrapeFrustumTool.register(i18n);
 
     ClearIsolatedElementsTool.register(i18n);
     EmphasizeSelectedElementsTool.register(i18n);

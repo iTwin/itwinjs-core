@@ -255,10 +255,12 @@ export namespace RenderTexture {
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
     Glyph,
-    /** A non-repeating image with no mip-maps, used for example for tiled map imagery. */
+    /** A non-repeating image with no mip-maps, used for example for reality models. */
     TileSection,
     /** A three-dimensional texture used for rendering a skybox. */
     SkyBox,
+    /** A non-repeating image with mip-maps and and anisotropic filtering, used for map tiles when draped on terrain. */
+    FilteredTileSection,
   }
 
   /** Parameters used to construct a [[RenderTexture]]. */

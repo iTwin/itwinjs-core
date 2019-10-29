@@ -1845,7 +1845,7 @@ export enum CoordSystem {
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
-export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined>;
+export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -5757,6 +5757,10 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @internal
+        filterMapDrapeTextures?: boolean;
+        // @internal
+        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         // @internal
         preserveShaderSourceCode?: boolean;
@@ -5856,6 +5860,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
 // @beta
 export interface RenderTargetDebugControl {
+    // @internal (undocumented)
+    displayDrapeFrustum: boolean;
     drawForReadPixels: boolean;
     // @alpha (undocumented)
     primitiveVisibility: PrimitiveVisibility;
@@ -6952,6 +6958,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     protected _decorations?: Decorations;
     // (undocumented)
     readonly decorationState: BranchState;
+    // (undocumented)
+    displayDrapeFrustum: boolean;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -9711,7 +9719,7 @@ export enum WebGLRenderCompatibilityStatus {
 
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {
-    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
+    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, _filterTextures: boolean, heightRange?: Range1d);
     // (undocumented)
     geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)

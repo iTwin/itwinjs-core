@@ -100,6 +100,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "batched": Display only un-instanced (batched) geometry.
   * "all": Display all geometry.
 * `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
+* `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
 * `fdt toggle logz` - Toggles the use of a logarithmic depth buffer for the active viewport.
   * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the clipboard.

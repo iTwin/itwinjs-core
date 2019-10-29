@@ -779,6 +779,8 @@ export interface RenderTargetDebugControl {
   vcSupportIntersectingVolumes: boolean;
   /** @internal */
   readonly shadowFrustum: Frustum | undefined;
+  /** @internal */
+  displayDrapeFrustum: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -1269,6 +1271,23 @@ export namespace RenderSystem {
      */
     logarithmicDepthBuffer?: boolean;
 
+    /** If true anisotropic filtering is applied to map tile textures.
+     *
+     * Default value: false
+     *
+     * @internal
+     *
+     */
+
+    filterMapTextures?: boolean;
+    /** If true anisotropic filtering is not applied to draped map tile textures.
+     *
+     * Default value: true
+     *
+     * @internal
+     *
+     */
+    filterMapDrapeTextures?: boolean;
     /** @internal
      * @deprecated This setting no longer has any effect.
      */

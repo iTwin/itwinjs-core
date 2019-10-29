@@ -50,6 +50,16 @@ export class ToggleLogZTool extends RenderTargetDebugControlTool {
   }
 }
 
+/** Turn on the display of the draping frustum.
+ * @alpha
+ */
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleDrapeFrustum";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayDrapeFrustum = !control.displayDrapeFrustum;
+    vp.invalidateRenderPlan();
+  }
+}
 /** Control whether all geometry renders, or only instanced or batched geometry.
  * Allowed argument: "instanced", "batched", "all". Defaults to "all" if no arguments supplied.
  * @beta

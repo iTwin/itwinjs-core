@@ -88,11 +88,12 @@ export class PlanarTextureProjection {
       const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(texturePlane.getNormalRef(), eyeHeight), texturePlane.getNormalRef());
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
       const projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
-      const minNearToFarRatio = .0005;  // Smaller value allows texture projection to conform tightly to view frustum.
+      const minNearToFarRatio = .01;  // Smaller value allows texture projection to conform tightly to view frustum.
       if (undefined !== projectionDistance) {
         const eyePoint = textureTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
         let near = eyePoint.z - range.high.z;
         let far = eyePoint.z - range.low.z;
+
         if (near / far < minNearToFarRatio) {
           // If the near-far ratio is less than minimum move the camera back.
           far = (range.high.z - range.low.z) / (1.0 - minNearToFarRatio);

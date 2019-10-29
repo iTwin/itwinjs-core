@@ -653,7 +653,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       options.displaySolarShadows = false;
     if (!capabilities.supportsFragDepth)
       options.logarithmicDepthBuffer = false;
-
+    if (!capabilities.supportsTextureFilterAnisotropic) {
+      options.filterMapTextures = false;
+      options.filterMapDrapeTextures = false;
+    }
     return new System(canvas, context, capabilities, options);
   }
 

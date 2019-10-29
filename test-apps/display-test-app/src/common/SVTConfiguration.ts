@@ -20,5 +20,7 @@ export interface SVTConfiguration {
   useProjectExtents?: boolean;
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
+  filterMapTextures?: boolean;  // default OFF
+  filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
 }

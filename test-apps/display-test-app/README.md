@@ -124,6 +124,10 @@ You can use these environment variables to alter the default behavior of various
 * SVT_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
+ * SVT_ENABLE_MAP_TEXTURE_FILTER
+  * If defined, the anisotropic filtering will be used for (planar) map tiles.
+ * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+  * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 
 ## Key-ins
 

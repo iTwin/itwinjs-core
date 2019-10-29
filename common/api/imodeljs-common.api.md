@@ -3967,6 +3967,7 @@ export namespace RenderTexture {
         readonly type: Type;
     }
     export const enum Type {
+        FilteredTileSection = 4,
         Glyph = 1,
         Normal = 0,
         SkyBox = 3,

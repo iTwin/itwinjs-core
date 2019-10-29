@@ -655,6 +655,14 @@ export class TileStatisticsTracker {
     dispose(): void;
     }
 
+// @alpha
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)

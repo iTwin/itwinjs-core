@@ -12,6 +12,9 @@
     "ToggleLogZ": {
       "keyin": "fdt toggle logz"
     },
+    "ToggleDrapeFrustum": {
+      "keyin": "fdt toggle drapefrustum"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
