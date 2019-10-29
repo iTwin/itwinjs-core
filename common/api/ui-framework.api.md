@@ -2293,6 +2293,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     groupId: string;
     // (undocumented)
+    static groupIdPrefix: string;
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly itemCount: number;

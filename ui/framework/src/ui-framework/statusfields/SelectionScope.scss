@@ -6,35 +6,31 @@
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
 .uifw-statusFields-selectionScope {
-  $font-size-medium: 12px;
-  $font-size-small: $font-size-medium;
+  $font-size-medium: $uicore-font-size-small;
+  $font-size-small: $uicore-font-size-smaller;
   overflow: hidden;
   padding-right: 0px;
 
   > .uifw-statusFields-selectionScope-label {
     display: inline;
     padding-right: 4px;
+
+    @include for-tablet-portrait-down {
+      display: none;
+      padding-right: 0px;
+    }
   }
 
   > .uifw-statusFields-selectionScope-selector {
     @include uicore-inputs-select;
-  }
 
-  @media only screen and (max-width: 768px) {
-    > .uifw-statusFields-selectionScope-label {
-      display: none;
-      padding-right: 0px;
+    @include for-tablet-portrait-down {
+      font-size: $font-size-medium;
+    }
+    @include for-phone-only {
+      font-size: $font-size-small;
     }
 
-    font-size: $font-size-medium;
   }
 
-  @media only screen and (max-width: 600px) {
-    > .uifw-statusFields-selectionScope-label {
-      display: none;
-      padding-right: 0px;
-    }
-
-    font-size: $font-size-small;
-  }
 }

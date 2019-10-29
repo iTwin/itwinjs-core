@@ -16,8 +16,8 @@ $key-size-large: 36px;
 $key-size-modifier: 24px;
 
 .uifw-statusFields-toolassistance {
-  $font-size-medium: 12px;
-  $font-size-small: $font-size-medium;
+  $font-size-medium: $uicore-font-size-small;
+  $font-size-small: $uicore-font-size-smaller;
 
   overflow: hidden;
 
@@ -29,19 +29,21 @@ $key-size-modifier: 24px;
     width: 5em;
   }
 
-  @media only screen and (max-width: 768px) {
-    font-size: $font-size-medium;
-
+  @include for-tablet-landscape-down {
     &.nz-footer-mode {
-      width: 12em;
+      width: 16em;
     }
   }
 
-  @media only screen and (max-width: 600px) {
+  @include for-tablet-portrait-down {
+    font-size: $font-size-medium;
+  }
+
+  @include for-phone-only {
     font-size: $font-size-small;
 
     &.nz-footer-mode {
-      width: 10em;
+      width: 12em;
     }
   }
 

@@ -16,6 +16,15 @@
 
   @include nz-transition(.2s ease);
 
+  @include for-tablet-landscape-down {
+    padding-bottom: $nz-backstage-item-spacing-medium;
+    padding-top: $nz-backstage-item-spacing-medium;
+  }
+  @include for-phone-only {
+    padding-bottom: $nz-backstage-item-spacing-small;
+    padding-top: $nz-backstage-item-spacing-small;
+  }
+
   &:hover {
     background: $nz-backstage-item-hover-background;
     color: $nz-backstage-item-color;
@@ -60,8 +69,15 @@
 
     > span:nth-child(2) {
       margin-top: $uicore-s;
-      font-size: $uicore-font-size;
+      font-size: $nz-backstage-subtitle-font-size;
       color: $buic-foreground-muted;
+
+      @include for-tablet-landscape-down {
+        font-size: $uicore-font-size-small;
+      }
+      @include for-phone-only {
+        font-size: $uicore-font-size-smaller;
+      }
     }
   }
 

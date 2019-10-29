@@ -369,6 +369,15 @@ describe("GroupItem", () => {
       expect(groupItemDef.panelLabel).to.eq(newPanelLabel);
     });
 
+    it("should generate id correctly", () => {
+      const groupItemDef = new GroupItemDef({
+        iconSpec: "icon-placeholder",
+        items: [tool1, tool2],
+      });
+
+      expect(groupItemDef.id.substr(0, GroupItemDef.groupIdPrefix.length)).to.eq(GroupItemDef.groupIdPrefix);
+    });
+
   });
 
 });

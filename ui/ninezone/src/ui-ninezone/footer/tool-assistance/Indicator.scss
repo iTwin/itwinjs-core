@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/breakpoints";
 @import "../../geometry";
 @import "../variables";
 
@@ -36,6 +37,16 @@
       margin-left: 8px;
       font-size: $text-font-size;
       line-height: 1;
+
+      /* Medium devices */
+      @include for-tablet-portrait-down {
+        font-size: $text-font-size-medium;
+      }
+
+      /* Small devices */
+      @include for-phone-only {
+        font-size: $text-font-size-small;
+      }
     }
 
     > .nz-triangle {

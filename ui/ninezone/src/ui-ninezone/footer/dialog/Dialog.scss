@@ -6,12 +6,7 @@
 @import "variables";
 
 .nz-footer-dialog-dialog {
-  border: {
-    color: $buic-background-dialog-stroke;
-    style: solid;
-    width: $nz-dialog-border-width;
-    radius: 3px;
-  };
+  border-radius: 3px;
   background-color: $buic-background-dialog;
   overflow: hidden;
   display: grid;

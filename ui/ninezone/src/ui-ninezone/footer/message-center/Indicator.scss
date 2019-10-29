@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/breakpoints";
 @import "../../geometry";
 @import "../variables";
 
@@ -16,14 +17,14 @@
   }
   box-sizing: border-box;
 
-  /* small devices (phones, 600px and down) */
-  @media only screen and (max-width: 600px) {
+  /* small devices */
+  @include for-phone-only {
     padding-left: $nz-footer-indicator-horizontal-padding-small;
     padding-right: $nz-footer-indicator-horizontal-padding-small;
   }
 
-  /* Medium devices (landscape tablets, 768px and up) */
-  @media only screen and (max-width: 768px) {
+  /* Medium devices */
+  @include for-tablet-landscape-down {
     padding-left: $nz-footer-indicator-horizontal-padding-medium;
     padding-right: $nz-footer-indicator-horizontal-padding-medium;
   }
@@ -38,6 +39,10 @@
 
     > .nz-label {
       font-size: $text-font-size;
+
+      @include for-tablet-landscape-down {
+        display: none;
+      }
     }
 
     > .nz-container {
