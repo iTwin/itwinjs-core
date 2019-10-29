@@ -115,6 +115,17 @@ export abstract class TileAdmin {
     return new Admin(props);
   }
 
+  /** Temporary workaround for authoring applications. Usage:
+   * ```ts
+   *  async function handleModelChanged(modelId: Id64String, iModel: IModelConnection): Promise<void> {
+   *    await iModel.tiles.purgeTileTrees([modelId]);
+   *    IModelApp.viewManager.refreshForModifiedModels(modelId);
+   *  }
+   * ```
+   * @internal
+   */
+  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
   /** @internal */

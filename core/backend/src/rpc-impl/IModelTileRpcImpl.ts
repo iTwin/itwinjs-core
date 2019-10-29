@@ -158,6 +158,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async purgeTileTrees(tokenProps: IModelTokenProps, modelIds: Id64Array | undefined): Promise<void> {
+    // `undefined` gets forwarded as `null`...
+    if (null === modelIds)
+      modelIds = undefined;
+
     const token = IModelToken.fromJSON(tokenProps);
     const db = IModelDb.find(token);
     return db.nativeDb.purgeTileTrees(modelIds);
