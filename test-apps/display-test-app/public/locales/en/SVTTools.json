@@ -58,6 +58,9 @@
     },
     "ToggleFrustumIntersection": {
       "keyin": "dta frustum intersection"
+    },
+    "PurgeTileTrees": {
+      "keyin": "dta purge tiletrees"
     }
   }
 }

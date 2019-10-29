@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { BeDuration, Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
+import { BeDuration, Dictionary, Id64Array, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
 import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -114,6 +114,17 @@ export abstract class TileAdmin {
   public static create(props?: TileAdmin.Props): TileAdmin {
     return new Admin(props);
   }
+
+  /** Temporary workaround for authoring applications. Usage:
+   * ```ts
+   *  async function handleModelChanged(modelId: Id64String, iModel: IModelConnection): Promise<void> {
+   *    await iModel.tiles.purgeTileTrees([modelId]);
+   *    IModelApp.viewManager.refreshForModifiedModels(modelId);
+   *  }
+   * ```
+   * @internal
+   */
+  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
 
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
@@ -625,6 +636,11 @@ class Admin extends TileAdmin {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId);
+  }
+
+  public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
+    this.initializeRpc();
+    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.iModelToken.toJSON(), modelIds);
   }
 
   public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
