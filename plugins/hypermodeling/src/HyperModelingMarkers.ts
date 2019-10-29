@@ -3,15 +3,62 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Id64Array } from "@bentley/bentleyjs-core";
-import { Point2d, XYAndZ, XAndY, Point3d, ClipVector } from "@bentley/geometry-core";
+import { Point2d, XYAndZ, XAndY, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
 import { SectionLocationProps, SectionType, Placement3d } from "@bentley/imodeljs-common";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl, InputSource } from "@bentley/imodeljs-frontend";
 import { HyperModelingPlugin } from "./HyperModeling";
+import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
+
+interface PopupToolbarProvider {
+  toolbarProps: AbstractToolbarProps;
+  overToolbarHotspot: boolean;
+  toolbarLocation: XAndY;
+  toolbarOffset?: XAndY;
+  onToolbarItemExecuted?(item: any): void;
+}
+
+class PopupToolbarManager {
+  private static _provider?: PopupToolbarProvider;
+  private static _current?: PopupToolbarProvider;
+
+  private static show(): boolean {
+    if (undefined !== PopupToolbarManager._provider && PopupToolbarManager._provider.overToolbarHotspot &&
+      IModelApp.uiAdmin.showToolbar(PopupToolbarManager._provider.toolbarProps, PopupToolbarManager._provider.toolbarLocation,
+        undefined !== PopupToolbarManager._provider.toolbarOffset ? PopupToolbarManager._provider.toolbarOffset : IModelApp.uiAdmin.createXAndY(0, 0),
+        PopupToolbarManager._itemExecuted, PopupToolbarManager._cancel)) {
+      PopupToolbarManager._current = PopupToolbarManager._provider;
+      PopupToolbarManager._provider = undefined;
+      PopupToolbarManager.closeAfterTimout();
+      return true;
+    }
+    return false;
+  }
+
+  private static _itemExecuted = (item: any) => { if (undefined !== PopupToolbarManager._current && undefined !== PopupToolbarManager._current.onToolbarItemExecuted) PopupToolbarManager._current.onToolbarItemExecuted(item); PopupToolbarManager.close(); };
+  private static _cancel = () => { if (undefined === PopupToolbarManager._current || !PopupToolbarManager._current.overToolbarHotspot) PopupToolbarManager.close(); }; // Don't hide when click is over hotspot...
+  private static close(): boolean { PopupToolbarManager._current = undefined; return IModelApp.uiAdmin.hideToolbar(); }
+
+  private static closeAfterTimout() {
+    if (undefined === PopupToolbarManager._current)
+      return;
+    if (PopupToolbarManager._current.overToolbarHotspot || undefined === IModelApp.toolAdmin.cursorView)
+      setTimeout(() => { PopupToolbarManager.closeAfterTimout(); }, 500); // Cursor not in view or over hotspot, check again...
+    else
+      PopupToolbarManager.close();
+  }
+
+  public static toolbarShowAfterTimout(provider: PopupToolbarProvider) {
+    if (PopupToolbarManager._current === provider)
+      return;
+    PopupToolbarManager._provider = provider;
+    setTimeout(() => { PopupToolbarManager.show(); }, 500);
+  }
+}
 
 /** Marker to show a section location.
  * @beta
  */
-class SectionLocation extends Marker {
+class SectionLocation extends Marker implements PopupToolbarProvider {
   private static _size = Point2d.create(40, 40);
   private _clip?: ClipVector;
   public isSelected: boolean = false;
@@ -33,14 +80,88 @@ class SectionLocation extends Marker {
     return this._clip;
   }
 
-  public onMouseButton(ev: BeButtonEvent): boolean {
-    if (BeButton.Data !== ev.button || !ev.isDown || !ev.viewport || !ev.viewport.view.isSpatialView())
-      return true;
+  private toggleSection(vp: ScreenViewport): void {
     this.isSelected = !this.isSelected;
-    ViewClipTool.enableClipVolume(ev.viewport);
-    ViewClipTool.setViewClip(ev.viewport, this.isSelected ? this.clip : undefined);
+    ViewClipTool.enableClipVolume(vp);
+    ViewClipTool.setViewClip(vp, this.isSelected ? this.clip : undefined);
     SectionLocationSetDecoration.props.display.selectedOnly = this.isSelected;
-    SectionLocationSetDecoration.show(ev.viewport, true, false); // tslint:disable-line:no-floating-promises
+    SectionLocationSetDecoration.show(vp, true, false); // tslint:disable-line:no-floating-promises
+  }
+
+  private alignView(vp: ScreenViewport): void {
+    if (undefined === this.props.placement)
+      return;
+    const placement = Placement3d.fromJSON(this.props.placement).transform;
+    const origin = placement.origin;
+    const matrix = placement.matrix;
+    const targetMatrix = matrix.multiplyMatrixMatrix(vp.rotation);
+    const rotateTransform = Transform.createFixedPointAndMatrix(origin, targetMatrix);
+    const startFrustum = vp.getFrustum();
+    const newFrustum = startFrustum.clone();
+    newFrustum.multiply(rotateTransform);
+    if (startFrustum.equals(newFrustum))
+      return;
+    vp.view.setupFromFrustum(newFrustum);
+    vp.synchWithView(true);
+    vp.animateToCurrent(startFrustum);
+  }
+
+  private openSection(_vp: ScreenViewport): void {
+    // ### TODO - Information to implement not currently unavailble...
+  }
+
+  public toolbarProps: AbstractToolbarProps = {
+    items: [
+      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.ToggleSection"), iconSpec: "icon-section-tool", badgeType: BadgeType.None, applicationData: "toggle_section", execute: () => { } },
+      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.AlignSection"), iconSpec: "icon-image", badgeType: BadgeType.None, applicationData: "align_view", execute: () => { } },
+      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.OpenSection"), iconSpec: "icon-import", badgeType: BadgeType.None, applicationData: "open_section", execute: () => { } },
+    ],
+  };
+
+  public get overToolbarHotspot(): boolean { return this._isHilited; }
+  public get toolbarLocation(): XAndY { return IModelApp.uiAdmin.createXAndY(this.rect.right, this.rect.top); }
+
+  public onToolbarItemExecuted = (item: any) => {
+    const vp = SectionLocationSetDecoration.sectionViewport();
+    if (undefined === vp)
+      return;
+
+    switch (item.applicationData) {
+      case "toggle_section": {
+        this.toggleSection(vp);
+        break;
+      }
+      case "align_view": {
+        this.alignView(vp);
+        break;
+      }
+      case "open_section": {
+        this.openSection(vp);
+        break;
+      }
+    }
+  }
+
+  protected drawSelected(ctx: CanvasRenderingContext2D) {
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "gold";
+    return false;
+  }
+
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    if (this.isSelected && this.drawSelected(ctx))
+      return;
+    super.drawDecoration(ctx);
+  }
+
+  public onMouseEnter(ev: BeButtonEvent) {
+    super.onMouseEnter(ev);
+    PopupToolbarManager.toolbarShowAfterTimout(this);
+  }
+
+  public onMouseButton(ev: BeButtonEvent): boolean {
+    if (InputSource.Mouse === ev.inputSource && BeButton.Data === ev.button && ev.isDown && ev.viewport)
+      this.toggleSection(ev.viewport);
     return true; // Don't allow clicks to be sent to active tool...
   }
 
@@ -48,7 +169,7 @@ class SectionLocation extends Marker {
     super.addMarker(context);
     if (!this._isHilited || undefined === this.props.clipGeometry)
       return;
-    ViewClipTool.drawClip(context, this.clip);
+    ViewClipTool.drawClip(context, this.clip, undefined, { fillClipPlanes: true, hasPrimaryPlane: true });
   }
 }
 
@@ -102,7 +223,7 @@ class SectionLocationClusterMarker extends Marker {
  */
 class SectionLocationSet extends MarkerSet<SectionLocation> {
   public minimumClusterSize = 5;
-  protected getClusterMarker(cluster: Cluster<SectionLocation>): Marker { return SectionLocationClusterMarker.makeFrom(cluster.markers[0], cluster, SectionLocationSetDecoration.decorator!.sectionMarkerImage); }
+  protected getClusterMarker(cluster: Cluster<SectionLocation>): Marker { return SectionLocationClusterMarker.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image); }
 }
 
 /**
@@ -110,9 +231,9 @@ class SectionLocationSet extends MarkerSet<SectionLocation> {
  */
 export class SectionLocationSetDecoration {
   private _sectionLocations: SectionLocationSet;
-  public detailMarkerImage?: HTMLImageElement;
-  public elevationMarkerImage?: HTMLImageElement;
-  public planMarkerImage?: HTMLImageElement;
+  private _detailMarkerImage?: HTMLImageElement;
+  private _elevationMarkerImage?: HTMLImageElement;
+  private _planMarkerImage?: HTMLImageElement;
   public static decorator?: SectionLocationSetDecoration; // static variable so we can tell if the decorator is active.
 
   /** By setting members of this object, applications can control the display and behavior of the section markers. */
@@ -134,18 +255,18 @@ export class SectionLocationSetDecoration {
     },
   };
 
-  public constructor(vp: ScreenViewport, public sectionMarkerImage: HTMLImageElement) { this._sectionLocations = new SectionLocationSet(vp); }
+  public constructor(vp: ScreenViewport, private _sectionMarkerImage: HTMLImageElement) { this._sectionLocations = new SectionLocationSet(vp); }
 
   private getMarkerImage(props: SectionLocationProps): HTMLImageElement {
     switch (props.sectionType) {
       case SectionType.Detail:
-        return (undefined !== this.detailMarkerImage ? this.detailMarkerImage : this.sectionMarkerImage);
+        return (undefined !== this._detailMarkerImage ? this._detailMarkerImage : this._sectionMarkerImage);
       case SectionType.Elevation:
-        return (undefined !== this.elevationMarkerImage ? this.elevationMarkerImage : this.sectionMarkerImage);
+        return (undefined !== this._elevationMarkerImage ? this._elevationMarkerImage : this._sectionMarkerImage);
       case SectionType.Plan:
-        return (undefined !== this.planMarkerImage ? this.planMarkerImage : this.sectionMarkerImage);
+        return (undefined !== this._planMarkerImage ? this._planMarkerImage : this._sectionMarkerImage);
       default:
-        return this.sectionMarkerImage;
+        return this._sectionMarkerImage;
     }
   }
 
@@ -178,7 +299,7 @@ export class SectionLocationSetDecoration {
   }
 
   /** Populate marker set from section locations */
-  public createMarkers(secLocPropList: SectionLocationProps[]): void {
+  private createMarkers(secLocPropList: SectionLocationProps[]): void {
     const pos = new Point3d();
     secLocPropList.forEach((secLocProps) => {
       if (undefined !== secLocProps.placement && undefined !== secLocProps.clipGeometry) {
@@ -189,7 +310,7 @@ export class SectionLocationSetDecoration {
   }
 
   /** Set marker visibility based on category display */
-  public setMarkerVisibility(vp: Viewport): boolean {
+  private setMarkerVisibility(vp: Viewport): boolean {
     let haveVisibleChange = false;
     let haveVisibleCategory = false;
     let haveVisibleType = false;
@@ -207,12 +328,12 @@ export class SectionLocationSetDecoration {
       if (oldVisible !== marker.visible)
         haveVisibleChange = true;
     }
-    if (undefined !== HyperModelingPlugin.plugin && !SectionLocationSetDecoration.props.display.selectedOnly) {
+    if (!SectionLocationSetDecoration.props.display.selectedOnly) {
       if (!haveVisibleCategory) {
-        const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundCategories");
+        const msg = HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Error.NotFoundCategories");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
       } else if (!haveVisibleType) {
-        const msg = HyperModelingPlugin.plugin.i18n.translate("HyperModeling:Error.NotFoundTypes");
+        const msg = HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Error.NotFoundTypes");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
       }
     }
@@ -220,10 +341,7 @@ export class SectionLocationSetDecoration {
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
-  public decorate(context: DecorateContext): void {
-    if (context.viewport.view.isSpatialView())
-      this._sectionLocations.addDecoration(context);
-  }
+  public decorate(context: DecorateContext): void { this._sectionLocations.addDecoration(context); }
 
   // Load one image, logging if there was an error
   private static async loadImage(src: string): Promise<HTMLImageElement | undefined> {
@@ -234,6 +352,9 @@ export class SectionLocationSetDecoration {
     }
     return undefined;
   }
+
+  /** The ScreenViewport of this MarkerSet. */
+  public static sectionViewport(): ScreenViewport | undefined { return (undefined !== SectionLocationSetDecoration.decorator ? SectionLocationSetDecoration.decorator._sectionLocations.viewport : undefined); }
 
   /** Stop showing markers if currently active. */
   public static clear(): void {
@@ -296,9 +417,9 @@ export class SectionLocationSetDecoration {
 
     // Start by creating the decoration object and adding it as a ViewManager decorator.
     SectionLocationSetDecoration.decorator = new SectionLocationSetDecoration(vp, sectionMarkerImage);
-    SectionLocationSetDecoration.decorator.detailMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("detailmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator.elevationMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("elevationmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator.planMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("planmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator._detailMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("detailmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator._elevationMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("elevationmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator._planMarkerImage = await this.loadImage(HyperModelingPlugin.plugin.resolveResourceUrl("planmarkersprite.ico"));
     SectionLocationSetDecoration.decorator.createMarkers(secLocPropList);
 
     if (0 === SectionLocationSetDecoration.decorator._sectionLocations.markers.size) {

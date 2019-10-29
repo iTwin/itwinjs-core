@@ -68,6 +68,7 @@
     "@bentley/imodeljs-clients": "1.7.0-dev.22",
     "@bentley/imodeljs-common": "1.7.0-dev.22",
     "@bentley/imodeljs-i18n": "1.7.0-dev.22",
-    "@bentley/imodeljs-frontend": "1.7.0-dev.22"
+    "@bentley/imodeljs-frontend": "1.7.0-dev.22",
+    "@bentley/ui-abstract": "1.7.0-dev.22"
   }
 }

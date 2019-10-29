@@ -2137,6 +2137,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly wantShadows: boolean;
 }
 
+// @alpha
+export interface DrawClipOptions {
+    color?: ColorDef;
+    fill?: ColorDef;
+    fillClipPlanes?: boolean;
+    hasPrimaryPlane?: boolean;
+    hiddenStyle?: LinePixels;
+    hiddenWidth?: number;
+    id?: string;
+    visibleWidth?: number;
+}
+
 // @public
 export class DrawingModelState extends GeometricModel2dState {
     // @internal (undocumented)
@@ -8649,7 +8661,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static doClipToShape(viewport: Viewport, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
     // (undocumented)
-    static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, id?: string): void;
+    static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, options?: DrawClipOptions): void;
     // (undocumented)
     static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void;
     // (undocumented)

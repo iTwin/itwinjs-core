@@ -51,6 +51,26 @@ export interface ViewClipEventHandler {
   onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
 }
 
+/** @alpha Options to control display for ViewClipTool.drawClip */
+export interface DrawClipOptions {
+  /** Color to use for clip edges, uses white adjusted for background color if not specified. */
+  color?: ColorDef;
+  /** Color to use for clip plane fill, uses transparent cyan adjusted for background color if not specified. */
+  fill?: ColorDef;
+  /** Width for visible clip edges, uses 3 if not specified. */
+  visibleWidth?: number;
+  /** Width for hidden clip edges, uses 1 if not specified. */
+  hiddenWidth?: number;
+  /** Style for hidden clip edges, uses LinePixels.Code2 if not specified. */
+  hiddenStyle?: LinePixels;
+  /** Whether to draw filled clip planes. */
+  fillClipPlanes?: boolean;
+  /** Whether clip represents a single section plane with addtional planes for xy and back clipping. Fill will only apply to the primary plane. */
+  hasPrimaryPlane?: boolean;
+  /** Unique id to allow clip edges to be pickable. */
+  id?: string;
+}
+
 /** @alpha A tool to define a clip volume for a view */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
@@ -234,7 +254,7 @@ export class ViewClipTool extends PrimitiveTool {
     builder.addLineString(shapePtsHi);
   }
 
-  public static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, id?: string): void {
+  public static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, options?: DrawClipOptions): void {
     const clipShape = ViewClipTool.isSingleClipShape(clip);
     const clipPlanes = (undefined === clipShape ? ViewClipTool.isSingleConvexClipPlaneSet(clip) : undefined);
     if (undefined === clipShape && undefined === clipPlanes)
@@ -242,18 +262,25 @@ export class ViewClipTool extends PrimitiveTool {
 
     const viewRange = (viewExtents ? viewExtents : context.viewport.computeViewRange());
     const clipPlanesLoops = (undefined !== clipPlanes ? ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, viewRange) : undefined);
-    if (undefined === clipShape && undefined === clipPlanesLoops)
+    if (undefined === clipShape && (undefined === clipPlanesLoops || 0 === clipPlanesLoops.length))
       return;
 
-    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration, clipShape ? clipShape.transformFromClip : undefined, id);
+    const color = (options && options.color ? options.color : ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor));
+    const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration, clipShape ? clipShape.transformFromClip : undefined, (options ? options.id : undefined));
     const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay, clipShape ? clipShape.transformFromClip : undefined);
-    builderVis.setSymbology(color, ColorDef.black, 3);
-    builderHid.setSymbology(color, ColorDef.black, 1, LinePixels.Code2);
+    builderVis.setSymbology(color, ColorDef.black, (options && options.visibleWidth ? options.visibleWidth : 3));
+    builderHid.setSymbology(color, ColorDef.black, (options && options.hiddenWidth ? options.hiddenWidth : 1), (options && options.hiddenStyle ? options.hiddenStyle : LinePixels.Code2));
 
     if (undefined !== clipPlanesLoops) {
       ViewClipTool.addClipPlanesLoops(builderVis, clipPlanesLoops, true);
       ViewClipTool.addClipPlanesLoops(builderHid, clipPlanesLoops, true);
+      if (options && options.fillClipPlanes) {
+        const fill = (options && options.fill ? options.fill : ColorDef.from(0, 255, 255, 225).adjustForContrast(context.viewport.view.backgroundColor));
+        const builderFill = context.createGraphicBuilder(GraphicType.WorldDecoration);
+        builderFill.setSymbology(fill, fill, 0);
+        ViewClipTool.addClipPlanesLoops(builderFill, (options.hasPrimaryPlane ? [clipPlanesLoops[0]] : clipPlanesLoops), false);
+        context.addDecorationFromBuilder(builderFill);
+      }
     } else if (undefined !== clipShape) {
       const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, viewRange);
       ViewClipTool.addClipShape(builderVis, clipShape, clipExtents);

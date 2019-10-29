@@ -104,6 +104,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 

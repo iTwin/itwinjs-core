@@ -116,7 +116,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-components",

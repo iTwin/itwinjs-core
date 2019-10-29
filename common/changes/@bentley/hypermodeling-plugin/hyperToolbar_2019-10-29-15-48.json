@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "comment": "Added popup toolbar when cursor stops over marker or marker is tapped.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-plugin",
+  "email": "Brien.Bastings@bentley.com"
+}
