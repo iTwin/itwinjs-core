@@ -2611,6 +2611,8 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     getTileCacheContainerUrl(_tokenProps: IModelTokenProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
+    // @internal
+    purgeTileTrees(_tokenProps: IModelTokenProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
