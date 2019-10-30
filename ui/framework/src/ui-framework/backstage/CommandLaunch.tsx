@@ -16,6 +16,8 @@ import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 
+// cspell:ignore safearea
+
 // tslint:disable-next-line:variable-name
 const BackstageItem = withSafeArea(NZ_BackstageItem);
 

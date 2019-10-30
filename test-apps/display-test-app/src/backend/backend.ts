@@ -58,6 +58,12 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
 
+  if (undefined !== process.env.SVT_ENABLE_MAP_TEXTURE_FILTER)
+    configuration.filterMapTextures = true;
+
+  if (undefined !== process.env.SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER)
+    configuration.filterMapDrapeTextures = false;
+
   if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;
 

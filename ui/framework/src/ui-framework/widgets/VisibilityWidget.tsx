@@ -10,6 +10,7 @@ import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } fr
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
 import { SelectionMode, ContextMenu, ContextMenuItem } from "@bentley/ui-components";
+import { connectIModelConnection } from "../redux/connectIModel";
 
 import { CategoryTree } from "../imodel-components/category-tree/CategoriesTree";
 import { VisibilityTree } from "../imodel-components/visibility-tree/VisibilityTree";
@@ -17,6 +18,7 @@ import { SpatialContainmentTree } from "../imodel-components/spatial-tree/Spatia
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+
 import "./VisibilityWidget.scss";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg";
@@ -131,6 +133,10 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   }
 
   public render() {
+    const { iModelConnection } = this.props;
+    if (!iModelConnection)
+      return (<span>{UiFramework.translate("visibilityWidget.noImodelConnection")}</span>);
+
     const { activeTree } = this.state;
     const showCategories = true;
     const showContainment = true;
@@ -157,6 +163,11 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   }
 }
 
+/** VisibilityComponent that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // tslint:disable-line:variable-name
+
 /** VisibilityWidget React component.
  * @alpha
  */
@@ -177,8 +188,8 @@ export class VisibilityWidget extends WidgetControl {
     super(info, options);
     if (options && options.iModelConnection)
       this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} />;
-    else
-      this.reactElement = "no imodel";
+    else  // use the connection from redux
+      this.reactElement = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} />;
   }
 
   public saveTransientState(): void {

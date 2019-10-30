@@ -24,3 +24,6 @@ package-deps.json
 # trash
 *.bak
 *.orig
+
+# xcode
+/**/xcuserdata

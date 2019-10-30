@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { Schema, Schemas } from "./Schema";
+import * as path from "path";
 import { ClassRegistry } from "./ClassRegistry";
+import { KnownLocations } from "./IModelHost";
+import { Schema, Schemas } from "./Schema";
 
 import * as elementMod from "./Element";
 import * as aspectMod from "./ElementAspect";
@@ -29,6 +31,7 @@ import * as materialMod from "./Material";
  */
 export class BisCoreSchema extends Schema {
   public static get schemaName(): string { return "BisCore"; }
+  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", `${BisCoreSchema.schemaName}.ecschema.xml`); }
 
   /** @internal */
   public static registerSchema() {

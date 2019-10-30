@@ -15,6 +15,17 @@ const loggerCategory = "imodeljs-frontend.Plugin";
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 
+/**  The structure expected of a `manifest.json` file from a plugin
+ * @internal
+ */
+interface Manifest {
+  bundleName?: string;
+  devPlugin?: string;
+  versionsRequired?: {
+    [moduleName: string]: string;
+  };
+}
+
 // @internal
 interface PluginLoader {
   // initialize the loader
@@ -30,7 +41,7 @@ interface PluginLoader {
   getPluginRoot(pluginSpec: string): string;
 
   // get the plugin manifest from the tar file.
-  getManifest(): Promise<any>;
+  getManifest(): Promise<Manifest>;
 
   // load the plugin javascript from the tar file.
   loadPlugin(buildType: string, manifest: any, args?: string[]): Promise<PluginLoadResults>;
@@ -155,11 +166,8 @@ class PendingPlugin {
 class ExternalServerPluginLoader implements PluginLoader {
   public serverName: string | undefined = undefined;
   private _pluginRootName: string | undefined = undefined;
-  private _requestContext: ClientRequestContext;
 
-  public constructor(private _pluginAdmin: PluginAdmin) {
-    this._requestContext = new ClientRequestContext("LoadPluginExternalServer");
-  }
+  public constructor(private _pluginAdmin: PluginAdmin) { }
 
   public async initialize(fullPluginName: string): Promise<PluginLoadResults> {
     const slashPos: number = fullPluginName.lastIndexOf("/");
@@ -190,19 +198,15 @@ class ExternalServerPluginLoader implements PluginLoader {
     return pluginSpec.slice(slashPos + 1);
   }
 
-  public async getManifest(): Promise<any> {
-    const requestOptions: RequestOptions = {
-      method: "GET",
-      responseType: "json",
-    };
+  public async getManifest(): Promise<Manifest> {
     const url: string = this.serverName!.concat("manifest.json");
-    const response: Response = await request(this._requestContext, url, requestOptions);
-    return Promise.resolve(response.body);
+    const response = await fetch(url);
+    return response.json();
   }
 
-  public async loadPlugin(buildType: string, _manifest: any, args?: string[]): Promise<PluginLoadResults> {
+  public async loadPlugin(buildType: string, _manifest: Manifest, args?: string[]): Promise<PluginLoadResults> {
     // the person setting up the server must have already untar'ed the plugin tar file. All we have to do is select the right file based on buildType.
-    const jsFileUrl: string = this.serverName!.concat(buildType, "/", this._pluginRootName!, ".js");
+    const jsFileUrl: string = this.serverName!.concat(buildType, "/", _manifest.bundleName!, ".js");
 
     // set it up to load.
     const newPendingPlugin: PendingPlugin = new PendingPlugin(this._pluginRootName!, jsFileUrl, this, args);
@@ -380,22 +384,22 @@ class SystemModuleResults {
     this.addErrorMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.ModuleNotLoaded", { moduleName: strippedModuleName }));
   }
 
-  // loads all the system modules that are needed but not yet required.
+  // Loads all the system modules that are needed but not yet required.
   // NOTE: This currently assumes that the remaining required modules can be loaded in any order. That will be true if
   // they all depend only on "core" system modules, but not if the depend on each other somehow. If that case arises,
   // the list of required modules will have to be sorted.
   public async loadRequiredModules(): Promise<void> {
+    if (undefined === this._notYetLoadedModules)
+      return;
+
     // check if there are any that need loading.
-    if (this._notYetLoadedModules) {
-      for (const needsLoading of this._notYetLoadedModules) {
-        try {
-          await this.loadRequiredModule(needsLoading);
-        } catch (error) {
-          return Promise.reject(error);
-        }
+    for (const needsLoading of this._notYetLoadedModules) {
+      try {
+        await this.loadRequiredModule(needsLoading);
+      } catch (error) {
+        return Promise.reject(error);
       }
     }
-    return Promise.resolve();
   }
 }
 
@@ -457,33 +461,34 @@ export class PluginAdmin {
       return results;
     }
 
+    const versionRequiredArr = Object.getOwnPropertyNames(versionsRequired);
+
     // make sure the versionsRequired string isn't empty.
-    if (!versionsRequired) {
+    if (0 === versionRequiredArr.length) {
       results.addErrorMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.PackagedIncorrectly"));
       return results;
     }
 
     // find loaded version, or add the module to the list that still needs to be loaded.
     try {
-      for (const moduleName of Object.getOwnPropertyNames(versionsRequired)) {
+      for (const moduleName of versionRequiredArr) {
         if (!moduleName.startsWith("@bentley"))
           continue;
         const strippedModuleName = moduleName.slice(9);
         const versionRequired: string = versionsRequired[moduleName];
         if (!versionRequired || "string" !== typeof (versionRequired)) {
           results.addErrorMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.NoVersionSpecified", { moduleName: strippedModuleName }));
-        } else {
-          // remove the "@bentley/" part. On startup, the modules store the part after that.
-          const versionLoaded = versionsLoaded.get(strippedModuleName);
-          if (!versionLoaded) {
-            // here we haven't loaded one of the required modules. We can try to load it here.
-            results.addNotYetLoadedModule(moduleName, versionRequired);
-          } else {
-            // check version required vs. version loaded.
-            if (!semver.satisfies(versionLoaded, versionRequired)) {
-              results.addErrorMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.VersionMismatch", { versionLoaded, moduleName: strippedModuleName, versionRequired }));
-            }
-          }
+          continue;
+        }
+
+        // On startup, the modules store the part after that.
+        const versionLoaded = versionsLoaded.get(strippedModuleName);
+        if (!versionLoaded) {
+          // here we haven't loaded one of the required modules. We can try to load it here.
+          results.addNotYetLoadedModule(moduleName, versionRequired);
+        } else if (!semver.satisfies(versionLoaded, versionRequired)) {
+          // check version required vs. version loaded.
+          results.addErrorMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.VersionMismatch", { versionLoaded, moduleName: strippedModuleName, versionRequired }));
         }
       }
     } catch (err) {
@@ -497,37 +502,37 @@ export class PluginAdmin {
    * @param pluginRoot the root name of the Plugin to be loaded from the web server.
    * @param args arguments that will be passed to the Plugin.onLoaded and Plugin.onExecute methods. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
    */
-  public async loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults> {
+  public async loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults> {
 
     // select one of the plugin loaders. If there is a / in the Plugin name, or we can't use the serverAssistedLoader (the web server doesn't support untarring Plugin Tar files) use the ExternalServerPluginLoader.
-    const pluginLoader: PluginLoader = await this.determinePluginLoader(pluginSpec);
-    const pluginRoot = pluginLoader.getPluginRoot(pluginSpec);
+    const pluginLoader: PluginLoader = await this.determinePluginLoader(pluginRoot);
+    const pluginName = pluginLoader.getPluginRoot(pluginRoot);
 
     // make sure there's an args and make sure the first element is the plugin name.
     if (!args) {
-      args = [pluginRoot];
+      args = [pluginName];
     } else {
-      if ((args.length < 1) || (args[0] !== pluginRoot)) {
-        const newArray: string[] = [pluginRoot];
+      if ((args.length < 1) || (args[0] !== pluginName)) {
+        const newArray: string[] = [pluginName];
         args = newArray.concat(args);
       }
     }
 
-    const pluginRootLC = pluginRoot.toLowerCase();
-    const pendingPlugin = this._pendingPlugins.get(pluginRootLC);
+    const pluginNameLC = pluginName.toLowerCase();
+    const pendingPlugin = this._pendingPlugins.get(pluginNameLC);
     if (undefined !== pendingPlugin) {
       // it has been loaded (or at least we have started to load it) already. If it is registered, call its reload method. (Otherwise reload called when we're done the initial load)
-      const registeredPlugin = this._registeredPlugins.get(pluginRootLC);
+      const registeredPlugin = this._registeredPlugins.get(pluginNameLC);
       if (registeredPlugin) {
         registeredPlugin.onExecute(args);
       }
       return pendingPlugin.promise;
     }
 
-    let manifest: any;
+    let manifest: Manifest | undefined;
 
     try {
-      const initializeResults: PluginLoadResults = await pluginLoader.initialize(pluginSpec);
+      const initializeResults: PluginLoadResults = await pluginLoader.initialize(pluginRoot);
       if (initializeResults && ("string" === typeof (initializeResults) || Array.isArray(initializeResults)))
         return initializeResults;
 

@@ -52,6 +52,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
+* `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
 * `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.
 * `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
@@ -99,6 +100,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "batched": Display only un-instanced (batched) geometry.
   * "all": Display all geometry.
 * `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
+* `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
 * `fdt toggle logz` - Toggles the use of a logarithmic depth buffer for the active viewport.
   * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the clipboard.

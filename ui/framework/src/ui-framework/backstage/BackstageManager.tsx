@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { Backstage } from "./Backstage";
 import { BackstageItemsManager } from "./BackstageItemsManager";
 import { UiFramework } from "../UiFramework";
 
@@ -41,6 +42,7 @@ export class BackstageManager {
     this.onToggled.raiseEvent({
       isOpen,
     });
+    Backstage.onBackstageEvent.emit({ isVisible: isOpen });
   }
 
   public open() {

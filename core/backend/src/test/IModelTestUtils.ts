@@ -26,14 +26,18 @@ import { TestUsers } from "./TestUsers";
 /** Class for simple test timing */
 export class Timer {
   private _label: string;
+  private _start: Date;
   constructor(label: string) {
-    // tslint:disable-next-line:no-console
-    console.time(this._label = "\t" + label);
+    this._label = "\t" + label;
+    this._start = new Date();
   }
 
   public end() {
+
+    const stop = new Date();
+    const elapsed = stop.getTime() - this._start.getTime();
     // tslint:disable-next-line:no-console
-    console.timeEnd(this._label);
+    console.log(`${this._label}: ${elapsed}ms`);
   }
 }
 

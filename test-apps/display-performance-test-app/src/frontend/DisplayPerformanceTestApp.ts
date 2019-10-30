@@ -342,7 +342,10 @@ async function waitForTilesToLoad(modelLocation?: string) {
     theViewport!.renderFrame();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || (0 < IModelApp.tileAdmin.getNumRequestsForViewport(theViewport!));
+    const sceneContext = theViewport!.createSceneContext();
+    activeViewState.viewState!.createScene(sceneContext);
+    sceneContext.requestMissingTiles();
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
 
     // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
     if (haveNewTiles)

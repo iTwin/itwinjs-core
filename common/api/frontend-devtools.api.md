@@ -655,6 +655,14 @@ export class TileStatisticsTracker {
     dispose(): void;
     }
 
+// @alpha
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
@@ -718,6 +726,20 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
 
 // @beta
 export class ToggleSelectedViewFrustumTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleShadowFrustumTool extends Tool {
     // (undocumented)
     static readonly maxArgs: number;
     // (undocumented)

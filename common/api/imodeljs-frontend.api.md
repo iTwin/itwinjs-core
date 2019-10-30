@@ -153,6 +153,7 @@ import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { RgbColorProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/imodeljs-clients';
 import { SettingsMapResult } from '@bentley/imodeljs-clients';
 import { SettingsResult } from '@bentley/imodeljs-clients';
@@ -980,7 +981,7 @@ export interface AppearanceOverrideProps {
     // (undocumented)
     color?: ColorDefProps;
     // (undocumented)
-    ids?: Id64Set;
+    ids?: Id64Array;
     // (undocumented)
     overrideType?: FeatureOverrideType;
 }
@@ -1844,7 +1845,7 @@ export enum CoordSystem {
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
-export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined>;
+export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -2134,6 +2135,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     viewFlags: ViewFlags;
     // @internal (undocumented)
     readonly wantShadows: boolean;
+}
+
+// @alpha
+export interface DrawClipOptions {
+    color?: ColorDef;
+    fill?: ColorDef;
+    fillClipPlanes?: boolean;
+    hasPrimaryPlane?: boolean;
+    hiddenStyle?: LinePixels;
+    hiddenWidth?: number;
+    id?: string;
+    visibleWidth?: number;
 }
 
 // @public
@@ -2427,9 +2440,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 // @beta (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
-    alwaysDrawn?: Id64Set;
+    alwaysDrawn?: Id64Array;
     // (undocumented)
-    alwaysDrawnExclusiveEmphasized?: Id64Set;
+    alwaysDrawnExclusiveEmphasized?: Id64Array;
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
@@ -2437,7 +2450,7 @@ export interface EmphasizeElementsProps {
     // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
-    neverDrawn?: Id64Set;
+    neverDrawn?: Id64Array;
     // (undocumented)
     wantEmphasis?: boolean;
 }
@@ -2582,7 +2595,7 @@ export namespace FeatureSymbology {
         ignoresMaterial?: true | undefined;
         linePixels?: LinePixels;
         nonLocatable?: true | undefined;
-        rgb?: RgbColor;
+        rgb?: RgbColorProps;
         transparency?: number;
         weight?: number;
     }
@@ -2892,8 +2905,14 @@ export class GeoServices {
     getConverter(datum?: string): GeoConverter | undefined;
     }
 
+// @beta
+export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
+
 // @internal (undocumented)
 export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise<TerrainTileLoaderBase | undefined>;
+
+// @beta
+export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;
@@ -4607,8 +4626,6 @@ export class NullTarget extends RenderTarget {
 export class OffScreenTarget extends Target {
     constructor(rect: ViewRect);
     // (undocumented)
-    animationFraction: number;
-    // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(): void;
@@ -4656,11 +4673,11 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
     // (undocumented)
-    animationFraction: number;
-    // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(): void;
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -4682,6 +4699,9 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     readonly viewRect: ViewRect;
     }
+
+// @beta
+export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
 // @public
 export class OrthographicViewState extends SpatialViewState {
@@ -4951,7 +4971,7 @@ export class PluginAdmin {
     getTarFileName(pluginRootName: string): string;
     // @deprecated
     static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
-    loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
+    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
     // @internal
     loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
     // @internal (undocumented)
@@ -5397,7 +5417,7 @@ export namespace RenderMemory {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
-        COUNT = 7,
+        COUNT = 8,
         // (undocumented)
         FeatureOverrides = 3,
         // (undocumented)
@@ -5406,6 +5426,8 @@ export namespace RenderMemory {
         PlanarClassifiers = 5,
         // (undocumented)
         ShadowMaps = 6,
+        // (undocumented)
+        TextureAttachments = 7,
         // (undocumented)
         Textures = 0,
         // (undocumented)
@@ -5445,6 +5467,8 @@ export namespace RenderMemory {
         // (undocumented)
         addTexture(numBytes: number): void;
         // (undocumented)
+        addTextureAttachment(numBytes: number): void;
+        // (undocumented)
         addVertexTable(numBytes: number): void;
         // (undocumented)
         addVisibleEdges(numBytes: number): void;
@@ -5464,6 +5488,8 @@ export namespace RenderMemory {
         readonly planarClassifiers: Consumers;
         // (undocumented)
         readonly shadowMaps: Consumers;
+        // (undocumented)
+        readonly textureAttachments: Consumers;
         // (undocumented)
         readonly textures: Consumers;
         // (undocumented)
@@ -5670,6 +5696,8 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
+    collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
@@ -5747,6 +5775,10 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @internal
+        filterMapDrapeTextures?: boolean;
+        // @internal
+        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         // @internal
         preserveShaderSourceCode?: boolean;
@@ -5764,7 +5796,7 @@ export interface RenderSystemDebugControl {
 }
 
 // @internal
-export abstract class RenderTarget implements IDisposable {
+export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
@@ -5789,6 +5821,8 @@ export abstract class RenderTarget implements IDisposable {
     abstract changeScene(scene: GraphicList): void;
     // (undocumented)
     changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void;
+    // (undocumented)
+    collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
     // (undocumented)
@@ -5844,9 +5878,13 @@ export abstract class RenderTarget implements IDisposable {
 
 // @beta
 export interface RenderTargetDebugControl {
+    // @internal (undocumented)
+    displayDrapeFrustum: boolean;
     drawForReadPixels: boolean;
     // @alpha (undocumented)
     primitiveVisibility: PrimitiveVisibility;
+    // @internal (undocumented)
+    readonly shadowFrustum: Frustum | undefined;
     useLogZ: boolean;
     // @internal (undocumented)
     vcSupportIntersectingVolumes: boolean;
@@ -6861,6 +6899,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
+    animationFraction: number;
+    // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
     readonly batchState: BatchState;
@@ -6899,6 +6939,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly clips: Clips;
     // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
     readonly compositor: SceneCompositor;
     // (undocumented)
     protected _compositor: SceneCompositor;
@@ -6934,6 +6976,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     protected _decorations?: Decorations;
     // (undocumented)
     readonly decorationState: BranchState;
+    // (undocumented)
+    displayDrapeFrustum: boolean;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -7071,7 +7115,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
     // (undocumented)
-    readonly solarShadowMap: SolarShadowMap | undefined;
+    readonly shadowFrustum: Frustum | undefined;
+    // (undocumented)
+    readonly solarShadowMap: SolarShadowMap;
     // (undocumented)
     readonly techniques: Techniques;
     // (undocumented)
@@ -7381,7 +7427,7 @@ export namespace Tile {
         // (undocumented)
         viewFrustum?: ViewFrustum;
         // (undocumented)
-        readonly worldToViewMap: Map4d;
+        protected readonly worldToViewMap: Map4d;
     }
     export const enum LoadPriority {
         Classifier = 50,
@@ -8022,11 +8068,13 @@ export class ToolSettingsPropertyItem {
 
 // @beta
 export class ToolSettingsPropertyRecord extends PropertyRecord {
-    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean);
+    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean, lockProperty?: PropertyRecord);
     // (undocumented)
     static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord;
     // (undocumented)
     editorPosition: EditorPosition;
+    // (undocumented)
+    lockProperty?: PropertyRecord;
 }
 
 // @beta
@@ -8619,7 +8667,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static doClipToShape(viewport: Viewport, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
     // (undocumented)
-    static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, id?: string): void;
+    static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, options?: DrawClipOptions): void;
     // (undocumented)
     static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void;
     // (undocumented)
@@ -9689,7 +9737,7 @@ export enum WebGLRenderCompatibilityStatus {
 
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {
-    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
+    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, _filterTextures: boolean, heightRange?: Range1d);
     // (undocumented)
     geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)

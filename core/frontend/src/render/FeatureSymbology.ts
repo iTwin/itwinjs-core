@@ -11,6 +11,7 @@ import {
   GeometryClass,
   LinePixels,
   RgbColor,
+  RgbColorProps,
   SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
@@ -32,7 +33,7 @@ export namespace FeatureSymbology {
   /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {
     /** The color of the Appearance */
-    rgb?: RgbColor;
+    rgb?: RgbColorProps;
     /** The line weight of the Appearance */
     weight?: number;
     /** The transparency in the range [0.0, 1.0] where 0 indicates fully opaque and 1 indicates fully transparent. */
@@ -154,7 +155,7 @@ export namespace FeatureSymbology {
     }
 
     private constructor(props: AppearanceProps) {
-      this.rgb = props.rgb;
+      this.rgb = undefined !== props.rgb ? RgbColor.fromJSON(props.rgb) : undefined;
       this.weight = props.weight;
       this.transparency = props.transparency;
       this.linePixels = props.linePixels;

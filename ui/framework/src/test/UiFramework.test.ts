@@ -3,15 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as moq from "typemoq";
+import { Presentation } from "@bentley/presentation-frontend";
+import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import TestUtils, { MockAccessToken } from "./TestUtils";
 import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
-import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp, IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { Id64String } from "@bentley/bentleyjs-core";
-import * as moq from "typemoq";
-
-import TestUtils, { MockAccessToken } from "./TestUtils";
 
 describe("UiFramework", () => {
 
@@ -146,6 +146,9 @@ describe("UiFramework", () => {
     const viewState = moq.Mock.ofType<ViewState>();
     UiFramework.setDefaultViewState(viewState.object);
     expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
+
+    UiFramework.oidcClient = undefined;
+    expect(UiFramework.oidcClient).to.be.undefined;
   });
 
 });
@@ -157,16 +160,19 @@ describe("Requires Presentation", () => {
       IModelApp.shutdown();
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     shutdownIModelApp();
-    NoRenderApp.startup();
     Presentation.terminate();
+    await initializePresentationTesting();
+  });
+
+  afterEach(() => {
+    terminatePresentationTesting();
   });
 
   describe("initialize and setActiveSelectionScope", () => {
 
     it("creates manager instances", async () => {
-      Presentation.initialize();
       await TestUtils.initializeUiFramework();
       UiFramework.setActiveSelectionScope("element");
       TestUtils.terminateUiFramework();

@@ -11,7 +11,7 @@ export class KnownTestLocations {
   public static get assetsDir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations.assetsDir;
+      return path.join(process.execPath!, "Assets", "assets");
     }
 
     // Assume that we are running in nodejs

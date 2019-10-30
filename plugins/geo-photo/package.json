@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geo-photo-plugin",
-  "version": "1.7.0-dev.16",
+  "version": "1.8.0-dev.1",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {
@@ -57,12 +57,12 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "1.7.0-dev.16",
-    "@bentley/build-tools": "1.7.0-dev.16",
-    "@bentley/webpack-tools": "1.7.0-dev.16",
-    "@bentley/config-loader": "1.7.0-dev.16",
-    "@bentley/express-server": "1.7.0-dev.16",
-    "@bentley/imodeljs-backend": "1.7.0-dev.16",
+    "@bentley/certa": "1.8.0-dev.1",
+    "@bentley/build-tools": "1.8.0-dev.1",
+    "@bentley/webpack-tools": "1.8.0-dev.1",
+    "@bentley/config-loader": "1.8.0-dev.1",
+    "@bentley/express-server": "1.8.0-dev.1",
+    "@bentley/imodeljs-backend": "1.8.0-dev.1",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
@@ -79,17 +79,17 @@
     "source-map-loader": "^0.2.3"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.7.0-dev.16",
-    "@bentley/geometry-core": "1.7.0-dev.16",
-    "@bentley/imodeljs-clients": "1.7.0-dev.16",
-    "@bentley/imodeljs-common": "1.7.0-dev.16",
-    "@bentley/imodeljs-i18n": "1.7.0-dev.16",
-    "@bentley/imodeljs-frontend": "1.7.0-dev.16",
-    "@bentley/imodeljs-quantity": "1.7.0-dev.16",
-    "@bentley/ui-core": "1.7.0-dev.16",
-    "@bentley/ui-components": "1.7.0-dev.16",
-    "@bentley/ui-ninezone": "1.7.0-dev.16",
-    "@bentley/ui-framework": "1.7.0-dev.16",
+    "@bentley/bentleyjs-core": "1.8.0-dev.1",
+    "@bentley/geometry-core": "1.8.0-dev.1",
+    "@bentley/imodeljs-clients": "1.8.0-dev.1",
+    "@bentley/imodeljs-common": "1.8.0-dev.1",
+    "@bentley/imodeljs-i18n": "1.8.0-dev.1",
+    "@bentley/imodeljs-frontend": "1.8.0-dev.1",
+    "@bentley/imodeljs-quantity": "1.8.0-dev.1",
+    "@bentley/ui-core": "1.8.0-dev.1",
+    "@bentley/ui-components": "1.8.0-dev.1",
+    "@bentley/ui-ninezone": "1.8.0-dev.1",
+    "@bentley/ui-framework": "1.8.0-dev.1",
     "react": "^16.8.0"
   }
 }

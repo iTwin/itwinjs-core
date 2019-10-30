@@ -13,6 +13,24 @@
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
 
+  /* Medium devices (landscape tablets) */
+  @include for-tablet-landscape-down {
+    padding-left: $nz-footer-indicator-horizontal-padding-medium;
+    padding-right: $nz-footer-indicator-horizontal-padding-medium;
+  }
+
+  /* Medium devices (portrait tablets) */
+  @include for-tablet-portrait-down {
+    font-size: $text-font-size-medium;
+  }
+
+  /* small devices (phones) */
+  @include for-phone-only {
+    font-size: $text-font-size-small;
+    padding-left: $nz-footer-indicator-horizontal-padding-small;
+    padding-right: $nz-footer-indicator-horizontal-padding-small;
+  }
+
   > .nz-label {
     margin-right: $space-between-text-and-icon;
     display: none;
@@ -73,7 +91,22 @@
 }
 
 .uifw-indicator-icon {
+  font-size: $icon-size;
   width: 100%;
   height: 100%;
   cursor: pointer;
+
+  /* Medium devices */
+  @include for-tablet-landscape-down {
+    font-size: $icon-size-medium;
+  }
+
+  /* Small devices */
+  @include for-phone-only {
+    font-size: $icon-size-small;
+  }
+
+  &:hover {
+    color: $buic-foreground-primary;
+  }
 }

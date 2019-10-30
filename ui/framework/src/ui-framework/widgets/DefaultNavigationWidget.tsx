@@ -9,6 +9,7 @@ import { NavigationWidget } from "./NavigationWidget";
 import { CoreTools } from "../CoreToolDefinitions";
 import { UiFramework } from "../UiFramework";
 import { ItemList } from "../shared/ItemMap";
+import { connectIModelConnection } from "../redux/connectIModel";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
  * @beta
@@ -65,3 +66,8 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     );
   }
 }
+
+/** DefaultNavigationWidget that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedNavigationWidget = connectIModelConnection(null, null)(DefaultNavigationWidget); // tslint:disable-line:variable-name

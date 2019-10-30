@@ -104,7 +104,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "directionExplicit": true,
       "execute": [Function],
       "getKey": [Function],
-      "groupId": "",
+      "groupId": "Group-3",
       "handleSizeKnown": [Function],
       "iconSpec": "icon-placeholder",
       "isActive": false,
@@ -208,7 +208,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
     ]
   }
   itemsInColumn={4}
-  key=""
+  key="Group-3"
   labelKey="UiFramework:tests.label"
 />
 `;

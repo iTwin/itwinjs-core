@@ -154,7 +154,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addHiliteShader(gl: WebGLRenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
-    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified);
+    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified, false);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
@@ -559,7 +559,7 @@ export class Techniques implements IDisposable {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
 
-          const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap !== undefined && target.solarShadowMap.isReady && target.currentViewFlags.shadows;   // TBD - Avoid shadows for pick?
+          const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap.isReady && target.currentViewFlags.shadows;   // TBD - Avoid shadows for pick?
           const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
           const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
 

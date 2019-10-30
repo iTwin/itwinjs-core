@@ -55,12 +55,12 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   /** Shows the Backstage */
   public static show(): void {
-    Backstage.onBackstageEvent.emit({ isVisible: true });
+    UiFramework.backstageManager.open();
   }
 
   /** Hides the Backstage */
   public static hide(): void {
-    Backstage.onBackstageEvent.emit({ isVisible: false });
+    UiFramework.backstageManager.close();
   }
 
   /** Command that toggles the Backstage */
@@ -70,10 +70,6 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
       labelKey: "UiFramework:commands.openBackstage",
       execute: () => {
         UiFramework.backstageManager.toggle();
-        if (Backstage.isBackstageVisible)
-          Backstage.hide();
-        else
-          Backstage.show();
       },
     });
   }
@@ -84,8 +80,9 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   constructor(props: BackstageProps) {
     super(props);
 
+    this.setIsOpen(!!this.props.isVisible);
     this.state = {
-      isVisible: !!this.props.isVisible,
+      isVisible: UiFramework.backstageManager.isOpen,
     };
   }
 
@@ -103,7 +100,15 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   public componentDidUpdate(prevProps: BackstageProps) {
     if (this.props.isVisible !== prevProps.isVisible)
-      this.setState({ isVisible: !!this.props.isVisible });
+      this.setIsOpen(!!this.props.isVisible);
+  }
+
+  private setIsOpen(isOpen: boolean) {
+    if (isOpen) {
+      UiFramework.backstageManager.open();
+    } else {
+      UiFramework.backstageManager.close();
+    }
   }
 
   private _onClose = () => {

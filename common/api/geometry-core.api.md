@@ -1239,6 +1239,14 @@ export abstract class CurveChain extends CurveCollection {
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
+// @internal
+export class CurveChainWireOffsetContext {
+    constructor();
+    static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined;
+    static createSingleOffsetPrimitiveXY(g: CurvePrimitive, distanceLeft: number): CurvePrimitive | CurvePrimitive[] | undefined;
+    }
+
 // @public
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
@@ -2403,6 +2411,19 @@ export interface IStrokeHandler {
     endParentCurvePrimitive(cp: CurvePrimitive): void;
     startCurvePrimitive(cp: CurvePrimitive): void;
     startParentCurvePrimitive(cp: CurvePrimitive): void;
+}
+
+// @public
+export class JointOptions {
+    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number);
+    static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions;
+    // (undocumented)
+    leftOffsetDistance: number;
+    // (undocumented)
+    maxChamferTurnDegrees: number;
+    minArcDegrees: number;
+    needArc(theta: Angle): boolean;
+    numChamferPoints(theta: Angle): number;
 }
 
 // @public
@@ -3712,6 +3733,12 @@ export class PolygonOps {
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
+    }
+
+// @internal
+export class PolygonWireOffsetContext {
+    constructor();
+    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     }
 
 // @public

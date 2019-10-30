@@ -121,6 +121,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
   private _onSplitterChange = (size: number): void => {
     let percentage = 0;
 
+    // istanbul ignore else
     if (this._containerDiv && size > 0) {
       if (this.props.orientation === Orientation.Horizontal) {
         const height = this._containerDiv.getBoundingClientRect().height;
@@ -132,6 +133,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
           percentage = size / width;
       }
 
+      // istanbul ignore else
       if (this.props.onSplitterChange)
         this.props.onSplitterChange(size, percentage);
     }

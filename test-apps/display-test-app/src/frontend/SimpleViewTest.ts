@@ -136,6 +136,8 @@ async function main() {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
     logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
+    filterMapTextures: true === configuration.filterMapTextures,
+    filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
   };
 
   if (configuration.disableInstancing)

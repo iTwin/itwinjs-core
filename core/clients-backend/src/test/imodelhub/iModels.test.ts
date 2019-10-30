@@ -15,7 +15,6 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true) {
   if (!TestConfig.enableMocks)
@@ -396,8 +395,8 @@ describe("iModelHub iModelsHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Seed File with Buffering (#iModelBank)", async () => {
-    imodelClient.setFileHandler(new AzureFileHandler(true));
+  it("should download a Seed File with Buffering", async () => {
+    imodelClient.setFileHandler(utils.createFileHanlder(true));
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
     utils.mockFileResponse();
@@ -407,7 +406,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    imodelClient.setFileHandler(new AzureFileHandler());
+    imodelClient.setFileHandler(utils.createFileHanlder());
   });
 
   it("should fail downloading the Seed File with no file handler (#iModelBank)", async () => {

@@ -248,7 +248,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     return this._imageryProvider;
   }
 
-  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
+  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, private _filterTextures: boolean, heightRange?: Range1d) {
     super(iModel, modelId, groundBias, mapTilingScheme, heightRange);
   }
 
@@ -280,7 +280,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
     try {
-      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
+      const textureParams = new RenderTexture.Params(undefined, this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection);
       return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
@@ -795,6 +795,7 @@ interface BackgroundMapTreeId {
   mapType: BackgroundMapType;
   groundBias: number;
   forDrape: boolean;
+  filterTextures: boolean;
 }
 
 class BackgroundMapTreeSupplier implements TileTree.Supplier {
@@ -806,6 +807,8 @@ class BackgroundMapTreeSupplier implements TileTree.Supplier {
         cmp = compareNumbers(lhs.groundBias, rhs.groundBias);
         if (0 === cmp) {
           cmp = compareBooleans(lhs.forDrape, rhs.forDrape);
+          if (0 === cmp)
+            cmp = compareBooleans(lhs.filterTextures, rhs.filterTextures);
         }
       }
     }
@@ -828,7 +831,7 @@ class BackgroundMapTreeSupplier implements TileTree.Supplier {
     if (undefined === imageryProvider)
       return undefined;
 
-    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, iModel);
+    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.filterTextures, iModel);
   }
 }
 
@@ -844,8 +847,8 @@ class ImageryTreeSupplier implements TileTree.Supplier {
 
   public compareTileTreeIds(lhs: number, rhs: number) { return compareNumbers(lhs, rhs); }
 
-  public async createTileTree(groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this.provider, groundBias, iModel);
+  public async createTileTree(options: { groundBias: number, filterTextures: boolean }, iModel: IModelConnection): Promise<TileTree | undefined> {
+    return createTileTreeFromImageryProvider(this.provider, options.groundBias, options.filterTextures, iModel);
   }
 }
 /** Returns whether a GCS converter is available.
@@ -879,7 +882,7 @@ class BackgroundMapTileTree extends MapTileTree {
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */
-export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined> {
+export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined> {
   if (undefined === iModel.ecefLocation)
     return undefined;
 
@@ -889,7 +892,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   const tilingScheme = new WebMercatorTilingScheme();
   const heightRange = Range1d.createXX(groundBias, groundBias);
   const haveConverter = await getGcsConverterAvailable(iModel);
-  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme);
+  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme, filterTextures);
   const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
   return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, heightRange);
 }
@@ -986,12 +989,15 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
   public settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
   private readonly _forDrape: boolean;
+  private readonly _filterTextures?: boolean;
 
   public constructor(settings: BackgroundMapSettings, iModel: IModelConnection, forDrape = false) {
     super();
     this.settings = settings;
     this._iModel = iModel;
     this._forDrape = forDrape;
+    const options = IModelApp.renderSystem.options;
+    this._filterTextures = forDrape ? (options.filterMapDrapeTextures === undefined || options.filterMapDrapeTextures) : options.filterMapTextures;
   }
 
   public get treeOwner(): TileTree.Owner {
@@ -1000,6 +1006,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
       mapType: this.settings.mapType,
       groundBias: this.settings.groundBias,
       forDrape: this._forDrape,
+      filterTextures: this._filterTextures,
     };
 
     return this._iModel.tiles.getTileTreeOwner(id, backgroundMapTreeSupplier);

@@ -10,6 +10,7 @@ import {
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
 import {
+  GLTimerResultCallback,
   GraphicBranch,
   GraphicBranchOptions,
   GraphicList,
@@ -19,11 +20,11 @@ import {
   RenderDiagnostics,
   RenderGraphic,
   RenderGraphicOwner,
+  RenderMemory,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
-  GLTimerResultCallback,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -515,6 +516,16 @@ export class IdMap implements IDisposable {
     this.addGradient(grad, texture);
     return texture;
   }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const texture of this.textures.values())
+      if (texture instanceof Texture)
+        stats.addTexture(texture.bytesUsed);
+
+    for (const gradient of this.gradients)
+      if (gradient instanceof Texture)
+        stats.addTexture(gradient.bytesUsed);
+  }
 }
 
 export type TextureBinding = WebGLTexture | undefined;
@@ -527,7 +538,7 @@ const enum VertexAttribState {
 }
 
 /** @internal */
-export class System extends RenderSystem implements RenderSystemDebugControl {
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -642,7 +653,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
       options.displaySolarShadows = false;
     if (!capabilities.supportsFragDepth)
       options.logarithmicDepthBuffer = false;
-
+    if (!capabilities.supportsTextureFilterAnisotropic) {
+      options.filterMapTextures = false;
+      options.filterMapDrapeTextures = false;
+    }
     return new System(canvas, context, capabilities, options);
   }
 
@@ -1071,5 +1085,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public get isGLTimerSupported(): boolean { return this.glTimer.isSupported; }
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     this.glTimer.resultsCallback = callback;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (undefined !== this._lineCodeTexture)
+      stats.addTexture(this._lineCodeTexture.bytesUsed);
+
+    if (undefined !== this._noiseTexture)
+      stats.addTexture(this._noiseTexture.bytesUsed);
+
+    for (const idMap of this.resourceCache.values())
+      idMap.collectStatistics(stats);
   }
 }

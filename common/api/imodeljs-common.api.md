@@ -1998,19 +1998,15 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 // @public
 export class GeometryStreamIteratorEntry {
     constructor(category?: Id64String);
-    // @beta @deprecated
+    // @beta
     brep?: BRepEntity.DataProps;
-    // @deprecated
     geometryQuery?: AnyGeometryQuery;
     geomParams: GeometryParams;
     localRange?: Range3d;
     localToWorld?: Transform;
-    // @deprecated
     partId?: Id64String;
-    // @deprecated
     partToLocal?: Transform;
     readonly primitive: GeometryStreamIteratorEntry.Primitive;
-    // @deprecated
     textString?: TextString;
 }
 
@@ -2278,6 +2274,7 @@ export namespace HiddenLine {
         static defaults: Settings;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
@@ -2299,7 +2296,9 @@ export namespace HiddenLine {
         equals(other: Style): boolean;
         // (undocumented)
         static fromJSON(json?: StyleProps, hidden?: true): Style;
-        overrideColor(color: ColorDef): Style;
+        overrideColor(color: ColorDef | undefined): Style;
+        overridePattern(pattern: LinePixels | undefined): Style;
+        overrideWidth(width: number | undefined): Style;
         // @internal (undocumented)
         readonly ovrColor: boolean;
         readonly pattern?: LinePixels;
@@ -3017,6 +3016,7 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
+    static readonly args: any;
     static readonly isIOSFrontend: any;
     static readonly isMobileBackend: boolean;
     static readonly isMobileFrontend: boolean;
@@ -3790,6 +3790,7 @@ export class RelatedElement implements RelatedElementProps {
     static fromJSON(json?: RelatedElementProps): RelatedElement | undefined;
     readonly id: Id64String;
     static idFromJson(json: any): Id64String;
+    static readonly none: RelatedElement;
     readonly relClassName?: string;
 }
 
@@ -3967,6 +3968,7 @@ export namespace RenderTexture {
         readonly type: Type;
     }
     export const enum Type {
+        FilteredTileSection = 4,
         Glyph = 1,
         Normal = 0,
         SkyBox = 3,
@@ -4022,10 +4024,21 @@ export class RgbColor {
     equals(other: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
+    static fromJSON(json: RgbColorProps | undefined): RgbColor;
+    // (undocumented)
     readonly g: number;
     // (undocumented)
     readonly r: number;
+    // (undocumented)
+    toJSON(): RgbColorProps;
 }
+
+// @public
+export type RgbColorProps = {
+    r: number;
+    g: number;
+    b: number;
+} | RgbColor;
 
 // @beta
 export type RgbFactorProps = number[];

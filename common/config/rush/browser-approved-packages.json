@@ -52,11 +52,11 @@
     },
     {
       "name": "@bentley/imodeljs-clients",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -116,7 +116,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -184,7 +184,7 @@
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "callable-instance2",
@@ -221,10 +221,6 @@
     {
       "name": "child_process",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "chokidar",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "chrome-launcher",
@@ -528,15 +524,11 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "nyc",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "obj-traverse",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "object-assign",
@@ -732,7 +724,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -851,39 +843,7 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
-      "name": "url-search-params",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "uuid",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-chromedriver-service",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-junit-reporter",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-mocha-framework",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-screenshot",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-spec-reporter",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-visual-regression-service",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "webdriverio",
       "allowedCategories": [ "tools" ]
     },
     {

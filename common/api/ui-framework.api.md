@@ -426,6 +426,12 @@ export enum BackstageItemType {
 }
 
 // @beta
+export class BackstageItemUtilities {
+    static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
+    static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
+}
+
+// @beta
 export class BackstageManager {
     // (undocumented)
     close(): void;
@@ -691,18 +697,6 @@ export enum ColorTheme {
     Light = "light"
 }
 
-// @internal (undocumented)
-export enum ColumnType {
-    // (undocumented)
-    Empty = 3,
-    // (undocumented)
-    Label = 0,
-    // (undocumented)
-    Record = 1,
-    // (undocumented)
-    RecordSpan = 2
-}
-
 // @public
 export type CombinedReducerState<R> = {
     readonly [K in keyof R]: R[K] extends FunctionType ? StateType<R[K]> : never;
@@ -835,8 +829,8 @@ export enum ConfigurableUiActionId {
 // @public
 export const ConfigurableUiActions: {
     setSnapMode: (snapMode: number) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetSnapMode, number>;
-    setToolPrompt: (toolPrompt: string) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setTheme: (theme: string) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetTheme, string>;
+    setToolPrompt: (toolPrompt: string) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setWidgetOpacity: (opacity: number) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
 };
 
@@ -932,6 +926,12 @@ export interface ConfigurableUiState {
     // (undocumented)
     widgetOpacity: number;
 }
+
+// @beta
+export const connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps<any, any>;
+
+// @beta
+export const connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps<any, any>;
 
 // @beta
 export type ContentCallback = (content: ContentProps) => void;
@@ -1440,8 +1440,6 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // (undocumented)
     execute(): void;
     // (undocumented)
-    labelMap: Map<string, TsLabel>;
-    // (undocumented)
     onInitialize(): void;
     // (undocumented)
     rows: TsRow[];
@@ -1770,10 +1768,10 @@ export interface FilterInfo {
 }
 
 // @beta
-export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
+export const FrameworkReducer: (state: import("../utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("../utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("../utils/redux-ts").DeepReadonlyObject<import("../utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("../utils/redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("../utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2295,6 +2293,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     groupId: string;
     // (undocumented)
+    static groupIdPrefix: string;
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly itemCount: number;
@@ -2366,6 +2366,27 @@ export interface IconProps extends IconProps_2 {
 // @public @deprecated
 export type IconSpec = IconSpec_2;
 
+// @beta
+export const IModelConnectedCategoryTree: any;
+
+// @beta
+export const IModelConnectedCubeNavigationAid: any;
+
+// @beta
+export const IModelConnectedNavigationWidget: any;
+
+// @beta
+export const IModelConnectedViewport: any;
+
+// @beta
+export const IModelConnectedViewSelector: any;
+
+// @beta
+export const IModelConnectedVisibilityComponent: any;
+
+// @beta
+export const IModelConnectedVisibilityTree: any;
+
 // @internal
 export interface IModelInfo {
     // (undocumented)
@@ -2422,6 +2443,7 @@ export class IModelViewportControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
     // (undocumented)
     protected _disableDefaultViewOverlay: boolean;
+    protected getImodelConnectedViewportReactElement(): React.ReactNode;
     protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
@@ -3621,24 +3643,65 @@ export enum SessionStateActionId {
 
 // @beta
 export const SessionStateActions: {
-    setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
-    setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
-    setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
-    setActiveIModelId: (iModelId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
-    setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
-    setDefaultViewId: (viewId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
-    setDefaultViewState: (viewState: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewState, any>;
-    setDefaultRulesetId: (rulesetid: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
-    setIModelConnection: (iModelConnection: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
-    setAccessToken: (accessToken: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
-    updateCursorMenu: (cursorMenuData: CursorMenuData) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("./utils/redux-ts").DeepReadonlyObject<CursorMenuData>>;
+    setAccessToken: (accessToken: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    setActiveIModelId: (iModelId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
+    setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("../utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
+    setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
+    setDefaultRulesetId: (rulesetid: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
+    setDefaultViewId: (viewId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
+    setDefaultViewState: (viewState: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewState, any>;
+    setNumItemsSelected: (numSelected: number) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
+    setIModelConnection: (iModelConnection: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
+    setSelectionScope: (activeSelectionScope: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
+    updateCursorMenu: (cursorMenuData: CursorMenuData) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("../utils/redux-ts").DeepReadonlyObject<CursorMenuData>>;
 };
+
+// @beta
+export interface SessionStateActionsProps {
+    // (undocumented)
+    setAccessToken: (typeof SessionStateActions.setAccessToken);
+    // (undocumented)
+    setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
+    // (undocumented)
+    setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
+    // (undocumented)
+    setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
+    // (undocumented)
+    setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
+    // (undocumented)
+    setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
+    // (undocumented)
+    setDefaultViewState: (typeof SessionStateActions.setDefaultViewState);
+    // (undocumented)
+    setIModelConnection: (typeof SessionStateActions.setIModelConnection);
+    // (undocumented)
+    setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
+    // (undocumented)
+    setSelectionScope: (typeof SessionStateActions.setSelectionScope);
+    // (undocumented)
+    updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
+}
 
 // @beta
 export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 // @beta
-export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly<SessionState>;
+export const sessionStateMapDispatchToProps: {
+    setAccessToken: (accessToken: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    setActiveIModelId: (iModelId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
+    setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("../utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
+    setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
+    setDefaultRulesetId: (rulesetid: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
+    setDefaultViewId: (viewId: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
+    setDefaultViewState: (viewState: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewState, any>;
+    setNumItemsSelected: (numSelected: number) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
+    setIModelConnection: (iModelConnection: any) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
+    setSelectionScope: (activeSelectionScope: string) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
+    updateCursorMenu: (cursorMenuData: CursorMenuData) => import("../utils/redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("../utils/redux-ts").DeepReadonlyObject<CursorMenuData>>;
+};
+
+// @beta
+export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -4528,37 +4591,6 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     horizontalToolbar?: React.ReactNode;
     // (undocumented)
     verticalToolbar?: React.ReactNode;
-}
-
-// @internal (undocumented)
-export class TsCol {
-    constructor(columnIndex: number);
-    // (undocumented)
-    readonly columnIndex: number;
-    // (undocumented)
-    columnSpan: number;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    type: ColumnType;
-}
-
-// @internal (undocumented)
-export class TsLabel {
-    constructor(label: string, isDisabled?: boolean | undefined);
-    // (undocumented)
-    isDisabled?: boolean | undefined;
-    // (undocumented)
-    readonly label: string;
-}
-
-// @internal (undocumented)
-export class TsRow {
-    constructor(priority: number, numColumns: number);
-    // (undocumented)
-    cols: TsCol[];
-    // (undocumented)
-    priority: number;
 }
 
 // @alpha

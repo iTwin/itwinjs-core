@@ -59,6 +59,9 @@
     "ToggleFrustumIntersection": {
       "keyin": "dta frustum intersection"
     },
+    "ToggleShadowMapTiles": {
+      "keyin": "dta shadow tiles"
+    },
     "PurgeTileTrees": {
       "keyin": "dta purge tiletrees"
     }

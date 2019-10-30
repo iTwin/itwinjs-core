@@ -31,9 +31,10 @@ import {
   ComboBox,
   createComboBox,
   createColorInput,
-  ColorInputProps,
   createNestedMenu,
   createNumericInput,
+  createSlider,
+  Slider,
 } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
@@ -122,233 +123,6 @@ export class ViewAttributes {
   public dispose(): void {
     this._removeMe();
     this._parent.removeChild(this._element);
-  }
-
-  private addEdgeDisplay(): void {
-    const edgeDisplayDiv = document.createElement("div");
-    const nestedMenu = createNestedMenu({
-      id: this._nextId,
-      label: "Edge Display",
-      parent: this._element,
-      expand: ViewAttributes._expandEdgeDisplay,
-      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      handler: (expanded) => ViewAttributes._expandEdgeDisplay = expanded,
-      body: edgeDisplayDiv,
-    });
-
-    this._updates.push((view) => {
-      if (view.is2d())
-        nestedMenu.div.hidden = true;
-      else
-        nestedMenu.div.hidden = false;
-    });
-
-    // Create Visible Edges Checkbox
-    const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.visibleEdges = enabled;
-      this._vp.viewFlags = vf;
-      this.sync();
-    }, nestedMenu.body);
-    const visEdgeDiv = this.addHiddenLineEditor(visEdgesCb, edgeDisplayDiv);
-
-    // Create Hidden Edges Checkbox
-    const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.hiddenEdges = enabled;
-      this._vp.viewFlags = vf;
-      this.sync();
-    }, edgeDisplayDiv);
-    hidEdgesCb.checkbox.disabled = true;
-    const hidEdgeDiv = this.addHiddenLineEditor(hidEdgesCb, edgeDisplayDiv, true);
-    this._updates.push((view) => {
-      if (view.is3d()) {
-        visEdgeDiv.hidden = !view.viewFlags.visibleEdges;
-        hidEdgeDiv.hidden = !view.viewFlags.hiddenEdges;
-        hidEdgesCb.checkbox.disabled = !view.viewFlags.visibleEdges;
-        const visWeightChecked = (visEdgeDiv.children[2].children[0] as HTMLInputElement).checked;
-        const hidWeightChecked = (hidEdgeDiv.children[2].children[0] as HTMLInputElement).checked;
-        if (visWeightChecked && hidWeightChecked) {
-          const visWeight = (visEdgeDiv.children[2].children[2] as HTMLInputElement).value; // visEdgeDiv.children.item(2) !== null ? visEdgeDiv.children.item(2)!.children.item(2)!.value;
-          const hidWeight = (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value;
-          if (parseInt(hidWeight, 10) > parseInt(visWeight, 10)) {
-            (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value = visWeight;
-          }
-        } else if (!visWeightChecked && hidWeightChecked) {
-          (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value = "1";
-        }
-      }
-    });
-  }
-
-  private addHiddenLineEditor(parentCb: CheckBox, parent: HTMLDivElement, hiddenEdge?: true): HTMLDivElement {
-    const oldHLSettings = this._vp.view.is3d() ? (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings : HiddenLine.Settings.defaults;
-    const hlEdgeSettings = hiddenEdge ? oldHLSettings.hidden : oldHLSettings.visible;
-    const hlDiv = document.createElement("div");
-    hlDiv.hidden = hiddenEdge ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
-
-    // Create transparency threshold checkbox and slider
-    const transDiv = document.createElement("div");
-    const label4 = document.createElement("label");
-    label4.htmlFor = "cb_ovrTrans";
-    label4.innerText = "Transparency Threshold ";
-    transDiv.appendChild(label4);
-    const slider = document.createElement("input");
-    slider.type = "range";
-    slider.className = "slider";
-    slider.min = "0.0";
-    slider.max = "1.0";
-    slider.step = "0.05";
-    slider.value = "1.0";
-    transDiv.appendChild(slider);
-    slider.addEventListener("input", () => {
-      this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-        colorCb.checked ? new ColorDef(colorInput.value) : undefined,
-        parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
-        hiddenEdge);
-    });
-    hlDiv.appendChild(transDiv);
-    if (hiddenEdge) {
-      transDiv.hidden = true;
-    }
-
-    // Create color checkbox and color picker
-    const colorDiv = document.createElement("div");
-    const colorCb = document.createElement("input");
-    colorCb.type = "checkbox";
-    colorCb.id = "cb_ovrColor";
-    colorDiv.appendChild(colorCb);
-    const props: ColorInputProps = {
-      parent: colorDiv,
-      id: "color_ovrColor",
-      label: "Color",
-      value: "#ffffff",
-      display: "inline",
-      disabled: true,
-      handler: (value: string) => {
-        this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-          colorCb.checked ? new ColorDef(value) : undefined,
-          parseInt(patternCb.select.value, 10),
-          lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
-          hiddenEdge);
-      },
-    };
-    const colorInput: HTMLInputElement = createColorInput(props).input;
-    colorCb.addEventListener("click", () => {
-      this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-        colorCb.checked ? new ColorDef(colorInput.value) : undefined,
-        parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
-        hiddenEdge);
-    });
-    colorCb.checked = false;
-    hlDiv.appendChild(colorDiv);
-    if (hiddenEdge) {
-      colorDiv.hidden = true;
-      colorCb.hidden = true;
-    }
-
-    // Create weight checkbox and numeric input
-    const lbDiv = document.createElement("div");
-    const lbCb = document.createElement("input");
-    lbCb.type = "checkbox";
-    lbCb.id = "cb_ovrWeight";
-    lbDiv.appendChild(lbCb);
-    const label = document.createElement("label");
-    label.htmlFor = "cb_ovrWeight";
-    label.innerText = "Weight ";
-    lbDiv.appendChild(label);
-    const num = createNumericInput({
-      parent: lbDiv,
-      value: hlEdgeSettings.width !== undefined ? hlEdgeSettings.width : 1,
-      disabled: true,
-      min: 1,
-      max: 31,
-      step: 1,
-      handler: (value) => {
-        this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-          colorCb.checked ? new ColorDef(colorInput.value) : undefined,
-          parseInt(patternCb.select.value, 10),
-          lbCb.checked ? value : undefined,
-          hiddenEdge);
-      },
-    });
-    lbDiv.appendChild(num);
-    lbCb.addEventListener("click", () => {
-      this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-        colorCb.checked ? new ColorDef(colorInput.value) : undefined,
-        parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
-        hiddenEdge);
-    });
-    lbCb.checked = false;
-    hlDiv.appendChild(lbDiv);
-
-    // Create style combo box
-    const patternCb = Settings.addStyle(hlDiv, hlEdgeSettings.pattern ? hlEdgeSettings.pattern : LinePixels.Invalid, (select: HTMLSelectElement) => {
-      this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
-        colorCb.checked ? new ColorDef(colorInput.value) : undefined,
-        parseInt(select.value, 10),
-        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
-        hiddenEdge);
-    });
-    parent.appendChild(hlDiv);
-
-    // Add to update list
-    const update = (view: ViewState) => {
-      if (view.is2d()) {
-        parentCb.div.style.display = "none";
-        hlDiv.hidden = true;
-        return;
-      }
-      parentCb.div.style.display = "block";
-      parentCb.checkbox.checked = view.viewFlags[hiddenEdge ? "hiddenEdges" : "visibleEdges"];
-
-      const latestSettings = view.is3d() ? (view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings : HiddenLine.Settings.defaults;
-      const latestEdgeSettings = hiddenEdge ? latestSettings.hidden : latestSettings.visible;
-
-      if (!hiddenEdge) {
-        slider.value = latestSettings.transparencyThreshold.toString();
-        colorCb.checked = latestEdgeSettings.color !== undefined;
-        colorInput.disabled = !colorCb.checked;
-        colorInput.value = latestEdgeSettings.color !== undefined ? latestEdgeSettings.color.toHexString() : ColorDef.white.toHexString();
-      }
-      patternCb.select.value = (latestEdgeSettings.pattern !== undefined ? latestEdgeSettings.pattern : LinePixels.Invalid).toString();
-      lbCb.checked = latestEdgeSettings.width !== undefined;
-      num.disabled = !lbCb.checked;
-      num.value = latestEdgeSettings.width !== undefined ? latestEdgeSettings.width.toString() : "1";
-    };
-    this._updates.push(update);
-
-    return hlDiv;
-  }
-
-  private updateEdgeDisplay(parent: HTMLDivElement, transThresh?: number, color?: ColorDef, pattern?: LinePixels, width?: number, hiddenEdge?: true): void {
-    const oldHLSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings;
-    const newHLSettings = HiddenLine.Settings.fromJSON({
-      visible: hiddenEdge ? oldHLSettings.visible : HiddenLine.Style.fromJSON({
-        ovrColor: color ? true : false,
-        color,
-        pattern,
-        width,
-      }),
-      hidden: !hiddenEdge ? HiddenLine.Style.fromJSON({
-        ovrColor: oldHLSettings.hidden.ovrColor,
-        color: oldHLSettings.hidden.color,
-        pattern: oldHLSettings.hidden.pattern,
-        width: (oldHLSettings.hidden.width === undefined || (width !== undefined && oldHLSettings.hidden.width <= width) ? oldHLSettings.hidden.width : width), // verify hidden width <= visible width
-      }) : HiddenLine.Style.fromJSON({
-        ovrColor: color ? true : false,
-        color,
-        pattern,
-        width: (width === undefined || (oldHLSettings.visible.width !== undefined && width <= oldHLSettings.visible.width) ? width : oldHLSettings.visible.width), // verify hidden width <= visible width
-      }, true),
-      transThreshold: transThresh,
-    });
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = newHLSettings;
-    this.sync();
-    parent.hidden = hiddenEdge ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
   }
 
   private addDisplayStylePicker(): void {
@@ -708,6 +482,177 @@ export class ViewAttributes {
   private get _nextId(): string {
     ++this._id;
     return "viewAttributesPanel_" + this._id;
+  }
+
+  private get edgeSettings() { return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings; }
+  private overrideEdgeSettings(props: HiddenLine.SettingsProps) {
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = this.edgeSettings.override(props);
+    this.sync();
+  }
+
+  private addEdgeDisplay(): void {
+    const edgeDisplayDiv = document.createElement("div");
+    const nestedMenu = createNestedMenu({
+      id: this._nextId,
+      label: "Edge Display",
+      parent: this._element,
+      expand: ViewAttributes._expandEdgeDisplay,
+      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+      handler: (expanded) => ViewAttributes._expandEdgeDisplay = expanded,
+      body: edgeDisplayDiv,
+    });
+
+    const slider: Slider = createSlider({
+      id: this._nextId,
+      name: "Transparency Threshold",
+      parent: edgeDisplayDiv,
+      min: "0.0",
+      max: "1.0",
+      step: "0.05",
+      value: "1.0",
+      handler: (_) => this.overrideEdgeSettings({ transThreshold: parseFloat(slider.slider.value) }),
+    });
+    slider.div.style.textAlign = "left";
+
+    const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.visibleEdges = enabled;
+      hidEdgesCb.checkbox.disabled = !enabled;
+      hidEditor.hidden = hidEditor.hidden || !enabled;
+      visEditor.hidden = !enabled;
+      this._vp.viewFlags = vf;
+      this.sync();
+    }, nestedMenu.body);
+
+    const visEditor = this.addHiddenLineEditor(false);
+    edgeDisplayDiv.appendChild(visEditor);
+
+    const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.hiddenEdges = enabled;
+      hidEditor.hidden = !enabled;
+      this._vp.viewFlags = vf;
+      this.sync();
+    }, edgeDisplayDiv);
+
+    const hidEditor = this.addHiddenLineEditor(true);
+    edgeDisplayDiv.appendChild(hidEditor);
+
+    this._updates.push((view) => {
+      if (view.is2d()) {
+        nestedMenu.div.hidden = true;
+        return;
+      }
+
+      nestedMenu.div.hidden = false;
+      const settings = this.edgeSettings;
+      slider.slider.value = settings.transparencyThreshold.toString();
+
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      visEdgesCb.checkbox.checked = vf.visibleEdges;
+      visEditor.hidden = !vf.visibleEdges;
+      hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      hidEditor.hidden = !vf.hiddenEdges;
+    });
+  }
+
+  private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {
+    const style = this._vp.view.is3d() ? this.edgeSettings : HiddenLine.Settings.defaults;
+    const settingsName = forHiddenEdges ? "hidden" : "visible";
+    const settings = style[settingsName];
+    const div = document.createElement("div");
+    div.style.paddingLeft = "10px";
+    div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
+
+    // Color override (visible only)
+    let colorCb: HTMLInputElement | undefined;
+    let colorInput: HTMLInputElement | undefined;
+    if (!forHiddenEdges) {
+      const colorDiv = document.createElement("div");
+      div.appendChild(colorDiv);
+
+      colorCb = document.createElement("input");
+      colorCb.type = "checkbox";
+      colorCb.id = this._nextId;
+      colorCb.checked = settings.ovrColor;
+      colorDiv.appendChild(colorCb);
+
+      const color = undefined !== settings.color ? settings.color.toHexString() : "#ffffff";
+      colorInput = createColorInput({
+        parent: colorDiv,
+        id: this._nextId,
+        label: "Color",
+        value: color,
+        display: "inline",
+        disabled: !settings.ovrColor,
+        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(new ColorDef(value)) }),
+      }).input;
+
+      colorCb.addEventListener("click", () => {
+        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? new ColorDef(colorInput!.value) : undefined) });
+      });
+    }
+
+    // Width override
+    const widthDiv = document.createElement("div");
+    div.appendChild(widthDiv);
+
+    const widthCb = document.createElement("input");
+    widthCb.type = "checkbox";
+    widthCb.id = this._nextId;
+    widthCb.checked = undefined !== settings.width;
+    widthDiv.appendChild(widthCb);
+
+    const widthLabel = document.createElement("label");
+    widthLabel.htmlFor = widthCb.id;
+    widthLabel.innerText = "Weight ";
+    widthDiv.appendChild(widthLabel);
+
+    const width = createNumericInput({
+      parent: widthDiv,
+      value: undefined !== settings.width ? settings.width : 1,
+      disabled: undefined === settings.width,
+      min: 1,
+      max: 31,
+      step: 1,
+      handler: (value) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(value) }),
+    });
+    widthDiv.appendChild(width);
+
+    widthCb.addEventListener("click", () => {
+      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined) });
+    });
+
+    // Line style override
+    const patternCb = Settings.addStyle(div, settings.pattern ? settings.pattern : LinePixels.Invalid, (select) => {
+      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overridePattern(parseInt(select.value, 10)) });
+    });
+
+    // Synchronization
+    this._updates.push((view: ViewState) => {
+      if (view.is2d()) {
+        div.hidden = true;
+        return;
+      }
+
+      const curStyle = this.edgeSettings[settingsName];
+      if (undefined !== colorCb && undefined !== colorInput) {
+        colorCb.checked = undefined !== curStyle.color;
+        colorInput.disabled = !colorCb.checked;
+        if (undefined !== curStyle.color)
+          colorInput.value = curStyle.color.toHexString();
+      }
+
+      widthCb.checked = undefined !== curStyle.width;
+      width.disabled = !widthCb.checked;
+      if (undefined !== curStyle.width)
+        width.value = curStyle.width.toString();
+
+      const pix = undefined !== curStyle.pattern ? curStyle.pattern : LinePixels.Invalid;
+      patternCb.select.value = pix.toString();
+    });
+
+    return div;
   }
 }
 

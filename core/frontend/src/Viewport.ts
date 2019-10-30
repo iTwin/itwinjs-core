@@ -631,8 +631,6 @@ export class ViewFrustum {
         if (worldToNpc === undefined)
           return;
 
-        const minimumEyeDistance = 10.0;
-        const horizonDistance = 10000;
         worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
 
         for (let i = 0; i < 4; i++) {
@@ -643,11 +641,18 @@ export class ViewFrustum {
           else includeHorizon = true;
         }
         if (includeHorizon) {
-          const rangeCenter = extents.fractionToPoint(.5, .5, .5);
-          const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
-          extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+          let horizonDistance = 10000;
+          const earthRadius = 6378137;
+          const eyePoint = view.getEyePoint();
+          const eyeHeight = view.getEyePoint().z;
+          if (eyeHeight > 0.0)          // Assume zero is ground level and increase horizon based on earth's curvature.
+            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * earthRadius));
+
+          extents.extend(eyePoint.plusScaled(viewZ, -horizonDistance));
         }
         if (view.isCameraOn) {
+
+          const minimumEyeDistance = 10.0;
           extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
         }
 

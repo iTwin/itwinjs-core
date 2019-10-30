@@ -267,5 +267,17 @@
   "statusFields": {
     "displayStyle": "Display Style",
     "unnamedDisplayStyle": "unnamed"
+  },
+  "properties": {
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
+      }
+    }
   }
 }

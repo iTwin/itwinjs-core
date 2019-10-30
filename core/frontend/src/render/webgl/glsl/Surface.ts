@@ -490,7 +490,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   });
 
   // Fragment and Vertex
-  addColor(builder, true);
+  addColor(builder);
 
   // Fragment
   builder.frag.addFunction(getSurfaceColor);

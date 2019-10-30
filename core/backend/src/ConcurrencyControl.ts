@@ -232,6 +232,19 @@ export class ConcurrencyControl {
     return res;
   }
 
+  /** Returns `true` if the schema lock is held.
+   * @param requestContext The client request context
+   * @alpha Need to determine if we want this method
+   */
+  public async hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean> {
+    const locks: Lock[] = await BriefcaseManager.imodelClient.locks.get(
+      requestContext,
+      this._iModel.iModelToken.iModelId!,
+      new LockQuery().byBriefcaseId(this._iModel.briefcase.briefcaseId).byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive),
+    );
+    return locks.length > 0;
+  }
+
   /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($clients) for details on what errors may be thrown. */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     requestContext.enter();

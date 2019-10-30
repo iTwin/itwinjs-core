@@ -36,6 +36,7 @@ beta;BackstageItemsChangedArgs
 beta;BackstageItemsManager
 public;BackstageItemState
 beta;BackstageItemType
+beta;BackstageItemUtilities
 beta;BackstageManager
 public;BackstageProps 
 beta;BackstageStageLauncher 
@@ -60,7 +61,6 @@ alpha;CategoryTreeState
 internal;ChangeSetInfo
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
-internal;ColumnType
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
 public;CombineReducersFunction = 
@@ -86,6 +86,8 @@ public;ConfigurableUiElement
 public;ConfigurableUiManager
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
+beta;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
+beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
 beta;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
@@ -205,6 +207,13 @@ internal;HitBoxZ
 public;Icon: React.FunctionComponent
 public;IconProps 
 public;IconSpec = IconSpec_2
+beta;IModelConnectedCategoryTree: any
+beta;IModelConnectedCubeNavigationAid: any
+beta;IModelConnectedNavigationWidget: any
+beta;IModelConnectedViewport: any
+beta;IModelConnectedViewSelector: any
+beta;IModelConnectedVisibilityComponent: any
+beta;IModelConnectedVisibilityTree: any
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -336,8 +345,10 @@ public;SeparatorBackstageItem
 beta;SessionState
 beta;SessionStateActionId
 beta;SessionStateActions:
+beta;SessionStateActionsProps
 beta;SessionStateActionsUnion = ActionsUnion
-beta;SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly
+beta;sessionStateMapDispatchToProps:
+beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -434,9 +445,6 @@ public;ToolWidget
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
-internal;TsCol
-internal;TsLabel
-internal;TsRow
 alpha;class UiDataProvider
 public;UiFramework
 alpha;UiShowHideManager

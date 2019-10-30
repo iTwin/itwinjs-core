@@ -16,8 +16,8 @@ describe("NativePlatform", () => {
   let nativePlatform: NativePlatformDefinition;
   let imodel: IModelDb;
 
-  before(() => {
-    initialize();
+  before(async () => {
+    await initialize();
   });
 
   after(() => {

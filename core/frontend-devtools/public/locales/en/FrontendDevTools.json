@@ -12,6 +12,9 @@
     "ToggleLogZ": {
       "keyin": "fdt toggle logz"
     },
+    "ToggleDrapeFrustum": {
+      "keyin": "fdt toggle drapefrustum"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
@@ -89,6 +92,9 @@
     },
     "MeasureTileLoadTime": {
       "keyin": "fdt time tile load"
+    },
+    "ToggleShadowFrustum": {
+      "keyin": "fdt shadow frustum"
     }
   }
 }

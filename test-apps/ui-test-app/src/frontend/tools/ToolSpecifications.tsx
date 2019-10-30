@@ -11,7 +11,7 @@ import {
 import { MessageSeverity } from "@bentley/ui-core";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, UiFramework, Backstage, BackstageItem,
+  SyncUiEventId, UiFramework, Backstage, BackstageItem, BackstageItemUtilities,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -22,12 +22,11 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
-import { createActionItem } from "../appui/AppBackstageItemProvider";
 
 export class AppTools {
   public static getItems(): BackstageItem[] {
     return [
-      createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
+      BackstageItemUtilities.createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
     ];
   }
 

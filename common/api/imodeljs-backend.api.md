@@ -324,6 +324,8 @@ export class BisCoreSchema extends Schema {
     // @internal (undocumented)
     static registerSchema(): void;
     // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
     static readonly schemaName: string;
 }
 
@@ -665,6 +667,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
     readonly hasPendingRequests: boolean;
+    // @alpha
+    hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean>;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
@@ -1649,6 +1653,8 @@ export class GenericSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
     static readonly schemaName: string;
 }
 
@@ -1689,6 +1695,13 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
 }
 
 // @public
+export class GeometricElement2dHasTypeDefinition extends RelatedElement {
+    constructor(id: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -1702,6 +1715,13 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     toJSON(): GeometricElement3dProps;
     // (undocumented)
     typeDefinition?: TypeDefinition;
+}
+
+// @public
+export class GeometricElement3dHasTypeDefinition extends RelatedElement {
+    constructor(id: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @public
@@ -1770,7 +1790,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
 }
 
 // @public
-export class GraphicalElement2dIsOfType extends RelatedElement {
+export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -1992,6 +2012,7 @@ export class IModelDb extends IModel {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
+    querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
     // @beta
@@ -2889,7 +2910,7 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
 }
 
 // @public
-export class PhysicalElementIsOfType extends RelatedElement {
+export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3261,7 +3282,7 @@ export abstract class SpatialLocationElement extends SpatialElement {
 }
 
 // @public
-export class SpatialLocationIsOfType extends RelatedElement {
+export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;

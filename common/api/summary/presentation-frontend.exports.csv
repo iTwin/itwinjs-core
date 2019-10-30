@@ -1,7 +1,10 @@
 sep=;
 Release Tag;API Item
-beta;FavoritePropertyManager
+internal;FavoriteProperties
+beta;FavoritePropertiesManager
 alpha;HiliteSet
+internal;IFavoritePropertiesStorage
+internal;IModelAppFavoritePropertiesStorage 
 public;ISelectionProvider
 beta;PersistenceHelper
 public;Presentation

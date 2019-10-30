@@ -29,7 +29,7 @@ import {
   ContentGroup,
   ContentProps,
   ModalDialogManager,
-  ViewSelector,
+  IModelConnectedViewSelector,
   ModelSelectorWidgetControl,
   Frontstage,
   Zone,
@@ -64,7 +64,7 @@ import {
   ZoneLocation,
   StagePanelHeader,
   StagePanelLocation,
-  DefaultNavigationWidget,
+  IModelConnectedNavigationWidget,
   StagePanelState,
 } from "@bentley/ui-framework";
 
@@ -105,7 +105,6 @@ export class ViewsFrontstage extends FrontstageProvider {
         iconSpec="icon-placeholder"
         labelKey="SampleApp:widgets.VisibilityTree"
         control={VisibilityTreeWidgetControl}
-        applicationData={{ iModelConnection: this.iModelConnection }}
       />,
     ],
   };
@@ -127,8 +126,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     return new CustomItemDef({
       customId: "sampleApp:viewSelector",
       reactElement: (
-        <ViewSelector
-          imodel={UiFramework.getIModelConnection()}
+        <IModelConnectedViewSelector
           listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
         />
       ),
@@ -180,7 +178,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         topRight={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<DefaultNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />} />,
+              <Widget isFreeform={true} element={<IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />} />,
             ]}
           />
         }

@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, EmphasizeElements, FeatureOverrideType } from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
+import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, EmphasizeElements, FeatureOverrideType, FeatureSymbology } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
 import * as path from "path";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
@@ -230,57 +230,120 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
   });
 
-  it("JSON to/from", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
-    EmphasizeElements.clear(vp);
-    let emph = EmphasizeElements.getOrCreate(vp);
-    const ids = new Set<string>();
-    let isolated: number = 0;
-    let emphasized: number = 0;
-    let overridden: number = 0;
-    let hidden: number = 0;
+  it("to/from JSON", async () => {
+    function roundTrip(populate: (emph: EmphasizeElements, vp: ScreenViewport) => void): void {
+      const vp1 = ScreenViewport.create(viewDiv!, spatialView.clone());
+      EmphasizeElements.clear(vp1);
+      const before = EmphasizeElements.getOrCreate(vp1);
+      populate(before, vp1);
 
-    ids.add("0x1"); ids.add("0x2"); ids.add("0x3"); ids.add("0x4"); ids.add("0x5"); isolated = ids.size;
-    let status = emph.isolateElements(ids, vp, true);
-    assert.isTrue(status);
-    let currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      const inputJson = JSON.stringify(before.toJSON(vp1));
 
-    ids.clear(); ids.add("0x3"); ids.add("0x4"); ids.add("0x5"); emphasized = ids.size;
-    status = emph.emphasizeElements(ids, vp, undefined, true);
-    assert.isTrue(status);
-    currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      const vp2 = ScreenViewport.create(viewDiv!, spatialView.clone());
+      const after = EmphasizeElements.getOrCreate(vp2);
+      after.fromJSON(JSON.parse(inputJson), vp2);
+      const outputJson = JSON.stringify(after.toJSON(vp2));
+      expect(outputJson).to.equal(inputJson);
 
-    const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly);
-    assert.isFalse(undefined === redKey);
-    ids.clear(); ids.add("0x5"); overridden = ids.size;
-    status = emph.overrideElements(ids, vp, ColorDef.red, undefined, true);
-    assert.isTrue(status);
-    currIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      function expectEqualSets(a: Set<string> | undefined, b: Set<string> | undefined): void {
+        expect(a === undefined).to.equal(b === undefined);
+        if (undefined !== a && undefined !== b)
+          expect(a.size).to.equal(b.size);
+      }
 
-    ids.clear(); ids.add("0x2"); hidden = ids.size;
-    status = emph.hideElements(ids, vp, true);
-    assert.isTrue(status);
-    currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      expect(after.wantEmphasis).to.equal(before.wantEmphasis);
+      expect(vp2.isAlwaysDrawnExclusive).to.equal(vp1.isAlwaysDrawnExclusive);
 
-    const json = emph.toJSON(vp);
-    EmphasizeElements.clear(vp);
-    emph = EmphasizeElements.getOrCreate(vp);
-    emph.fromJSON(json, vp);
+      const aApp = after.defaultAppearance;
+      const bApp = before.defaultAppearance;
+      expect(undefined === aApp).to.equal(undefined === bApp);
+      if (undefined !== aApp && undefined !== bApp) {
+        expect(undefined !== aApp.rgb).to.equal(undefined !== bApp.rgb);
+        expect(aApp.weight).to.equal(bApp.weight);
+        expect(aApp.transparency).to.equal(bApp.transparency);
+        expect(aApp.linePixels).to.equal(bApp.linePixels);
+        expect(aApp.ignoresMaterial).to.equal(bApp.ignoresMaterial);
+        expect(aApp.nonLocatable).to.equal(bApp.nonLocatable);
+        expect(aApp.emphasized).to.equal(bApp.emphasized);
+      }
 
-    currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined !== currIds && isolated === currIds.size);
-    currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined !== currIds && emphasized === currIds.size);
-    currIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currIds && overridden === currIds.size);
-    currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined !== currIds && hidden === currIds.size);
+      expectEqualSets(after.getHiddenElements(vp2), before.getHiddenElements(vp1));
+      expectEqualSets(after.getEmphasizedElements(vp2), before.getEmphasizedElements(vp1));
+      expectEqualSets(after.getIsolatedElements(vp2), before.getIsolatedElements(vp1));
+      expectEqualSets(after.getEmphasizedIsolatedElements(), before.getEmphasizedIsolatedElements());
 
-    EmphasizeElements.clear(vp);
+      const aOvr = after.getOverriddenElements();
+      const bOvr = before.getOverriddenElements();
+      expect(undefined === aOvr).to.equal(undefined === bOvr);
+      if (undefined !== aOvr && undefined !== bOvr) {
+        expect(aOvr.size).to.equal(bOvr.size);
+        for (const key of aOvr.keys()) {
+          expectEqualSets(after.getOverriddenElementsByKey(key), before.getOverriddenElementsByKey(key));
+
+          const aColor = new ColorDef();
+          const bColor = new ColorDef();
+          const aOvrType = after.getOverrideFromKey(key, aColor);
+          const bOvrType = before.getOverrideFromKey(key, bColor);
+          expect(aOvrType).to.equal(bOvrType);
+          expect(aColor.tbgr).to.equal(bColor.tbgr);
+        }
+      }
+
+      EmphasizeElements.clear(vp1);
+      EmphasizeElements.clear(vp2);
+
+      vp1.dispose();
+      vp2.dispose();
+    }
+
+    roundTrip((emph, _vp) => {
+      expect(emph.wantEmphasis).to.be.false;
+      emph.wantEmphasis = true;
+    });
+
+    roundTrip((emph, _vp) => {
+      expect(emph.defaultAppearance).to.be.undefined;
+      emph.defaultAppearance = FeatureSymbology.Appearance.fromJSON({
+        rgb: { r: 10, g: 20, b: 30 },
+        weight: 4,
+        transparency: 0.75,
+        linePixels: LinePixels.Invisible,
+        ignoresMaterial: true,
+        nonLocatable: true,
+        emphasized: true,
+      });
+    });
+
+    roundTrip((emph, vp) => {
+      emph.isolateElements("0x123", vp, false);
+      emph.emphasizeElements("0x456", vp, undefined, false);
+      expect(emph.getIsolatedElements(vp)!.size).to.equal(1);
+      expect(emph.getEmphasizedIsolatedElements()!.size).to.equal(1);
+    });
+
+    roundTrip((emph, vp) => {
+      const ids = new Set<string>();
+      ids.add("0x1"); ids.add("0x2"); ids.add("0x3"); ids.add("0x4"); ids.add("0x5");
+      expect(emph.isolateElements(ids, vp, true)).to.be.true;
+      let currIds = emph.getIsolatedElements(vp);
+      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+
+      ids.clear(); ids.add("0x3"); ids.add("0x4"); ids.add("0x5");
+      expect(emph.emphasizeElements(ids, vp, undefined, true)).to.be.true;
+      currIds = emph.getEmphasizedElements(vp);
+      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+
+      const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
+      expect(redKey).not.to.be.undefined;
+      ids.clear(); ids.add("0x5");
+      expect(emph.overrideElements(ids, vp, ColorDef.red, undefined, true)).to.be.true;
+      currIds = emph.getOverriddenElementsByKey(redKey);
+      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+
+      ids.clear(); ids.add("0x2");
+      expect(emph.hideElements(ids, vp, true)).to.be.true;
+      currIds = emph.getHiddenElements(vp);
+      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    });
   });
-
 });

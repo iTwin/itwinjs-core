@@ -521,6 +521,10 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
+    const shadowMap = params.target.compositor.solarShadowMap;
+    if (shadowMap.isEnabled && shadowMap.isDrawing)
+      flags |= SurfaceFlags.TransparencyThreshold;
+
     return flags;
   }
 

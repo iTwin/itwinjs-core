@@ -39,6 +39,9 @@ const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, 
  * @public
  */
 export class GroupItemDef extends ActionButtonItemDef {
+  private static _sId = 0;
+  public static groupIdPrefix = "Group-";
+
   public groupId: string;
   public direction: Direction;
   public itemsInColumn: number;
@@ -56,6 +59,13 @@ export class GroupItemDef extends ActionButtonItemDef {
     super(groupItemProps, onItemExecuted);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
+    if (groupItemProps.groupId)
+      this.groupId = groupItemProps.groupId;
+    else {
+      GroupItemDef._sId++;
+      this.groupId = GroupItemDef.groupIdPrefix + GroupItemDef._sId;
+    }
+
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
@@ -563,7 +573,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             }
 
             const trayId = item.trayId;
-            if (trayId)
+            if (trayId) {
               return (
                 isVisible &&
                 <GroupToolExpander
@@ -572,6 +582,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   ref={itemKey}
                   label={item.label}
                   icon={icon}
+                  badge={badge}
                   onClick={() => this.setState((prevState) => {
                     return {
                       ...prevState,
@@ -581,6 +592,8 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   })}
                 />
               );
+            }
+
             return (
               isVisible &&
               <GroupTool

@@ -14,7 +14,10 @@ import {
   RpcOperation, IModelToken, RpcConfiguration,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { Presentation } from "@bentley/presentation-frontend";
+import {
+  Presentation, FavoritePropertiesManager,
+  IFavoritePropertiesStorage, FavoriteProperties,
+} from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
@@ -55,6 +58,8 @@ export class SampleApp {
     if (process.env.NODE_ENV === "development")
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
+    setCustomFavoritePropertiesManager();
+
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({
       // specify `clientId` so Presentation framework can share caches
@@ -77,6 +82,18 @@ export class SampleApp {
 
   public static get ready(): Promise<void> { return this._ready; }
 }
+
+const setCustomFavoritePropertiesManager = () => {
+  const storage: IFavoritePropertiesStorage = {
+    loadProperties: async (_?: string, __?: string) => ({
+      nestedContentInfos: new Set<string>(),
+      propertyInfos: new Set<string>(),
+      baseFieldInfos: new Set<string>(),
+    }),
+    async saveProperties(_: FavoriteProperties, __?: string, ___?: string) { },
+  };
+  Presentation.favoriteProperties = new FavoritePropertiesManager({ storage });
+};
 
 SampleApp.startup();
 

@@ -80,12 +80,32 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
   }
 }
 
+/** Relates a [[GeometricElement2d]] to its [[TypeDefinitionElement]]
+ * @public
+ */
+export class GeometricElement2dHasTypeDefinition extends RelatedElement {
+  public static classFullName = "BisCore:GeometricElement2dHasTypeDefinition";
+  public constructor(id: Id64String, relClassName: string = GeometricElement2dHasTypeDefinition.classFullName) {
+    super({ id, relClassName });
+  }
+}
+
 /** Relates a [[GraphicalElement2d]] to its [[GraphicalType2d]]
  * @public
  */
-export class GraphicalElement2dIsOfType extends RelatedElement {
+export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinition {
   public static classFullName = "BisCore:GraphicalElement2dIsOfType";
   public constructor(id: Id64String, relClassName: string = GraphicalElement2dIsOfType.classFullName) {
+    super(id, relClassName);
+  }
+}
+
+/** Relates a [[GeometricElement3d]] to its [[TypeDefinitionElement]]
+ * @public
+ */
+export class GeometricElement3dHasTypeDefinition extends RelatedElement {
+  public static classFullName = "BisCore:GeometricElement3dHasTypeDefinition";
+  public constructor(id: Id64String, relClassName: string = GeometricElement3dHasTypeDefinition.classFullName) {
     super({ id, relClassName });
   }
 }
@@ -93,20 +113,20 @@ export class GraphicalElement2dIsOfType extends RelatedElement {
 /** Relates a [[PhysicalElement]] to its [[PhysicalType]]
  * @public
  */
-export class PhysicalElementIsOfType extends RelatedElement {
+export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition {
   public static classFullName = "BisCore:PhysicalElementIsOfType";
   public constructor(id: Id64String, relClassName: string = PhysicalElementIsOfType.classFullName) {
-    super({ id, relClassName });
+    super(id, relClassName);
   }
 }
 
 /** Relates a [[SpatialLocationElement]] to its [[SpatialLocationType]]
  * @public
  */
-export class SpatialLocationIsOfType extends RelatedElement {
+export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition {
   public static classFullName = "BisCore:SpatialLocationIsOfType";
   public constructor(id: Id64String, relClassName: string = SpatialLocationIsOfType.classFullName) {
-    super({ id, relClassName });
+    super(id, relClassName);
   }
 }
 

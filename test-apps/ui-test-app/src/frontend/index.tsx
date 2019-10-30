@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, Store } from "redux";
-import { connect, Provider } from "react-redux";
+import { Provider } from "react-redux";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
@@ -18,7 +18,7 @@ import {
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration, AccessToken, IOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
@@ -30,8 +30,6 @@ import {
   FrontstageDef,
   SafeAreaContext,
   SyncUiEventArgs,
-  BackstageComposer,
-  UserProfileBackstageItem,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -51,7 +49,8 @@ import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { AppBackstageItemProvider } from "./appui/AppBackstageItemProvider";
+import { AppBackstageItemProvider } from "./appui/backstage/AppBackstageItemProvider";
+import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -220,11 +219,13 @@ export class SampleAppIModelApp {
     if (ElectronRpcConfiguration.isElectron) {
       const clientId = "imodeljs-electron-test";
       const redirectUri = "electron://frontend/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+      const postSignoutRedirectUri = "electron://frontend/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " offline_access", responseType: "code" };
     } else {
       const clientId = "imodeljs-spa-test";
       const redirectUri = "http://localhost:3000/signin-callback";
-      oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+      const postSignoutRedirectUri = "http://localhost:3000/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
     }
     // cSpell:enable
 
@@ -462,34 +463,9 @@ export class SampleAppIModelApp {
   }
 }
 
-function mapStateToProps(state: RootState) {
-  const frameworkState = state.frameworkState;
-
-  if (!frameworkState)
-    return undefined;
-
-  return { accessToken: frameworkState.sessionState.accessToken };
-}
-
-interface AppBackstageComposerProps {
-  /** AccessToken from sign-in */
-  accessToken: AccessToken | undefined;
-}
-
-export class AppBackstageComposerComponent extends React.PureComponent<AppBackstageComposerProps> {
-  public render() {
-    return (
-      <BackstageComposer
-        header={this.props.accessToken && <UserProfileBackstageItem accessToken={this.props.accessToken} />}
-      />
-    );
-  }
-}
-
-export const AppBackstageComposer = connect(mapStateToProps)(AppBackstageComposerComponent); // tslint:disable-line:variable-name
-
-const provider = new AppBackstageItemProvider();
 export class SampleAppViewer extends React.Component<any> {
+  private _provider = new AppBackstageItemProvider();
+
   constructor(props: any) {
     super(props);
 
@@ -503,12 +479,12 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    UiFramework.backstageManager.itemsManager.add(provider.backstageItems);
+    UiFramework.backstageManager.itemsManager.add(this._provider.backstageItems);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
   public componentWillUnmount() {
-    const items = provider.backstageItems.map((item) => item.id);
+    const items = this._provider.backstageItems.map((item) => item.id);
     UiFramework.backstageManager.itemsManager.remove(items);
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
   }
@@ -592,6 +568,7 @@ async function main() {
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
+  // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

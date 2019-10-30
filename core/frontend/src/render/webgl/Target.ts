@@ -35,6 +35,7 @@ import {
   Pixel,
   PlanarClassifierMap,
   PrimitiveVisibility,
+  RenderMemory,
   RenderPlan,
   RenderPlanarClassifier,
   RenderSystem,
@@ -313,6 +314,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
+  private _animationFraction: number = 0;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -322,6 +324,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
+  public displayDrapeFrustum = false;
+  public get shadowFrustum(): Frustum | undefined {
+    const map = this.solarShadowMap;
+    return map.isEnabled && map.isReady ? map.frustum : undefined;
+  }
   public get debugControl(): RenderTargetDebugControl { return this; }
 
   protected constructor(rect?: ViewRect) {
@@ -364,10 +371,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
 
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
-  public get solarShadowMap(): SolarShadowMap | undefined { return this.compositor.solarShadowMap; }
+  public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
@@ -738,9 +748,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.emphasisSettings = plan.emphasisSettings;
     this.emphasisColor.setColorDef(this.emphasisSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
-    this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
+
+    // used by HiddenLine, SolidFill, and determining shadow casting
+    this._transparencyThreshold = 0.0;
+    if (undefined !== plan.hline) {
+      // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
+      // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
+      let threshold = plan.hline.transparencyThreshold;
+      threshold = Math.min(1.0, Math.max(0.0, threshold));
+      this._transparencyThreshold = 1.0 - threshold;
+    }
 
     this.updateActiveVolume(plan.activeVolume);
 
@@ -781,16 +800,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.visibleEdges = true;
-
-        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
-        if (undefined !== plan.hline) {
-          // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
-          // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
-          let threshold = plan.hline.transparencyThreshold;
-          threshold = Math.min(1.0, Math.max(0.0, threshold));
-          this._transparencyThreshold = 1.0 - threshold;
-        }
-
+        vf.transparency = false;
         break;
       }
     }
@@ -1283,7 +1293,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
   public drawSolarShadowMap() {
-    if (this.solarShadowMap && this.solarShadowMap.isEnabled)
+    if (this.solarShadowMap.isEnabled)
       this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {
@@ -1296,6 +1306,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(): void;
   protected abstract _endPaint(): void;
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._compositor.collectStatistics(stats);
+  }
 }
 
 class CanvasState {
@@ -1333,7 +1347,6 @@ export class OnScreenTarget extends Target {
   private readonly _webglCanvas: CanvasState;
   private _usingWebGLCanvas = false;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private _animationFraction: number = 0;
   private _scratchProgParams?: ShaderProgramParams;
   private _scratchDrawParams?: DrawParams;
 
@@ -1354,8 +1367,11 @@ export class OnScreenTarget extends Target {
     super.dispose();
   }
 
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    super.collectStatistics(stats);
+    if (undefined !== this._blitGeom)
+      this._blitGeom.collectStatistics(stats);
+  }
 
   public get viewRect(): ViewRect {
     assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
@@ -1401,14 +1417,15 @@ export class OnScreenTarget extends Target {
 
     const viewRect = this.viewRect;
 
-    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
-    if (system.canvas.width !== viewRect.width)
+    // Ensure off-screen canvas is sufficiently large for on-screen canvas.
+    // Using a portion of a larger canvas lets us avoid thrashing canvas resizes with multiple viewports.
+    if (system.canvas.width < viewRect.width)
       system.canvas.width = viewRect.width;
-    if (system.canvas.height !== viewRect.height)
+    if (system.canvas.height < viewRect.height)
       system.canvas.height = viewRect.height;
 
-    assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
-    assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferWidth >= viewRect.width, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferHeight >= viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
   private getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
@@ -1439,8 +1456,11 @@ export class OnScreenTarget extends Target {
     // Copy off-screen canvas contents to on-screen canvas
     const onscreenContext = this._2dCanvas.canvas.getContext("2d", { alpha: true });
     assert(null !== onscreenContext);
-    if (null !== onscreenContext)
-      onscreenContext.drawImage(system.canvas, 0, 0);
+    if (null !== onscreenContext) {
+      const w = this.viewRect.width, h = this.viewRect.height;
+      const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
+      onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
+    }
   }
 
   protected drawOverlayDecorations(): void {
@@ -1497,14 +1517,9 @@ export class OnScreenTarget extends Target {
 
 /** @internal */
 export class OffScreenTarget extends Target {
-  private _animationFraction: number = 0;
-
   public constructor(rect: ViewRect) {
     super(rect);
   }
-
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect { return this.renderRect; }
 

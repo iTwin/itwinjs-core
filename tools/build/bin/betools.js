@@ -21,7 +21,7 @@ program
   .option("--watch", "Adds the --watch and --inline-diffs parameters to the Mocha command.")
   .option("--debug", "Adds the --inspect=9229 and --debug-brk parameters to the Mocha command.")
   .option("--defineWindow", "Adds the `--require jsdom-global/register` to the Mocha command.  Use if a window is needed for compilation.")
-  .option("--opts", "Adds the provided opts file to mocha using --opts.  See mocha docs for priority order, https://mochajs.org/api/module-lib_cli_options.html#.loadMochaOpts.")
+  .option("--opts [opts path]", "Adds the provided opts file to mocha using --opts.  See mocha docs for priority order, https://mochajs.org/api/module-lib_cli_options.html#.loadMochaOpts.")
   .option("--timeout [timeout]", "Overrides the default timeout passed to Mocha.  Default is 999999.")
   .option("--grep [pattern]", "Add the grep pattern to Mocha.")
   .option("--invert", "Adds the --invert option to Mocha, only if '--grep' is provided too.")
@@ -61,7 +61,7 @@ program
 program
   .command("pseudolocalize")
   .description("Psuedolocalizes an english localization JSON file.")
-  .option("--englishDir [englishPath]", "The path to the English localization folder.  Default is `./public/locales/en`");
+  .option("--englishDir [englishPath]", "The path to the English localization folder.  Default is `./public/locales/en`")
   .option("--out [outPath]", "The output path to put the pseudolocalized files.  Default is `./public/locales/en-pseudo`")
   .action((options) => pseudolocalizeCommand(options));
 

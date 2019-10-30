@@ -23,6 +23,8 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -40,7 +42,12 @@ function configMockSettings() {
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
 }
-
+export function createFileHanlder(useDownloadBuffer?: boolean) {
+  if (MobileRpcConfiguration.isMobileBackend) {
+    return new IOSAzureFileHandler();
+  }
+  return new AzureFileHandler(useDownloadBuffer);
+}
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() {
@@ -99,7 +106,7 @@ let _imodelHubClient: IModelHubClient;
 function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(new AzureFileHandler());
+  _imodelHubClient = new IModelHubClient(createFileHanlder());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }

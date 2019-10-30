@@ -2,42 +2,11 @@
   "props": {
     "seedCount": 1000,
     "operationsCount": 1000,
-    "propertiesCounts": [
-      5,
-      10,
-      15,
-      20,
-      25,
-      30,
-      35,
-      40,
-      45,
-      50,
-      55,
-      60,
-      65,
-      70,
-      75,
-      80,
-      85,
-      90,
-      95,
-      100,
-      200,
-      300,
-      400,
-      500,
-      600,
-      700,
-      800,
-      900,
-      1000,
-      1200,
-      1400,
-      1600,
-      1800,
-      1990
-    ]
+    "propertiesCounts": {
+      "start": 10,
+      "end": 1990,
+      "increment": 20
+    }
   },
   "index": {
     "seedCount": 100000,
@@ -73,5 +42,21 @@
   "relation": {
     "seedCount": 10000,
     "operationsCount": 1000
+  },
+  "polymorphic": {
+    "multi": {
+      "seedCount": 10000,
+      "hierarchyCount": 30,
+      "opCount": 5
+    },
+    "flat": {
+      "seedCount": 1000,
+      "hierarchyCounts": [
+        500,
+        1000,
+        1500,
+        2000
+      ]
+    }
   }
 }

@@ -34,6 +34,10 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
       height: 650,
       autoHideMenuBar: true,
       show: true,
+      webPreferences: {
+        nodeIntegration: true,
+        preload: path.join(__dirname, "preload.js"),
+      },
     });
     // tell ElectronRpcManager which RPC interfaces to handle
     ElectronRpcManager.initializeImpl({}, rpcs);
