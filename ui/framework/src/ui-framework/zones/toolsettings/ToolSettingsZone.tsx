@@ -84,8 +84,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   private _handleToolActivatedEvent = (): void => {
     // Update tool settings title when active tool changes.
     const title = `${ToolUiManager.activeToolLabel}`;
-    if (this.state.title !== title)
-      this.setState({ title });
+    this.setState({ title });
   }
 
   public componentDidMount(): void {
