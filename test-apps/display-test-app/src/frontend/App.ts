@@ -184,7 +184,7 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => {
+    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // tslint:disable-line:no-floating-promises
       IModelApp.viewManager.refreshForModifiedModels(modelIds);
     });
 
