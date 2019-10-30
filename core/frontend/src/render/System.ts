@@ -947,7 +947,15 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   readonly isGLTimerSupported: boolean;
+  /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
+   * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
+   * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
+   * program output).
+   * @internal
+   */
+  compileAllShaders(): boolean;
 }
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.

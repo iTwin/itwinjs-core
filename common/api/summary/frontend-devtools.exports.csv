@@ -16,6 +16,7 @@ alpha;ComboBox
 alpha;ComboBoxEntry
 alpha;ComboBoxHandler = (select: HTMLSelectElement) => void
 alpha;ComboBoxProps
+beta;CompileShadersTool 
 alpha;convertHexToRgb(hex: string): RgbColor | undefined
 alpha;createButton(props: ButtonProps): Button
 alpha;createCheckBox(props: CheckBoxProps): CheckBox

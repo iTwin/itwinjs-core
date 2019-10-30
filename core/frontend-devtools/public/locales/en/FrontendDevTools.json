@@ -95,6 +95,9 @@
     },
     "ToggleShadowFrustum": {
       "keyin": "fdt shadow frustum"
+    },
+    "CompileShaders": {
+      "keyin": "fdt compile shaders"
     }
   }
 }

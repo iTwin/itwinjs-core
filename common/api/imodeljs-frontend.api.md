@@ -5787,6 +5787,8 @@ export namespace RenderSystem {
 
 // @beta
 export interface RenderSystemDebugControl {
+    // @internal
+    compileAllShaders(): boolean;
     drawSurfacesAsWiremesh: boolean;
     // @internal
     readonly isGLTimerSupported: boolean;

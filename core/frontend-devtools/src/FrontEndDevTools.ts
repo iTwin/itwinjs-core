@@ -14,6 +14,7 @@ import {
   ToggleDrapeFrustumTool,
 } from "./tools/RenderTargetTools";
 import {
+  CompileShadersTool,
   LoseWebGLContextTool,
   ToggleWiremeshTool,
 } from "./tools/RenderSystemTools";
@@ -75,6 +76,7 @@ export class FrontendDevTools {
 
     LoseWebGLContextTool.register(i18n);
     ToggleWiremeshTool.register(i18n);
+    CompileShadersTool.register(i18n);
 
     ToggleReadPixelsTool.register(i18n);
     ToggleLogZTool.register(i18n);

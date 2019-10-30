@@ -137,7 +137,7 @@ const checkVertexDiscard = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
-function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {
+function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions, wantGlobalOvrFlags = true): boolean {
   if (FeatureMode.None === mode)
     return false;
 
@@ -159,14 +159,12 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
   assert(wantColor || !wantAlpha);
 
-  vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   vert.addFunction(extractNthBit);
   addOvrFlagConstants(vert);
 
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
   vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
 
-  vert.addFunction(extractNthFeatureBit);
   if (wantWeight || wantLineCode) {
     if (wantLineCode)
       replaceLineCode(vert, computeLineCode);
@@ -176,18 +174,21 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     }
   }
 
-  vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
-      let flags = 0.0;
-      if (params.geometry.isEdge) {
-        const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
-        if (undefined !== edgeOvrs)
-          flags = edgeOvrs.computeOvrFlags();
-      }
+  if (wantGlobalOvrFlags) {
+    vert.addFunction(extractNthFeatureBit);
+    vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
+        let flags = 0.0;
+        if (params.geometry.isEdge) {
+          const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
+          if (undefined !== edgeOvrs)
+            flags = edgeOvrs.computeOvrFlags();
+        }
 
-      uniform.setUniform1f(flags);
+        uniform.setUniform1f(flags);
+      });
     });
-  });
+  }
 
   addLookupTable(vert, "feature", "2.0");
   vert.addGlobal("feature_texCoord", VariableType.Vec2);
@@ -289,8 +290,6 @@ const computeSurfaceHiliteColor = `
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
-  feature_invisible = 1.0 == extractNthFeatureBit(value.r * 256.0, kOvrBit_Visibility);
-
   float flags = value.g * 256.0;
   v_feature_hilited = kEmphFlag_Hilite * extractNthBit(flags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(flags, kOvrBit_Emphasized);
 `;
@@ -314,7 +313,7 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   if (wantWeight)
     opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
 
-  if (!addCommon(builder, FeatureMode.Overrides, opts))
+  if (!addCommon(builder, FeatureMode.Overrides, opts, wantWeight))
     return;
 
   builder.addVarying("v_feature_hilited", VariableType.Float);
@@ -701,6 +700,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   builder.addVarying("v_feature_emphasis", VariableType.Float);
 
   const vert = builder.vert;
+  vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   addEmphasisFlags(vert);
   vert.addGlobal("use_material", VariableType.Boolean, "true");
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);

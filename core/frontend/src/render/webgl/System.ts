@@ -1082,6 +1082,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return true;
   }
 
+  public compileAllShaders(): boolean {
+    return this.techniques.compileShaders();
+  }
+
   public get isGLTimerSupported(): boolean { return this.glTimer.isSupported; }
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     this.glTimer.resultsCallback = callback;

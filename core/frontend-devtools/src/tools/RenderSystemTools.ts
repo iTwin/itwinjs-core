@@ -5,6 +5,8 @@
 
 import {
   IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
   RenderSystemDebugControl,
   Tool,
 } from "@bentley/imodeljs-frontend";
@@ -41,5 +43,17 @@ export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
   public static toolId = "ToggleWiremesh";
   public execute(control: RenderSystemDebugControl): void {
     control.drawSurfacesAsWiremesh = !control.drawSurfacesAsWiremesh;
+  }
+}
+
+/** Compiles all registered shader programs for which compilation has not already been attempted.
+ * This is useful for uncovering/debugging platform-specific shader issues.
+ * @beta
+ */
+export class CompileShadersTool extends RenderSystemDebugControlTool {
+  public static toolId = "CompileShaders";
+  public execute(control: RenderSystemDebugControl): void {
+    const compiled = control.compileAllShaders();
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, (compiled ? "No" : "Some") + " compilation errors occurred."));
   }
 }

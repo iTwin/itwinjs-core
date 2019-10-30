@@ -196,6 +196,14 @@ export interface ComboBoxProps {
     value?: number | string;
 }
 
+// @beta
+export class CompileShadersTool extends RenderSystemDebugControlTool {
+    // (undocumented)
+    execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export function convertHexToRgb(hex: string): RgbColor | undefined;
 
