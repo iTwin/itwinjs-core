@@ -158,6 +158,32 @@ describe("Favorite Properties", () => {
     expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
   });
 
+  it("does not reject when multiple data providers at the same time get data from an iModel for the first time", async () => {
+    ruleset = {
+      id: faker.random.uuid(),
+      rules: [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.SelectedNodeInstances,
+        }],
+      }],
+    };
+    propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
+    const secondDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
+
+    const firstDataProviderPromise = (async () => {
+      propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
+      await propertiesDataProvider.getData();
+    })();
+
+    const secondDataProviderPromise = (async () => {
+      secondDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+      await secondDataProvider.getData();
+    })();
+
+    await expect(Promise.all([firstDataProviderPromise, secondDataProviderPromise])).to.not.be.rejected;
+  });
+
 });
 
 describe("Favorite Properties storage", () => {
