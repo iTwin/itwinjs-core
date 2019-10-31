@@ -79,6 +79,12 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this._unmounted = true;
   }
 
+  public componentDidUpdate (prevProps: TimelineComponentProps) {
+    if (this.props.initialDuration !== prevProps.initialDuration) {
+      this.setState({ currentDuration: this.props.initialDuration ? this.props.initialDuration : 0 });
+    }
+  }
+
   // user clicked backward button
   private _onBackward = () => {
     // istanbul ignore else
@@ -292,7 +298,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     const miniMode = minimized || !hasDates;
 
     return (
-      <div className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")}>
+      <div data-testid="timeline-component" className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")} >
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward} />

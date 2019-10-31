@@ -3122,6 +3122,8 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
+    componentDidUpdate(prevProps: TimelineComponentProps): void;
+    // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;

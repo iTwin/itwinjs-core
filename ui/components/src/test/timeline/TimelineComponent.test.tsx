@@ -456,4 +456,42 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const nullExpandItem = renderedComponent.queryByText("timeline.expand");
     expect(nullExpandItem).to.be.null;
   });
+  it("Dynamically set duration", async () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={true}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+
+    // trigger call to componentDidUpdate
+    renderedComponent.rerender(
+      <TimelineComponent
+      startDate={dataProvider.start}
+      endDate={dataProvider.end}
+      initialDuration={50000}
+      totalDuration={dataProvider.duration}
+      milestones={dataProvider.getMilestones()}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onSettingsChange={dataProvider.onPlaybackSettingChanged}
+      onPlayPause={dataProvider.onPlayPause}
+      alwaysMinimized={false}
+    />,
+    );
+  });
 });
