@@ -12,6 +12,8 @@ import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../geometry4d/Point4d";
 import { XAndY } from "../geometry3d/XYZProps";
+import { Range3d, Range1d } from "../geometry3d/Range";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -398,7 +400,66 @@ export class SphereImplicit {
     }
     return { thetaRadians: (theta), phiRadians: (phi), r: (r), valid: (valid) };
   }
+  /** Return the range of a uv-aligned patch of the sphere. */
+  public static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d {
+    const thetaSweep = AngleSweep.createStartEndRadians(theta0Radians, theta1Radians);
+    const phiSweep = AngleSweep.createStartEndRadians(phi0Radians, phi1Radians);
+    const range = Range3d.createNull(result);
+    const xyz = Point3d.create();
+    if (thetaSweep.isFullCircle && phiSweep.isFullLatitudeSweep) {
+      // full sphere, no trimming -- build directly
+      range.extendPoint(center);
+      range.expandInPlace(Math.abs(radius));
+    } else {
+      const sphere = new SphereImplicit(radius);
+      // construct range for ORIGIN CENTERED sphere ...
+      const pi = Math.PI;
+      const piOver2 = 0.5 * Math.PI;
+      let phi, theta;
+      // 6 candidate interior extreme points on equator and 0, 90 degree meridians
+      for (const thetaPhi of [
+        [0.0, 0.0],
+        [pi, 0.0],
+        [piOver2, 0.0],
+        [-piOver2, 0.0],
+        [theta0Radians, piOver2],
+        [theta0Radians, -piOver2]]) {
+        theta = thetaPhi[0];
+        phi = thetaPhi[1];
+        if (thetaSweep.isRadiansInSweep(theta) && phiSweep.isRadiansInSweep(phi))
+          range.extendPoint(sphere.evaluateThetaPhi(theta, phi, xyz));
+      }
 
+      // 4 boundary curves, each with 3 components ...
+      // BUT: phi should not extend beyond poles. Hence z extremes on constant theta curve will never be different from z of constant phi curve or of poles as tested above.
+      const axisRange = Range1d.createNull();
+      const cosPhi0 = Math.cos(phi0Radians);
+      const cosPhi1 = Math.cos(phi1Radians);
+      const sinPhi0 = Math.sin(phi0Radians);
+      const sinPhi1 = Math.sin(phi1Radians);
+      // constant phi curves at phi0 and phi1
+      for (const cosPhi of [cosPhi0, cosPhi1]) {
+        thetaSweep.sineWaveRange(0, cosPhi * radius, 0, axisRange);
+        range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
+        thetaSweep.sineWaveRange(0, 0, cosPhi * radius, axisRange);
+        range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
+      }
+      range.extendZOnly(sinPhi0 * radius);
+      range.extendZOnly(sinPhi1 * radius);
+
+      // constant theta curves as theta0 and theta1:
+      for (const thetaRadians of [theta0Radians, theta1Radians]) {
+        const cosThetaR = Math.cos(thetaRadians) * radius;
+        const sinThetaR = Math.sin(thetaRadians) * radius;
+        phiSweep.sineWaveRange(0, cosThetaR, 0, axisRange);
+        range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
+        phiSweep.sineWaveRange(0, sinThetaR, 0, axisRange);
+        range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
+      }
+      range.cloneTranslated(center, range);
+    }
+    return range;
+  }
   // public intersectRay(ray: Ray3d, maxHit: number): {rayFractions: number, points: Point3d} {
   //   const q = new Degree2PowerPolynomial();
   //   // Ray is (origin.x + s * direction.x, etc)
@@ -422,12 +483,12 @@ export class SphereImplicit {
    * @param thetaRadians latitude angle
    * @param phiRadians longitude angle
    */
-  public evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d {
+  public evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d {
     const rc = this.radius * Math.cos(thetaRadians);
     const rs = this.radius * Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
     const sinPhi = Math.sin(phiRadians);
-    return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi);
+    return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi, result);
   }
 
   /** Compute the derivatives with respect to spherical angles.

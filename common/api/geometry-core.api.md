@@ -137,6 +137,7 @@ export class AngleSweep implements BeJSONFunctions {
     setFromJSON(json?: any): void;
     setStartEndDegrees(startDegrees?: number, endDegrees?: number): void;
     setStartEndRadians(startRadians?: number, endRadians?: number): void;
+    sineWaveRange(a: number, cosineCoff: number, sineCoff: number, result?: Range1d): Range1d;
     readonly startAngle: Angle;
     readonly startDegrees: number;
     readonly startRadians: number;
@@ -3913,12 +3914,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     constructor(lowX?: number, lowY?: number, lowZ?: number, highX?: number, highY?: number, highZ?: number);
     readonly center: Point3d;
     clone(result?: this): this;
+    cloneTranslated(shift: XYAndZ, result?: this): this;
     containsPoint(point: Point3d): boolean;
     containsPointXY(point: Point3d): boolean;
     containsRange(other: Range3d): boolean;
     containsXY(x: number, y: number): boolean;
     containsXYZ(x: number, y: number, z: number): boolean;
-    corners(): Point3d[];
+    corners(result?: Point3d[]): Point3d[];
     static create(...point: Point3d[]): Range3d;
     static createArray<T extends Range3d>(points: Point3d[], result?: T): T;
     static createFrom<T extends Range3d>(other: Range3d, result?: T): T;
@@ -3947,8 +3949,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendTransformedXYZ(transform: Transform, x: number, y: number, z: number): void;
     extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number): void;
     extendTransformTransformedXYZ(transformA: Transform, transformB: Transform, x: number, y: number, z: number): void;
+    extendXOnly(x: number): void;
     extendXYZ(x: number, y: number, z: number): void;
     extendXYZW(x: number, y: number, z: number, w: number): void;
+    extendYOnly(y: number): void;
+    extendZOnly(z: number): void;
     static faceCornerIndices(index: number): number[];
     fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d;
     freeze(): void;
@@ -4427,7 +4432,8 @@ export class SphereImplicit {
     evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
     evaluateImplicitFunction(x: number, y: number, z: number): number;
     evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number;
-    evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d;
+    evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
+    static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
     radius: number;
     xyzToThetaPhiR(xyz: Point3d): {
         thetaRadians: number;

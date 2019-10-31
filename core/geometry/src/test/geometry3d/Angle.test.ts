@@ -206,6 +206,34 @@ describe("AngleSweep", () => {
     ck.checkpoint("AngleSweeps.Hello");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("SineWaveRange", () => {
+    const ck = new Checker();
+    const degreesA = 10.0;
+    const degreesB = 20.0;
+    const degreesC = 290;
+    const a0 = 2.0;
+    const a1 = 1.5;
+    const a2 = -0.3;
+    const func = (radians: number) => a0 + a1 * Math.cos(radians) + a2 * Math.sin(radians);
+    for (const sweep of [
+      AngleSweep.createStartEndDegrees(degreesA, degreesB),
+      AngleSweep.createStartEndDegrees(degreesA, degreesB + 180),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA + 360),
+      AngleSweep.createStartEndDegrees(degreesA, degreesC),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360)]) {
+      const sampledRange = Range1d.createNull();
+      for (let f = 0; f <= 1.0; f += 1 / 32) {
+        sampledRange.extendX(func(sweep.fractionToRadians(f)));
+      }
+      const analyticRange = sweep.sineWaveRange(a0, a1, a2);
+      ck.testTrue(analyticRange.containsRange(sampledRange));
+      const expandedSampledRange = sampledRange.clone();
+      expandedSampledRange.expandInPlace(0.2);
+      ck.testTrue(expandedSampledRange.containsRange(analyticRange));
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 class ComplexTests {

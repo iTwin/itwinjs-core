@@ -5,6 +5,7 @@
 import { GrowableFloat64Array } from "./GrowableFloat64Array";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
+import { Range1d } from "./Range";
 /** @module CartesianGeometry */
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
@@ -233,6 +234,8 @@ export class AngleSweep implements BeJSONFunctions {
         const delta1 = radians - this._radians1;
         if (delta0 * delta1 <= 0.0)
             return true;
+        if (this._radians0 === this._radians1)
+            return Angle.isAlmostEqualRadiansAllowPeriodShift (radians, this._radians0);
         return this.radiansToPositivePeriodicFraction(radians) <= 1.0;
     }
     /** set this AngleSweep from various sources:
@@ -287,4 +290,29 @@ export class AngleSweep implements BeJSONFunctions {
      * * * isAlmostEqualRadiansNoPeriodShift
      */
     public isAlmostEqual(other: AngleSweep): boolean { return this.isAlmostEqualNoPeriodShift(other); }
+    /**
+     * Return a Range1d which has the min and max values of the sine wave `a + cosineCoff * cos(theta) + sineCoff*sin(theta)` for theta within this `AngleSweep`
+     * @param a constant (middle value) for complete sine wave
+     * @param cosineCoff coefficient of `cos(theta)`
+     * @param sineCoff coefficient of `sin(theta)`
+     * @param result optional preallocated result.
+     */
+    public sineWaveRange(a: number, cosineCoff: number, sineCoff: number, result?: Range1d): Range1d {
+        const f = (theta: number) => a + cosineCoff * Math.cos(theta) + sineCoff * Math.sin(theta);
+        if (result)
+            result.setNull();
+        else
+            result = Range1d.createNull();
+        result.extendX(f(this.startRadians));
+        result.extendX(f(this.endRadians));
+        // angles for min and max of the sine wave . ..
+        const alphaA = Math.atan2(sineCoff, cosineCoff);
+        const alphaB = alphaA + Math.PI;
+        if (this.isRadiansInSweep(alphaA))
+            result.extendX(f(alphaA));
+        if (this.isRadiansInSweep(alphaB))
+            result.extendX(f(alphaB));
+        return result;
+    }
+
 }

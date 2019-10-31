@@ -18,12 +18,11 @@ import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Geometry } from "../../Geometry";
 import { Range2d } from "../../geometry3d/Range";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 
 /* tslint:disable: no-console */
 
 describe("GrowableXYArray", () => {
-  it("Hello", () => {
-  });
   it("PointMoments", () => {
     const ck = new Checker();
     for (let n = 3; n < 100; n *= 2) {
@@ -474,4 +473,20 @@ describe("GrowableXYArray", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("MethodsImplementedByInterface", () => {
+    const ck = new Checker();
+    const growablePoints = new GrowableXYZArray();
+    growablePoints.pushFrom([[0, 1, 2], [2, 3, 1], [-2, 3, 9]]);
+    const simplePoints = growablePoints.getPoint3dArray();
+    const wrapper = new Point3dArrayCarrier(simplePoints);
+    let i = 0;
+    for (const p of wrapper.points) {
+      ck.testPoint3d(p, simplePoints[i], "wrapper vs simple");
+      ck.testPoint3d(p, growablePoints.getPoint3dAtUncheckedPointIndex(i), "wrapper vs growable");
+      i++;
+    }
+    const growableRange = growablePoints.getRange ();
+    const wrapperRange  = wrapper.getRange ();
+    ck.testRange3d (growableRange, wrapperRange, "growable vs wrapper");
+  });
 });
