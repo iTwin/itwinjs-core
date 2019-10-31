@@ -61,6 +61,9 @@
     },
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
+    },
+    "PurgeTileTrees": {
+      "keyin": "dta purge tiletrees"
     }
   }
 }

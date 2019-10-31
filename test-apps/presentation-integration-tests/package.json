@@ -18,7 +18,8 @@
     "test:integration": "mocha --opts ./mocha.opts ./lib/**/*.js",
     "test:integration:watch": "npm run test:integration -- --reporter min --watch-extensions ts --watch",
     "cover:integration": "npm run test:integration",
-    "cover": ""
+    "cover": "",
+    "test": ""
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "1.8.0-dev.2",
