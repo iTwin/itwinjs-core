@@ -186,6 +186,9 @@ export abstract class MeshGeometry extends LUTGeometry {
   protected computeEdgeLineCode(params: ShaderProgramParams): number { return params.target.getEdgeLineCode(params, this.edgeLineCode); }
   protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
   protected computeEdgePass(target: Target): RenderPass {
+    if (target.isDrawingShadowMap)
+      return RenderPass.None;
+
     const vf = target.currentViewFlags;
     if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges) {
       return RenderPass.None;
@@ -521,8 +524,7 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
-    const shadowMap = params.target.compositor.solarShadowMap;
-    if (shadowMap.isEnabled && shadowMap.isDrawing)
+    if (params.target.isDrawingShadowMap)
       flags |= SurfaceFlags.TransparencyThreshold;
 
     return flags;

@@ -7128,6 +7128,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly is3d: boolean;
     // (undocumented)
+    readonly isDrawingShadowMap: boolean;
+    // (undocumented)
     readonly isEdgeColorOverridden: boolean;
     // (undocumented)
     readonly isEdgeWeightOverridden: boolean;
