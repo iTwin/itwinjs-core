@@ -29,7 +29,12 @@ class SolarShadowMapDrawArgs extends Tile.DrawArgs {
     super(context, location, root, now, purgeOlderThan, clip);
   }
 
-  public get frustumPlanes(): FrustumPlanes { return this._mapFrustumPlanes; }
+  public get frustumPlanes(): FrustumPlanes {
+    if (true === this._useViewportMap)
+      return super.frustumPlanes;
+    else
+      return this._mapFrustumPlanes;
+  }
   protected get worldToViewMap(): Map4d {
     if (true === this._useViewportMap)
       return super.worldToViewMap;

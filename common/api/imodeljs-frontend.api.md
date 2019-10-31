@@ -7266,6 +7266,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     protected _contentRange?: ElementAlignedBox3d;
     // (undocumented)
+    countDescendants(): number;
+    // (undocumented)
     debugDump(): string;
     // (undocumented)
     readonly depth: number;
@@ -7637,6 +7639,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     computeTileRangeForFrustum(vp: Viewport): Range3d | undefined;
     // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
+    // (undocumented)
+    countTiles(): number;
     // (undocumented)
     createDrawArgs(context: SceneContext): Tile.DrawArgs;
     // (undocumented)

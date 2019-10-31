@@ -294,6 +294,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
     this.extendRangeForTileContent(range, this.rootTile, matrix, this.location, frustumPlanes);
   }
+
+  public countTiles(): number {
+    return 1 + this.rootTile.countDescendants();
+  }
 }
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({

@@ -628,6 +628,17 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     assert(undefined === request || undefined === this.request);
     this._request = request;
   }
+
+  public countDescendants(): number {
+    let count = 0;
+    if (undefined !== this._children) {
+      count = this._children.length;
+      for (const child of this._children)
+        count += child.countDescendants();
+    }
+
+    return count;
+  }
 }
 
 // tslint:disable:no-const-enum
