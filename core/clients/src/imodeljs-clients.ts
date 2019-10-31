@@ -95,3 +95,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description Utils
  * Utilities for implementing clients.
  */
+/**
+ * @docs-group-description Config
+ * Class for easily managing configuration variables for an iModel.js application.
+ */

@@ -403,10 +403,10 @@ export interface CodeUpdateOptions {
     unlimitedReporting?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export class Config {
     static readonly App: Config;
-    get(varName: string, defaultVal?: ValueType): any;
+    get(varName: string, defaultVal?: boolean | string | number): any;
     getBoolean(name: string, defaultVal?: boolean): boolean;
     getContainer(): any;
     getNumber(name: string, defaultVal?: number): number;
@@ -416,8 +416,8 @@ export class Config {
     merge(source: any): void;
     query(varName: string): any;
     remove(varName: string): void;
-    set(varName: string, value: ValueType): void;
-    }
+    set(varName: string, value: boolean | string | number): void;
+}
 
 // @alpha
 export class ConflictingCodesError extends IModelHubError {
@@ -1998,7 +1998,7 @@ export class UserStatisticsQuery extends WsgQuery {
     selectPushedChangeSetsCount(): this;
     }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ValueType = string | boolean | number;
 
 // @beta

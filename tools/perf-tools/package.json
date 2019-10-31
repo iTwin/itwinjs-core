@@ -11,6 +11,7 @@
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "lint": "tslint --project . 1>&2",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=Reporter",
     "test": "",
     "docs": "",
     "cover": ""

@@ -13,6 +13,7 @@ interface Entry {
   info?: object;
 }
 
+/** @beta */
 export class Reporter {
   private _entries: Entry[] = [];
 
