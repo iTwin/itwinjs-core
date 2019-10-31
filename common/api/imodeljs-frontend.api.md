@@ -3549,6 +3549,8 @@ export namespace IModelConnection {
         // (undocumented)
         readonly isDisposed: boolean;
         purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
+        // (undocumented)
+        purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
         reset(): void;
         }
     export class Views {
@@ -7605,6 +7607,8 @@ export abstract class TileAdmin {
     abstract onTileTimedOut(tile: Tile): void;
     // @internal
     abstract process(): void;
+    // @internal
+    abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     abstract readonly realityTileExpirationTime: BeDuration;
     // @internal (undocumented)
