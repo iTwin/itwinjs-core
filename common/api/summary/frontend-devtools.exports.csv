@@ -49,8 +49,7 @@ alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
-alpha;ProjectExtentsDecoration 
-alpha;ProjectExtentsResizeTool 
+alpha;ProjectExtentsDecoration
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
