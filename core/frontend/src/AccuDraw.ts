@@ -3199,9 +3199,9 @@ export class AccuDrawHintBuilder {
   public setAngle(angle: number) { this._angle = angle; this._flagAngle = true; }
 
   /* Enable AccuDraw for the current tool without sending any hints */
-  public static activate() { IModelApp.accuDraw.activate; }
+  public static activate() { IModelApp.accuDraw.activate(); }
   /* Disable AccuDraw for the current tool */
-  public static deactivate() { IModelApp.accuDraw.deactivate; }
+  public static deactivate() { IModelApp.accuDraw.deactivate(); }
 
   /**
    * Calls AccuDraw.setContext using the current builder state.

@@ -1688,26 +1688,6 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @alpha
-export enum ClipOrientation {
-    // (undocumented)
-    Back = 4,
-    // (undocumented)
-    Bottom = 3,
-    // (undocumented)
-    Face = 7,
-    // (undocumented)
-    Front = 1,
-    // (undocumented)
-    Left = 2,
-    // (undocumented)
-    Right = 5,
-    // (undocumented)
-    Top = 0,
-    // (undocumented)
-    View = 6
-}
-
 // @beta
 export const enum ClippingType {
     Mask = 1,
@@ -2257,11 +2237,32 @@ export namespace EditManipulator {
         // (undocumented)
         static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
         // (undocumented)
+        static getRotation(rotation: RotationType, viewport: Viewport): Matrix3d | undefined;
+        // (undocumented)
         static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor?: number): boolean;
         // (undocumented)
         static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
         // (undocumented)
         static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
+    }
+    // (undocumented)
+    export enum RotationType {
+        // (undocumented)
+        Back = 4,
+        // (undocumented)
+        Bottom = 3,
+        // (undocumented)
+        Face = 7,
+        // (undocumented)
+        Front = 1,
+        // (undocumented)
+        Left = 2,
+        // (undocumented)
+        Right = 5,
+        // (undocumented)
+        Top = 0,
+        // (undocumented)
+        View = 6
     }
 }
 
@@ -4019,6 +4020,84 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
+
+// @alpha (undocumented)
+export class MeasureAreaByPointsTool extends PrimitiveTool {
+    // (undocumented)
+    protected _acceptedMeasurement?: MeasureMarker;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    // (undocumented)
+    protected _area: number;
+    // (undocumented)
+    protected _centroid: Point3d;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected static enumAsOrientationMessage(str: string): any;
+    // (undocumented)
+    protected static _getEnumAsOrientationDescription: () => PropertyDescription;
+    // (undocumented)
+    protected getMarkerToolTip(): Promise<HTMLElement>;
+    // (undocumented)
+    protected getShapePoints(ev: BeButtonEvent): Point3d[];
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected _isComplete: boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _marker?: MeasureLabel;
+    // (undocumented)
+    protected _matrix?: Matrix3d;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    orientation: EditManipulator.RotationType;
+    // (undocumented)
+    protected static _orientationName: string;
+    // (undocumented)
+    protected _perimeter: number;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected reportMeasurements(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateTotals(): Promise<void>;
+}
 
 // @alpha (undocumented)
 export class MeasureAreaTool extends MeasureElementTool {
@@ -8268,7 +8347,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    orientation: ClipOrientation;
+    orientation: EditManipulator.RotationType;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
@@ -8326,7 +8405,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
-    orientation: ClipOrientation;
+    orientation: EditManipulator.RotationType;
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
@@ -8683,8 +8762,6 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     protected static enumAsOrientationMessage(str: string): any;
     // (undocumented)
-    static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
-    // (undocumented)
     static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d;
     // (undocumented)
     static getClipShapeExtents(shape: ClipShape, viewRange: Range3d): Range1d;
@@ -8695,7 +8772,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static getOffsetValueTransformed(offset: number, transform?: Transform): number;
     // (undocumented)
-    static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
+    static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
     static hasClip(viewport: Viewport): boolean;
     // (undocumented)

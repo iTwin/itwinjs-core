@@ -14,6 +14,9 @@ import { HitDetail } from "../HitDetail";
 import { Viewport, CoordSystem } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { Npc } from "@bentley/imodeljs-common";
+import { StandardViewId } from "../StandardView";
+import { TentativeOrAccuSnap } from "../AccuSnap";
+import { AccuDraw } from "../AccuDraw";
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
@@ -21,6 +24,7 @@ import { Npc } from "@bentley/imodeljs-common";
  */
 export namespace EditManipulator {
   export enum EventType { Synch, Cancel, Accept }
+  export enum RotationType { Top, Front, Left, Bottom, Back, Right, View, Face }
 
   export abstract class HandleTool extends InputCollector {
     public static toolId = "Select.Manipulator";
@@ -221,6 +225,37 @@ export namespace EditManipulator {
       if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
         return undefined;
       return lineRay.projectPointToRay(projectedPt);
+    }
+
+    public static getRotation(rotation: RotationType, viewport: Viewport): Matrix3d | undefined {
+      switch (rotation) {
+        case RotationType.Top:
+          return AccuDraw.getStandardRotation(StandardViewId.Top, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.Front:
+          return AccuDraw.getStandardRotation(StandardViewId.Front, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.Left:
+          return AccuDraw.getStandardRotation(StandardViewId.Left, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.Bottom:
+          return AccuDraw.getStandardRotation(StandardViewId.Bottom, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.Back:
+          return AccuDraw.getStandardRotation(StandardViewId.Back, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.Right:
+          return AccuDraw.getStandardRotation(StandardViewId.Right, viewport, viewport.isContextRotationRequired).inverse();
+        case RotationType.View:
+          return viewport.view.getRotation().inverse();
+        case RotationType.Face:
+          const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+          if (undefined === snap || undefined === snap.normal)
+            return undefined;
+          const normal = Vector3d.createZero();
+          const boresite = EditManipulator.HandleUtils.getBoresite(snap.hitPoint, viewport);
+          if (snap.normal.dotProduct(boresite.direction) < 0.0)
+            normal.setFrom(snap.normal);
+          else
+            snap.normal.negate(normal);
+          return Matrix3d.createRigidHeadsUp(normal);
+      }
+      return undefined;
     }
 
     /** Get a transform to orient arrow shape to view direction. If arrow direction is close to perpendicular to view direction will return undefined. */

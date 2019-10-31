@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps } from "@bentley/geometry-core";
+import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps, AxisOrder } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { Id64Arg, Id64, BeEvent, GuidString, Guid, IModelStatus } from "@bentley/bentleyjs-core";
 import { Viewport, ScreenViewport } from "../Viewport";
-import { TentativeOrAccuSnap } from "../AccuSnap";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
 import { EditManipulator } from "./EditManipulator";
@@ -26,18 +25,6 @@ import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
 import { AuthorizedFrontendRequestContext, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "../imodeljs-frontend";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
-
-/** @alpha The orientation to use to define the view clip volume */
-export enum ClipOrientation {
-  Top,
-  Front,
-  Left,
-  Bottom,
-  Back,
-  Right,
-  View,
-  Face,
-}
 
 /** @alpha An object that can react to a view's clip being changed by tools or modify handles. */
 export interface ViewClipEventHandler {
@@ -76,22 +63,22 @@ export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
 
   protected static _orientationName = "enumAsOrientation";
-  protected static enumAsOrientationMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Orientation." + str); }
+  protected static enumAsOrientationMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.Settings.Orientation." + str); }
   protected static _getEnumAsOrientationDescription = (): PropertyDescription => {
     return {
       name: ViewClipTool._orientationName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Orientation.Label"),
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.Settings.Orientation.Label"),
       typename: "enum",
       enum: {
         choices: [
-          { label: ViewClipTool.enumAsOrientationMessage("Top"), value: ClipOrientation.Top },
-          { label: ViewClipTool.enumAsOrientationMessage("Front"), value: ClipOrientation.Front },
-          { label: ViewClipTool.enumAsOrientationMessage("Left"), value: ClipOrientation.Left },
-          { label: ViewClipTool.enumAsOrientationMessage("Bottom"), value: ClipOrientation.Bottom },
-          { label: ViewClipTool.enumAsOrientationMessage("Back"), value: ClipOrientation.Back },
-          { label: ViewClipTool.enumAsOrientationMessage("Right"), value: ClipOrientation.Right },
-          { label: ViewClipTool.enumAsOrientationMessage("View"), value: ClipOrientation.View },
-          { label: ViewClipTool.enumAsOrientationMessage("Face"), value: ClipOrientation.Face },
+          { label: ViewClipTool.enumAsOrientationMessage("Top"), value: EditManipulator.RotationType.Top },
+          { label: ViewClipTool.enumAsOrientationMessage("Front"), value: EditManipulator.RotationType.Front },
+          { label: ViewClipTool.enumAsOrientationMessage("Left"), value: EditManipulator.RotationType.Left },
+          { label: ViewClipTool.enumAsOrientationMessage("Bottom"), value: EditManipulator.RotationType.Bottom },
+          { label: ViewClipTool.enumAsOrientationMessage("Back"), value: EditManipulator.RotationType.Back },
+          { label: ViewClipTool.enumAsOrientationMessage("Right"), value: EditManipulator.RotationType.Right },
+          { label: ViewClipTool.enumAsOrientationMessage("View"), value: EditManipulator.RotationType.View },
+          { label: ViewClipTool.enumAsOrientationMessage("Face"), value: EditManipulator.RotationType.Face },
         ],
       },
     };
@@ -109,42 +96,11 @@ export class ViewClipTool extends PrimitiveTool {
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.onReinitialize(); return EventHandled.No; }
 
-  public static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined {
-    const matrix = ViewClipTool.getClipOrientation(orientation, viewport);
+  public static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined {
+    const matrix = EditManipulator.HandleUtils.getRotation(orientation, viewport);
     if (undefined === matrix)
       return undefined;
     return matrix.getColumn(2).negate();
-  }
-
-  public static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined {
-    switch (orientation) {
-      case ClipOrientation.Top:
-        return AccuDraw.getStandardRotation(StandardViewId.Top, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.Front:
-        return AccuDraw.getStandardRotation(StandardViewId.Front, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.Left:
-        return AccuDraw.getStandardRotation(StandardViewId.Left, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.Bottom:
-        return AccuDraw.getStandardRotation(StandardViewId.Bottom, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.Back:
-        return AccuDraw.getStandardRotation(StandardViewId.Back, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.Right:
-        return AccuDraw.getStandardRotation(StandardViewId.Right, viewport, viewport.isContextRotationRequired).inverse();
-      case ClipOrientation.View:
-        return viewport.view.getRotation().inverse();
-      case ClipOrientation.Face:
-        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
-        if (undefined === snap || undefined === snap.normal)
-          return undefined;
-        const normal = Vector3d.createZero();
-        const boresite = EditManipulator.HandleUtils.getBoresite(snap.hitPoint, viewport);
-        if (snap.normal.dotProduct(boresite.direction) < 0.0)
-          normal.setFrom(snap.normal);
-        else
-          snap.normal.negate(normal);
-        return Matrix3d.createRigidHeadsUp(normal);
-    }
-    return undefined;
   }
 
   public static enableClipVolume(viewport: Viewport): boolean {
@@ -445,11 +401,11 @@ export class ViewClipClearTool extends ViewClipTool {
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
-  private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
+  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
-  public get orientation(): ClipOrientation { return this._orientationValue.value as ClipOrientation; }
-  public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
+  public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
+  public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
@@ -513,14 +469,14 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
-  private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
+  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Top);
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _zLow?: number;
   protected _zHigh?: number;
 
-  public get orientation(): ClipOrientation { return this._orientationValue.value as ClipOrientation; }
-  public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
+  public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
+  public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
@@ -594,6 +550,12 @@ export class ViewClipByShapeTool extends ViewClipTool {
     if (1 === this._points.length) {
       hints.setRotation(this._matrix!.inverse()!);
       hints.setModeRectangular();
+    } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
+      const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
+      const zVec = this._matrix!.getColumn(2);
+      const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
+      if (undefined !== matrix)
+        hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
     }
     hints.setLockZ = true;
     hints.sendHints();
@@ -650,7 +612,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     const fillAccVis = context.viewport.hilite.color.clone(); fillAccVis.setAlpha(25);
 
     builderAccVis.setSymbology(colorAccVis, fillAccVis, 3);
-    builderAccHid.setSymbology(colorAccHid, fillAccVis, 1);
+    builderAccHid.setSymbology(colorAccHid, fillAccVis, 1, LinePixels.Code2);
 
     if (points.length > 2)
       builderAccHid.addShape(points);
@@ -684,7 +646,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return EventHandled.Yes;
     }
 
-    if (undefined === this._matrix && undefined === (this._matrix = ViewClipTool.getClipOrientation(this.orientation, this.targetView)))
+    if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(this.orientation, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
@@ -751,7 +713,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
     if (undefined === this.targetView || undefined === this._corner)
       return false;
     // Creating clip aligned with ACS when ACS context lock is enabled...
-    const matrix = ViewClipTool.getClipOrientation(ClipOrientation.Top, this.targetView);
+    const matrix = EditManipulator.HandleUtils.getRotation(EditManipulator.RotationType.Top, this.targetView);
     Transform.createOriginAndMatrix(this._corner, matrix, transform);
     const pt1 = transform.multiplyInversePoint3d(this._corner);
     const pt2 = transform.multiplyInversePoint3d(ev.point);
@@ -780,7 +742,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
     const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
-    builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1);
+    builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
 
     builderAccVis.addRangeBox(range);
     builderAccHid.addRangeBox(range);

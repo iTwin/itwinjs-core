@@ -120,19 +120,6 @@
       }
     },
     "ViewClip": {
-      "Settings": {
-        "Orientation": {
-          "Label": "Orientation",
-          "Top": "Top",
-          "Front": "Front",
-          "Left": "Left",
-          "Bottom": "Bottom",
-          "Back": "Back",
-          "Right": "Right",
-          "View": "View",
-          "Face": "Face"
-        }
-      },
       "ByPlane": {
         "keyin": "viewclip byplane",
         "description": "Section a view with a plane",
@@ -318,6 +305,17 @@
         "description": "Measure volume of elements",
         "flyover": "Measure Volume"
       },
+      "AreaByPoints": {
+        "keyin": "measure points area",
+        "description": "Measure area defined by points",
+        "flyover": "Measure Area By Points",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
+        }
+      },
       "Labels": {
         "CumulativeDistance": "Cumulative Distance",
         "Distance": "Distance",
@@ -388,6 +386,19 @@
         "Replace": "Replace current selection",
         "Add": "Add to selection",
         "Remove": "Remove from selection"
+      }
+    },
+    "Settings": {
+      "Orientation": {
+        "Label": "Orientation",
+        "Top": "Top",
+        "Front": "Front",
+        "Left": "Left",
+        "Bottom": "Bottom",
+        "Back": "Back",
+        "Right": "Right",
+        "View": "View",
+        "Face": "Face"
       }
     },
     "Plugin": {
