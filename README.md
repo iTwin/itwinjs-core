@@ -44,7 +44,7 @@ Each package creates its own **node_modules** directory that contains symbolic l
 * [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
-> See [supported platforms](./docs/core/learning/SupportedPlatforms.md) for further information.
+> See [supported platforms](./docs/learning/SupportedPlatforms.md) for further information.
 
 ## Build Instructions
 
