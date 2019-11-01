@@ -25,6 +25,7 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
+import { UrlFileHandler } from "../../UrlFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -45,6 +46,8 @@ function configMockSettings() {
 export function createFileHanlder(useDownloadBuffer?: boolean) {
   if (MobileRpcConfiguration.isMobileBackend) {
     return new IOSAzureFileHandler();
+  } else if (TestConfig.enableIModelBank) {
+    return new UrlFileHandler();
   }
   return new AzureFileHandler(useDownloadBuffer);
 }

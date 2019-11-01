@@ -395,7 +395,7 @@ describe("iModelHub iModelsHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Seed File with Buffering", async () => {
+  it("should download a Seed File with Buffering (#iModelBank)", async () => {
     imodelClient.setFileHandler(utils.createFileHanlder(true));
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
@@ -409,7 +409,7 @@ describe("iModelHub iModelsHandler", () => {
     imodelClient.setFileHandler(utils.createFileHanlder());
   });
 
-  it("should fail downloading the Seed File with no file handler (#iModelBank)", async () => {
+  it("should fail downloading the Seed File with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
@@ -422,12 +422,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail creating an iModel with no file handler (#iModelBank)", async function () {
-    if (!utils.getCloudEnv().isIModelHub) {
-      this.skip();
-      return;
-    }
-
+  it("should fail creating an iModel with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
