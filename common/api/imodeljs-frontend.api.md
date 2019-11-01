@@ -8894,19 +8894,17 @@ export class ViewHandleArray {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
+    onWheel(ev: BeWheelEvent): void;
+    // (undocumented)
     setFocus(index: number): void;
     // (undocumented)
     testHit(ptScreen: Point3d, forced?: ViewHandleType): boolean;
-    // (undocumented)
-    viewport?: Viewport;
     // (undocumented)
     viewTool: ViewManip;
 }
 
 // @internal (undocumented)
 export const enum ViewHandleType {
-    // (undocumented)
-    EXTERIOR = 1,
     // (undocumented)
     Fly = 64,
     // (undocumented)
@@ -8954,6 +8952,8 @@ export abstract class ViewingToolHandle {
     noMotion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     onReinitialize(): void;
+    // (undocumented)
+    onWheel(_ev: BeWheelEvent): void;
     // (undocumented)
     abstract testHandleForHit(ptScreen: Point3d, out: {
         distance: number;

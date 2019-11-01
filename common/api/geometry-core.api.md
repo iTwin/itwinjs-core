@@ -1143,6 +1143,10 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
 export class Constant {
     static readonly circumferenceOfEarth: number;
     static readonly diameterOfEarth: number;
+    static readonly earthRadiusWGS84: {
+        polar: number;
+        equator: number;
+    };
     static readonly oneCentimeter: number;
     static readonly oneKilometer: number;
     static readonly oneMeter: number;

@@ -642,16 +642,14 @@ export class ViewFrustum {
         }
         if (includeHorizon) {
           let horizonDistance = 10000;
-          const earthRadius = 6378137;
           const eyePoint = view.getEyePoint();
-          const eyeHeight = view.getEyePoint().z;
+          const eyeHeight = eyePoint.z;
           if (eyeHeight > 0.0)          // Assume zero is ground level and increase horizon based on earth's curvature.
-            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * earthRadius));
+            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator));
 
           extents.extend(eyePoint.plusScaled(viewZ, -horizonDistance));
         }
         if (view.isCameraOn) {
-
           const minimumEyeDistance = 10.0;
           extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
         }
