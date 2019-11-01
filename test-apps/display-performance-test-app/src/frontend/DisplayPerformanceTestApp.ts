@@ -365,7 +365,10 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const w = configs.view!.width * devicePixelRatio;
+  const h = configs.view!.height * devicePixelRatio;
+  rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
@@ -501,7 +504,7 @@ class DefaultConfigs {
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
-  public renderOptions: RenderSystem.Options = { };
+  public renderOptions: RenderSystem.Options = {};
   public tileProps?: TileAdmin.Props;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
