@@ -8,7 +8,7 @@ import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { HasMaterialAtlas, IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
-import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
+import { ProgramBuilder, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
@@ -26,7 +26,7 @@ import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
-import { assignFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
+import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum, addEyeSpace } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
@@ -166,9 +166,9 @@ export abstract class VariedTechnique implements Technique {
 
   protected addFeatureId(builder: ProgramBuilder, feat: FeatureMode) {
     const frag = builder.frag;
-    if (FeatureMode.None === feat)
-      frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
-    else {
+    if (FeatureMode.None === feat) {
+      addFragColorWithPreMultipliedAlpha(frag);
+    } else {
       const vert = builder.vert;
       addFrustum(builder);
       addEyeSpace(builder);
