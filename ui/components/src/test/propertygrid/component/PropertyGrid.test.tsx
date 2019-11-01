@@ -390,8 +390,7 @@ describe("PropertyGrid", () => {
         dataProvider.onDataChanged.raiseEvent();
 
       // resolve the data promise
-      dataPromise.resolve(data);
-      await TestUtils.flushAsyncOperations();
+      await dataPromise.resolve(data);
 
       // expect data to be requested one more time for the last change,
       // but not for intermediate ones

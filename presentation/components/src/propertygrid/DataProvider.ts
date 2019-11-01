@@ -17,7 +17,7 @@ import {
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
 import { ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
-import { prioritySortFunction, translate } from "../common/Utils";
+import { priorityAndNameSortFunction, translate } from "../common/Utils";
 
 const favoritesCategoryName = "Favorite";
 let favoritesCategoryPromise: Promise<CategoryDescription> | undefined;
@@ -349,7 +349,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * to supply a different sorting algorithm.
    */
   protected sortCategories(categories: CategoryDescription[]): void {
-    categories.sort(prioritySortFunction);
+    categories.sort(priorityAndNameSortFunction);
   }
 
   /**
@@ -357,7 +357,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * to supply a different sorting algorithm.
    */
   protected sortFields(_category: CategoryDescription, fields: Field[]): void {
-    fields.sort(prioritySortFunction);
+    fields.sort(priorityAndNameSortFunction);
   }
 
   /**

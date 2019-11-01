@@ -13,13 +13,8 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "area per time squared temperature",
-      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared__x0020__temperature",
-    },
-    Object {
-      "expand": false,
-      "label": "workingUnitsProp",
-      "name": "DgnCustomItemTypes_MyProp__x003A__workingUnitsProp",
+      "label": "area",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area",
     },
     Object {
       "expand": false,
@@ -28,8 +23,13 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "area",
-      "name": "DgnCustomItemTypes_MyProp__x003A__area",
+      "label": "area per time squared",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared",
+    },
+    Object {
+      "expand": false,
+      "label": "area per time squared temperature",
+      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared__x0020__temperature",
     },
     Object {
       "expand": false,
@@ -45,6 +45,11 @@ Object {
       "expand": false,
       "label": "electric current",
       "name": "DgnCustomItemTypes_MyProp__x003A__electric__x0020__current",
+    },
+    Object {
+      "expand": false,
+      "label": "length",
+      "name": "DgnCustomItemTypes_MyProp__x003A__length",
     },
     Object {
       "expand": false,
@@ -68,13 +73,13 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "length",
-      "name": "DgnCustomItemTypes_MyProp__x003A__length",
+      "label": "lenic mass",
+      "name": "DgnCustomItemTypes_MyProp__x003A__lenic__x0020__mass",
     },
     Object {
       "expand": false,
-      "label": "lenic mass",
-      "name": "DgnCustomItemTypes_MyProp__x003A__lenic__x0020__mass",
+      "label": "luminous flux",
+      "name": "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux",
     },
     Object {
       "expand": false,
@@ -83,8 +88,8 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "luminous flux",
-      "name": "DgnCustomItemTypes_MyProp__x003A__luminous__x0020__flux",
+      "label": "mass",
+      "name": "DgnCustomItemTypes_MyProp__x003A__mass",
     },
     Object {
       "expand": false,
@@ -123,18 +128,8 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "mass",
-      "name": "DgnCustomItemTypes_MyProp__x003A__mass",
-    },
-    Object {
-      "expand": false,
       "label": "molar volume",
       "name": "DgnCustomItemTypes_MyProp__x003A__molar__x0020__volume",
-    },
-    Object {
-      "expand": false,
-      "label": "area per time squared",
-      "name": "DgnCustomItemTypes_MyProp__x003A__area__x0020__per__x0020__time__x0020__squared",
     },
     Object {
       "expand": false,
@@ -148,13 +143,13 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "plane angle per time",
-      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle__x0020__per__x0020__time",
+      "label": "plane angle",
+      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle",
     },
     Object {
       "expand": false,
-      "label": "plane angle",
-      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle",
+      "label": "plane angle per time",
+      "name": "DgnCustomItemTypes_MyProp__x003A__plane__x0020__angle__x0020__per__x0020__time",
     },
     Object {
       "expand": false,
@@ -203,13 +198,18 @@ Object {
     },
     Object {
       "expand": false,
+      "label": "temperature",
+      "name": "DgnCustomItemTypes_MyProp__x003A__temperature",
+    },
+    Object {
+      "expand": false,
       "label": "temperature per length",
       "name": "DgnCustomItemTypes_MyProp__x003A__temperature__x0020__per__x0020__length",
     },
     Object {
       "expand": false,
-      "label": "temperature",
-      "name": "DgnCustomItemTypes_MyProp__x003A__temperature",
+      "label": "time",
+      "name": "DgnCustomItemTypes_MyProp__x003A__time",
     },
     Object {
       "expand": false,
@@ -233,8 +233,8 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "time",
-      "name": "DgnCustomItemTypes_MyProp__x003A__time",
+      "label": "volume",
+      "name": "DgnCustomItemTypes_MyProp__x003A__volume",
     },
     Object {
       "expand": false,
@@ -248,8 +248,8 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "volume",
-      "name": "DgnCustomItemTypes_MyProp__x003A__volume",
+      "label": "workingUnitsProp",
+      "name": "DgnCustomItemTypes_MyProp__x003A__workingUnitsProp",
     },
     Object {
       "expand": false,
@@ -1449,16 +1449,16 @@ Object {
     ],
     "General": Array [
       PropertyRecord {
-        "description": "Properties_60InstancesWithUrl2",
+        "description": "Uncategorized",
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Model",
-          "name": "PhysicalObject_Model",
+          "displayLabel": "Category",
+          "name": "PhysicalObject_Category",
           "typename": "navigation",
         },
         "value": Object {
-          "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "displayValue": "Uncategorized",
+          "value": 23,
           "valueFormat": 0,
         },
       },
@@ -1475,6 +1475,20 @@ Object {
         },
       },
       PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Model",
+          "name": "PhysicalObject_Model",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
         "property": Object {
           "displayLabel": "User Label",
           "name": "PhysicalObject_UserLabel",
@@ -1483,20 +1497,6 @@ Object {
         "value": Object {
           "displayValue": "",
           "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "description": "Uncategorized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Category",
-          "name": "PhysicalObject_Category",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Uncategorized",
-          "value": 23,
           "valueFormat": 0,
         },
       },

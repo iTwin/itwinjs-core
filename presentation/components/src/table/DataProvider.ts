@@ -20,7 +20,7 @@ import {
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { PageContainer, Page } from "../common/PageContainer";
-import { prioritySortFunction } from "../common/Utils";
+import { priorityAndNameSortFunction } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
@@ -234,7 +234,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDescription[] => {
   if (!descriptor)
     return [];
-  const sortedFields = [...descriptor.fields].sort(prioritySortFunction);
+  const sortedFields = [...descriptor.fields].sort(priorityAndNameSortFunction);
   return sortedFields.map((field) => createColumn(field));
 };
 
