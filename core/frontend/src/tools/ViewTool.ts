@@ -13,7 +13,7 @@ import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
 import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator, areViewportsCompatible } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings, CoreTools } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -57,13 +57,12 @@ const enum ViewManipPriority {
 
 const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 
-function translateCoreTool(val: string) { return IModelApp.i18n.translate("CoreTools:tools." + val); }
-function translateViewTool(val: string) { return translateCoreTool("View." + val); }
-
 /** An InteractiveTool that manipulates a view.
  * @public
  */
 export abstract class ViewTool extends InteractiveTool {
+  public static translate(val: string) { return CoreTools.translate("View." + val); }
+
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
@@ -93,7 +92,7 @@ export abstract class ViewTool extends InteractiveTool {
   /** Do not override. */
   public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
   public static showPrompt(prompt: string) {
-    IModelApp.notifications.outputPrompt(translateViewTool(prompt));
+    IModelApp.notifications.outputPrompt(ViewTool.translate(prompt));
   }
 }
 
@@ -404,12 +403,12 @@ export abstract class ViewManip extends ViewTool {
 
   /** @beta */
   public provideToolAssistance(mainInstrKey: string, additionalInstr?: ToolAssistanceInstruction[]): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translateViewTool(mainInstrKey));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = translateCoreTool("ElementSet.Inputs.AcceptPoint");
-    const rejectMsg = translateCoreTool("ElementSet.Inputs.Exit");
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
+    const rejectMsg = CoreTools.translate("ElementSet.Inputs.Exit");
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
@@ -1722,8 +1721,8 @@ export class WalkViewTool extends ViewManip {
   /** @beta */
   public provideToolAssistance(mainInstrKey: string): void {
     const walkInstructions: ToolAssistanceInstruction[] = [];
-    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, translateViewTool("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
-    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, translateViewTool("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
     super.provideToolAssistance(mainInstrKey, walkInstructions);
   }
 }
@@ -1742,8 +1741,8 @@ export class FlyViewTool extends ViewManip {
   /** @beta */
   public provideToolAssistance(mainInstrKey: string): void {
     const flyInstructions: ToolAssistanceInstruction[] = [];
-    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, translateViewTool("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
-    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, translateViewTool("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
+    flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
     super.provideToolAssistance(mainInstrKey, flyInstructions);
   }
 }
@@ -1767,12 +1766,12 @@ export class FitViewTool extends ViewTool {
 
   /** @beta */
   public provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translateViewTool("Fit.Prompts.FirstPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate("Fit.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = translateCoreTool("ElementSet.Inputs.Accept");
-    const rejectMsg = translateCoreTool("ElementSet.Inputs.Exit");
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.Accept");
+    const rejectMsg = CoreTools.translate("ElementSet.Inputs.Exit");
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
@@ -1861,13 +1860,13 @@ export class WindowAreaTool extends ViewTool {
 
   /** @beta */
   public provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translateViewTool(this._haveFirstPoint ? "WindowArea.Prompts.NextPoint" : "WindowArea.Prompts.FirstPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveFirstPoint ? "WindowArea.Prompts.NextPoint" : "WindowArea.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = translateCoreTool("ElementSet.Inputs.AcceptPoint");
-    const restartMsg = translateCoreTool("ElementSet.Inputs.Restart");
-    const exitMsg = translateCoreTool("ElementSet.Inputs.Exit");
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
+    const restartMsg = CoreTools.translate("ElementSet.Inputs.Restart");
+    const exitMsg = CoreTools.translate("ElementSet.Inputs.Exit");
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, exitMsg, false, ToolAssistanceInputMethod.Touch));
@@ -2406,12 +2405,12 @@ export class SetupCameraTool extends PrimitiveTool {
 
   /** @beta */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translateViewTool(this._haveEyePt ? "SetupCamera.Prompts.NextPoint" : "SetupCamera.Prompts.FirstPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveEyePt ? "SetupCamera.Prompts.NextPoint" : "SetupCamera.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = translateCoreTool("ElementSet.Inputs.AcceptPoint");
-    const rejectMsg = translateCoreTool(this._haveEyePt ? "ElementSet.Inputs.Restart" : "ElementSet.Inputs.Exit");
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
+    const rejectMsg = CoreTools.translate(this._haveEyePt ? "ElementSet.Inputs.Restart" : "ElementSet.Inputs.Exit");
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
@@ -2624,7 +2623,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private static _cameraHeightDescription?: LengthDescription;
   private _getCameraHeightDescription = (): PropertyDescription => {
     if (!SetupCameraTool._cameraHeightDescription)
-      SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, translateViewTool("SetupCamera.Labels.CameraHeight"));
+      SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, ViewTool.translate("SetupCamera.Labels.CameraHeight"));
     return SetupCameraTool._cameraHeightDescription;
   }
 
@@ -2635,7 +2634,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private static _targetHeightDescription?: LengthDescription;
   private _getTargetHeightDescription = (): PropertyDescription => {
     if (!SetupCameraTool._targetHeightDescription)
-      SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, translateViewTool("SetupCamera.Labels.TargetHeight"));
+      SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, ViewTool.translate("SetupCamera.Labels.TargetHeight"));
     return SetupCameraTool._targetHeightDescription;
   }
 

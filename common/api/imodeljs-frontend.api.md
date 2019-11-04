@@ -1822,6 +1822,18 @@ export enum CoordSystem {
 }
 
 // @internal (undocumented)
+export class CoreTools {
+    // (undocumented)
+    static namespace: string;
+    // (undocumented)
+    static outputPromptByKey(key: string): void;
+    // (undocumented)
+    static tools: string;
+    // (undocumented)
+    static translate(prompt: string): any;
+}
+
+// @internal (undocumented)
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
@@ -9753,6 +9765,8 @@ export abstract class ViewTool extends InteractiveTool {
     run(..._args: any[]): boolean;
     // (undocumented)
     static showPrompt(prompt: string): void;
+    // (undocumented)
+    static translate(val: string): any;
     // (undocumented)
     viewport?: ScreenViewport | undefined;
 }

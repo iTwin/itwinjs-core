@@ -374,7 +374,7 @@
         "NoSSElems": "No elements selected",
         "AlreadySelected": "Element is already selected",
         "NotSelected": "Element is not selected",
-        "NotSuportedElmType": "Element type not valid for this tool",
+        "NotSupportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
       },
       "SelectionMethods": {
