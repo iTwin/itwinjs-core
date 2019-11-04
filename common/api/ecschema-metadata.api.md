@@ -361,7 +361,7 @@ export class DelayedPromise<T> implements Promise<T> {
 // @beta (undocumented)
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
-// @beta (undocumented)
+// @beta
 export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
 
 // @beta (undocumented)
@@ -721,6 +721,8 @@ export enum ECObjectsStatus {
     InvalidPrimitiveType = 35064,
     // (undocumented)
     InvalidRelationshipEnd = 35068,
+    // (undocumented)
+    InvalidSchemaAlias = 35078,
     // (undocumented)
     InvalidSchemaComparisonArgument = 35077,
     // (undocumented)
@@ -2049,9 +2051,7 @@ export class RelationshipMultiplicity {
 export class Schema implements CustomAttributeContainerProps {
     // @internal
     constructor(context: SchemaContext);
-    // @internal
     constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
-    // @internal
     constructor(context: SchemaContext, key: SchemaKey);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;

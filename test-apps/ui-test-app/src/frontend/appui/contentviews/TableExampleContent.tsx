@@ -7,11 +7,12 @@ import * as React from "react";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/imodeljs-frontend";
 import {
-  Table, ColumnDescription, RowItem, TableDataProvider,
+  Table, ColumnDescription, RowItem, TableDataProvider, FilterRenderer,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
 import { BodyText } from "@bentley/ui-core";
+import { LoremIpsum } from "lorem-ipsum";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -26,6 +27,7 @@ interface TableExampleState {
   selectionMode: SelectionMode;
   tableSelectionTarget: TableSelectionTarget;
   selectedIndexes: any[];
+  requestedTopRow: number;
   topRow: number;
 }
 
@@ -68,6 +70,24 @@ const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) =
   return enumPropertyRecord;
 };
 
+const createLoremPropertyRecord = (column: ColumnDescription) => {
+  const lorem = new LoremIpsum();
+  const value = lorem.generateWords(5);
+
+  const v: PropertyValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+    value,
+    displayValue: value,
+  };
+  const pd: PropertyDescription = {
+    typename: "text",
+    name: column.key,
+    displayLabel: column.label,
+  };
+  column.propertyDescription = pd;
+  return new PropertyRecord(v, pd);
+};
+
 class TableExampleContent extends React.Component<{}, TableExampleState>  {
   public readonly state: Readonly<TableExampleState>;
 
@@ -81,6 +101,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         resizable: true,
         sortable: true,
         width: 90,
+        filterable: true,
+        filterRenderer: FilterRenderer.Numeric,
       },
       {
         key: "title",
@@ -88,14 +110,25 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         sortable: true,
         resizable: true,
         editable: true,
+        filterable: true,
+        filterRenderer: FilterRenderer.MultiSelect,
       },
       {
         key: "color",
         label: "Color",
         sortable: true,
-        resizable: false,
+        resizable: true,
         editable: true,
         width: 180,
+        filterable: true,
+        filterRenderer: FilterRenderer.SingleSelect,
+      },
+      {
+        key: "lorem",
+        label: "Lorem",
+        resizable: true,
+        filterable: true,
+        filterRenderer: FilterRenderer.Text,
       },
     ];
 
@@ -103,16 +136,20 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     for (let i = 1; i <= 100000; i++) {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
-        key: "id",
+        key: columns[0].key,
         record: createPropertyRecord(i, columns[0], "int"),
       });
       row.cells.push({
-        key: "title",
+        key: columns[1].key,
         record: createPropertyRecord("Title " + i, columns[1], "text"),
       });
       row.cells.push({
-        key: "color",
+        key: columns[2].key,
         record: createEnumPropertyRecord(i, columns[2]),
+      });
+      row.cells.push({
+        key: columns[3].key,
+        record: createLoremPropertyRecord(columns[3]),
       });
       rows.push(row);
     }
@@ -125,6 +162,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       selectedIndexes: [],
       selectionMode: SelectionMode.Single,
       tableSelectionTarget: TableSelectionTarget.Row,
+      requestedTopRow: 0,
       topRow: 0,
     };
   }
@@ -183,11 +221,15 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     return updated;
   }
 
-  private _onTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private _onRequestedTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value !== null) {
       const value = parseInt(e.target.value, 10);
-      this.setState({ topRow: value });
+      this.setState({ requestedTopRow: value });
     }
+  }
+
+  private _onScrollToRow = (topRowIndex: number) => {
+    this.setState({ topRow: topRowIndex });
   }
 
   public render(): React.ReactNode {
@@ -206,7 +248,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
           </select>
           <label>
             <BodyText>Top row:</BodyText>
-            <input onChange={this._onTopRowChange} style={{ width: "100px" }} />
+            <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <span>({this.state.topRow})</span>
           </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
@@ -215,7 +258,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             tableSelectionTarget={this.state.tableSelectionTarget}
             selectionMode={this.state.selectionMode}
             onPropertyUpdated={this._handlePropertyUpdated}
-            scrollToRow={this.state.topRow}
+            scrollToRow={this.state.requestedTopRow}
+            onScrollToRow={this._onScrollToRow}
           />
         </div>
       </div>

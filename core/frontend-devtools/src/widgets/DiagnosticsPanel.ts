@@ -74,7 +74,7 @@ export class DiagnosticsPanel {
     }
 
     if (true !== exclude.gpuProfiler) {
-      this._gpuProfiler = new GpuProfiler(this._element, vp);
+      this._gpuProfiler = new GpuProfiler(this._element);
       this.addSeparator();
     }
 

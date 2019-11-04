@@ -7,9 +7,9 @@
 import * as React from "react";
 import { GlobalContextMenu, CommonProps } from "@bentley/ui-core"; // ContextSubMenu,
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../../syncui/SyncUiEventDispatcher";
-import { SessionStateActionId } from "../../SessionState";
+import { SessionStateActionId } from "../../redux/SessionState";
 import { UiFramework } from "../../UiFramework";
-import { MenuItemHelpers } from "../../shared/MenuItem";
+import { MenuItemProps, MenuItemHelpers } from "../../shared/MenuItem";
 
 /** State for [[CursorPopupMenu]] component
  * @alpha
@@ -18,7 +18,7 @@ interface CursorPopupMenuState {
   menuX: number;
   menuY: number;
   menuVisible: boolean;
-  items?: any;
+  items?: MenuItemProps[];
 }
 
 /** Popup Menu to show at cursor typically used by tools to provide a right-click context menu.

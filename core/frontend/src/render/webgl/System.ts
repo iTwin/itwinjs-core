@@ -10,6 +10,7 @@ import {
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
 import {
+  GLTimerResultCallback,
   GraphicBranch,
   GraphicBranchOptions,
   GraphicList,
@@ -18,11 +19,12 @@ import {
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
+  RenderGraphicOwner,
+  RenderMemory,
   RenderSystem,
   RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
-  GLTimerResultCallback,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -31,7 +33,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { Branch, Batch, GraphicsArray } from "./Graphic";
+import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -514,6 +516,16 @@ export class IdMap implements IDisposable {
     this.addGradient(grad, texture);
     return texture;
   }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const texture of this.textures.values())
+      if (texture instanceof Texture)
+        stats.addTexture(texture.bytesUsed);
+
+    for (const gradient of this.gradients)
+      if (gradient instanceof Texture)
+        stats.addTexture(gradient.bytesUsed);
+  }
 }
 
 export type TextureBinding = WebGLTexture | undefined;
@@ -526,7 +538,7 @@ const enum VertexAttribState {
 }
 
 /** @internal */
-export class System extends RenderSystem implements RenderSystemDebugControl {
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -641,7 +653,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
       options.displaySolarShadows = false;
     if (!capabilities.supportsFragDepth)
       options.logarithmicDepthBuffer = false;
-
+    if (!capabilities.supportsTextureFilterAnisotropic) {
+      options.filterMapTextures = false;
+      options.filterMapDrapeTextures = false;
+    }
     return new System(canvas, context, capabilities, options);
   }
 
@@ -690,6 +705,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   }
 
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
+
+  public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
+    return new GraphicOwner(owned as Graphic);
+  }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
@@ -814,7 +833,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
-    this.glTimer = GLTimer.create(capabilities);
+    this.glTimer = GLTimer.create(this);
 
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
@@ -1066,5 +1085,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
   public get isGLTimerSupported(): boolean { return this.glTimer.isSupported; }
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     this.glTimer.resultsCallback = callback;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (undefined !== this._lineCodeTexture)
+      stats.addTexture(this._lineCodeTexture.bytesUsed);
+
+    if (undefined !== this._noiseTexture)
+      stats.addTexture(this._noiseTexture.bytesUsed);
+
+    for (const idMap of this.resourceCache.values())
+      idMap.collectStatistics(stats);
   }
 }

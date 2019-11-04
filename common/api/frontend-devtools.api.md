@@ -426,6 +426,9 @@ export interface NumericInputProps {
     value: number;
 }
 
+// @beta
+export function parseToggle(arg: string | undefined): string | boolean | undefined;
+
 // @alpha (undocumented)
 export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     constructor(iModel: IModelConnection);
@@ -558,6 +561,22 @@ export class SaveViewTool extends Tool {
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
 
+// @internal
+export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface Slider {
     // (undocumented)
@@ -636,6 +655,14 @@ export class TileStatisticsTracker {
     dispose(): void;
     }
 
+// @alpha
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
@@ -699,6 +726,20 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
 
 // @beta
 export class ToggleSelectedViewFrustumTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleShadowFrustumTool extends Tool {
     // (undocumented)
     static readonly maxArgs: number;
     // (undocumented)

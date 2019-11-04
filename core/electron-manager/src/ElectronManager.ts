@@ -85,7 +85,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
     let assetPath = requestedUrl.substr("electron://frontend/".length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/#.*$/, "");
+    assetPath = assetPath.replace(/(#|\?).*$/, "");
 
     // FIXME: Should this really be hard-coded?
     assetPath = assetPath.replace("signin-callback", "index.html");

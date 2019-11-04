@@ -15,10 +15,16 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ViewportContentControl } from "./ViewportContentControl";
 import { DefaultViewOverlay } from "./DefaultViewOverlay";
 import { UiFramework } from "../UiFramework";
+import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
+
+/** ViewSelector that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // tslint:disable-line:variable-name
 
 /** [[IModelViewportControl]] options. These options are set in the applicationData property of the [[ContentProps]].
  * @beta
@@ -64,12 +70,29 @@ export class IModelViewportControl extends ViewportContentControl {
     if (this._viewState && iModelConnection) {
       this.reactElement = this.getImodelViewportReactElement(iModelConnection, this._viewState);
     } else {
-      this.reactElement = this.getNoContentReactElement(options);
-      this.setIsReady();
+      if (UiFramework.getIModelConnection() && UiFramework.getDefaultViewState()) {
+        this.reactElement = this.getImodelConnectedViewportReactElement();
+      } else {
+        this.reactElement = this.getNoContentReactElement(options);
+        this.setIsReady();
+      }
     }
   }
 
-  /** Get the React component that will be contain the Viewport */
+  /** Get the React component that will contain the Viewport */
+  protected getImodelConnectedViewportReactElement(): React.ReactNode {
+    return <IModelConnectedViewport
+      viewportRef={(v: ScreenViewport) => {
+        this.viewport = v;
+        // for convenience, if window defined bind viewport to window
+        if (undefined !== window)
+          (window as any).viewport = v;
+      }}
+      getViewOverlay={this._getViewOverlay}
+    />;
+  }
+
+  /** Get the React component that will contain the Viewport */
   protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React.ReactNode {
     return <UnifiedSelectionViewport
       viewState={viewState}

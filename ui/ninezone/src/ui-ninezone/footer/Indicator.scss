@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "@bentley/ui-core/lib/ui-core/style/index";
 @import "variables";
 
 .nz-footer-indicator {
@@ -15,6 +15,20 @@
   padding-bottom: $nz-footer-indicator-vertical-padding;
   box-sizing: border-box;
 
+  .nz-icon {
+    font-size: $icon-size;
+
+    /* Medium devices */
+    @include for-tablet-landscape-down {
+      font-size: $icon-size-medium;
+    }
+
+    /* Small devices */
+    @include for-phone-only {
+      font-size: $icon-size-small;
+    }
+  }
+
   &.nz-footer-mode {
     padding-left: $nz-footer-indicator-horizontal-padding;
     padding-right: $nz-footer-indicator-horizontal-padding;
@@ -25,10 +39,8 @@
     padding-right: $nz-footer-widget-indicator-horizontal-padding;
   }
 
-  /* Medium devices (landscape tablets, 768px and up) */
-  @media only screen and (max-width: 768px) {
-    font-size: $text-font-size-medium;
-
+  /* Medium devices */
+  @include for-tablet-landscape-down {
     &.nz-footer-mode {
       padding-left: $nz-footer-indicator-horizontal-padding-medium;
       padding-right: $nz-footer-indicator-horizontal-padding-medium;
@@ -39,9 +51,12 @@
       padding-right: $nz-footer-widget-indicator-horizontal-padding-medium;
     }
   }
+  @include for-tablet-portrait-down {
+    font-size: $text-font-size-medium;
+  }
 
-  /* small devices (phones, 600px and down) */
-  @media only screen and (max-width: 600px) {
+  /* Small devices */
+  @include for-phone-only {
     font-size: $text-font-size-small;
 
     &.nz-footer-mode {

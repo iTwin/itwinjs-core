@@ -50,6 +50,16 @@ export class ToggleLogZTool extends RenderTargetDebugControlTool {
   }
 }
 
+/** Turn on the display of the draping frustum.
+ * @alpha
+ */
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleDrapeFrustum";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayDrapeFrustum = !control.displayDrapeFrustum;
+    vp.invalidateRenderPlan();
+  }
+}
 /** Control whether all geometry renders, or only instanced or batched geometry.
  * Allowed argument: "instanced", "batched", "all". Defaults to "all" if no arguments supplied.
  * @beta
@@ -83,5 +93,27 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     }
 
     return this.run(args);
+  }
+}
+
+/** Sets support for intersecting volume classifiers.
+ * @internal
+ */
+export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
+  public static toolId = "VCIntersectOn";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.vcSupportIntersectingVolumes = true;
+    vp.invalidateRenderPlan();
+  }
+}
+
+/** Sets support for intersecting volume classifiers.
+ * @internal
+ */
+export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
+  public static toolId = "VCIntersectOff";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.vcSupportIntersectingVolumes = false;
+    vp.invalidateRenderPlan();
   }
 }

@@ -101,7 +101,7 @@ class WMSTreeSupplier implements TileTree.Supplier {
 
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(type: WMSImageryType, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, iModel);
+    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, false, iModel);
   }
 }
 

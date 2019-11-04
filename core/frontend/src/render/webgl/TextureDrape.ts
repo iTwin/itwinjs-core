@@ -7,14 +7,14 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderTextureDrape } from "../System";
 import { Texture } from "./Texture";
 import { Target } from "./Target";
-import { Matrix4 } from "./Matrix";
+import { Matrix4d } from "@bentley/geometry-core";
 import { SceneContext } from "../../ViewContext";
 
 export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer {
   protected _texture?: Texture;
-  protected _projectionMatrix = new Matrix4();
+  protected _projectionMatrix = Matrix4d.createIdentity();
   public get texture(): Texture | undefined { return this._texture; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public abstract collectGraphics(context: SceneContext): void;
   public abstract draw(target: Target): void;
   public get isReady(): boolean { return this._texture !== undefined; }

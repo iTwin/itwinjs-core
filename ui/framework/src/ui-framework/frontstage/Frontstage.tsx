@@ -9,10 +9,10 @@ import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
-import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
+import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
-import { FrontstageRuntimeProps } from "./FrontstageComposer";
+import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
@@ -22,7 +22,7 @@ import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
-import { FrontstageManager } from "./FrontstageManager";
+import { FrontstageManager, FrontstageActivatedEventArgs } from "./FrontstageManager";
 import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
 
 /** Properties for a [[Frontstage]] component.
@@ -88,9 +88,17 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
-  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
+  private _zonesStyle: React.CSSProperties = {
+    pointerEvents: "none",
+  };
+  private _zonesFooterModeStyle: React.CSSProperties = {
+    ...this._zonesStyle,
+    display: "flex",
+    flexFlow: "column",
+  };
 
   /** @internal */
   constructor(props: FrontstageProps) {
@@ -370,7 +378,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const zones = runtimeProps.nineZone.zones;
       const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, zones);
       const dropTarget = zonesManager.getDropTarget(zoneId, zones);
-      const zone = zones.zones[zoneId];
+      const zone = getExtendedZone(zoneId, zones, runtimeProps.zoneDefProvider);
       const widget = zone.widgets.length > 0 ? zones.widgets[zone.widgets[0]] : undefined;
       const openWidgetId = zone.widgets.find((wId) => zones.widgets[wId].tabIndex >= 0);
       const activeTabIndex = openWidgetId ? zones.widgets[openWidgetId].tabIndex : 0;
@@ -390,7 +398,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         widget,
         zoneDef,
         zoneDefProvider: runtimeProps.zoneDefProvider,
-        zone: runtimeProps.nineZone.zones.zones[zoneId],
+        zone,
       };
       return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
     });
@@ -450,18 +458,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       height: "100%",
     };
 
-    /** For Zones area within the Nine-zone area; excludes */
-    const zonesStyle: React.CSSProperties = {
-      pointerEvents: "none",
-      display: "flex",
-      flexFlow: "column",
-    };
-
     const frontstageDef = runtimeProps.frontstageDef;
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        <NZ_Zones style={zonesStyle} >
+        <NZ_Zones style={runtimeProps.nineZone.zones.isInFooterMode ? this._zonesFooterModeStyle : this._zonesStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
             topPanel={this.cloneStagePanelElement(frontstageDef.topMostPanel, runtimeProps)}
@@ -582,3 +583,50 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.forceUpdate();
   }
 }
+
+/** @internal */
+export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider): ZoneManagerProps => {
+  const zone = zones.zones[zoneId];
+  if (zoneId === 1 || zoneId === 3) {
+    let extendOverId: WidgetZoneId = zoneId;
+    const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
+    let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
+    while (bottomZoneId !== undefined) {
+      const bottomZoneDef = defProvider.getZoneDef(bottomZoneId);
+      if (bottomZoneDef && bottomZoneDef.widgetDefs.length !== 0)
+        break;
+
+      extendOverId = bottomZoneId;
+      bottomZoneId = zonesManager.bottomZones.getInitial(bottomZoneId);
+    }
+
+    const bottom = zones.zones[extendOverId].bounds.bottom;
+    if (bottom === zone.bounds.bottom)
+      return zone;
+    return {
+      ...zone,
+      bounds: {
+        ...zone.bounds,
+        bottom,
+      },
+    };
+  }
+  return zone;
+};
+
+/** Hook that returns active frontstage id.
+ * @beta
+ */
+export const useActiveFrontstageId = () => {
+  const [id, setId] = React.useState(FrontstageManager.activeFrontstageId);
+  React.useEffect(() => {
+    const handleActivated = (args: FrontstageActivatedEventArgs) => {
+      setId(args.activatedFrontstageDef.id);
+    };
+    FrontstageManager.onFrontstageActivatedEvent.addListener(handleActivated);
+    return () => {
+      FrontstageManager.onFrontstageActivatedEvent.removeListener(handleActivated);
+    };
+  }, []);
+  return id;
+};

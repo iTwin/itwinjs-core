@@ -13,6 +13,7 @@ import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } fro
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 import { AttributeDetails } from "./AttributeMap";
+import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 
 // tslint:disable:no-const-enum
 
@@ -880,10 +881,23 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  baseColor = applyMaterialOverrides(baseColor);");
     }
 
+    const finalizeDepth = this.get(FragmentShaderComponent.FinalizeDepth);
+    if (undefined !== finalizeDepth) {
+      prelude.addFunction("float finalizeDepth()", finalizeDepth);
+      main.addline("  float finalDepth = finalizeDepth();");
+      main.addline("  gl_FragDepthEXT = finalDepth;");
+    }
+
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
     if (undefined !== applyPlanarClassifier) {
-      prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor)", applyPlanarClassifier);
-      main.addline("  baseColor = applyPlanarClassifications(baseColor);");
+      if (undefined === finalizeDepth) {
+        if (this.findFunction(volClassOpaqueColor))
+          main.addline("  float finalDepth = gl_FragCoord.z;");
+        else
+          main.addline("  float finalDepth = 1.0;");
+      }
+      prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor, float depth)", applyPlanarClassifier);
+      main.addline("  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
     }
     const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
     if (undefined !== applySolarShadowMap) {
@@ -935,12 +949,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyDebug) {
       prelude.addFunction("vec4 applyDebugColor(vec4 baseColor)", applyDebug);
       main.addline("  baseColor = applyDebugColor(baseColor);");
-    }
-
-    const finalizeDepth = this.get(FragmentShaderComponent.FinalizeDepth);
-    if (undefined !== finalizeDepth) {
-      prelude.addFunction("float finalizeDepth()", finalizeDepth);
-      main.addline("  gl_FragDepthEXT = finalizeDepth();");
     }
 
     const assignFragData = this.get(FragmentShaderComponent.AssignFragData);

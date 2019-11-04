@@ -7,7 +7,7 @@ import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { withTimeout, Button, ButtonType, ButtonProps, Omit, OmitChildrenProp, withOnOutsideClick, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
+import { withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
 import { BackstageItem } from "@src/backstage/Item";
 import { BackstageSeparator } from "@src/backstage/Separator";
@@ -51,7 +51,6 @@ import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
 import { HistoryTray, History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { SafeAreaInsets } from "@src/utilities/SafeAreaInsets";
 import { WidgetContent } from "@src/widget/rectangular/Content";
@@ -151,8 +150,6 @@ interface HiddenZone3VerticalTools extends Tools {
 
 interface Zone3VerticalTools extends HiddenZone3VerticalTools {
   clipboard: ToolGroup;
-  calendar: ToolGroup;
-  chat2: SimpleTool;
   document: SimpleTool;
 }
 
@@ -1920,7 +1917,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
           }
           verticalToolbar={
             getNumberOfVisibleTools(this.props.verticalTools) > 0 &&
-            <ToolZoneScrollableToolbar
+            <ToolZoneToolbar
               expandsTo={Direction.Left}
               onHistoryItemClick={this.props.onHistoryItemClick}
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
@@ -1928,7 +1925,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onPanelBack={this.props.onPanelBack}
               onPanelOutsideClick={this.props.onPanelOutsideClick}
               onPanelToolClick={this.props.onPanelToolClick}
-              onScroll={this.props.onToolbarScroll}
               onToolClick={this.props.onToolClick}
               panelAlignment={ToolbarPanelAlignment.Start}
               tools={this.props.verticalTools}
@@ -2033,33 +2029,6 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
     if (ref.current.contains(e.target))
       return;
     this.props.onPanelOutsideClick(toolId);
-  }
-}
-
-interface ScrollableToolbarProps extends OmitChildrenProp<ToolZoneToolbarProps> {
-  onScroll: () => void;
-}
-
-class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarProps> {
-  public render() {
-    const { onScroll, ...props } = this.props;
-    return (
-      <ToolZoneToolbar
-        {...props}
-      >
-        {this._renderScrollableToolbar}
-      </ToolZoneToolbar>
-    );
-  }
-
-  private _renderScrollableToolbar = (items: React.ReactNode): React.ReactNode => {
-    const { children, ...props } = this.props;
-    return (
-      <Scrollable
-        items={items}
-        {...props}
-      />
-    );
   }
 }
 
@@ -2693,31 +2662,6 @@ const zoneTools: ZoneTools = {
         direction: Direction.Left,
         history: [],
       },
-      calendar: {
-        id: "calendar",
-        trayId: "tray1",
-        backTrays: [],
-        trays: {
-          tray1: {
-            title: "3D Tools",
-            columns: {
-              0: {
-                items: {
-                  "3D#1": {
-                  },
-                  "3D#2": {
-                  },
-                },
-              },
-            },
-          },
-        },
-        direction: Direction.Left,
-        history: [],
-      },
-      chat2: {
-        id: "chat2",
-      },
       document: {
         id: "document",
       },
@@ -2742,7 +2686,6 @@ interface ZonesExampleProps {
   onHideMessage: () => void;
   onHistoryItemClick: (item: HistoryItem) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
-  onLayout: () => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onOpenWidgetChange: (openWidget: FooterWidget) => void;
   onResize: () => void;
@@ -2781,10 +2724,19 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
     toolSettingsMode: ToolSettingsMode.Open,
   };
 
+  private _widgetModeStyle: React.CSSProperties = {
+    position: "absolute",
+  };
+
+  private _footerModeStyle: React.CSSProperties = {
+    ...this._widgetModeStyle,
+    display: "flex",
+    flexDirection: "column",
+  };
+
   public componentDidMount(): void {
     window.addEventListener("resize", this._handleWindowResize, true);
-
-    this.props.onLayout();
+    this.props.onResize();
   }
 
   public componentWillUnmount(): void {
@@ -2793,11 +2745,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
 
   public render() {
     return (
-      <Zones style={{
-        position: "absolute",
-        display: "flex",
-        flexDirection: "column",
-      }}>
+      <Zones style={this.props.zones.isInFooterMode ? this._footerModeStyle : this._widgetModeStyle}>
         <TooltipExample
           getContainerSize={this.props.getContainerSize}
           isTooltipVisible={this.props.isTooltipVisible}
@@ -3114,6 +3062,18 @@ interface ZonesPageState {
 
 const defaultNineZoneStagePanelsManagerProps = getDefaultNineZoneStagePanelsManagerProps();
 
+const defaultZonesManagerProps = getDefaultZonesManagerProps();
+const defaultZonesProps = {
+  ...defaultZonesManagerProps,
+  zones: {
+    ...defaultZonesManagerProps.zones,
+    9: {
+      ...defaultZonesManagerProps.zones[9],
+      isLayoutChanged: true,
+    },
+  },
+};
+
 export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   private _handleTabDrag: ScheduleFn<WidgetTabDragFn>;
   private _handleZoneResize: ScheduleFn<ZoneResizeFn>;
@@ -3141,7 +3101,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           },
         },
       },
-      zones: getDefaultZonesManagerProps(),
+      zones: this._nineZone.getZonesManager().mergeZone(6, 9, defaultZonesProps),
     },
     openWidget: FooterWidget.None,
     safeAreaInsets: SafeAreaInsets.All,
@@ -3235,7 +3195,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           onHideMessage={this._handleHideMessage}
           onHistoryItemClick={this._handleHistoryItemClick}
           onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
-          onLayout={this._handleLayout}
           onOpenPanelGroup={this._handleExpandPanelGroup}
           onOpenWidgetChange={this._handleOpenWidgetChange}
           onStagePanelInitialize={this._handleStagePanelInitialize}
@@ -3418,14 +3377,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           ...tools[3].vertical,
           clipboard: {
             ...tools[3].vertical.clipboard,
-            isHidden,
-          },
-          calendar: {
-            ...tools[3].vertical.calendar,
-            isHidden,
-          },
-          chat2: {
-            ...tools[3].vertical.chat2,
             isHidden,
           },
           document: {
@@ -3895,28 +3846,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         nineZone,
         openWidget,
       };
-    });
-  }
-
-  private _handleLayout = () => {
-    if (!this._zonesMeasurer.current)
-      return;
-    const zoneBounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
-    this.setState((prevState) => {
-      const zonesManager = this._nineZone.getZonesManager();
-      let zones = prevState.nineZone.zones;
-      zones = zonesManager.setZonesBounds(zoneBounds, zones);
-      zones = zonesManager.restoreLayout(zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    }, () => {
-      this._zoneBounds = zoneBounds;
     });
   }
 

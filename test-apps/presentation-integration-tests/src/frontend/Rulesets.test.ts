@@ -15,7 +15,7 @@ describe("Rulesets", async () => {
   let ruleset: Ruleset;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     ruleset = require("../../test-rulesets/Rulesets/default");

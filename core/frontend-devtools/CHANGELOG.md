@@ -1,6 +1,20 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Add debug tool for drape frustum
+- Update this.keyins when new ones are discovered. Match englishKeyin.
+- Fixes for making volume classifiers work.
+- Additional options for `emphasize selection` key-in.
+- Add ability to record GPU profiling data to Chrome Event Trace Format.
+- Key-in for visualizing shadow frustum.
+- Visualization of tile requests; key-in to measure time required to load tiles for view.
+- Added more types of memory tracking to MemoryTracker.
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

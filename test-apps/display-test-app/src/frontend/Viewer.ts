@@ -8,6 +8,7 @@ import {
   imageBufferToPngDataUrl,
   IModelApp,
   IModelConnection,
+  openImageDataUrlInNewWindow,
   ScreenViewport,
   Tool,
   Viewport,
@@ -43,7 +44,7 @@ function saveImage(vp: Viewport) {
     return;
   }
 
-  window.open(url, "Saved View");
+  openImageDataUrlInNewWindow(url, "Saved View");
 }
 
 async function zoomToSelectedElements(vp: Viewport) {
@@ -89,7 +90,10 @@ export class MarkupTool extends Tool {
         return true;
       }
       MarkupApp.props.result.maxWidth = 1500;
-      MarkupApp.stop().then((markupData) => window.open(markupData.image, "Markup")).catch((_) => { });
+      MarkupApp.stop().then((markupData) => {
+        if (undefined !== markupData.image)
+          openImageDataUrlInNewWindow(markupData.image, "Markup");
+      }).catch((_) => { });
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events

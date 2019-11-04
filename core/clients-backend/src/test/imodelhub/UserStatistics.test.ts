@@ -67,12 +67,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   const user2OwnedLocksCount = 1;
   const user2PushedChangesetsCount = 0;
 
-  before(async function () {
-    if (TestConfig.enableIModelBank) {
-      this.skip();
-      return;
-    }
-
+  before(async () => {
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     const managerAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager);
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));

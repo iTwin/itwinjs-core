@@ -21,6 +21,7 @@ export class Rule extends Lint.Rules.AbstractRule {
     "imodeljs-common",
     "imodeljs-quantity",
     "imodeljs-frontend",
+    "ui-abstract",
     "ui-core",
     "ui-components",
     "ui-framework",

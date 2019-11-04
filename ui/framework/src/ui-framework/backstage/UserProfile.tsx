@@ -12,6 +12,9 @@ import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { Backstage } from "./Backstage";
+import { UiFramework } from "../UiFramework";
+
+// cSpell:ignore safearea
 
 /** Properties for the [[Backstage]] React component.
  * @public
@@ -68,6 +71,10 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
 
   private _onOpenSignOut = () => {
     Backstage.hide();
+
+    const manager = UiFramework.backstageManager;
+    manager.close();
+
     FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
 
     // istanbul ignore else

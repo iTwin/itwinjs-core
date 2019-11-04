@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
- * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 // A workaround to @testing-library/react {@testing-library/dom {wait-for-expect}} breaking somewhere,
 // because somewhere (most likely in jsdom) window.Date becomes undefined.
 // Similar issue mentioned in https://github.com/vuejs/vue-test-utils/issues/936
@@ -22,7 +22,7 @@ const spies = require("chai-spies");
 
 // setup enzyme (testing utils for React)
 enzyme.configure({
-  adapter: new(require("enzyme-adapter-react-16/build"))()
+  adapter: new (require("enzyme-adapter-react-16/build"))()
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 
@@ -34,7 +34,7 @@ chai.use(spies);
 chai.use(sinonChai);
 try {
   chai.use(require("chai-string"));
-} catch (e) {}
+} catch (e) { }
 
 before(function () {
   chaiJestSnapshot.resetSnapshotRegistry();
@@ -72,5 +72,5 @@ afterEach(() => {
   try {
     const rtl = require("@testing-library/react");
     rtl.cleanup();
-  } catch (e) {}
+  } catch (e) { }
 });

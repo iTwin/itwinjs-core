@@ -277,16 +277,14 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
-    if (this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
     return val;
   }
 
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
-    if (this.typeDefinition)
-      predecessorIds.add(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -321,16 +319,14 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
-    if (this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
     return val;
   }
 
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
-    if (this.typeDefinition)
-      predecessorIds.add(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -444,7 +440,7 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public constructor(props: SectionLocationProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-    this.clipGeometry = ClipVector.fromJSON(props.clipGeometry);
+    this.clipGeometry = props.clipGeometry ? ClipVector.fromJSON(JSON.parse(props.clipGeometry)) : undefined;
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
   }
@@ -452,10 +448,16 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public toJSON(): SectionLocationProps {
     const val = super.toJSON() as SectionLocationProps;
     val.sectionType = this.sectionType;
-    val.clipGeometry = this.clipGeometry;
+    val.clipGeometry = this.clipGeometry ? this.clipGeometry.toJSON().toString() : undefined;
     val.modelSelectorId = this.modelSelectorId;
     val.categorySelectorId = this.categorySelectorId;
     return val;
+  }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.modelSelectorId);
+    predecessorIds.add(this.categorySelectorId);
   }
 }
 
@@ -632,6 +634,11 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.border) { predecessorIds.add(this.border); }
+  }
 }
 
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
@@ -652,7 +659,11 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
-
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
+  }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Sheet and provides the scope for its name.
@@ -725,6 +736,11 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
+  }
 }
 
 /** Defines a recipe for generating a *type*.

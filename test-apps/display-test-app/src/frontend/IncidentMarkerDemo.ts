@@ -2,13 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@bentley/bentleyjs-core";
 import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl,
   IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, Tool,
 } from "@bentley/imodeljs-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
 
 /** Example Marker to show an *incident*. Each incident has an *id*, a *severity*, and an *icon*. */
 class IncidentMarker extends Marker {
@@ -19,7 +19,7 @@ class IncidentMarker extends Marker {
   private static _sweep360 = AngleSweep.create360();
   private _color: ColorDef;
 
-  /** This makes the icon only show when the cursor is over an incident marker. */
+  /** uncomment the next line to make the icon only show when the cursor is over an incident marker. */
   // public get wantImage() { return this._isHilited; }
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
@@ -28,12 +28,10 @@ class IncidentMarker extends Marker {
       this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
+  // when someone clicks on our marker, open a message box with the severity of the incident.
   public onMouseButton(ev: BeButtonEvent): boolean {
-    if (ev.button === BeButton.Data) {
-      if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
-      }
-    }
+    if (ev.button === BeButton.Data && ev.isDown)
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
     return true;
   }
 
@@ -42,23 +40,32 @@ class IncidentMarker extends Marker {
     super(location, IncidentMarker._size);
     this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
-    this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
+    this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels so the bottom of the flag is at the incident location in the view.
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
-
-    // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
-    this.htmlElement = document.createElement("div");
-    this.htmlElement.innerHTML = id.toString(); // just put the id of the incident as text
+    this.label = id.toString();
   }
 
+  /**
+   * For this demo, add a WorldDecoration that draws a circle with a radius of 200cm centered at the incident location.
+   * WorldDecorations are in world coordinates, so the circle will change size as you zoom in/out. Also, they are drawn with the z-buffer enabled, so
+   * the circle may be obscured by other geometry in front of in the view. This can help the user understand the point that the marker relates to,
+   * but that effect isn't always desireable.
+   *
+   * World decorations for markers are completely optional. If you don't want anything drawn with WorldDecorations, don't follow this example.
+   *
+   */
   public addMarker(context: DecorateContext) {
     super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
-    builder.setSymbology(ColorDef.white, this._color, 1);
+    // draw the circle the color of the marker, but with some transparency.
+    const color = this._color.clone();
+    builder.setSymbology(ColorDef.white, color, 1);
+    color.setTransparency(200);
     builder.addArc(ellipse, false, false);
-    builder.setBlankingFill(this._color);
+    builder.setBlankingFill(color);
     builder.addArc(ellipse, true, true);
     context.addDecorationFromBuilder(builder);
   }
@@ -137,7 +144,7 @@ export class IncidentMarkerDemo {
   private _awaiting = false;
   private _loading?: Promise<any>;
   private _images: Array<HTMLImageElement | undefined> = [];
-  private _incidents = new IncidentMarkerSet();
+  public readonly incidents = new IncidentMarkerSet();
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
@@ -179,7 +186,7 @@ export class IncidentMarkerDemo {
       pos.z = extents.low.z + (Math.random() * extents.zLength());
       const img = this._images[(i % len) + 1];
       if (undefined !== img)
-        this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
+        this.incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
     }
     this._loading = undefined;
   }
@@ -194,7 +201,7 @@ export class IncidentMarkerDemo {
       return;
 
     if (undefined === this._loading) {
-      this._incidents.addDecoration(context);
+      this.incidents.addDecoration(context);
       return;
     }
 
@@ -208,17 +215,28 @@ export class IncidentMarkerDemo {
     }
   }
 
+  /** start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator. */
+  private static start(extents: AxisAlignedBox3d) {
+    IncidentMarkerDemo.decorator = new IncidentMarkerDemo(extents);
+    IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
+
+    // hook the event for viewport changing and stop the demo. This is called when the view is closed too. */
+    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() => this.stop());
+  }
+
+  /** stop the demo */
+  private static stop() {
+    if (IncidentMarkerDemo.decorator)
+      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
+    IncidentMarkerDemo.decorator = undefined;
+  }
+
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
   public static toggle(extents: AxisAlignedBox3d) {
-    if (undefined === IncidentMarkerDemo.decorator) {
-      // start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator.
-      IncidentMarkerDemo.decorator = new IncidentMarkerDemo(extents);
-      IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
-    } else {
-      // stop the demo
-      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
-      IncidentMarkerDemo.decorator = undefined;
-    }
+    if (undefined === IncidentMarkerDemo.decorator)
+      this.start(extents);
+    else
+      this.stop();
   }
 }
 

@@ -6,14 +6,12 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { IModelInfo } from "@bentley/ui-framework";
 import { IModelCard } from "./IModelCard";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { ProjectDialog } from "./ProjectDialog";
 import { SearchBox, Toggle } from "@bentley/ui-core";
 import "./IModelList.scss";
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {
-  accessToken: AccessToken;
   iModels?: IModelInfo[];
   onIModelSelected?: (iModel: IModelInfo) => void;
 }
@@ -102,7 +100,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       <div className="cards">
         {iModels.map((iModelInfo: IModelInfo) => (
           <IModelCard key={iModelInfo.wsgId}
-            accessToken={this.props.accessToken}
             iModel={iModelInfo}
             showDescription={this.state.showDescriptions}
             onSelectIModel={this.props.onIModelSelected} />
@@ -140,7 +137,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
             There are no iModels associated to this project.
             <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
           </div>
-          {this.state.showProjectDialog && <ProjectDialog accessToken={this.props.accessToken} onClose={this._onProjectsSelectorClose} />}
+          {this.state.showProjectDialog && <ProjectDialog onClose={this._onProjectsSelectorClose} />}
         </div>
       );
     } else {

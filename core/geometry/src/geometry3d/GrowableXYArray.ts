@@ -44,6 +44,21 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
   /** Return the number of points in use. */
   public get length() { return this._xyInUse; }
+
+  /** Set number of points.
+   * Pad zeros if length grows.
+   */
+  public set length(newLength: number) {
+    let oldLength = this.length;
+    if (newLength < oldLength) {
+      this._xyInUse = newLength;
+    } else if (newLength > oldLength) {
+      this.ensureCapacity(newLength);
+      while (oldLength++ < newLength)
+        this.pushXY(0, 0);
+    }
+  }
+
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyInUse * 2; }
   /** Return the raw packed data.
@@ -280,6 +295,20 @@ export class GrowableXYArray extends IndexedXYCollection {
       return 1;
     }
     return 0;
+  }
+
+  /**
+   * * Compute a point at fractional coordinate between points i and j of source
+   * * push onto this array.
+   */
+  public pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number) {
+    if (source.isIndexValid(i) && source.isIndexValid(j)) {
+      const data = source._data;
+      i = 3 * i;
+      j = 3 * j;
+      this.pushXY(Geometry.interpolate(data[i], fraction, data[j]),
+        Geometry.interpolate(data[i + 1], fraction, data[j + 1]));
+    }
   }
 
   /**

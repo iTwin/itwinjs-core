@@ -1,6 +1,16 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Wed, 09 Oct 2019 20:28:43 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Removed wdio dependencies and added deprecation warning for test-e2e script.
+- Use url-loader for svg's referenced from css files.
+- ios test app to run backend test
+- Added initial ui-abstract package setup
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:43 GMT

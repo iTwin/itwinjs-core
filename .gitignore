@@ -14,6 +14,7 @@ coverage
 # rush-specific
 /common/temp
 package-deps.json
+/**/.rush
 *.build.log
 *.build.error.log
 
@@ -23,3 +24,6 @@ package-deps.json
 # trash
 *.bak
 *.orig
+
+# xcode
+/**/xcuserdata

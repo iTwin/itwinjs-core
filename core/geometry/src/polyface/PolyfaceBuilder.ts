@@ -1240,7 +1240,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addSphere(sphere: Sphere, strokeCount?: number) {
     const numStrokeTheta = strokeCount ? strokeCount : this._options.defaultCircleStrokes;
-    const numStrokePhi = Geometry.clampToStartEnd(Math.abs (numStrokeTheta * sphere.latitudeSweepFraction), 1, Math.ceil(numStrokeTheta * 0.5));
+    const numStrokePhi = Geometry.clampToStartEnd(Math.abs(numStrokeTheta * sphere.latitudeSweepFraction), 1, Math.ceil(numStrokeTheta * 0.5));
 
     const lineStringA = sphere.strokeConstantVSection(0.0, numStrokeTheta, this._options);
     if (sphere.capped && !Geometry.isSmallMetricDistance(lineStringA.quickLength())) {
@@ -1367,6 +1367,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
       numPointsToUse--;
     let index = 0;
+    if (normals && normals.length < numPointsToUse)
+      normals = undefined;
+    if (params && params.length < numPointsToUse)
+      params = undefined;
+    if (colors && colors.length < numPointsToUse)
+    colors = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
         index = this.findOrAddPointInGrowableXYZArray(points, i)!;

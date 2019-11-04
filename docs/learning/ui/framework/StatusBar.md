@@ -6,4 +6,4 @@ The Status Bar contains one or more Status Fields.
 
 ## API Reference
 
-* [StatusBar]($framework:StatusBar)
+* [StatusBar]($ui-framework:StatusBar)

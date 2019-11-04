@@ -5,9 +5,10 @@
 
 // __PUBLISH_EXTRACT_START__ IModelHubClient.example-code
 import { IModelHubClient } from "@bentley/imodeljs-clients";
-import { AzureFileHandler } from "@bentley/imodeljs-clients-backend";
+import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 
-const imodelHubClient = new IModelHubClient(new AzureFileHandler());
+const imodelHubClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new IOSAzureFileHandler() : new AzureFileHandler());
 // __PUBLISH_EXTRACT_END__
 () => {
   if (!imodelHubClient)

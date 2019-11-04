@@ -18,7 +18,7 @@ describe("Hierarchies", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;

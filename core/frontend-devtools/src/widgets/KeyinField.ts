@@ -18,7 +18,7 @@ function parseKeyin(input: string): Keyin {
   const tools = IModelApp.tools.getToolList();
   let tool: ToolType | undefined;
   const args: string[] = [];
-  const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin);
+  const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
 
   // try the trivial, common case first
   tool = findTool(input.toLowerCase());
@@ -243,8 +243,10 @@ export class KeyinField {
     if (keyins.length > this.keyins.length) {
       const newKeyins: string[] = [];
       for (const keyin of keyins)
-        if (!this.keyins.includes(keyin))
+        if (!this.keyins.includes(keyin)) {
           newKeyins.push(keyin);
+          this.keyins.push(keyin);
+        }
 
       if (newKeyins.length > 0)
         appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));

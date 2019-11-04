@@ -25,9 +25,11 @@ export class InstanceBuffers implements IDisposable {
   public readonly shared: boolean;
   // The center of the range of the instances' translations.
   private readonly _rtcCenter: Point3d;
+  // A transform including only rtcCenter.
+  private readonly _rtcOnlyTransform: Transform;
   // A transform from _rtcCenter including model matrix
-  private readonly _rtcTransform: Transform;
-  // The model matrix from which _rtcTransform was previously computed. If it changes, _rtcTransform must be recomputed.
+  private readonly _rtcModelTransform: Transform;
+  // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
   // Holds the instance transforms for computing range. Set to undefined after range computed (immediately after construction)
   private _transforms?: Float32Array;
@@ -42,7 +44,8 @@ export class InstanceBuffers implements IDisposable {
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
     this._rtcCenter = rtcCenter;
-    this._rtcTransform = Transform.createTranslation(this._rtcCenter);
+    this._rtcOnlyTransform = Transform.createTranslation(this._rtcCenter);
+    this._rtcModelTransform = this._rtcOnlyTransform.clone();
     this._transforms = transformsData;
   }
 
@@ -94,14 +97,16 @@ export class InstanceBuffers implements IDisposable {
     return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf) : undefined;
   }
 
-  public getRtcTransform(modelMatrix: Transform): Transform {
+  public getRtcModelTransform(modelMatrix: Transform): Transform {
     if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
       modelMatrix.clone(this._modelMatrix);
-      const rtcTransform = Transform.createTranslation(this._rtcCenter);
-      modelMatrix.multiplyTransformTransform(rtcTransform, this._rtcTransform);
+      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
     }
 
-    return this._rtcTransform;
+    return this._rtcModelTransform;
+  }
+  public getRtcOnlyTransform(): Transform {
+    return this._rtcOnlyTransform;
   }
 
   public dispose() {
@@ -171,7 +176,8 @@ export class InstancedGeometry extends CachedGeometry {
   public get transforms() { return this._buffers.transforms; }
   public get featureIds() { return this._buffers.featureIds; }
   public get symbology() { return this._buffers.symbology; }
-  public getRtcTransform(modelMatrix: Transform) { return this._buffers.getRtcTransform(modelMatrix); }
+  public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
+  public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
 
   public get asInstanced() { return this; }
   public get asLUT() { return this._repr.asLUT; }

@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Add ability to have Table provide top visible row feedback
+- Made PropertyGrid categories keep the collapsed state when data is refreshed.
+- Added New badge for UI items
+- Added Table column filtering support
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+- Added DataProvider getter on TreeModelSource
+- Fix tree attempting to highlight empty text in nodes
+- Fix tree no re-rendering delay loaded nodes after reload
+- Added initial implementation of ControlledTree
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

@@ -77,13 +77,6 @@ This is a script designed to extract sample code from test.ts files in a specifi
 - extractDir - the path at which the sample code files are located
 - outDir - the path at which to output the selected code
 
-#### printconfig.js
-
-This script will read a json file and search for an "extends" property. It will then open the base json file specified by the property and merge the contents with the original file. This action will be taken recursively. (The "extends" property will be removed from the merged file)
-
-- config (required) - the configuration files to start with (ex: tsconfig.json)
-- out - the file name to write the merged json file to (otherwise the output will be written to console)
-
 #### test.js
 
 This script runs the javascript output of Mocha tests with a few standard parameters. The output (success/failure) of the tests will be written to the console.
@@ -95,7 +88,12 @@ This script runs the javascript output of Mocha tests with a few standard parame
 
 #### test-tsnode.js
 
-This script is similar to the test.js command, but looks for the TypeScript test source in order to run it using ts-node. The arguments for this command are similar to the test command, witht he following differences:
+This script is similar to the test.js command, but looks for the TypeScript test source in order to run it using ts-node. The arguments for this command are similar to the test command, with the following differences:
 
 - testDir - specifies the test TypeScript source folder (instead of the test JavaScript output folder)
 - tscPaths - adds the --require tsconfig-paths/register arguments to the mocha command, in order to resolve paths in the typescript source files to run them with ts-node (needed for multi-package repos like imodeljs-core)
+
+#### pseudolocalize.js
+
+This script handles translating an English localization JSON file into a pseudolocalization file.
+

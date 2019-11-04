@@ -15,9 +15,12 @@ import {
   JsonUtils,
 } from "@bentley/bentleyjs-core";
 import {
+  ClipUtilities,
   ClipVector,
+  ConvexClipPlaneSet,
   Matrix4d,
   Plane3dByOriginAndUnitNormal,
+  Point3d,
   Point4d,
   Range3d,
   Transform,
@@ -46,8 +49,68 @@ import { IModelTileIO } from "./IModelTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
-import { Tile } from "./Tile";
-import { Viewport } from "../Viewport";
+import {
+  bisectRange2d,
+  bisectRange3d,
+  Tile,
+} from "./Tile";
+import { CoordSystem, Viewport } from "../Viewport";
+
+function pointIsContained(point: Point3d, range: Range3d): boolean {
+  const tol = 1.0e-6;
+  return point.x >= range.low.x - tol
+    && point.y >= range.low.y - tol
+    && point.z >= range.low.z - tol
+    && point.x <= range.high.x + tol
+    && point.y <= range.high.y + tol
+    && point.z <= range.high.z + tol;
+}
+
+function pointsAreContained(points: Point3d[], range: Range3d): boolean {
+  for (const point of points)
+    if (!pointIsContained(point, range))
+      return false;
+
+  return true;
+}
+
+/** Sub-divide tile range until we find range of smallest tile containing all the points. */
+function computeTileRangeContainingPoints(parentRange: Range3d, points: Point3d[], is2d: boolean): Range3d {
+  const bisect = is2d ? bisectRange2d : bisectRange3d;
+  const maxK = is2d ? 1 : 2;
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      for (let k = 0; k < maxK; k++) {
+        const range = parentRange.clone();
+        bisect(range, 0 === i);
+        bisect(range, 0 === j);
+        if (!is2d)
+          bisect(range, 0 === k);
+
+        if (pointsAreContained(points, range))
+          return computeTileRangeContainingPoints(range, points, is2d);
+      }
+    }
+  }
+
+  return parentRange;
+}
+
+/** Divide range in half until we find smallest sub-range containing all the points. */
+function computeSubRangeContainingPoints(parentRange: Range3d, points: Point3d[], is2d: boolean): Range3d {
+  const bisect = is2d ? bisectRange2d : bisectRange3d;
+  const range = parentRange.clone();
+  bisect(range, false);
+  if (pointsAreContained(points, range))
+    return computeSubRangeContainingPoints(range, points, is2d);
+
+  parentRange.clone(range);
+  bisect(range, true);
+  if (pointsAreContained(points, range))
+    return computeSubRangeContainingPoints(range, points, is2d);
+
+  return parentRange;
+}
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
@@ -165,6 +228,28 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     return this.loader.processSelectedTiles(selected, args);
   }
 
+  public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
+    if (this.range.isNull)
+      return undefined;
+
+    const range = this.location.multiplyRange(this.range);
+    const frustum = vp.getFrustum(CoordSystem.World, true);
+    const frustumPlanes = new FrustumPlanes(frustum);
+    const planes = ConvexClipPlaneSet.createPlanes(frustumPlanes.planes!);
+    const points: Point3d[] = [];
+    ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(planes, range, (array) => {
+      for (const point of array.points)
+        points.push(point);
+    }, true, true, false);
+
+    if (0 === points.length)
+      return undefined;
+
+    assert(pointsAreContained(points, range));
+    const useTileRange = false;
+    return useTileRange ? computeTileRangeContainingPoints(range, points, this.is2d) : computeSubRangeContainingPoints(range, points, this.is2d);
+  }
+
   public drawScene(context: SceneContext): void { this.draw(this.createDrawArgs(context)); }
   public draw(args: Tile.DrawArgs): void {
     const selectedTiles = this.selectTiles(args);
@@ -222,6 +307,8 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
  * @internal
  */
 export abstract class TileLoader {
+  private _containsPointClouds = false;
+
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
@@ -231,6 +318,7 @@ export abstract class TileLoader {
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
   public get isContentUnbounded(): boolean { return false; }
+  public get containsPointClouds(): boolean { return this._containsPointClouds; }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;
@@ -259,6 +347,7 @@ export abstract class TileLoader {
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:
+        this._containsPointClouds = true;
         return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:

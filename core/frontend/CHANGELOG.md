@@ -1,6 +1,58 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Anisotropic filting of draped map tiles.
+- Add debug tool for drape frustum.
+- Added MarkerSet.changeViewport
+- Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. 
+- Tweaks to ambient occlusion settings.
+- Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications.
+- Update DefaultToolSettingsProvider to create responisve UI.
+- Reduce size of Cesium ION copyright logo.
+- Cleanup AO settings.
+- Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
+- Concatenate projection and model matrix to avoid jitter.
+- Make toJSON methods of EmphasizeElements and FeatureSymbology.Appearance return pure JSON types.
+- Added support for English key-ins in addition to translated key-ins
+- Simplify fitView. Hypermodeling plugin cleanup.
+- Rework perspective frustum calculation for planar projections
+- Fix plugin loader to honor the bundleName from the manifest file of the plugin.
+- Prevent background map terrain from being affected by default symbology overrides.
+- Fix failure to report shader compilation errors to user in debug builds.
+- Create terrain tiles about center to correct drape jitter.
+- Fix terrain skirt quantization
+- Fixes for making volume classifiers work.
+- Fixes to volume classifier hilite & flashing
+- Fixed EmphasizeElements.wantEmphasis having no effect if neither color nor transparency were overridden.
+- Added better control over auto-disposal of decoration graphics.
+- New wip plugin for hypermodeling support.
+- Added popup toolbar when cursor stops over marker or marker is tapped.
+- Add imageUtil functions that are used in Design Review and needed in other packages.
+- Improve horizon calculation
+- Fixed bug that caused duplicated points to be handled improperly in batched spatial<->geocoord conversions
+- MarkerSet applies only to a single ScreenViewport
+- Make viewport member of MarkerSet public
+- More OIDC fixes for logout of electron apps. 
+- Improve performance for multiple viewports.
+- Added New badge for UI items
+- Cross-platform function to open an image in a new window.
+- Reduce planar texture frustum by clipping to view planes.
+- Fix planar-classified regions not displaying hilite silhouettes in perspective views.
+- Prioritize loading of map tiles.
+- RenderSystem.Options.displaySolarShadows now defaults to true; and directScreenRendering has no effect (deprecated).
+- Ensure shadows are continually updated using the best available tiles.
+- Apply transparency cutoff to shadows
+- Ensure transparency threshold takes into account material and feature overrides.
+- Make shadows not apply to world decorations
+- Reduce threshold for moving camera in planar texture projection
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

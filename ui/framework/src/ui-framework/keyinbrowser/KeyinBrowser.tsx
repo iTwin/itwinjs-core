@@ -14,12 +14,18 @@ import { IModelApp, Tool, NotifyMessageDetails, OutputMessagePriority, OutputMes
 import { UiFramework } from "../UiFramework";
 import "./KeyinBrowser.scss";
 
+interface KeyinBrowserData extends AutoSuggestData {
+  // value is the toolId
+  // label is the keyin
+  englishKeyin: string;
+}
+
 /**
  * Properties that hold state of key-in browser.
  * @alpha
  */
 interface KeyinBrowserState {
-  keyins: AutoSuggestData[];
+  keyins: KeyinBrowserData[];
   currentToolId: string | undefined;
   currentArgs: string;
 }
@@ -100,10 +106,10 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     return "";
   }
 
-  private getToolKeyinMap(): AutoSuggestData[] {
-    const keyins: AutoSuggestData[] = [];
+  private getToolKeyinMap(): KeyinBrowserData[] {
+    const keyins: KeyinBrowserData[] = [];
     IModelApp.tools.getToolList()
-      .forEach((tool: typeof Tool) => keyins.push({ value: tool.toolId, label: tool.keyin }));
+      .forEach((tool: typeof Tool) => keyins.push({ value: tool.toolId, label: tool.keyin, englishKeyin: tool.englishKeyin }));
     return keyins;
   }
 
@@ -149,16 +155,15 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         try {
           runStatus = args.length > 0 ? tool.parseAndRun(...args) : tool.run();
 
-          if (!runStatus) {
+          if (!runStatus)
             this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
-          } else {
-          }
         } catch (e) {
           this._outputMessage(UiFramework.translate("keyinbrowser.exceptionOccurred") + ": " + e);
         }
       }
     }
 
+    // istanbul ignore else
     if (this.props.onExecute)
       this.props.onExecute();
   }
@@ -237,7 +242,10 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
 
     // istanbul ignore next
     if (inputValue !== currentKeyin) {
-      foundTool = IModelApp.tools.getToolList().find((tool: typeof Tool) => tool.keyin === inputValue);
+      const inputValueLower = inputValue.trim().toLowerCase();
+      foundTool = IModelApp.tools.getToolList()
+        .find((tool: typeof Tool) => tool.keyin.toLowerCase() === inputValueLower || tool.englishKeyin.toLowerCase() === inputValueLower);
+
       if (!foundTool) {
         this._outputMessage(UiFramework.translate("keyinbrowser.couldNotFindTool"));
         return false;
@@ -259,6 +267,16 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
       this.props.onCancel();
   }
 
+  /** Calculate suggestions for any given input value. */
+  private _getSuggestions = (value: string): AutoSuggestData[] => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+
+    return inputLength === 0 ? [] : this.state.keyins.filter((data: KeyinBrowserData) => {
+      return data.label.toLowerCase().includes(inputValue) || data.englishKeyin.toLowerCase().includes(inputValue);
+    });
+  }
+
   /** @internal */
   public render(): React.ReactNode {
     return (
@@ -268,7 +286,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
             placeholder={this._suggestPlaceholder} options={this.state.keyins}
             onSuggestionSelected={this._onKeyinSelected} onPressEnter={this._onAutoSuggestEnter}
             onPressTab={this._onAutoSuggestTab} onPressEscape={this._onAutoSuggestEscape} onInputFocus={this._onInputFocus}
-            data-testid="uif-keyin-autosuggest" />
+            getSuggestions={this._getSuggestions} data-testid="uif-keyin-autosuggest" />
         </InputLabel>
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs}
           data-testid="uif-keyin-arguments" id="uif-keyin-arguments"

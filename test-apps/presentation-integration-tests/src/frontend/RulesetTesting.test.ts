@@ -25,9 +25,9 @@ describe("RulesetTesting", () => {
   let imodel: IModelConnection;
   const imodelPath = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
 
-  before(() => {
+  before(async () => {
     // initialize presentation-testing
-    initialize();
+    await initialize();
   });
 
   after(() => {

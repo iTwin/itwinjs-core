@@ -7,8 +7,8 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
@@ -38,11 +38,9 @@ class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-let widgetControl: StatusBarWidgetControl | undefined;
-
 describe("SelectionScopeField", () => {
 
-  afterEach(cleanup);
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -59,6 +57,8 @@ describe("SelectionScopeField", () => {
   after(() => {
     TestUtils.terminateUiFramework();
   });
+
+  afterEach(cleanup);
 
   it("SelectionScopeField with default data", () => {
     const component = render(<Provider store={TestUtils.store}>
@@ -93,30 +93,38 @@ describe("SelectionScopeField", () => {
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
 describe("Test that requires Presentation", () => {
-  afterEach(cleanup);
+
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   const shutdownIModelApp = () => {
     if (IModelApp.initialized)
       IModelApp.shutdown();
   };
 
-  beforeEach(async () => {
+  before(async () => {
     shutdownIModelApp();
-    NoRenderApp.startup();
     Presentation.terminate();
 
-    Presentation.initialize();
+    await initializePresentationTesting();
     await TestUtils.initializeUiFramework();
+
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
+    });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  afterEach(() => {
+  after(() => {
     TestUtils.terminateUiFramework();
-    Presentation.terminate();
-    shutdownIModelApp();
+    terminatePresentationTesting();
   });
+
+  afterEach(cleanup);
 
   it("SelectionScopeField with specific scopes", () => {
-
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, [
       { id: "element", label: "Element" } as PresentationSelectionScope,
       { id: "assembly", label: "Assembly" } as PresentationSelectionScope,

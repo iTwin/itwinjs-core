@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import TestUtils from "../TestUtils";
+import { BadgeType } from "@bentley/ui-abstract";
 import {
   HorizontalAnchor,
   TabMode,
@@ -181,7 +182,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -196,7 +196,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -213,7 +212,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -230,7 +228,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -251,7 +248,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -277,7 +273,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -294,7 +289,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -311,7 +305,6 @@ describe("WidgetStack", () => {
       widgetTabs={{
         ...props.widgetTabs,
         [6]: [{
-          betaBadge: false,
           title: "W6T1",
         }],
       }}
@@ -385,11 +378,9 @@ describe("WidgetStackTabGroup", () => {
         tabIndex: 2,
       }}
       tabs={[{
-        betaBadge: false,
         title: "Tab1",
       },
       {
-        betaBadge: false,
         title: "Tab2",
       }]}
       widgetId={6}
@@ -411,11 +402,9 @@ describe("WidgetStackTabGroup", () => {
       }}
       tabs={[
         {
-          betaBadge: false,
           title: "Tab1",
         },
         {
-          betaBadge: false,
           title: "Tab2",
         },
       ]}
@@ -430,11 +419,9 @@ describe("WidgetStackTabGroup", () => {
       isStacked
       tabs={[
         {
-          betaBadge: false,
           title: "Tab1",
         },
         {
-          betaBadge: false,
           title: "Tab2",
         },
       ]}
@@ -448,7 +435,6 @@ describe("WidgetStackTabGroup", () => {
       {...props}
       isStacked
       tabs={[{
-        betaBadge: false,
         title: "Tab1",
       }]}
       widgetId={6}
@@ -472,7 +458,6 @@ describe("WidgetStackTabGroup", () => {
       {...props}
       isStacked
       tabs={[{
-        betaBadge: false,
         title: "Tab1",
       }]}
       widgetId={6}
@@ -493,7 +478,6 @@ describe("WidgetStackTabGroup", () => {
       {...props}
       isStacked
       tabs={[{
-        betaBadge: false,
         title: "Tab1",
       }]}
       widgetId={6}
@@ -509,7 +493,7 @@ describe("WidgetStackTab", () => {
     shallow(<WidgetStackTab
       horizontalAnchor={HorizontalAnchor.Left}
       index={0}
-      isBetaBadgeVisible={true}
+      badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}
       isProtruding={false}
       lastPosition={undefined}
@@ -528,7 +512,7 @@ describe("WidgetStackTab", () => {
     const sut = shallow(<WidgetStackTab
       horizontalAnchor={HorizontalAnchor.Left}
       index={0}
-      isBetaBadgeVisible={true}
+      badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}
       isProtruding={false}
       lastPosition={undefined}
@@ -551,7 +535,7 @@ describe("WidgetStackTab", () => {
     const sut = shallow(<WidgetStackTab
       horizontalAnchor={HorizontalAnchor.Left}
       index={5}
-      isBetaBadgeVisible={true}
+      badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}
       isProtruding={false}
       lastPosition={undefined}

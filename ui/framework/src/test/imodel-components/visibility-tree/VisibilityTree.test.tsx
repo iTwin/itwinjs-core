@@ -14,7 +14,7 @@ import { IModelConnection, ViewState, Viewport, ViewState3d, SpatialViewState, P
 import { KeySet, ECInstanceNodeKey, StandardNodeTypes, BaseNodeKey, InstanceKey } from "@bentley/presentation-common";
 import { SelectionManager, Presentation, SelectionChangeEvent } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
+import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
 import { isPromiseLike } from "@bentley/ui-core";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { VisibilityTree } from "../../../ui-framework";
@@ -302,16 +302,14 @@ describe("VisibilityTree", () => {
       }
 
       const mockSubjectModelIds = (props: SubjectModelIdsMockProps) => {
-        const q1 = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-        props.imodelMock.setup((x) => x.query(q1))
+        props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.Subject")))))
           .returns(async function* () {
             const list = new Array<{ id: Id64String, parentId: Id64String }>();
             props.subjectsHierarchy.forEach((ids, parentId) => ids.forEach((id) => list.push({ id, parentId })));
             while (list.length)
               yield list.shift();
           });
-        const q2 = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
-        props.imodelMock.setup((x) => x.query(q2))
+        props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement")))))
           .returns(async function* () {
             const list = new Array<{ id: Id64String, subjectId: Id64String }>();
             props.subjectModels.forEach((modelIds, subjectId) => modelIds.forEach((modelId) => list.push({ id: modelId, subjectId })));
@@ -1313,8 +1311,8 @@ describe("VisibilityTree", () => {
     let imodel: IModelConnection;
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
-    before(() => {
-      initializePresentationTesting();
+    before(async () => {
+      await initializePresentationTesting();
     });
 
     after(() => {

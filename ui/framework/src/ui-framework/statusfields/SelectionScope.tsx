@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import classnames from "classnames";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
-import { PresentationSelectionScope } from "../SessionState";
+import { PresentationSelectionScope } from "../redux/SessionState";
 import { StatusFieldProps } from "./StatusFieldProps";
 
 import "./SelectionScope.scss";

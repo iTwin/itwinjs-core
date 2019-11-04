@@ -202,4 +202,4 @@ The following shows a sample layout with four pieces of content. There is a `top
 
 ## API Reference
 
-* [Content Views]($framework:ContentView)
+* [Content Views]($ui-framework:ContentView)

@@ -8,7 +8,8 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon } from "@bentley/ui-core";
+import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
+import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
@@ -16,13 +17,14 @@ import {
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemProps, AnyItemDef, StringGetter } from "../shared/ItemProps";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BetaBadge } from "../betabadge/BetaBadge";
 import { UiFramework } from "../UiFramework";
+import { AnyItemDef } from "../shared/AnyItemDef";
+import { GroupItemProps } from "../shared/GroupItemProps";
+import { ItemDefFactory } from "../shared/ItemDefFactory";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -37,6 +39,9 @@ const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, 
  * @public
  */
 export class GroupItemDef extends ActionButtonItemDef {
+  private static _sId = 0;
+  public static groupIdPrefix = "Group-";
+
   public groupId: string;
   public direction: Direction;
   public itemsInColumn: number;
@@ -50,15 +55,36 @@ export class GroupItemDef extends ActionButtonItemDef {
   private _itemMap!: ItemMap;
   private _panelLabel: string | StringGetter = "";
 
-  constructor(groupItemProps: GroupItemProps) {
-    super(groupItemProps);
+  constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc) {
+    super(groupItemProps, onItemExecuted);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
+    if (groupItemProps.groupId)
+      this.groupId = groupItemProps.groupId;
+    else {
+      GroupItemDef._sId++;
+      this.groupId = GroupItemDef.groupIdPrefix + GroupItemDef._sId;
+    }
+
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
     this.items = groupItemProps.items;
+  }
+
+  /** @internal */
+  public static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef {
+    const groupItemDef: GroupItemProps = {
+      groupId: itemProps.groupId,
+      items: ItemDefFactory.createItemListForGroupItem(itemProps.items, onItemExecuted),
+      direction: itemProps.direction as number,
+      itemsInColumn: itemProps.itemsInColumn,
+      panelLabel: itemProps.panelLabel,
+      paneLabelKey: itemProps.paneLabelKey,
+    };
+
+    return new GroupItemDef(groupItemDef);
   }
 
   public get id(): string {
@@ -135,7 +161,7 @@ interface ToolGroupItem {
   iconSpec?: IconSpec;
   label: string;
   trayId?: string;
-  betaBadge?: boolean;
+  badgeType?: BadgeType;
 }
 type ColumnItemMap = Map<string, ToolGroupItem>;
 
@@ -293,7 +319,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
             this._trayIndex++;
             const itemTrayId = this.generateTrayId();
-            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId, betaBadge: item.betaBadge };
+            const groupItem: ToolGroupItem = {
+              iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
+              badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
+            };
 
             columnItems.set(item.id, groupItem);
             this.processGroupItemDef(item, itemTrayId, trays);
@@ -358,6 +387,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       className,
       groupItemDef.overflow && "nz-toolbar-item-overflow",
     );
+    const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
 
     return (
       <ExpandableItem
@@ -377,7 +407,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             onKeyDown={this._handleKeyDown}
             icon={icon}
             onSizeKnown={this.props.onSizeKnown}
-            badge={groupItemDef.betaBadge && <BetaBadge />}
+            badge={badge}
           />
         </div>
       </ExpandableItem>
@@ -528,6 +558,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             let isVisible = true;
             let isActive = false;
             let isEnabled = true;
+            const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
             if (item instanceof ItemDefBase) {
               isVisible = item.isVisible;
@@ -542,7 +573,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             }
 
             const trayId = item.trayId;
-            if (trayId)
+            if (trayId) {
               return (
                 isVisible &&
                 <GroupToolExpander
@@ -551,6 +582,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   ref={itemKey}
                   label={item.label}
                   icon={icon}
+                  badge={badge}
                   onClick={() => this.setState((prevState) => {
                     return {
                       ...prevState,
@@ -560,6 +592,8 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   })}
                 />
               );
+            }
+
             return (
               isVisible &&
               <GroupTool
@@ -570,7 +604,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
-                badge={item.betaBadge && <BetaBadge />}
+                badge={badge}
               />
             );
           })}

@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../presentation/common/Ruleset.schema.json",
+  "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
   "id": "ui-framework/Categories",
   "rules": [
     {
@@ -19,7 +19,22 @@
                 }
               ],
               "arePolymorphic": true,
-              "instanceFilter": "this.HasRelatedInstance(\"BisCore:GeometricElement3dIsInCategory\", \"Backward\", \"BisCore:Element\")",
+              "relatedInstances": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ModelContainsElements"
+                  },
+                  "requiredDirection": "Backward",
+                  "class": {
+                    "schemaName": "BisCore",
+                    "className": "Model"
+                  },
+                  "isRequired": true,
+                  "alias": "model"
+                }
+              ],
+              "instanceFilter": "NOT model.IsPrivate AND this.HasRelatedInstance(\"BisCore:GeometricElement3dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }
@@ -39,7 +54,22 @@
                 }
               ],
               "arePolymorphic": true,
-              "instanceFilter": "this.HasRelatedInstance(\"BisCore:GeometricElement2dIsInCategory\", \"Backward\", \"BisCore:Element\")",
+              "relatedInstances": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ModelContainsElements"
+                  },
+                  "requiredDirection": "Backward",
+                  "class": {
+                    "schemaName": "BisCore",
+                    "className": "Model"
+                  },
+                  "isRequired": true,
+                  "alias": "model"
+                }
+              ],
+              "instanceFilter": "NOT model.IsPrivate AND this.HasRelatedInstance(\"BisCore:GeometricElement2dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }

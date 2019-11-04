@@ -5,13 +5,11 @@
 /** @module Utilities */
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-
-import { getClassName } from "./utils/getClassName";
+import { UiError, getClassName, UiAbstract } from "@bentley/ui-abstract";
 
 /** Import color themes and Sass classes barrel file */
 import "./colorthemes.scss";
 import "./classes.scss";
-import { UiError } from "./utils/UiError";
 
 /**
  * Entry point for static initialization required by various
@@ -29,6 +27,7 @@ export class UiCore {
   public static async initialize(i18n: I18N): Promise<void> {
     UiCore._i18n = i18n;
     await UiCore._i18n.registerNamespace(UiCore.i18nNamespace).readFinished;
+    await UiAbstract.initialize(i18n);
   }
 
   /** Unregisters the UiCore internationalization service namespace */
@@ -36,6 +35,7 @@ export class UiCore {
     if (UiCore._i18n)
       UiCore._i18n.unregisterNamespace(UiCore.i18nNamespace);
     UiCore._i18n = undefined;
+    UiAbstract.terminate();
   }
 
   /** The internationalization service created by the IModelApp. */

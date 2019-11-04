@@ -16,7 +16,6 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
-import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
@@ -70,30 +69,33 @@ export namespace AmbientOcclusion {
         // (undocumented)
         readonly blurTexelStepSize?: number;
         readonly intensity?: number;
+        readonly maxDistance?: number;
         readonly texelStepSize?: number;
         readonly zLengthCap?: number;
     }
     export class Settings implements Props {
         // (undocumented)
-        readonly bias?: number;
+        readonly bias: number;
         // (undocumented)
-        readonly blurDelta?: number;
+        readonly blurDelta: number;
         // (undocumented)
-        readonly blurSigma?: number;
+        readonly blurSigma: number;
         // (undocumented)
-        readonly blurTexelStepSize?: number;
+        readonly blurTexelStepSize: number;
         // (undocumented)
         static defaults: Settings;
         // (undocumented)
         static fromJSON(json?: Props): Settings;
         // (undocumented)
-        readonly intensity?: number;
+        readonly intensity: number;
         // (undocumented)
-        readonly texelStepSize?: number;
+        readonly maxDistance: number;
+        // (undocumented)
+        readonly texelStepSize: number;
         // (undocumented)
         toJSON(): Props;
         // (undocumented)
-        readonly zLengthCap?: number;
+        readonly zLengthCap: number;
     }
 }
 
@@ -1144,6 +1146,7 @@ export class ColorIndex {
 // @public
 export enum CommonLoggerCategory {
     ElementProps = "imodeljs-common.ElementProps",
+    Geometry = "imodeljs-common.Geometry",
     RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
@@ -1768,6 +1771,8 @@ export class FrustumPlanes {
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
     readonly isValid: boolean;
+    // (undocumented)
+    readonly planes: ClipPlane[] | undefined;
     }
 
 // @internal (undocumented)
@@ -1993,19 +1998,15 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 // @public
 export class GeometryStreamIteratorEntry {
     constructor(category?: Id64String);
-    // @beta @deprecated
+    // @beta
     brep?: BRepEntity.DataProps;
-    // @deprecated
     geometryQuery?: AnyGeometryQuery;
     geomParams: GeometryParams;
     localRange?: Range3d;
     localToWorld?: Transform;
-    // @deprecated
     partId?: Id64String;
-    // @deprecated
     partToLocal?: Transform;
     readonly primitive: GeometryStreamIteratorEntry.Primitive;
-    // @deprecated
     textString?: TextString;
 }
 
@@ -2273,6 +2274,7 @@ export namespace HiddenLine {
         static defaults: Settings;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
@@ -2294,7 +2296,9 @@ export namespace HiddenLine {
         equals(other: Style): boolean;
         // (undocumented)
         static fromJSON(json?: StyleProps, hidden?: true): Style;
-        overrideColor(color: ColorDef): Style;
+        overrideColor(color: ColorDef | undefined): Style;
+        overridePattern(pattern: LinePixels | undefined): Style;
+        overrideWidth(width: number | undefined): Style;
         // @internal (undocumented)
         readonly ovrColor: boolean;
         readonly pattern?: LinePixels;
@@ -3012,6 +3016,7 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
+    static readonly args: any;
     static readonly isIOSFrontend: any;
     static readonly isMobileBackend: boolean;
     static readonly isMobileFrontend: boolean;
@@ -3339,6 +3344,7 @@ export class Placement2d implements Placement2dProps {
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point2d;
     readonly rotation: Matrix3d;
@@ -3367,6 +3373,7 @@ export class Placement3d implements Placement3dProps {
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
     readonly isValid: boolean;
+    multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point3d;
     readonly rotation: Matrix3d;
@@ -3783,6 +3790,7 @@ export class RelatedElement implements RelatedElementProps {
     static fromJSON(json?: RelatedElementProps): RelatedElement | undefined;
     readonly id: Id64String;
     static idFromJson(json: any): Id64String;
+    static readonly none: RelatedElement;
     readonly relClassName?: string;
 }
 
@@ -3960,6 +3968,7 @@ export namespace RenderTexture {
         readonly type: Type;
     }
     export const enum Type {
+        FilteredTileSection = 4,
         Glyph = 1,
         Normal = 0,
         SkyBox = 3,
@@ -4015,10 +4024,21 @@ export class RgbColor {
     equals(other: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
+    static fromJSON(json: RgbColorProps | undefined): RgbColor;
+    // (undocumented)
     readonly g: number;
     // (undocumented)
     readonly r: number;
+    // (undocumented)
+    toJSON(): RgbColorProps;
 }
+
+// @public
+export type RgbColorProps = {
+    r: number;
+    g: number;
+    b: number;
+} | RgbColor;
 
 // @beta
 export type RgbFactorProps = number[];
@@ -4542,7 +4562,7 @@ export interface SceneLightsProps {
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
-    clipGeometry?: ClipVector;
+    clipGeometry?: any;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
 }
@@ -4790,31 +4810,27 @@ export namespace SpatialClassificationProps {
     export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
     export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
+        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
         // (undocumented)
         inside: Display;
         // (undocumented)
-        outside: Display;
+        isVolumeClassifier: boolean;
         // (undocumented)
-        type: number;
+        outside: Display;
+        readonly type = 0;
     }
     export interface FlagsProps {
         // (undocumented)
         inside: SpatialClassificationProps.Display;
         // (undocumented)
-        outside: SpatialClassificationProps.Display;
+        isVolumeClassifier?: boolean;
         // (undocumented)
-        type: number;
+        outside: SpatialClassificationProps.Display;
+        readonly type: number;
     }
     export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-    }
-    export enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
     }
 }
 

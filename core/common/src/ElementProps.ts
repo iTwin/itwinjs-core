@@ -5,7 +5,7 @@
 /** @module WireFormats */
 
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AngleProps, ClipVector, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
@@ -51,6 +51,8 @@ export class RelatedElement implements RelatedElementProps {
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+  /** Used to *null out* an existing navigation relationship. */
+  public static readonly none = new RelatedElement({ id: Id64.invalid, relClassName: "" });
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64String {
@@ -124,8 +126,8 @@ export enum SectionType {
 export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
-  /** Details on how this section was clipped. */
-  clipGeometry?: ClipVector;
+  /** Details on how this section was clipped. A placement local ClipVector stored as a json string. */
+  clipGeometry?: any;
   /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
   modelSelectorId?: Id64String;
   /** The element Id of the [CategorySelector]($backend) for this SectionLocation */

@@ -9,7 +9,6 @@ import { FrameBuffer } from "./FrameBuffer";
 import { RenderClipVolume, RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { Matrix4 } from "./Matrix";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
@@ -36,7 +35,7 @@ export class GraphicsCollectorDrawArgs extends Tile.DrawArgs {
     super(context, location, root, now, purgeOlderThan, clip);
   }
   public get frustumPlanes(): FrustumPlanes { return this._planes; }
-  public get worldToViewMap(): Map4d { return this._worldToViewMap; }
+  protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public drawGraphics(): void {
     if (!this.graphics.isEmpty)
       this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
@@ -230,7 +229,7 @@ const scratchViewFlags = new ViewFlags();
 /** @internal */
 export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer {
   private _buffers?: FrameBuffers;
-  private _projectionMatrix = new Matrix4();
+  private _projectionMatrix = Matrix4d.createIdentity();
   private readonly _graphics: RenderGraphic[] = [];
   private _frustum?: Frustum;
   private _width = 0;
@@ -252,7 +251,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
   private _doDebugFrustum = false;
-  private _debugFrustumGrahic?: RenderGraphic = undefined;
+  private _debugFrustumGraphic?: RenderGraphic = undefined;
+  private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -272,7 +272,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.hilite : undefined; }
   public get texture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.combined : undefined; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
@@ -280,6 +280,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get anyTranslucent(): boolean { return this._anyTranslucent; }
   public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.inside; }
   public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.outside; }
+  public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
+
   public addGraphic(graphic: RenderGraphic) {
     this._graphics.push(graphic);
   }
@@ -300,11 +302,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private pushBatches(batchState: BatchState, graphics: RenderGraphic[]) {
     graphics.forEach((graphic) => {
       if (graphic instanceof Batch) {
-        batchState.push(graphic as Batch, true);
+        batchState.push(graphic, true);
         batchState.pop();
       } else if (graphic instanceof Branch) {
-        const branch = graphic as Branch;
-        this.pushBatches(batchState, branch.branch.entries);
+        this.pushBatches(batchState, graphic.branch.entries);
       }
     });
   }
@@ -345,8 +346,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
 
+    // Shader behaves slightly differently when classifying surfaces vs point clouds.
+    this._isClassifyingPointCloud = classifiedTree.loader.containsPointClouds;
+
     if (this._doDebugFrustum) {
-      this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
+      this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
 
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
@@ -355,7 +359,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);
       builder.addFrustum(this._frustum);
-      this._debugFrustumGrahic = builder.finish();
+      this._debugFrustumGraphic = builder.finish();
     }
   }
 
@@ -369,8 +373,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         return;
     }
 
-    if (undefined !== this._debugFrustumGrahic)
-      target.scene.push(this._debugFrustumGrahic);
+    if (undefined !== this._debugFrustumGraphic)
+      target.scene.push(this._debugFrustumGraphic);
 
     // Temporarily override the Target's state.
     const system = System.instance;
@@ -379,7 +383,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const vf = target.currentViewFlags.clone(scratchViewFlags);
     vf.renderMode = RenderMode.SmoothShade;
-    vf.transparency = true;
+    vf.transparency = !this.isClassifyingPointCloud; // point clouds don't support transparency.
     vf.noGeometryMap = true;
     vf.textures = vf.lighting = vf.shadows = false;
     vf.monochrome = vf.materials = vf.ambientOcclusion = false;

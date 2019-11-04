@@ -7,7 +7,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { UiFramework } from "../UiFramework";
-import { FrameworkState } from "../FrameworkState";
+import { FrameworkState } from "../redux/FrameworkState";
 
 /** Enum for the Color Theme string.
  * @beta

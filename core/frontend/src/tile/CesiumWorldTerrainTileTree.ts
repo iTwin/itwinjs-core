@@ -11,7 +11,7 @@ import { TileRequest } from "./TileRequest";
 import { Tile } from "./Tile";
 import { TileIO } from "./TileIO";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d } from "@bentley/geometry-core";
+import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d, Transform } from "@bentley/geometry-core";
 import { QParams3d, QPoint3d, ColorDef, OctEncodedNormal, LinePixels, FillFlags, RenderMaterial, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Triangle } from "../render/primitives/Primitives";
 import { IModelApp } from "../IModelApp";
@@ -21,6 +21,7 @@ import { MeshParams } from "../render/primitives/VertexTable";
 import { GeographicTilingScheme } from "./MapTilingScheme";
 import { ScreenViewport } from "../Viewport";
 import { MapTile } from "./MapTileTree";
+import { GraphicBranch } from "../render/System";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -112,6 +113,7 @@ function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, i
 class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private readonly _copyrightImagesByViewportId = new Map<number, HTMLImageElement>();
   private static _scratchRange = Range3d.createNull();
+  private static _scratchLocalRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
   private static _scratchQParams = QParams3d.fromRange(CesiumWorldTerrainTileLoader._scratchRange);
   private static _scratchQPoint = QPoint3d.create(CesiumWorldTerrainTileLoader._scratchVertex, CesiumWorldTerrainTileLoader._scratchQParams);
@@ -131,8 +133,8 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     if (undefined === image) {
       image = new Image();
       image.src = "images/ion_color_white.png";
-      image.width = 173;
-      image.height = 30;
+      image.width = 114;
+      image.height = 20;
       this._copyrightImagesByViewportId.set(viewport.viewportId, image);
     }
 
@@ -215,9 +217,12 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     CesiumWorldTerrainTileLoader._scratchRange.extendArray(corners);
     CesiumWorldTerrainTileLoader._scratchRange.low.z = minHeight - skirtHeight;
     CesiumWorldTerrainTileLoader._scratchRange.high.z = maxHeight;
-
     CesiumWorldTerrainTileLoader._scratchQParams.setFromRange(CesiumWorldTerrainTileLoader._scratchRange);
-    const mesh = Mesh.create({ displayParams, type: Mesh.PrimitiveType.Mesh, range: CesiumWorldTerrainTileLoader._scratchRange, isPlanar: false, is2d: false });
+    const rangeCenter = CesiumWorldTerrainTileLoader._scratchRange.fractionToPoint(.5, .5, .5);
+    CesiumWorldTerrainTileLoader._scratchRange.low.minus(rangeCenter, CesiumWorldTerrainTileLoader._scratchLocalRange.low);
+    CesiumWorldTerrainTileLoader._scratchRange.high.minus(rangeCenter, CesiumWorldTerrainTileLoader._scratchLocalRange.high);
+
+    const mesh = Mesh.create({ displayParams, type: Mesh.PrimitiveType.Mesh, range: CesiumWorldTerrainTileLoader._scratchLocalRange, isPlanar: false, is2d: false });
     for (let i = 0; i < indexCount;)
       this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
 
@@ -294,9 +299,15 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.featureID = 0;
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.type = FeatureIndexType.Uniform;
     CesiumWorldTerrainTileLoader._scratchMeshArgs.hasFixedNormals = true;
+
     let graphic = system.createMesh(MeshParams.create(CesiumWorldTerrainTileLoader._scratchMeshArgs));
-    if (graphic)
+
+    if (graphic) {
       graphic = system.createBatch(graphic, this._featureTable, Range3d.createNull());
+      const branch = new GraphicBranch();
+      branch.add(graphic);
+      graphic = system.createBranch(branch, Transform.createTranslation(rangeCenter));
+    }
 
     const content: Tile.Content = { graphic, contentRange: CesiumWorldTerrainTileLoader._scratchRange.clone() };
     return content;
@@ -308,7 +319,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private generateSkirts(mesh: Mesh, indices: Uint16Array | Uint32Array, skirtHeight: number) {
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
-      mesh.points.unquantize(index, CesiumWorldTerrainTileLoader._scratchPoint);
+      mesh.points.list[index].unquantize(CesiumWorldTerrainTileLoader._scratchQParams, CesiumWorldTerrainTileLoader._scratchPoint);
       const normal = mesh.normals.length ? mesh.normals[index] : undefined;
       CesiumWorldTerrainTileLoader._scratchPoint.z -= skirtHeight;
       CesiumWorldTerrainTileLoader._scratchQPoint.init(CesiumWorldTerrainTileLoader._scratchPoint, CesiumWorldTerrainTileLoader._scratchQParams);

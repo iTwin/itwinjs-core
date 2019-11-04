@@ -10,19 +10,19 @@ import { PresentationError, PresentationStatus } from "@bentley/presentation-com
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
-import { FavoritePropertyManager } from "./FavoritePropertyManager";
+import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
 
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let i18n: I18N | undefined;
-let favoritePropertyManager: FavoritePropertyManager | undefined;
+let favoritePropertiesManager: FavoritePropertiesManager | undefined;
 
 /**
  * Static class used to statically set up Presentation library for the frontend.
  * Basically what it does is:
  * - Create a singleton [[PresentationManager]] instance
  * - Create a singleton [[SelectionManager]] instance
- * - Create a singleton [[FavoritePropertyManager]]] instance
+ * - Create a singleton [[FavoritePropertiesManager]]] instance
  *
  * @public
  */
@@ -71,9 +71,10 @@ export class Presentation {
         scopes: scopesManager,
       });
     }
-    if (!favoritePropertyManager) {
-      favoritePropertyManager = new FavoritePropertyManager();
+    if (!favoritePropertiesManager) {
+      favoritePropertiesManager = new FavoritePropertiesManager();
     }
+    presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection;
   }
 
   /**
@@ -85,7 +86,7 @@ export class Presentation {
       presentationManager.dispose();
     presentationManager = undefined;
     selectionManager = undefined;
-    favoritePropertyManager = undefined;
+    favoritePropertiesManager = undefined;
     i18n = undefined;
   }
 
@@ -120,18 +121,18 @@ export class Presentation {
   }
 
   /**
-   * Get the singleton [[FavoritePropertyManager]]
+   * Get the singleton [[FavoritePropertiesManager]]
    * @beta
    */
-  public static get favoriteProperties(): FavoritePropertyManager {
-    if (!favoritePropertyManager)
+  public static get favoriteProperties(): FavoritePropertiesManager {
+    if (!favoritePropertiesManager)
       throw new Error("Favorite Properties must be first initialized by calling Presentation.initialize");
-    return favoritePropertyManager;
+    return favoritePropertiesManager;
   }
 
   /** @internal */
-  public static set favoriteProperties(value: FavoritePropertyManager) {
-    favoritePropertyManager = value;
+  public static set favoriteProperties(value: FavoritePropertiesManager) {
+    favoritePropertiesManager = value;
   }
 
   /**

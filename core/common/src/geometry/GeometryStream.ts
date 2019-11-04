@@ -354,23 +354,23 @@ export class GeometryStreamIteratorEntry {
   /** Optional stored local range for the current geometric entry */
   public localRange?: Range3d;
   /** Optional [[GeometryPart]] instance transform when current entry is for a [[GeometryPart]].
-   * @deprecated Use [[primitive]] instead.
+   * @note Can also use [[primitive]] and switch on the primitive type.
    */
   public partToLocal?: Transform;
   /** Current iterator entry is a [[GeometryPart]] instance when partId is not undefined.
-   * @deprecated Use [[primitive]] instead.
+   * @note Can also use [[primitive]] and switch on the primitive type.
    */
   public partId?: Id64String;
   /** Current iterator entry is a [[GeometryQuery]] when geometryQuery is not undefined.
-   * @deprecated Use [[primitive]] instead.
+   * @note Can also use [[primitive]] and switch on the primitive type.
    */
   public geometryQuery?: AnyGeometryQuery;
   /** Current iterator entry is a [[TextString]] when textString is not undefined.
-   * @deprecated Use [[primitive]] instead.
+   * @note Can also use [[primitive]] and switch on the primitive type.
    */
   public textString?: TextString;
   /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined.
-   * @deprecated Use [[primitive]] instead.
+   * @note Can also use [[primitive]] and switch on the primitive type.
    * @beta
    */
   public brep?: BRepEntity.DataProps;

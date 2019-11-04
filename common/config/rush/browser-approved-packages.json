@@ -28,7 +28,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -48,15 +48,15 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -115,20 +115,24 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@bentley/ui-abstract",
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
+    },
+    {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "@bentley/webpack-tools",
@@ -155,6 +159,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -176,7 +184,7 @@
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "callable-instance2",
@@ -213,10 +221,6 @@
     {
       "name": "child_process",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "chokidar",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "chrome-launcher",
@@ -339,6 +343,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "file-saver",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -391,8 +399,12 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "immer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "immutable",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "imports-loader",
@@ -449,6 +461,10 @@
     {
       "name": "lolex",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "lorem-ipsum",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "make-dir",
@@ -508,15 +524,11 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "nyc",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "obj-traverse",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "object-assign",
@@ -576,7 +588,7 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "react-autosuggest",
@@ -588,6 +600,10 @@
     },
     {
       "name": "react-data-grid",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-data-grid-addons",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -643,6 +659,14 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-virtualized-auto-sizer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-window",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "readline",
       "allowedCategories": [ "tools" ]
     },
@@ -656,7 +680,11 @@
     },
     {
       "name": "request",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "request-promise",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "request-promise-native",
@@ -696,7 +724,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -760,7 +788,7 @@
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslint",
@@ -780,7 +808,7 @@
     },
     {
       "name": "tsutils",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "typedoc",
@@ -815,39 +843,7 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
-      "name": "url-search-params",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "uuid",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-chromedriver-service",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-junit-reporter",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-mocha-framework",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-screenshot",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-spec-reporter",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "wdio-visual-regression-service",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "webdriverio",
       "allowedCategories": [ "tools" ]
     },
     {

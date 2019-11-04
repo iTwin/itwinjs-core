@@ -5,10 +5,10 @@
 /** @module Rendering */
 
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
-  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
+  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
   QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
@@ -25,7 +25,6 @@ import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
-import { SpatialViewState } from "../ViewState";
 import { BackgroundMapTileTreeReference } from "../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
@@ -111,6 +110,7 @@ export namespace RenderMemory {
     ClipVolumes,
     PlanarClassifiers,
     ShadowMaps,
+    TextureAttachments,
     COUNT,
   }
 
@@ -134,6 +134,7 @@ export namespace RenderMemory {
     public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
     public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
     public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
+    public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -159,6 +160,7 @@ export namespace RenderMemory {
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
     public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
     public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
+    public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
 
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
     public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
@@ -241,6 +243,29 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
+/** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.
+ * Use a GraphicOwner to prevent disposal of a graphic that you want to reuse. The graphic owner can be added to decorations and list of dynamics just like any other graphic, but the graphic it owns
+ * will never be automatically disposed of. Instead, you assume responsibility for disposing of the owned graphic by calling [[disposeGraphic]] when the owned graphic is no longer in use. Failure
+ * to do so will result in leaks of graphics memory or other webgl resources.
+ * @public
+ */
+export abstract class RenderGraphicOwner extends RenderGraphic {
+  /** The owned graphic. */
+  public abstract get graphic(): RenderGraphic;
+  /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
+  public dispose(): void { }
+  /** Disposes of the owned graphic. */
+  public disposeGraphic(): void { this.graphic.dispose(); }
+  /** @internal */
+  public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+}
+
+/** Default implementation of RenderGraphicOwner. */
+class GraphicOwner extends RenderGraphicOwner {
+  public constructor(private readonly _graphic: RenderGraphic) { super(); }
+  public get graphic(): RenderGraphic { return this._graphic; }
+}
+
 /** Describes the type of a RenderClipVolume.
  * @beta
  */
@@ -274,21 +299,6 @@ export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-/** An opaque representation of a shadow map.
- * @internal
- */
-export abstract class RenderSolarShadowMap implements IDisposable {
-  public abstract dispose(): void;
-
-  /** @internal */
-  public abstract disable(): void;
-
-  /** @internal */
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-
-  /** @internal */
-  public abstract collectGraphics(sceneContext: SceneContext): void;
 }
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
@@ -765,6 +775,12 @@ export interface RenderTargetDebugControl {
   useLogZ: boolean;
   /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
+  /** @internal */
+  vcSupportIntersectingVolumes: boolean;
+  /** @internal */
+  readonly shadowFrustum: Frustum | undefined;
+  /** @internal */
+  displayDrapeFrustum: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -772,7 +788,7 @@ export interface RenderTargetDebugControl {
  * of the RenderTarget.
  * @internal
  */
-export abstract class RenderTarget implements IDisposable {
+export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
@@ -794,8 +810,9 @@ export abstract class RenderTarget implements IDisposable {
 
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
-  public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
-  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
+
+  /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
+  public updateSolarShadows(_context: SceneContext | undefined): void { }
   public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
   public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
@@ -809,6 +826,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
+  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -822,6 +840,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
+  public collectStatistics(_stats: RenderMemory.Statistics): void { }
 
   /** Specify whether webgl content should be rendered directly to the screen.
    * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
@@ -901,7 +920,9 @@ export interface GraphicBranchOptions {
 export interface GLTimerResult {
   /** Label from GLTimer.beginOperation */
   label: string;
-  /** Time elapsed in nanoseconds; no-op queries seem to have 32ns of noise */
+  /** Time elapsed in nanoseconds, inclusive of child result times.
+   *  @note no-op queries seem to have 32ns of noise.
+   */
   nanoseconds: number;
   /** Child results if GLTimer.beginOperation calls were nested */
   children?: GLTimerResult[];
@@ -1092,6 +1113,14 @@ export abstract class RenderSystem implements IDisposable {
    */
   public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
 
+  /** Create a graphic that assumes ownership of another graphic.
+   * @param ownedGraphic The RenderGraphic to be owned.
+   * @returns The owning graphic that exposes a `disposeGraphic` method for explicitly disposing of the owned graphic.
+   * @see [[RenderGraphicOwner]] for details regarding ownership semantics.
+   * @public
+   */
+  public createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner { return new GraphicOwner(ownedGraphic); }
+
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
    * @param _imodel The IModelConnection with which the texture is associated.
@@ -1186,6 +1215,9 @@ export abstract class RenderSystem implements IDisposable {
    * @beta
    */
   public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
+
+  /** @internal */
+  public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
 /** @internal */
@@ -1225,7 +1257,7 @@ export namespace RenderSystem {
 
     /** If true, display solar shadows when enabled by [ViewFlags.shadows]($common).
      *
-     * Default value: false
+     * Default value: true
      *
      * @beta
      */
@@ -1239,15 +1271,25 @@ export namespace RenderSystem {
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** By default, all [[ScreenViewports]] render their webgl content to a single, shared, off-screen canvas, then copy the resultant image to the 2d rendering context of
-     * their own on-screen canvases. This allows webgl resources to be shared amongst all viewports because they all use the same webgl context. However, the copy operation
-     * incurs a significant performance penalty on non-chromium-based browsers. When only one ScreenViewport is actually rendering webgl content, we can avoid that copy operation
-     * and therefore improve performance by rendering the webgl content directly to the screen, by adding the shared webgl canvas to the document as a child of that one-and-only
-     * viewport. We will only do that if this option is defined to `true`.
+    /** If true anisotropic filtering is applied to map tile textures.
      *
      * Default value: false
      *
      * @internal
+     *
+     */
+
+    filterMapTextures?: boolean;
+    /** If true anisotropic filtering is not applied to draped map tile textures.
+     *
+     * Default value: true
+     *
+     * @internal
+     *
+     */
+    filterMapDrapeTextures?: boolean;
+    /** @internal
+     * @deprecated This setting no longer has any effect.
      */
     directScreenRendering?: boolean;
   }

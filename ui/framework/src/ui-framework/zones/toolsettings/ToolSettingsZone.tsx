@@ -27,6 +27,8 @@ import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 import { Outline } from "../Outline";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 
+// cSpell:ignore safearea
+
 /** State for the ToolSettingsZone content.
  */
 enum ToolSettingsZoneContent {
@@ -63,7 +65,6 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
   };
-  private _settingsSuffix: string;
   private _widget = React.createRef<ToolSettings>();
 
   /** @internal */
@@ -72,8 +73,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    this._settingsSuffix = UiFramework.translate("general.settings");
-    const title = `${ToolUiManager.activeToolLabel} - ${this._settingsSuffix}`;
+    const title = `${ToolUiManager.activeToolLabel}`;
 
     this.state = {
       toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
@@ -83,7 +83,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private _handleToolActivatedEvent = (): void => {
     // Update tool settings title when active tool changes.
-    const title = `${ToolUiManager.activeToolLabel} - ${this._settingsSuffix}`;
+    const title = `${ToolUiManager.activeToolLabel}`;
     if (this.state.title !== title)
       this.setState({ title });
   }

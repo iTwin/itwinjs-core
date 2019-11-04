@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
-import { initialize, terminate } from "../IntegrationTests";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation, FavoriteProperties, IModelAppFavoritePropertiesStorage } from "@bentley/presentation-frontend";
 import { PropertyData } from "@bentley/ui-components";
+import { initialize, terminate } from "../IntegrationTests";
 
 const favoritesCategoryName = "Favorite";
 describe("Favorite Properties", () => {
@@ -17,7 +17,7 @@ describe("Favorite Properties", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
@@ -30,11 +30,13 @@ describe("Favorite Properties", () => {
 
   let propertiesRuleset: RegisteredRuleset;
   let propertiesDataProvider: PresentationPropertyDataProvider;
+  let ruleset: Ruleset;
 
   beforeEach(async () => {
     Presentation.terminate();
     Presentation.initialize();
-    const ruleset: Ruleset = {
+
+    ruleset = {
       id: faker.random.uuid(),
       rules: [{
         ruleType: RuleTypes.Content,
@@ -45,6 +47,10 @@ describe("Favorite Properties", () => {
     };
     propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
     propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
+  });
+
+  afterEach(async () => {
+    await Presentation.favoriteProperties.clear();
   });
 
   const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {
@@ -65,7 +71,7 @@ describe("Favorite Properties", () => {
     // find the property record to make the property favorite
     const record = getPropertyRecordByLabel(propertyData, "Country")!;
     const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-    Presentation.favoriteProperties.add(field!);
+    await Presentation.favoriteProperties.add(field!);
 
     propertyData = await propertiesDataProvider.getData();
 
@@ -82,7 +88,7 @@ describe("Favorite Properties", () => {
     // find the property record to make the property favorite
     const record = getPropertyRecordByLabel(propertyData, "area")!;
     const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-    Presentation.favoriteProperties.add(field!);
+    await Presentation.favoriteProperties.add(field!);
 
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     propertyData = await propertiesDataProvider.getData();
@@ -101,7 +107,7 @@ describe("Favorite Properties", () => {
     // find the property record to make the property favorite
     const record = getPropertyRecordByLabel(propertyData, "Model")!;
     const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-    Presentation.favoriteProperties.add(field!);
+    await Presentation.favoriteProperties.add(field!);
 
     // verify the property is now in favorites group
     propertyData = await propertiesDataProvider.getData();
@@ -117,6 +123,86 @@ describe("Favorite Properties", () => {
     expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
     expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
     expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
+  });
+
+  it("refreshing the Presentaiton favorite properties stay the same", async () => {
+    propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+    let propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.be.eq(4);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.false;
+
+    // find the property record to make the property favorite
+    const record = getPropertyRecordByLabel(propertyData, "Model")!;
+    const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
+    await Presentation.favoriteProperties.add(field!);
+
+    // verify the property is now in favorites group
+    propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.eq(5);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
+    expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
+    expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
+
+    // refresh Presentation
+    Presentation.terminate();
+    Presentation.initialize();
+    propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
+    propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
+    propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+
+    // verify the property is still in favorites group
+    propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.eq(5);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
+    expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
+    expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
+  });
+
+});
+
+describe("Favorite Properties storage", () => {
+
+  let storage: IModelAppFavoritePropertiesStorage;
+
+  before(async () => {
+    await initialize();
+  });
+
+  after(async () => {
+    terminate();
+  });
+
+  beforeEach(async () => {
+    storage = new IModelAppFavoritePropertiesStorage();
+    await storage.saveProperties(getEmptyFavoriteProperties());
+  });
+
+  afterEach(async () => {
+    await storage.saveProperties(getEmptyFavoriteProperties());
+  });
+
+  const getEmptyFavoriteProperties = () => ({
+    nestedContentInfos: new Set<string>(),
+    propertyInfos: new Set<string>(),
+    baseFieldInfos: new Set<string>(),
+  });
+
+  it("loads saved favorite properties from global scope", async () => {
+    const properties: FavoriteProperties = {
+      nestedContentInfos: new Set<string>(["nestedContentInfo-global"]),
+      propertyInfos: new Set<string>(["propertyInfo-global"]),
+      baseFieldInfos: new Set<string>(["baseFieldInfos-global"]),
+    };
+    await storage.saveProperties(properties);
+
+    const returnedStorage = await storage.loadProperties();
+    expect(returnedStorage).is.not.null;
+    expect(returnedStorage!.propertyInfos.size).to.eq(1);
+    expect(returnedStorage!.propertyInfos.has("propertyInfo-global")).to.be.true;
+    expect(returnedStorage!.baseFieldInfos.size).to.eq(1);
+    expect(returnedStorage!.baseFieldInfos.has("baseFieldInfos-global")).to.be.true;
+    expect(returnedStorage!.nestedContentInfos.size).to.eq(1);
+    expect(returnedStorage!.nestedContentInfos.has("nestedContentInfo-global")).to.be.true;
   });
 
 });

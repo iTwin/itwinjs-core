@@ -11,7 +11,6 @@ import {
   StatusBarWidgetControlArgs, SelectionScopeField, ToolAssistanceField, StatusBarSpaceBetween,
   StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, ViewAttributesStatusField, SectionsStatusField,
 } from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
@@ -27,23 +26,18 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
       <StatusBarSpaceBetween>
         <StatusBarLeftSection>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
-          {isInFooterMode && <FooterSeparator />}
         </StatusBarLeftSection>
         <StatusBarCenterSection>
           <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
-          {isInFooterMode && <FooterSeparator />}
           <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} targetRef={toastTargetRef} />
-          {isInFooterMode && <FooterSeparator />}
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(isVisible: boolean) => isVisible && <>
               <SnapModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
-              {isInFooterMode && <FooterSeparator />}
             </>}
           </BooleanSyncUiListener>
           <DisplayStyleField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           <SectionsStatusField />
           <ViewAttributesStatusField />
-          {isInFooterMode && <FooterSeparator />}
         </StatusBarCenterSection>
         <StatusBarRightSection>
           <SelectionScopeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />

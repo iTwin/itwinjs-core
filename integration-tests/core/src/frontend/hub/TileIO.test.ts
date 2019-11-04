@@ -554,7 +554,18 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 describe("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
+  class TestTarget extends MockRender.OnScreenTarget {
+    public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
+      return toScreen ? document.createElement("canvas") : undefined;
+    }
+  }
+
+  class TestSystem extends MockRender.System {
+    public createTarget(canvas: HTMLCanvasElement): TestTarget { return new TestTarget(this, canvas); }
+  }
+
   before(async () => {
+    MockRender.App.systemFactory = () => new TestSystem();
     MockRender.App.startup();
     imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });

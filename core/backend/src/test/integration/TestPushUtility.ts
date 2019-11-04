@@ -16,6 +16,7 @@ import { IModelWriter } from "./IModelWriter";
 import { HubUtility } from "./HubUtility";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -61,7 +62,7 @@ export class TestPushUtility {
   }
 
   private createStandalone(): string {
-    const pathname: string = path.join(__dirname, this.iModelName + ".bim");
+    const pathname: string = path.join(KnownTestLocations.outputDir, this.iModelName + ".bim");
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 

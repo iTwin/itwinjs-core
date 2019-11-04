@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
+import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentControl } from "./ContentControl";

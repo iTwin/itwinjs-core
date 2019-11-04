@@ -37,7 +37,7 @@ import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
 import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
 import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
-import { PresentationManager } from "../PresentationManager";
+import { PresentationManager, PresentationManagerMode } from "../PresentationManager";
 import { RulesetManagerImpl } from "../RulesetManager";
 import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 
@@ -85,10 +85,11 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         using(new PresentationManager(), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWith(
+          expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
             [path.join(__dirname, "../assets/locales")],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            IModelHost.platform.ECPresentationManagerMode.ReadWrite,
           );
         });
       });
@@ -101,13 +102,15 @@ describe("PresentationManager", () => {
           id: faker.random.uuid(),
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
+          mode: PresentationManagerMode.ReadOnly,
         };
         using(new PresentationManager(props), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWith(
+          expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
             [path.join(__dirname, "../assets/locales"), testLocale],
             testTaskAllocations,
+            IModelHost.platform.ECPresentationManagerMode.ReadOnly,
           );
         });
       });

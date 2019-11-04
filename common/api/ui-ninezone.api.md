@@ -142,18 +142,6 @@ export interface CellProps {
 }
 
 // @alpha
-export class Chevron extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ChevronProps extends CommonProps, NoChildrenProps {
-    direction: Direction;
-    onClick?: () => void;
-}
-
-// @alpha
 export class Columns extends React.PureComponent<ColumnsProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -345,6 +333,9 @@ export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 export const getClosedWidgetTabIndex: (tabIndex: number) => number;
 
 // @internal (undocumented)
+export const getColumnZones: (id: WidgetZoneId) => WidgetZoneId[];
+
+// @internal (undocumented)
 export const getDefaultAllowsMerging: (id: WidgetZoneId) => boolean;
 
 // @alpha
@@ -391,6 +382,9 @@ export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
 // @alpha
 export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarItemProps<ToolbarItem>;
+
+// @internal (undocumented)
+export const getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings;
 
 // @internal (undocumented)
 export const getZoneCell: (id: ZoneId) => Cell;
@@ -1065,27 +1059,6 @@ export class SafeAreaInsetsHelpers {
     static isTop(flags: SafeAreaInsets): boolean;
 }
 
-// @alpha
-export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
-    // (undocumented)
-    componentDidUpdate(prevProps: Readonly<ScrollableProps>): void;
-    // (undocumented)
-    static readonly defaultProps: ScrollableDefaultProps;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<ScrollableState>;
-}
-
-// @alpha
-export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
-
-// @alpha
-export interface ScrollableProps extends ToolbarProps {
-    onScroll?: () => void;
-    visibleItemThreshold: number;
-}
-
 // @beta
 export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
     // (undocumented)
@@ -1101,12 +1074,6 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
 // @beta
 export interface ScrollableToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
-}
-
-// @alpha
-export class ScrollIndicator extends React.PureComponent<ChevronProps> {
-    // (undocumented)
-    render(): JSX.Element;
 }
 
 // @beta
@@ -1815,6 +1782,9 @@ export interface WidgetTabDragStartArguments {
     readonly widgetId: WidgetZoneId;
 }
 
+// @internal (undocumented)
+export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId>;
+
 // @beta
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 
@@ -1901,6 +1871,7 @@ export type ZoneId = WidgetZoneId | ContentZoneId;
 
 // @internal
 export class ZoneManager {
+    constructor(windowResize?: ZoneWindowResizeSettings);
     // (undocumented)
     setAllowsMerging(allowsMerging: boolean, props: ZoneManagerProps): ZoneManagerProps;
     // (undocumented)
@@ -1911,6 +1882,8 @@ export class ZoneManager {
     setFloatingProps(floating: ZoneManagerFloatingProps | undefined, props: ZoneManagerProps): ZoneManagerProps;
     // (undocumented)
     setIsLayoutChanged(isLayoutChanged: boolean, props: ZoneManagerProps): ZoneManagerProps;
+    // (undocumented)
+    windowResize: ZoneWindowResizeSettings;
 }
 
 // @beta
@@ -1980,13 +1953,19 @@ export class ZonesManager {
         bounds: RectangleProps;
     }>;
     // @internal (undocumented)
-    readonly growBottom: GrowBottom;
+    getWindowResizeBounds(props: ZonesManagerProps): {
+        [id in WidgetZoneId]: RectangleProps;
+    };
     // @internal (undocumented)
-    readonly growLeft: GrowLeft;
+    getZoneManager(id: WidgetZoneId): ZoneManager;
     // @internal (undocumented)
-    readonly growRight: GrowRight;
+    readonly growBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly growTop: GrowTop;
+    readonly growLeft: UpdateWindowResizeSettings;
+    // @internal (undocumented)
+    readonly growRight: UpdateWindowResizeSettings;
+    // @internal (undocumented)
+    readonly growTop: UpdateWindowResizeSettings;
     // (undocumented)
     handleTargetChanged(target: ZonesManagerTargetProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
@@ -2017,6 +1996,8 @@ export class ZonesManager {
     restoreLayout(props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     readonly rightZones: RightZones;
+    // @internal (undocumented)
+    saveWindowSettings(id: WidgetZoneId, props: ZonesManagerProps): void;
     // (undocumented)
     setAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
@@ -2042,19 +2023,17 @@ export class ZonesManager {
     // @internal (undocumented)
     setZoneProps(zoneProps: ZoneManagerProps, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
-    setZonesBounds(bounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
+    setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
-    readonly shrinkBottom: ShrinkBottom;
+    readonly shrinkBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkLeft: ShrinkLeft;
+    readonly shrinkLeft: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkRight: ShrinkRight;
+    readonly shrinkRight: UpdateWindowResizeSettings;
     // @internal (undocumented)
-    readonly shrinkTop: ShrinkTop;
+    readonly shrinkTop: UpdateWindowResizeSettings;
     // @internal (undocumented)
     readonly topZones: TopZones;
-    // @internal (undocumented)
-    readonly zoneManager: ZoneManager;
     }
 
 // @beta
@@ -2117,6 +2096,26 @@ export enum ZoneTargetType {
     Back = 1,
     // (undocumented)
     Merge = 2
+}
+
+// @internal (undocumented)
+export interface ZoneWindowResizeSettings {
+    // (undocumented)
+    hEnd: number;
+    // (undocumented)
+    hMode: "Minimum" | "Percentage";
+    // (undocumented)
+    hStart: number;
+    // (undocumented)
+    minHeight: number;
+    // (undocumented)
+    minWidth: number;
+    // (undocumented)
+    vEnd: number;
+    // (undocumented)
+    vMode: "Minimum" | "Percentage";
+    // (undocumented)
+    vStart: number;
 }
 
 

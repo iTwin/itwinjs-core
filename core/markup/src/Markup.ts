@@ -36,7 +36,7 @@ export interface MarkupSvgData {
  * @beta
  */
 export interface MarkupData extends MarkupSvgData {
-  /** a base64 encoded string with the image of the view that was marked up. See [MarkupApp.props.result] for options. */
+  /** a base64 encoded string with the image of the view that was marked up. See [[MarkupApp.props.result]] for options. */
   image?: string;
 }
 
@@ -213,7 +213,7 @@ export class MarkupApp {
     IModelApp.toolAdmin.startDefaultTool();
   }
 
-  /** Read the result of a Markup session. and stop it.
+  /** Read the result of a Markup session, then stop the session.
    * @note see [MarkupApp.props.result] for options.
    */
   public static async stop(): Promise<MarkupData> {

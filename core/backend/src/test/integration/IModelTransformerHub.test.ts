@@ -7,12 +7,11 @@ import { Point3d } from "@bentley/geometry-core";
 import { ChangeOpCode, ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSummaryExtractOptions, InstanceChange } from "../../ChangeSummaryManager";
-import { ElementAspect, ExternalSourceAspect } from "../../ElementAspect";
-import { Entity } from "../../Entity";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, IModelTransformer, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
-import { Model } from "../../Model";
-import { Relationship } from "../../Relationship";
+import * as semver from "semver";
+import {
+  AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, ConcurrencyControl,
+  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -261,19 +260,33 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
-      const bisCoreSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", "BisCore.ecschema.xml");
-
       // open/upgrade sourceDb
       const sourceDb: IModelDb = await IModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.1"));
       assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      await sourceDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.8"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push sourceDb schema changes
       await sourceDb.concurrencyControl.request(requestContext);
-      sourceDb.saveChanges();
-      await sourceDb.pushChanges(requestContext, () => "Upgrade BisCore");
+      assert.isTrue(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+      assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
+      await sourceDb.pushChanges(requestContext, () => "Import schemas to upgrade BisCore"); // should actually push schema changes
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+
+      // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
+      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isFalse(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to be a no-op");
+      assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
+      sourceDb.saveChanges(); // will be no changes to save in this case
+      await sourceDb.pushChanges(requestContext, () => "Import schemas again"); // will be no changes to push in this case
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext)); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // populate sourceDb
       IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
@@ -281,12 +294,13 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, () => "Populate Source");
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
 
       // open/upgrade targetDb
       const targetDb: IModelDb = await IModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
       assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      await targetDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push targetDb schema changes

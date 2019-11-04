@@ -32,20 +32,20 @@ import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
+import * as semver from "semver";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
-  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
+  DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
+  GenericSchema, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, KnownLocations, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelHost } from "../../IModelHost";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -701,8 +701,9 @@ describe("iModel", () => {
     });
   });
 
+  // NOTE: this test can be removed when the deprecated executeQuery method is removed
   it("should produce an array of rows", () => {
-    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`);
+    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -711,71 +712,84 @@ describe("iModel", () => {
   });
 
   it("should be some categories", () => {
-    const categoryRows: any[] = imodel1.executeQuery(`SELECT ECInstanceId FROM ${Category.classFullName}`);
-    assert.exists(categoryRows, "Should have some Category ids");
-    for (const categoryRow of categoryRows!) {
-      const categoryId = Id64.fromJSON(categoryRow.id);
-      const category = imodel1.elements.getElement(categoryId);
-      assert.isTrue(category instanceof Category, "Should be instance of Category");
-      if (!category)
-        continue;
-      if (!(category instanceof Category))
-        continue;
+    const categorySql = `SELECT ECInstanceId FROM ${Category.classFullName}`;
+    imodel1.withPreparedStatement(categorySql, (categoryStatement: ECSqlStatement): void => {
+      let numCategories = 0;
+      while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
+        numCategories++;
+        const categoryId: Id64String = categoryStatement.getValue(0).getId();
+        const category: Element = imodel1.elements.getElement(categoryId);
+        assert.isTrue(category instanceof Category, "Should be instance of Category");
 
-      // verify the default subcategory.
-      const defaultSubCategoryId: Id64String = category.myDefaultSubCategoryId();
-      const defaultSubCategory = imodel1.elements.getElement(defaultSubCategoryId);
-      assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
-      if (defaultSubCategory instanceof SubCategory) {
-        assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-        assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
-        assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
-      }
-
-      // get the subcategories
-      const queryString: string = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=?`;
-      const subCategoryRows: any[] = imodel1.executeQuery(queryString, [categoryId]);
-      assert.exists(subCategoryRows, "Should have at least one SubCategory");
-      for (const subCategoryRow of subCategoryRows) {
-        const subCategoryId = Id64.fromJSON(subCategoryRow.id);
-        const subCategory = imodel1.elements.getElement(subCategoryId);
-        assert.isTrue(subCategory instanceof SubCategory);
-        if (subCategory instanceof SubCategory) {
-          assert.isTrue(subCategory.parent!.id === categoryId);
+        // verify the default subcategory.
+        const defaultSubCategoryId: Id64String = (category as Category).myDefaultSubCategoryId();
+        const defaultSubCategory: Element = imodel1.elements.getElement(defaultSubCategoryId);
+        assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
+        if (defaultSubCategory instanceof SubCategory) {
+          assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
+
+        // get the subcategories
+        const subCategorySql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=:parentId`;
+        imodel1.withPreparedStatement(subCategorySql, (subCategoryStatement: ECSqlStatement): void => {
+          let numSubCategories = 0;
+          subCategoryStatement.bindId("parentId", categoryId);
+          while (DbResult.BE_SQLITE_ROW === subCategoryStatement.step()) {
+            numSubCategories++;
+            const subCategoryId: Id64String = subCategoryStatement.getValue(0).getId();
+            const subCategory: Element = imodel1.elements.getElement(subCategoryId);
+            assert.isTrue(subCategory instanceof SubCategory);
+            assert.isTrue(subCategory.parent!.id === categoryId);
+          }
+          assert.isAtLeast(numSubCategories, 1, "Expected query to find at least one SubCategory");
+        });
       }
-    }
+      assert.isAtLeast(numCategories, 1, "Expected query to find some categories");
+    });
   });
 
   it("should be some 2d elements", () => {
-    const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
-    assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
-    for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphic = imodel2.elements.getElement<GeometricElement2d>({ id: drawingGraphicRow.id, wantGeometry: true });
-      assert.exists(drawingGraphic);
-      assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
-      assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
-      if (Id64.getLocalId(drawingGraphic.id) === 0x25) {
-        assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
-        assert.isTrue(drawingGraphic.placement.origin.y === 0.0);
-        assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.high.x === 1.0);
-        assert.isTrue(drawingGraphic.placement.bbox.high.y === 1.0);
-        assert.isDefined(drawingGraphic.geom);
+    const sql = `SELECT ECInstanceId FROM ${DrawingGraphic.classFullName}`;
+    imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      let numDrawingGraphics = 0;
+      let found25: boolean = false;
+      let found26: boolean = false;
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        numDrawingGraphics++;
+        const drawingGraphicId: Id64String = statement.getValue(0).getId();
+        const drawingGraphic = imodel2.elements.getElement<GeometricElement2d>({ id: drawingGraphicId, wantGeometry: true });
+        assert.exists(drawingGraphic);
+        assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
+        assert.isTrue(drawingGraphic instanceof DrawingGraphic, "Is instance of DrawingGraphic");
+        assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
+        if (Id64.getLocalId(drawingGraphic.id) === 0x25) {
+          found25 = true;
+          assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
+          assert.isTrue(drawingGraphic.placement.origin.y === 0.0);
+          assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.high.x === 1.0);
+          assert.isTrue(drawingGraphic.placement.bbox.high.y === 1.0);
+          assert.isDefined(drawingGraphic.geom);
+        } else if (Id64.getLocalId(drawingGraphic.id) === 0x26) {
+          found26 = true;
+          assert.isTrue(drawingGraphic.placement.origin.x === 1.0);
+          assert.isTrue(drawingGraphic.placement.origin.y === 1.0);
+          assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
+          assert.isTrue(drawingGraphic.placement.bbox.high.x === 2.0);
+          assert.isTrue(drawingGraphic.placement.bbox.high.y === 2.0);
+          assert.isDefined(drawingGraphic.geom);
+        }
       }
-      if (Id64.getLocalId(drawingGraphic.id) === 0x26) {
-        assert.isTrue(drawingGraphic.placement.origin.x === 1.0);
-        assert.isTrue(drawingGraphic.placement.origin.y === 1.0);
-        assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
-        assert.isTrue(drawingGraphic.placement.bbox.high.x === 2.0);
-        assert.isTrue(drawingGraphic.placement.bbox.high.y === 2.0);
-        assert.isDefined(drawingGraphic.geom);
-      }
-    }
+      assert.isAtLeast(numDrawingGraphics, 1, "Expected query to find some DrawingGraphics");
+      assert.isTrue(found25, "Expected to find a specific element");
+      assert.isTrue(found26, "Expected to find a specific element");
+    });
   });
 
   it("should be able to query for ViewDefinitionProps", () => {
@@ -820,50 +834,46 @@ describe("iModel", () => {
   });
 
   it("should be children of RootSubject", () => {
-    const queryString: string = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=${IModel.repositoryModelId}`;
-    const modelRows: any[] = imodel2.executeQuery(queryString);
-    assert.exists(modelRows, "Should have at least one model within rootSubject");
-    for (const modelRow of modelRows) {
-      const modelId = Id64.fromJSON(modelRow.id);
-      const model = imodel2.models.getModel(modelId);
-      assert.exists(model, "Model should exist");
-      assert.isTrue(model instanceof Model);
+    const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("parentModelId", IModel.repositoryModelId);
+      let numModels = 0;
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        numModels++;
+        const modelId: Id64String = statement.getValue(0).getId();
+        const model = imodel2.models.getModel(modelId);
+        assert.exists(model, "Model should exist");
+        assert.isTrue(model instanceof Model);
 
-      // should be an element with the same Id.
-      const modeledElement = imodel2.elements.getElement(modelId);
-      assert.exists(modeledElement, "Modeled Element should exist");
+        // should be an element with the same Id.
+        const modeledElement = imodel2.elements.getElement(modelId);
+        assert.exists(modeledElement, "Modeled Element should exist");
 
-      if (model.className === "LinkModel") {
-        // expect LinkModel to be accompanied by LinkPartition
-        assert.isTrue(modeledElement instanceof LinkPartition);
-        continue;
-      } else if (model.className === "DictionaryModel") {
-        assert.isTrue(modeledElement instanceof DefinitionPartition);
-        continue;
-      } else if (model.className === "PhysicalModel") {
-        assert.isTrue(modeledElement instanceof PhysicalPartition);
-        continue;
-      } else if (model.className === "GroupModel") {
-        assert.isTrue(modeledElement instanceof GroupInformationPartition);
-        continue;
-      } else if (model.className === "DocumentListModel") {
-        assert.isTrue(modeledElement instanceof DocumentPartition);
-        continue;
-      } else if (model.className === "DefinitionModel") {
-        assert.isTrue(modeledElement instanceof DefinitionPartition);
-        continue;
-      } else {
-        assert.isTrue(false, "Expected a known model type");
+        if (model.className === "LinkModel") {
+          // expect LinkModel to be accompanied by LinkPartition
+          assert.isTrue(modeledElement instanceof LinkPartition);
+          continue;
+        } else if (model.className === "DictionaryModel") {
+          assert.isTrue(modeledElement instanceof DefinitionPartition);
+          continue;
+        } else if (model.className === "PhysicalModel") {
+          assert.isTrue(modeledElement instanceof PhysicalPartition);
+          continue;
+        } else if (model.className === "GroupModel") {
+          assert.isTrue(modeledElement instanceof GroupInformationPartition);
+          continue;
+        } else if (model.className === "DocumentListModel") {
+          assert.isTrue(modeledElement instanceof DocumentPartition);
+          continue;
+        } else if (model.className === "DefinitionModel") {
+          assert.isTrue(modeledElement instanceof DefinitionPartition);
+          continue;
+        } else {
+          assert.isTrue(false, "Expected a known model type");
+        }
       }
-    }
-  });
-
-  it("should produce an array of rows with executeQuery", () => {
-    const rows: any[] = imodel1.executeQuery("SELECT * FROM bis.Element");
-    assert.exists(rows);
-    assert.isArray(rows);
-    assert.notEqual(rows.length, 0);
-    assert.notEqual(rows[0].id, "");
+      assert.isAtLeast(numModels, 1, "Expected query to find some Models");
+    });
   });
 
   it("should insert and update auto-handled properties", () => {
@@ -1867,8 +1877,35 @@ describe("iModel", () => {
     // import schemas
     const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
     const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
+    assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
+    assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
+    assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
+    assert.isTrue(iModelDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+    assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
+    // test querySchemaVersion
+    const bisCoreSchemaVersion: string = iModelDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, ">= 1.0.8"));
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, "< 2"));
+    assert.isTrue(semver.satisfies(bisCoreSchemaVersion, "^1.0.0"));
+    assert.isTrue(semver.satisfies(iModelDb.querySchemaVersion(GenericSchema.schemaName)!, ">= 1.0.2"));
+    assert.isTrue(semver.eq(iModelDb.querySchemaVersion("TestAnalytical")!, "1.0.0"));
+    assert.isDefined(iModelDb.querySchemaVersion("Analytical"), "Expect Analytical to be imported");
+    assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
+    assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
+    // insert category
+    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue });
+    assert.isTrue(Id64.isValidId64(categoryId));
+    // insert TypeDefinition
+    const typeDefinitionProps: TypeDefinitionElementProps = {
+      classFullName: "TestAnalytical:Type",
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      userLabel: "TypeDefinition",
+    };
+    const typeDefinitionId: Id64String = iModelDb.elements.insertElement(typeDefinitionProps);
+    assert.isTrue(Id64.isValidId64(typeDefinitionId));
     // insert partition
     const partitionProps: InformationPartitionElementProps = {
       classFullName: "TestAnalytical:Partition",
@@ -1885,6 +1922,26 @@ describe("iModel", () => {
     };
     const modelId: Id64String = iModelDb.models.insertModel(modelProps);
     assert.isTrue(Id64.isValidId64(modelId));
+    // insert element
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "TestAnalytical:Element",
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      userLabel: "A1",
+      typeDefinition: { id: typeDefinitionId, relClassName: "Analytical:AnalyticalElementIsOfType" },
+    };
+    const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
+    // test typeDefinition update scenarios
+    assert.isTrue(Id64.isValidId64(elementId));
+    assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
+    elementProps.typeDefinition = undefined;
+    iModelDb.elements.updateElement(elementProps);
+    assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Still expect valid typeDefinition.id because undefined causes update to skip it");
+    elementProps.typeDefinition = RelatedElement.none;
+    iModelDb.elements.updateElement(elementProps);
+    assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
+    // close
     iModelDb.saveChanges();
     iModelDb.closeSnapshot();
   });

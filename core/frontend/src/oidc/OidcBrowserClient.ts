@@ -6,7 +6,7 @@
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
-import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -130,20 +130,23 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     if (!this.getIsRedirecting())
       return false;
 
-    try {
-      let user: User;
-      if (window.parent !== window) {
-        // This is an i-frame, and we are doing a silent signin.
-        await this._userManager!.signinSilentCallback();
-      } else {
-        user = await this._userManager!.signinRedirectCallback();
-        assert(user && !user.expired, "Expected userManager.signinRedirectCallback to always resolve to authorized user");
-        window.location.replace(user.state.successRedirectUrl);
+    let user: User;
+    if (window.parent !== window) {
+      // This is an i-frame, and we are doing a silent signin.
+      user = await this._userManager!.signinSilentCallback();
+      if (!user || user.expired) {
+        throw new Error("Silent renew has failed");
       }
+      return true;
+    }
+
+    try {
+      user = await this._userManager!.signinRedirectCallback();
+      assert(user && !user.expired, "Expected userManager.signinRedirectCallback to always resolve to authorized user");
+      window.location.replace(user.state.successRedirectUrl);
     } catch (err) {
       Logger.logError(loggerCategory, "Authentication error - cannot retrieve token after redirection");
     }
-
     return true;
   }
 
@@ -184,13 +187,13 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     // Load user from session/local storage
     const user = await this.getUser(requestContext);
     if (user && !user.expired) {
-      this._onUserLoaded(user); // Call only because getUser() doesn't call any events
+      this._onUserLoaded(user); // Need an explicit broadcast of events because getUser() does not do that internally
       return true;
     }
 
     // Attempt a silent sign-in
     try {
-      await this.signInSilent(requestContext); // calls events
+      await this.signInSilent(requestContext); // internally broadcasts events on successful signin
     } catch (err) {
       Logger.logInfo(loggerCategory, "Silent sign-in failed");
       return false;
@@ -298,7 +301,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     return this._userManager;
   }
 
-  private async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
+  /**
+   * Override to customize the user manager settings used by the underlying oidc-client-js.
+   * This allows setting additional fields that are not exposed by [[OidcFrontendClientConfiguration]] or customizing the defaults.
+   * @internal
+   */
+  protected async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
       authority: this._configuration.authority || await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
@@ -310,9 +318,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       query_status_response_type: this._configuration.responseType || "id_token token",
       scope: this._configuration.scope,
       loadUserInfo: true,
-      // userStore: new WebStorageStateStore({ store: window.localStorage }),
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
       clockSkew: this._configuration.clockSkew,
       metadata: this._configuration.metadata,
+      accessTokenExpiringNotificationTime: 60, // 60 seconds before expiry
+      monitorSession: false,
+      silentRequestTimeout: 20000,
     };
     return userManagerSettings;
   }

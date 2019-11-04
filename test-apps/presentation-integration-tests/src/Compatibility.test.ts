@@ -19,7 +19,7 @@ describe("Compatibility", () => {
     let defaultRpcOptions: PresentationRpcRequestOptions;
 
     before(async () => {
-      initialize();
+      await initialize();
       client = RpcManager.getClientForInterface(PresentationRpcInterface);
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await IModelConnection.openSnapshot(testIModelName);

@@ -193,11 +193,10 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private _shouldExpandCategory = (category: PropertyCategory): boolean => {
-    if (category.expand)
-      return true;
-    return this.state.categories.some((stateCategory: PropertyGridCategory) => {
-      return stateCategory.propertyCategory.name === category.name && stateCategory.propertyCategory.expand;
-    });
+    const stateCategory = this.state.categories.find((x) => x.propertyCategory.name === category.name);
+    if (stateCategory)
+      return stateCategory.propertyCategory.expand;
+    return category.expand;
   }
 
   private async gatherData(): Promise<void> {

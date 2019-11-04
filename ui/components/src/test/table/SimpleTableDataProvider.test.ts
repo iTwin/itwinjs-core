@@ -5,9 +5,6 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  PropertyValue,
-  PropertyDescription,
-  PropertyRecord,
   PropertyValueFormat,
   PrimitiveValue,
 } from "@bentley/imodeljs-frontend";
@@ -18,21 +15,8 @@ import {
   SimpleTableDataProvider,
 } from "../../ui-components";
 import { SortDirection } from "@bentley/ui-core";
-
-const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {
-  const v: PropertyValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-    displayValue: value,
-  };
-  const pd: PropertyDescription = {
-    typename,
-    name: column.key,
-    displayLabel: column.label,
-  };
-  column.propertyDescription = pd;
-  return new PropertyRecord(v, pd);
-};
+import { TestUtils } from "../TestUtils";
+import { TableFilterDescriptorCollection } from "../../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 
 const columns: ColumnDescription[] = [
   {
@@ -58,35 +42,37 @@ const columns: ColumnDescription[] = [
 ];
 
 const createRow = (i: number) => {
+  const enumValue = i % 4;
   const row: RowItem = { key: i.toString(), cells: [] };
   row.cells.push({
-    key: "id",
-    record: createPropertyRecord(i, columns[0], "int"),
+    key: columns[0].key,
+    record: TestUtils.createPropertyRecord(i, columns[0], "int"),
   });
   row.cells.push({
-    key: "title",
-    record: createPropertyRecord("Title " + i, columns[1], "text"),
+    key: columns[1].key,
+    record: TestUtils.createPropertyRecord("Title " + i, columns[1], "text"),
   });
   row.cells.push({
-    key: "more",
-    record: createPropertyRecord("More Data - " + i, columns[2], "text"),
+    key: columns[2].key,
+    record: TestUtils.createEnumProperty(columns[2].label, enumValue, columns[2]),
   });
   return row;
 };
 
 const createSecondarySortColumnTestRow = (i: number) => {
+  const enumValue = i % 4;
   const row: RowItem = { key: i.toString(), cells: [] };
   row.cells.push({
-    key: "id",
-    record: createPropertyRecord(1, columns[0], "int"),   /* Always 1 */
+    key: columns[0].key,
+    record: TestUtils.createPropertyRecord(1, columns[0], "int"),   /* Always 1 */
   });
   row.cells.push({
-    key: "title",
-    record: createPropertyRecord("Title " + i, columns[1], "text"),
+    key: columns[1].key,
+    record: TestUtils.createPropertyRecord("Title " + i, columns[1], "text"),
   });
   row.cells.push({
-    key: "more",
-    record: createPropertyRecord("More Data - " + i, columns[2], "text"),
+    key: columns[2].key,
+    record: TestUtils.createEnumProperty(columns[2].label, enumValue, columns[2]),
   });
   return row;
 };
@@ -108,11 +94,11 @@ describe("SimpleTableDataProvider", () => {
 
     it("should set up columns", async () => {
       dataProvider = new SimpleTableDataProvider(columns);
-      const columnsDescriptions = await dataProvider.getColumns();
-      expect(columnsDescriptions.length).to.eq(3);
-      expect(columnsDescriptions[0].key).to.eq("id");
-      expect(columnsDescriptions[1].key).to.eq("title");
-      expect(columnsDescriptions[2].key).to.eq("more");
+      const columnDescriptions = await dataProvider.getColumns();
+      expect(columnDescriptions.length).to.eq(3);
+      expect(columnDescriptions[0].key).to.eq("id");
+      expect(columnDescriptions[1].key).to.eq("title");
+      expect(columnDescriptions[2].key).to.eq("more");
     });
 
     it("should throw Error if invalid row requested", async () => {
@@ -206,7 +192,7 @@ describe("SimpleTableDataProvider", () => {
         const propertyValue = testRecord.value;
         expect(propertyValue.valueFormat).to.equal(PropertyValueFormat.Primitive);
         const primitiveValue = propertyValue as PrimitiveValue;
-        expect(primitiveValue.value).to.equal("More Data - 1");
+        expect(primitiveValue.value).to.equal(1);
       }
     });
 
@@ -463,6 +449,34 @@ describe("SimpleTableDataProvider", () => {
       }
     });
 
+  });
+
+  describe("Filtering methods", async () => {
+
+    it("getDistinctValues should return correct number of values", async () => {
+      dataProvider = new SimpleTableDataProvider(columns);
+      dataProvider.setItems(rows);
+
+      let distinctValues = await dataProvider.getDistinctValues("");
+      expect(distinctValues.values.length).to.eq(0);
+      distinctValues = await dataProvider.getDistinctValues("id");
+      expect(distinctValues.values.length).to.eq(1000);
+      distinctValues = await dataProvider.getDistinctValues("title", 500);
+      expect(distinctValues.values.length).to.eq(500);
+      distinctValues = await dataProvider.getDistinctValues("more");
+      expect(distinctValues.values.length).to.eq(4);
+    });
+
+    it("applyFilterDescriptors with clean filter should filter no rows", async () => {
+      dataProvider = new SimpleTableDataProvider(columns);
+      dataProvider.setItems(rows);
+
+      const filterDescriptors = new TableFilterDescriptorCollection();
+
+      await dataProvider.applyFilterDescriptors(filterDescriptors);
+      const count = await dataProvider.getRowsCount();
+      expect(count).to.eq(1000);
+    });
   });
 
 });

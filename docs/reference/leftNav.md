@@ -17,6 +17,7 @@ packageClassification:  [
       "order":"2",
       "header":"iModel.js UI Packages",
       "packages":[
+         "ui-abstract",
          "ui-core",
          "ui-components",
          "ui-ninezone",

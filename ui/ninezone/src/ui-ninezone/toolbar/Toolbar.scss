@@ -8,6 +8,7 @@
 .nz-toolbar-toolbar {
   display: inline-block;
   position: relative;
+  pointer-events: auto;
 
   > .nz-panels {
     @include uicore-z-index(toolbar-panels);

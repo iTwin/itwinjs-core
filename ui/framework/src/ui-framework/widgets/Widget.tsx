@@ -6,13 +6,13 @@
 
 import * as React from "react";
 
+import { BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
 
 import { WidgetState } from "./WidgetDef";
-import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($framework). component.
+/** Properties for a [Widget]($ui-framework). component.
  * @public
  */
 export interface WidgetProps extends IconProps {
@@ -56,8 +56,12 @@ export interface WidgetProps extends IconProps {
   classId?: string | ConfigurableUiControlConstructor;
   /** Control's priority */
   priority?: number;
-  /** Indicates whether to draw a Beta badge. */
+  /** Indicates whether to draw a Beta badge.
+   * @deprecated - use badgeType instead.
+   */
   betaBadge?: boolean;
+  /** Badge to be overlaid on the widget tab. */
+  badgeType?: BadgeType;
 }
 
 /** Widget React component.

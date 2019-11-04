@@ -2,6 +2,84 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-framework_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Addressed AccessToken, OidcClient and Backstage issues in ui-framework"
+          },
+          {
+            "comment": "UiAdmin methods for AccuDraw Ui: MenuButton, Calculator, Angle, Length, Height"
+          },
+          {
+            "comment": "Provide a DefaultNavigationWidget that can be used by Apps and Plugins and can be extended by Plugins."
+          },
+          {
+            "comment": "Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications."
+          },
+          {
+            "comment": "Minor Backstage cleanup & unit tests"
+          },
+          {
+            "comment": "Update DefaultToolSettingsProvide to create responsive UI."
+          },
+          {
+            "comment": "Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract."
+          },
+          {
+            "comment": "Added support for English key-ins in addition to translated key-ins"
+          },
+          {
+            "comment": "Flatten group in DefaultNavigationWidget"
+          },
+          {
+            "comment": "Update order of string enums to try to avoid extract-api issues"
+          },
+          {
+            "comment": "Added New badge for UI items"
+          },
+          {
+            "comment": "Add basic support for redux connected components."
+          },
+          {
+            "comment": "Made the Status Bar & Backstage more responsive on smaller screens"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Refactored BackstageComposer."
+          },
+          {
+            "comment": "Expand tool zone bounds over unused bottom zones."
+          },
+          {
+            "comment": "Correctly fill merged zones."
+          },
+          {
+            "comment": "Update presentation rules of imodel components' hierarchies to hide private models and their content"
+          },
+          {
+            "comment": "Fix defaultState of StagePanel."
+          },
+          {
+            "comment": "Raise BackstageEvent from BackstageManager."
+          },
+          {
+            "comment": "Remove CSS class that was adding extra padding to the bottom of editor fields in narrow layout."
+          },
+          {
+            "comment": "Removed unused package"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/ui-framework_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:43 GMT",

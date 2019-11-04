@@ -6,7 +6,6 @@
 /// <reference types="node" />
 /// <reference types="mocha" />
 /// <reference types="chai" />
-/// <reference types="webdriverio" />
 /// <reference types="react" />
 /// <reference types="react-dom" />
 
@@ -38,23 +37,5 @@ declare namespace JSX {
 declare namespace Chai {
   interface Assertion {
     matchSnapshot(resetSnapshot?: boolean): void;
-  }
-}
-
-declare namespace WebdriverIO {
-  class compareResults {
-    public misMatchPercentage: number;
-    public isWithinMisMatchTolerance: boolean;
-    public isSameDimensions: boolean;
-    public isExactSameImage: boolean;
-  }
-
-  interface Client<T> {
-    saveViewportScreenshot(filename?: string, options?: Object): void;
-    saveElementScreenshot(filename: string | undefined, elementSelector: string, options?: Object): void;
-    saveDocumentScreenshot(filename?: string, options?: Object): void;
-    checkViewport(options?: Object): compareResults[];
-    checkDocument(options?: Object): compareResults[];
-    checkElement(elementSelector: string, options?: Object): compareResults[];
   }
 }

@@ -321,3 +321,84 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     return true;
   }
 }
+
+class ShadowFrustumDecoration {
+  private static _instance?: ShadowFrustumDecoration;
+  private _targetVp: Viewport;
+  private _cleanup?: () => void;
+
+  public constructor(vp: Viewport) {
+    this._targetVp = vp;
+    const removeDecorator = IModelApp.viewManager.addDecorator(this);
+    const removeOnRender = vp.onRender.addListener((_) => this.onRender());
+    this._cleanup = () => { removeDecorator(); removeOnRender(); };
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  private stop(): void {
+    if (undefined !== this._cleanup) {
+      this._cleanup();
+      this._cleanup = undefined;
+    }
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  public onRender(): void {
+    IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateDecorations(); });
+  }
+
+  public decorate(context: DecorateContext): void {
+    const frustum = this._targetVp.target.debugControl!.shadowFrustum;
+    if (undefined === frustum)
+      return;
+
+    const thisVp = context.viewport;
+    if (thisVp === this._targetVp || !thisVp.view.isSpatialView())
+      return;
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    FrustumDecoration.drawFrustumBox(builder, frustum, false, thisVp);
+    context.addDecorationFromBuilder(builder);
+  }
+
+  public static toggle(vp: Viewport, enabled?: boolean): void {
+    const instance = ShadowFrustumDecoration._instance;
+    if (undefined !== enabled) {
+      const alreadyEnabled = undefined !== instance;
+      if (enabled === alreadyEnabled)
+        return;
+    }
+
+    if (undefined === instance) {
+      ShadowFrustumDecoration._instance = new ShadowFrustumDecoration(vp);
+    } else {
+      instance.stop();
+      ShadowFrustumDecoration._instance = undefined;
+    }
+  }
+}
+
+/** Toggle visualization of the selected viewport's shadow frustum in all other viewports.
+ * @beta
+ */
+export class ToggleShadowFrustumTool extends Tool {
+  public static toolId = "ToggleShadowFrustum";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(enable?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && vp.view.isSpatialView())
+      ShadowFrustumDecoration.toggle(vp, enable);
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+
+    return true;
+  }
+}

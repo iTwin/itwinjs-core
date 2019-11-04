@@ -934,6 +934,7 @@ describe("ECClass", () => {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
+        alias: "ts",
         version: "1.2.3",
         items: {
           ...customAttributeJson,
@@ -993,6 +994,37 @@ describe("ECClass", () => {
 
       const properties = getElementChildrenByTagName(serialized, "ECProperty");
       assert.strictEqual(properties.length, 4);
+    });
+
+    it("Serialization with base class in reference Schema, base type reference uses schema alias", async () => {
+      const context = new SchemaContext();
+      const refSchema = await Schema.fromJson(getSchemaJson(), context);
+      const testClass = await refSchema.getItem("testClass") as ECClass;
+
+      const testSchema = new Schema(context, "ChildSchema", 1, 0, 5);
+      const childClass = new EntityClass(testSchema, "TestClass");
+      childClass.baseClass = new DelayedPromiseWithProps(testClass!.key, async () => testClass!);
+      (testSchema as MutableSchema).addItem(testClass);
+
+      const serialized = await childClass!.toXml(newDom);
+      const baseClasses = getElementChildrenByTagName(serialized, "BaseClass");
+      assert.strictEqual(baseClasses.length, 1);
+      const baseClass = baseClasses[0];
+      expect(baseClass.textContent).to.eql("ts:testClass");
+    });
+
+    it("Serialization with base class in reference Schema, no schema alias defined, throws", async () => {
+      const context = new SchemaContext();
+      const refSchema = new Schema(context, "BaseSchema", 1, 0, 5);
+      const baseClass = new EntityClass(refSchema, "BaseClass");
+      (refSchema as MutableSchema).addItem(baseClass);
+
+      const testSchema = new Schema(context, "ChildSchema", 1, 0, 5);
+      const childClass = new EntityClass(testSchema, "TestClass");
+      childClass.baseClass = new DelayedPromiseWithProps(baseClass!.key, async () => baseClass!);
+      (testSchema as MutableSchema).addItem(childClass);
+
+      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
     });
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {

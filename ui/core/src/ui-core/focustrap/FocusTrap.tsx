@@ -18,7 +18,7 @@ interface Props extends React.AllHTMLAttributes<any> {
   active?: boolean;
   /** restore focus to element that had focus before trap was activated */
   returnFocusOnDeactivate: boolean;
-  /** Optional referent to element to receive focus when trap is activated. Optionally a CSS Selector
+  /** Optional reference to element to receive focus when trap is activated. Optionally a CSS Selector
    * string can be supplied to locate an element in the FocusTrap container. If no specification is defined
    * the first focusable element is used.
    */

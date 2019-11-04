@@ -6,7 +6,8 @@
 
 import * as React from "react";
 
-import { RelativePosition, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { Timer, BodyText, Point, PointProps, Icon } from "@bentley/ui-core";
 
 import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs } from "../../../ui-framework";
@@ -30,7 +31,9 @@ export class CursorPrompt {
 
   public display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset: PointProps = { x: 20, y: 20 }, relativePosition: RelativePosition = RelativePosition.BottomRight) {
     if (!instruction.text) {
-      this.close(false);
+      // istanbul ignore else
+      if (this._timer.isRunning)
+        this.close(false);
       return;
     }
 

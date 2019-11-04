@@ -12,6 +12,9 @@
     "ToggleLogZ": {
       "keyin": "fdt toggle logz"
     },
+    "ToggleDrapeFrustum": {
+      "keyin": "fdt toggle drapefrustum"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
@@ -77,6 +80,21 @@
     },
     "FadeOut": {
       "keyin": "fdt fadeout"
+    },
+    "VCIntersectOn": {
+      "keyin": "fdt vcintersect on"
+    },
+    "VCIntersectOff": {
+      "keyin": "fdt vcintersect off"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
+    },
+    "ToggleShadowFrustum": {
+      "keyin": "fdt shadow frustum"
     }
   }
 }

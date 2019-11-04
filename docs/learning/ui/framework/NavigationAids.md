@@ -4,4 +4,4 @@ A **Navigation&nbsp;Aid** is a user interface control that moves the user's pers
 
 ## API Reference
 
-* [NavigationAids]($framework:NavigationAids)
+* [NavigationAids]($ui-framework:NavigationAids)

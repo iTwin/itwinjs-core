@@ -5,9 +5,12 @@
 /** @module Tools */
 
 import {
-  Tool, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec,
-  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+  Tool, PluginUiProvider, PluginUiManager, UiItemNode,
 } from "@bentley/imodeljs-frontend";
+import {
+  ActionItemInsertSpec, GroupItemInsertSpec,
+  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+} from "@bentley/ui-abstract";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
 /** alpha test code */
@@ -87,7 +90,6 @@ class TestUiProvider implements PluginUiProvider {
         label: "test action tool (navH)",
       };
       return [navHorizontalSpec];
-
     } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
       const navVerticalSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,

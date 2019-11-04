@@ -5,15 +5,18 @@
 /** @module OIDC */
 
 import * as React from "react";
-import { SignIn as SignInBase } from "@bentley/ui-components";
+
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
+import { SignIn as SignInBase } from "@bentley/ui-components";
 
 /** Properties for the [[SignIn]] component
  * @public
  */
 export interface SignInProps extends CommonProps {
+  /** Oidc Frontend Client object */
+  oidcClient?: IOidcFrontendClient;
   /** Handler called after sign-in has completed */
   onSignedIn: () => void;
   /** Handler for the Register link */
@@ -27,7 +30,7 @@ export interface SignInProps extends CommonProps {
 
 /**
  * SignIn React component.
- * `UiFramework.oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * `this.props.oidcClient.signIn` is called when the "Sign In" button is pressed,
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
@@ -38,25 +41,26 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     // istanbul ignore next
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    if (this.props.oidcClient)
+      this.props.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   private _onUserStateChanged() {
-    if (UiFramework.oidcClient.isAuthorized && this.props.onSignedIn)
+    // istanbul ignore next
+    if (this.props.oidcClient && this.props.oidcClient.isAuthorized && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
   public componentWillUnmount() {
     // istanbul ignore next
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    if (this.props.oidcClient)
+      this.props.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {
     // istanbul ignore next
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    if (this.props.oidcClient)
+      this.props.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

@@ -24,7 +24,7 @@ function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
 }
 
-describe("iModelHubClient LockHandler", () => {
+describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Locks test";

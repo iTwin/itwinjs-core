@@ -118,7 +118,6 @@ The `applicationData` prop specifies JSON data attached to the Zone and ZoneDef.
     });
 ```
 
-
 ## Related Learning Topics
 
 * [Content Views and Layouts](./ContentViews.md)
@@ -132,5 +131,5 @@ The `applicationData` prop specifies JSON data attached to the Zone and ZoneDef.
 
 ## API Reference
 
-* [Frontstage]($framework:Frontstage)
-* [Zone]($framework:Zone)
+* [Frontstage]($ui-framework:Frontstage)
+* [Zone]($ui-framework:Zone)

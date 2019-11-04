@@ -32,14 +32,24 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 
-// @beta
-export class FavoritePropertyManager {
-    constructor();
-    add(field: Field): void;
-    has(field: Field): boolean;
-    onFavoritesChanged: BeEvent<() => void>;
-    remove(field: Field): void;
+// @internal
+export interface FavoriteProperties {
+    baseFieldInfos: Set<string>;
+    nestedContentInfos: Set<string>;
+    propertyInfos: Set<string>;
 }
+
+// @beta
+export class FavoritePropertiesManager {
+    constructor(props?: FavoritePropertiesManagerProps);
+    add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    clear(projectId?: string, imodelId?: string): Promise<void>;
+    has(field: Field, projectId?: string, imodelId?: string): boolean;
+    // @internal
+    initializeConnection: (imodelConnection: IModelConnection) => Promise<void>;
+    onFavoritesChanged: BeEvent<() => void>;
+    remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    }
 
 // @alpha
 export interface HiliteSet {
@@ -49,6 +59,20 @@ export interface HiliteSet {
     models?: Id64String[];
     // (undocumented)
     subCategories?: Id64String[];
+}
+
+// @internal
+export interface IFavoritePropertiesStorage {
+    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+}
+
+// @internal (undocumented)
+export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    // (undocumented)
+    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
 }
 
 // @public
@@ -66,7 +90,7 @@ export class PersistenceHelper {
 // @public
 export class Presentation {
     // @internal (undocumented)
-    static favoriteProperties: FavoritePropertyManager;
+    static favoriteProperties: FavoritePropertiesManager;
     // @internal (undocumented)
     static i18n: I18N;
     static initialize(props?: PresentationManagerProps): void;
@@ -103,6 +127,8 @@ export class PresentationManager implements IDisposable {
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
     // @beta
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
+    // @internal
+    onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
     readonly rpcRequestsHandler: RpcRequestsHandler;
     rulesets(): RulesetManager;

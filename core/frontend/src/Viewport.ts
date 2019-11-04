@@ -631,8 +631,6 @@ export class ViewFrustum {
         if (worldToNpc === undefined)
           return;
 
-        const minimumEyeDistance = 10.0;
-        const horizonDistance = 10000;
         worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
 
         for (let i = 0; i < 4; i++) {
@@ -643,11 +641,18 @@ export class ViewFrustum {
           else includeHorizon = true;
         }
         if (includeHorizon) {
-          const rangeCenter = extents.fractionToPoint(.5, .5, .5);
-          const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
-          extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+          let horizonDistance = 10000;
+          const earthRadius = 6378137;
+          const eyePoint = view.getEyePoint();
+          const eyeHeight = view.getEyePoint().z;
+          if (eyeHeight > 0.0)          // Assume zero is ground level and increase horizon based on earth's curvature.
+            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * earthRadius));
+
+          extents.extend(eyePoint.plusScaled(viewZ, -horizonDistance));
         }
         if (view.isCameraOn) {
+
+          const minimumEyeDistance = 10.0;
           extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
         }
 
@@ -2227,7 +2232,7 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored (e.g., those having null range of nonsensical origin). If no valid placements are supplied, this function does nothing.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
@@ -2262,7 +2267,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2294,7 +2299,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
@@ -2605,6 +2610,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;

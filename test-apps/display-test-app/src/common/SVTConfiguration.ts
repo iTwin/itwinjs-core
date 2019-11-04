@@ -18,9 +18,9 @@ export interface SVTConfiguration {
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean;
-  displaySolarShadows?: boolean; // default ON
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
-  directScreenRendering?: boolean; // default ON
+  filterMapTextures?: boolean;  // default OFF
+  filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
 }

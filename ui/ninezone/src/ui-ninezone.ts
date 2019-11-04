@@ -76,11 +76,7 @@ export * from "./ui-ninezone/toolbar/item/expandable/history/Icon";
 export * from "./ui-ninezone/toolbar/item/expandable/history/Item";
 export * from "./ui-ninezone/toolbar/item/expandable/history/Tray";
 
-export * from "./ui-ninezone/toolbar/scroll/Chevron";
-export * from "./ui-ninezone/toolbar/scroll/Indicator";
-
 export * from "./ui-ninezone/toolbar/Items";
-export * from "./ui-ninezone/toolbar/Scrollable";
 export * from "./ui-ninezone/toolbar/Toolbar";
 
 export * from "./ui-ninezone/utilities/Cell";

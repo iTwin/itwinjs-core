@@ -62,10 +62,13 @@ export class SavedView {
       viewState = SpatialViewState.createFromProps(props, iModelConnection);
     else if (ViewUtilities.isDrawing(savedViewProps.bisBaseClass))
       viewState = DrawingViewState.createFromProps(props, iModelConnection);
-    else /* Istanbul ignore else */ if (ViewUtilities.isSheet(savedViewProps.bisBaseClass))
-      viewState = SheetViewState.createFromProps(props, iModelConnection);
+    else {
+      // istanbul ignore else
+      if (ViewUtilities.isSheet(savedViewProps.bisBaseClass))
+        viewState = SheetViewState.createFromProps(props, iModelConnection);
+    }
 
-    // Istanbul ignore else
+    // istanbul ignore else
     if (viewState)
       await viewState.load();
 

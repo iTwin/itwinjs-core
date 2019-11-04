@@ -24,7 +24,6 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
@@ -43,7 +42,6 @@ public;AuxCoordSystemSpatialState
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundTerrainTileTreeReference 
-alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
 beta;class BaseQuantityDescription 
@@ -84,8 +82,6 @@ public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
-alpha;ConditionalDisplaySpecification
-alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
 alpha;ConversionData 
@@ -93,7 +89,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -108,6 +104,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 
@@ -151,7 +148,9 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
+beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
+beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
@@ -163,7 +162,6 @@ public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-alpha;GroupItemInsertSpec 
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -196,7 +194,6 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
-alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
@@ -249,6 +246,7 @@ internal;OffScreenTarget
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
 internal;OnScreenTarget 
+beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 public;OrthographicViewState 
 public;OutputMessageAlert
 public;OutputMessagePriority
@@ -288,11 +286,11 @@ beta;class RenderClipVolume
 public;RenderContext
 internal;enum RenderDiagnostics
 public;class RenderGraphic 
+public;class RenderGraphicOwner 
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;RenderScheduleState
-internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
@@ -386,8 +384,6 @@ beta;ToolAssistanceInstruction
 beta;ToolAssistanceInstructions
 beta;ToolAssistanceKeyboardInfo
 beta;ToolAssistanceSection
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings

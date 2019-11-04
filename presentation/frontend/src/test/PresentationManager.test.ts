@@ -6,6 +6,7 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
+import sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomDescriptor,
@@ -100,6 +101,20 @@ describe("PresentationManager", () => {
     it("disposes RPC requests handler", () => {
       manager.dispose();
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
+    });
+
+  });
+
+  describe("onConnection", () => {
+
+    it("caches IModelConnection", () => {
+      const managerStub = sinon.stub(manager, "onNewiModelConnection");
+      const imodelConnectionMock = moq.Mock.ofType<IModelConnection>();
+      (manager as any).onConnection(imodelConnectionMock.object).then(() => {
+        (manager as any).onConnection(imodelConnectionMock.object).then(() => {
+          expect(managerStub.calledOnceWith(imodelConnectionMock.object)).to.be.true;
+        })
+      });
     });
 
   });

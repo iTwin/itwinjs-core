@@ -27,7 +27,7 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
   return false;
 }
 
-describe("iModelHub CodeHandler", () => {
+describe("iModelHub CodeHandler (#iModelBank)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
@@ -364,7 +364,7 @@ function createTestSequence(type: CodeSequenceType) {
   return sequence;
 }
 
-describe("iModelHub CodeSequenceHandler ", () => {
+describe("iModelHub CodeSequenceHandler (#iModelBank)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;

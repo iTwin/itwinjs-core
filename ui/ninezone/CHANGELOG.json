@@ -2,6 +2,42 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-ninezone_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed mouse interaction for Navigation Aids"
+          },
+          {
+            "comment": "Made the Status Bar & Backstage more responsive on smaller screens"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Merge zone to save window resize settings and update target zone bounds."
+          },
+          {
+            "comment": "Fix footer offset in widget mode."
+          },
+          {
+            "comment": "Enable pointer events over toolbar instead of toolbar container."
+          },
+          {
+            "comment": "Persist zones layout on window resize."
+          },
+          {
+            "comment": "Fix Safari high CPU issue."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/ui-ninezone_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:43 GMT",

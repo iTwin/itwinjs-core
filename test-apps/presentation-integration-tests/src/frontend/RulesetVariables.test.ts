@@ -16,8 +16,8 @@ describe("Ruleset Variables", async () => {
   let variables: RulesetVariablesManager;
   const ruleset: Ruleset = require("../../test-rulesets/RulesetVariables/default");
 
-  before(() => {
-    initialize();
+  before(async () => {
+    await initialize();
   });
 
   after(() => {

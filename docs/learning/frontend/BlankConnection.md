@@ -4,7 +4,7 @@ A *Blank* IModelConnection is an [IModelConnection]($frontend) that is **not** c
 
 ## Background
 
-Much of the iModel.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [IModelConnection.createBlank] method can be used to create a valid `IModelConnection` that is *not* connected to a backend.
+Much of the iModel.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [IModelConnection.createBlank]($frontend) method can be used to create a valid `IModelConnection` that is *not* connected to a backend.
 
 ## Uses
 
@@ -21,7 +21,7 @@ Many services in the iModel.js frontend package display information from sources
 
 A blank IModelConnection can be used for creating Viewports that show graphics from sources other than an iModel, but remember that they *do not* have a backend. Therefore, it is not legal to attempt RPC requests against a blank IModelConnection. Most such operations will simply return nothing, but some will throw an exception. For example, all of the various forms of ECSQL queries will throw errors if attempted with a blank IModelConnection.
 
-You can test whether an IModelConnection is blank, by using either [IModelConnection.isOpen]($frontend) or [IModelConnection.isBlank]($frontend). `isOpen`will be false for a blank connection, and `isBlank`will be true [N.B. The distinction is that isOpen will also return false for an IModelConnection that was originally opened against a backend but subsequently closed.]
+You can test whether an IModelConnection is blank, by using either [IModelConnection.isOpen]($frontend) or [IModelConnection.isBlank]($frontend). `isOpen` will be false for a blank connection, and `isBlank` will be true [N.B. The distinction is that isOpen will also return false for an IModelConnection that was originally opened against a backend but subsequently closed.]
 
 ## Example
 

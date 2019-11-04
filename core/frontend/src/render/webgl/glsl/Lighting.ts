@@ -78,7 +78,7 @@ export function addLighting(builder: ProgramBuilder) {
   frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_sunDir", (uniform, params) => {
       const shadowMap = params.target.compositor.solarShadowMap;
-      if (undefined !== shadowMap && shadowMap.isEnabled && undefined !== shadowMap.direction) {
+      if (shadowMap && shadowMap.isEnabled && undefined !== shadowMap.direction) {
         // replace first light dir with solar direction (relative to model instead of view)
         let mvt = params.target.viewMatrix.clone(scratchTransform);
         mvt = mvt.multiplyTransformTransform(params.target.currentTransform, mvt);

@@ -22,6 +22,7 @@ import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { GraphicsCollectorDrawArgs } from "./PlanarClassifier";
+import { FeatureSymbology } from "../FeatureSymbology";
 
 /** @internal */
 export class BackgroundMapDrape extends TextureDrape {
@@ -38,8 +39,8 @@ export class BackgroundMapDrape extends TextureDrape {
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _doDebugFrustum = false;
-  private _debugFrustumGrahic?: RenderGraphic = undefined;
+  private _debugFrustumGraphic?: RenderGraphic = undefined;
+  private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
@@ -93,22 +94,22 @@ export class BackgroundMapDrape extends TextureDrape {
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
 
-    if (this._doDebugFrustum) {
-      this._debugFrustumGrahic = dispose(this._debugFrustumGrahic);
+    if (context.target.debugControl && context.target.debugControl.displayDrapeFrustum) {
+      this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
-      builder.setSymbology(ColorDef.white, ColorDef.blue, 1);
-      builder.addFrustum(this._frustum);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addFrustum(context.viewFrustum.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
       builder.addFrustum(this._debugFrustum!);
-      this._debugFrustumGrahic = builder.finish();
+      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.addFrustum(this._frustum);
+      this._debugFrustumGraphic = builder.finish();
     }
   }
 
   public draw(target: Target) {
-    if (undefined !== this._debugFrustumGrahic)
-      target.scene.push(this._debugFrustumGrahic);
+    if (undefined !== this._debugFrustumGraphic)
+      target.scene.push(this._debugFrustumGraphic);
 
     if (undefined === this._frustum || this._graphics.length === 0)
       return;
@@ -134,6 +135,9 @@ export class BackgroundMapDrape extends TextureDrape {
 
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
     const stack = new BranchStack();
+    stack.setViewFlags(drawingParams.viewFlags);
+    stack.setSymbologyOverrides(this._symbologyOverrides);
+
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
@@ -142,7 +146,7 @@ export class BackgroundMapDrape extends TextureDrape {
     target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
     target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.setViewFlags(drawingParams.viewFlags);
+    target.branchStack.pushState(stack.top);
 
     const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics, RenderPass.OpaqueGeneral);
@@ -157,6 +161,8 @@ export class BackgroundMapDrape extends TextureDrape {
       if (!useMRT) target.compositor.currentRenderTargetIndex = 0;
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
+
+    target.branchStack.pop();
 
     batchState.reset();   // Reset the batch Ids...
     target.bgColor.setTbgr(prevBgColor);

@@ -40,6 +40,7 @@ export * from "./ModelState";
 export * from "./NotificationManager";
 export * from "./plugin/Plugin";
 export * from "./plugin/PluginUiManager";
+export * from "./RelativePosition";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";

@@ -4,86 +4,62 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { IconProps } from "@bentley/ui-core";
-import { Direction } from "@bentley/ui-ninezone";
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { ToolItemDef } from "./ToolItemDef";
-import { BaseItemState } from "./ItemDefBase";
-import { CommandItemDef } from "./CommandItemDef";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import {
+  SyncUiProps, StringGetter, LabelProps, DescriptionProps, TooltipProps, CommandHandler,
+  AbstractItemProps,
+} from "@bentley/ui-abstract";
+import { Omit, IconProps } from "@bentley/ui-core";
 
-// -----------------------------------------------------------------------------
-// ItemProps and sub-interfaces
-// -----------------------------------------------------------------------------
-
-/** Definition that allows component to register to monitor SyncUi events.
+/** Definition that allows a component to register to monitor SyncUi events.
+ * Deprecated - Use [SyncUiProps]($ui-abstract) in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use SyncUiProps in bentley/ui-abstract instead
  */
-export interface SyncUiProps {
-  stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-  stateSyncIds?: string[];
-}
+export type SyncUiProps = SyncUiProps;
 
 /** Prototype for string getter function.
+ * Deprecated - Use [StringGetter]($ui-abstract) in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use StringGetter in bentley/ui-abstract instead
  */
-export type StringGetter = () => string;
+export type StringGetter = StringGetter;
 
 /** Properties for a label in an item
+ * Deprecated - Use [LabelProps]($ui-abstract) in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use LabelProps in bentley/ui-abstract instead
  */
-export interface LabelProps {
-  /** if set, it is used to explicitly set the label shown by a component. */
-  label?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  labelKey?: string;
-}
+export type LabelProps = LabelProps;
 
 /** Properties for a description in an item
+ * Deprecated - Use [DescriptionProps]($ui-abstract) in bentley/ui-abstract instead.
+ * @deprecated - use DescriptionProps in bentley/ui-abstract instead
  * @public
  */
-export interface DescriptionProps {
-  /** if set, it is used to explicitly set the description shown by a component. */
-  description?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if description is not explicitly set. */
-  descriptionKey?: string;
-}
+export type DescriptionProps = DescriptionProps;
 
 /** Properties for a tooltip in an item
+ * Deprecated - Use [TooltipProps]($ui-abstract) in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use TooltipProps in bentley/ui-abstract instead
  */
-export interface TooltipProps {
-  /** used to explicitly set the tooltip shown by a component. */
-  tooltip?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  tooltipKey?: string;
-}
+export type TooltipProps = TooltipProps;
+
+/** Definition for a command handler used by [[CommandItemProps]].
+ * Deprecated - Use [CommandHandler]($ui-abstract) in bentley/ui-abstract instead.
+ * @public
+ * @deprecated - use CommandHandler in bentley/ui-abstract instead
+ */
+export type CommandHandler = CommandHandler;
 
 /** Definition that specifies properties shared between many ConfigurableUi components.
  * @public
  */
-export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps, DescriptionProps {
-  /** if set, component will be visible - defaults to true */
-  isVisible?: boolean;
-  /** if set, component will be enabled - defaults to true */
-  isEnabled?: boolean;
-  /** if set, component will be considered "active" an will display an "active stripe" - defaults to false */
-  isActive?: boolean;
-  /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
-  isPressed?: boolean;
-  /** can be used by application to store miscellaneous data. */
-  applicationData?: any;
-  /** Indicates whether to draw a Beta badge. */
+export interface ItemProps extends Omit<AbstractItemProps, "iconSpec">, IconProps {
+  /** Indicates whether to draw a Beta badge.
+   * @deprecated - use badgeType instead
+   */
   betaBadge?: boolean;
-}
-
-/** Definition for a command handler used by [[CommandItemProps]].
- * @public
- */
-export interface CommandHandler {
-  execute?: (args?: any) => any;
-  parameters?: any;
-  getCommandArgs?: () => any[];
 }
 
 /** Definition for a Tool item with a tool id.
@@ -98,51 +74,4 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
  */
 export interface CommandItemProps extends ItemProps, CommandHandler {
   commandId?: string;
-}
-
-/** Union of all Item definitions that can be specified in a GroupItem
- * @public
- */
-export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
-
-/** Definition for a Group item that opens a group of items.
- * @public
- */
-export interface GroupItemProps extends ItemProps {
-  groupId?: string;
-  items: AnyItemDef[];
-  direction?: Direction;
-  itemsInColumn?: number;
-  /** if set, it is used to explicitly set a label at top of open group component. */
-  panelLabel?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if panelLabel is not explicitly set. */
-  paneLabelKey?: string;
-}
-
-/** Definition for a Conditional item that conditionally renders other items based on UiSync events.
- * @beta
- */
-export interface ConditionalItemProps extends ItemProps {
-  conditionalId?: string;
-  items: AnyItemDef[];
-}
-
-/** Definition for a Custom item that renders a React component.
- * @beta
- */
-export interface CustomItemProps extends ItemProps {
-  customId?: string;
-  reactElement: React.ReactNode;
-}
-
-/** Properties for a Menu item
- * @alpha
- */
-export interface MenuItemProps extends ItemProps {
-  /** The id for the menu item. */
-  id: string;
-  /** The item to execute when this item is invoked. Either 'item' or 'submenu' must be specified. */
-  item?: CommandItemProps;
-  /** Nested array of item props. Either 'item' or 'submenu' must be specified. */
-  submenu?: MenuItemProps[];
 }

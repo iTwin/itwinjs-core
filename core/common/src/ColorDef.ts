@@ -646,6 +646,15 @@ Object.freeze(ColorDef.red);
 Object.freeze(ColorDef.green);
 Object.freeze(ColorDef.blue);
 
+/** JSON representation of an [[RgbColor]]
+ * @public
+ */
+export type RgbColorProps = {
+  r: number;
+  g: number;
+  b: number;
+} | RgbColor;
+
 /** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255].
  * @public
  */
@@ -665,5 +674,25 @@ export class RgbColor {
   public static fromColorDef(colorDef: ColorDef): RgbColor {
     const colors = colorDef.colors;
     return new RgbColor(colors.r, colors.g, colors.b);
+  }
+
+  public toJSON(): RgbColorProps {
+    return { r: this.r, g: this.g, b: this.b };
+  }
+
+  public static fromJSON(json: RgbColorProps | undefined): RgbColor {
+    let r = 0xff;
+    let g = 0xff;
+    let b = 0xff;
+    if (undefined !== json) {
+      if (typeof json.r === "number")
+        r = json.r;
+      if (typeof json.g === "number")
+        g = json.g;
+      if (typeof json.b === "number")
+        b = json.b;
+    }
+
+    return new RgbColor(r, g, b);
   }
 }

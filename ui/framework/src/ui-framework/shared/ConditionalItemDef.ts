@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { AnyItemDef, ConditionalItemProps } from "./ItemProps";
+import { AbstractConditionalItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
+
 import { ItemList, ItemMap } from "./ItemMap";
 import { ItemDefBase, BaseItemState } from "./ItemDefBase";
 import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { ConditionalItemProps } from "./ConditionalItemProps";
+import { ItemDefFactory } from "./ItemDefFactory";
+import { AnyItemDef } from "./AnyItemDef";
 
 /** An Item that conditionally renders other items based on UiSync events.
  * @beta
@@ -32,6 +36,17 @@ export class ConditionalItemDef extends ItemDefBase {
     }
 
     this.items = props.items;
+  }
+
+  /** @internal */
+  public static constructFromAbstractItemProps(abstractItemProps: AbstractConditionalItemProps, onItemExecuted?: OnItemExecutedFunc): ConditionalItemDef {
+    const items = ItemDefFactory.createItemListForGroupItem(abstractItemProps.items, onItemExecuted);
+    const itemProps: ConditionalItemProps = {
+      conditionalId: abstractItemProps.conditionalId,
+      items,
+    };
+
+    return new ConditionalItemDef(itemProps);
   }
 
   public get id(): string {

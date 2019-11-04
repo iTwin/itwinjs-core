@@ -40,10 +40,10 @@ function ensureSymlink(sourceFile, outFilePath) {
   return 0; // success
 }
 
-function readPackageFileContents () {
+function readPackageFileContents() {
   const packageFileName = path.resolve("./package.json");
   if (!fs.existsSync(packageFileName))
-      return {};
+    return {};
   const packageFileContents = fs.readFileSync(packageFileName, "utf8");
   return JSON.parse(packageFileContents);
 }
@@ -65,6 +65,7 @@ let modulesList = [
   new ModuleInfo("core/quantity/lib/module/dev", "imodeljs-quantity.js"),
   new ModuleInfo("core/frontend/lib/module/dev", "imodeljs-frontend.js"),
   new ModuleInfo("core/markup/lib/module/dev", "imodeljs-markup.js"),
+  new ModuleInfo("ui/abstract/lib/module/dev", "ui-abstract.js"),
   new ModuleInfo("ui/core/lib/module/dev", "ui-core.js"),
   new ModuleInfo("ui/components/lib/module/dev", "ui-components.js"),
   new ModuleInfo("ui/framework/lib/module/dev", "ui-framework.js"),
@@ -74,8 +75,8 @@ let modulesList = [
   new ModuleInfo("presentation/frontend/lib/module/dev", "presentation-frontend.js"),
 ];
 
-function getPackageName (fileName) {
-  let packageRoot = fileName.slice(0, fileName.length-3);
+function getPackageName(fileName) {
+  let packageRoot = fileName.slice(0, fileName.length - 3);
   let packageName = "@bentley/".concat(packageRoot);
   return packageName;
 }

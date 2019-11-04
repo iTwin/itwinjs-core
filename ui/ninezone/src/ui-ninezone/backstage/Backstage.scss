@@ -17,16 +17,23 @@
   width: $nz-backstage-width;
   height: 100%;
   font-size: $nz-backstage-item-font-size;
-  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: $nz-backstage-item-color;
   background-color: $nz-backstage-background;
   transform: translateX(-100%);
   box-sizing: border-box;
+
   @include uicore-z-index(backstage);
   @include nz-transition(transform .25s ease);
 
   &.nz-open {
     @include nz-transform(translateX(0%));
+  }
+
+  @include for-tablet-landscape-down {
+    font-size: $uicore-font-size;
+  }
+  @include for-phone-only {
+    font-size: $uicore-font-size-small;
   }
 
   > ul {

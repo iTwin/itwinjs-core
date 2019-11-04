@@ -848,11 +848,11 @@ describe("Format", () => {
       assert.strictEqual(units.length, 2);
 
       const firstUnit = units[0];
-      expect(firstUnit.textContent).to.eql("Formats:MILE");
+      expect(firstUnit.textContent).to.eql("f:MILE");
       expect(firstUnit.getAttribute("label")).to.eql("mile(s)");
 
       const secondUnit = units[1];
-      expect(secondUnit.textContent).to.eql("Formats:YRD");
+      expect(secondUnit.textContent).to.eql("f:YRD");
       expect(secondUnit.getAttribute("label")).to.eql("yard(s)");
     });
   });

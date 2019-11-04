@@ -22,7 +22,7 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
 import { DisplayParams } from "../primitives/DisplayParams";
 
-function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
     return false;
 
@@ -288,6 +288,38 @@ export abstract class Graphic extends RenderGraphic {
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
+}
+
+export class GraphicOwner extends Graphic {
+  private readonly _graphic: Graphic;
+
+  public constructor(graphic: Graphic) {
+    super();
+    this._graphic = graphic;
+  }
+
+  public get graphic(): RenderGraphic { return this._graphic; }
+
+  public dispose(): void { }
+  public disposeGraphic(): void {
+    this.graphic.dispose();
+  }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+  }
+
+  public addCommands(commands: RenderCommands): void {
+    this._graphic.addCommands(commands);
+  }
+  public get isPickable(): boolean {
+    return this._graphic.isPickable;
+  }
+  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
+    this._graphic.addHiliteCommands(commands, batch, pass);
+  }
+  public toPrimitive(): Primitive | undefined {
+    return this._graphic.toPrimitive();
+  }
 }
 
 /** Transiently assigned to a Batch while rendering a frame, reset afterward. Used to provide context for pick IDs.

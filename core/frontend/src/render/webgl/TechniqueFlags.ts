@@ -74,7 +74,8 @@ export class TechniqueFlags {
 
   public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, hasMaterialAtlas = HasMaterialAtlas.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
-      this.initForHilite(target.clipDef, instanced, (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No);
+      const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
+      this.initForHilite(target.clipDef, instanced, isClassified, target.wantLogZ);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
@@ -142,7 +143,7 @@ export class TechniqueFlags {
   public setHasMaterialAtlas(has: boolean) { this.hasMaterialAtlas = has ? HasMaterialAtlas.Yes : HasMaterialAtlas.No; }
 
   public get isHilite() { return this._isHilite; }
-  public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified) {
+  public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified, logZ: boolean) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
@@ -153,6 +154,7 @@ export class TechniqueFlags {
     this.hasMaterialAtlas = HasMaterialAtlas.No;
     this.usesLogZ = false;
     this.clip = clip;
+    this.usesLogZ = logZ;
   }
 
   public buildDescription(): string {

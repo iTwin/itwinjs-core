@@ -277,7 +277,7 @@ function testPolygonOffset(polygons: Point3d[][],
 
   for (const points of polygons) {
     const range = Range3d.createArray(points);
-    const yStep = 2.0 * range.yLength();
+    const yStep = 2.0 * range.yLength() + 10;
     y0 = 0.0;
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
     y0 += yStep;
@@ -372,6 +372,34 @@ describe("PolygonOffset", () => {
     const star2 = Sample.createStar(1, 1, 0, 5, 2, 5, true);
     testPolygonOffset([rectangle0, star1, star2, wPoints], "TestA", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
 
+  });
+
+  it("TestSplitLine", () => {
+    const allPoints = [];
+    for (const upperCount of [2, 1, 2, 3, 8]) {
+      const points = Sample.createInterpolatedPoints(Point3d.create(0, 1), Point3d.create(2, 3), upperCount, undefined, 0, upperCount);
+      allPoints.push(points);
+    }
+    testPolygonOffset(allPoints, "TestSplitLine", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
+
+  });
+
+  it("TestColinear", () => {
+    const allPoints = [];
+    for (const delta of [0, 0.01, 0.4]) {
+      const points: Point3d[] = [];
+      const corners = Sample.createRectangleXY(0, 0, 5, 6);
+      corners[1].x += delta;
+      corners[2].x += 0.2 * delta;
+      corners[2].y += delta;
+      corners[3].x -= delta * 2;
+      Sample.createInterpolatedPoints(corners[0], corners[1], 3, points, 0, 2);
+      Sample.createInterpolatedPoints(corners[1], corners[2], 3, points, 0, 2);
+      Sample.createInterpolatedPoints(corners[2], corners[3], 4, points, 0, 3);
+      Sample.createInterpolatedPoints(corners[3], corners[0], 3, points, 0, 3);
+      allPoints.push(points);
+    }
+    testPolygonOffset(allPoints, "TestColinear", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
   });
 
   it("TestSpikes", () => {

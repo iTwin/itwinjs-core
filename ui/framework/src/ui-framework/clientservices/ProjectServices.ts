@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { AccessToken } from "@bentley/imodeljs-clients";
-
 // This file defines the Project-related service interface that applications can provide if they want to override the default behavior.
 
 /** The possible status values for reading ProjectInfo from CONNECT.
@@ -46,5 +44,5 @@ export interface ProjectServices {
    * Retrieve the Projects for the specified ProjectScope to which the logged in user has access.
    * The top and skip arguments are used for paging when there are large numbers of projects.
    */
-  getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
+  getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }

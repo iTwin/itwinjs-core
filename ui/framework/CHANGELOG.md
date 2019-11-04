@@ -1,6 +1,35 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 09 Oct 2019 20:28:43 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Addressed AccessToken, OidcClient and Backstage issues in ui-framework
+- UiAdmin methods for AccuDraw Ui: MenuButton, Calculator, Angle, Length, Height
+- Provide a DefaultNavigationWidget that can be used by Apps and Plugins and can be extended by Plugins.
+- Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications.
+- Minor Backstage cleanup & unit tests
+- Update DefaultToolSettingsProvide to create responsive UI.
+- Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
+- Added support for English key-ins in addition to translated key-ins
+- Flatten group in DefaultNavigationWidget
+- Update order of string enums to try to avoid extract-api issues
+- Added New badge for UI items
+- Add basic support for redux connected components.
+- Made the Status Bar & Backstage more responsive on smaller screens
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+- Refactored BackstageComposer.
+- Expand tool zone bounds over unused bottom zones.
+- Correctly fill merged zones.
+- Update presentation rules of imodel components' hierarchies to hide private models and their content
+- Fix defaultState of StagePanel.
+- Raise BackstageEvent from BackstageManager.
+- Remove CSS class that was adding extra padding to the bottom of editor fields in narrow layout.
+- Removed unused package
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:43 GMT

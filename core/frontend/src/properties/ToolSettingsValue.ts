@@ -90,16 +90,18 @@ export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
  */
 export class ToolSettingsPropertyRecord extends PropertyRecord {
   public editorPosition: EditorPosition;
+  public lockProperty?: PropertyRecord;
 
-  public constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly = false) {
+  public constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly = false, lockProperty?: PropertyRecord) {
     super(value, property);
     this.editorPosition = editorPosition;
     this.isReadonly = isReadonly;
+    this.lockProperty = lockProperty;
   }
 
   public static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord {
     const value = Object.assign({}, newValue ? newValue : record.value);
-    const newRecord = new ToolSettingsPropertyRecord(value, record.property, record.editorPosition, record.isReadonly);
+    const newRecord = new ToolSettingsPropertyRecord(value, record.property, record.editorPosition, record.isReadonly, record.lockProperty);
     newRecord.isDisabled = record.isDisabled;
     return newRecord;
   }

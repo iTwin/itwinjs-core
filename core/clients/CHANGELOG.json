@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-clients_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixing fourth digit elimination if third one is zero while parsing version in ulas LogEntryConverter"
+          },
+          {
+            "comment": "Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications."
+          },
+          {
+            "comment": "Fixed a typo in the RealityDataServices client for accessing the lastAccessedTimestamp"
+          },
+          {
+            "comment": "Fix thumbnail download issue in ElectronJs"
+          },
+          {
+            "comment": "Enhancements to the ProjectShare plugin. "
+          },
+          {
+            "comment": "Added Basic authentication for iModelBank"
+          },
+          {
+            "comment": "fixed ios client issues"
+          },
+          {
+            "comment": "Fix for Bug#192178 - Settings service returns only 20 at a time from namespace query. Also, use query rather than /Namespace/Settingname url to avoid 404 return code."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/imodeljs-clients_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

@@ -6,6 +6,7 @@
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
@@ -40,20 +41,6 @@ export enum OutputMessageAlert {
   None = 0,
   Dialog = 1,
   Balloon = 2,
-}
-
-/** Relative Position for setPointerTypeDetails
- * @public
- */
-export enum RelativePosition {
-  Left = 0,
-  Top = 1,
-  Right = 2,
-  Bottom = 3,
-  TopLeft = 4,
-  TopRight = 5,
-  BottomLeft = 6,
-  BottomRight = 7,
 }
 
 /** Reason for ending the activity message via endActivityMessage

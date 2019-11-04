@@ -56,6 +56,7 @@ iModel.js-clients
 iModel.js-common
 iModel.js-quantity
 iModel.js-frontend
+ui-abstract
 ui-core
 ui-components
 ui-framework

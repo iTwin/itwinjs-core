@@ -15,7 +15,6 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 chai.should();
 
@@ -56,7 +55,7 @@ function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   mockPostUpdatedChangeSet(imodelId, changeSet);
 }
 
-describe("iModelHub ChangeSetHandler", () => {
+describe("iModelHub ChangeSetHandler (#iModelBank)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -140,7 +139,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://"));
+      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
@@ -179,7 +178,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should download ChangeSets with Buffering", async () => {
-    iModelClient.setFileHandler(new AzureFileHandler(true));
+    iModelClient.setFileHandler(utils.createFileHanlder(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
 
@@ -197,7 +196,7 @@ describe("iModelHub ChangeSetHandler", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
     }
 
-    iModelClient.setFileHandler(new AzureFileHandler());
+    iModelClient.setFileHandler(utils.createFileHanlder());
   });
 
   it("should get ChangeSets skipping the first one", async () => {
@@ -248,7 +247,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://"));
+      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 

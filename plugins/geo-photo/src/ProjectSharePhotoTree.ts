@@ -3,28 +3,31 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Logger, BentleyError, BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
-import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Logger, GuidString } from "@bentley/bentleyjs-core";
+import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry } from "./PhotoTree";
-import { JpegTagReader, ImageTags, ImageTagValue } from "./JpegTagReader";
-
-const loggerCategory = "Plugins.GeoPhoto";
+import { loggerCategory, GeoPhotoTags, PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
 
 // ------------------------ Project Share TreeHandler implementation ---------------------
 
 /** Subclass of PhotoFolder created by ProjectShareHandler */
-class PSPhotoFolder extends PhotoFolder {
+export class PSPhotoFolder extends PhotoFolder {
 
-  constructor(treeHandler: PhotoTreeHandler, private _i18N: I18N, private _psFolder: ProjectShareFolder | undefined) {
-    super(treeHandler);
+  constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder | undefined, private _i18n: I18N, private _psFolder: ProjectShareFolder | undefined) {
+    super(treeHandler, parent);
   }
 
   public get name(): string {
     if (this._psFolder)
       return this._psFolder.name!;
-    return this._i18N.translate("geoPhoto:messages.RootFolderName");
+    return this._i18n.translate("geoPhoto:messages.RootFolderName");
+  }
+
+  public get createTime(): string {
+    if (this._psFolder)
+      return this._psFolder.createdTimeStamp || "";
+    return "";
   }
 
   public get folderId(): string | undefined {
@@ -37,15 +40,19 @@ class FoundProperty {
 }
 
 /** Subclass of PhotoEntry created by ProjectShareHandler */
-class PSPhotoFile extends PhotoFile {
+export class PSPhotoFile extends PhotoFile {
   public geoLocation: Cartographic | undefined;
 
-  constructor(treeHandler: PhotoTreeHandler, private _i18N: I18N, public psFile: ProjectShareFile) {
-    super(treeHandler);
+  constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder, i18n: I18N, public psFile: ProjectShareFile) {
+    super(treeHandler, parent, i18n);
   }
 
   public get name(): string {
     return this.psFile.name!;
+  }
+
+  public get createTime(): string {
+    return this.psFile.createdTimeStamp || "";
   }
 
   public get fileId(): string {
@@ -53,7 +60,7 @@ class PSPhotoFile extends PhotoFile {
   }
 
   public async getFileContents(byteCount?: number): Promise<Uint8Array> {
-    return this.treeHandler.getFileContents(this, byteCount).catch((error) => {
+    return this._treeHandler.getFileContents(this, byteCount).catch((error) => {
       // tslint:disable-next-line:no-console
       console.log(`Error retrieving Photo File contents: ${error}`);
       return new Uint8Array();
@@ -62,14 +69,6 @@ class PSPhotoFile extends PhotoFile {
 
   public get accessUrl(): string {
     return this.psFile.accessUrl!;
-  }
-
-  public get isPanorama(): boolean {
-    return this.probablyPano ? this.probablyPano : false;
-  }
-
-  public get toolTip(): string {
-    return this._i18N.translate(this.isPanorama ? "geoPhoto:messages.PanoramaFile" : "geoPhoto:messages.PhotoFile", { fileName: this.name });
   }
 
   public findCustomProperty(propertyName: string): FoundProperty | undefined {
@@ -83,81 +82,24 @@ class PSPhotoFile extends PhotoFile {
   }
 }
 
-/**
- * Subset of Jpeg Tags that are of interest to the geo-photo plugin, stored in ProjectShare
- */
-export class GeoPhotoTags {
-  constructor(public geoLocation: Cartographic, public probablyPano: boolean, public createdTime: string | undefined) {
-  }
-}
-
 /** The TreeHandler subclass that reads from Project Share. */
-export class ProjectShareHandler implements PhotoTreeHandler {
+export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTreeHandler {
   private _projectShareClient: ProjectShareClient;
   private _rootFolder: PSPhotoFolder | undefined;
-  private static readonly _customPropertyName = "JpegFileInfo";
+  private static readonly _customPropertyName = "JpegInfoV1";
 
-  constructor(private _context: AuthorizedFrontendRequestContext, private _i18N: I18N, private _iModelConnection: IModelConnection) {
+  constructor(private _context: AuthorizedFrontendRequestContext, private _i18n: I18N, iModel: IModelConnection) {
+    super(iModel);
     this._projectShareClient = new ProjectShareClient();
   }
 
   /** Create the root folder for a Project Share file repository */
   public async createRootFolder(): Promise<PhotoFolder> {
-    this._rootFolder = new PSPhotoFolder(this, this._i18N, undefined);
+    this._rootFolder = new PSPhotoFolder(this, undefined, this._i18n, undefined);
 
     // Always get the contents of the root folder. (ends up back at our readFolderContents method)
     await this._rootFolder.getFolderContents(true);
     return this._rootFolder;
-  }
-
-  /** Utility function to get decimal degrees from the degree / minute / second array stored in a JPEG file */
-  private static getDegreeMinSec(tagSet: ImageTags, baseName: string, positiveVal: string): number | undefined {
-    const dmsArray = tagSet.get(baseName);
-    if (!Array.isArray(dmsArray) || dmsArray.length < 3)
-      return undefined;
-    const ref: ImageTagValue = tagSet.get(baseName + "Ref");
-    if (undefined === ref)
-      return undefined;
-    if (typeof ref !== "string")
-      return undefined;
-    const sign: number = (ref === positiveVal) ? 1.0 : -1.0;
-    return sign * (dmsArray[0] + dmsArray[1] / 60.0 + dmsArray[2] / (3600.0));
-  }
-
-  /** There is no obvious way to tell whether a JPEG file contains a panorama or not. This function uses the heuristic that
-   *  panorama files have an aspect ratio of 2:1.
-   */
-  private static getProbablyPano(tagSet: ImageTags): boolean {
-    const pixelX = tagSet.get("PixelXDimension");
-    const pixelY = tagSet.get("PixelYDimension");
-    // err on the side of calling it a pano.
-    if ((undefined === pixelX) || (undefined === pixelY)) {
-      return true;
-    }
-    if ((typeof pixelX !== "number") || (typeof pixelY !== "number"))
-      return true;
-
-    return pixelX === 2 * pixelY;
-  }
-
-  /** Read tags from a JPEG image */
-  private async readTagsFromJpeg(psFile: PSPhotoFile): Promise<GeoPhotoTags> {
-    const byteCount = 12000; // 12KB should be sufficient to read the GPS headers and Thumbnails
-    const byteArray: Uint8Array = await psFile.getFileContents(byteCount);
-
-    const tagSet: ImageTags = JpegTagReader.readTags(byteArray.buffer);
-
-    const longitude = ProjectShareHandler.getDegreeMinSec(tagSet, "GPSLongitude", "E");
-    const latitude = ProjectShareHandler.getDegreeMinSec(tagSet, "GPSLatitude", "N");
-    const elevation: ImageTagValue = tagSet.get("GPSAltitude");
-    const probablyPano: boolean = ProjectShareHandler.getProbablyPano(tagSet);
-    if (longitude === undefined || latitude === undefined)
-      throw new BentleyError(BentleyStatus.ERROR, "There is no geographic tag in the jpeg file", Logger.logError, loggerCategory, () => ({ ...psFile.psFile }));
-
-    const cartographic = new Cartographic(longitude, latitude, (undefined === elevation) ? undefined : elevation as number);
-
-    const tags = new GeoPhotoTags(cartographic, probablyPano, psFile.psFile.createdTimeStamp);
-    return tags;
   }
 
   private findCustomProperty(file: ProjectShareFile): FoundProperty | undefined {
@@ -181,17 +123,10 @@ export class ProjectShareHandler implements PhotoTreeHandler {
    * @param tags
    * @returns Updated ProjectShareFile
    */
-  public async saveTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, tags: GeoPhotoTags): Promise<void> {
+  private async saveTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, tags: GeoPhotoTags): Promise<void> {
     const tagsStr = JSON.stringify(tags);
-
-    const prop = this.findCustomProperty(psFile.psFile);
-    const customProperties = psFile.psFile.customProperties;
-    if (prop)
-      customProperties[prop.index].Value = tagsStr; // Update existing
-    else
-      customProperties.push({ Name: ProjectShareHandler._customPropertyName, Value: tagsStr }); // Create new
-
-    await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, customProperties);
+    const customProperties = [{ Name: ProjectShareHandler._customPropertyName, Value: tagsStr }]; // Create or update
+    psFile.psFile = await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, customProperties);
   }
 
   /**
@@ -205,11 +140,12 @@ export class ProjectShareHandler implements PhotoTreeHandler {
       return undefined;
 
     const tags: any = JSON.parse(prop.value);
+    // require all the values to be defined, or read the tag value from the file again.
     if (tags.geoLocation === undefined || tags.geoLocation.latitude === undefined || tags.geoLocation.longitude === undefined)
       return undefined;
 
     const geoLocation = new Cartographic(tags.geoLocation.longitude, tags.geoLocation.latitude, tags.geoLocation.height || 0.0);
-    return new GeoPhotoTags(geoLocation, tags.probablyPano, tags.createdTime);
+    return new GeoPhotoTags(geoLocation, tags.track, tags.time, tags.probablyPano, tags.thumbnail);
   }
 
   /**
@@ -218,19 +154,23 @@ export class ProjectShareHandler implements PhotoTreeHandler {
    * @param contextId Connect context Id (e.g., projectId or assetId)
    * @param file
    */
-  public async deleteTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile): Promise<void> {
-    const prop = this.findCustomProperty(file);
+  public async deleteTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<void> {
+    const prop = this.findCustomProperty(psFile.psFile);
     if (!prop)
       return;
 
-    const deleteProperties = new Array<string>(ProjectShareHandler._customPropertyName);
-    await this._projectShareClient.updateCustomProperties(requestContext, contextId, file, undefined, deleteProperties);
+    const deleteProperties = [];
+    deleteProperties.push(ProjectShareHandler._customPropertyName);
+    psFile.psFile = await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, undefined, deleteProperties);
   }
 
   /** Validates the tags retrieved from the ProjectShare image */
-  public validateTags(psFile: PSPhotoFile, tags: GeoPhotoTags): boolean {
-    // TODO: This currently checks whether the created time matches.This isn't ideal, we are planning on changing it
-    return (psFile.psFile.createdTimeStamp === tags.createdTime);
+  public validateTags(_psFile: PSPhotoFile, _tags: GeoPhotoTags): boolean {
+    // TODO: This currently just returns true. We experimented with modifiedTime - that doesn't work because it changes when
+    // you change the custom properties. We experimented with checksum - that is too slow. So we simply observe that the way
+    // pictures are taken, the camera gives them a new name every time, and they never really change. If necessary, we can
+    // figure out something in the future.
+    return true;
   }
 
   /**
@@ -240,13 +180,19 @@ export class ProjectShareHandler implements PhotoTreeHandler {
    * @returns The tags that have been read from the image
    */
   public async updateTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<GeoPhotoTags | undefined> {
-    const tags = await this.readTagsFromJpeg(psFile);
-    if (tags === undefined) {
-      Logger.logWarning(loggerCategory, "Jpeg does not have any geographic location", () => ({ ...psFile.psFile }));
+    try {
+      const tags = await psFile.readTagsFromJpeg();
+      if (tags === undefined) {
+        Logger.logWarning(loggerCategory, "Jpeg does not have any geographic location", () => ({ ...psFile.psFile }));
+        return undefined;
+      }
+      await this.saveTags(requestContext, contextId, psFile, tags);
+      return tags;
+    } catch (error) {
+      // tslint:disable-next-line:no-console
+      console.log(`Error ${error} attempting to read tags of ${psFile.name}`);
       return undefined;
     }
-    await this.saveTags(requestContext, contextId, psFile, tags);
-    return tags;
   }
 
   /** Get the Cartographic (lat/long) positions for the specified file. */
@@ -255,7 +201,7 @@ export class ProjectShareHandler implements PhotoTreeHandler {
 
     let tags = this.readTags(psFile);
     if (tags === undefined || !this.validateTags(psFile, tags))
-      tags = await this.updateTags(this._context, this._iModelConnection.iModelToken.contextId!, psFile);
+      tags = await this.updateTags(this._context, this._iModel.iModelToken.contextId!, psFile);
 
     if (!tags) {
       // tslint:disable-next-line:no-console
@@ -264,17 +210,9 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     }
 
     psFile.geoLocation = tags.geoLocation;
+    psFile.track = tags.track;
+    psFile.takenTime = tags.time;
     psFile.probablyPano = tags.probablyPano;
-  }
-
-  /** Gets the Spatial (x,y,z) coordinates for the photoFile. */
-  private async getPhotoFileSpatial(file: PhotoFile, _folder: PhotoFolder): Promise<void> {
-    const psFile: PSPhotoFile = file as PSPhotoFile;
-    const geoLocation: Cartographic | undefined = psFile.geoLocation;
-    if (geoLocation) {
-      const cartographic = Cartographic.fromDegrees(geoLocation.longitude, geoLocation.latitude, geoLocation.height);
-      psFile.spatial = await this._iModelConnection.cartographicToSpatial(cartographic);
-    }
   }
 
   /** Traverses the files to get their Cartographic positions. This is set up as a separate pass to facility
@@ -284,18 +222,10 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     await folder.traversePhotos(this.getPhotoFileCartographic.bind(this), subFolders, false);
   }
 
-  /** Traverses the files to get their Spatial positions. This is set up as a separate pass to facility
-   *  future optimization. Currently, it just does the files one by one. Batching up the lat/long
-   *  values to calculate their spatial coordinates would improve efficiency.
-   */
-  public async getSpatialPositions(folder: PhotoFolder, subFolders: boolean): Promise<void> {
-    await folder.traversePhotos(this.getPhotoFileSpatial.bind(this), subFolders, false);
-  }
-
   /** Reads the contents (both folders and files) in specified folder */
   public async readFolderContents(folder: PhotoFolder, subFolders: boolean): Promise<FolderEntry[]> {
     const entries: FolderEntry[] = [];
-    const projectId = this._iModelConnection.iModelToken.contextId;
+    const projectId = this._iModel.iModelToken.contextId;
     if (!projectId)
       return entries;
 
@@ -303,19 +233,18 @@ export class ProjectShareHandler implements PhotoTreeHandler {
     let folderId = (folder as PSPhotoFolder).folderId;
     if (undefined === folderId)
       folderId = projectId;
-    const projectShareQuery = new ProjectShareQuery().inFolder(folderId!);
-    const folders: ProjectShareFolder[] = await this._projectShareClient.getFolders(this._context, projectId, projectShareQuery);
-    for (const thisFolder of folders) {
-      entries.push(new PSPhotoFolder(this, this._i18N, thisFolder));
+    const psFolders: ProjectShareFolder[] = await this._projectShareClient.getFolders(this._context, projectId, new ProjectShareFolderQuery().inFolder(folderId!));
+    for (const thisPsFolder of psFolders) {
+      entries.push(new PSPhotoFolder(this, folder, this._i18n, thisPsFolder));
     }
 
-    const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, projectShareQuery);
+    const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, new ProjectShareFileQuery().inFolder(folderId!));
     for (const thisFile of files) {
       // we want only jpeg files.
       if (undefined !== thisFile.name) {
         const lcName: string = thisFile.name.toLowerCase();
         if (lcName.endsWith("jpg") || lcName.endsWith("jpeg")) {
-          entries.push(new PSPhotoFile(this, this._i18N, thisFile));
+          entries.push(new PSPhotoFile(this, folder, this._i18n, thisFile));
         }
       }
     }

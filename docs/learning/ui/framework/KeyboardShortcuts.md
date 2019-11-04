@@ -4,4 +4,4 @@ A **Keyboard Shortcut** is a keystroke or combination of keystrokes used to laun
 
 ## API Reference
 
-* [KeyboardShortcut]($framework:KeyboardShortcut)
+* [KeyboardShortcut]($ui-framework:KeyboardShortcut)
