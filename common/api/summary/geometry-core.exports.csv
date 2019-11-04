@@ -204,6 +204,7 @@ public;RotationalSweep
 public;RuledSweep 
 alpha;Sample
 public;Segment1d
+internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 
