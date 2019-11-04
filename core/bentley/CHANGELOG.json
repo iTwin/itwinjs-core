@@ -2,6 +2,12 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/bentleyjs-core_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/bentleyjs-core_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

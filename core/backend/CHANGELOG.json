@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-backend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add TypeScript wrapper class for BisCore:ElementOwnsExternalSourceAspects"
+          },
+          {
+            "comment": "New wip plugin for hypermodeling support."
+          },
+          {
+            "comment": "Calling IModelDb.pushChanges is now a no-op if there are no changes"
+          },
+          {
+            "comment": "Adding accessor for LinearElementId from LinearlyLocated. Adding convenience APIs to manipulate LinearReferencing data stored in multi-aspects."
+          },
+          {
+            "comment": "Add TypeScript wrappers for GeometricElement2dHasTypeDefinition and GeometricElement3dHasTypeDefinition navigation relationships"
+          },
+          {
+            "comment": "Tests for Mixin impact on CRUD"
+          },
+          {
+            "comment": "Add and fix npm script to create backend test for mobile."
+          },
+          {
+            "comment": "Schema Design Perf tests for Polymorphic queries"
+          },
+          {
+            "comment": "Add IModelDb.querySchemaVersion"
+          },
+          {
+            "comment": "Schema Design Perf tests for relationships"
+          },
+          {
+            "comment": "Resurrected the old way of doing agent registrations"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/imodeljs-backend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

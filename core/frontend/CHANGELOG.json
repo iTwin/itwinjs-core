@@ -2,6 +2,153 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-frontend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Anisotropic filting of draped map tiles."
+          },
+          {
+            "comment": "Add debug tool for drape frustum."
+          },
+          {
+            "comment": "Added MarkerSet.changeViewport"
+          },
+          {
+            "comment": "Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. "
+          },
+          {
+            "comment": "Tweaks to ambient occlusion settings."
+          },
+          {
+            "comment": "Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications."
+          },
+          {
+            "comment": "Update DefaultToolSettingsProvider to create responisve UI."
+          },
+          {
+            "comment": "Reduce size of Cesium ION copyright logo."
+          },
+          {
+            "comment": "Cleanup AO settings."
+          },
+          {
+            "comment": "Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract."
+          },
+          {
+            "comment": "Concatenate projection and model matrix to avoid jitter."
+          },
+          {
+            "comment": "Make toJSON methods of EmphasizeElements and FeatureSymbology.Appearance return pure JSON types."
+          },
+          {
+            "comment": "Added support for English key-ins in addition to translated key-ins"
+          },
+          {
+            "comment": "Simplify fitView. Hypermodeling plugin cleanup."
+          },
+          {
+            "comment": "Rework perspective frustum calculation for planar projections"
+          },
+          {
+            "comment": "Fix plugin loader to honor the bundleName from the manifest file of the plugin."
+          },
+          {
+            "comment": "Prevent background map terrain from being affected by default symbology overrides."
+          },
+          {
+            "comment": "Fix failure to report shader compilation errors to user in debug builds."
+          },
+          {
+            "comment": "Create terrain tiles about center to correct drape jitter."
+          },
+          {
+            "comment": "Fix terrain skirt quantization"
+          },
+          {
+            "comment": "Fixes for making volume classifiers work."
+          },
+          {
+            "comment": "Fixes to volume classifier hilite & flashing"
+          },
+          {
+            "comment": "Fixed EmphasizeElements.wantEmphasis having no effect if neither color nor transparency were overridden."
+          },
+          {
+            "comment": "Added better control over auto-disposal of decoration graphics."
+          },
+          {
+            "comment": "New wip plugin for hypermodeling support."
+          },
+          {
+            "comment": "Added popup toolbar when cursor stops over marker or marker is tapped."
+          },
+          {
+            "comment": "Add imageUtil functions that are used in Design Review and needed in other packages."
+          },
+          {
+            "comment": "Improve horizon calculation"
+          },
+          {
+            "comment": "Fixed bug that caused duplicated points to be handled improperly in batched spatial<->geocoord conversions"
+          },
+          {
+            "comment": "MarkerSet applies only to a single ScreenViewport"
+          },
+          {
+            "comment": "Make viewport member of MarkerSet public"
+          },
+          {
+            "comment": "More OIDC fixes for logout of electron apps. "
+          },
+          {
+            "comment": "Improve performance for multiple viewports."
+          },
+          {
+            "comment": "Added New badge for UI items"
+          },
+          {
+            "comment": "Cross-platform function to open an image in a new window."
+          },
+          {
+            "comment": "Reduce planar texture frustum by clipping to view planes."
+          },
+          {
+            "comment": "Fix planar-classified regions not displaying hilite silhouettes in perspective views."
+          },
+          {
+            "comment": "Prioritize loading of map tiles."
+          },
+          {
+            "comment": "RenderSystem.Options.displaySolarShadows now defaults to true; and directScreenRendering has no effect (deprecated)."
+          },
+          {
+            "comment": "Ensure shadows are continually updated using the best available tiles."
+          },
+          {
+            "comment": "Apply transparency cutoff to shadows"
+          },
+          {
+            "comment": "Ensure transparency threshold takes into account material and feature overrides."
+          },
+          {
+            "comment": "Make shadows not apply to world decorations"
+          },
+          {
+            "comment": "Reduce threshold for moving camera in planar texture projection"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/imodeljs-frontend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

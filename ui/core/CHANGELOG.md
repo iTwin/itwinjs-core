@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Provide a generic Form component to replace the one in Design Review Saftibase and Risk Manangement stages.
+- Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
+- Added support for English key-ins in addition to translated key-ins
+- Fix centering and sizing of dialogs in FireFox.
+- Made the Status Bar & Backstage more responsive on smaller screens
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+- Fixed SVG support in ui-core
+- Added useLifecycleLogging hook to help debugging react functional components
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

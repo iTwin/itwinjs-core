@@ -2,6 +2,39 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/frontend-devtools_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add debug tool for drape frustum"
+          },
+          {
+            "comment": "Update this.keyins when new ones are discovered. Match englishKeyin."
+          },
+          {
+            "comment": "Fixes for making volume classifiers work."
+          },
+          {
+            "comment": "Additional options for `emphasize selection` key-in."
+          },
+          {
+            "comment": "Add ability to record GPU profiling data to Chrome Event Trace Format."
+          },
+          {
+            "comment": "Key-in for visualizing shadow frustum."
+          },
+          {
+            "comment": "Visualization of tile requests; key-in to measure time required to load tiles for view."
+          },
+          {
+            "comment": "Added more types of memory tracking to MemoryTracker."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/frontend-devtools_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

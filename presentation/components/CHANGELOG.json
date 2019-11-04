@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/presentation-components_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added logic to set the scope of Favorite Properties in DataProvider."
+          },
+          {
+            "comment": "Disable filtering of table columns created by PresentationTableDataProvider until the provider supports filtering"
+          },
+          {
+            "comment": "Added useUnifiedSelection hook to enabled unified selection in ControlledTree"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/presentation-components_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

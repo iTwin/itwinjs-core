@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/ui-abstract",
+  "entries": [
+    {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-abstract_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UiAdmin methods for AccuDraw Ui: MenuButton, Calculator, Angle, Length, Height"
+          },
+          {
+            "comment": "Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract."
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/presentation-frontend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added API to save favorite properties in user settings"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/presentation-frontend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

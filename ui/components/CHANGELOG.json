@@ -2,6 +2,45 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-components_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to have Table provide top visible row feedback"
+          },
+          {
+            "comment": "Made PropertyGrid categories keep the collapsed state when data is refreshed."
+          },
+          {
+            "comment": "Added New badge for UI items"
+          },
+          {
+            "comment": "Added Table column filtering support"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Added DataProvider getter on TreeModelSource"
+          },
+          {
+            "comment": "Fix tree attempting to highlight empty text in nodes"
+          },
+          {
+            "comment": "Fix tree no re-rendering delay loaded nodes after reload"
+          },
+          {
+            "comment": "Added initial implementation of ControlledTree"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/ui-components_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

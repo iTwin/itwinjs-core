@@ -2,6 +2,24 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/geometry-core_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#193588 bugs in PolygonOffsetContext"
+          },
+          {
+            "comment": "Mesh support: TVertexFixup and ColinearEdgeFixup"
+          },
+          {
+            "comment": "Lightweight iterator over Point3ds contained in an IndexedXYZCollection; Transform.multiplyRange() returns a null range if input is a null range."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/geometry-core_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",
