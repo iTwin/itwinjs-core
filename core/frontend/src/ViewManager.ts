@@ -449,6 +449,7 @@ export class ViewManager {
   public get dynamicsCursor(): string { return "url(cursors/dynamics.cur), move"; }
   public get grabCursor(): string { return "url(cursors/openHand.cur), auto"; }
   public get grabbingCursor(): string { return "url(cursors/closedHand.cur), auto"; }
+  public get walkCursor(): string { return "url(cursors/walk.cur), auto"; }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.

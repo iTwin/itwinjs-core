@@ -1548,7 +1548,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return true;
   }
 
-  public getHandleCursor() { return IModelApp.viewManager.crossHairCursor; }
+  public getHandleCursor() { return IModelApp.viewManager.walkCursor; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)

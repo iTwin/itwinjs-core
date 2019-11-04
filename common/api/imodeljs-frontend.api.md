@@ -9053,7 +9053,9 @@ export class ViewManager {
     readonly toolTipProviders: ToolTipProvider[];
     // @internal (undocumented)
     validateViewportScenes(): void;
-    }
+    // (undocumented)
+    readonly walkCursor: string;
+}
 
 // @public
 export abstract class ViewManip extends ViewTool {
