@@ -5050,7 +5050,7 @@ export abstract class Plugin {
 // @beta
 export class PluginAdmin {
     constructor();
-    // (undocumented)
+    // @internal (undocumented)
     addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
     addSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
     // @internal (undocumented)
@@ -5058,9 +5058,9 @@ export class PluginAdmin {
         detailHTML: HTMLElement | undefined;
         detailStrings: string[] | undefined;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getTarFileName(pluginRootName: string): string;
     // @deprecated
     static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;

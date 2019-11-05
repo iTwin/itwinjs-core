@@ -161,24 +161,40 @@ class PendingPlugin {
   }
 }
 
-// this class reads the plugin from a plain server assuming that the user has untarred the tarfile into a directory from the called "imjs_plugins/<pluginName>"
-// This loader is selected when the PluginAdmin.loadPlugin argument is of the form "<servername>/<pluginName>";
+/** Reads the plugin from a plain server assuming that the plugin is a set of files in a directory formatted as "imjs_plugins/<pluginName>".
+ *
+ * This loader is selected when the PluginAdmin.loadPlugin argument is of the form "<servername>/<pluginName>";
+ */
 class ExternalServerPluginLoader implements PluginLoader {
-  public serverName: string | undefined = undefined;
-  private _pluginRootName: string | undefined = undefined;
+  public serverName?: string = undefined;
+  private _pluginRootName?: string | undefined = undefined;
 
   public constructor(private _pluginAdmin: PluginAdmin) { }
 
+  /** Initializes the plugin loader for the provided plugin name.
+   *
+   * - A trailing '/' is not supported in the full plugin name.
+   * - Prepends 'http' to the fullPluginName if the fullPluginName starts with "localhost" or "127.0.0.1"
+   * - Prepends 'https' if the fullPluginName is missing an http and https
+   *
+   * @param fullPluginName The name or url to the location of the plugin.
+   */
   public async initialize(fullPluginName: string): Promise<PluginLoadResults> {
     const slashPos: number = fullPluginName.lastIndexOf("/");
-    // split apart the server name and plugin name.
+
+    // The fullPluginName is not a url
     if (-1 === slashPos) {
       this._pluginRootName = fullPluginName;
       this.serverName = "imjs_plugins/".concat(this._pluginRootName, "/");
     } else {
+      // split apart the server name and plugin name.
       this._pluginRootName = fullPluginName.slice(slashPos + 1);
-      const protocol: string = (fullPluginName.startsWith("localhost") || fullPluginName.startsWith("127.0.0.1")) ? "http://" : "https://";
-      this.serverName = protocol.concat(fullPluginName.slice(0, slashPos), "/imjs_plugins/", this._pluginRootName, "/");
+
+      let pluginServerUrl = "";
+      if (!fullPluginName.startsWith("http") || !fullPluginName.startsWith("https"))
+        pluginServerUrl += (fullPluginName.startsWith("localhost") || fullPluginName.startsWith("127.0.0.1")) ? "http://" : "https://";
+
+      this.serverName = pluginServerUrl.concat(fullPluginName.slice(0, slashPos), "/imjs_plugins/", this._pluginRootName, "/");
     }
     return Promise.resolve(undefined);
   }
@@ -192,7 +208,7 @@ class ExternalServerPluginLoader implements PluginLoader {
     return this.serverName!.concat(relativeUrl);
   }
 
-  // return the plugin name without the server name. Used to look up the registered name when determining whether the plugin is already loaded.
+  /** Return the plugin name without the server name. Used to look up the registered name when determining whether the plugin is already loaded. */
   public getPluginRoot(pluginSpec: string): string {
     const slashPos = pluginSpec.lastIndexOf("/");
     return pluginSpec.slice(slashPos + 1);
@@ -421,19 +437,19 @@ export class PluginAdmin {
   private _useServerAssistedLoader: Promise<boolean> | undefined;
   private _viewStartupPluginsLoaded: boolean = false;
 
-  // @internal
+  /** @internal */
   public addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin) {
     const pluginNameLC = pluginRootName.toLowerCase();
     this._pendingPlugins.set(pluginNameLC, pendingPlugin);
   }
 
-  // @internal
+  /** @internal */
   public getTarFileName(pluginRootName: string): string {
     // if it doesn't end in plugin.tar, append that.
     return pluginRootName.endsWith(".plugin.tar") ? pluginRootName : pluginRootName.concat(".plugin.tar");
   }
 
-  // @internal
+  /** @internal */
   public getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined {
     // lowercase name.
     const pluginNameLC = pluginName.toLowerCase();
@@ -553,9 +569,8 @@ export class PluginAdmin {
       await results.loadRequiredModules();
     }
     // if there no errors, we have successfully loaded all the required modules.
-    if (results.errorMessages) {
-      return Promise.resolve(results.errorMessages);
-    }
+    if (results.errorMessages)
+      return results.errorMessages;
 
     // Now that we know we have the required modules, we will load the actual bundle.
     // If we get this far, we know that window.iModelJsVersions is fine. Get the deployment type from it.
@@ -836,7 +851,7 @@ export class PluginAdmin {
    * If not, no further action is taken and the Plugin is not active.
    * @param plugin a newly instantiated subclass of Plugin.
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
-   * @deprecated call IModelApp.pluginAdmin.register instead.
+   * @deprecated call IModelApp.pluginAdmin.register instead.  Will be removed in iModel.js 2.0.
    */
   public static register(plugin: Plugin) {
     IModelApp.pluginAdmin.register(plugin);
@@ -845,7 +860,7 @@ export class PluginAdmin {
   /** Load a Plugin
    * @param pluginRoot the root name of the Plugin to be loaded from the web server.
    * @param args arguments that will be passed to the Plugin.onLoaded and Plugin.onExecute methods. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
-   * @deprecated call IModelApp.pluginAdmin.loadPlugin instead.
+   * @deprecated call IModelApp.pluginAdmin.loadPlugin instead.  Will be removed in iModel.js 2.0.
    */
   public static async loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults> {
     return IModelApp.pluginAdmin.loadPlugin(pluginSpec, args);
