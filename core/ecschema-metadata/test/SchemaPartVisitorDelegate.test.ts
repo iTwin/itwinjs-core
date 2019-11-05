@@ -30,7 +30,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
   let mockVisitor: any;
 
   beforeEach(() => {
-    schema = new Schema(new SchemaContext(), "Test", 1, 2, 3);
+    schema = new Schema(new SchemaContext(), "Test", "test", 1, 2, 3);
   });
 
   describe("visitSchema", () => {

@@ -17,7 +17,7 @@ describe("Diagnostics tests", () => {
   }
 
   beforeEach(async () => {
-    testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
   });
 
   it("diagnosticCategoryToString, Error, proper string returned", () => {

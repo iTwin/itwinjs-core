@@ -26,8 +26,8 @@ describe("CustomAttribute Rules Tests", () => {
 
   beforeEach(async () => {
     context = new SchemaContext();
-    schema = new Schema(context, "TestSchema", 1, 0, 0);
-    caSchema = new Schema(context, "TestCASchema", 1, 0, 0);
+    schema = new Schema(context, "TestSchema", "ts", 1, 0, 0);
+    caSchema = new Schema(context, "TestCASchema", "ts", 1, 0, 0);
     await (schema as MutableSchema).addReference(caSchema);
   });
 

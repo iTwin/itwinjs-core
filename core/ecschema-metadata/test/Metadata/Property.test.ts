@@ -41,7 +41,7 @@ describe("Property", () => {
   }
 
   beforeEach(async () => {
-    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     const mutable = schema as MutableSchema;
     testClass = await mutable.createEntityClass("TestClass");
     testCategory = await mutable.createPropertyCategory("TestCategory");
@@ -406,7 +406,7 @@ describe("Property", () => {
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
       const context = new SchemaContext();
-      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
       const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);
@@ -877,7 +877,7 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
@@ -918,10 +918,10 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
     beforeEach(() => {
       const context = new SchemaContext();
-      const referencedSchema = new Schema(context, "Reference", 1, 0, 0) as MutableSchema;
+      const referencedSchema = new Schema(context, "Reference", "ref", 1, 0, 0) as MutableSchema;
       referencedSchema.createKindOfQuantitySync("MyKindOfQuantity");
 
-      const schema = new Schema(context, "TestSchema", 1, 0, 0) as MutableSchema;
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
       schema.addReferenceSync(referencedSchema);
 
       const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
@@ -954,10 +954,10 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
     beforeEach(() => {
       const context = new SchemaContext();
-      const referencedSchema = new Schema(context, "Reference", 1, 0, 0) as MutableSchema;
+      const referencedSchema = new Schema(context, "Reference", "ref", 1, 0, 0) as MutableSchema;
       referencedSchema.createPropertyCategorySync("MyCategory");
 
-      const schema = new Schema(context, "TestSchema", 1, 0, 0) as MutableSchema;
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
       schema.addReferenceSync(referencedSchema);
 
       const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
@@ -989,7 +989,7 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
@@ -1021,7 +1021,7 @@ describe("PrimitiveProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
@@ -1059,7 +1059,7 @@ describe("EnumerationProperty", () => {
     let testEnum: Enumeration;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
@@ -1091,7 +1091,7 @@ describe("EnumerationProperty", () => {
     let testEnum: Enumeration;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
@@ -1114,7 +1114,7 @@ describe("EnumerationProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       const testEnumeration = new Enumeration(schema, "TestEnumeration");
       testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
@@ -1143,7 +1143,7 @@ describe("StructProperty", () => {
     let testStruct: StructClass;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
@@ -1175,7 +1175,7 @@ describe("StructProperty", () => {
     let testStruct: StructClass;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
@@ -1200,7 +1200,7 @@ describe("StructProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
@@ -1226,7 +1226,7 @@ describe("PrimitiveArrayProperty", () => {
     let testProperty: PrimitiveArrayProperty;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
     });
@@ -1249,7 +1249,7 @@ describe("PrimitiveArrayProperty", () => {
       let testArrayProperty: PrimitiveArrayProperty;
 
       beforeEach(() => {
-        const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+        const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
         const testClass = new EntityClass(schema, "TestClass");
         testArrayProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
       });
@@ -1274,7 +1274,7 @@ describe("PrimitiveArrayProperty", () => {
       const newDom = createEmptyXmlDocument();
 
       beforeEach(() => {
-        const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+        const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
         const testClass = new EntityClass(schema, "TestClass");
         testArrayProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
       });
@@ -1303,7 +1303,7 @@ describe.skip("NavigationProperty (Deserialization not fully implemented)", () =
     const newDom = createEmptyXmlDocument();
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       const relationshipClass = new RelationshipClass(schema, "TestRelationship");
       const lazyRelationship = new DelayedPromiseWithProps(relationshipClass.key, async () => relationshipClass!);

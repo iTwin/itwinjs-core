@@ -2051,8 +2051,8 @@ export class RelationshipMultiplicity {
 export class Schema implements CustomAttributeContainerProps {
     // @internal
     constructor(context: SchemaContext);
-    constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
-    constructor(context: SchemaContext, key: SchemaKey);
+    constructor(context: SchemaContext, name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number);
+    constructor(context: SchemaContext, key: SchemaKey, alias: string);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     // (undocumented)
@@ -2062,7 +2062,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected addReferenceSync(refSchema: Schema): void;
     // (undocumented)
-    readonly alias: string | undefined;
+    readonly alias: string;
     // (undocumented)
     protected _alias?: string;
     readonly context: SchemaContext;

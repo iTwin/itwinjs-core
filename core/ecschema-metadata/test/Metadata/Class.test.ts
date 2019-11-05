@@ -23,7 +23,7 @@ describe("ECClass", () => {
 
   describe("get properties", () => {
     beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     });
 
     it("inherited properties from base class", async () => {
@@ -356,7 +356,7 @@ describe("ECClass", () => {
         },
       };
 
-      const refSchema = new Schema(new SchemaContext(), "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(new SchemaContext(), "RefSchema", "ref", 1, 0, 5);
       const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
@@ -625,7 +625,7 @@ describe("ECClass", () => {
         },
       };
 
-      const refSchema = new Schema(new SchemaContext(), "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(new SchemaContext(), "RefSchema", "ref", 1, 0, 5);
       const refBaseClass = (refSchema as MutableSchema).createEntityClassSync("BaseClassInRef");
 
       const context = new SchemaContext();
@@ -1001,7 +1001,7 @@ describe("ECClass", () => {
       const refSchema = await Schema.fromJson(getSchemaJson(), context);
       const testClass = await refSchema.getItem("testClass") as ECClass;
 
-      const testSchema = new Schema(context, "ChildSchema", 1, 0, 5);
+      const testSchema = new Schema(context, "ChildSchema", "child", 1, 0, 5);
       const childClass = new EntityClass(testSchema, "TestClass");
       childClass.baseClass = new DelayedPromiseWithProps(testClass!.key, async () => testClass!);
       (testSchema as MutableSchema).addItem(testClass);
@@ -1013,23 +1013,23 @@ describe("ECClass", () => {
       expect(baseClass.textContent).to.eql("ts:testClass");
     });
 
-    it("Serialization with base class in reference Schema, no schema alias defined, throws", async () => {
+    /* it("Serialization with base class in reference Schema, no schema alias defined, throws", async () => {
       const context = new SchemaContext();
-      const refSchema = new Schema(context, "BaseSchema", 1, 0, 5);
+      const refSchema = new Schema(context, "BaseSchema", "bad", 1, 0, 5);
       const baseClass = new EntityClass(refSchema, "BaseClass");
       (refSchema as MutableSchema).addItem(baseClass);
 
-      const testSchema = new Schema(context, "ChildSchema", 1, 0, 5);
+      const testSchema = new Schema(context, "ChildSchema", "child", 1, 0, 5);
       const childClass = new EntityClass(testSchema, "TestClass");
       childClass.baseClass = new DelayedPromiseWithProps(baseClass!.key, async () => baseClass!);
       (testSchema as MutableSchema).addItem(childClass);
 
       await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
-    });
+    }); */
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
       const context = new SchemaContext();
-      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
       const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);
@@ -1599,8 +1599,8 @@ describe("ECClass", () => {
   describe("classesAreEqualByKey tests", () => {
     const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
     const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
-    const schemaA = new Schema(new SchemaContext(), schemaKeyA);
-    const schemaB = new Schema(new SchemaContext(), schemaKeyB);
+    const schemaA = new Schema(new SchemaContext(), schemaKeyA, "test");
+    const schemaB = new Schema(new SchemaContext(), schemaKeyB, "other");
 
     it("should return false if names do not match", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
