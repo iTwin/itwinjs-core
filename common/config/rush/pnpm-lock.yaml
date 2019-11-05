@@ -2,7 +2,7 @@ dependencies:
   '@azure/storage-blob': 10.5.0
   '@bentley/icons-generic': 0.0.31
   '@bentley/icons-generic-webfont': 0.0.31
-  '@bentley/imodeljs-native': 1.8.1
+  '@bentley/imodeljs-native': 1.8.2
   '@microsoft/api-extractor': 7.5.0
   '@openid/appauth': 1.2.6
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -284,7 +284,7 @@ dependencies:
   tslib: 1.10.0
   tslint: 5.20.0_typescript@3.6.4
   tslint-consistent-codestyle: 1.16.0_tslint@5.20.0+typescript@3.6.4
-  tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+  tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
   tslint-loader: 3.6.0_tslint@5.20.0
   tsutils: 3.17.1_typescript@3.6.4
   typedoc: 0.14.2
@@ -433,11 +433,11 @@ packages:
     dev: false
     resolution:
       integrity: sha1-mwt1MGtSz4er/Sts2xA83/fOIds=
-  /@bentley/imodeljs-native/1.8.1:
+  /@bentley/imodeljs-native/1.8.2:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-O+c8f7efAjBR2bAmzIZW5K77iBY=
+      integrity: sha1-odrW1qm7eDz2pmwf+wRADNv6A4g=
   /@fimbul/bifrost/0.21.0_tslint@5.20.0+typescript@3.6.4:
     dependencies:
       '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@3.6.4
@@ -12509,7 +12509,7 @@ packages:
       typescript: '>=2.1.4 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >=3.0.0-dev || >=3.1.0-dev || >=3.2.0-dev || >=3.3.0-dev || >=3.4.0-dev'
     resolution:
       integrity: sha512-ebR/xHyMEuU36hGNOgCfjGBNYxBPixf0yU1Yoo6s3BrpBRFccjPOmIVaVvQsWAUAMdmfzHOCihVkcaMfimqvHw==
-  /tslint-etc/1.9.1_tslint@5.20.0+typescript@3.6.4:
+  /tslint-etc/1.9.2_tslint@5.20.0+typescript@3.6.4:
     dependencies:
       '@phenomnomnominal/tsquery': 4.0.0_typescript@3.6.4
       tslib: 1.10.0
@@ -12522,7 +12522,7 @@ packages:
       tslint: ^5.0.0
       typescript: ^2.3.0 || ^3.0.0
     resolution:
-      integrity: sha512-lkZQSHRoTNm8EkLC76VYJ66JGY5oymCICzEFISTSYLOhwd/vKE0ljQY7AJIDp+4LT/BSLDDu6LklDYJqca+63Q==
+      integrity: sha512-OGsPc2kPVg4TU6OVJuc6awbri38O/uyNuWzlnYz6tivCa542FBtD4Vfiun26O9bPa1KlOrOMAB8hPcgQQR3T1Q==
   /tslint-loader/3.6.0_tslint@5.20.0:
     dependencies:
       loader-utils: 1.2.3
@@ -13820,7 +13820,7 @@ packages:
       rimraf: 2.7.1
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/bentleyjs-core'
@@ -13854,7 +13854,7 @@ packages:
       tslib: 1.10.0
       tslint: 5.20.0_typescript@3.6.4
       tslint-consistent-codestyle: 1.16.0_tslint@5.20.0+typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       tsutils: 3.17.1_typescript@3.6.4
       typedoc: 0.14.2
       typedoc-plugin-external-module-name: 2.0.0_typedoc@0.14.2
@@ -13890,7 +13890,7 @@ packages:
       rimraf: 2.7.1
       source-map-support: 0.5.16
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       uuid: 3.3.3
       yargs: 12.0.5
@@ -13908,7 +13908,7 @@ packages:
       json5: 2.1.1
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/config-loader'
@@ -13932,7 +13932,7 @@ packages:
       rimraf: 2.7.1
       source-map-loader: 0.2.4
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -13957,7 +13957,7 @@ packages:
       rimraf: 2.7.1
       tooltip.js: 1.3.3
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -13984,7 +13984,7 @@ packages:
       rimraf: 2.7.1
       tooltip.js: 1.3.3
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -14013,7 +14013,7 @@ packages:
       sinon: 7.5.0
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       xmldom: 0.1.27
     dev: false
@@ -14028,7 +14028,7 @@ packages:
       electron: 4.2.12
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/electron-manager'
@@ -14066,7 +14066,7 @@ packages:
       rimraf: 2.7.1
       save: 2.4.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       xmlhttprequest: 1.8.0
@@ -14104,7 +14104,7 @@ packages:
       rimraf: 2.7.1
       save: 2.4.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -14119,7 +14119,7 @@ packages:
       '@types/yargs': 12.0.13
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14134,7 +14134,7 @@ packages:
       '@types/yargs': 12.0.13
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14152,7 +14152,7 @@ packages:
       express: 4.17.1
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/express-server'
@@ -14167,7 +14167,7 @@ packages:
       file-saver: 2.0.2
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/frontend-devtools'
@@ -14188,7 +14188,7 @@ packages:
       source-map-loader: 0.2.4
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       webpack-cli: 3.3.10_webpack@4.41.2
@@ -14212,7 +14212,7 @@ packages:
       semver: 5.7.1
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/geometry-core'
@@ -14231,7 +14231,7 @@ packages:
       source-map-loader: 0.2.4
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       webpack-cli: 3.3.10_webpack@4.41.2
@@ -14252,7 +14252,7 @@ packages:
       request-promise-native: 1.0.8_request@2.88.0
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14276,7 +14276,7 @@ packages:
       request-promise-native: 1.0.8_request@2.88.0
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14288,7 +14288,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.5.0
-      '@bentley/imodeljs-native': 1.8.1
+      '@bentley/imodeljs-native': 1.8.2
       '@types/chai': 4.2.4
       '@types/formidable': 1.0.31
       '@types/fs-extra': 4.0.9
@@ -14315,13 +14315,13 @@ packages:
       source-map-support: 0.5.16
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-vszOrB3F/JYuDpkY24sNCbOubopzVFWxS5wPK3aCV3GLdvF4FrTV8RnR9K3/7ndD+ByKS0KQtuXA2mbIyp4vWA==
+      integrity: sha512-OAPjdo++aR1l10WC1XWhdKlZ5B9ipnyqWcjTK8H56Jo6gnIjmLccK4voKAuog71fHU5TGYIpOePEzzpSPwhCtQ==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -14353,7 +14353,7 @@ packages:
       source-map-support: 0.5.16
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/imodeljs-clients-backend'
@@ -14387,7 +14387,7 @@ packages:
       superagent: 3.8.3
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       xmldom: 0.1.27
@@ -14411,7 +14411,7 @@ packages:
       semver: 5.7.1
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/imodeljs-common'
@@ -14438,7 +14438,7 @@ packages:
       semver: 5.7.1
       source-map-loader: 0.2.4
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -14457,7 +14457,7 @@ packages:
       i18next-xhr-backend: 2.0.1
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/imodeljs-i18n'
@@ -14478,7 +14478,7 @@ packages:
       rimraf: 2.7.1
       source-map-loader: 0.2.4
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -14503,7 +14503,7 @@ packages:
       sinon: 7.5.0
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/imodeljs-quantity'
@@ -14526,7 +14526,7 @@ packages:
       tar: 4.4.13
       tree-kill: 1.2.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14552,7 +14552,7 @@ packages:
       svg-sprite-loader: 3.9.2
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       webpack-cli: 3.3.10_webpack@4.41.2
@@ -14573,7 +14573,7 @@ packages:
       request-promise: 4.2.5_request@2.88.0
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/logger-config'
@@ -14587,7 +14587,7 @@ packages:
       fs-extra: 6.0.1
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/perf-tools'
@@ -14623,7 +14623,7 @@ packages:
       sinon: 7.5.0
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
     dev: false
@@ -14658,7 +14658,7 @@ packages:
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
       tslint: 5.20.0_typescript@3.6.4
       tslint-consistent-codestyle: 1.16.0_tslint@5.20.0+typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       typescript-json-schema: 0.28.0
@@ -14701,7 +14701,7 @@ packages:
       sinon: 7.5.0
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
@@ -14738,7 +14738,7 @@ packages:
       sinon: 7.5.0
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
@@ -14780,7 +14780,7 @@ packages:
       sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
       ts-node: 7.0.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
@@ -14810,7 +14810,7 @@ packages:
       rimraf: 2.7.1
       semver: 5.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/presentation-test-app'
@@ -14840,7 +14840,7 @@ packages:
       rimraf: 2.7.1
       sinon: 7.5.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
     dev: false
@@ -14870,7 +14870,7 @@ packages:
       semver: 5.7.1
       source-map-loader: 0.2.4
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -14892,7 +14892,7 @@ packages:
       popper.js: 1.16.0
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/test-apps-analysis-importer'
@@ -14910,7 +14910,7 @@ packages:
       fs-extra: 6.0.1
       rimraf: 2.7.1
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       yargs: 12.0.5
     dev: false
@@ -14925,7 +14925,7 @@ packages:
       rimraf: 2.7.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       webpack-cli: 3.3.10_webpack@4.41.2
@@ -14967,7 +14967,7 @@ packages:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
     dev: false
@@ -15047,7 +15047,7 @@ packages:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
@@ -15105,7 +15105,7 @@ packages:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
     dev: false
@@ -15171,7 +15171,7 @@ packages:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typemoq: 2.1.0
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
@@ -15233,7 +15233,7 @@ packages:
       tsconfig-paths: 3.9.0
       tslib: 1.10.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       tslint-loader: 3.6.0_tslint@5.20.0
       tsutils: 3.17.1_typescript@3.6.4
       typemoq: 2.1.0
@@ -15276,7 +15276,7 @@ packages:
       svg-baker-runtime: 1.4.3
       svg-sprite-loader: 3.9.2
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
     dev: false
@@ -15353,7 +15353,7 @@ packages:
       tree-kill: 1.2.1
       ts-loader: 6.2.1_typescript@3.6.4
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       tslint-loader: 3.6.0_tslint@5.20.0
       typescript: 3.6.4
       uglifyjs-webpack-plugin: 1.3.0_webpack@4.41.2
@@ -15377,7 +15377,7 @@ packages:
       rimraf: 2.7.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
     dev: false
     name: '@rush-temp/webworker-test-app'
@@ -15391,7 +15391,7 @@ packages:
       rimraf: 2.7.1
       tsconfig-paths: 3.9.0
       tslint: 5.20.0_typescript@3.6.4
-      tslint-etc: 1.9.1_tslint@5.20.0+typescript@3.6.4
+      tslint-etc: 1.9.2_tslint@5.20.0+typescript@3.6.4
       typescript: 3.6.4
       webpack: 4.41.2_webpack@4.41.2
       webpack-cli: 3.3.10_webpack@4.41.2
@@ -15405,7 +15405,7 @@ specifiers:
   '@azure/storage-blob': ^10.4.0
   '@bentley/icons-generic': ^0.0.31
   '@bentley/icons-generic-webfont': ^0.0.31
-  '@bentley/imodeljs-native': 1.8.1
+  '@bentley/imodeljs-native': 1.8.2
   '@microsoft/api-extractor': 7.5.0
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
