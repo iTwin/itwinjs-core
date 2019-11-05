@@ -2575,7 +2575,9 @@ export namespace SolarShadows {
     private static readonly _defaultBias = .001;
     /** Shadow color */
     public color: ColorDef;
-    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects.
+     * @alpha
+     */
     public bias: number;
 
     public constructor(props?: SolarShadowProps) {
