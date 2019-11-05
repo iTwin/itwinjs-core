@@ -8140,6 +8140,7 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     static noMotionTimeout: BeDuration;
     static preserveWorldUp: boolean;
+    static scrollSpeed: number;
     static startDragDelay: BeDuration;
     static startDragDistanceInches: number;
     static touchMoveDelay: BeDuration;
@@ -8158,6 +8159,7 @@ export class ToolSettings {
     static wheelPageFactor: number;
     static wheelZoomBumpDistance: number;
     static wheelZoomRatio: number;
+    static zoomSpeed: number;
 }
 
 // @beta
@@ -9333,7 +9335,7 @@ export abstract class Viewport implements IDisposable {
     readonly rotation: Matrix3d;
     // @internal (undocumented)
     readonly scheduleTime: number;
-    scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
+    scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     // @beta
     setAnimator(animator?: Animator): void;

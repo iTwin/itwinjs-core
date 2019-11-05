@@ -2146,7 +2146,7 @@ export abstract class Viewport implements IDisposable {
   /** Scroll the view by a given number of pixels.
    * @param screenDist distance to scroll, in pixels
    */
-  public scroll(screenDist: Point2d, options?: ViewChangeOptions) {
+  public scroll(screenDist: XAndY, options?: ViewChangeOptions) {
     const view = this.view;
     if (!view)
       return;
