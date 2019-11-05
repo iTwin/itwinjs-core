@@ -1822,6 +1822,18 @@ export enum CoordSystem {
 }
 
 // @internal (undocumented)
+export class CoreTools {
+    // (undocumented)
+    static namespace: string;
+    // (undocumented)
+    static outputPromptByKey(key: string): void;
+    // (undocumented)
+    static tools: string;
+    // (undocumented)
+    static translate(prompt: string): any;
+}
+
+// @internal (undocumented)
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
@@ -8894,19 +8906,17 @@ export class ViewHandleArray {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
+    onWheel(ev: BeWheelEvent): void;
+    // (undocumented)
     setFocus(index: number): void;
     // (undocumented)
     testHit(ptScreen: Point3d, forced?: ViewHandleType): boolean;
-    // (undocumented)
-    viewport?: Viewport;
     // (undocumented)
     viewTool: ViewManip;
 }
 
 // @internal (undocumented)
 export const enum ViewHandleType {
-    // (undocumented)
-    EXTERIOR = 1,
     // (undocumented)
     Fly = 64,
     // (undocumented)
@@ -8954,6 +8964,8 @@ export abstract class ViewingToolHandle {
     noMotion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     onReinitialize(): void;
+    // (undocumented)
+    onWheel(_ev: BeWheelEvent): void;
     // (undocumented)
     abstract testHandleForHit(ptScreen: Point3d, out: {
         distance: number;
@@ -9041,7 +9053,9 @@ export class ViewManager {
     readonly toolTipProviders: ToolTipProvider[];
     // @internal (undocumented)
     validateViewportScenes(): void;
-    }
+    // (undocumented)
+    readonly walkCursor: string;
+}
 
 // @public
 export abstract class ViewManip extends ViewTool {
@@ -9753,6 +9767,8 @@ export abstract class ViewTool extends InteractiveTool {
     run(..._args: any[]): boolean;
     // (undocumented)
     static showPrompt(prompt: string): void;
+    // (undocumented)
+    static translate(val: string): any;
     // (undocumented)
     viewport?: ScreenViewport | undefined;
 }

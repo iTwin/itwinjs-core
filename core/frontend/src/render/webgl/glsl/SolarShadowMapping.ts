@@ -147,11 +147,12 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
   if (vert.usesInstancedGeometry)
     addInstancedRtcMatrix(vert);
   builder.addInlineComputedVarying("v_shadowPos", VariableType.Vec3, vert.usesInstancedGeometry ? computeInstancedShadowPos : computeShadowPos);
-  /* This is the EVSM bias value which can tweak things.  Probably should be between 0.1 and 0.4, and it is a
-     tradeoff.  Lower values can introduce shadows where they should not be, including some acne. Higher values
-     can cause Peter Panning and light bleeding.  Tested 0.01 and 1.0, then focused more on 0.1 to 0.5 inclusive,
-     and ended up choosing 0.2 as the best tradeoffs for the various set of models tested on 9/13/19 */
-  frag.addGlobal("kVSMBias", VariableType.Float, "0.2", true);
+  /* This is the EVSM bias value, which makes tradeoffs in shadow quality.  Normally it should be set to 0.1.
+     Lower values can introduce shadows where they should not be, including shadow acne. Higher values can cause Peter
+     Panning effect and light bleeding. Tested 0.01 and 1.0, woth more focus on 0.1 to 0.5 inclusive, chose 0.2 for a
+     while (on 9/13/19) then after having shadow tiles match view tile resolution for ones in view, retested and went
+     back to 0.1 (on 11/5/19). */
+  frag.addGlobal("kVSMBias", VariableType.Float, "0.1", true);
   frag.addFunction(warpDepth);
   frag.addFunction(chebyshevUpperBound);
   frag.addFunction(shadowMapEVSM);

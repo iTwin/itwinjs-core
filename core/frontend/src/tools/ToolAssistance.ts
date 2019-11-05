@@ -6,6 +6,7 @@
 /** @module Tools */
 
 import { IModelApp } from "../IModelApp";
+import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
  * @beta
@@ -127,24 +128,27 @@ export class ToolAssistance {
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
+  private static translateKey(key: string) { return IModelApp.i18n.translate(CoreTools.namespace + ":toolAssistance." + key); }
+  private static translateTouch(cursor: string) { return IModelApp.i18n.translate(CoreTools.namespace + ":touchCursor." + cursor); }
+
   /** Alt key text. */
   public static get altKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.altKey");
+    return this.translateKey("altKey");
   }
 
   /** Ctrl key text. */
   public static get ctrlKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.ctrlKey");
+    return this.translateKey("ctrlKey");
   }
 
   /** Shift key text. */
   public static get shiftKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.shiftKey");
+    return this.translateKey("shiftKey");
   }
 
   /** Inputs text. */
   public static get inputsLabel(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.inputs");
+    return this.translateKey("inputs");
   }
 
   /** Keyboard info for Alt key. */
@@ -257,11 +261,11 @@ export class ToolAssistance {
   public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
     const accuSnap = IModelApp.accuSnap;
     if (accuSnap.isSnapEnabled && accuSnap.isSnapEnabledByUser && undefined === accuSnap.touchCursor) {
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:touchCursor.Activate"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch));
       return true;
     } else if (undefined !== accuSnap.touchCursor) {
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, IModelApp.i18n.translate("CoreTools:touchCursor.IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, IModelApp.i18n.translate("CoreTools:touchCursor.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, this.translateTouch("IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, this.translateTouch("AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
       return true;
     }
     return false;

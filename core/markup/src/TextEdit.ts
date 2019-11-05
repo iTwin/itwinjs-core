@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module MarkupTools */
 
-import { BeButtonEvent, EventHandled, InputSource, ToolAssistance, IModelApp, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, InputSource, ToolAssistance, IModelApp, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
@@ -61,8 +61,8 @@ export class EditTextTool extends MarkupTool {
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Accept");
-    const rejectMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit");
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.Accept");
+    const rejectMsg = CoreTools.translate("ElementSet.Inputs.Exit");
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));

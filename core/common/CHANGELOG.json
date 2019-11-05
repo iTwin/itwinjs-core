@@ -2,6 +2,60 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-common_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Anisotropic filtering of draped map tiles."
+          },
+          {
+            "comment": "Tweaks to ambient occlusion settings."
+          },
+          {
+            "comment": "Callout clip is now local to placement. Only show marker for active clip."
+          },
+          {
+            "comment": "Cleanup AO settings."
+          },
+          {
+            "comment": "Remove @deprecated tags in GeometryStreamIteratorEntry"
+          },
+          {
+            "comment": "Fix comparison of classification properties ignoring the 'volume' flag."
+          },
+          {
+            "comment": "Fixes for making volume classifiers work."
+          },
+          {
+            "comment": "New wip plugin for hypermodeling support."
+          },
+          {
+            "comment": "Add CommonLoggerCategory.Geometry"
+          },
+          {
+            "comment": "Add Placement2d.multiplyTransform, Placement3d.multiplyTransform"
+          },
+          {
+            "comment": "Add RelatedElement.none for nulling out existing navigation relationships"
+          },
+          {
+            "comment": "Reacting to iPadOS change in user agent of safari"
+          },
+          {
+            "comment": "Remove limit for binary data for mobile"
+          },
+          {
+            "comment": "Expose FrustumPlanes.planes"
+          },
+          {
+            "comment": "Convenience methods for overriding aspects of hidden line styles."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/imodeljs-common_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",

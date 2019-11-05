@@ -16,6 +16,7 @@ import {
   MessageBoxType,
   NotifyMessageDetails,
   OutputMessagePriority,
+  CoreTools,
 } from "@bentley/imodeljs-frontend";
 import {
   GeometrySummaryOptions,
@@ -61,7 +62,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.ConfirmSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
+    CoreTools.outputPromptByKey(this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement");
   }
 
   public autoLockTarget(): void { }
@@ -96,7 +97,7 @@ export class InspectElementTool extends PrimitiveTool {
         });
 
         if (0 === ids.length)
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.NotSuportedElmType")));
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
         else
           await this.process(ids);
 
@@ -173,7 +174,7 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occured while generating summary", err.toString());
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", err.toString());
     }
 
     IModelApp.notifications.outputMessage(messageDetails);

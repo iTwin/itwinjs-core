@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-quantity
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+*Version update only*
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

@@ -5,7 +5,6 @@
 import { GrowableFloat64Array } from "./GrowableFloat64Array";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
-import { Range1d } from "./Range";
 /** @module CartesianGeometry */
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
@@ -178,12 +177,19 @@ export class AngleSweep implements BeJSONFunctions {
      * @param radians
      */
     public radiansToPositivePeriodicFraction(radians: number): number {
-        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
+        return AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, this._radians0, this._radians1);
+    }
+    /**
+     * Convert a radians value to a fraction that is always positive and can wrap.  See `angleToPositivePeriodicFraction` for detailed description.
+     * @param radians
+     */
+    public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number {
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0))
             return 0.0;
-        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians1))
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians1))
             return 1.0;
-        const sweep = this._radians1 - this._radians0;
-        const delta = radians - this._radians0;
+        const sweep = radians1 - radians0;
+        const delta = radians - radians0;
         if (sweep > 0) {
             const delta1 = Angle.adjustRadians0To2Pi(delta);
             const fraction1 = Geometry.safeDivideFraction(delta1, sweep, 0.0);
@@ -235,9 +241,21 @@ export class AngleSweep implements BeJSONFunctions {
         if (delta0 * delta1 <= 0.0)
             return true;
         if (this._radians0 === this._radians1)
-            return Angle.isAlmostEqualRadiansAllowPeriodShift (radians, this._radians0);
+            return Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0);
         return this.radiansToPositivePeriodicFraction(radians) <= 1.0;
     }
+    /** test if radians are within sweep  */
+    public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number): boolean {
+        // quick out for simple inside ...
+        const delta0 = radians - radians0;
+        const delta1 = radians - radians1;
+        if (delta0 * delta1 <= 0.0)
+            return true;
+        if (radians0 === radians1)
+            return Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0);
+        return this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1) <= 1.0;
+    }
+
     /** set this AngleSweep from various sources:
      *
      * * if json is undefined, a full-circle sweep is returned.
@@ -290,29 +308,4 @@ export class AngleSweep implements BeJSONFunctions {
      * * * isAlmostEqualRadiansNoPeriodShift
      */
     public isAlmostEqual(other: AngleSweep): boolean { return this.isAlmostEqualNoPeriodShift(other); }
-    /**
-     * Return a Range1d which has the min and max values of the sine wave `a + cosineCoff * cos(theta) + sineCoff*sin(theta)` for theta within this `AngleSweep`
-     * @param a constant (middle value) for complete sine wave
-     * @param cosineCoff coefficient of `cos(theta)`
-     * @param sineCoff coefficient of `sin(theta)`
-     * @param result optional preallocated result.
-     */
-    public sineWaveRange(a: number, cosineCoff: number, sineCoff: number, result?: Range1d): Range1d {
-        const f = (theta: number) => a + cosineCoff * Math.cos(theta) + sineCoff * Math.sin(theta);
-        if (result)
-            result.setNull();
-        else
-            result = Range1d.createNull();
-        result.extendX(f(this.startRadians));
-        result.extendX(f(this.endRadians));
-        // angles for min and max of the sine wave . ..
-        const alphaA = Math.atan2(sineCoff, cosineCoff);
-        const alphaB = alphaA + Math.PI;
-        if (this.isRadiansInSweep(alphaA))
-            result.extendX(f(alphaA));
-        if (this.isRadiansInSweep(alphaB))
-            result.extendX(f(alphaB));
-        return result;
-    }
-
 }

@@ -1,6 +1,27 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 09 Oct 2019 20:28:42 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Anisotropic filtering of draped map tiles.
+- Tweaks to ambient occlusion settings.
+- Callout clip is now local to placement. Only show marker for active clip.
+- Cleanup AO settings.
+- Remove @deprecated tags in GeometryStreamIteratorEntry
+- Fix comparison of classification properties ignoring the 'volume' flag.
+- Fixes for making volume classifiers work.
+- New wip plugin for hypermodeling support.
+- Add CommonLoggerCategory.Geometry
+- Add Placement2d.multiplyTransform, Placement3d.multiplyTransform
+- Add RelatedElement.none for nulling out existing navigation relationships
+- Reacting to iPadOS change in user agent of safari
+- Remove limit for binary data for mobile
+- Expose FrustumPlanes.planes
+- Convenience methods for overriding aspects of hidden line styles.
 
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT

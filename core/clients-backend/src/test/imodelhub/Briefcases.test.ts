@@ -224,7 +224,7 @@ describe("iModelHub BriefcaseHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Briefcase with Bufferring", async () => {
+  it("should download a Briefcase with Bufferring (#iModelBank)", async () => {
     iModelClient.setFileHandler(utils.createFileHanlder(true));
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];

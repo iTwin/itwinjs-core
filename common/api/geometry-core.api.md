@@ -128,16 +128,17 @@ export class AngleSweep implements BeJSONFunctions {
     readonly isCCW: boolean;
     readonly isFullCircle: boolean;
     readonly isFullLatitudeSweep: boolean;
+    static isRadiansInStartEnd(radians: number, radians0: number, radians1: number): boolean;
     isRadiansInSweep(radians: number): boolean;
     radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number): number;
+    static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number;
     radiansToSignedPeriodicFraction(radians: number): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
     setFromJSON(json?: any): void;
     setStartEndDegrees(startDegrees?: number, endDegrees?: number): void;
     setStartEndRadians(startRadians?: number, endRadians?: number): void;
-    sineWaveRange(a: number, cosineCoff: number, sineCoff: number, result?: Range1d): Range1d;
     readonly startAngle: Angle;
     readonly startDegrees: number;
     readonly startRadians: number;
@@ -1143,6 +1144,10 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
 export class Constant {
     static readonly circumferenceOfEarth: number;
     static readonly diameterOfEarth: number;
+    static readonly earthRadiusWGS84: {
+        polar: number;
+        equator: number;
+    };
     static readonly oneCentimeter: number;
     static readonly oneKilometer: number;
     static readonly oneMeter: number;
@@ -4343,6 +4348,19 @@ export class Segment1d {
     signedDelta(): number;
     x0: number;
     x1: number;
+}
+
+// @internal
+export class SineCosinePolynomial {
+    constructor(a: number, cosCoff: number, sinCoff: number);
+    a: number;
+    cosineCoff: number;
+    evaluateRadians(theta: number): number;
+    range(result?: Range1d): Range1d;
+    rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d;
+    rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d;
+    set(a: number, cosCoff: number, sinCoff: number): void;
+    sineCoff: number;
 }
 
 // @public

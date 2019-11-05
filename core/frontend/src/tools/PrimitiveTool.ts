@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides } from "./Tool";
+import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides, CoreTools } from "./Tool";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -101,7 +101,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents")));
 
     return false;
   }

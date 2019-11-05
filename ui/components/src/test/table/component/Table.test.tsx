@@ -149,15 +149,14 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     expect(dataProvider.getColumns).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onColumnsChanged.raiseEvent();
 
-    columnsPromise.resolve([]);
+    await columnsPromise.resolve([]);
 
-    await (shallowTable.instance() as Table).update();
     expect(dataProvider.getColumns).to.be.calledTwice;
   });
 
@@ -172,17 +171,15 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onRowsChanged.raiseEvent();
 
-    rowsCountPromise.resolve(0);
+    await rowsCountPromise.resolve(0);
 
-    await (shallowTable.instance() as Table).update();
-    await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledTwice;
   });
 

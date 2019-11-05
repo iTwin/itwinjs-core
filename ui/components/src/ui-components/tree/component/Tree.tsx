@@ -613,10 +613,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     // children immediately, then node has children here. if data provider
     // delay loads children, then `node.getChildren()` returns empty array and
     // the `_onChildrenLoaded` callback is called where we do the same thing as here
-    this.state.model.updateNodesSelection(toNodes(node.getChildren()), this.props.selectedNodes);
-    if (this.props.checkboxInfo) {
-      // tslint:disable-next-line: no-floating-promises
-      this.state.model.updateNodesCheckboxes(toNodes(node.getChildren()), this.props.checkboxInfo);
+    const children = node.getChildren();
+    if (children.length > 0) {
+      this.state.model.updateNodesSelection(toNodes(children), this.props.selectedNodes);
+      if (this.props.checkboxInfo) {
+        // tslint:disable-next-line: no-floating-promises
+        this.state.model.updateNodesCheckboxes(toNodes(children), this.props.checkboxInfo);
+      }
     }
 
     this._nodesSelectionHandlers = undefined;

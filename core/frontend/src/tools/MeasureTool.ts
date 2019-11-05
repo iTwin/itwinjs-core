@@ -14,7 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
 import { GeometryStreamProps, ColorDef, MassPropertiesRequestProps, MassPropertiesOperation, BentleyStatus, MassPropertiesResponseProps, LinePixels } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
-import { BeButtonEvent, EventHandled, InputSource } from "./Tool";
+import { BeButtonEvent, EventHandled, InputSource, CoreTools } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { AccuDrawHintBuilder } from "../AccuDraw";
@@ -23,6 +23,8 @@ import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { EditManipulator } from "./EditManipulator";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, ToolSettingsPropertySyncItem, PropertyDescription } from "../imodeljs-frontend";
+
+function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 
 /** @alpha */
 class MeasureLabel implements CanvasDecoration {
@@ -124,23 +126,23 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public onUnsuspend(): void { this.showPrompt(); }
   protected showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(0 === this._locationData.length ? "CoreTools:tools.Measure.Distance.Prompts.FirstPoint" : "CoreTools:tools.Measure.Distance.Prompts.NextPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(0 === this._locationData.length ? "Measure.Distance.Prompts.FirstPoint" : "Measure.Distance.Prompts.NextPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
     if (0 === this._locationData.length) {
       if (this._acceptedSegments.length > 0) {
-        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
-        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
       }
     } else {
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Touch));
-      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Mouse));
-      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
-      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.Cancel"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), CoreTools.translate("ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
     }
 
     const sections: ToolAssistanceSection[] = [];
@@ -330,7 +332,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected reportMeasurements(): void {
     if (undefined === this._totalDistanceMarker)
       return;
-    const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + this._totalDistanceMarker.label;
+    const briefMsg = CoreTools.translate(this._acceptedSegments.length > 1 ? "Measure.Labels.CumulativeDistance" : "Measure.Labels.Distance") + ": " + this._totalDistanceMarker.label;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -363,13 +365,13 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     let toolTipHtml = "";
     const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
-    toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
+    toolTipHtml += translateBold("Distance") + formattedDistance + "<br>";
 
     if (is3d) {
       const angleFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
         const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
+        toolTipHtml += translateBold("Slope") + formattedSlope + "<br>";
       }
     }
 
@@ -383,31 +385,32 @@ export class MeasureDistanceTool extends PrimitiveTool {
         endAdjusted = endAdjusted.minus(globalOrigin);
       }
 
-      const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
-      const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
-      const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
-      if (is3d)
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
-      else
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + "<br>";
-
+      {
+        const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
+        const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
+        const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
+        toolTipHtml += translateBold("StartCoord") + formattedStartX + ", " + formattedStartY;
+        if (is3d)
+          toolTipHtml += ", " + formattedStartZ;
+        toolTipHtml += "<br>";
+      }
       const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, coordFormatterSpec);
       const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, coordFormatterSpec);
       const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, coordFormatterSpec);
+      toolTipHtml += translateBold("EndCoord") + formattedEndX + ", " + formattedEndY;
       if (is3d)
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
-      else
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + "<br>";
+        toolTipHtml += ", " + formattedEndZ;
+      toolTipHtml += "<br>";
     }
 
     if (undefined !== delta) {
       const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
       const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
       const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
+      toolTipHtml += translateBold("Delta") + formattedDeltaX + ", " + formattedDeltaY;
       if (is3d)
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
-      else
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + "<br>";
+        toolTipHtml += ", " + formattedDeltaZ;
+      toolTipHtml += "<br>";
     }
 
     toolTip.innerHTML = toolTipHtml;
@@ -582,16 +585,16 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   public onUnsuspend(): void { this.showPrompt(); }
   protected showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate("CoreTools:tools.Measure.Location.Prompts.EnterPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate("Measure.Location.Prompts.EnterPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
     if (0 !== this._acceptedLocations.length) {
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
-      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
     }
 
     const sections: ToolAssistanceSection[] = [];
@@ -623,10 +626,11 @@ export class MeasureLocationTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+      toolTipHtml += translateBold("Coordinate") + formattedPointX + ", " + formattedPointY;
       if (is3d)
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
-      else
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + "<br>";
+        toolTipHtml += ", " + formattedPointZ;
+
+      toolTipHtml += "<br>";
     }
 
     if (isSpatial) {
@@ -637,10 +641,10 @@ export class MeasureLocationTool extends PrimitiveTool {
           const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
           const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-          const latDir = IModelApp.i18n.translateKeys(cartographic.latitude < 0 ? "%{CoreTools:tools.Measure.Labels.S}" : "%{CoreTools:tools.Measure.Labels.N}");
-          const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
+          const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
+          const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
+          toolTipHtml += translateBold("LatLong") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
+          toolTipHtml += translateBold("Altitude") + formattedHeight + "<br>";
         } catch { }
       }
     }
@@ -719,11 +723,11 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   protected static _orientationName = "enumAsOrientation";
-  protected static enumAsOrientationMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.Settings.Orientation." + str); }
+  protected static enumAsOrientationMessage(str: string) { return CoreTools.translate("Settings.Orientation." + str); }
   protected static _getEnumAsOrientationDescription = (): PropertyDescription => {
     return {
       name: MeasureAreaByPointsTool._orientationName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.Settings.Orientation.Label"),
+      displayLabel: CoreTools.translate("Settings.Orientation.Label"),
       typename: "enum",
       enum: {
         choices: [
@@ -766,7 +770,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   public onUnsuspend(): void { this.showPrompt(); }
 
   protected showPrompt(): void {
-    let mainMsg = "CoreTools:tools.Measure.AreaByPoints.Prompts.";
+    let mainMsg = "Measure.AreaByPoints.Prompts.";
     switch (this._points.length) {
       case 0:
         mainMsg += "FirstPoint";
@@ -781,23 +785,23 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
         mainMsg += this._isComplete ? "FirstPoint" : "NextPoint";
         break;
     }
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainMsg));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainMsg));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.i18n.translate(this._isComplete ? "CoreTools:tools.ElementSet.Inputs.Restart" : "CoreTools:tools.ElementSet.Inputs.AcceptPoint");
+    const acceptMsg = CoreTools.translate(this._isComplete ? "ElementSet.Inputs.Restart" : "ElementSet.Inputs.AcceptPoint");
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    const resetMsg = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart");
+    const resetMsg = CoreTools.translate("ElementSet.Inputs.Restart");
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, resetMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, resetMsg, false, ToolAssistanceInputMethod.Mouse));
 
     if (this._points.length > 1)
-      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AdditionalPoint"), false, ToolAssistanceInputMethod.Mouse));
     if (0 !== this._points.length)
-      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), CoreTools.translate("ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -915,12 +919,12 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
     if (undefined !== areaFormatterSpec) {
       const formattedArea = IModelApp.quantityFormatter.formatQuantity(this._area, areaFormatterSpec);
-      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Area}:</b> ") + formattedArea + "<br>";
+      toolTipHtml += translateBold("Area") + formattedArea + "<br>";
     }
     const perimeterFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
     if (undefined !== perimeterFormatterSpec) {
       const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(this._perimeter, perimeterFormatterSpec);
-      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Perimeter}:</b> ") + formattedPerimeter + "<br>";
+      toolTipHtml += translateBold("Perimeter") + formattedPerimeter + "<br>";
     }
     const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
     if (undefined !== coordFormatterSpec) {
@@ -932,10 +936,11 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+      toolTipHtml += translateBold("Centroid") + formattedPointX + ", " + formattedPointY;
       if (is3d)
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Centroid}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
-      else
-        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Centroid}:</b> ") + formattedPointX + ", " + formattedPointY + "<br>";
+        toolTipHtml += ", " + formattedPointZ;
+
+      toolTipHtml += "<br>";
     }
 
     toolTip.innerHTML = toolTipHtml;
@@ -945,8 +950,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   protected reportMeasurements(): void {
     if (undefined === this._marker)
       return;
-    const label = "%{CoreTools:tools.Measure.Labels.Area}: ";
-    const briefMsg = IModelApp.i18n.translateKeys(label) + this._marker.label;
+    const briefMsg = CoreTools.translate("Measure.Labels.Area") + ": " + this._marker.label;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -1070,27 +1074,27 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
   public onUnsuspend(): void { this.showPrompt(); }
   protected showPrompt(): void {
-    const mainMsg = (this._useSelection ? (0 === this._acceptedMeasurements.length ? "CoreTools:tools.ElementSet.Prompts.ConfirmSelection" : "CoreTools:tools.ElementSet.Prompts.InspectResult") : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainMsg));
+    const mainMsg = (this._useSelection ? (0 === this._acceptedMeasurements.length ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.InspectResult") : "ElementSet.Prompts.IdentifyElement");
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainMsg));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (this._useSelection) {
       if (0 === this._acceptedMeasurements.length) {
-        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Touch));
-        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Mouse));
-        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Touch));
-        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate("ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptSelection"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.RejectSelection"), false, ToolAssistanceInputMethod.Mouse));
       } else {
-        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
-        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.Exit"), false, ToolAssistanceInputMethod.Mouse));
       }
     } else {
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
-      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate("ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
       if (0 !== this._acceptedMeasurements.length) {
-        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
-        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Touch));
+        mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.Restart"), false, ToolAssistanceInputMethod.Mouse));
       }
     }
 
@@ -1115,21 +1119,21 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   protected reportMeasurements(): void {
     if (undefined === this._totalMarker)
       return;
-    let label;
+    let label = "Measure.Labels.";
     switch (this.getOperation()) {
       case MassPropertiesOperation.AccumulateLengths:
-        label = "%{CoreTools:tools.Measure.Labels.Length}: ";
+        label += "Length";
         break;
       case MassPropertiesOperation.AccumulateAreas:
-        label = "%{CoreTools:tools.Measure.Labels.Area}: ";
+        label += "Area";
         break;
       case MassPropertiesOperation.AccumulateVolumes:
-        label = "%{CoreTools:tools.Measure.Labels.Volume}: ";
+        label += "Volume";
         break;
       default:
         return;
     }
-    const briefMsg = IModelApp.i18n.translateKeys(label) + this._totalMarker.label;
+    const briefMsg = CoreTools.translate(label) + ": " + this._totalMarker.label;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -1145,7 +1149,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec) {
           const formattedLength = IModelApp.quantityFormatter.formatQuantity(responseProps.length ? responseProps.length : 0, distanceFormatterSpec);
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Length}:</b> ") + formattedLength + "<br>";
+          toolTipHtml += translateBold("Length") + formattedLength + "<br>";
         }
         break;
       }
@@ -1153,13 +1157,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
         if (undefined !== areaFormatterSpec) {
           const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area ? responseProps.area : 0, areaFormatterSpec);
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Area}:</b> ") + formattedArea + "<br>";
+          toolTipHtml += translateBold("Area") + formattedArea + "<br>";
         }
         if (responseProps.perimeter) {
           const perimeterFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
           if (undefined !== perimeterFormatterSpec) {
             const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(responseProps.perimeter, perimeterFormatterSpec);
-            toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Perimeter}:</b> ") + formattedPerimeter + "<br>";
+            toolTipHtml += translateBold("Perimeter") + formattedPerimeter + "<br>";
           }
         }
         break;
@@ -1168,13 +1172,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const volumeFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Volume);
         if (undefined !== volumeFormatterSpec) {
           const formattedVolume = IModelApp.quantityFormatter.formatQuantity(responseProps.volume ? responseProps.volume : 0, volumeFormatterSpec);
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Volume}:</b> ") + formattedVolume + "<br>";
+          toolTipHtml += translateBold("Volume") + formattedVolume + "<br>";
         }
         if (responseProps.area) {
           const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
           if (undefined !== areaFormatterSpec) {
             const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area, areaFormatterSpec);
-            toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Area}:</b> ") + formattedArea + "<br>";
+            toolTipHtml += translateBold("Area") + formattedArea + "<br>";
           }
         }
         break;
@@ -1192,10 +1196,10 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
         const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
         const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+        toolTipHtml += translateBold("Centroid") + formattedPointX + ", " + formattedPointY;
         if (is3d)
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Centroid}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
-        else
-          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Centroid}:</b> ") + formattedPointX + ", " + formattedPointY + "<br>";
+          toolTipHtml += ", " + formattedPointZ;
+        toolTipHtml += "<br>";
       }
     }
 
@@ -1324,7 +1328,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         await this.doMeasureSelectedElements(ev.viewport);
         if (0 !== this._acceptedMeasurements.length)
           return EventHandled.Yes;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.NotSuportedElmType")));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
         this.onReinitialize();
       }
       return EventHandled.Yes;

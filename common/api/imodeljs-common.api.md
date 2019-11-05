@@ -4780,6 +4780,7 @@ export namespace SolarShadows {
     }
     export class Settings implements Props {
         constructor(props?: SolarShadowProps);
+        // @alpha
         bias: number;
         // (undocumented)
         clone(result?: SolarShadows.Settings): SolarShadows.Settings;

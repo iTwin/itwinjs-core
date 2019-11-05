@@ -14,6 +14,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Range3d, Range1d } from "../geometry3d/Range";
 import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -437,11 +438,14 @@ export class SphereImplicit {
       const cosPhi1 = Math.cos(phi1Radians);
       const sinPhi0 = Math.sin(phi0Radians);
       const sinPhi1 = Math.sin(phi1Radians);
+      const trigForm = new SineCosinePolynomial(0, 0, 0);
       // constant phi curves at phi0 and phi1
       for (const cosPhi of [cosPhi0, cosPhi1]) {
-        thetaSweep.sineWaveRange(0, cosPhi * radius, 0, axisRange);
+        trigForm.set(0, cosPhi * radius, 0);
+        trigForm.rangeInSweep(thetaSweep, axisRange);
         range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
-        thetaSweep.sineWaveRange(0, 0, cosPhi * radius, axisRange);
+        trigForm.set(0, 0, cosPhi * radius);
+        trigForm.rangeInSweep(thetaSweep, axisRange);
         range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
       }
       range.extendZOnly(sinPhi0 * radius);
@@ -451,9 +455,12 @@ export class SphereImplicit {
       for (const thetaRadians of [theta0Radians, theta1Radians]) {
         const cosThetaR = Math.cos(thetaRadians) * radius;
         const sinThetaR = Math.sin(thetaRadians) * radius;
-        phiSweep.sineWaveRange(0, cosThetaR, 0, axisRange);
+        trigForm.set(0, cosThetaR, 0);
+        trigForm.rangeInSweep(phiSweep, axisRange);
         range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
-        phiSweep.sineWaveRange(0, sinThetaR, 0, axisRange);
+
+        trigForm.set(0, sinThetaR, 0);
+        trigForm.rangeInSweep(phiSweep, axisRange);
         range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
       }
       range.cloneTranslated(center, range);
@@ -1651,4 +1658,63 @@ export class BilinearPolynomial {
     return SmallSystem.solveBilinearPair(p.a - pValue, p.b, p.c, p.d,
       q.a - qValue, q.b, q.c, q.d);
   }
+}
+
+/**
+ * * trigonometric expresses `f(theta) = a + cosineCoff * cos(theta) + sineCoff * sin(theta)`
+ * @internal
+ */
+export class SineCosinePolynomial {
+  /** constant coefficient */
+  public a: number;
+  /** cosine coefficient */
+  public cosineCoff: number;
+  /** sine coefficient */
+  public sineCoff: number;
+  /**
+   *
+   * @param a constant coefficient
+   * @param cosineCoff `cos(theta)` coefficient
+   * @param sinCoff `sin(theta)` coefficient
+   */
+  public constructor(a: number, cosCoff: number, sinCoff: number) {
+    this.a = a;
+    this.cosineCoff = cosCoff;
+    this.sineCoff = sinCoff;
+  }
+  /** set all coefficients */
+  public set(a: number, cosCoff: number, sinCoff: number) {
+    this.a = a;
+    this.cosineCoff = cosCoff;
+    this.sineCoff = sinCoff;
+  }
+  /** Return the function value at given angle in radians */
+  public evaluateRadians(theta: number): number {
+    return this.a + this.cosineCoff * Math.cos(theta) + this.sineCoff * Math.sin(theta);
+  }
+  /** Return the range of function values over the entire angle range. */
+  public range(result?: Range1d): Range1d {
+    const q = Geometry.hypotenuseXY(this.cosineCoff, this.sineCoff);
+    return Range1d.createXX(this.a + q, this.a - q, result);
+  }
+  /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
+  public rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d {
+    if (Angle.isFullCircleRadians(radians1 - radians0))
+      return this.range(result);
+    result = Range1d.createXX(this.evaluateRadians(radians0), this.evaluateRadians(radians1), result);
+    // angles of min and max ...
+    // angles for min and max of the sine wave . ..
+    const alphaA = Math.atan2(this.sineCoff, this.cosineCoff);
+    const alphaB = alphaA + Math.PI;
+    if (AngleSweep.isRadiansInStartEnd(alphaA, radians0, radians1))
+      result.extendX(this.evaluateRadians(alphaA));
+    if (AngleSweep.isRadiansInStartEnd(alphaB, radians0, radians1))
+      result.extendX(this.evaluateRadians(alphaB));
+    return result;
+  }
+  /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
+  public rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d {
+    return this.rangeInStartEndRadians(sweep.startRadians, sweep.endRadians, result);
+  }
+
 }

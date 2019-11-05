@@ -147,11 +147,15 @@ export class KeyinField {
   }
 
   private async handleKeyPress(ev: KeyboardEvent): Promise<void> {
+    ev.stopPropagation();
+
     if ("Enter" === ev.key)
       await this.submitKeyin();
   }
 
   private async handleKeyDown(ev: KeyboardEvent): Promise<void> {
+    ev.stopPropagation();
+
     if (undefined === this._history || 0 === this._history.length)
       return Promise.resolve();
 

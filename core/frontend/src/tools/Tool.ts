@@ -869,3 +869,11 @@ export class ToolRegistry {
     return this.getToolList().find((thisTool) => thisTool.keyin.toLowerCase() === keyin);
   }
 }
+
+/** @internal */
+export class CoreTools {
+  public static namespace = "CoreTools";
+  public static tools = "CoreTools:tools.";
+  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
+}

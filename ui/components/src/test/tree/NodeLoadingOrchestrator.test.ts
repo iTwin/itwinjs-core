@@ -89,13 +89,12 @@ describe("NodeLoadingOrchestrator", () => {
           await expectSequence(preparedNodes, [[0, 1]]);
         });
 
-        it("does not call load progression callbacks", (done) => {
+        it("does not call load progression callbacks", () => {
           preparedNodes.subscribe().add(() => {
             // Check expections when subscription is disposed
             expect(onLoadProgress).to.not.have.been.called;
             expect(onLoadCanceled).to.not.have.been.called;
             expect(onLoadFinished).to.not.have.been.called;
-            done();
           });
         });
       });
@@ -265,12 +264,11 @@ describe("NodeLoadingOrchestrator", () => {
           await expectSequence(preparedNodes, [[0, 1, 2]]);
         });
 
-        it("does not call load progression callbacks", (done) => {
+        it("does not call load progression callbacks", () => {
           preparedNodes.subscribe().add(() => {
             expect(onLoadProgress).to.not.have.been.called;
             expect(onLoadCanceled).to.not.have.been.called;
             expect(onLoadFinished).to.not.have.been.called;
-            done();
           });
         });
       });
@@ -800,49 +798,53 @@ describe("makeObservableCallback", () => {
 
 describe("onCancelation", () => {
   describe("returned observable", () => {
-    it("invokes callback if subscriber cancels subscription before the observable completes", (done) => {
+    it("invokes callback if subscriber cancels subscription before the observable completes", async () => {
+      const cancelationSpy = sinon.spy();
       const promise = new ResolvablePromise<void>();
       const subscription = from(promise)
         .pipe(
-          onCancelation(done),
+          onCancelation(cancelationSpy),
         )
         .subscribe();
-
       subscription.unsubscribe();
-      promise.resolve();
+      await promise.resolve();
+      expect(cancelationSpy).to.be.calledOnce;
     });
 
-    it("invokes callback if observable sends error notification", (done) => {
+    it("invokes callback if observable sends error notification", () => {
+      const cancelationSpy = sinon.spy();
       throwError(new Error())
         .pipe(
-          onCancelation(() => done()),
+          onCancelation(cancelationSpy),
         )
         .subscribe({
           error: () => { },
         });
+      expect(cancelationSpy).to.be.calledOnce;
     });
 
-    it("does not invoke callback if observable completes", (done) => {
+    it("does not invoke callback if observable completes", () => {
+      const cancelationSpy = sinon.spy();
       of([1, 2, 3])
         .pipe(
-          onCancelation(() => done(new Error("callback should not have been invoked"))),
+          onCancelation(cancelationSpy),
         )
         .subscribe();
-      done();
+      expect(cancelationSpy).to.not.be.called;
     });
 
-    it("invokes callback after subscriber handles error", (done) => {
+    it("invokes callback after subscriber handles error", () => {
       let errorHandled = false;
       throwError(new Error())
         .pipe(
           onCancelation(() => {
             expect(errorHandled).to.be.true;
-            done();
           }),
         )
         .subscribe({
           error: () => { errorHandled = true; },
         });
+      expect(errorHandled).to.be.true;
     });
   });
 });

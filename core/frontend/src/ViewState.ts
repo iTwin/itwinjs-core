@@ -128,7 +128,7 @@ class ViewState3dUndo extends ViewStateUndo {
       this.origin.isAlmostEqual(view.origin) &&
       this.extents.isAlmostEqual(view.extents) &&
       this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera)); // ###TODO: should this be less precise equality?
+      (!this.cameraOn || this.camera.equals(view.camera));
   }
 }
 

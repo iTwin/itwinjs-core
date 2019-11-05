@@ -56,8 +56,8 @@ class SelectionContext {
   public missing = new Array<Tile>();
   constructor(public selected: Tile[]) { }
 
-  public selectOrQueue(tile: Tile, traversalDetails: TraversalDetails): SelectStatus {
-    if (tile.isReady) {
+  public selectOrQueue(tile: Tile, traversalDetails: TraversalDetails, selectIfReady: boolean): SelectStatus {
+    if (selectIfReady && tile.isReady) {
       traversalDetails.selectedCount++;
       this.selected.push(tile);
       return SelectStatus.Selected;
@@ -182,13 +182,13 @@ export class MapTile extends Tile {
     const meetsSse = args.getPixelSize(this) < this.maximumSize * sizeTestRatio;
     if (this.isDisplayable && (meetsSse || this._anyChildNotFound || this.depth >= this._mapTree.maxDepth) || this._mapTree.needsReprojection(this)) {
       traversalDetails.maxDepth = Math.max(traversalDetails.maxDepth, this.depth);
-      return context.selectOrQueue(this, traversalDetails);
+      return context.selectOrQueue(this, traversalDetails, true);
     } else {
       this.selectMapChildren(context, args, traversalDetails);
       if (this.isDisplayable) {
         if (0 !== traversalDetails.queuedCount && this.isReady) {
           traversalDetails.queuedCount = 0;
-          return context.selectOrQueue(this, traversalDetails);
+          return context.selectOrQueue(this, traversalDetails, false);
         }
         if (traversalDetails.maxDepth - this.depth <= this._mapTree.preloadDescendantDepth)
           return context.preload(this);
@@ -285,7 +285,7 @@ export class MapTileTree extends TileTree {
 
     rootTile.selectMapTile(context, args, new TraversalDetails());
 
-    context.missing.sort((a, b) => a.depth - b.depth);      // Load lower resolution (preloaded)  tiles first so we can quickly get something displayed.
+    context.missing.sort((a, b) => b.depth - a.depth);      // Load lower resolution (preloaded)  tiles first so we can quickly get something displayed.
     selected.sort((a, b) => b.depth - a.depth);             // But if already loaded select the higher resolution ones.
 
     for (const tile of context.missing)

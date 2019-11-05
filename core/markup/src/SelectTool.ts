@@ -5,7 +5,7 @@
 /** @module MarkupTools */
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
-import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -509,13 +509,13 @@ export class SelectTool extends MarkupTool {
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
 
-    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
-    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
 
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, CoreTools.translate("ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));

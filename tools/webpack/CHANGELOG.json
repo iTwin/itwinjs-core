@@ -2,6 +2,27 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/webpack-tools_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed wdio dependencies and added deprecation warning for test-e2e script."
+          },
+          {
+            "comment": "Use url-loader for svg's referenced from css files."
+          },
+          {
+            "comment": "ios test app to run backend test"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@bentley/webpack-tools_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:43 GMT",
