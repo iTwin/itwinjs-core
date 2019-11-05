@@ -1446,6 +1446,10 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     creatorId?: string;
     // (undocumented)
+    dataAcquirer?: string;
+    // (undocumented)
+    dataAcquisitionDate?: string;
+    // (undocumented)
     dataLocationGuid?: string;
     // (undocumented)
     dataSet?: string;
@@ -1483,6 +1487,8 @@ export class RealityData extends WsgInstance {
     ownerId?: string;
     // (undocumented)
     projectId: undefined | string;
+    // (undocumented)
+    referenceElevation?: number;
     // (undocumented)
     resolutionInMeters?: string;
     // (undocumented)
