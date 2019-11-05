@@ -7,6 +7,7 @@
 /**
  * Sub-specification to hide / display specified ECInstance properties.
  * @public
+ * @deprecated Use `PropertySpecification` instead
  */
 export interface PropertiesDisplaySpecification {
   /** List of ECProperty names which should be hidden or shown */

@@ -6,6 +6,7 @@
 
 import { RelationshipDirection } from "../../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../../ClassSpecifications";
+import { PropertySpecification } from "../PropertySpecification";
 
 /**
  * Meaning of the relationship
@@ -76,8 +77,16 @@ export interface RelatedPropertiesSpecification {
   /**
    * List of names of related class properties that should be included in the content.
    * All properties are included if not specified.
+   * @deprecated Use `properties` attribute instead
    */
   propertyNames?: string[] | RelatedPropertiesSpecialValues;
+
+  /**
+   * A list of property names or specifications that should be included in the content. All
+   * properties are included if this attribute is not specified.
+   * @beta
+   */
+  properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
 
   /** Specifications for nested related properties */
   nestedRelatedProperties?: RelatedPropertiesSpecification[];

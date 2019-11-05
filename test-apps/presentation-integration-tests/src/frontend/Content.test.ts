@@ -36,8 +36,9 @@ describe("Content", () => {
         const keys = new KeySet([key1, key2]);
         const descriptor = await Presentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.id }, "Grid", keys, undefined);
         expect(descriptor).to.not.be.undefined;
-        const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.id }, descriptor!, keys,
-          "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model");
+        const field = descriptor!.getFieldByName("Element_Model");
+        expect(field).to.not.be.undefined;
+        const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.id }, descriptor!, keys, field!.name);
         expect(distinctValues).to.be.deep.equal([
           "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
           "DgnV8Bridge",
