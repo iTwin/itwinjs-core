@@ -81,7 +81,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   public componentDidUpdate (prevProps: TimelineComponentProps) {
     if (this.props.initialDuration !== prevProps.initialDuration) {
-      this.setState({ currentDuration: this.props.initialDuration ? this.props.initialDuration : 0 });
+      this._setDuration(this.props.initialDuration ? this.props.initialDuration : 0 );
     }
   }
 
