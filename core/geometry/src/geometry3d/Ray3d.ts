@@ -199,12 +199,12 @@ export class Ray3d implements BeJSONFunctions {
     return false;
   }
   /**
-   * If parameter `a` is clearly nonzero and the direction vector can be normalized,
-   * * save the parameter `a` as the optional `a` member of the ray.
-   * * normalize the ray's direction vector
-   * If parameter `a` is nearly zero,
-   * * Set the `a` member to zero
-   * * Set the ray's direction vector to zero.
+   * * If parameter `a` is clearly nonzero and the direction vector can be normalized,
+   *    * save the parameter `a` as the optional `a` member of the ray.
+   *    * normalize the ray's direction vector
+   * * If parameter `a` is nearly zero,
+   *   * Set the `a` member to zero
+   *   * Set the ray's direction vector to zero.
    * @param a area to be saved.
    */
   // input a ray and "a" understood as an area.

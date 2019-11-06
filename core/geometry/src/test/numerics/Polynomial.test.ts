@@ -23,6 +23,11 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Sphere } from "../../solid/Sphere";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
@@ -611,6 +616,50 @@ describe("LinearSystems", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "PatchRange");
   });
+  it("RayIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const radius = 5.0;
+    const rayFractions: number[] = [];
+    const xyzIntersections: Point3d[] = [];
+    const thetaPhiRadians: Point2d[] = [];
+    let x0 = 0;
+    let y0;
+    const b = 2.5 * radius; // distance for displaying the ray
+    for (const center of [Point3d.createZero(), Point3d.create(1, 2, 3)]) {
+      y0 = 0;
+      const sphere = Sphere.createCenterRadius(center, radius);
+      for (const ray0 of [Ray3d.createXAxis(),
+      Ray3d.create(center, Vector3d.create(1, 2, 3)),
+      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
+        ray0.tryNormalizeInPlaceWithAreaWeight(1);
+        const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));
+        for (const shift of [-6, -4, -2, 0, 1, 3, 5, 7]) {
+          const ray = Ray3d.create(frame.multiplyXYZ(shift, 0, 0), ray0.direction);
+          SphereImplicit.intersectSphereRay(center, radius, ray, rayFractions, xyzIntersections, thetaPhiRadians);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(ray.fractionToPoint(-b), ray.fractionToPoint(b)), x0, y0);
+          for (const xyz of xyzIntersections)
+            GeometryCoreTestIO.captureGeometry(allGeometry, Sphere.createCenterRadius(xyz, radius * 0.04), x0, y0);
+          const closestPoint = ray.projectPointToRay(center);
+          const d = center.distance(closestPoint);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(center, center.interpolate(d < radius ? 3.0 : 1.0, closestPoint)), x0, y0);
+          if (Geometry.isSameCoordinate(d, radius)) {
+            // ignore the potential tolerance problems . . .
+          } else if (d < radius) {
+            ck.testExactNumber(2, xyzIntersections.length, "Expect 2 intersections when ray passes close to center");
+          } else
+            ck.testExactNumber(0, xyzIntersections.length, "Expect no intersections when ray is far from center");
+        }
+        y0 += 6.0 * radius;
+      }
+      x0 += 6.0 * radius;
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
+  });
+
 });
 
 function arraySteps(low: number, high: number, step: number): number[] {

@@ -15,6 +15,7 @@ import { XAndY } from "../geometry3d/XYZProps";
 import { Range3d, Range1d } from "../geometry3d/Range";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
+import { Ray3d } from "../geometry3d/Ray3d";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -467,6 +468,52 @@ export class SphereImplicit {
     }
     return range;
   }
+  /** Compute intersections with a ray.
+   * * Return the number of intersections
+   * * Fill any combinations of arrays of
+   *    * rayFractions = fractions along the ray
+   *    * xyz = xyz intersection coordinates points in space
+   *    * thetaPhiRadians = sphere longitude and latitude in radians.
+   * * For each optional array, caller must of course initialize an array (usually empty)
+   */
+  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number {
+    const vx = ray.origin.x - center.x;
+    const vy = ray.origin.y - center.y;
+    const vz = ray.origin.z - center.z;
+    const ux = ray.direction.x;
+    const uy = ray.direction.y;
+    const uz = ray.direction.z;
+    const a0 = Geometry.hypotenuseSquaredXYZ(vx, vy, vz) - radius * radius;
+    const a1 = 2.0 * Geometry.dotProductXYZXYZ(ux, uy, uz, vx, vy, vz);
+    const a2 = Geometry.hypotenuseSquaredXYZ(ux, uy, uz);
+    const parameters = Degree2PowerPolynomial.solveQuadratic(a2, a1, a0);
+    if (rayFractions !== undefined)
+      rayFractions.length = 0;
+    if (xyz !== undefined)
+      xyz.length = 0;
+    if (thetaPhiRadians !== undefined)
+      thetaPhiRadians.length = 0;
+
+    if (parameters === undefined) {
+      return 0;
+    }
+    const sphere = new SphereImplicit(radius);
+    if (rayFractions !== undefined)
+      for (const f of parameters) rayFractions.push(f);
+    if (xyz !== undefined || thetaPhiRadians !== undefined) {
+      for (const f of parameters) {
+        const point = ray.fractionToPoint(f);
+        if (xyz !== undefined)
+          xyz.push(point);
+        if (thetaPhiRadians !== undefined) {
+          const data = sphere.xyzToThetaPhiR(point);
+          thetaPhiRadians.push(Point2d.create(data.thetaRadians, data.phiRadians));
+        }
+      }
+    }
+    return parameters.length;
+  }
+
   // public intersectRay(ray: Ray3d, maxHit: number): {rayFractions: number, points: Point3d} {
   //   const q = new Degree2PowerPolynomial();
   //   // Ray is (origin.x + s * direction.x, etc)
