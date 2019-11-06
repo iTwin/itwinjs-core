@@ -1405,8 +1405,8 @@ export class Entity implements EntityProps {
     readonly asAny: any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
-    readonly classFullName: string;
     static readonly classFullName: string;
+    readonly classFullName: string;
     static readonly className: string;
     readonly className: string;
     // @internal @deprecated
@@ -1938,9 +1938,9 @@ export class IModelDb extends IModel {
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
     // @beta
-    createSnapshot(snapshotFile: string): IModelDb;
-    // @beta
     static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb;
+    // @beta
+    createSnapshot(snapshotFile: string): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;

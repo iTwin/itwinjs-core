@@ -3886,8 +3886,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     isAlmostEqual(other: Range2d): boolean;
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
-    static isNull(range: LowAndHighXY): boolean;
     readonly isNull: boolean;
+    static isNull(range: LowAndHighXY): boolean;
     readonly isSinglePoint: boolean;
     low: Point2d;
     maxAbs(): number;
@@ -3975,8 +3975,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
     readonly isAlmostZeroZ: boolean;
-    static isNull(data: LowAndHighXYZ): boolean;
     readonly isNull: boolean;
+    static isNull(data: LowAndHighXYZ): boolean;
     readonly isSinglePoint: boolean;
     localToWorld(xyz: XYAndZ, result?: Point3d): Point3d | undefined;
     localToWorldArrayInPlace(points: Point3d[]): boolean;
@@ -4495,8 +4495,8 @@ export class StrokeCountMap {
 // @public
 export class StrokeOptions {
     angleTol?: Angle;
-    static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number;
     applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number;
+    static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number;
     applyChordTol(minCount: number, radius: number, sweepRadians: number): number;
     applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number;
     applyMaxEdgeLength(minCount: number, totalLength: number): number;

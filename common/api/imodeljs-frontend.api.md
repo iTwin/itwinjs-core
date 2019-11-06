@@ -2473,8 +2473,8 @@ export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
     readonly classFullName: string;
     static readonly classFullName: string;
-    readonly className: string;
     static readonly className: string;
+    readonly className: string;
     clone(iModel?: IModelConnection): this;
     equals(other: this): boolean;
     readonly id: Id64String;
@@ -5062,9 +5062,9 @@ export class PluginAdmin {
     getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
     // @internal (undocumented)
     getTarFileName(pluginRootName: string): string;
+    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
     // @deprecated
     static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
-    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
     // @internal
     loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
     // @internal (undocumented)
@@ -7871,8 +7871,8 @@ export class TileTreeSet {
 // @public
 export class Tool {
     constructor(..._args: any[]);
-    readonly description: string;
     static readonly description: string;
+    readonly description: string;
     static readonly englishKeyin: string;
     static readonly flyover: string;
     readonly flyover: string;

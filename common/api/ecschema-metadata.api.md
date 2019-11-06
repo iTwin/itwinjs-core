@@ -588,18 +588,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
     // (undocumented)
     protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
-    // (undocumented)
-    protected createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
     protected createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
     // (undocumented)
-    protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
+    protected createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
     protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
     // (undocumented)
-    protected createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+    protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
     protected createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
     // (undocumented)
-    protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+    protected createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
     protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+    // (undocumented)
+    protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
     // (undocumented)
     protected createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
     // (undocumented)
@@ -864,9 +864,9 @@ export class Enumeration extends SchemaItem {
     readonly enumerators: Enumerator<string | number>[];
     // (undocumented)
     protected _enumerators: AnyEnumerator[];
+    getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
     getEnumerator(value: number): Enumerator<number> | undefined;
-    getEnumerator(value: string): Enumerator<string> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     readonly isInt: boolean;
@@ -2049,10 +2049,10 @@ export class RelationshipMultiplicity {
 
 // @beta (undocumented)
 export class Schema implements CustomAttributeContainerProps {
-    // @internal
-    constructor(context: SchemaContext);
     constructor(context: SchemaContext, name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number);
     constructor(context: SchemaContext, key: SchemaKey, alias: string);
+    // @internal
+    constructor(context: SchemaContext);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     // (undocumented)
