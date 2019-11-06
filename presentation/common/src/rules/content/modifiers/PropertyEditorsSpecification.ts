@@ -7,11 +7,18 @@
 /**
  * Sub-specification to specify custom property editor
  * @public
+ * @deprecated Use `PropertySpecification` instead
  */
-export interface PropertyEditorsSpecification {
+export interface PropertyEditorsSpecification extends PropertyEditorSpecification {
   /** Name of the property which custom editor should be used for */
   propertyName: string;
+}
 
+/**
+ * Specification for custom property editor
+ * @public
+ */
+export interface PropertyEditorSpecification {
   /** Name of the custom editor */
   editorName: string;
 

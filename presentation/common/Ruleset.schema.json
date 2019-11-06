@@ -405,10 +405,24 @@
           },
           "type": "array"
         },
+        "propertyCategories": {
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "items": {
+            "$ref": "#/definitions/PropertyCategorySpecification"
+          },
+          "type": "array"
+        },
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
             "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "propertyOverrides": {
+          "description": "Specifications for various property overrides.",
+          "items": {
+            "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
@@ -474,10 +488,24 @@
           },
           "type": "array"
         },
+        "propertyCategories": {
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "items": {
+            "$ref": "#/definitions/PropertyCategorySpecification"
+          },
+          "type": "array"
+        },
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
             "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "propertyOverrides": {
+          "description": "Specifications for various property overrides.",
+          "items": {
+            "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
@@ -531,10 +559,24 @@
           },
           "type": "array"
         },
+        "propertyCategories": {
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "items": {
+            "$ref": "#/definitions/PropertyCategorySpecification"
+          },
+          "type": "array"
+        },
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
             "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "propertyOverrides": {
+          "description": "Specifications for various property overrides.",
+          "items": {
+            "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
@@ -1462,6 +1504,37 @@
       ],
       "type": "object"
     },
+    "PropertyCategorySpecification": {
+      "additionalProperties": false,
+      "description": "Specification to define a custom property category.",
+      "properties": {
+        "autoExpand": {
+          "description": "Should this category be auto-expanded. Defaults to `false`.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Optional extensive description of the category.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Category identifier which has to be unique at the scope of it's definition",
+          "type": "string"
+        },
+        "label": {
+          "description": "Display label of the category. May be localized.",
+          "type": "string"
+        },
+        "priority": {
+          "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "type": "object"
+    },
     "PropertyEditorJsonParameters": {
       "additionalProperties": false,
       "description": "Arbitrary JSON parameters for custom property editors",
@@ -1563,6 +1636,40 @@
         "max",
         "min",
         "paramsType"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for custom property editor",
+      "properties": {
+        "editorName": {
+          "description": "Name of the custom editor",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Parameters for the editor",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/PropertyEditorJsonParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorMultilineParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorRangeParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorSliderParameters"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "editorName"
       ],
       "type": "object"
     },
@@ -1739,6 +1846,40 @@
       "required": [
         "propertyName",
         "ruleType"
+      ],
+      "type": "object"
+    },
+    "PropertySpecification": {
+      "additionalProperties": false,
+      "description": "Specification of an ECProperty and its overrides",
+      "properties": {
+        "categoryId": {
+          "description": "ID of a category specified through `PropertyCategorySpecification` in this scope.",
+          "type": "string"
+        },
+        "editor": {
+          "$ref": "#/definitions/PropertyEditorSpecification",
+          "description": "Custom property editor specification"
+        },
+        "isDisplayed": {
+          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.",
+          "type": "boolean"
+        },
+        "labelOverride": {
+          "description": "Label override. May be localized.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the ECProperty",
+          "type": "string"
+        },
+        "overridesPriority": {
+          "description": "Priority of the specified overrides",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name"
       ],
       "type": "object"
     },
@@ -1919,6 +2060,30 @@
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
+        },
+        "properties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "A list of property names or specifications that should be included in the content. All\nproperties are included if this attribute is not specified."
         },
         "propertyNames": {
           "anyOf": [
@@ -2169,10 +2334,24 @@
           },
           "type": "array"
         },
+        "propertyCategories": {
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "items": {
+            "$ref": "#/definitions/PropertyCategorySpecification"
+          },
+          "type": "array"
+        },
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
             "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "propertyOverrides": {
+          "description": "Specifications for various property overrides.",
+          "items": {
+            "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
@@ -2465,10 +2644,10 @@
             "$ref": "#/definitions/RootNodeRule"
           },
           {
-            "$ref": "#/definitions/ContentModifier"
+            "$ref": "#/definitions/ContentRule"
           },
           {
-            "$ref": "#/definitions/ContentRule"
+            "$ref": "#/definitions/ContentModifier"
           }
         ]
       },

@@ -34,6 +34,8 @@ Content modifier rules are applied when creating content for property grid, tabl
   - of all related `BisCore:LinkElement`s through `BisCore:ElementHasLinks` forward relationship
   - of all related `BisCore:GroupInformationElement`s through `BisCore:ElementGroupsMembers` backward relationship
     - and their related `BisCore:LinkElement`s through `BisCore:ElementHasLinks` forward relationship
+  - 'Identifier' as 'Source Element ID' of related `BisCore:ExternalSourceAspect` through `BisCore:ElementOwnsMultiAspects` forward relationship into the 'Source File Information' category
+  - 'Url' as 'Source File Path' and 'UserLabel' as 'Source File Name' of related `BisCore:RepositoryLink` through `BisCore:ModelContainsElements` -> `BisCore:Model` -> `BisCore:ModelModelsElement` -> `BisCore:PhysicalPartition | BisCore:Drawing` -> `BisCore:ElementHasLinks` path.
 
 ### BisCore:PhysicalElement
 

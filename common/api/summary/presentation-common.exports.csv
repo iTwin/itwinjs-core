@@ -25,12 +25,13 @@ public;Content
 public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentModifier 
+public;ContentModifiersList
 public;ContentRelatedInstancesSpecification 
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
 public;ContentRule 
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
-public;ContentSpecificationBase
+public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
@@ -144,15 +145,17 @@ public;PropertyEditorParametersBase
 public;PropertyEditorParameterTypes
 public;PropertyEditorRangeParameters 
 public;PropertyEditorSliderParameters 
-public;PropertyEditorsSpecification
+public;PropertyEditorsSpecification 
 public;PropertyGroup 
 public;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 internal;fromJSON(json: PropertyInfoJSON): PropertyInfo
 internal;toJSON(info: PropertyInfo): PropertyInfoJSON
+beta;PropertyOverrides
 public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
+beta;PropertySpecification 
 public;PropertyValueFormat
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase

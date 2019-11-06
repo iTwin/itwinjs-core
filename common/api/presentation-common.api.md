@@ -189,13 +189,23 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
 }
 
 // @public
-export interface ContentModifier extends RuleBase {
-    calculatedProperties?: CalculatedPropertiesSpecification[];
+export interface ContentModifier extends RuleBase, ContentModifiersList {
     class?: SingleSchemaClassSpecification;
-    propertiesDisplay?: PropertiesDisplaySpecification[];
-    propertyEditors?: PropertyEditorsSpecification[];
-    relatedProperties?: RelatedPropertiesSpecification[];
     ruleType: RuleTypes.ContentModifier;
+}
+
+// @public
+export interface ContentModifiersList {
+    calculatedProperties?: CalculatedPropertiesSpecification[];
+    // @deprecated
+    propertiesDisplay?: PropertiesDisplaySpecification[];
+    // @beta
+    propertyCategories?: PropertyCategorySpecification[];
+    // @deprecated
+    propertyEditors?: PropertyEditorsSpecification[];
+    // @beta
+    propertyOverrides?: PropertySpecification[];
+    relatedProperties?: RelatedPropertiesSpecification[];
 }
 
 // @public
@@ -227,13 +237,9 @@ export interface ContentRule extends RuleBase, ConditionContainer {
 export type ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification;
 
 // @public
-export interface ContentSpecificationBase {
-    calculatedProperties?: CalculatedPropertiesSpecification[];
+export interface ContentSpecificationBase extends ContentModifiersList {
     priority?: number;
-    propertiesDisplay?: PropertiesDisplaySpecification[];
-    propertyEditors?: PropertyEditorsSpecification[];
     relatedInstances?: RelatedInstanceSpecification[];
-    relatedProperties?: RelatedPropertiesSpecification[];
     showImages?: boolean;
     specType: ContentSpecificationTypes;
 }
@@ -965,7 +971,7 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
-// @public
+// @public @deprecated
 export interface PropertiesDisplaySpecification {
     isDisplayed?: boolean;
     priority?: number;
@@ -1044,10 +1050,8 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
     paramsType: PropertyEditorParameterTypes.Slider;
 }
 
-// @public
-export interface PropertyEditorsSpecification {
-    editorName: string;
-    parameters?: PropertyEditorParameters[];
+// @public @deprecated
+export interface PropertyEditorsSpecification extends PropertyEditorSpecification {
     propertyName: string;
 }
 
@@ -1087,6 +1091,15 @@ export namespace PropertyInfo {
     export function toJSON(info: PropertyInfo): PropertyInfoJSON;
 }
 
+// @beta
+export interface PropertyOverrides {
+    categoryId?: string;
+    editor?: PropertyEditorSpecification;
+    isDisplayed?: boolean;
+    labelOverride?: string;
+    overridesPriority?: number;
+}
+
 // @public
 export interface PropertyRangeGroupSpecification {
     fromValue: string;
@@ -1100,6 +1113,11 @@ export interface PropertySortingRule extends SortingRuleBase {
     propertyName: string;
     ruleType: RuleTypes.PropertySorting;
     sortAscending?: boolean;
+}
+
+// @beta
+export interface PropertySpecification extends PropertyOverrides {
+    name: string;
 }
 
 // @public
@@ -1193,6 +1211,9 @@ export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
     isPolymorphic?: boolean;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
+    // @beta
+    properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+    // @deprecated
     propertyNames?: string[] | RelatedPropertiesSpecialValues;
     relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     relationshipMeaning?: RelationshipMeaning;

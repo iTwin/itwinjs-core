@@ -199,6 +199,12 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
+      "propertyCategories": [
+        {
+          "id": "source_file_information",
+          "label": "@BisCore:Categories.SourceFileInformation@"
+        }
+      ],
       "relatedProperties": [
         {
           "relationships": {
@@ -280,6 +286,98 @@
               "requiredDirection": "Forward",
               "isPolymorphic": true,
               "autoExpand": true
+            }
+          ]
+        },
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsMultiAspects"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ExternalSourceAspect"
+            ]
+          },
+          "properties": [
+            {
+              "name": "Identifier",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceElementId@",
+              "categoryId": "source_file_information",
+              "isDisplayed": true
+            }
+          ]
+        },
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelContainsElements"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Model"
+            ]
+          },
+          "properties": "_none_",
+          "nestedRelatedProperties": [
+            {
+              "relationships": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "ModelModelsElement"
+                ]
+              },
+              "requiredDirection": "Forward",
+              "relatedClasses": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "PhysicalPartition",
+                  "Drawing"
+                ]
+              },
+              "properties": "_none_",
+              "nestedRelatedProperties": [
+                {
+                  "relationships": {
+                    "schemaName": "BisCore",
+                    "classNames": [
+                      "ElementHasLinks"
+                    ]
+                  },
+                  "requiredDirection": "Forward",
+                  "relatedClasses": {
+                    "schemaName": "BisCore",
+                    "classNames": [
+                      "RepositoryLink"
+                    ]
+                  },
+                  "properties": [
+                    {
+                      "name": "Url",
+                      "overridesPriority": 1001,
+                      "labelOverride": "@BisCore:Properties.SourceFilePath@",
+                      "categoryId": "source_file_information",
+                      "isDisplayed": true
+                    },
+                    {
+                      "name": "UserLabel",
+                      "overridesPriority": 1001,
+                      "labelOverride": "@BisCore:Properties.SourceFileName@",
+                      "categoryId": "source_file_information",
+                      "isDisplayed": true
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
