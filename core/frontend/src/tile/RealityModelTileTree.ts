@@ -205,9 +205,6 @@ class FindChildResult {
 const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
 realityModelViewFlagOverrides.clearClipVolume();
 
-const scratchTileCenterWorld = new Point3d();
-const scratchTileCenterView = new Point3d();
-
 /** @internal */
 class RealityModelTileLoader extends TileLoader {
   private readonly _tree: RealityModelTileTreeProps;
@@ -306,17 +303,7 @@ class RealityModelTileLoader extends TileLoader {
   }
 
   public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
-    // Prioritize tiles closer to eye.
-    // NB: In NPC coords, 0 = far plane, 1 = near plane.
-    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
-    let minDistance = 1.0;
-    for (const viewport of viewports) {
-      const npc = viewport.worldToNpc(center, scratchTileCenterView);
-      const distance = 1.0 - npc.z;
-      minDistance = Math.min(distance, minDistance);
-    }
-
-    return minDistance;
+    return TileLoader.computeTileClosestToEyePriority(tile, viewports);
   }
 }
 

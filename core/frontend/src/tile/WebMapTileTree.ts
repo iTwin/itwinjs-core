@@ -192,11 +192,6 @@ export abstract class MapTileLoaderBase extends TileLoader {
   public tileRequiresLoading(params: Tile.Params): boolean {
     return 0.0 !== params.maximumSize;
   }
-  public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
-    // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
-    // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
-    return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
-  }
   public abstract async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
   public abstract get maxDepth(): number;
   public abstract async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -298,6 +293,9 @@ export class WebMapTileLoader extends MapTileLoaderBase {
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
   abstract get geometryAttributionProvider(): MapTileGeometryAttributionProvider;
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Terrain; }
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    return TileLoader.computeTileClosestToEyePriority(tile, viewports);
+  }
 }
 
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
@@ -894,7 +892,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   const haveConverter = await getGcsConverterAvailable(iModel);
   const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme, filterTextures);
   const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
-  return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, heightRange);
+  return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, true, heightRange);
 }
 
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.

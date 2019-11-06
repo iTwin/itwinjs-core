@@ -188,7 +188,7 @@ export class MapTile extends Tile {
       if (this.isDisplayable) {
         if (0 !== traversalDetails.queuedCount && this.isReady) {
           traversalDetails.queuedCount = 0;
-          return context.selectOrQueue(this, traversalDetails, false);
+          return context.selectOrQueue(this, traversalDetails, this._mapTree.isPlanar);   // If planar select if readyFix even if under tolerance as these will not obscure higher resolution tiles....
         }
         if (traversalDetails.maxDepth - this.depth <= this._mapTree.preloadDescendantDepth)
           return context.preload(this);
@@ -224,7 +224,7 @@ export class MapTileTree extends TileTree {
   public traversalQuadsByDepth: TraversalQuads[] = new Array<TraversalQuads>();
   public static minReprojectionDepth = 8;     // Reprojection does not work with very large tiles so just do linear transform.
 
-  constructor(params: TileTree.Params, public groundBias: number, gcsConverterAvailable: boolean, public mapTilingScheme: MapTilingScheme, public heightRange: Range1d, public maxDepth: number = 20, public preloadDescendantDepth = 3) {
+  constructor(params: TileTree.Params, public groundBias: number, gcsConverterAvailable: boolean, public mapTilingScheme: MapTilingScheme, public isPlanar = false, public heightRange: Range1d, public maxDepth: number = 20, public preloadDescendantDepth = 3) {
     super(params);
     this._mercatorFractionToDb = computeMercatorFractionToDb(params.iModel, groundBias, mapTilingScheme);
     const quadId = new QuadId(0, 0, 0);
@@ -285,19 +285,17 @@ export class MapTileTree extends TileTree {
 
     rootTile.selectMapTile(context, args, new TraversalDetails());
 
-    context.missing.sort((a, b) => b.depth - a.depth);      // Load lower resolution (preloaded)  tiles first so we can quickly get something displayed.
-    selected.sort((a, b) => b.depth - a.depth);             // But if already loaded select the higher resolution ones.
-
+    selected.sort((a, b) => this.isPlanar ? (a.depth - b.depth) : (b.depth - a.depth));             // For terrain we are not currently displaying low resolution tiles (they cause undesirable jittering and overdisplay good tiles).
     for (const tile of context.missing)
       args.insertMissing(tile);
 
     const doSelectLogging = false, doMissingLogging = false;
 
     if (doSelectLogging)
-      this.logTiles("Selected", selected);
+      this.logTiles("Selected  - Planar: " + this.isPlanar, selected);
 
     if (doMissingLogging && context.missing.length)
-      this.logTiles("Missing", context.missing);
+      this.logTiles("Missing - Planar: " + this.isPlanar, context.missing);
 
     return selected;
   }

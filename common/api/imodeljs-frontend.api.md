@@ -3918,8 +3918,6 @@ export abstract class MapTileLoaderBase extends TileLoader {
     // (undocumented)
     readonly priority: Tile.LoadPriority;
     // (undocumented)
-    processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[];
-    // (undocumented)
     abstract requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
     tileRequiresLoading(params: Tile.Params): boolean;
@@ -7300,6 +7298,8 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
 // @internal
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
     // (undocumented)
+    computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    // (undocumented)
     abstract readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
     readonly priority: Tile.LoadPriority;
@@ -7689,6 +7689,8 @@ export abstract class TileLoader {
     adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string;
     // (undocumented)
     protected readonly _batchType: BatchType;
+    // (undocumented)
+    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number;
     // (undocumented)
     computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)

@@ -307,6 +307,8 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   noSolarLight: true,
 }));
 
+const scratchTileCenterWorld = new Point3d();
+const scratchTileCenterView = new Point3d();
 /** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
  * @internal
  */
@@ -399,6 +401,20 @@ export abstract class TileLoader {
 
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
   public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
+
+  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    // Prioritize tiles closer to eye.
+    // NB: In NPC coords, 0 = far plane, 1 = near plane.
+    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+    let minDistance = 1.0;
+    for (const viewport of viewports) {
+      const npc = viewport.worldToNpc(center, scratchTileCenterView);
+      const distance = 1.0 - npc.z;
+      minDistance = Math.min(distance, minDistance);
+    }
+
+    return minDistance;
+  }
 }
 
 /** @internal */
