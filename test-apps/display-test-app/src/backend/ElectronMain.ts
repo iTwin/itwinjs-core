@@ -6,24 +6,13 @@ import * as path from "path";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsElectronManager } from "@bentley/electron-manager";
 
 import * as electron from "electron";
 
-// --------------------------------------------------------------------------------------
-// ------- Initialization and setup of host and tools before starting app ---------------
-
 // Start the backend
 initializeBackend();
 
-// Set up logging (by default, no logging is enabled)
-const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
-const logLevel = undefined !== logLevelEnv ? Logger.parseLogLevel(logLevelEnv) : LogLevel.None;
-Logger.setLevelDefault(logLevel);
-
-// --------------------------------------------------------------------------------------
-// ---------------- This part copied from protogist ElectronMain.ts ---------------------
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
