@@ -16,7 +16,195 @@ import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Range3d, Range1d } from "./Range";
 import { Point4d } from "../geometry4d/Point4d";
+/**
+ * Carrier for a loop extracted from clip operation, annotated for sorting
+ * @internal
+ */
+export class CutLoop {
+  /* All points of the loop */
+  public xyz: GrowableXYZArray;
+  /* ray within point of "on" edge */
+  public edge?: Ray3d;
+  public sortCoordinate0: number;
+  public sortCoordinate1: number;
+  public sortDelta: number;
+  public isNotch: boolean;
+  public constructor(xyz: GrowableXYZArray) {
+    this.xyz = xyz;
+    this.edge = undefined;
+    this.sortCoordinate0 = this.sortCoordinate1 = 0;
+    this.sortDelta = 0;
+    this.isNotch = false;
+  }
+  /**
+   * Create a `CutLoop` structure annotated with the vector from last point to first.
+   * @param xyz coordinates to capture
+   */
+  public static createCaptureWithReturnEdge(xyz: GrowableXYZArray): CutLoop {
+    const result = new CutLoop(xyz);
+    if (xyz.length >= 2)
+      result.edge = Ray3d.createStartEnd(xyz.front()!, xyz.back()!);
+    return result;
+  }
+  /**
+   * Set up coordinates for sort steps:
+   * * Make `sortCoordinate0` and `sortCoordinate` the (algebraically sorted) start and end fractions along the ray
+   * * Make `sortDelta` the oriented difference of those two
+   * * Hence sorting on the coordinates puts loops in left-to-right order by the their edge vector leftmost point.
+   */
+  public setSortCoordinates(ray: Ray3d) {
+    this.sortDelta = this.edge!.direction.dotProduct(ray.direction);
+    const a = ray.dotProductToPoint(this.edge!.origin);
+    if (this.sortDelta >= 0) {
+      this.sortCoordinate0 = a;
+      this.sortCoordinate1 = a + this.sortDelta;
+    } else {
+      this.sortCoordinate0 = a + this.sortDelta;    // and sortDelta is negative !!!
+      this.sortCoordinate1 = a;
 
+    }
+  }
+  /** Return
+   * * 0 if other sort limits are not strictly contained in this.
+   * * 1 if other sort limits are strictly contained with same direction
+   * * -1 if other sort limits are strictly contained in opposite direction.
+   */
+  public containsSortLimits(other: CutLoop): number {
+    if (other.sortCoordinate0 >= this.sortCoordinate1
+      || other.sortCoordinate0 <= this.sortCoordinate0
+      || other.sortCoordinate1 <= this.sortCoordinate0
+      || other.sortCoordinate1 >= this.sortCoordinate1)
+      return 0;
+    return this.sortDelta * other.sortDelta > 0 ? 1 : -1;
+  }
+  /**
+   * * push coordinates from other onto this
+   * * reset this.sortCoordinate0 to other.sortCoordinate1
+   * @param other new coordinates
+   */
+  public absorb(other: CutLoop) {
+    this.xyz.pushFromGrowableXYZArray(other.xyz);
+    this.sortCoordinate0 = other.sortCoordinate1;
+  }
+  /** Comparison function for system sort function applied to an array of CutLoop .... */
+  public static sortFunction(loopA: CutLoop, loopB: CutLoop): number {
+    const q = loopA.sortCoordinate0 - loopB.sortCoordinate0;
+    return q > 0 ? 1 : -1;
+  }
+
+  /** Return first point coordinates.
+   * * For type checking, assume array is not empty.
+   */
+  public front(result?: Point3d): Point3d { return this.xyz.front(result)!; }
+  /** Return last point coordinates.
+   * * For type checking, assume array is not empty.
+   */
+  public back(result?: Point3d): Point3d { return this.xyz.back(result)!; }
+
+}
+/**
+ * Context to hold an array of input loops and apply sort logic.
+ * * This is used when a non-convex face is clipped by a plane
+ * *  Simple convex clip logic in this case generates double-back edges that need to be eliminated.
+ * * This class manages the elimination.
+ * * Usage pattern is:
+ * @internal
+ */
+export class CutLoopMergeContext {
+  /** Array (filled by user code) of loops being sorted. Contents are subject to being changed during sort. */
+  public inputLoops: CutLoop[];
+  /** Array (filled by sortAndMergeLoops) of reorganized loops. */
+  public outputLoops: CutLoop[];
+  // Initialize with empty loop arrays.
+  public constructor() {
+    this.inputLoops = [];
+    this.outputLoops = [];
+  }
+  /**
+   *  * Search all start and end points for the one most distant from point0.
+   */
+  private mostDistantPoint(point0: Point3d, workPoint: Point3d, resultPoint: Point3d) {
+    let dMax = -1.0;
+    resultPoint.setZero();
+    let d;
+    for (const loop of this.inputLoops) {
+      loop.front(workPoint);
+      d = workPoint.distanceSquared(point0);
+      if (d > dMax) {
+        dMax = d;
+        resultPoint.setFromPoint3d(workPoint);
+      }
+      loop.back(workPoint);
+      d = workPoint.distanceSquared(point0);
+      if (d > dMax) {
+        dMax = d;
+        resultPoint.setFromPoint3d(workPoint);
+      }
+    }
+  }
+  /**
+   * * Find a long (probably longest) edge through start and end points of inputs.
+   * * Setup sortCoordinate0 and sortCoordinate1 along that edge for each loop
+   * * sort all inputLoop members by sortCoordinate0.
+   */
+  private sortInputs() {
+    if (this.inputLoops.length > 0 && this.inputLoops[0].xyz.length > 0) {
+      const point0 = this.inputLoops[0].xyz.front()!;
+      const workPoint = Point3d.create();
+      const point1 = Point3d.create();
+      // point0 could be in the middle.   Find the most distant point ...
+      this.mostDistantPoint(point0, workPoint, point1);
+      // And again from point1 to get to the other extreme .  .
+      this.mostDistantPoint(point1, workPoint, point0);
+      const sortRay = Ray3d.createStartEnd(point0, point1);
+      sortRay.direction.normalizeInPlace();
+      for (const loop of this.inputLoops)
+        loop.setSortCoordinates(sortRay);
+      this.inputLoops.sort(CutLoop.sortFunction);
+
+    }
+  }
+  /**
+   * * sort all input loops by coordinate along the cut edge
+   * * sweep left to right, using start and end coordinates to decide if loops are outer or hole, and combine holes into their containing outer loops.
+   */
+  public sortAndMergeLoops() {
+    this.sortInputs();
+    const inputs = this.inputLoops;
+    const outputs = this.outputLoops;
+    const stack = [];
+    outputs.length = 0;
+    for (const candidate of inputs) {
+      candidate.isNotch = false;
+      // candidate must be either (a) absorbed in to of stack or (b) pushed onto stack.
+      // If pushed, must have indication of natch state.
+      for (; stack.length > 0;) {
+        const topOfStack = stack[stack.length - 1];
+        const containment = topOfStack.containsSortLimits(candidate);
+        if (containment === 0) {
+          if (!topOfStack.isNotch)
+            outputs.push(topOfStack);
+          stack.pop();
+          continue;   // a larger topOfStack may have appeared !
+          candidate.isNotch = false;
+        } else if (containment === 1) {
+          candidate.isNotch = false;
+          break;
+        } else {
+          topOfStack.absorb(candidate);
+          candidate.isNotch = true;
+          break;
+        }
+      }
+      stack.push(candidate);
+    }
+    // Anything on stack must be complete ...
+    for (const p of stack) {
+      if (!p.isNotch)
+        outputs.push(p);
+    }
+  }
+}
 /** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
  * Various (static method) computations for arrays of points interpreted as a polygon.
@@ -459,7 +647,7 @@ export class PolygonOps {
    * @param outwardNormal
    * @return the number of loops reversed.
    */
-  public static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number {
+  public static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number {
     if (loops instanceof IndexedXYZCollection)
       return this.orientLoopsCCWForOutwardNormalInPlace([loops], outwardNormal);
     const orientations: number[] = [];
@@ -570,14 +758,16 @@ export class IndexedXYZCollectionPolygonOps {
    * @param xyz input points.
    * @param work work buffer
    * @param tolerance tolerance for "on plane" decision.
+   * @return the number of crossings.   If this is larger than 2, the result is "correct" in a parity sense but may have overlapping (hence cancelling) parts.
    */
-  public static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive: boolean = true, tolerance: number = Geometry.smallMetricDistance) {
+  public static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive: boolean = true, tolerance: number = Geometry.smallMetricDistance): number {
     work.clear();
     const s = keepPositive ? 1.0 : -1.0;
     const n = xyz.length;
     let numNegative = 0;
     const fractionTol = 1.0e-8;
     const b = -tolerance;
+    let numCrossings = 0;
     if (xyz.length > 1) {
       let a1;
       let index0 = xyz.length - 1;
@@ -595,10 +785,16 @@ export class IndexedXYZCollectionPolygonOps {
             // the endpoint will be saved -- avoid the duplicate
           } else {
             work.pushInterpolatedFromGrowableXYZArray(xyz, index0, f, index1);
+            if (a1 > 0)
+              numCrossings++; // "out to in"
           }
         }
-        if (a1 >= b)
+        if (a1 >= b) {
           work.pushFromGrowableXYZArray(xyz, index1);
+          if (a0 < -b) {
+            numCrossings++; // "in to out"
+          }
+        }
         index0 = index1;
         a0 = a1;
       }
@@ -611,6 +807,80 @@ export class IndexedXYZCollectionPolygonOps {
       xyz.pushFromGrowableXYZArray(work);
     }
     work.clear();
+    return numCrossings;
+  }
+
+  /**
+   * * Input a "clipped" polygon (from clipConvexPolygonInPlace) with more than 2 crossings, i.e. is from a non-convex polygon with configurations like:
+   *   * multiple distinct polygons
+   *   * single polygon, but cut lines overlap and cancel by parity rules.
+   * * return 1 or more polygons, each having first and last points "on" the plane and intermediate points "off"
+   * * `minChainLength` indicates the shortest chain to be returned.
+   * @internal
+   */
+  public static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength: number = 3, tolerance: number = Geometry.smallMetricDistance): CutLoopMergeContext {
+    const result: CutLoopMergeContext = new CutLoopMergeContext();
+    // find the first on-plane point
+    let firstOnPlaneIndex = 0;
+    const n = xyz.length;
+    for (; firstOnPlaneIndex < n; firstOnPlaneIndex++) {
+      const a = xyz.evaluateUncheckedIndexPlaneAltitude(firstOnPlaneIndex, plane);
+      if (Math.abs(a) <= tolerance)
+        break;
+    }
+    if (firstOnPlaneIndex === n)
+      return result;
+    // find contiguous blocks of "off plane" points with on-plane points at their end.
+    let candidateA = firstOnPlaneIndex;
+    while (candidateA < n) {
+      const currentChain = new GrowableXYZArray();
+      currentChain.pushFromGrowableXYZArray(xyz, candidateA);
+      let candidateB = candidateA + 1;
+      while (candidateB < n) {
+        currentChain.pushFromGrowableXYZArray(xyz, candidateB);
+        const a = xyz.evaluateUncheckedIndexPlaneAltitude(candidateB, plane);
+        if (Math.abs(a) <= tolerance) {
+          break;
+        }
+        candidateB++;
+      }
+      if (candidateB === n)
+        for (let i = 0; i <= firstOnPlaneIndex; i++)
+          currentChain.pushFromGrowableXYZArray(xyz, i);
+      if (currentChain.length >= minChainLength)
+        result.inputLoops.push(CutLoop.createCaptureWithReturnEdge(currentChain));
+      candidateA = candidateB;
+    }
+    return result;
+  }
+  /**
+   * * Input the loops from `gatherCutLoopsFromClipPlane`
+   * * Consolidate loops for reentrant configurations.
+   * * WARNING: The output reuses and modifies input loops whenever possible.
+   * @internal
+   */
+  public static reorderCutLoops(loops: CutLoopMergeContext) {
+    // Simple case: all loops have common orientation
+    if (loops.inputLoops.length === 1)
+      return;
+    // Simple cases: 2 loops . . .
+    if (loops.inputLoops.length === 2) {
+      // if edges are in the same direction, it must be a pair of unrelated loop . . .
+      if (loops.inputLoops[0].edge!.direction.dotProduct(loops.inputLoops[1].edge!.direction) > 0) {
+        loops.outputLoops.push(loops.inputLoops[0]);
+        loops.outputLoops.push(loops.inputLoops[1]);
+        return;
+      }
+      // twist the two loops into 1,
+      const source = loops.inputLoops[1].xyz;
+      const dest = loops.inputLoops[0].xyz;
+      dest.pushFromGrowableXYZArray(source);
+      loops.outputLoops.push(loops.inputLoops[0]);
+      return;
+    }
+    // 3 or more loops.
+    loops.sortAndMergeLoops();
+    //
   }
   /**
    * Return the intersection of the plane with a range cube.
@@ -781,7 +1051,7 @@ class SortablePolygon {
    */
   public static pushLoop(loops: SortablePolygon[], loop: IndexedReadWriteXYZCollection): boolean {
     const areaXY = PolygonOps.areaXY(loop);
-    if (areaXY > 0.0) {
+    if (Math.abs(areaXY) > 0.0) {
       loops.push(new SortablePolygon(loop, Range3d.createFromVariantData(loop), areaXY));
       return true;
     }

@@ -9,13 +9,12 @@ import { CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { LineSegment3d } from "./LineSegment3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { CurveCurveApproachType } from "./CurveLocationDetail";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Path } from "./Path";
 import { Loop } from "./Loop";
 import { Arc3d } from "./Arc3d";
 import { CurveCurve } from "./CurveCurve";
-import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
 import { Angle } from "../geometry3d/Angle";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -293,11 +292,11 @@ class Joint {
     }
   }
   // Select the index at which summed fraction difference is smallest.
-  private selectIntersectionIndexByFraction(fractionA: number, fractionB: number, intersections: CurveLocationDetailArrayPair): number {
+  private selectIntersectionIndexByFraction(fractionA: number, fractionB: number, intersections: CurveLocationDetailPair[]): number {
     let index = -1;
     let aMin = Number.MAX_VALUE;
-    for (let i = 0; i < intersections.dataA.length; i++) {
-      const a = Math.abs(intersections.dataA[i].fraction - fractionA) + Math.abs(intersections.dataB[i].fraction - fractionB);
+    for (let i = 0; i < intersections.length; i++) {
+      const a = Math.abs(intersections[i].detailA.fraction - fractionA) + Math.abs(intersections[i].detailB.fraction - fractionB);
       if (a < aMin) {
         aMin = a;
         index = i;
@@ -348,12 +347,12 @@ class Joint {
         }
       } else {
         // generic pair of curves ...
-        const intersections = CurveCurve.intersectionXY(this.curve0, false, this.curve1, false);
+        const intersections = CurveCurve.intersectionXYPairs(this.curve0, false, this.curve1, false);
         const intersectionIndex = this.selectIntersectionIndexByFraction(1.0, 0.0, intersections);
         if (intersectionIndex >= 0) {
           this.flexure = JointMode.Trim;
-          this.fraction0 = intersections.dataA[intersectionIndex].fraction;
-          this.fraction1 = intersections.dataB[intersectionIndex].fraction;
+          this.fraction0 = intersections[intersectionIndex].detailA.fraction;
+          this.fraction1 = intersections[intersectionIndex].detailB.fraction;
         } else {
           this.annotateExtension(options);
         }

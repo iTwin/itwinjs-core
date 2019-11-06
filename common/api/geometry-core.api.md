@@ -879,7 +879,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
-    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): void;
+    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
     // @deprecated
@@ -1496,6 +1496,38 @@ export enum CurveSearchStatus {
     stoppedAtBoundary = 2,
     success = 1
 }
+
+// @internal
+export class CutLoop {
+    constructor(xyz: GrowableXYZArray);
+    absorb(other: CutLoop): void;
+    back(result?: Point3d): Point3d;
+    containsSortLimits(other: CutLoop): number;
+    static createCaptureWithReturnEdge(xyz: GrowableXYZArray): CutLoop;
+    // (undocumented)
+    edge?: Ray3d;
+    front(result?: Point3d): Point3d;
+    // (undocumented)
+    isNotch: boolean;
+    setSortCoordinates(ray: Ray3d): void;
+    // (undocumented)
+    sortCoordinate0: number;
+    // (undocumented)
+    sortCoordinate1: number;
+    // (undocumented)
+    sortDelta: number;
+    static sortFunction(loopA: CutLoop, loopB: CutLoop): number;
+    // (undocumented)
+    xyz: GrowableXYZArray;
+}
+
+// @internal
+export class CutLoopMergeContext {
+    constructor();
+    inputLoops: CutLoop[];
+    outputLoops: CutLoop[];
+    sortAndMergeLoops(): void;
+    }
 
 // @internal
 export class DeepCompare {
@@ -2395,8 +2427,12 @@ export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<Inde
 
 // @public
 export class IndexedXYZCollectionPolygonOps {
-    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): void;
+    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): number;
+    // @internal
+    static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength?: number, tolerance?: number): CutLoopMergeContext;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
+    // @internal
+    static reorderCutLoops(loops: CutLoopMergeContext): void;
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
     }
 
@@ -2633,7 +2669,7 @@ export class Loop extends CurveChain {
     cloneStroked(options?: StrokeOptions): AnyCurve;
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
-    static createPolygon(points: GrowableXYZArray | Point3d[]): Loop;
+    static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop;
     readonly curveCollectionType = "loop";
     dgnBoundaryType(): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -3733,7 +3769,7 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
-    static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number;
+    static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
     static sumTriangleAreasXY(points: Point3d[]): number;

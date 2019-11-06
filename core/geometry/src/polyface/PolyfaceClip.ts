@@ -39,20 +39,42 @@ export class PolyfaceClip {
     const point0 = Point3d.create();
     const point1 = Point3d.create();
     for (visitor.reset(); visitor.moveToNextFacet();) {
-      clipper.clipConvexPolygonInPlace(visitor.point, work, insideClip);
-      if (visitor.point.length > 2)
-        builder.addPolygonGrowableXYZArray(visitor.point);
-      this.collectEdgesOnPlane(visitor.point, clipper, chainContext, point0, point1);
+      const numCrossings = IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(clipper, visitor.point, work, insideClip);
+      // clipper.clipConvexPolygonInPlace(visitor.point, work, insideClip);
+      if (visitor.point.length > 2) {
+        if (numCrossings > 2) {
+          const loopsA = IndexedXYZCollectionPolygonOps.gatherCutLoopsFromPlaneClip(clipper, visitor.point);
+          IndexedXYZCollectionPolygonOps.reorderCutLoops(loopsA);
+          for (const loop of loopsA.outputLoops) {
+            builder.addPolygonGrowableXYZArray(loop.xyz);
+            this.collectEdgesOnPlane(loop.xyz, clipper, chainContext, point0, point1);
+          }
+        } else {
+          builder.addPolygonGrowableXYZArray(visitor.point);
+          this.collectEdgesOnPlane(visitor.point, clipper, chainContext, point0, point1);
+        }
+      }
     }
     // SweepContour is your friend .. but maybe it doesn't do holes and multi-loops yet?
     if (buildClosureFace) {
       const outwardNormal = clipper.getPlane3d().getNormalRef().scale(-1.0);
       chainContext.clusterAndMergeVerticesXYZ();
       const loops = chainContext.collectMaximalGrowableXYZArrays();
-      PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loops, outwardNormal);
-      const contour = SweepContour.createForPolygon(loops, outwardNormal);
-      if (contour !== undefined) {
-        contour.emitFacets(builder, insideClip);
+      if (loops.length > 1) {
+        const loopSets = PolygonOps.sortOuterAndHoleLoopsXY(loops);
+        for (const loopSet of loopSets) {
+          PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loopSet, outwardNormal);
+          const contour = SweepContour.createForPolygon(loopSet, outwardNormal);
+          if (contour !== undefined) {
+            contour.emitFacets(builder, insideClip);
+          }
+        }
+      } else {
+        PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loops, outwardNormal);
+        const contour = SweepContour.createForPolygon(loops, outwardNormal);
+        if (contour !== undefined) {
+          contour.emitFacets(builder, insideClip);
+        }
       }
     }
     return builder.claimPolyface(true);

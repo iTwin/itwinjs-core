@@ -86,6 +86,8 @@ public;class CurvePrimitive
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex"
 public;CurveSearchStatus
+internal;CutLoop
+internal;CutLoopMergeContext
 internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
