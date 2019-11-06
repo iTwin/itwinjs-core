@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { wait } from "@testing-library/react";
+import { wait, act } from "@testing-library/react";
 
 let mochaTimeoutsEnabled = true;
 beforeEach(function () {
@@ -34,7 +34,7 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
   const stack = (new Error()).stack;
   const timeout = mochaTimeoutsEnabled ? undefined : Number.MAX_VALUE;
   const callCountBefore = spy.callCount;
-  action();
+  act(() => { action(); });
   await wait(() => {
     if (spy.callCount - callCountBefore !== count) {
       const err = new Error(`Calls count doesn't match. Expected ${count}, got ${spy.callCount - callCountBefore} (${spy.callCount} in total)`);
