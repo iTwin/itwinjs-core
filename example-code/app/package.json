@@ -4,14 +4,13 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run build-code && npm run extract && npm run extract-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
-    "build-code": "tsc 1>&2",
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "docs": "",
+    "docs": "npm run extract && npm run extract-assets",
     "lint": "tslint --project . 1>&2",
     "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --defineWindow --testDir=\"./lib/backend/test\"",
     "cover": "npm test"

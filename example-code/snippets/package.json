@@ -4,11 +4,11 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:assets && npm run extract && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "docs": "",
+    "docs": "npm run copy:assets && npm run extract",
     "lint": "tslint --project . 1>&2",
     "test": "npm run test:backend",
     "test:backend": "npm run copy:assets && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib\"",
