@@ -99,6 +99,8 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
+alpha;DepthPointOptions
+alpha;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 

@@ -2033,6 +2033,24 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     static toolId: string;
 }
 
+// @alpha
+export interface DepthPointOptions {
+    excludeDecorations?: boolean;
+    excludeExternalIModels?: boolean;
+    excludeNonLocatable?: boolean;
+}
+
+// @alpha
+export enum DepthPointSource {
+    ACS = 5,
+    BackgroundMap = 2,
+    Geometry = 0,
+    Grid = 4,
+    GroundPlane = 3,
+    Model = 1,
+    TargetPoint = 6
+}
+
 // @public
 export interface DepthRangeNpc {
     maximum: number;
@@ -6158,6 +6176,11 @@ export class ScreenViewport extends Viewport {
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
     pickCanvasDecoration(pt: XAndY): import("./render/System").CanvasDecoration | undefined;
+    // @alpha
+    pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): {
+        plane: Plane3dByOriginAndUnitNormal;
+        source: DepthPointSource;
+    };
     pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
@@ -8945,6 +8968,8 @@ export const enum ViewHandleType {
 export abstract class ViewingToolHandle {
     constructor(viewTool: ViewManip);
     // (undocumented)
+    adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, _source: DepthPointSource): boolean;
+    // (undocumented)
     checkOneShot(): boolean;
     // (undocumented)
     abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
@@ -8964,6 +8989,8 @@ export abstract class ViewingToolHandle {
     protected readonly _lastPtNpc: Point3d;
     // (undocumented)
     motion(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
     // (undocumented)
     noMotion(_ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -9066,8 +9093,18 @@ export abstract class ViewManip extends ViewTool {
     constructor(viewport: ScreenViewport | undefined, handleMask: number, oneShot: boolean, isDraggingRequired?: boolean);
     // (undocumented)
     changeViewport(vp?: ScreenViewport): void;
+    // @internal (undocumented)
+    clearDepthPoint(): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // @internal (undocumented)
+    protected _depthPreview?: {
+        testPoint: Point3d;
+        pickRadius: number;
+        plane: Plane3dByOriginAndUnitNormal;
+        source: DepthPointSource;
+        isDefaultDepth: boolean;
+    };
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
@@ -9076,6 +9113,8 @@ export abstract class ViewManip extends ViewTool {
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
+    // @internal (undocumented)
+    getDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
     // (undocumented)
     static getFocusPlaneNpc(vp: Viewport): number;
     // (undocumented)
@@ -9127,6 +9166,8 @@ export abstract class ViewManip extends ViewTool {
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
+    // @internal (undocumented)
+    previewDepthPoint(context: DecorateContext): void;
     // (undocumented)
     processFirstPoint(ev: BeButtonEvent): boolean;
     // (undocumented)

@@ -6,8 +6,8 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
-  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d,
+  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ, Geometry,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
@@ -336,6 +336,34 @@ export class ViewRect {
     result.bottom = minCrnY;
     return result;
   }
+}
+
+/** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+export enum DepthPointSource {
+  /** Depth point from geometry within specified radius of pick point */
+  Geometry,
+  /** Depth point from reality model within specified radius of pick point */
+  Model,
+  /** Depth point from ray projection to background map plane */
+  BackgroundMap,
+  /** Depth point from ray projection to ground plane */
+  GroundPlane,
+  /** Depth point from ray projection to grid plane */
+  Grid,
+  /** Depth point from ray projection to acs plane */
+  ACS,
+  /** Depth point from plane passing through view target point */
+  TargetPoint,
+}
+
+/** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
+export interface DepthPointOptions {
+  /** If true, geometry with the "non-locatable" flag set will not be selected. */
+  excludeNonLocatable?: boolean;
+  /** If true, geometry from pickable decorations will not be selected. */
+  excludeDecorations?: boolean;
+  /** If true, geometry from an IModelConnection other than the one associated with the Viewport will not be selected. */
+  excludeExternalIModels?: boolean;
 }
 
 /** The minimum and maximum values for the z-depth of a rectangle of screen space.
@@ -2919,18 +2947,37 @@ export class ScreenViewport extends Viewport {
    * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
+    const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
+    if (DepthPointSource.TargetPoint === depthResult.source)
+      return undefined;
+    const result = undefined !== out ? out : new Point3d();
+    result.setFrom(depthResult.plane.getOriginRef());
+    return result;
+  }
+
+  /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
+   * If no geometry is selected, return the point projected to the most appropriate reference plane.
+   * @param pickPoint Point to search about, in world coordinates
+   * @param radius Radius, in pixels, of the circular area to search.
+   * @param options Optional settings to control what can be selected.
+   * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
+   * @note The result plane normal is valid when the source is not geometry or a reality model.
+   * @alpha
+   */
+  public pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource } {
+    if (!this.view.is3d())
+      return { plane: Plane3dByOriginAndUnitNormal.createXYPlane(pickPoint), source: DepthPointSource.ACS };
+
     const picker = new ElementPicker();
-    const options = new LocateOptions();
-    options.allowNonLocatable = allowNonLocatable;
-    if (0 !== picker.doPick(this, pickPoint, radius, options)) {
-      const result = undefined !== out ? out : new Point3d();
-      result.setFrom(picker.getHit(0)!.getPoint());
-      return result;
+    const locateOpts = new LocateOptions();
+    locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
+    locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
+    locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+
+    if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
+      const geomPlane = Plane3dByOriginAndUnitNormal.create(picker.getHit(0)!.getPoint(), this.view.getZVector())!;
+      return { plane: geomPlane, source: (picker.getHit(0)!.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry) };
     }
-    // If no background map is displayed, use ACS xy plane as this is where unsnapped points would be projected to.
-    let plane = this.backgroundMapPlane;
-    if (undefined === plane)
-      plane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2))!;
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
     const direction = Vector3d.createFrom(eyePoint);
@@ -2940,15 +2987,26 @@ export class ScreenViewport extends Viewport {
       direction.setFrom(pickPoint.vectorTo(xyzEye));
     }
     direction.scaleToLength(-1.0, direction);
-    const rayToEye = Ray3d.create(pickPoint, direction);
+    const boresite = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
-    if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
-      return undefined;
 
-    const planeResult = undefined !== out ? out : new Point3d();
-    planeResult.setFrom(projectedPt);
-    return planeResult;
+    if (undefined !== this.backgroundMapPlane && undefined !== boresite.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.backgroundMapPlane.getNormalRef())!, source: DepthPointSource.BackgroundMap };
+
+    if (this.view.getDisplayStyle3d().environment.ground.display) {
+      const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
+      if (undefined !== groundPlane && undefined !== boresite.intersectionWithPlane(groundPlane, projectedPt))
+        return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
+    }
+
+    const acsPlane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2));
+    if (undefined !== acsPlane && undefined !== boresite.intersectionWithPlane(acsPlane, projectedPt))
+      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
+
+    this.worldToView(pickPoint, projectedPt); projectedPt.z = this.worldToView(this.view.getTargetPoint()).z; this.viewToWorld(projectedPt, projectedPt);
+    return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
+
   /** @internal */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
     if (!animationTime || 0.0 >= animationTime.milliseconds)
