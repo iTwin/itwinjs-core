@@ -5,19 +5,32 @@
 ```ts
 
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
+import { EventHandled } from '@bentley/imodeljs-frontend';
+import { GeometrySummaryOptions } from '@bentley/imodeljs-common';
+import { Hilite } from '@bentley/imodeljs-common';
+import { HitDetail } from '@bentley/imodeljs-frontend';
+import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
+import { LocateResponse } from '@bentley/imodeljs-frontend';
+import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
+import { Tile } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+
+// @alpha (undocumented)
+export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): void;
 
 // @beta
 export class ApplyViewTool extends Tool {
@@ -58,6 +71,56 @@ export interface ButtonProps {
     tooltip?: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
+    // (undocumented)
+    protected apply(vp: Viewport, settings?: Hilite.Settings): void;
+    // (undocumented)
+    protected getCurrentSettings(vp: Viewport): Hilite.Settings;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
+    // (undocumented)
+    protected apply(vp: Viewport, settings?: Hilite.Settings): void;
+    // (undocumented)
+    protected getCurrentSettings(vp: Viewport): Hilite.Settings;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export abstract class ChangeHiliteTool extends Tool {
+    // (undocumented)
+    protected abstract apply(vp: Viewport, settings: Hilite.Settings | undefined): void;
+    // (undocumented)
+    protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(settings?: Hilite.Settings): boolean;
+}
+
+// @beta
+export class ChangeUnitsTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(useMetric?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha
@@ -198,6 +261,9 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
 // @alpha (undocumented)
 export function convertHexToRgb(hex: string): RgbColor | undefined;
 
+// @beta
+export function copyStringToClipboard(str: string): void;
+
 // @alpha (undocumented)
 export function createButton(props: ButtonProps): Button;
 
@@ -209,6 +275,9 @@ export function createColorInput(props: ColorInputProps): ColorInput;
 
 // @alpha (undocumented)
 export function createComboBox(props: ComboBoxProps): ComboBox;
+
+// @alpha (undocumented)
+export function createDataList(props: DataListProps): DataList;
 
 // @alpha (undocumented)
 export function createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput;
@@ -227,6 +296,39 @@ export function createSlider(props: SliderProps): Slider;
 
 // @alpha (undocumented)
 export function createTextBox(props: TextBoxProps): TextBox;
+
+// @alpha (undocumented)
+export interface DataList {
+    // (undocumented)
+    div: HTMLDivElement;
+    // (undocumented)
+    list: HTMLDataListElement;
+}
+
+// @alpha (undocumented)
+export interface DataListEntry {
+    // (undocumented)
+    value: number | string | undefined;
+}
+
+// @alpha (undocumented)
+export type DataListHandler = (list: HTMLDataListElement) => void;
+
+// @alpha (undocumented)
+export interface DataListProps {
+    // (undocumented)
+    entries: DataListEntry[];
+    // (undocumented)
+    handler?: DataListHandler;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    inline?: boolean;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parent?: HTMLElement;
+}
 
 // @beta
 export function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState>;
@@ -279,11 +381,39 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     }
 
 // @beta
+export class FadeOutTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class FpsTracker {
     constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
     dispose(): void;
     }
+
+// @beta
+export class FreezeSceneTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @beta
 export class FrontendDevTools {
@@ -300,6 +430,44 @@ export class FrustumDecorator implements Decorator {
     static readonly isEnabled: boolean;
 }
 
+// @alpha (undocumented)
+export class GpuProfiler {
+    constructor(parent: HTMLElement);
+    // (undocumented)
+    dispose(): void;
+    }
+
+// @alpha
+export class InspectElementTool extends PrimitiveTool {
+    constructor(options?: GeometrySummaryOptions, elementId?: Id64String);
+    // (undocumented)
+    autoLockTarget(): void;
+    // (undocumented)
+    filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
 // @beta
 export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
@@ -311,7 +479,7 @@ export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
 // @beta
 export class KeyinField {
     constructor(props: KeyinFieldProps);
-    // (undocumented)
+    // @alpha (undocumented)
     readonly autoCompleteList: DataList;
     // (undocumented)
     focus(): void;
@@ -356,6 +524,14 @@ export interface LabeledNumericInputProps extends NumericInputProps {
 export class LoseWebGLContextTool extends RenderSystemDebugControlTool {
     // (undocumented)
     execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MeasureTileLoadTimeTool extends Tool {
+    // (undocumented)
+    run(_args: any[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -484,6 +660,20 @@ export interface RadioBoxProps {
     vertical?: boolean;
 }
 
+// @alpha (undocumented)
+export class RealityTransitionTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(fadeMode?: FadeMode): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export abstract class RenderSystemDebugControlTool extends Tool {
     // (undocumented)
@@ -519,6 +709,20 @@ export class SaveViewTool extends Tool {
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
 
+// @alpha (undocumented)
+export class SetAspectRatioSkewTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(skew?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @internal
 export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
     // (undocumented)
@@ -531,6 +735,20 @@ export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
 export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ShowTileVolumesTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(boxes?: Tile.DebugBoundingBoxes): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -714,6 +932,20 @@ export class ToggleShadowFrustumTool extends Tool {
 export class ToggleSkyboxTool extends Tool {
     // (undocumented)
     run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleTileRequestDecorationTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }

@@ -77,6 +77,7 @@ function createTraceFromTimerResults(timerResults: GLTimerResult[]): ChromeTrace
   return { traceEvents };
 }
 
+/** @alpha */
 export class GpuProfiler {
   private readonly _div: HTMLDivElement;
   private readonly _resultsDiv: HTMLDivElement;

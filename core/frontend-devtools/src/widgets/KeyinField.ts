@@ -93,6 +93,7 @@ export interface KeyinFieldProps {
  * @beta
  */
 export class KeyinField {
+  /** @alpha */
   public readonly autoCompleteList: DataList;
   public readonly textBox: TextBox;
   public readonly keyins: string[];

@@ -60,6 +60,7 @@ class TileLoadTimer {
 
 /** Unloads all tile trees, then starts a timer that stops when all tile trees and tiles required for the view are ready.
  * Outputs the elapsed time to notifications manager.
+ * @alpha
  */
 export class MeasureTileLoadTimeTool extends Tool {
   public static toolId = "MeasureTileLoadTime";

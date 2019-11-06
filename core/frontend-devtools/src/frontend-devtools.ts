@@ -3,22 +3,30 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./ClipboardUtilities";
 export * from "./FrontEndDevTools";
 
+export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ChangeViewFlagsTool";
 export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/FrustumDecoration";
+export * from "./tools/InspectElementTool";
+export * from "./tools/MeasureTileLoadTime";
 export * from "./tools/parseToggle";
 export * from "./tools/ProjectExtents";
+export * from "./tools/RealityTransitionTool";
 export * from "./tools/RenderSystemTools";
 export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
+export * from "./tools/TileRequestDecoration";
+export * from "./tools/ViewportTools";
 
 export * from "./ui/Button";
 export * from "./ui/CheckBox";
 export * from "./ui/ColorInput";
 export * from "./ui/ComboBox";
+export * from "./ui/DataList";
 export * from "./ui/NestedMenu";
 export * from "./ui/NumericInput";
 export * from "./ui/RadioBox";
@@ -27,6 +35,7 @@ export * from "./ui/TextBox";
 
 export * from "./widgets/DiagnosticsPanel";
 export * from "./widgets/FpsTracker";
+export * from "./widgets/GpuProfiler";
 export * from "./widgets/KeyinField";
 export * from "./widgets/MemoryTracker";
 export * from "./widgets/TileStatisticsTracker";

@@ -81,6 +81,7 @@ class TileRequestDecoration {
 
 /** Display in every viewport a range graphic for every tile currently being requested for the viewport that was initially selected when the decorator was installed.
  * Green indicates queued (http request not yet sent), red indicates active (http request sent). White indicates unexpected state.
+ * @beta
  */
 export class ToggleTileRequestDecorationTool extends Tool {
   public static toolId = "ToggleTileRequestDecoration";

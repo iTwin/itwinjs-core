@@ -13,6 +13,8 @@ import { RenderSchedule } from "@bentley/imodeljs-common";
 import { Vector3d } from "@bentley/geometry-core";
 
 enum FadeMode { X, Y, Z, Transparent }
+
+/** @alpha */
 export class RealityTransitionTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
