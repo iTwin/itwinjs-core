@@ -256,6 +256,11 @@ Object {
       "label": "Gèñêrãl",
       "name": "General",
     },
+    Object {
+      "expand": false,
+      "label": "$óúrçè Fílê Ïñfõrmätïòñ",
+      "name": "source_file_information",
+    },
   ],
   "description": "Physical Object",
   "label": "Physical Object [0-39]",
@@ -1449,23 +1454,9 @@ Object {
     ],
     "General": Array [
       PropertyRecord {
-        "description": "Uncategorized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Category",
-          "name": "PhysicalObject_Category",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Uncategorized",
-          "value": 23,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "property": Object {
           "displayLabel": "Code",
-          "name": "PhysicalObject_CodeValue",
+          "name": "Element_CodeValue",
           "typename": "string",
         },
         "value": Object {
@@ -1479,7 +1470,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Model",
-          "name": "PhysicalObject_Model",
+          "name": "Element_Model",
           "typename": "navigation",
         },
         "value": Object {
@@ -1491,12 +1482,54 @@ Object {
       PropertyRecord {
         "property": Object {
           "displayLabel": "User Label",
-          "name": "PhysicalObject_UserLabel",
+          "name": "Element_UserLabel",
           "typename": "string",
         },
         "value": Object {
           "displayValue": "",
           "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Uncategorized",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Category",
+          "name": "GeometricElement3d_Category",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Uncategorized",
+          "value": 23,
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "source_file_information": Array [
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2.dgn",
+        "property": Object {
+          "displayLabel": "$óúrçè Fílê Ñâmé",
+          "name": "Element_UserLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2.dgn",
+          "value": "Properties_60InstancesWithUrl2.dgn",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+        "property": Object {
+          "displayLabel": "$óúrçè Fílê Páth",
+          "name": "UrlLink_Url",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+          "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
           "valueFormat": 0,
         },
       },
@@ -1523,7 +1556,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "PhysicalModel_ModeledElement",
+          "name": "Model_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
@@ -1574,7 +1607,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "PhysicalModel_ModeledElement",
+          "name": "Model_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
@@ -1590,7 +1623,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "PhysicalModel_ModeledElement",
+          "name": "Model_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {

@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Add property overrides' rule",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Deprecate `PropertiesDisplaySpecification` in favor of `PropertyOverrides`",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Deprecate `PropertyEditorsSpecification` in favor of `PropertyOverrides`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

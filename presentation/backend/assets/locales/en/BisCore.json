@@ -1,0 +1,10 @@
+{
+  "Categories": {
+    "SourceFileInformation": "Source File Information"
+  },
+  "Properties": {
+    "SourceElementId": "Source Element ID",
+    "SourceFileName": "Source File Name",
+    "SourceFilePath": "Source File Path"
+  }
+}
