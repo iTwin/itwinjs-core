@@ -60,6 +60,7 @@ interface ElementGeom {
 class ResponseGenerator {
   public verbosity = GeometrySummaryVerbosity.Basic;
   public includePlacement = false;
+  public includePartReferences?: "2d" | "3d";
   public verboseSymbology = false;
   public elementIds: Id64Array;
   public iModel: IModelDb;
@@ -73,6 +74,7 @@ class ResponseGenerator {
     if (undefined !== opts) {
       this.verbosity = undefined !== opts.geometryVerbosity ? opts.geometryVerbosity : GeometrySummaryVerbosity.Basic;
       this.includePlacement = true === opts.includePlacement;
+      this.includePartReferences = opts.includePartReferences;
       this.verboseSymbology = true === opts.verboseSymbology;
     }
   }
@@ -94,6 +96,8 @@ class ResponseGenerator {
 
       if (undefined !== geom.geometricElement)
         lines.push(this.summarizeElement(geom.geometricElement));
+      else if (undefined !== this.includePartReferences)
+        lines.push(this.summarizePartReferences(id, "2d" === this.includePartReferences)); // NB: Hideously inefficient if more than one element's summary was requested.
 
       let curGeomParams: GeometryParams | undefined;
       let curLocalRange: Range3d | undefined;
@@ -147,6 +151,11 @@ class ResponseGenerator {
     }
 
     return lines.join("\n");
+  }
+
+  public summarizePartReferences(id: Id64String, is2d: boolean): string {
+    const refIds = this.iModel.nativeDb.findGeometryPartReferences([id], is2d);
+    return "Part references (" + refIds.length + "): " + refIds.join();
   }
 
   public getElementGeom(id: Id64String): ElementGeom | undefined {
