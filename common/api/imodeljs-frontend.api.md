@@ -8968,7 +8968,7 @@ export const enum ViewHandleType {
 export abstract class ViewingToolHandle {
     constructor(viewTool: ViewManip);
     // (undocumented)
-    adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, _source: DepthPointSource): boolean;
+    adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean;
     // (undocumented)
     checkOneShot(): boolean;
     // (undocumented)
@@ -9050,6 +9050,8 @@ export class ViewManager {
     invalidateScenes(): void;
     // @internal (undocumented)
     invalidateViewportScenes(): void;
+    // (undocumented)
+    readonly lookCursor: string;
     // @internal (undocumented)
     notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
     readonly onBeginRender: BeEvent<() => void>;
@@ -9075,6 +9077,8 @@ export class ViewManager {
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal
     renderLoop(): void;
+    // (undocumented)
+    readonly rotateCursor: string;
     // @internal (undocumented)
     readonly sceneInvalidated: boolean;
     readonly selectedView: ScreenViewport | undefined;
@@ -9086,6 +9090,8 @@ export class ViewManager {
     validateViewportScenes(): void;
     // (undocumented)
     readonly walkCursor: string;
+    // (undocumented)
+    readonly zoomCursor: string;
 }
 
 // @public
@@ -9113,6 +9119,8 @@ export abstract class ViewManip extends ViewTool {
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
+    // (undocumented)
+    static getDefaultTargetPointWorld(vp: Viewport): Point3d;
     // @internal (undocumented)
     getDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
     // (undocumented)

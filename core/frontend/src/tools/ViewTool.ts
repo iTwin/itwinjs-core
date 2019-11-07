@@ -115,7 +115,18 @@ export abstract class ViewingToolHandle {
   public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
   public onWheel(_ev: BeWheelEvent): void { }
   public needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean { return false; }
-  public adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, _source: DepthPointSource): boolean { return isValid; }
+  public adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
+    switch (source) {
+      case DepthPointSource.Geometry:
+      case DepthPointSource.Model:
+      case DepthPointSource.BackgroundMap:
+      case DepthPointSource.GroundPlane:
+      case DepthPointSource.Grid:
+        return isValid; // Sources with visible geometry/graphics are considered valid by default...
+      default:
+        return false; // Sources without visible geometry/graphics are NOT considered valid by default...
+    }
+  }
 }
 
 /** @internal */
@@ -267,28 +278,29 @@ export abstract class ViewManip extends ViewTool {
     if (cursorVp !== context.viewport)
       return;
 
-    if (!this._depthPreview.isDefaultDepth) {
-      switch (this._depthPreview.source) {
-        case DepthPointSource.BackgroundMap:
-        case DepthPointSource.GroundPlane:
-        case DepthPointSource.Grid:
-        case DepthPointSource.ACS:
-          const pixelSize = context.viewport.getPixelSizeAtPoint(this._depthPreview.plane.getOriginRef());
-          const radius = 3 * this._depthPreview.pickRadius * pixelSize;
-          const rMatrix = Matrix3d.createRigidHeadsUp(this._depthPreview.plane.getNormalRef());
-          const ellipse = Arc3d.createScaledXYColumns(this._depthPreview.plane.getOriginRef(), rMatrix, radius, radius, AngleSweep.create360());
-          const color = context.viewport.hilite.color.adjustForContrast(cursorVp.view.backgroundColor); color.setTransparency(200);
+    let origin = this._depthPreview.plane.getOriginRef();
+    let normal = (DepthPointSource.Model === this._depthPreview.source ? Vector3d.unitZ() : this._depthPreview.plane.getNormalRef());
 
-          const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-          builder.setSymbology(color, color, 1);
-          builder.addArc(ellipse, true, true);
-          context.addDecorationFromBuilder(builder);
-          break;
-      }
+    if (this._depthPreview.isDefaultDepth) {
+      origin = cursorVp.worldToView(origin); origin.z = 0.0; cursorVp.viewToWorld(origin, origin); // Avoid getting clipped out in z...
+      normal = context.viewport.view.getZVector(); // Always draw circle for invalid depth point oriented to view...
     }
 
-    ViewTargetCenter.drawDepthLocateCursor(context, this._depthPreview.testPoint, this._depthPreview.pickRadius, !this._depthPreview.isDefaultDepth);
-    ViewTargetCenter.drawCross(context, this._depthPreview.plane.getOriginRef(), this._depthPreview.pickRadius * 0.5, false);
+    const pixelSize = context.viewport.getPixelSizeAtPoint(origin);
+    const radius = this._depthPreview.pickRadius * pixelSize;
+    const rMatrix = Matrix3d.createRigidHeadsUp(normal);
+    const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
+    const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
+    const colorLine = colorBase.adjustForContrast(cursorVp.view.backgroundColor); colorLine.setTransparency(50);
+    const colorFill = colorLine.clone(); colorFill.setTransparency(200);
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    builder.setSymbology(colorLine, colorFill, 1, this._depthPreview.isDefaultDepth ? LinePixels.Code2 : LinePixels.Solid);
+    builder.addArc(ellipse, true, true);
+    builder.addArc(ellipse, false, false);
+    context.addDecorationFromBuilder(builder);
+
+    ViewTargetCenter.drawCross(context, origin, this._depthPreview.pickRadius * 0.5, false);
   }
 
   /** @internal */
@@ -577,10 +589,7 @@ export abstract class ViewManip extends ViewTool {
     if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter))
       return this.setTargetCenterWorld(vp.viewCmdTargetCenter, true, true);
 
-    if (!vp.view.allow3dManipulations())
-      return this.setTargetCenterWorld(vp.npcToWorld(NpcCenter), false, false);
-
-    this.setTargetCenterWorld(vp.view.getTargetPoint(), false, false);
+    return this.setTargetCenterWorld(ViewManip.getDefaultTargetPointWorld(vp), false, false);
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
@@ -624,6 +633,21 @@ export abstract class ViewManip extends ViewTool {
   public static getFocusPlaneNpc(vp: Viewport): number {
     const pt = vp.worldToNpc(vp.view.getTargetPoint());
     return (pt.z < 0.0 || pt.z > 1.0) ? 0.5 : pt.z;
+  }
+
+  public static getDefaultTargetPointWorld(vp: Viewport): Point3d {
+    if (!vp.view.allow3dManipulations())
+      return vp.npcToWorld(NpcCenter);
+
+    const targetPoint = vp.view.getTargetPoint();
+    const targetPointNpc = vp.worldToNpc(targetPoint);
+
+    if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0) {
+      targetPointNpc.z = 0.5;
+      vp.npcToWorld(targetPointNpc, targetPoint);
+    }
+
+    return targetPoint;
   }
 
   /** Determine whether the supplied point is visible in this Viewport. */
@@ -779,36 +803,6 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 
   /** @internal */
-  public static drawDepthLocateCursor(context: DecorateContext, worldPoint: Point3d, radiusPixels: number, validTarget: boolean): void {
-    const radius = Math.floor(radiusPixels) + 0.5;
-    const position = context.viewport.worldToView(worldPoint); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
-    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-      ctx.strokeStyle = "rgba(0,0,0,.8)";
-      ctx.lineWidth = 1;
-
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.stroke();
-
-      ctx.strokeStyle = "rgba(255,255,255,.8)";
-
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.7, Math.PI, 1.5 * Math.PI);
-      ctx.stroke();
-
-      ctx.fillStyle = validTarget ? "rgba(255,255,255,.2)" : "rgba(255,0,0,.2)";
-      if (!validTarget)
-        ctx.setLineDash([3, 3]);
-
-      ctx.beginPath();
-      ctx.arc(0, 0, radius - 1, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    };
-    context.addCanvasDecoration({ position, drawDecoration }, true);
-  }
-
-  /** @internal */
   public static drawCross(context: DecorateContext, worldPoint: Point3d, sizePixels: number, hasFocus: boolean): void {
     const crossSize = Math.floor(sizePixels) + 0.5;
     const outlineSize = crossSize + 1;
@@ -940,25 +934,20 @@ class ViewPan extends HandleWithInertia {
   public firstPoint(ev: BeButtonEvent) {
     this._inertiaVec = undefined;
     const vp = ev.viewport!;
-    vp.worldToNpc(ev.rawPoint, this._lastPtNpc);
+    vp.worldToNpc(ev.point, this._lastPtNpc);
 
     // if the camera is on, we need to find the element under the starting point to get the z
-    const visiblePoint = this.viewTool.getDepthPoint(ev);
-    if (undefined !== visiblePoint)
-      vp.worldToNpc(visiblePoint, this._lastPtNpc); // set the anchor point in NPC
-    else if (this.needDepthPoint(ev))
-      this._lastPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
+    if (this.needDepthPoint(ev, false)) {
+      const visiblePoint = this.viewTool.getDepthPoint(ev);
+      if (undefined !== visiblePoint)
+        vp.worldToNpc(visiblePoint, this._lastPtNpc);
+      else
+        this._lastPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
+    }
 
     this.viewTool.beginDynamicUpdate();
     this.viewTool.provideToolAssistance("Pan.Prompts.NextPoint");
     return true;
-  }
-
-  public onReinitialize() {
-    const vha = this.viewTool.viewHandles.hitHandle;
-    if (vha === this) {
-      IModelApp.toolAdmin.setCursor(this.getHandleCursor());
-    }
   }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
@@ -985,22 +974,8 @@ class ViewPan extends HandleWithInertia {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent): boolean {
+  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
-  }
-
-  /** @internal */
-  public adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
-    switch (source) {
-      case DepthPointSource.Geometry:
-      case DepthPointSource.Model:
-      case DepthPointSource.BackgroundMap:
-      case DepthPointSource.GroundPlane:
-      case DepthPointSource.Grid:
-        return isValid;
-      default:
-        return false;
-    }
   }
 }
 
@@ -1010,7 +985,7 @@ class ViewRotate extends HandleWithInertia {
   private readonly _activeFrustum = new Frustum();
   private readonly _anchorPtNpc = new Point3d();
   public get handleType() { return ViewHandleType.Rotate; }
-  public getHandleCursor() { return "move"; }
+  public getHandleCursor() { return IModelApp.viewManager.rotateCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1118,28 +1093,16 @@ class ViewRotate extends HandleWithInertia {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent): boolean {
+  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return (!this.viewTool.targetCenterLocked && ev.viewport!.view.allow3dManipulations());
   }
 
   /** @internal */
   public adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
-    let useDefaultTarget = false;
-    switch (source) {
-      case DepthPointSource.Geometry:
-      case DepthPointSource.Model:
-      case DepthPointSource.BackgroundMap:
-      case DepthPointSource.GroundPlane:
-      case DepthPointSource.Grid:
-        useDefaultTarget = !isValid;
-        break;
-      default:
-        useDefaultTarget = true;
-        break;
-    }
-    if (useDefaultTarget)
-      plane.getOriginRef().setFrom(vp.view.getTargetPoint());
-    return !useDefaultTarget;
+    if (super.adjustDepthPoint(isValid, vp, plane, source))
+      return true;
+    plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
+    return false;
   }
 }
 
@@ -1150,7 +1113,7 @@ class ViewLook extends ViewingToolHandle {
   private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
-  public getHandleCursor(): string { return IModelApp.viewManager.crossHairCursor; }
+  public getHandleCursor(): string { return IModelApp.viewManager.lookCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1242,10 +1205,22 @@ abstract class AnimatedHandle extends ViewingToolHandle {
   public abstract animate(): boolean;
 
   public firstPoint(ev: BeButtonEvent): boolean {
+    const vp = ev.viewport;
     const tool = this.viewTool;
     tool.inDynamicUpdate = true;
-    this._lastPtView.setFrom(ev.viewPoint);
-    this._anchorPtView.setFrom(ev.viewPoint);
+    if (vp && this.needDepthPoint(ev, false)) {
+      const visiblePoint = this.viewTool.getDepthPoint(ev);
+      if (undefined !== visiblePoint) {
+        vp.worldToView(visiblePoint, this._anchorPtView);
+      } else {
+        vp.worldToNpc(ev.point, this._anchorPtView);
+        this._anchorPtView.z = ViewManip.getFocusPlaneNpc(vp);
+        vp.npcToView(this._anchorPtView, this._anchorPtView);
+      }
+    } else {
+      this._anchorPtView.setFrom(ev.viewPoint);
+    }
+    this._lastPtView.setFrom(this._anchorPtView);
     tool.viewport!.setAnimator(this);
     return true;
   }
@@ -1283,7 +1258,7 @@ abstract class AnimatedHandle extends ViewingToolHandle {
 /** ViewingToolHandle for performing the "scroll view" operation */
 class ViewScroll extends AnimatedHandle {
   public get handleType() { return ViewHandleType.Scroll; }
-  public getHandleCursor(): string { return IModelApp.viewManager.crossHairCursor; }
+  public getHandleCursor(): string { return "move"; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
@@ -1330,23 +1305,28 @@ class ViewScroll extends AnimatedHandle {
     context.addCanvasDecoration({ position, drawDecoration }, true);
   }
 
+  public firstPoint(ev: BeButtonEvent) {
+    super.firstPoint(ev);
+    this.viewTool.provideToolAssistance("Scroll.Prompts.NextPoint");
+    return true;
+  }
+
   public animate(): boolean {
     const dist = this.getDirection();
     if (undefined === dist)
       return false;
-    dist.scaleInPlace(ToolSettings.scrollSpeed * this.getElapsedTime());
 
+    dist.scaleInPlace(ToolSettings.scrollSpeed * this.getElapsedTime());
     const tool = this.viewTool;
     const viewport = tool.viewport!;
-    const view = viewport.view;
 
-    if (view.is3d() && view.isCameraOn) {
+    if (viewport.isCameraOn) {
       const points: Point3d[] = new Array<Point3d>(2);
       points[0] = this._anchorPtView.clone();
       points[1] = points[0].plus(dist);
 
       viewport.viewToNpcArray(points);
-      points[0].z = points[1].z = ViewManip.getFocusPlaneNpc(viewport); // use the focal plane for z coordinates
+      points[1].z = points[0].z;
       viewport.npcToWorldArray(points);
 
       const offset = points[1].minus(points[0]);
@@ -1360,6 +1340,11 @@ class ViewScroll extends AnimatedHandle {
 
     return false;
   }
+
+  /** @internal */
+  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
+    return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
+  }
 }
 
 /** ViewingToolHandle for performing the "zoom view" operation */
@@ -1367,7 +1352,7 @@ class ViewZoom extends AnimatedHandle {
   private readonly _anchorPtNpc = new Point3d();
   private _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
-  public getHandleCursor() { return IModelApp.viewManager.crossHairCursor; }
+  public getHandleCursor() { return IModelApp.viewManager.zoomCursor; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
@@ -1399,16 +1384,9 @@ class ViewZoom extends AnimatedHandle {
   }
 
   public firstPoint(ev: BeButtonEvent) {
-    const tool = this.viewTool;
-    const viewport = tool.viewport!;
-    viewport.setAnimator(this);
-    tool.provideToolAssistance("Zoom.Prompts.NextPoint");
-    tool.beginDynamicUpdate();
-
-    const visiblePoint = this.viewTool.getDepthPoint(ev);
-    viewport.worldToView(undefined !== visiblePoint ? visiblePoint : ev.point, this._anchorPtView);
-    this._lastPtView.setFrom(this._anchorPtView);
-    viewport.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+    super.firstPoint(ev);
+    ev.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+    this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
     return true;
   }
 
@@ -1449,22 +1427,8 @@ class ViewZoom extends AnimatedHandle {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent): boolean {
+  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
-  }
-
-  /** @internal */
-  public adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
-    switch (source) {
-      case DepthPointSource.Geometry:
-      case DepthPointSource.Model:
-      case DepthPointSource.BackgroundMap:
-      case DepthPointSource.GroundPlane:
-      case DepthPointSource.Grid:
-        return isValid;
-      default:
-        return false;
-    }
   }
 }
 
@@ -1926,13 +1890,13 @@ export class StandardViewTool extends ViewTool {
   public onPostInstall() {
     super.onPostInstall();
     if (this.viewport) {
-      const id = this._standardViewId;
       const vp = this.viewport;
+      const id = vp.view.allow3dManipulations() ? this._standardViewId : StandardViewId.Top;
       const rMatrix = AccuDraw.getStandardRotation(id, vp, vp.isContextRotationRequired);
       const inverse = rMatrix.inverse();
       if (undefined !== inverse) {
         const targetMatrix = inverse.multiplyMatrixMatrix(vp.rotation);
-        const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
+        const rotateTransform = Transform.createFixedPointAndMatrix(ViewManip.getDefaultTargetPointWorld(vp), targetMatrix);
         const startFrustum = vp.getFrustum();
         const newFrustum = startFrustum.clone();
         newFrustum.multiply(rotateTransform);
@@ -2242,7 +2206,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
       vp.worldToView(this._startPtWorld, this._startPtView);
     } else {
       this._startPtView.setFrom(ev.viewPoint);
-      this._startPtView.z = vp.worldToView(vp.view.getTargetPoint()).z;
+      this._startPtView.z = vp.worldToView(ViewManip.getDefaultTargetPointWorld(vp)).z;
       vp.viewToWorld(this._startPtView, this._startPtWorld);
     }
     this._lastPtView.setFrom(this._startPtView);

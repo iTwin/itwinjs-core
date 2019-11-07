@@ -9,7 +9,7 @@ beta;ChangeEmphasisSettingsTool
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
 beta;ChangeUnitsTool 
-alpha;ChangeViewFlagsTool 
+beta;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
@@ -65,7 +65,7 @@ alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
-alpha;ProjectExtentsDecoration
+beta;ProjectExtentsDecoration
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
@@ -97,7 +97,7 @@ beta;ToggleProjectExtentsTool
 beta;ToggleReadPixelsTool 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
-alpha;ToggleSkyboxTool 
+beta;ToggleSkyboxTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

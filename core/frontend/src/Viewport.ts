@@ -3003,7 +3003,11 @@ export class ScreenViewport extends Viewport {
     if (undefined !== acsPlane && undefined !== boresite.intersectionWithPlane(acsPlane, projectedPt))
       return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
 
-    this.worldToView(pickPoint, projectedPt); projectedPt.z = this.worldToView(this.view.getTargetPoint()).z; this.viewToWorld(projectedPt, projectedPt);
+    const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
+    if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
+      targetPointNpc.z = 0.5;
+
+    this.worldToNpc(pickPoint, projectedPt); projectedPt.z = targetPointNpc.z; this.npcToWorld(projectedPt, projectedPt);
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
