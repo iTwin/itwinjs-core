@@ -3,10 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-/** @beta */
+/** @module Controls */
+
+/** Wraps an HTML text input field.
+ * @beta
+ */
 export interface TextBox {
+  /** The label, if the text box has one. */
   label?: HTMLLabelElement;
+  /** The text input element. */
   textbox: HTMLInputElement;
+  /** The div containing the text box. */
   div: HTMLDivElement;
 }
 

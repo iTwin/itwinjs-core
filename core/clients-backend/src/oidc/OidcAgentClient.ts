@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Authentication */
 
 import { GrantParams, TokenSet } from "openid-client";
 import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";

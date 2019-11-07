@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CloudStorage */
+
 import { IModelToken } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";

@@ -2,11 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Polyface */
+
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range2d } from "../geometry3d/Range";
 import { IndexedPolyface, IndexedPolyfaceVisitor } from "./Polyface";
-/** module Polyface */
 /**
  * Data for a face in a polyface containing facets.
  * This is built up cooperatively by the PolyfaceBuilder and its

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Plugins */
 
 // This file is a partial implementation of a PluginLoader that downloads a tar file locally from the server
 // (into a Buffer) and fulfills all the resource requests by creating blob URLs from the components of the at file.

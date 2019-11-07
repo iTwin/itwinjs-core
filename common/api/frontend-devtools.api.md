@@ -46,7 +46,7 @@ export class ApplyViewTool extends Tool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface Button {
     // (undocumented)
     button: HTMLInputElement;
@@ -54,10 +54,10 @@ export interface Button {
     div: HTMLElement;
 }
 
-// @alpha (undocumented)
+// @alpha
 export type ButtonHandler = (button: HTMLInputElement) => void;
 
-// @alpha (undocumented)
+// @alpha
 export interface ButtonProps {
     // (undocumented)
     handler: ButtonHandler;
@@ -123,7 +123,7 @@ export class ChangeUnitsTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class ChangeViewFlagsTool extends Tool {
     // (undocumented)
     static readonly maxArgs: undefined;
@@ -264,7 +264,7 @@ export function convertHexToRgb(hex: string): RgbColor | undefined;
 // @beta
 export function copyStringToClipboard(str: string): void;
 
-// @alpha (undocumented)
+// @alpha
 export function createButton(props: ButtonProps): Button;
 
 // @alpha (undocumented)
@@ -604,7 +604,7 @@ export interface NumericInputProps {
 // @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class ProjectExtentsDecoration {
     constructor(iModel: IModelConnection);
     // (undocumented)
@@ -786,13 +786,10 @@ export interface SliderProps {
     value: string;
 }
 
-// @beta (undocumented)
+// @beta
 export interface TextBox {
-    // (undocumented)
     div: HTMLDivElement;
-    // (undocumented)
     label?: HTMLLabelElement;
-    // (undocumented)
     textbox: HTMLInputElement;
 }
 
@@ -928,7 +925,7 @@ export class ToggleShadowFrustumTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class ToggleSkyboxTool extends Tool {
     // (undocumented)
     run(): boolean;

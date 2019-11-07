@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
+
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { BadUnit, Parser, ParserSpec, ParseResult, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider, BasicUnit } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";

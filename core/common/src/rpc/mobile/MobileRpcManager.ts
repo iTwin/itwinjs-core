@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";

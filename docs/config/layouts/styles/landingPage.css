@@ -94,7 +94,7 @@ p.digital-twin {
 }
 
 #demo-container {
-  width: 111%;
+  width: 100%;
   background-color: #F1F9FF;
   display: flex;
   align-items: center;
@@ -160,6 +160,8 @@ p.digital-twin {
   height: 101%;
   width: 101%;
   margin-bottom: 2em;
+  max-height: 44vh;
+  max-width: 44vw;
 }
 
 .feature-header {

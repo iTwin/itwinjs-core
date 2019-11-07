@@ -12,3 +12,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
     (window as any).iModelJsVersions = new Map<string, string>();
   (window as any).iModelJsVersions.set("imodeljs-i18n", BUILD_SEMVER);
 }
+
+/** @docs-package-description
+ * The imodeljs-i18n package contains classes related to internationalization and localization.
+ */
+
+/** @docs-group-description AppAdministration
+ * Classes for internationalization and localization of your app.
+ */

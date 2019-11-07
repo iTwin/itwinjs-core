@@ -49,7 +49,26 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
   (window as any).iModelJsVersions.set("frontend-devtools", BUILD_SEMVER);
 }
 
+/** @docs-package-description
+ * The frontend-devtools package contains various tools and widgets for monitoring and debugging the front-end state of an iModel.js application.
+ */
+
 /**
- * @docs-group-description UiWidgets
- * Functions for creating basic UI widgets.
+ * @docs-group-description Widgets
+ * Widgets that wrap some of the package's functionality into embeddable HTML controls.
+ */
+
+/**
+ * @docs-group-description Tools
+ * Interactive- and immediate-mode [tools]($docs/learning/frontend/Tools.md), most of which can be executed via key-in. All key-ins are documented in the package's README.
+ */
+
+/**
+ * @docs-group-description Controls
+ * Rudimentary HTML components used to build the widgets.
+ */
+
+/**
+ * @docs-group-description Utilities
+ * Utility functions used throughout the package.
  */

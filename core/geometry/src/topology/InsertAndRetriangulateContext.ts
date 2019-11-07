@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Topology */
+
 import { HalfEdgeGraph, HalfEdgeMask, HalfEdge } from "./Graph";
 import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -11,7 +13,6 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
 import { Triangulator } from "./Triangulation";
 
-/** @module Topology */
 /**
  * Context for repeated insertion of new points in a graph.
  * * Initial graph should have clean outer boundary. (e.g. as typically marked with HalfEdgeMask.EXTERIOR)

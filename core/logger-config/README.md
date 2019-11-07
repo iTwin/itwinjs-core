@@ -4,7 +4,7 @@ Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
-The __@bentley/logger-config__ package contains that help configure a backend logger.
+The __@bentley/logger-config__ package contains classes that help configure a backend logger.
 
 ## Documentation
 

@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 /*
 Adapted from https://github.com/pillarjs/multiparty. Multiparty license as follows:
 (The MIT License)

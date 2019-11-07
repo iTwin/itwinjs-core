@@ -92,7 +92,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 }
 
 /** @docs-package-description
- * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
+ * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
  */
 
 /**
@@ -153,4 +153,20 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description OIDC
+ * Classes for working with the OpenID Connect (OIDC) protocol
+ */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description Logging
+ * Logger categories used by this package
+ */
+/**
+ * @docs-group-description SpatialClassification
+ * Classes for spatial classification.
  */

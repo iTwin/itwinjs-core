@@ -1,10 +1,11 @@
-import { Cartographic } from "@bentley/imodeljs-common";
-import { Angle, Vector3d } from "@bentley/geometry-core";
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
+
+import { Cartographic } from "@bentley/imodeljs-common";
+import { Angle, Vector3d } from "@bentley/geometry-core";
 
 // Code below loosely translated from  https://www.esrl.noaa.gov/gmd/grad/solcalc/
 function calcTimeJulianCent(jd: number) {

@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
 import { createTextBox, TextBox } from "../ui/TextBox";

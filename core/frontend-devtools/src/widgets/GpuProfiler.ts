@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { saveAs } from "file-saver";

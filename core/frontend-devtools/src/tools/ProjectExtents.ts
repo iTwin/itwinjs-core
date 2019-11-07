@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+/** @module Tools */
+
 import {
   AxisAlignedBox3d,
   ColorDef,
@@ -16,7 +19,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
-/** @alpha */
+/** @beta */
 export class ProjectExtentsDecoration {
   private static _decorator?: ProjectExtentsDecoration;
   protected _removeDecorationListener?: () => void;

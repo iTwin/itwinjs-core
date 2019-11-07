@@ -2,10 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { GrowableFloat64Array } from "./GrowableFloat64Array";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
-/** @module CartesianGeometry */
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *

@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module AzCopy */
 
 import { spawn, execFileSync } from "child_process";
 import * as fs from "fs";
@@ -9,17 +10,17 @@ import * as semver from "semver";
 import { EventEmitter } from "events";
 
 /** Integerity check constraint
- *  @internal
+ * @internal
  */
 export type MD5Options = "NoCheck" | "LogOnly" | "FailIfDifferent" | "FailIfDifferentOrMissing";
 
 /** Log level for azcopy. Default to INFO
- *  @internal
+ * @internal
  */
 export type LogLevel = "INFO" | "WARNING" | "ERROR";
 
 /** Copy option taken by 'azcopy copy' command
- *  @internal
+ * @internal
  */
 export interface CopyOptions {
   blobType?: string; // defines the type of blob at the destination. This is used in case of upload / account to account copy (default "None")
@@ -38,7 +39,7 @@ export interface CopyOptions {
 }
 
 /** Allow configuring azure stack variables
- *  @internal
+ * @internal
  */
 export interface Configuration {
   concurrencyValue?: number; // Overrides how many Go Routines work on transfers. By default, this number is determined based on the number of logical cores on the machine.
@@ -48,12 +49,12 @@ export interface Configuration {
   defaultServiceApiVersion?: string; // Overrides the service API version so that AzCopy could accommodate custom environments such as Azure Stack.
 }
 /** Describe message type
- *  @internal
+ * @internal
  */
 export type MessageType = "Init" | "Info" | "Progress" | "Exit" | "Error" | "Prompt";
 
 /** Base interface for az events
- *  @internal
+ * @internal
  */
 export interface MessageEventArgs {
   TimeStamp: string;
@@ -61,14 +62,14 @@ export interface MessageEventArgs {
 }
 
 /** Base class for event args
- *  @internal
+ * @internal
  */
 export interface StringEventArgs extends MessageEventArgs {
   MessageContent: string;
 }
 
 /** Args for azinit event
- *  @internal
+ * @internal
  */
 export interface InitEventArgs extends MessageEventArgs {
   LogFileLocation: string;
@@ -76,7 +77,7 @@ export interface InitEventArgs extends MessageEventArgs {
 }
 
 /** Args for azprogress and azexit events
- *  @internal
+ * @internal
  */
 export interface ProgressEventArgs extends MessageEventArgs {
   ErrorMsg: string;
@@ -96,7 +97,7 @@ export interface ProgressEventArgs extends MessageEventArgs {
 }
 
 /** Declare typed events
- *  @internal
+ * @internal
  */
 export declare interface AzCopy {
   on(event: "azinit", listener: (args: InitEventArgs) => void): this;

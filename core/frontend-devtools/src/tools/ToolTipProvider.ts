@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Tools */
+
 import {
   HitDetail,
   IModelApp,
@@ -21,7 +23,7 @@ class DebugToolTipProvider implements ToolTipProvider {
     // discard and overwrite
     await tooltipPromise;
 
-    const keys: Array<keyof HitDetail> = [ "sourceId", "modelId", "subCategoryId", "tileId", "geometryClass" ];
+    const keys: Array<keyof HitDetail> = ["sourceId", "modelId", "subCategoryId", "tileId", "geometryClass"];
     let html = "";
     for (const key of keys) {
       const value = hit[key];
@@ -52,6 +54,10 @@ class DebugToolTipProvider implements ToolTipProvider {
   }
 }
 
+/** Replaces the default tooltips displayed when mousing over elements to instead display information useful for debugging, including
+ * element, model, subcategory, and tile Ids as well as geometry class.
+ * @beta
+ */
 export class ToggleToolTipsTool extends Tool {
   public static toolId = "ToggleToolTips";
   public static get minArgs() { return 0; }

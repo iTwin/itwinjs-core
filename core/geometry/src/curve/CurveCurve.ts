@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Curve */
 
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -10,7 +11,6 @@ import { CurveCurveIntersectXYZ } from "./CurveCurveIntersectXYZ";
 import { CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveLocationDetailPair } from "./CurveLocationDetail";
-/** @module Curve */
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
  * @public

@@ -127,3 +127,15 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Geometry Functions]($docs/learning/GeometrySqlFuncs.md)
  */
+/**
+ * @docs-group-description Logging
+ * Logger categories used by this package
+ */
+/**
+ * @docs-group-description CloudStorage
+ * Classes for working with Cloud Storage.
+ */
+/**
+ * @docs-group-description SpatialClassificationProps
+ * Classes for spatial classification.
+ */

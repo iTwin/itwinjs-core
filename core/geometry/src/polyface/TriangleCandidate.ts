@@ -2,12 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Polyface */
+
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 
-/** @module Polyface */
 /**
  * `TriangleCandidate` is a `BarycentricTriangle` with additional application-specific label data:
  * * `quality` = numeric indicator of quality (e.g. aspect ratio of this triangle or a combination with other triangles)
@@ -58,7 +59,7 @@ export class TriangleCandidate extends BarycentricTriangle {
       result.markInvalid();
     return result;
   }
-/** (property) return the validity flag. */
+  /** (property) return the validity flag. */
   public get isValid(): boolean { return this._isValid; }
   /**
    * * Mark this triangle invalid.

@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Utilities */
+
 /** Parses a string case-insensitively returning true for "ON", false for "OFF" undefined for "TOGGLE" or undefined, and the input string for anything else
  * Used by various tools which take such arguments.
  * @beta

@@ -2,12 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Ray3d } from "./Ray3d";
 import { XYAndZ, XAndY, HasZ, XYZProps } from "./XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
-/** @module CartesianGeometry */
 
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.

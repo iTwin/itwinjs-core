@@ -55,6 +55,7 @@
       "i18n": "imodeljs-i18n",
       "markup": "imodeljs-markup",
       "quantity": "imodeljs-quantity",
+      "frontend-devtools": "frontend-devtools",
       "ui-abstract": "ui-abstract",
       "ui-components": "ui-components",
       "ui-core": "ui-core",
