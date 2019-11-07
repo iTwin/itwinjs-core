@@ -74,6 +74,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
+* `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey. If the selection set is empty, clear the effects of any previous use of this key-in. Accepts one of the following arguments:
   * "none": Don't override color, don't apply silhouette.
