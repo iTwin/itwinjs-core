@@ -2048,6 +2048,7 @@ export type GeometryStreamProps = GeometryStreamEntryProps[];
 // @alpha
 export interface GeometrySummaryOptions {
     geometryVerbosity?: GeometrySummaryVerbosity;
+    includePartReferences?: "2d" | "3d";
     includePlacement?: boolean;
     verboseSymbology?: boolean;
 }

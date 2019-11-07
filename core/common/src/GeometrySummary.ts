@@ -30,6 +30,10 @@ export interface GeometrySummaryOptions {
   includePlacement?: boolean;
   /** The level of detail with which to summarize each geometric primitive. Default: Basic. */
   geometryVerbosity?: GeometrySummaryVerbosity;
+  /** If defined, for each geometry part, output a list of all geometric elements that reference that part in their geometry streams.
+   * WARNING: This requires an exhaustive search through every geometric element in the iModel and may be extremely slow.
+   */
+  includePartReferences?: "2d" | "3d";
 }
 
 /** Describes the elements for which to generate an array of geometry summaries and the options controlling the contents of each summary.

@@ -58,6 +58,7 @@ beta;class RenderSystemDebugControlTool
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
 beta;SaveViewTool 
+beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetVolClassIntersectOff 
 internal;SetVolClassIntersectOn 

@@ -98,6 +98,9 @@
     },
     "CompileShaders": {
       "keyin": "fdt compile shaders"
+    },
+    "SelectElementsById": {
+      "keyin": "fdt select elements"
     }
   }
 }

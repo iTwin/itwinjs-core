@@ -14,6 +14,7 @@ export * from "./tools/RenderSystemTools";
 export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
+export * from "./tools/SelectionTools";
 
 export * from "./ui/Button";
 export * from "./ui/CheckBox";
