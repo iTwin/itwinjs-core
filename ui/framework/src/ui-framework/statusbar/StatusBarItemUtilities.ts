@@ -15,6 +15,7 @@ export class StatusBarItemUtilities {
   /** Creates a StatusBar item */
   public static createStatusBarItem = (id: string, section: StatusBarSection, itemPriority: number, component: React.ReactNode, itemProps?: Partial<StatusBarItem>): StatusBarItem => ({
     id, section, itemPriority, component,
+    isVisible: true,
     ...itemProps ? itemProps : {},
   })
 

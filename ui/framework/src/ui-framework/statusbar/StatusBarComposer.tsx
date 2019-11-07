@@ -42,7 +42,7 @@ export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposer
 
   private getSectionItems(section: StatusBarSection): React.ReactNode[] {
     const sectionItems = this.state.statusBarItems
-      .filter((item) => item.section === section)
+      .filter((item) => item.section === section && item.isVisible)
       .sort((a, b) => a.itemPriority - b.itemPriority);
 
     return sectionItems.map((sectionItem) => (

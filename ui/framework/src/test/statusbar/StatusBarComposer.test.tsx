@@ -171,4 +171,27 @@ describe("StatusBarComposer", () => {
     wrapper.unmount();
   });
 
+  it("StatusBarComposer should support item.isVisible", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const items: StatusBarItem[] = [
+      StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isVisible: false }),
+    ];
+
+    UiFramework.statusBarManager.itemsManager.add(items);
+    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(2);
+
+    wrapper.update();
+    let leftItems = wrapper.find("div.uifw-statusbar-left");
+    expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    UiFramework.statusBarManager.itemsManager.setIsVisible("test2", true);
+    wrapper.update();
+    leftItems = wrapper.find("div.uifw-statusbar-left");
+    expect(leftItems.find(AppStatusBarComponent).length).to.eq(2);
+
+    wrapper.unmount();
+  });
+
 });

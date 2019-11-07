@@ -47,6 +47,7 @@ export class AppTools {
         UiFramework.backstageManager.itemsManager.add(backstageItems);
         const statusBarItem = StatusBarItemUtilities.createStatusBarItem(this._sampleStatusFieldId, StatusBarSection.Left, 10, <SampleStatus />);
         UiFramework.statusBarManager.itemsManager.add(statusBarItem);
+        UiFramework.statusBarManager.itemsManager.setIsVisible("ViewAttributes", false);
       },
     });
   }
@@ -62,6 +63,7 @@ export class AppTools {
         const backstageItems = AppTools.getBackstageItems().map((item) => item.id);
         UiFramework.backstageManager.itemsManager.remove(backstageItems);
         UiFramework.statusBarManager.itemsManager.remove(this._sampleStatusFieldId);
+        UiFramework.statusBarManager.itemsManager.setIsVisible("ViewAttributes", true);
       },
     });
   }

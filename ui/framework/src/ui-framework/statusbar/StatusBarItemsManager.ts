@@ -56,6 +56,26 @@ export class StatusBarItemsManager {
     this.items = items;
   }
 
+  public setIsVisible(id: StatusBarItemId, isVisible: boolean) {
+    const itemIndex = this._items.findIndex((i) => i.id === id);
+    if (itemIndex < 0)
+      return;
+
+    const prevItem = this._items[itemIndex];
+    if (prevItem.isVisible === isVisible)
+      return;
+
+    const item = {
+      ...prevItem,
+      isVisible,
+    };
+    this.items = [
+      ...this._items.slice(0, itemIndex),
+      item,
+      ...this._items.slice(itemIndex + 1),
+    ];
+  }
+
   /** @internal */
   public removeAll() {
     this._items = [];

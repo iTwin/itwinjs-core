@@ -27,6 +27,8 @@ export interface StatusBarItem {
   readonly itemPriority: number;
   /** React component for the StatusBar item. */
   readonly component: React.ReactNode;
+  /** Indicates whether the item is visible. Defaults to true. */
+  readonly isVisible: boolean;
 }
 
 /** Type for StatusBar Item Id

@@ -4089,6 +4089,7 @@ export type StatusBarFieldId = string | null;
 export interface StatusBarItem {
     readonly component: React.ReactNode;
     readonly id: string;
+    readonly isVisible: boolean;
     readonly itemPriority: number;
     readonly section: StatusBarSection;
 }
@@ -4111,6 +4112,8 @@ export class StatusBarItemsManager {
     remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
     // @internal (undocumented)
     removeAll(): void;
+    // (undocumented)
+    setIsVisible(id: StatusBarItemId, isVisible: boolean): void;
 }
 
 // @beta

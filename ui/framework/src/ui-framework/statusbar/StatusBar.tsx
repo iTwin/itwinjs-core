@@ -386,7 +386,7 @@ export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (p
  */
 export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>({ // tslint:disable-line: variable-name
   isInFooterMode: true,
-  onOpenWidget: () => { },
+  onOpenWidget: /* istanbul ignore next */ () => { },
   openWidget: "",
   toastTargetRef: { current: null },
 });
