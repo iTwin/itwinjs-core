@@ -51,6 +51,7 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { AppBackstageItemProvider } from "./appui/backstage/AppBackstageItemProvider";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
+import { AppStatusBarItemProvider } from "./appui/statusbars/AppStatusBarItemProvider";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -464,7 +465,8 @@ export class SampleAppIModelApp {
 }
 
 export class SampleAppViewer extends React.Component<any> {
-  private _provider = new AppBackstageItemProvider();
+  private _backstageItemProvider = new AppBackstageItemProvider();
+  private _statusBarItemProvider = new AppStatusBarItemProvider();
 
   constructor(props: any) {
     super(props);
@@ -479,13 +481,18 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    UiFramework.backstageManager.itemsManager.add(this._provider.backstageItems);
+    UiFramework.backstageManager.itemsManager.add(this._backstageItemProvider.backstageItems);
+    UiFramework.statusBarManager.itemsManager.add(this._statusBarItemProvider.statusBarItems);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
   public componentWillUnmount() {
-    const items = this._provider.backstageItems.map((item) => item.id);
-    UiFramework.backstageManager.itemsManager.remove(items);
+    const backstageItems = this._backstageItemProvider.backstageItems.map((item) => item.id);
+    UiFramework.backstageManager.itemsManager.remove(backstageItems);
+
+    const statusBarItems = this._statusBarItemProvider.statusBarItems.map((item) => item.id);
+    UiFramework.statusBarManager.itemsManager.remove(statusBarItems);
+
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
   }
 

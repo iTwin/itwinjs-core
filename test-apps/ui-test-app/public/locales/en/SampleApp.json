@@ -266,6 +266,8 @@
   },
   "statusFields": {
     "displayStyle": "Display Style",
+    "sampleField": "Sample StatusBar Field",
+    "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"
   },
   "properties": {

@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
+
 import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
 import {
   Footer,
@@ -15,13 +16,17 @@ import {
   MessageButton, Status, MessageHyperlink, MessageProgress,
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
+
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { MessageDiv } from "../messages/MessageSpan";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
-import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
+
 import "./StatusBar.scss";
+
+// cspell:ignore safearea
 
 // tslint:disable-next-line: variable-name
 const MessageLabel = (props: { message: HTMLElement | string, className: string }): JSX.Element => {
@@ -112,18 +117,25 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     }
 
     return (
-      <SafeAreaContext.Consumer>
-        {(safeAreaInsets) => (
-          <Footer
-            messages={this.getFooterMessage()}
-            isInFooterMode={this.props.isInFooterMode}
-            onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-            safeAreaInsets={safeAreaInsets}
-          >
-            {footerSections}
-          </Footer>
-        )}
-      </SafeAreaContext.Consumer>
+      <StatusBarContext.Provider value={{
+        isInFooterMode: this.props.isInFooterMode,
+        openWidget: this.state.openWidget,
+        toastTargetRef: this._handleToastTargetRef,
+        onOpenWidget: this._handleOpenWidget,
+      }}>
+        <SafeAreaContext.Consumer>
+          {(safeAreaInsets) => (
+            <Footer
+              messages={this.getFooterMessage()}
+              isInFooterMode={this.props.isInFooterMode}
+              onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+              safeAreaInsets={safeAreaInsets}
+            >
+              {footerSections}
+            </Footer>
+          )}
+        </SafeAreaContext.Consumer>
+      </StatusBarContext.Provider>
     );
   }
 
@@ -180,19 +192,19 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     });
   }
 
-  private getFooterMessage() {
-    if (this.state.activityMessageInfo && this.state.isActivityMessageVisible) {
+  private getFooterMessage(): React.ReactNode {
+    if (this.state.activityMessageInfo && this.state.isActivityMessageVisible)
       return this.getActivityMessage();
-    }
 
     if (!this.state.messageDetails)
-      return;
+      return undefined;
 
     const severity = MessageManager.getSeverity(this.state.messageDetails);
+    let message: React.ReactNode;
 
     switch (this.state.visibleMessage) {
       case (StatusBarMessageType.Toast): {
-        return (
+        message = (
           <ToastMessage
             animateOutTo={this.state.toastTarget}
             onAnimatedOut={() => this._hideMessages()}
@@ -214,9 +226,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
             }
           />
         );
+        break;
       }
+
       case (StatusBarMessageType.Sticky): {
-        return (
+        message = (
           <Message
             status={StatusBar.severityToStatus(severity)}
             icon={
@@ -237,10 +251,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
             </MessageLayout>
           </Message>
         );
+        break;
       }
     }
 
-    return undefined;
+    return message;
   }
 
   /**
@@ -365,3 +380,13 @@ export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps> = (
 export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
   return <Div {...props} mainClassName="uifw-statusbar-right" />;
 };
+
+/** Context providing values for StatusFieldProps and MessageCenterFieldProps
+ *  @internal
+ */
+export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>({ // tslint:disable-line: variable-name
+  isInFooterMode: true,
+  onOpenWidget: () => { },
+  openWidget: "",
+  toastTargetRef: { current: null },
+});

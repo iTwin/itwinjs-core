@@ -4,36 +4,43 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
-import { TitleBar, FooterPopup, Dialog } from "@bentley/ui-ninezone";
-import { Checkbox } from "@bentley/ui-core";
+import * as React from "react";
+
 import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Checkbox } from "@bentley/ui-core";
+import { TitleBar, FooterPopup, Dialog } from "@bentley/ui-ninezone";
+
 import { Indicator } from "./Indicator";
-import * as React from "react";
-import "./SectionsField.scss";  // TODO - separate if necessary
+import { StatusFieldProps } from "./StatusFieldProps";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../UiFramework";
+
+import "./ViewAttributes.scss";
 
 interface ViewAttributesStatusFieldState {
-  opened: boolean;
   viewFlags: ViewFlagProps;
   cameraOn: boolean;
   target: HTMLElement | null;
 }
 
-/** Widget for showing section extra tools for clearing and showing manipulators
+/** Widget for showing Checkboxes for View Attributes
  * @beta
  */
-// TODO: Add testing as soon as possible - needed for Risk Management Plugin frontstage
-// istanbul ignore next
-export class ViewAttributesStatusField extends React.Component<any, ViewAttributesStatusFieldState> {
-  constructor(props: any) {
+export class ViewAttributesStatusField extends React.Component<StatusFieldProps, ViewAttributesStatusFieldState> {
+  private _className: string;
+  private _title = UiFramework.translate("listTools.viewAttributes");
+
+  constructor(props: StatusFieldProps) {
     super(props);
 
     this.state = {
       cameraOn: false,
-      opened: false,
       viewFlags: {},
       target: null,
     };
+
+    this._className = this.constructor.name;
   }
 
   public componentDidMount() {
@@ -41,30 +48,37 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
   }
 
   /** Handle opening/closing the dialog */
-  public handleClick() {
-    this.updateState(true);
+  private _handleIndicatorClick = () => {
+    this.updateState();
+
+    const isOpen = this.props.openWidget === this._className;
+    if (isOpen)
+      this.setOpenWidget(null);
+    else
+      this.setOpenWidget(this._className);
   }
 
-  public updateState(toggleOpened?: boolean) {
+  private updateState() {
     if (IModelApp.viewManager.selectedView) {
       const viewFlags: ViewFlagProps = { ...IModelApp.viewManager.selectedView.view.viewFlags.toJSON() };
       const cameraOn = IModelApp.viewManager.selectedView.isCameraOn;
+
       this.setState({
-        ...this.state,
         viewFlags,
         cameraOn,
-        opened: toggleOpened ? !this.state.opened : this.state.opened,
       });
     }
   }
 
-  public handleViewFlagClick = (flagName: string) => {
-    const props: ViewFlagProps = IModelApp.viewManager.selectedView!.viewFlags.toJSON();
-    (props as any)[flagName] = (props as any)[flagName] === undefined ? true : !(props as any)[flagName];
-    const viewFlags = ViewFlags.fromJSON(props);
-    IModelApp.viewManager.selectedView!.viewFlags = viewFlags;
-    IModelApp.viewManager.selectedView!.invalidateRenderPlan();
-    this.updateState();
+  private _handleViewFlagClick = (flagName: string) => {
+    if (IModelApp.viewManager.selectedView) {
+      const props: ViewFlagProps = IModelApp.viewManager.selectedView.viewFlags.toJSON();
+      (props as any)[flagName] = (props as any)[flagName] === undefined ? true : !(props as any)[flagName];
+      const viewFlags = ViewFlags.fromJSON(props);
+      IModelApp.viewManager.selectedView.viewFlags = viewFlags;
+      IModelApp.viewManager.selectedView.invalidateRenderPlan();
+      this.updateState();
+    }
   }
 
   private _handleToggleCamera = () => {
@@ -79,7 +93,7 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
   }
 
   private getViewFlagItem(flagName: string, value: boolean, labelKey?: string) {
-    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : this.stylizeName(flagName)} onClick={() => this.handleViewFlagClick(flagName)} defaultChecked={value} />;
+    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
   }
 
   private getFlagState(flagName: string) {
@@ -87,7 +101,7 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
   }
 
   private getToggleCameraItem() {
-    return <Checkbox key={"toggleCamera"} label={IModelApp.i18n.translate("UiFramework:listTools.camera")} onClick={() => this._handleToggleCamera()} defaultChecked={this.state.cameraOn} />;
+    return <Checkbox key={"toggleCamera"} label={IModelApp.i18n.translate("UiFramework:listTools.camera")} onClick={this._handleToggleCamera} defaultChecked={this.state.cameraOn} />;
   }
 
   private getViewFlags() {
@@ -104,22 +118,25 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
   }
 
   public render() {
+    const isOpen = this.props.openWidget === this._className;
+
     return (
       <>
-        <div ref={this._handleTargetRef} title={IModelApp.i18n.translate("UiFramework:listTools.viewAttributes")}>
+        <div ref={this._handleTargetRef} title={this._title}>
           <Indicator
             iconName="icon-window-settings"
-            onClick={this.handleClick.bind(this)}
-            opened={this.state.opened}></Indicator>
+            onClick={this._handleIndicatorClick}
+            opened={isOpen}
+            isInFooterMode={this.props.isInFooterMode}
+          />
         </div>
         <FooterPopup
           target={this.state.target}
-          onClose={() => { this.setState({ ...this.state, opened: false }); }}
-          isOpen={this.state.opened}>
+          onClose={this._handleClose}
+          isOpen={isOpen}>
           <Dialog
             titleBar={
-              <TitleBar title={IModelApp.i18n.translate("UiFramework:listTools.viewAttributes")}>
-              </TitleBar>
+              <TitleBar title={this._title} />
             }>
             {this.getViewFlags()}
           </Dialog>
@@ -130,5 +147,16 @@ export class ViewAttributesStatusField extends React.Component<any, ViewAttribut
 
   private _handleTargetRef = (target: HTMLElement | null) => {
     this.setState({ target });
+  }
+
+  private _handleClose = () => {
+    this.setOpenWidget(null);
+  }
+
+  /** Opens the pop-up window. */
+  private setOpenWidget(openWidget: StatusBarFieldId) {
+    // istanbul ignore else
+    if (this.props.onOpenWidget)
+      this.props.onOpenWidget(openWidget);
   }
 }

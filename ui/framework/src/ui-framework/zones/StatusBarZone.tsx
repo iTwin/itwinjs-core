@@ -9,11 +9,13 @@ import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import { ZoneManagerProps, ZoneTargetType, Zone } from "@bentley/ui-ninezone";
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { StatusBar } from "../widgets/StatusBar";
-import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
+import { StatusBar } from "../statusbar/StatusBar";
+import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { Outline } from "./Outline";
 import { getFloatingZoneBounds } from "./FrameworkZone";
+
+// cspell:ignore safearea
 
 /** Properties for the [[StatusBarZone]] component
  * @internal

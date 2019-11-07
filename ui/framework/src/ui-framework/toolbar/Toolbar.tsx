@@ -234,6 +234,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           groupId: `overflow-group-${itemDimensions}-${actionItems.length}-${overflowItems.length}`,
           labelKey: "UiFramework:general.overflow",
           items: overflowItems,
+          direction: this.props.expandsTo,
         });
         overflowItemDef.overflow = true;
       }

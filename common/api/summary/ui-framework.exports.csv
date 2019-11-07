@@ -385,10 +385,19 @@ alpha;StandardRotationNavigationAidControl
 public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection: React.FunctionComponent
+beta;StatusBarComposer 
+internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
+beta;StatusBarItem
+beta;StatusBarItemId = StatusBarItem["id"]
+beta;StatusBarItemsChangedEvent 
+beta;StatusBarItemsManager
+beta;StatusBarItemUtilities
 beta;StatusBarLeftSection: React.FunctionComponent
+beta;StatusBarManager
 public;StatusBarProps 
 beta;StatusBarRightSection: React.FunctionComponent
+beta;StatusBarSection
 beta;StatusBarSpaceBetween: React.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
@@ -499,7 +508,9 @@ public;WidgetStateChangedEventArgs
 internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
+beta;withMessageCenterFieldProps: 
 alpha;withSafeArea: 
+beta;withStatusFieldProps: 
 public;Workflow 
 public;WorkflowActivatedEvent 
 public;WorkflowActivatedEventArgs

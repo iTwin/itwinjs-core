@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "variables";
+@import "../../typography";
 
 .nz-footer-dialog-titleBar {
   $horizontal-padding: $nz-dialog-padding;
@@ -21,6 +22,7 @@
   padding-right: $horizontal-padding;
 
   > .nz-title {
+    @include title;
     color: $buic-text-color;
     filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
     white-space: nowrap;

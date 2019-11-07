@@ -25,6 +25,7 @@ import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
+import { StatusBarManager } from "./statusbar/StatusBarManager";
 
 // cSpell:ignore Mobi
 
@@ -52,6 +53,7 @@ export class UiFramework {
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
+  private static _statusBarManager?: StatusBarManager;
 
   /** Get Show Ui event.
    * @beta
@@ -92,6 +94,7 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
+    UiFramework._statusBarManager = new StatusBarManager();
 
     // istanbul ignore next
     if (oidcConfig) {
@@ -114,6 +117,7 @@ export class UiFramework {
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
+    UiFramework._statusBarManager = undefined;
   }
 
   private static _oidcClient: IOidcFrontendClient | undefined;
@@ -178,6 +182,14 @@ export class UiFramework {
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._backstageManager;
+  }
+
+  /** @beta */
+  public static get statusBarManager(): StatusBarManager {
+    // istanbul ignore next
+    if (!UiFramework._statusBarManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._statusBarManager;
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.

@@ -15,4 +15,8 @@ describe("<Group />", () => {
   it("renders correctly", () => {
     shallow(<Group />).should.matchSnapshot();
   });
+
+  it("renders with title and columns correctly", () => {
+    shallow(<Group title="Test" columns={<div>columns</div>} />).should.matchSnapshot();
+  });
 });

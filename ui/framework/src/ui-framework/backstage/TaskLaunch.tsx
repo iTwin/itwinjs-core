@@ -12,8 +12,11 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
 import { Backstage } from "./Backstage";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
+
+// cspell:ignore safearea
 
 // tslint:disable-next-line:variable-name
 const BackstageItem = withSafeArea(NZ_BackstageItem);
@@ -44,7 +47,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    const state = getBackstageItemStateFromProps(props);
+    const state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
     /* istanbul ignore else */
     if (this.props.isActive === undefined)
       state.isActive = WorkflowManager.activeTaskId === this.props.taskId && WorkflowManager.activeWorkflowId === this.props.workflowId;
@@ -100,7 +103,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   public componentDidUpdate(_prevProps: TaskLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(this.props);
+    const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     updatedState.isActive = WorkflowManager.activeTaskId === this.props.taskId && WorkflowManager.activeWorkflowId === this.props.workflowId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);

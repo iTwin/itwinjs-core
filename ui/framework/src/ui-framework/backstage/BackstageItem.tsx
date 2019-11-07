@@ -6,7 +6,7 @@
 
 import { LabelProps, DescriptionProps, TooltipProps } from "@bentley/ui-abstract";
 import { IconProps, IconSpec } from "@bentley/ui-core";
-import { PropsHelper } from "../utils/PropsHelper";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 /** Base properties for a [[Backstage]] item.
  * @public
@@ -34,20 +34,12 @@ export interface BackstageItemState {
   isActive?: boolean;
 }
 
-/** Helper method to set backstage item state from props
+/** Helper method to set backstage item state from props.
+ * Deprecated - Use [[BackstageItemUtilities.getBackstageItemStateFromProps]] instead.
  * @public
+ * @deprecated Use BackstageItemUtilities.getBackstageItemStateFromProps instead
  */
+// istanbul ignore next
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {
-  const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
-  const subtitleSpec = PropsHelper.getStringSpec(props.description, props.descriptionKey);
-  const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
-
-  return {
-    isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
-    label: PropsHelper.getStringFromSpec(labelSpec),
-    subtitle: PropsHelper.getStringFromSpec(subtitleSpec),
-    tooltip: PropsHelper.getStringFromSpec(tooltipSpec),
-    iconSpec: props.iconSpec,
-    isActive: undefined !== props.isActive ? props.isActive : false,
-  };
+  return BackstageItemUtilities.getBackstageItemStateFromProps(props);
 };

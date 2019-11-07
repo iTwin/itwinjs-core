@@ -9,7 +9,7 @@ import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import { ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
+import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 import { WidgetProps } from "../widgets/Widget";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetState, WidgetType } from "../widgets/WidgetDef";
 import { WidgetTabs } from "../widgets/WidgetStack";

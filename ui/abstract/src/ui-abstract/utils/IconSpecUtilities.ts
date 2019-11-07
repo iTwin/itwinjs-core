@@ -5,11 +5,11 @@
 /** @module Utilities */
 
 /** Various IconSpec utilities.
- * @alpha
+ * @beta
  */
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec */
-  public static SVG_PREFIX = "svg:";
+  public static readonly SVG_PREFIX = "svg:";
 
   /** Create an IconSpec for an SVG */
   public static createSvgIconSpec(svgSrc: string): string {

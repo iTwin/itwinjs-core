@@ -154,11 +154,11 @@ export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
     readonly itemType: ToolbarItemType.GroupButton;
 }
 
-// @alpha
+// @beta
 export class IconSpecUtilities {
     static createSvgIconSpec(svgSrc: string): string;
     static getSvgSource(iconSpec: string): string | undefined;
-    static SVG_PREFIX: string;
+    static readonly SVG_PREFIX = "svg:";
 }
 
 // @alpha

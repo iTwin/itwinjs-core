@@ -11,26 +11,6 @@
   padding: 8px;
 }
 
-.uifw-view-attributes-contents {
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  overflow-y: auto;
-
-  > .core-checkbox {
-    margin: 0 2px;
-    cursor: default;
-
-    > span {
-      cursor: default;
-    }
-
-    > label {
-      cursor: pointer;
-    }
-  }
-}
-
 .uifw-uifw-sections-toggle-container {
   display: flex;
   margin: $uicore-xs;
@@ -40,14 +20,17 @@
 .uifw-sections-toggle {
   align-self: center;
   margin-right: $uicore-s;
-  height: 22px;
-  width: 41px;
 }
 
 .uifw-sections-label {
   @include uicore-font-family;
-  color: $uicore-black;
+  color: $buic-text-color;
   font-size: $uicore-font-size;
   align-self: center;
   margin: $uicore-s;
+
+  &.disabled {
+    color: $buic-text-color-disabled;
+  }
 }
+

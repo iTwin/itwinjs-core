@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "@bentley/ui-core/lib/ui-core/style/index";
 @import "../widget/variables";
 @import "../safearea";
 
@@ -49,10 +49,18 @@
 
   &.nz-panel-bottom, &.nz-panel-top {
     min-height: $min-size;
+
+    @include for-tablet-landscape-down {
+      min-height: $nz-resize-grip-size-large;
+    }
   }
 
   &.nz-panel-left, &.nz-panel-right {
     min-width: $min-size;
+
+    @include for-tablet-landscape-down {
+      min-width: $nz-resize-grip-size-large;
+    }
   }
 
   &:hover {

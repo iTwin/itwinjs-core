@@ -13,7 +13,10 @@ import { FrontstageManager, FrontstageActivatedEventArgs } from "../frontstage/F
 import { PropsHelper } from "../utils/PropsHelper";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
+
+// cspell:ignore safearea
 
 // tslint:disable-next-line:variable-name
 const BackstageItem = withSafeArea(NZ_BackstageItem);
@@ -42,7 +45,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    const state = getBackstageItemStateFromProps(props);
+    const state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
     /* istanbul ignore else */
     if (this.props.isActive === undefined)
       state.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
@@ -91,7 +94,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   }
 
   public componentDidUpdate(_prevProps: FrontstageLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(this.props);
+    const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     updatedState.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);

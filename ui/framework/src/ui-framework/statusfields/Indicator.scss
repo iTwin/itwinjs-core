@@ -10,8 +10,19 @@
   height: 100%;
   display: flex;
   align-items: center;
-  padding-left: $nz-footer-indicator-horizontal-padding;
-  padding-right: $nz-footer-indicator-horizontal-padding;
+
+  /* Desktop */
+  @include for-desktop-up {
+    &.nz-footer-mode {
+      padding-left: $nz-footer-indicator-horizontal-padding;
+      padding-right: $nz-footer-indicator-horizontal-padding;
+    }
+
+    &:not(.nz-footer-mode) {
+      padding-left: $nz-footer-widget-indicator-horizontal-padding;
+      padding-right: $nz-footer-widget-indicator-horizontal-padding;
+    }
+  }
 
   /* Medium devices (landscape tablets) */
   @include for-tablet-landscape-down {

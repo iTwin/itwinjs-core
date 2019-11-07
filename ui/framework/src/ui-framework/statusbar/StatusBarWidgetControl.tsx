@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
-import { WidgetControl } from "./WidgetControl";
+import { WidgetControl } from "../widgets/WidgetControl";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** Status Bar Field type.

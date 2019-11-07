@@ -92,9 +92,17 @@ export * from "./ui-framework/shared/ToolItemDef";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 
+export * from "./ui-framework/statusbar/StatusBar";
+export * from "./ui-framework/statusbar/StatusBarWidgetControl";
+export * from "./ui-framework/statusbar/StatusBarComposer";
+export * from "./ui-framework/statusbar/StatusBarItem";
+export * from "./ui-framework/statusbar/StatusBarItemsManager";
+export * from "./ui-framework/statusbar/StatusBarItemUtilities";
+export * from "./ui-framework/statusbar/StatusBarManager";
+export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
+export * from "./ui-framework/statusbar/withStatusFieldProps";
+
 export * from "./ui-framework/widgets/NavigationWidget";
-export * from "./ui-framework/widgets/StatusBar";
-export * from "./ui-framework/widgets/StatusBarWidgetControl";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
 export * from "./ui-framework/widgets/Widget";

@@ -178,7 +178,9 @@ export class ViewsFrontstage extends FrontstageProvider {
         topRight={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />} />,
+              <Widget isFreeform={true} element={
+                <IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([CoreTools.sectionToolGroup, this._viewSelectorItemDef])} />
+              } />,
             ]}
           />
         }

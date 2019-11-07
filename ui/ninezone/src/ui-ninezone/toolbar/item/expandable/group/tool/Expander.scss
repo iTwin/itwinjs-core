@@ -16,6 +16,7 @@
     border-left: $border;
     margin-left: $expander-arrow-thickness;
     margin-top: $expander-arrow-thickness;
+    margin-right: $space-after-expander;
     box-sizing: border-box;
     transform: rotate(135deg);
   }

@@ -11,7 +11,7 @@ import {
 import { MessageSeverity } from "@bentley/ui-core";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, UiFramework, Backstage, BackstageItem, BackstageItemUtilities,
+  SyncUiEventId, UiFramework, Backstage, BackstageItem, BackstageItemUtilities, StatusBarItemUtilities, StatusBarSection, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -22,13 +22,18 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
+import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+
+// tslint:disable-next-line: variable-name
+const SampleStatus = withStatusFieldProps(SampleStatusField);
 
 export class AppTools {
-  public static getItems(): BackstageItem[] {
+  public static getBackstageItems(): BackstageItem[] {
     return [
       BackstageItemUtilities.createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
     ];
   }
+  private static _sampleStatusFieldId = "tool1:statusField1";
 
   public static get tool1() {
     return new ToolItemDef({
@@ -38,8 +43,10 @@ export class AppTools {
       description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
-        const items = AppTools.getItems();
-        UiFramework.backstageManager.itemsManager.add(items);
+        const backstageItems = AppTools.getBackstageItems();
+        UiFramework.backstageManager.itemsManager.add(backstageItems);
+        const statusBarItem = StatusBarItemUtilities.createStatusBarItem(this._sampleStatusFieldId, StatusBarSection.Left, 10, <SampleStatus />);
+        UiFramework.statusBarManager.itemsManager.add(statusBarItem);
       },
     });
   }
@@ -52,8 +59,9 @@ export class AppTools {
       tooltipKey: "SampleApp:tools.Tool2.description",
       execute: () => {
         IModelApp.tools.run(Tool2.toolId);
-        const items = AppTools.getItems().map((item) => item.id);
-        UiFramework.backstageManager.itemsManager.remove(items);
+        const backstageItems = AppTools.getBackstageItems().map((item) => item.id);
+        UiFramework.backstageManager.itemsManager.remove(backstageItems);
+        UiFramework.statusBarManager.itemsManager.remove(this._sampleStatusFieldId);
       },
     });
   }
@@ -255,7 +263,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Toast)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
     });
   }
 

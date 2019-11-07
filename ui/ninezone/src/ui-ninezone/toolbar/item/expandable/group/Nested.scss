@@ -11,7 +11,7 @@
     width: 15px;
     height: 20px;
     position: absolute;
-    left: 6px;
+    left: 10px;
     top: 8px;
 
     &:hover {
@@ -27,5 +27,12 @@
       left: 3px;
       top: 3px;
     }
+  }
+
+  > .nz-toolbar-item-expandable-group-title {
+    /* Contributes to space available for back arrow */
+    min-height: 14px;
+    margin-left: $title-horizontal-back-arrow-margin;
+    margin-right: $title-horizontal-back-arrow-margin;
   }
 }

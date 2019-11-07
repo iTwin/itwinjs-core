@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "dan.east@bentley.com"
+}

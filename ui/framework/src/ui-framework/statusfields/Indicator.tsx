@@ -25,13 +25,13 @@ interface IndicatorProps extends CommonProps {
   onClick?: () => void;
   /** Determines if indicator has been opened to show contained dialog */
   opened: boolean;
+  /** Describes whether the footer is in footer or widget mode. */
+  isInFooterMode?: boolean;
 }
 
 /** General-purpose [[Footer]] indicator.
  * @beta
  */
-// TODO: Add testing as soon as possible - needed for Risk Management Plugin frontstage
-// istanbul ignore next
 export class Indicator extends React.Component<IndicatorProps, any> {
   constructor(props: IndicatorProps) {
     super(props);
@@ -40,6 +40,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
   public render() {
     const className = classnames(
       "uifw-footer-indicator",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     const getDialog = () => {
@@ -56,7 +57,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     const iconClassNames = classnames(
       "icon",
       "uifw-indicator-icon",
-      this.props.iconName ? this.props.iconName : "icon-placeholder",
+      this.props.iconName ? this.props.iconName : /* istanbul ignore next */ "icon-placeholder",
     );
 
     return (
@@ -77,6 +78,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
   }
 
   private _handleOnIndicatorClick = () => {
+    // istanbul ignore else
     if (this.props.onClick)
       this.props.onClick();
   }

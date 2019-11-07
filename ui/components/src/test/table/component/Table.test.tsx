@@ -1177,9 +1177,8 @@ describe("Table", () => {
       inputNode.simulate("change", { target: { value: newPropertyValue } });
       inputNode.simulate("keyDown", { key: "Enter" });
 
-      setImmediate(() => {
-        expect(onPropertyUpdated.calledOnce).to.be.true;
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(onPropertyUpdated.calledOnce).to.be.true;
     });
 
   });
@@ -1268,12 +1267,11 @@ describe("Table", () => {
       table.update();
     });
 
-    it("should scroll to a specific row", () => {
+    it("should scroll to a specific row", async () => {
       table.setProps({ scrollToRow: 50 });
       table.update();
-      setImmediate(() => {
-        expect(onScrollToRow.calledOnceWith(50)).to.be.true;
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(onScrollToRow.calledOnceWith(50)).to.be.true;
     });
 
   });

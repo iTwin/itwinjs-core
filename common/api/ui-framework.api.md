@@ -429,6 +429,7 @@ export enum BackstageItemType {
 export class BackstageItemUtilities {
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
     static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
+    static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
 
 // @beta
@@ -2227,7 +2228,7 @@ export enum FunctionKey {
 // @public
 export type FunctionType = (...args: any[]) => any;
 
-// @public
+// @public @deprecated
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
 // @internal (undocumented)
@@ -2939,11 +2940,15 @@ export interface MessageAddedEventArgs {
 // @public
 export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
     constructor(p: MessageCenterFieldProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
-}
+    }
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -3564,17 +3569,13 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export class SectionsStatusField extends React.Component<any, any> {
-    constructor(props: any);
+export class SectionsStatusField extends React.Component<StatusFieldProps, SectionsStatusFieldState> {
+    constructor(props: StatusFieldProps);
     componentDidMount(): void;
     componentWillUnmount(): void;
-    handleClear(): void;
-    handleClick(): void;
-    handleShowHideManipulators(_checked: boolean): void;
     // (undocumented)
     render(): JSX.Element;
-    renderContents(): JSX.Element;
-}
+    }
 
 // @public
 export const SelectionInfoField: any;
@@ -4066,11 +4067,65 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 // @beta
 export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
 
+// @beta
+export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposerState> {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: StatusBarComposerState;
+}
+
+// @internal
+export const StatusBarContext: React.Context<StatusBarWidgetControlArgs>;
+
 // @public
 export type StatusBarFieldId = string | null;
 
 // @beta
+export interface StatusBarItem {
+    readonly component: React.ReactNode;
+    readonly id: string;
+    readonly itemPriority: number;
+    readonly section: StatusBarSection;
+}
+
+// @beta
+export type StatusBarItemId = StatusBarItem["id"];
+
+// @beta
+export class StatusBarItemsChangedEvent extends UiEvent<{}> {
+}
+
+// @beta
+export class StatusBarItemsManager {
+    // (undocumented)
+    add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>): void;
+    // @internal (undocumented)
+    items: ReadonlyArray<StatusBarItem>;
+    static readonly onStatusBarItemsChanged: StatusBarItemsChangedEvent;
+    // (undocumented)
+    remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
+    // @internal (undocumented)
+    removeAll(): void;
+}
+
+// @beta
+export class StatusBarItemUtilities {
+    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, component: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
+}
+
+// @beta
 export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps>;
+
+// @beta
+export class StatusBarManager {
+    // (undocumented)
+    readonly itemsManager: StatusBarItemsManager;
+    }
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -4082,6 +4137,16 @@ export interface StatusBarProps extends CommonProps {
 
 // @beta
 export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
+
+// @beta
+export enum StatusBarSection {
+    // (undocumented)
+    Center = 1,
+    // (undocumented)
+    Left = 0,
+    // (undocumented)
+    Right = 2
+}
 
 // @beta
 export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
@@ -4689,6 +4754,8 @@ export class UiFramework {
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)
     static setWidgetOpacity(opacity: number): void;
+    // @beta (undocumented)
+    static readonly statusBarManager: StatusBarManager;
     static readonly store: Store<any>;
     static terminate(): void;
     // @internal
@@ -4780,18 +4847,13 @@ export interface VersionInfo {
 }
 
 // @beta
-export class ViewAttributesStatusField extends React.Component<any, ViewAttributesStatusFieldState> {
-    constructor(props: any);
+export class ViewAttributesStatusField extends React.Component<StatusFieldProps, ViewAttributesStatusFieldState> {
+    constructor(props: StatusFieldProps);
     // (undocumented)
     componentDidMount(): void;
-    handleClick(): void;
-    // (undocumented)
-    handleViewFlagClick: (flagName: string) => void;
     // (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    updateState(toggleOpened?: boolean): void;
-}
+    }
 
 // @beta
 export interface ViewLayout {
@@ -5337,6 +5399,9 @@ export enum WidgetType {
     ToolSettings = 4
 }
 
+// @beta
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "style" | "className" | "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
     new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
@@ -5391,6 +5456,9 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
     };
     contextType?: React.Context<any> | undefined;
 };
+
+// @beta
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {
