@@ -114,6 +114,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "tslint-loader": "^3.6.0",
+    "tslint-react-hooks": "^2.2.1",
     "tsutils": "^3.6.0",
     "typemoq": "^2.1.0",
     "typescript": "~3.6.2",

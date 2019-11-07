@@ -807,6 +807,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "tslint-react-hooks",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "tsutils",
       "allowedCategories": [ "frontend", "tools" ]
     },

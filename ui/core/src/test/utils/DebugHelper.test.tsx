@@ -24,7 +24,7 @@ describe("UseLifecycleLogging", () => {
     const consoleSpy = sinon.spy(console, "log");
     render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 })}   // tslint:disable-line: react-hooks-nesting
       />,
     );
     consoleSpy.restore();
@@ -34,7 +34,7 @@ describe("UseLifecycleLogging", () => {
   it("logs when component is unmounted", () => {
     const { unmount } = render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 })} // tslint:disable-line: react-hooks-nesting
       />,
     );
 
@@ -47,14 +47,14 @@ describe("UseLifecycleLogging", () => {
   it("logs when component re renders", () => {
     const { rerender } = render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 })} // tslint:disable-line: react-hooks-nesting
       />,
     );
 
     const consoleSpy = sinon.spy(console, "log");
     rerender(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 })} // tslint:disable-line: react-hooks-nesting
       />,
     );
     consoleSpy.restore();
@@ -64,14 +64,14 @@ describe("UseLifecycleLogging", () => {
   it("logs when component re renders with new props", () => {
     const { rerender } = render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 })} // tslint:disable-line: react-hooks-nesting
       />,
     );
 
     const consoleSpy = sinon.spy(console, "log");
     rerender(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 2 })}
+        callback={() => useLifecycleLogging("TestHook", { id: 2 })} // tslint:disable-line: react-hooks-nesting
       />,
     );
     consoleSpy.restore();
@@ -81,14 +81,14 @@ describe("UseLifecycleLogging", () => {
   it("logs when component re renders with new context", () => {
     const { rerender } = render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "Old context" })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "Old context" })}  // tslint:disable-line: react-hooks-nesting
       />,
     );
 
     const consoleSpy = sinon.spy(console, "log");
     rerender(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "New context" })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "New context" })}  // tslint:disable-line: react-hooks-nesting
       />,
     );
     consoleSpy.restore();
@@ -98,14 +98,14 @@ describe("UseLifecycleLogging", () => {
   it("logs when component re renders with new props and new context", () => {
     const { rerender } = render(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "Old context" })}
+        callback={() => useLifecycleLogging("TestHook", { id: 1 }, { contextValue: "Old context" })}  // tslint:disable-line: react-hooks-nesting
       />,
     );
 
     const consoleSpy = sinon.spy(console, "log");
     rerender(
       <TestHook
-        callback={() => useLifecycleLogging("TestHook", { id: 2 }, { contextValue: "New context" })}
+        callback={() => useLifecycleLogging("TestHook", { id: 2 }, { contextValue: "New context" })}  // tslint:disable-line: react-hooks-nesting
       />,
     );
     consoleSpy.restore();

@@ -44,7 +44,7 @@ describe("useVisibleTreeNodes", () => {
   it("subscribes to onModelChange event and returns visible nodes", () => {
     let visibleNodes: VisibleTreeNodes;
     render(
-      <TestHook callback={() => { visibleNodes = useVisibleTreeNodes(modelSourceMock.object); }} />,
+      <TestHook callback={() => { visibleNodes = useVisibleTreeNodes(modelSourceMock.object); }} />,  // tslint:disable-line: react-hooks-nesting
     );
     expect(visibleNodes!).to.not.be.undefined;
     onModelChangeMock.verify((x) => x.addListener(moq.It.isAny()), moq.Times.once());
@@ -52,7 +52,7 @@ describe("useVisibleTreeNodes", () => {
 
   it("resubscribes to onModelChangeEvent when model source changes", () => {
     const { rerender } = render(
-      <TestHook callback={() => useVisibleTreeNodes(modelSourceMock.object)} />,
+      <TestHook callback={() => useVisibleTreeNodes(modelSourceMock.object)} />,  // tslint:disable-line: react-hooks-nesting
     );
     onModelChangeMock.verify((x) => x.addListener(moq.It.isAny()), moq.Times.once());
 
@@ -61,7 +61,7 @@ describe("useVisibleTreeNodes", () => {
     newModelSourceMock.setup((x) => x.onModelChanged).returns(() => newOnModelChangeMock.object);
 
     rerender(
-      <TestHook callback={() => useVisibleTreeNodes(newModelSourceMock.object)} />,
+      <TestHook callback={() => useVisibleTreeNodes(newModelSourceMock.object)} />, // tslint:disable-line: react-hooks-nesting
     );
 
     onModelChangeMock.verify((x) => x.removeListener(moq.It.isAny()), moq.Times.once());
