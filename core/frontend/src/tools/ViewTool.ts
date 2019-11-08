@@ -256,7 +256,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   protected _forcedHandle = ViewHandleType.None;
   /** @internal */
-  protected _depthPreview?: { testPoint: Point3d, pickRadius: number, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, isDefaultDepth: boolean };
+  protected _depthPreview?: { testPoint: Point3d, pickRadius: number, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, isDefaultDepth: boolean, sourceId?: string };
 
   constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super(viewport);
@@ -304,6 +304,13 @@ export abstract class ViewManip extends ViewTool {
   }
 
   /** @internal */
+  public getDepthPointGeometryId(): string | undefined {
+    if (undefined === this._depthPreview)
+      return undefined;
+    return (DepthPointSource.Geometry === this._depthPreview.source ? this._depthPreview.sourceId : undefined);
+  }
+
+  /** @internal */
   public clearDepthPoint(): boolean {
     if (undefined === this._depthPreview)
       return false;
@@ -313,6 +320,9 @@ export abstract class ViewManip extends ViewTool {
 
   /** @internal */
   public getDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
+    if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
+      ev.viewport.setFlashed(undefined, 0.0);
+
     this.clearDepthPoint();
     if (isPreview && this.inDynamicUpdate)
       return undefined;
@@ -344,7 +354,7 @@ export abstract class ViewManip extends ViewTool {
     isValidDepth = this.viewHandles.hitHandle.adjustDepthPoint(isValidDepth, vp, result.plane, result.source);
 
     if (isPreview)
-      this._depthPreview = { testPoint: ev.rawPoint, pickRadius: pickRadiusPixels, plane: result.plane, source: result.source, isDefaultDepth: !isValidDepth };
+      this._depthPreview = { testPoint: ev.rawPoint, pickRadius: pickRadiusPixels, plane: result.plane, source: result.source, isDefaultDepth: !isValidDepth, sourceId: result.sourceId };
 
     return (isValidDepth || isPreview ? result.plane.getOriginRef() : undefined);
   }
@@ -454,10 +464,14 @@ export abstract class ViewManip extends ViewTool {
 
     this.viewHandles.motion(ev);
 
-    const lastShowDepthPoint = this.clearDepthPoint();
-    const thisShowDepthPoint = (0 === this.nPts && undefined !== this.getDepthPoint(ev, true));
-    if (ev.viewport && (lastShowDepthPoint || thisShowDepthPoint))
+    const prevSourceId = this.getDepthPointGeometryId();
+    const showDepthChanged = ((0 === this.nPts && undefined !== this.getDepthPoint(ev, true)) || this.clearDepthPoint());
+    if (ev.viewport && showDepthChanged) {
+      const currSourceId = this.getDepthPointGeometryId();
+      if (currSourceId !== prevSourceId)
+        ev.viewport.setFlashed(currSourceId, 0.25);
       ev.viewport.invalidateDecorations();
+    }
   }
 
   public async onMouseMotionStopped(ev: BeButtonEvent) {

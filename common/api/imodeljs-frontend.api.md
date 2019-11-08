@@ -6180,6 +6180,7 @@ export class ScreenViewport extends Viewport {
     pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
         source: DepthPointSource;
+        sourceId?: string;
     };
     pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
@@ -9110,6 +9111,7 @@ export abstract class ViewManip extends ViewTool {
         plane: Plane3dByOriginAndUnitNormal;
         source: DepthPointSource;
         isDefaultDepth: boolean;
+        sourceId?: string;
     };
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
@@ -9123,6 +9125,8 @@ export abstract class ViewManip extends ViewTool {
     static getDefaultTargetPointWorld(vp: Viewport): Point3d;
     // @internal (undocumented)
     getDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
+    // @internal (undocumented)
+    getDepthPointGeometryId(): string | undefined;
     // (undocumented)
     static getFocusPlaneNpc(vp: Viewport): number;
     // (undocumented)

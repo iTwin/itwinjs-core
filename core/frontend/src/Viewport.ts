@@ -2964,7 +2964,7 @@ export class ScreenViewport extends Viewport {
    * @note The result plane normal is valid when the source is not geometry or a reality model.
    * @alpha
    */
-  public pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource } {
+  public pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
     if (!this.view.is3d())
       return { plane: Plane3dByOriginAndUnitNormal.createXYPlane(pickPoint), source: DepthPointSource.ACS };
 
@@ -2975,8 +2975,9 @@ export class ScreenViewport extends Viewport {
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
 
     if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const geomPlane = Plane3dByOriginAndUnitNormal.create(picker.getHit(0)!.getPoint(), this.view.getZVector())!;
-      return { plane: geomPlane, source: (picker.getHit(0)!.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry) };
+      const hitDetail = picker.getHit(0)!;
+      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), this.view.getZVector())!;
+      return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
