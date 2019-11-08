@@ -1412,12 +1412,11 @@ class ViewZoom extends AnimatedHandle {
     const viewport = tool.viewport!;
     const view = viewport.view;
     const thisPtNpc = viewport.viewToNpc(this._lastPtView);
-    const dist = this._anchorPtNpc.minus(thisPtNpc);
-    dist.z = 0.0;
+    const dist = this._anchorPtNpc.minus(thisPtNpc); dist.z = 0.0;
     let zoomRatio = 1.0 + (dist.magnitude() * ToolSettings.zoomSpeed * this.getElapsedTime());
+    const bumpDistance = ToolSettings.wheelZoomBumpDistance * zoomRatio;
     if (dist.y < 0)
       zoomRatio = 1.0 / zoomRatio;
-
     this._lastZoomRatio = zoomRatio;
 
     if (view.is3d() && view.isCameraOn) {
@@ -1425,7 +1424,12 @@ class ViewZoom extends AnimatedHandle {
       const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldEyePoint = view.getEyePoint();
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
-      const cameraOffset = newEyePoint.minus(oldEyePoint);
+      const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
+
+      // As you near the depth point, the zoom operation continues to slow. Apply "bump distance" to move through the initial depth point.
+      if (cameraOffset.magnitude() < bumpDistance)
+        cameraOffset.scaleToLength(bumpDistance, cameraOffset);
+
       const cameraOffsetTransform = Transform.createTranslation(cameraOffset);
       const frustum = viewport.getWorldFrustum();
       frustum.transformBy(cameraOffsetTransform, frustum);
