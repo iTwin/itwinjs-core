@@ -79,7 +79,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     public render() {
       const { onOutsideClick, ...props } = this.props;
       return (
-        <div ref={this.ref}>
+        <div ref={this.ref} className="uicore-full-size">
           <Component {...props as ComponentProps} />
         </div>
       );

@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`WithOnOutsideClick renders correctly 1`] = `
-<div>
+<div
+  className="uicore-full-size"
+>
   <Component />
 </div>
 `;

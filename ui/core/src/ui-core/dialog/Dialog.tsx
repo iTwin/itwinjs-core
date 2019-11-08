@@ -7,15 +7,13 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-
-const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 import { UiCore } from "../UiCore";
 
 import "./Dialog.scss";
 import { Omit } from "../utils/typeUtils";
 import { CommonProps } from "../utils/Props";
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public
@@ -245,7 +243,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "core-dialog",
-          !modal && "core-dialog-hidden",
+          !modal && "core-dialog-modeless",
           opened && "core-dialog-opened",
           className,
         )}
@@ -254,9 +252,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         {...props}
       >
         {opened &&
-          <DivWithOutsideClick onOutsideClick={onOutsideClick}>
+          <DivWithOutsideClick onOutsideClick={onOutsideClick}
+            className={classnames("core-dialog-alignment", this.getCSSClassNameFromAlignment(alignment))}
+          >
             <div
-              className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
+              className="core-dialog-container"
               style={containerStyle}
               data-testid="core-dialog-container"
               onPointerDown={this._handleContainerPointerDown}
