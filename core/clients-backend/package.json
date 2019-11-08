@@ -9,7 +9,7 @@
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.11.0 <11.0"
+    "node": ">=10.11.0 <13.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",

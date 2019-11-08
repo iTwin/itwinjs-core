@@ -5,9 +5,6 @@
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
   "license": "MIT",
-  "engines": {
-    "node": ">=10.11.0 <11.0"
-  },
   "scripts": {
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
