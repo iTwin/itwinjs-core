@@ -13,7 +13,6 @@ import { EventHandled } from '@bentley/imodeljs-frontend';
 import { GeometrySummaryOptions } from '@bentley/imodeljs-common';
 import { Hilite } from '@bentley/imodeljs-common';
 import { HitDetail } from '@bentley/imodeljs-frontend';
-import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
@@ -702,6 +701,20 @@ export class ReportWebGLCompatibilityTool extends Tool {
 export class SaveViewTool extends Tool {
     // (undocumented)
     run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SelectElementsByIdTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: undefined;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(ids?: Id64Arg): boolean;
     // (undocumented)
     static toolId: string;
 }
