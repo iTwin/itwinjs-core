@@ -45,6 +45,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { ScreenViewport } from "./Viewport";
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -107,6 +108,7 @@ export interface IModelAppOptions {
  * @public
  */
 export class IModelApp {
+  private static _copyrightNotice = '© 2017-2019 <a href="https://www.bentley.com">Bentley Systems, Inc.</a>';
   private static _initialized = false;
   private static _accuDraw: AccuDraw;
   private static _accuSnap: AccuSnap;
@@ -352,4 +354,93 @@ export class IModelApp {
     };
   }
 
+  /** Parameters of the logo in the lower left corner and Logo Cards
+   * @beta
+   */
+  public static logoParams = {
+    card: {
+      className: "logo-card",
+      style: {
+        width: "300px",
+        whiteSpace: "normal",
+        border: "1px black solid",
+        padding: "5px",
+        margin: "5px",
+        background: "#b0c4de",
+        boxShadow: "#3c3c3c 3px 3px 10px",
+        borderRadius: "5px",
+        borderTopStyle: "none",
+        borderLeftStyle: "none",
+      },
+    },
+    image: {
+      source: "images/imodeljs.svg",
+      width: 32,
+      height: 32,
+      className: "imodeljs-logo",
+      opacity: ".6",
+    },
+  };
+
+  /** Supply a Logo Card for the application.
+   * @beta
+   */
+  public static applicationLogoCard?: () => HTMLDivElement;
+
+  /** Make a new Logo Card, optionally supplying its content.
+   * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
+   * @beta
+   */
+  public static makeLogoCard(el?: HTMLElement): HTMLDivElement {
+    const card = document.createElement("div");
+    card.className = this.logoParams.card.className;
+    const style = card.style as any;
+    const styles = this.logoParams.card.style as any;
+    for (const val in styles) {
+      if (val)
+        style[val] = styles[val];
+    }
+    if (undefined !== el)
+      card.appendChild(el);
+    return card;
+  }
+
+  private static getIModelJsLogoCard() {
+    const imjsP = document.createElement("p");
+    imjsP.className = "imjs-attribution";
+    imjsP.style.margin = "0px";
+    const poweredBy = document.createElement("span");
+    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy");
+    const logo = new Image();
+    logo.src = "images/imodeljs-logo.svg";
+    logo.width = 80;
+    logo.style.boxShadow = "black 1px 1px 5px";
+    const copyright = document.createElement("p");
+    copyright.style.margin = "0";
+    copyright.innerHTML = this._copyrightNotice;
+    imjsP.appendChild(poweredBy);
+    imjsP.appendChild(logo);
+    imjsP.appendChild(copyright);
+    return this.makeLogoCard(imjsP);
+  }
+
+  /** @internal */
+  public static makeLogoCards(vp: ScreenViewport): HTMLDivElement {
+    const attrDiv = document.createElement("div");
+    if (undefined !== this.applicationLogoCard)
+      attrDiv.appendChild(this.applicationLogoCard());
+    attrDiv.appendChild(this.getIModelJsLogoCard());
+    vp.displayStyle.getAttribution(attrDiv, vp);
+    return attrDiv;
+  }
+  /** @internal */
+  public static makeLogo(): HTMLImageElement {
+    const imageProps = this.logoParams.image;
+    const image = new Image();
+    image.src = imageProps.source;
+    image.width = imageProps.width;
+    image.height = imageProps.height;
+    image.className = imageProps.className;
+    return image;
+  }
 }

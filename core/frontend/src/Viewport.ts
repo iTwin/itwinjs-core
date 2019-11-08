@@ -19,7 +19,7 @@ import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ToolTipOptions } from "./NotificationManager";
+import { ToolTipOptions, MessageBoxType, MessageBoxIconType } from "./NotificationManager";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget } from "./render/System";
@@ -2901,6 +2901,42 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
+  protected addLogo() {
+    const logo = IModelApp.makeLogo();
+    const logoStyle = logo.style;
+    logoStyle.left = logoStyle.bottom = "5px";
+    logoStyle.position = "absolute";
+    logoStyle.opacity = IModelApp.logoParams.image.opacity;
+    logoStyle.zIndex = "11";
+    this.vpDiv.appendChild(logo);
+
+    let popup: HTMLDivElement | undefined;
+    const stopProp = (ev: MouseEvent, fn: () => void) => { fn(); ev.stopPropagation(); };
+    logo.onmouseenter = (ev) => stopProp(ev, () => {
+      logoStyle.opacity = "1.0";
+      popup = IModelApp.makeLogoCards(this);
+      const popupStyle = popup.style;
+      popupStyle.position = "absolute";
+      popupStyle.bottom = "0px";
+      popupStyle.left = logo.width + 2 + "px";
+      popupStyle.zIndex = "50";
+      popupStyle.pointerEvents = "none";
+      this.vpDiv.appendChild(popup);
+    });
+    logo.onclick = (ev) => stopProp(ev, () => {
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, IModelApp.makeLogoCards(this), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
+    });
+    logo.onmouseleave = (ev) => stopProp(ev, () => {
+      logoStyle.opacity = IModelApp.logoParams.image.opacity;
+      if (undefined !== popup) {
+        this.vpDiv.removeChild(popup);
+        popup = undefined;
+      }
+    });
+    logo.onmousemove = (ev) => ev.stopPropagation();
+
+  }
+  /** @internal */
   protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, view: ViewState) {
     super(target, view);
     this.canvas = canvas;
@@ -2913,12 +2949,14 @@ export class ScreenViewport extends Viewport {
     div.className = "imodeljs-vp";
     this.addChildDiv(this.parentDiv, div, 0);
 
+    canvas.style.pointerEvents = "auto";
     this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
     this.setCursor();
+    this.addLogo();
   }
 
   /** Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[ScreenViewport.toolTipDiv]].
@@ -2929,6 +2967,12 @@ export class ScreenViewport extends Viewport {
    */
   public openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
+  }
+
+  /** @internal */
+  public mousePosFromEvent(ev: MouseEvent): XAndY {
+    const rect = this.getClientRect();
+    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */

@@ -31,10 +31,7 @@
     "Type": "Class"
   },
   "BackgroundMap": {
-    "BingDataClickTarget": "Data Attribution",
-    "MapBoxCopyright": "(c) Mapbox, (c) OpenStreetMap contributors",
-    "BingDataAttribution": "Data Provided by: ",
-    "NoBingDataAttribution": "No data attribution is available.",
+    "MapBoxCopyright": "© Mapbox, © OpenStreetMap contributors",
     "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia"
   },
   "PluginErrors": {
@@ -67,5 +64,8 @@
     "Length": "Length",
     "UnableToParseAngle": "Unable to parse angle value",
     "UnableToParseLength": "Unable to parse length value"
+  },
+  "Notices": {
+    "PoweredBy": "Powered by: "
   }
 }

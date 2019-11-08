@@ -16,7 +16,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { getCesiumWorldTerrainLoader } from "./CesiumWorldTerrainTileTree";
 import { WebMapTileLoader, WebMapTileTreeProps, MapTileTreeReference, MapTileLoaderBase, getGcsConverterAvailable, TerrainTileLoaderBase } from "./WebMapTileTree";
-import { SceneContext, DecorateContext } from "../ViewContext";
+import { SceneContext } from "../ViewContext";
 import { Point3d, Range3d, Plane3dByOriginAndUnitNormal, Transform, Matrix3d, Angle, Range1d } from "@bentley/geometry-core";
 import { BingElevationProvider } from "./BingElevation";
 import { RenderClipVolume } from "../render/System";
@@ -24,6 +24,7 @@ import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { MapTilingScheme, GeographicTilingScheme } from "./MapTilingScheme";
 import { MapTileTree } from "./MapTileTree";
+import { ScreenViewport } from "../Viewport";
 
 interface BackgroundTerrainTreeId {
   providerName: TerrainProviderName;
@@ -124,7 +125,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
 
 const backgroundTerrainTreeSupplier = new BackgroundTerrainTreeSupplier();
 
-/** Specializaation of tile tree that represents background terrain.   Background terrain differs from conventional terrain as is assumed to be at least nominally available worldwide and is
+/** Specialization of tile tree that represents background terrain.   Background terrain differs from conventional terrain as is assumed to be at least nominally available worldwide and is
  * an alternative to a planar background map
  * @internal
  */
@@ -183,9 +184,6 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
   public getHeightRange(): Range1d | undefined {
     if (undefined !== this.treeOwner.tileTree && this.treeOwner.tileTree.loader instanceof MapTileLoaderBase)
       return this.treeOwner.tileTree.loader.heightRange;
-    else
-      return undefined;
-
     return undefined;
   }
   public addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void {
@@ -215,8 +213,8 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     div.innerHTML = strings.join("<br>");
     return div;
   }
-  /** Add copyright info to the viewport. */
-  public decorate(context: DecorateContext): void {
+  /** Add logo cards to logo div. */
+  public addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void {
     const drapeTree = this._mapDrapeTree as MapTileTreeReference;
     if (undefined !== drapeTree &&
       undefined !== drapeTree.treeOwner.tileTree &&
@@ -224,7 +222,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
       undefined !== this.treeOwner.tileTree &&
       undefined !== this.treeOwner.tileTree.loader as TerrainTileLoaderBase) {
       (drapeTree.treeOwner.tileTree.loader as WebMapTileLoader).geometryAttributionProvider = (this.treeOwner.tileTree.loader as TerrainTileLoaderBase).geometryAttributionProvider;
-      drapeTree.decorate(context);
+      drapeTree.addLogoCards(logoDiv, vp);
     }
   }
   private get _symbologyOverrides(): FeatureSymbology.Overrides | undefined {

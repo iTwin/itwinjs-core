@@ -224,6 +224,20 @@ export class DisplayTestApp {
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
 
+    IModelApp.applicationLogoCard = () => {
+      const div = document.createElement("div");
+      const image = new Image();
+      image.src = "cold.svg";
+      image.width = 80;
+      div.appendChild(image);
+
+      const attr = document.createElement("p");
+      attr.style.margin = "0";
+      attr.innerText = "Display Test App";
+      div.appendChild(attr);
+      return IModelApp.makeLogoCard(div);
+    };
+
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);

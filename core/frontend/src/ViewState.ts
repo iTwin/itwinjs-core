@@ -370,7 +370,6 @@ export abstract class ViewState extends ElementState {
    */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
-    this.displayStyle.decorate(context);
   }
 
   /** @internal */

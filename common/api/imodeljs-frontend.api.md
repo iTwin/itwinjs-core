@@ -1301,10 +1301,10 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 // @internal
 export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
+    addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
-    decorate(context: DecorateContext): void;
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
@@ -2114,8 +2114,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
     detachRealityModelByIndex(index: number): void;
     // @internal (undocumented)
     detachRealityModelByNameAndUrl(name: string, url: string): void;
@@ -2129,6 +2127,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void;
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
+    // @internal (undocumented)
+    getAttribution(div: HTMLDivElement, vp: ScreenViewport): void;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
@@ -3338,17 +3338,9 @@ export abstract class ImageryProvider {
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): string;
     // (undocumented)
-    decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void;
+    geometryAttributionProvider?: MapTileGeometryAttributionProvider;
     // (undocumented)
-    geometryAttributionProvider: MapTileGeometryAttributionProvider;
-    // (undocumented)
-    protected _geometryAttributionProvider?: MapTileGeometryAttributionProvider;
-    // (undocumented)
-    abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
-    // (undocumented)
-    getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[];
-    // (undocumented)
-    abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
+    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
     // (undocumented)
@@ -3388,6 +3380,8 @@ export class IModelApp {
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
     static readonly applicationId: string;
+    // @beta
+    static applicationLogoCard?: () => HTMLDivElement;
     static readonly applicationVersion: string;
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
@@ -3400,8 +3394,39 @@ export class IModelApp {
     static readonly initialized: boolean;
     // @internal (undocumented)
     static readonly locateManager: ElementLocateManager;
+    // @beta
+    static logoParams: {
+        card: {
+            className: string;
+            style: {
+                width: string;
+                whiteSpace: string;
+                border: string;
+                padding: string;
+                margin: string;
+                background: string;
+                boxShadow: string;
+                borderRadius: string;
+                borderTopStyle: string;
+                borderLeftStyle: string;
+            };
+        };
+        image: {
+            source: string;
+            width: number;
+            height: number;
+            className: string;
+            opacity: string;
+        };
+    };
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
+    // @internal (undocumented)
+    static makeLogo(): HTMLImageElement;
+    // @beta
+    static makeLogoCard(el?: HTMLElement): HTMLDivElement;
+    // @internal (undocumented)
+    static makeLogoCards(vp: ScreenViewport): HTMLDivElement;
     static readonly notifications: NotificationManager;
     // @internal (undocumented)
     static readonly pluginAdmin: PluginAdmin;
@@ -3899,9 +3924,7 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
     // (undocumented)
-    addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
-    // (undocumented)
-    getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
+    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
 }
 
 // @internal (undocumented)
@@ -3943,10 +3966,10 @@ export abstract class MapTileLoaderBase extends TileLoader {
 
 // @internal
 export abstract class MapTileTreeReference extends TileTree.Reference {
+    addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
-    decorate(context: DecorateContext): void;
     getTilesForView(viewport: Viewport): Tile[];
     // (undocumented)
     protected abstract readonly _graphicType: TileTree.GraphicType;
@@ -4617,7 +4640,7 @@ export class NotificationManager {
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
     openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
+    openToolTip(htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number): boolean;
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
@@ -6152,6 +6175,8 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
+    protected addLogo(): void;
+    // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
@@ -6172,6 +6197,8 @@ export class ScreenViewport extends Viewport {
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
     maxUndoSteps: number;
+    // @internal (undocumented)
+    mousePosFromEvent(ev: MouseEvent): XAndY;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)

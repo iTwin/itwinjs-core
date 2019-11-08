@@ -19,7 +19,6 @@ import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
 import { GeographicTilingScheme } from "./MapTilingScheme";
-import { ScreenViewport } from "../Viewport";
 import { MapTile } from "./MapTileTree";
 import { GraphicBranch } from "../render/System";
 
@@ -111,7 +110,6 @@ function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, i
 
 /** @internal */
 class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
-  private readonly _copyrightImagesByViewportId = new Map<number, HTMLImageElement>();
   private static _scratchRange = Range3d.createNull();
   private static _scratchLocalRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
@@ -125,21 +123,22 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d, private readonly _wantSkirts: boolean) {
     super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
-  public getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string {
-    return (IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution"));
-  }
-  public addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void {
-    let image = this._copyrightImagesByViewportId.get(viewport.viewportId);
-    if (undefined === image) {
-      image = new Image();
-      image.src = "images/ion_color_white.png";
-      image.width = 114;
-      image.height = 20;
-      this._copyrightImagesByViewportId.set(viewport.viewportId, image);
-    }
 
-    images.unshift(image);
+  public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLDivElement {
+    const div = document.createElement("div");
+    const image = new Image();
+    image.src = "images/cesium_ion.png";
+    image.width = 114;
+    image.height = 20;
+    div.appendChild(image);
+
+    const attr = document.createElement("p");
+    attr.style.margin = "0";
+    attr.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
+    div.appendChild(attr);
+    return IModelApp.makeLogoCard(div);
   }
+
   public get maxDepth(): number { return this._maxDepth; }
   public get geometryAttributionProvider(): MapTileGeometryAttributionProvider { return this; }
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
