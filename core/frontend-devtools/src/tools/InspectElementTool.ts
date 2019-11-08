@@ -34,6 +34,7 @@ import {
  *  - `verbosity=0|1|2` controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note verbosity=2 can produce megabytes of data for certain types of geometric primitives like large meshes.
  *  - `modal=0|1` where 1 indicates the output should appear in a modal dialog.
  *  - `copy=0|1` where 1 indicates the output should be copied to the clipboard. Defaults to true.
+ *  - `refs=0|1` where 1 indicates that for geometry parts a list of all elements referencing that part should be included in the output. This is extremely computationally expensive.
  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
  * @alpha
  */
@@ -189,9 +190,9 @@ export class InspectElementTool extends PrimitiveTool {
       if (2 !== parts.length)
         continue;
 
-      const name = parts[0].toLowerCase();
+      const name = parts[0][0].toLowerCase();
 
-      if ("id" === name) {
+      if ("i" === name) {
         this._elementId = parts[1];
         continue;
       }
@@ -200,7 +201,7 @@ export class InspectElementTool extends PrimitiveTool {
       if (Number.isNaN(value))
         continue;
 
-      if ("verbosity" === name) {
+      if ("v" === name) {
         switch (value) {
           case 0:
             this._options.geometryVerbosity = GeometrySummaryVerbosity.Basic;
@@ -220,16 +221,21 @@ export class InspectElementTool extends PrimitiveTool {
 
       const flag = 1 === value;
       switch (name) {
-        case "symbology":
+        case "s":
           this._options.verboseSymbology = flag;
           break;
-        case "placement":
+        case "p":
           this._options.includePlacement = flag;
           break;
-        case "modal":
+        case "r":
+          const vp = IModelApp.viewManager.selectedView;
+          if (undefined !== vp)
+            this._options.includePartReferences = vp.view.is3d() ? "3d" : "2d";
+          break;
+        case "m":
           this._modal = flag;
           break;
-        case "copy":
+        case "c":
           this._doCopy = flag;
           break;
       }
