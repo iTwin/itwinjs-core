@@ -3,27 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
-import { FrustumPlanes } from "@bentley/imodeljs-common";
+import { FrustumPlanes, ColorDef, ViewFlag } from "@bentley/imodeljs-common";
 import { TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { assert } from "@bentley/bentleyjs-core";
 import { QuadId, computeMercatorFractionToDb } from "./WebMapTileTree";
-import { Point3d, Range1d, Range3d, Transform, XYZProps, Angle, BilinearPatch } from "@bentley/geometry-core";
+import { Point3d, Range1d, Range3d, Transform, XYZProps, Angle, BilinearPatch, ClipVector, ClipShape } from "@bentley/geometry-core";
 import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
+import { GraphicBranch } from "../render/System";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 
 /** @internal */
 enum SelectStatus { Culled, Selected, Queued, NotFound, Preloaded, Ignored }
 
 /** @internal */
 class TraversalDetails {
-  public queuedCount: number = 0;
   public maxDepth: number = -1;
-  public selectedCount: number = 0;
+  public queuedChildren = new Array<MapTile>();
+
   public initialize() {
-    this.queuedCount = 0;
-    this.selectedCount = 0;
     this.maxDepth = -1;
+    this.queuedChildren.length = 0;
   }
 }
 
@@ -41,11 +42,11 @@ class TraversalQuads {
   }
   public combine(parentDetails: TraversalDetails) {
     parentDetails.maxDepth = -1;
-    parentDetails.queuedCount = 0;
+    parentDetails.queuedChildren.length = 0;
     for (const quadDetail of this.quadDetails) {
       parentDetails.maxDepth = Math.max(parentDetails.maxDepth, quadDetail.maxDepth);
-      parentDetails.queuedCount += quadDetail.queuedCount;
-      parentDetails.selectedCount += quadDetail.selectedCount;
+      for (const queuedChild of quadDetail.queuedChildren)
+        parentDetails.queuedChildren.push(queuedChild);
     }
   }
 }
@@ -54,15 +55,16 @@ class TraversalQuads {
 class SelectionContext {
   public preloadCount = 0;
   public missing = new Array<Tile>();
-  constructor(public selected: Tile[]) { }
+  constructor(public selected: Tile[], public displayedDescendants: MapTile[][]) { }
 
-  public selectOrQueue(tile: Tile, traversalDetails: TraversalDetails, selectIfReady: boolean): SelectStatus {
-    if (selectIfReady && tile.isReady) {
-      traversalDetails.selectedCount++;
+  public selectOrQueue(tile: MapTile, traversalDetails: TraversalDetails): SelectStatus {
+    if (tile.isReady) {
       this.selected.push(tile);
+      this.displayedDescendants.push(traversalDetails.queuedChildren.slice());
+      traversalDetails.queuedChildren.length = 0;
       return SelectStatus.Selected;
     } else if (!tile.isNotFound) {
-      traversalDetails.queuedCount++;
+      traversalDetails.queuedChildren.push(tile);
       this.missing.push(tile);
       return SelectStatus.Queued;
     } else
@@ -182,13 +184,12 @@ export class MapTile extends Tile {
     const meetsSse = args.getPixelSize(this) < this.maximumSize * sizeTestRatio;
     if (this.isDisplayable && (meetsSse || this._anyChildNotFound || this.depth >= this._mapTree.maxDepth) || this._mapTree.needsReprojection(this)) {
       traversalDetails.maxDepth = Math.max(traversalDetails.maxDepth, this.depth);
-      return context.selectOrQueue(this, traversalDetails, true);
+      return context.selectOrQueue(this, traversalDetails);
     } else {
       this.selectMapChildren(context, args, traversalDetails);
       if (this.isDisplayable) {
-        if (0 !== traversalDetails.queuedCount && this.isReady) {
-          traversalDetails.queuedCount = 0;
-          return context.selectOrQueue(this, traversalDetails, this._mapTree.isPlanar);   // If planar select if readyFix even if under tolerance as these will not obscure higher resolution tiles....
+        if (0 !== traversalDetails.queuedChildren.length && this.isReady) {
+          context.selectOrQueue(this, traversalDetails);   // If planar select if readyFix even if under tolerance as these will not obscure higher resolution tiles....
         }
         if (traversalDetails.maxDepth - this.depth <= this._mapTree.preloadDescendantDepth)
           return context.preload(this);
@@ -210,6 +211,27 @@ export class MapTile extends Tile {
     if (this.reprojectionRequired) {
       await this._mapTree.reprojectTileCorners(this);
     }
+  }
+  public getBoundaryShape(z?: number) {
+    const shapePoints = [this.corners[0].clone(), this.corners[1].clone(), this.corners[3].clone(), this.corners[2].clone(), this.corners[0].clone()];
+    if (z)
+      for (const shapePoint of shapePoints)
+        shapePoint.z = z;
+
+    return shapePoints;
+  }
+  public addBoundingRectangle(builder: GraphicBuilder, color: ColorDef) {
+    builder.setSymbology(color, color, 3);
+    builder.addLineString(this.getBoundaryShape(this.heightRange.low));
+    builder.addLineString(this.getBoundaryShape(this.heightRange.high));
+  }
+  public allChildrenIncluded(tiles: MapTile[]) {
+    if (this.children === undefined || tiles.length !== this.children.length)
+      return false;
+    for (const tile of tiles)
+      if (tile.parent !== this)
+        return false;
+    return true;
   }
 }
 /**
@@ -278,14 +300,61 @@ export class MapTileTree extends TileTree {
     }
   }
 
+  public draw(args: Tile.DrawArgs): void {
+    const displayedTileDescendants = new Array<MapTile[]>();
+    const selectedTiles = this.selectMapTiles(args, displayedTileDescendants);
+    if (this.isPlanar) {
+      selectedTiles.sort((a, b) => this.isPlanar ? (a.depth - b.depth) : (b.depth - a.depth));             // For terrain we are not currently displaying low resolution tiles (they cause undesirable jittering and overdisplay good tiles).
+      for (const selectedTile of selectedTiles)
+        selectedTile.drawGraphics(args);
+    } else {
+      assert(selectedTiles.length === displayedTileDescendants.length);
+      for (let i = 0; i < selectedTiles.length; i++) {
+        const selectedTile = selectedTiles[i];
+        if (undefined !== selectedTile.graphics) {
+          const doRangeDebug = false;
+          const builder = doRangeDebug ? args.context.createSceneGraphicBuilder() : undefined;
+          const displayedDescendants = displayedTileDescendants[i];
+          const graphics = selectedTile.graphics;
+          if (0 === displayedDescendants.length || selectedTile.allChildrenIncluded(displayedDescendants)) {
+            args.graphics.add(graphics);
+            if (builder) selectedTile.addBoundingRectangle(builder, ColorDef.green);
+          } else {
+            if (builder) selectedTile.addBoundingRectangle(builder, ColorDef.red);
+            for (const displayedDescendant of displayedDescendants) {
+              if (builder) displayedDescendant.addBoundingRectangle(builder, ColorDef.blue);
+
+              const branch = new GraphicBranch();
+              const doClipOverride = new ViewFlag.Overrides();
+              doClipOverride.setShowClipVolume(true);
+              branch.add(graphics);
+              branch.setViewFlagOverrides(doClipOverride);
+              const clip = ClipShape.createShape(displayedDescendant.getBoundaryShape());
+              const clipVolume = args.context.target.renderSystem.createClipVolume(ClipVector.createCapture([clip!]));
+
+              args.graphics.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
+            }
+          }
+          if (builder) args.graphics.add(builder.finish());
+        }
+      }
+    }
+    args.drawGraphics();
+    args.context.viewport.numSelectedTiles += selectedTiles.length;
+  }
+
   public selectTiles(args: Tile.DrawArgs): Tile[] {
+    const displayedDescendants = new Array<MapTile[]>();
+    return this.selectMapTiles(args, displayedDescendants);
+  }
+
+  public selectMapTiles(args: Tile.DrawArgs, displayedDescendants: MapTile[][]): MapTile[] {
     const rootTile = this._rootTile as MapTile;
-    const selected = new Array<Tile>();
-    const context = new SelectionContext(selected);
+    const selected = new Array<MapTile>();
+    const context = new SelectionContext(selected, displayedDescendants);
 
     rootTile.selectMapTile(context, args, new TraversalDetails());
 
-    selected.sort((a, b) => this.isPlanar ? (a.depth - b.depth) : (b.depth - a.depth));             // For terrain we are not currently displaying low resolution tiles (they cause undesirable jittering and overdisplay good tiles).
     for (const tile of context.missing)
       args.insertMissing(tile);
 

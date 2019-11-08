@@ -47,7 +47,7 @@ class BackgroundTerrainDrawArgs extends Tile.DrawArgs {
 
 class BackgroundTerrainTileTree extends MapTileTree {
   constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
-    super(params, groundBias, gcsConverterAvailable, tilingScheme, false, heightRange, 20, 0);
+    super(params, groundBias, gcsConverterAvailable, tilingScheme, false, heightRange, 20, 4);
     this._fixedPoint = Point3d.create(0, 0, 0);   // Exaggerate about IModel zero.
   }
   private _fixedPoint: Point3d;
