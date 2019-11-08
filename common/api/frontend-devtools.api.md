@@ -13,6 +13,8 @@ import { EventHandled } from '@bentley/imodeljs-frontend';
 import { GeometrySummaryOptions } from '@bentley/imodeljs-common';
 import { Hilite } from '@bentley/imodeljs-common';
 import { HitDetail } from '@bentley/imodeljs-frontend';
+import { Id64Arg } from '@bentley/bentleyjs-core';
+import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
