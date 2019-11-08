@@ -12,7 +12,7 @@ import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } 
 import {
   CategoryDescription, Descriptor, DescriptorOverrides,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
-  PresentationError, PresentationStatus, ContentFlags, Value,
+  PresentationError, PresentationStatus, ContentFlags, Value, InstanceKey,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
@@ -143,7 +143,7 @@ class PropertyDataBuilder {
     };
   }
 
-  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): PropertyRecord {
+  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): PropertyRecord | undefined {
     const pathToRootField = createFieldPath(field);
 
     if (createStruct) {
@@ -166,10 +166,18 @@ class PropertyDataBuilder {
       if (!Value.isNestedContent(nestedContentValues))
         throw new PresentationError(PresentationStatus.Error, "value should be nested content");
 
-      if (nestedContentValues.length !== 1)
-        throw new PresentationError(PresentationStatus.Error, "nested content should have a single element");
-      const nestedContentValue = nestedContentValues[0];
+      if (nestedContentValues.length === 0)
+        return undefined;
 
+      if (nestedContentValues.length > 1) {
+        const mergedItem = new Item(nestedContentValues.reduce((keys, ncv) => {
+          keys.push(...ncv.primaryKeys);
+          return keys;
+        }, new Array<InstanceKey>()), "", "", undefined, { [field.name]: undefined }, { [field.name]: undefined }, [field.name]);
+        return ContentBuilder.createPropertyRecord(field, mergedItem);
+      }
+
+      const nestedContentValue = nestedContentValues[0];
       item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
         nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
     }
@@ -226,6 +234,9 @@ class PropertyDataBuilder {
       for (const field of fields.fields[category.name]) {
         const shouldCreateAncestorsStructure = !containsFieldPath(fields.hiddenAncestorsFieldPaths, createFieldPath(field));
         const record = this.createRecord(field, shouldCreateAncestorsStructure, fields.hiddenFieldPaths);
+        if (!record)
+          continue;
+
         if (field.isNestedContentField())
           handleNestedContentRecord(field, record);
         else

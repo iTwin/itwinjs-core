@@ -640,6 +640,56 @@ describe("PropertyDataProvider", () => {
         expect(await provider.getData()).to.matchSnapshot();
       });
 
+      it("removes nested content record when the nested field is categorized but there's no content", async () => {
+        descriptor.fields = [field1];
+        field1.nestedFields[0].category = createRandomCategory();
+        const values = {
+          [field1.name]: [] as NestedContentValue[],
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
+      it("returns nested content with multiple nested categorized records", async () => {
+        descriptor.fields = [field1];
+        field1.nestedFields[0].category = createRandomCategory();
+        const values = {
+          [field1.name]: [{
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }, {
+            primaryKeys: [createRandomECInstanceKey()],
+            values: {
+              [field1.nestedFields[0].name]: faker.random.word(),
+            },
+            displayValues: {
+              [field1.nestedFields[0].name]: faker.random.words(),
+            },
+            mergedFieldNames: [],
+          }] as NestedContentValue[],
+          [field2.name]: faker.random.word(),
+        };
+        const displayValues = {
+          [field1.name]: undefined,
+          [field2.name]: faker.random.words(),
+        };
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+        expect(await provider.getData()).to.matchSnapshot();
+      });
+
     });
 
     describe("includeFieldsWithNoValues handling", () => {
@@ -830,38 +880,6 @@ describe("PropertyDataProvider", () => {
             faker.random.uuid(), undefined, values, displayValues, []);
           (provider as any).getContent = async () => new Content(descriptor, [record]);
           await expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "value should be nested content");
-        });
-
-        it("throws if nested content does not contain a single element", async () => {
-          favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
-          const values = {
-            [field1.name]: [{
-              primaryKeys: [createRandomECInstanceKey()],
-              values: {
-                [field1.nestedFields[0].name]: faker.random.word(),
-              },
-              displayValues: {
-                [field1.nestedFields[0].name]: faker.random.words(),
-              },
-              mergedFieldNames: [],
-            }, {
-              primaryKeys: [createRandomECInstanceKey()],
-              values: {
-                [field1.nestedFields[0].name]: faker.random.word(),
-              },
-              displayValues: {
-                [field1.nestedFields[0].name]: faker.random.words(),
-              },
-              mergedFieldNames: [],
-            }] as NestedContentValue[],
-          };
-          const displayValues = {
-            [field1.name]: undefined,
-          };
-          const record = new Item([createRandomECInstanceKey()], faker.random.words(),
-            faker.random.uuid(), undefined, values, displayValues, []);
-          (provider as any).getContent = async () => new Content(descriptor, [record]);
-          await expect(provider.getData()).to.eventually.be.rejectedWith(PresentationError, "nested content should have a single element");
         });
 
       });

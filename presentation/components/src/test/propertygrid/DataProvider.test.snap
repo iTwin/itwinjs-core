@@ -30,6 +30,15 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider getData nested content handling removes nested content record when the nested field is categorized but there's no content 1`] = `
+Object {
+  "categories": Array [],
+  "description": undefined,
+  "label": "Mission Personal Loan Account",
+  "records": Object {},
+}
+`;
+
 exports[`PropertyDataProvider getData nested content handling removes nested content record when the only nested field is moved into a separate category and nested content record is the only record in category 1`] = `
 Object {
   "categories": Array [
@@ -361,6 +370,122 @@ Object {
         "value": Object {
           "displayValue": "Computers Computer Pizza",
           "value": "vortals",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with multiple nested categorized records 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Bridge Hat",
+      "name": "Savings Account",
+    },
+    Object {
+      "expand": false,
+      "label": "haptic Gorgeous Steel Cheese cross-platform",
+      "name": "program",
+    },
+  ],
+  "description": undefined,
+  "label": "Berkshire",
+  "records": Object {
+    "Savings Account": Array [
+      PropertyRecord {
+        "autoExpand": true,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "product invoice",
+          "name": "paradigms",
+          "typename": "serial",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "product invoice",
+                "name": "paradigms",
+                "typename": "serial",
+              },
+              "value": Object {
+                "members": Object {
+                  "COM": PropertyRecord {
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Intelligent grey",
+                      "editor": Object {
+                        "name": "Baht",
+                        "params": Array [],
+                      },
+                      "name": "COM",
+                      "typename": "int",
+                    },
+                    "value": Object {
+                      "displayValue": "",
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "product invoice",
+                "name": "paradigms",
+                "typename": "serial",
+              },
+              "value": Object {
+                "members": Object {
+                  "COM": PropertyRecord {
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Intelligent grey",
+                      "editor": Object {
+                        "name": "Baht",
+                        "params": Array [],
+                      },
+                      "name": "COM",
+                      "typename": "int",
+                    },
+                    "value": Object {
+                      "displayValue": "",
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "itemsTypeName": "serial",
+          "valueFormat": 1,
+        },
+      },
+    ],
+    "program": Array [
+      PropertyRecord {
+        "isMerged": true,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "XSS",
+          "name": "Burkina Faso",
+          "typename": "set",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
           "valueFormat": 0,
         },
       },
