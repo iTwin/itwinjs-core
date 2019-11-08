@@ -466,7 +466,7 @@ export abstract class ViewManip extends ViewTool {
 
     const prevSourceId = this.getDepthPointGeometryId();
     const showDepthChanged = ((0 === this.nPts && undefined !== this.getDepthPoint(ev, true)) || this.clearDepthPoint());
-    if (ev.viewport && showDepthChanged) {
+    if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
         ev.viewport.setFlashed(currSourceId, 0.25);
