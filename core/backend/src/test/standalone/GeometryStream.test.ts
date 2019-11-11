@@ -33,7 +33,7 @@ import { assert, expect } from "chai";
 import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe("GeometryStream", () => {
+describe.only("GeometryStream", () => {
   let imodel: IModelDb;
 
   before(() => {
@@ -846,6 +846,10 @@ describe("GeometryStream", () => {
     geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
     geometryStream.push({ fill: { display: FillDisplay.ByView } });
     geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
+
+    // The add-on always prepends the "header" entry to JSON.
+    expect(value.geom[0].header).not.to.be.undefined;
+    value.geom.shift();
 
     const fromBuilder = JSON.stringify(builder.geometryStream);
     const fromElProps = JSON.stringify(value.geom);
