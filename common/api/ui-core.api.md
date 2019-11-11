@@ -1980,6 +1980,9 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
+// @alpha
+export function useEffectSkipFirst(callback: () => void, deps?: any[]): void;
+
 // @public
 export enum VerticalAlignment {
     // (undocumented)

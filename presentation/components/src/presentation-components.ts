@@ -47,6 +47,7 @@ export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionP
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
 export { controlledTreeWithModelSource, ControlledTreeWithModelSourceProps } from "./tree/controlled/WithModelSource";
+export { usePresentationNodeLoader } from "./tree/controlled/TreeHooks";
 
 /**
  * @module Viewport

@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TreeModelSource, createDefaultNodeLoadHandler } from "./TreeModelSource";
 import { VisibleTreeNodes } from "./TreeModel";
 import { TreeDataProvider } from "../TreeDataProvider";
 import { PagedTreeNodeLoader, ITreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
+import { useEffectSkipFirst } from "@bentley/ui-core";
 
 /** Custom hook which returns visible nodes from model source and subscribes to onModelChanged event.
  * @alpha
@@ -36,8 +37,7 @@ export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvid
   const [nodeLoader, setNodeLoader] = useState(new TreeNodeLoader(dataProvider));
 
   useEffectSkipFirst(() => {
-    const pagedLoader = new TreeNodeLoader(dataProvider);
-    setNodeLoader(pagedLoader);
+    setNodeLoader(new TreeNodeLoader(dataProvider));
   }, [dataProvider]);
 
   return nodeLoader;
@@ -50,8 +50,7 @@ export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataP
   const [nodeLoader, setNodeLoader] = useState(new PagedTreeNodeLoader(dataProvider, pageSize));
 
   useEffectSkipFirst(() => {
-    const pagedLoader = new PagedTreeNodeLoader(dataProvider, pageSize);
-    setNodeLoader(pagedLoader);
+    setNodeLoader(new PagedTreeNodeLoader(dataProvider, pageSize));
   }, [dataProvider, pageSize]);
 
   return nodeLoader;
@@ -64,7 +63,7 @@ export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
   const [modelSource, setModelSource] = useState(nodeLoader ? new TreeModelSource() : undefined);
   const modifyModel = useCallback(createOnNodeLoadedHandler(modelSource), [modelSource]);
 
-  useEffect(() => {
+  useEffectSkipFirst(() => {
     setModelSource(nodeLoader ? new TreeModelSource() : undefined);
   }, [nodeLoader]);
 
@@ -78,18 +77,6 @@ export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
   }, [nodeLoader, modifyModel]);
 
   return modelSource;
-}
-
-function useEffectSkipFirst(callback: () => void, deps?: any[]) {
-  const skipFirst = useRef(true);
-  useEffect(() => {
-    if (skipFirst.current) {
-      skipFirst.current = false;
-      return;
-    }
-
-    callback();
-  }, deps);
 }
 
 function createOnNodeLoadedHandler(modelSource: TreeModelSource | undefined) {

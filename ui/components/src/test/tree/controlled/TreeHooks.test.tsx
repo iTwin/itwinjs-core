@@ -159,6 +159,18 @@ describe("useModelSource", () => {
     expect(result.current).to.be.undefined;
   });
 
+  it("returns undefined if node loader changed to undefined", () => {
+    const { result, rerender } = renderHook<{ nodeLoader: ITreeNodeLoader | undefined }, TreeModelSource | undefined>(
+      (props: { nodeLoader: ITreeNodeLoader | undefined }) => useModelSource(props.nodeLoader),
+      { initialProps: { nodeLoader: nodeLoaderMock.object } },
+    );
+    expect(result.current).to.not.be.undefined;
+
+    rerender({ nodeLoader: undefined });
+
+    expect(result.current).to.be.undefined;
+  });
+
   it("creates new model source and subscribes to onNodeLoaded event when node loader changes", () => {
     const removeListenerSpy = sinon.spy(onNodeLoadedEvent, "removeListener");
     const { result, rerender } = renderHook(

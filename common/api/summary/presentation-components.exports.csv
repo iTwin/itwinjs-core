@@ -33,5 +33,6 @@ public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
 alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
 alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
+alpha;usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

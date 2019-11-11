@@ -2,23 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { TreeNodeItem, PageOptions } from "@bentley/ui-components";
+import { useEffectSkipFirst } from "@bentley/ui-core";
 
 export const PAGING_SIZE = 10;
 
 export function useDataProvider(imodel: IModelConnection, rulesetId: string): SampleDataProvider {
   const [dataProvider, setDataProvider] = useState(() => new SampleDataProvider(imodel, rulesetId));
 
-  const skipEffect = useRef(true);
-  useEffect(() => {
-    if (skipEffect.current) {
-      skipEffect.current = false;
-      return;
-    }
-
+  useEffectSkipFirst(() => {
     setDataProvider(new SampleDataProvider(imodel, rulesetId));
   }, [imodel, rulesetId]);
 

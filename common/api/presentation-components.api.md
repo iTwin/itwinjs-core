@@ -303,6 +303,9 @@ export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvid
 // @alpha
 export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
 
+// @alpha
+export function usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader<PresentationTreeDataProvider>;
+
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;
 

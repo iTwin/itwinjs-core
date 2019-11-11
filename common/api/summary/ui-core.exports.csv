@@ -215,6 +215,7 @@ beta;UiSettingsResult
 beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
+alpha;useEffectSkipFirst(callback: () => void, deps?: any[]): void
 public;VerticalAlignment
 beta;VerticalTabs 
 public;WebFontIcon: React.FunctionComponent
