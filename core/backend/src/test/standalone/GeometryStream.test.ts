@@ -843,13 +843,10 @@ describe.only("GeometryStream", () => {
 
     const geometryStream: GeometryStreamProps = [];
 
+    geometryStream.push({ header: { flags: 0 } });
     geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
     geometryStream.push({ fill: { display: FillDisplay.ByView } });
     geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
-
-    // The add-on always prepends the "header" entry to JSON.
-    expect(value.geom[0].header).not.to.be.undefined;
-    value.geom.shift();
 
     const fromBuilder = JSON.stringify(builder.geometryStream);
     const fromElProps = JSON.stringify(value.geom);
