@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "comment": "Toolbar button to open section location view attachment now works.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-plugin",
+  "email": "Brien.Bastings@bentley.com"
+}

@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, Id64Array } from "@bentley/bentleyjs-core";
+import { Logger, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, XYAndZ, XAndY, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
-import { SectionLocationProps, SectionType, Placement3d } from "@bentley/imodeljs-common";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl, InputSource } from "@bentley/imodeljs-frontend";
+import { SectionLocationProps, SectionType, Placement3d, ViewAttachmentProps, RelatedElement } from "@bentley/imodeljs-common";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl, InputSource, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { HyperModelingPlugin } from "./HyperModeling";
 import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 
@@ -80,12 +80,40 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     return this._clip;
   }
 
-  private toggleSection(vp: ScreenViewport): void {
+  private async getViewState(iModel: IModelConnection): Promise<ViewState | undefined> {
+    if (undefined === this.props.viewAttachment)
+      return undefined;
+    const attachmentId = RelatedElement.idFromJson(this.props.viewAttachment);
+    if (Id64.isInvalid(attachmentId))
+      return undefined;
+    try {
+      const attachments = await iModel.elements.getProps(attachmentId) as ViewAttachmentProps[];
+      if (1 !== attachments.length)
+        return undefined;
+      return await iModel.views.load(attachments[0].view.id);
+    } catch {
+      return undefined;
+    }
+  }
+
+  private toggleClip(vp: ScreenViewport): void {
     this.isSelected = !this.isSelected;
     ViewClipTool.enableClipVolume(vp);
     ViewClipTool.setViewClip(vp, this.isSelected ? this.clip : undefined);
     SectionLocationSetDecoration.props.display.selectedOnly = this.isSelected;
     SectionLocationSetDecoration.show(vp, true, false); // tslint:disable-line:no-floating-promises
+  }
+
+  private async toggleSection(vp: ScreenViewport): Promise<void> {
+    this.toggleClip(vp);
+    // ###TODO Display attachment...
+  }
+
+  private async openSection(vp: ScreenViewport): Promise<void> {
+    const viewState = await this.getViewState(vp.view.iModel);
+    if (undefined === viewState)
+      return;
+    vp.changeView(viewState);
   }
 
   private alignView(vp: ScreenViewport): void {
@@ -106,10 +134,6 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     vp.animateToCurrent(startFrustum);
   }
 
-  private openSection(_vp: ScreenViewport): void {
-    // ### TODO - Information to implement not currently unavailble...
-  }
-
   public toolbarProps: AbstractToolbarProps = {
     items: [
       { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.ToggleSection"), iconSpec: "icon-section-tool", badgeType: BadgeType.None, applicationData: "toggle_section", execute: () => { } },
@@ -128,7 +152,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
     switch (item.applicationData) {
       case "toggle_section": {
-        this.toggleSection(vp);
+        this.toggleSection(vp); // tslint:disable-line:no-floating-promises
         break;
       }
       case "align_view": {
@@ -136,7 +160,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
         break;
       }
       case "open_section": {
-        this.openSection(vp);
+        this.openSection(vp); // tslint:disable-line:no-floating-promises
         break;
       }
     }
@@ -161,7 +185,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (InputSource.Mouse === ev.inputSource && BeButton.Data === ev.button && ev.isDown && ev.viewport)
-      this.toggleSection(ev.viewport);
+      this.toggleSection(ev.viewport); // tslint:disable-line:no-floating-promises
     return true; // Don't allow clicks to be sent to active tool...
   }
 
@@ -362,6 +386,7 @@ export class SectionLocationSetDecoration {
       return;
     IModelApp.viewManager.dropDecorator(SectionLocationSetDecoration.decorator);
     SectionLocationSetDecoration.decorator = undefined;
+    SectionLocationSetDecoration.props.display.selectedOnly = false;
   }
 
   /** Start showing markers if not currently active (or optionally refresh when currently displayed). */
