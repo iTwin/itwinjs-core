@@ -39,7 +39,7 @@ dependencies:
   '@rush-temp/perf-tools': 'file:projects/perf-tools.tgz'
   '@rush-temp/presentation-backend': 'file:projects/presentation-backend.tgz'
   '@rush-temp/presentation-common': 'file:projects/presentation-common.tgz'
-  '@rush-temp/presentation-components': 'file:projects/presentation-components.tgz'
+  '@rush-temp/presentation-components': 'file:projects/presentation-components.tgz_react-test-renderer@16.11.0'
   '@rush-temp/presentation-frontend': 'file:projects/presentation-frontend.tgz_jsdom@11.12.0'
   '@rush-temp/presentation-integration-tests': 'file:projects/presentation-integration-tests.tgz_jsdom@11.12.0'
   '@rush-temp/presentation-test-app': 'file:projects/presentation-test-app.tgz'
@@ -49,7 +49,7 @@ dependencies:
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:projects/test-apps-synchro-schedule-importer.tgz'
   '@rush-temp/test-tools': 'file:projects/test-tools.tgz'
   '@rush-temp/ui-abstract': 'file:projects/ui-abstract.tgz'
-  '@rush-temp/ui-components': 'file:projects/ui-components.tgz_prop-types@15.7.2'
+  '@rush-temp/ui-components': 'file:projects/ui-components.tgz_9e995fbfe8e80b1bd9c8f071073de41e'
   '@rush-temp/ui-core': 'file:projects/ui-core.tgz'
   '@rush-temp/ui-framework': 'file:projects/ui-framework.tgz'
   '@rush-temp/ui-ninezone': 'file:projects/ui-ninezone.tgz'
@@ -60,6 +60,7 @@ dependencies:
   '@svgdotjs/svg.js': 3.0.13
   '@testing-library/dom': 5.6.1
   '@testing-library/react': 8.0.9_react-dom@16.11.0+react@16.11.0
+  '@testing-library/react-hooks': 3.2.1_2d953f8cc08fbfe7584fba7e53830728
   '@types/body-parser': 1.17.1
   '@types/bunyan': 1.8.6
   '@types/bunyan-seq': 0.2.2
@@ -119,6 +120,7 @@ dependencies:
   '@types/source-map-support': 0.4.2
   '@types/superagent': 3.8.7
   '@types/tar': 4.0.3
+  '@types/testing-library__react-hooks': 3.1.0
   '@types/uuid': 3.4.6
   '@types/webpack': 3.8.18
   '@types/xmldom': 0.1.29
@@ -608,6 +610,18 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-Y1T2bjtvQMewffn1CJ28kpgnuvPYKsBcZMagEH0ppfEMZPDc8AkkEnTk4smrGZKw0cblNB3lhM2FMnpfLExlHg==
+  /@testing-library/react-hooks/3.2.1_2d953f8cc08fbfe7584fba7e53830728:
+    dependencies:
+      '@babel/runtime': 7.7.2
+      '@types/testing-library__react-hooks': 3.1.0
+      react: 16.11.0
+      react-test-renderer: 16.11.0_react@16.11.0
+    dev: false
+    peerDependencies:
+      react: '>=16.9.0'
+      react-test-renderer: '>=16.9.0'
+    resolution:
+      integrity: sha1-GbbKoEjvFfqmnUOcRpAzhz6gEpQ=
   /@testing-library/react/8.0.9_react-dom@16.11.0+react@16.11.0:
     dependencies:
       '@babel/runtime': 7.7.2
@@ -1025,6 +1039,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-euC3SiwDg3NcjFdNmFL8uVuAFTpZJm0WMFUw+4eXMUnxa7M9RGFEG0szt0z+/Zgk4G2k9JBFhaEnY64RBiFmuw==
+  /@types/react-test-renderer/16.9.1:
+    dependencies:
+      '@types/react': 16.9.11
+    dev: false
+    resolution:
+      integrity: sha1-nUMsRsUV6+UMRfqSxvtazcIuOcQ=
   /@types/react-virtualized-auto-sizer/1.0.0:
     dependencies:
       '@types/react': 16.9.11
@@ -1134,6 +1154,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Z7AVMMlkI8NTWF0qGhC4QIX0zkV/+y0J8x7b/RsHrN0310+YNjoJd8UrApCiGBCWtKjxS9QhNqLi2UJNToh5hA==
+  /@types/testing-library__react-hooks/3.1.0:
+    dependencies:
+      '@types/react': 16.9.11
+      '@types/react-test-renderer': 16.9.1
+    dev: false
+    resolution:
+      integrity: sha1-BNF0znZ/vM48y1Ah1/FW4bBgCKk=
   /@types/tough-cookie/2.3.5:
     dev: false
     resolution:
@@ -14685,8 +14712,9 @@ packages:
       integrity: sha512-ephbpR0+NurkZ17pnLVA2WbpGNrQl04irr4UwTJTFBM5ZMppLCe6uvzXWl4aZakg7llAO6780G409wJSj2+fvg==
       tarball: 'file:projects/presentation-common.tgz'
     version: 0.0.0
-  'file:projects/presentation-components.tgz':
+  'file:projects/presentation-components.tgz_react-test-renderer@16.11.0':
     dependencies:
+      '@testing-library/react-hooks': 3.2.1_2d953f8cc08fbfe7584fba7e53830728
       '@types/chai': 4.2.4
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
@@ -14698,6 +14726,7 @@ packages:
       '@types/react-dom': 16.9.4
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.3
+      '@types/testing-library__react-hooks': 3.1.0
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -14722,9 +14751,12 @@ packages:
       typescript: 3.6.4
       xmlhttprequest: 1.8.0
     dev: false
+    id: 'file:projects/presentation-components.tgz'
     name: '@rush-temp/presentation-components'
+    peerDependencies:
+      react-test-renderer: '*'
     resolution:
-      integrity: sha512-BBxI0hShqmDd6HBsFYwOID9j5Z9xfVv6cs85zCvHOoBn6uNgPdDHS+IMLnawN7iqDovfdSmOwr9pbDtori0T8A==
+      integrity: sha512-AJ1XqpSQxM9bBJbIJl4cZwdD9DoK93BxHEUyppi6lyMxwjxltoCNQ81N5Huk7Qt3RzjHNwBvKZTiUgrA7s7Whg==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz_jsdom@11.12.0':
@@ -14992,10 +15024,11 @@ packages:
       integrity: sha512-tKawM759ibpmgkS3qaAR2O+rqQggUyozvxcYZ8jdHpM0DYrh7vKk9wRn+kVF5CJpIIhwcYlYCzVLoZXALT5t1w==
       tarball: 'file:projects/ui-abstract.tgz'
     version: 0.0.0
-  'file:projects/ui-components.tgz_prop-types@15.7.2':
+  'file:projects/ui-components.tgz_9e995fbfe8e80b1bd9c8f071073de41e':
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.31
       '@testing-library/react': 8.0.9_react-dom@16.11.0+react@16.11.0
+      '@testing-library/react-hooks': 3.2.1_2d953f8cc08fbfe7584fba7e53830728
       '@types/chai': 4.2.4
       '@types/chai-as-promised': 7.1.2
       '@types/chai-jest-snapshot': 1.3.5
@@ -15017,6 +15050,7 @@ packages:
       '@types/react-window': 1.8.1
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.3
+      '@types/testing-library__react-hooks': 3.1.0
       callable-instance2: 1.0.0
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
@@ -15073,8 +15107,9 @@ packages:
     name: '@rush-temp/ui-components'
     peerDependencies:
       prop-types: '*'
+      react-test-renderer: '*'
     resolution:
-      integrity: sha512-IO8CtLuo6SIrT2uJ1Vrim6u2fle3LESSSox3mrLXT4leLYlq44KtEnMiw81zUqDDyeUmaO5lPckk1hSoprTHHA==
+      integrity: sha512-Xak4003zop5IrX3tuQ3YlbHbtw/xUuXJ6sgzHTU46+eU7bLgH8GElAzJ97/ij2j6hjwXvSDczXXm04dScztD+g==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz':
@@ -15421,6 +15456,7 @@ packages:
       integrity: sha512-LyBCZkadc6cEcXTEiZsCucwNhfjb3eLKMwQldVAYxUO9/Nlu8GyP9Yy4FPWdbmAjQJ77sfyX58S3OsUsq/U6mg==
       tarball: 'file:projects/wms-plugin-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': ^10.4.0
   '@bentley/icons-generic': ^0.0.31
@@ -15483,6 +15519,7 @@ specifiers:
   '@svgdotjs/svg.js': 3.0.13
   '@testing-library/dom': ^5.2.0
   '@testing-library/react': ^8.0.1
+  '@testing-library/react-hooks': ^3.2.1
   '@types/body-parser': ^1.17.0
   '@types/bunyan': ^1.8.4
   '@types/bunyan-seq': ^0.2.0
@@ -15542,6 +15579,7 @@ specifiers:
   '@types/source-map-support': ^0.4.0
   '@types/superagent': ^3.5.6
   '@types/tar': ^4.0.0
+  '@types/testing-library__react-hooks': ^3.1.0
   '@types/uuid': ~3.4.4
   '@types/webpack': ^3.8.5
   '@types/xmldom': ^0.1.29

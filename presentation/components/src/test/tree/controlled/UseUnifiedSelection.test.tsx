@@ -2,42 +2,44 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import * as moq from "typemoq";
 import sinon from "sinon";
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { renderHook } from "@testing-library/react-hooks";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { CheckBoxState } from "@bentley/ui-core";
 import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
-  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent
+  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent,
 } from "@bentley/ui-components";
+import {
+  SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler,
+  SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
+} from "@bentley/presentation-frontend";
+import { ECInstanceNodeKey, KeySet, NodeKey, StandardNodeTypes } from "@bentley/presentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider } from "@bentley/presentation-frontend";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-
 import { UnifiedSelectionTreeEventHandler } from "../../../tree/controlled/UseUnifiedSelection";
 import { useControlledTreeUnifiedSelection, IPresentationTreeDataProvider } from "../../../presentation-components";
-import { CheckBoxState } from "@bentley/ui-core";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 import { PRESENTATION_TREE_NODE_KEY } from "../../../tree/Utils";
-import { ECInstanceNodeKey, KeySet, NodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-
-interface TestHookProps {
-  callback: () => void;
-}
-
-// tslint:disable-next-line: variable-name naming-convention
-const TestHook: React.FC<TestHookProps> = (props: TestHookProps) => {
-  props.callback();
-  return null;
-};
 
 describe("useUnifiedSelection", () => {
-  const modelSourceMock = moq.Mock.ofType<TreeModelSource<IPresentationTreeDataProvider>>();
+  interface HookProps {
+    modelSource: TreeModelSource;
+    dataProvider: IPresentationTreeDataProvider;
+    treeEvents: TreeEvents;
+  }
+
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
+  const initialProps: HookProps = {
+    modelSource: modelSourceMock.object,
+    dataProvider: dataProviderMock.object,
+    treeEvents: treeEventsMock.object,
+  };
 
   beforeEach(() => {
     modelSourceMock.reset();
@@ -49,43 +51,44 @@ describe("useUnifiedSelection", () => {
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     Presentation.selection = selectionManagerMock.object;
-    modelSourceMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
     dataProviderMock.setup((x) => x.rulesetId).returns(() => "TestRuleset");
   });
 
   it("returns wrapped event handler", () => {
-    let eventHandler: TreeEvents;
-    mount(
-      <TestHook callback={() => { eventHandler = useControlledTreeUnifiedSelection(modelSourceMock.object, treeEventsMock.object); }} />,
-    );
 
-    expect(eventHandler!).to.not.be.undefined;
+    const hook = renderHook(
+      (props: HookProps) => useControlledTreeUnifiedSelection(props.modelSource, props.treeEvents, props.dataProvider),
+      { initialProps },
+    );
+    expect(hook.result.current).to.not.be.undefined;
   });
 
   it("disposes previous event handler", () => {
-    let eventHandler: UnifiedSelectionTreeEventHandler;
-    const wrapper = mount(
-      <TestHook callback={() => { eventHandler = useControlledTreeUnifiedSelection(modelSourceMock.object, treeEventsMock.object) as UnifiedSelectionTreeEventHandler; }} />,
+    const hook = renderHook(
+      (props: HookProps) => useControlledTreeUnifiedSelection(props.modelSource, props.treeEvents, props.dataProvider),
+      { initialProps },
     );
 
+    const eventHandler = hook.result.current as UnifiedSelectionTreeEventHandler;
     const disposeSpy = sinon.spy(eventHandler!, "dispose");
 
     const newTreeEventsMock = moq.Mock.ofType<TreeEvents>();
-    wrapper.setProps({ callback: () => useControlledTreeUnifiedSelection(modelSourceMock.object, newTreeEventsMock.object) });
+    hook.rerender({ ...initialProps, treeEvents: newTreeEventsMock.object });
 
     expect(disposeSpy).to.be.calledOnce;
   });
 
   it("disposes selectionHandler on unmount", () => {
-    let eventHandler: UnifiedSelectionTreeEventHandler;
-    const wrapper = mount(
-      <TestHook callback={() => { eventHandler = useControlledTreeUnifiedSelection(modelSourceMock.object, treeEventsMock.object) as UnifiedSelectionTreeEventHandler; }} />,
+    const hook = renderHook(
+      (props: HookProps) => useControlledTreeUnifiedSelection(props.modelSource, props.treeEvents, props.dataProvider),
+      { initialProps },
     );
-    const selectionHandler = (eventHandler! as any)._selectionHandler;
+
+    const selectionHandler = (hook.result.current as any)._selectionHandler;
     const disposeSpy = sinon.spy(selectionHandler, "dispose");
 
-    wrapper.unmount();
+    hook.unmount();
 
     expect(disposeSpy).to.be.calledOnce;
   });
@@ -95,7 +98,7 @@ describe("useUnifiedSelection", () => {
 describe("UnifiedSelectionEventHandler", () => {
   let unifiedEventHandler: UnifiedSelectionTreeEventHandler;
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
-  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource<IPresentationTreeDataProvider>>();
+  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   const treeModelMock = moq.Mock.ofType<TreeModel>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
@@ -109,9 +112,8 @@ describe("UnifiedSelectionEventHandler", () => {
 
     onModelChangeEvent = new BeUiEvent<TreeModel>();
     treeModelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
-    treeModelSourceMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
     dataProviderMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => (n as any)[PRESENTATION_TREE_NODE_KEY]);
-    unifiedEventHandler = new UnifiedSelectionTreeEventHandler(treeEventsMock.object, treeModelSourceMock.object, selectionHandlerMock.object);
+    unifiedEventHandler = new UnifiedSelectionTreeEventHandler(treeEventsMock.object, treeModelSourceMock.object, selectionHandlerMock.object, dataProviderMock.object);
   });
 
   const createNode = (nodeKey?: NodeKey) => {
@@ -262,7 +264,7 @@ describe("UnifiedSelectionEventHandler", () => {
         closed: false,
         unsubscribe: () => { },
         add: spy,
-      }
+      };
       const innerSubscription = {
         closed: false,
         unsubscribe: () => { },
@@ -279,7 +281,7 @@ describe("UnifiedSelectionEventHandler", () => {
       const previousSubscription = {
         closed: false,
         unsubscribe: spy,
-        add: () => { }
+        add: () => { },
       };
 
       (unifiedEventHandler as any)._ongoingSubscriptions.add(previousSubscription);
@@ -293,7 +295,7 @@ describe("UnifiedSelectionEventHandler", () => {
 
     it("applies unified selection when model changes", () => {
       const node = createNode();
-      selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([dataProviderMock.target.getNodeKey(node.item)]))
+      selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([dataProviderMock.target.getNodeKey(node.item)]));
       treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => [node][Symbol.iterator]());
 

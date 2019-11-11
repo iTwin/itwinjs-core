@@ -5,6 +5,7 @@
 ```ts
 
 import * as _ from 'lodash';
+import { ActiveMatchInfo } from '@bentley/ui-components';
 import { CategoryDescription } from '@bentley/presentation-common';
 import { ColumnDescription } from '@bentley/ui-components';
 import { Content } from '@bentley/presentation-common';
@@ -13,12 +14,14 @@ import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
+import { HighlightableTreeProps } from '@bentley/ui-components';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
+import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { KeySet } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -84,11 +87,32 @@ export class ContentDataProvider implements IContentDataProvider {
 }
 
 // @alpha
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "modelSource" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+
+// @alpha
+export interface ControlledTreeWithFilteringSupportProps {
+    activeMatchIndex?: number;
+    filter?: string;
+    nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+    onFilterApplied?: (filter: string) => void;
+    onMatchesCounted?: (count: number) => void;
+    onNodeLoaderChanged?: (nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
+}
+
+// @alpha
+export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
+
+// @alpha
+export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
+    modelSource: TreeModelSource;
+}
+
+// @alpha
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
 
 // @alpha
 export interface ControlledTreeWithUnifiedSelectionProps {
-    modelSource: TreeModelSource<IPresentationTreeDataProvider>;
+    nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
 // @public
@@ -268,7 +292,16 @@ export interface TreeWithUnifiedSelectionProps {
 }
 
 // @alpha
-export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource<IPresentationTreeDataProvider>, treeEvents: TreeEvents): TreeEvents;
+export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
+    nodeHighlightingProps: HighlightableTreeProps | undefined;
+    filteredNodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
+    filteredModelSource: TreeModelSource;
+    isFiltering: boolean;
+    matchesCount: number | undefined;
+};
+
+// @alpha
+export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;

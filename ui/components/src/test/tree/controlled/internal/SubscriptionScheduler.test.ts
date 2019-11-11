@@ -2,8 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { SubscriptionScheduler, scheduleSubscription } from "../../../../ui-components/tree/controlled/internal/SubscriptionScheduler";
-import { extractSequence, waitForUnsubscription } from "../../ObservableTestHelpers";
 import { expect } from "chai";
 import sinon from "sinon";
 import { Observable } from "rxjs/internal/Observable";
@@ -16,6 +14,8 @@ import { scheduled } from "rxjs/internal/scheduled/scheduled";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
 import { async as asyncScheduler } from "rxjs/internal/scheduler/async";
 import { queue as queueScheduler } from "rxjs/internal/scheduler/queue";
+import { SubscriptionScheduler, scheduleSubscription } from "../../../../ui-components/tree/controlled/internal/SubscriptionScheduler";
+import { extractSequence, waitForUnsubscription } from "../../ObservableTestHelpers";
 
 async function expectSequence<T>(expectedSequence: T[], observable: Observable<T>): Promise<void> {
   const actualSequence = await extractSequence(observable);

@@ -11,21 +11,24 @@ import { TreeModelSource } from "../../../../ui-components/tree/controlled/TreeM
 import { MutableTreeModelNode, MutableTreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
 import { CheckboxStateChange } from "../../../../ui-components/tree/controlled/TreeEvents";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import { TreeDataProvider } from "../../../../ui-components/tree/TreeDataProvider";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
 
 describe("TreeModelMutator", () => {
 
   let modelMutator: TreeModelMutator;
-  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource<TreeDataProvider>>();
+  const treeModelSourceMock = moq.Mock.ofType<TreeModelSource>();
+  const treeNodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
   const treeModelMock = moq.Mock.ofType<MutableTreeModel>();
   let node: MutableTreeModelNode;
 
   beforeEach(() => {
     treeModelSourceMock.reset();
     treeModelMock.reset();
-    modelMutator = new TreeModelMutator(treeModelSourceMock.object, false);
+    treeNodeLoaderMock.reset();
+    modelMutator = new TreeModelMutator(treeModelSourceMock.object, treeNodeLoaderMock.object, false);
     node = createRandomMutableTreeModelNode();
 
+    treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
     treeModelSourceMock
       .setup((x) => x.modifyModel(moq.It.isAny()))
       .callback((func: (model: MutableTreeModel) => void) => func(treeModelMock.object))
@@ -35,7 +38,7 @@ describe("TreeModelMutator", () => {
   describe("expandNode", () => {
 
     beforeEach(() => {
-      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.exactly(2));
     });
 
     it("expands node without children", () => {
@@ -48,12 +51,12 @@ describe("TreeModelMutator", () => {
     });
 
     it("expands node and loads children", () => {
-      treeModelSourceMock.setup((x) => x.loadNode(node.id, 0)).returns(() => EMPTY).verifiable(moq.Times.once());
+      treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => parent.id === node.id), 0)).returns(() => EMPTY).verifiable(moq.Times.once());
       node = { ...node, isExpanded: false, numChildren: undefined };
       modelMutator.expandNode(node.id);
 
       treeModelMock.verifyAll();
-      treeModelSourceMock.verifyAll();
+      treeNodeLoaderMock.verifyAll();
       expect(node.isExpanded).to.be.true;
     });
 
@@ -91,7 +94,7 @@ describe("TreeModelMutator", () => {
     });
 
     it("collapses node and disposes children when disposing is enabled", () => {
-      const disposingMutator = new TreeModelMutator(treeModelSourceMock.object, true);
+      const disposingMutator = new TreeModelMutator(treeModelSourceMock.object, treeNodeLoaderMock.object, true);
       treeModelMock.setup((x) => x.clearChildren(node.id)).verifiable(moq.Times.once());
       node = { ...node, isExpanded: true, numChildren: 0 };
       disposingMutator.collapseNode(node.id);

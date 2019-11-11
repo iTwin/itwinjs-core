@@ -44,6 +44,9 @@ export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
 export { useControlledTreeUnifiedSelection } from "./tree/controlled/UseUnifiedSelection";
 export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
+export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
+export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
+export { controlledTreeWithModelSource, ControlledTreeWithModelSourceProps } from "./tree/controlled/WithModelSource";
 
 /**
  * @module Viewport

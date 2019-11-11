@@ -4,22 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { TreeModelNode, VisibleTreeNodes, isTreeModelNode, TreeModelNodePlaceholder } from "../TreeModel";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
-
-import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
-
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { useCallback, useEffect, useMemo } from "react";
-import { TreeNodeLoader } from "../TreeModelSource";
-
 import { from } from "rxjs/internal/observable/from";
+import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { TreeModelNode, VisibleTreeNodes, isTreeModelNode, TreeModelNodePlaceholder } from "../TreeModel";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
+import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { UiComponents } from "../../../UiComponents";
 import { TreeEvents } from "../TreeEvents";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
+import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 
 /**
  * Properties for [[ControlledTree]]
@@ -27,10 +25,11 @@ import { SelectionMode } from "../../../common/selection/SelectionModes";
  */
 export interface ControlledTreeProps extends CommonProps {
   visibleNodes: VisibleTreeNodes;
-  nodeLoader: TreeNodeLoader;
+  nodeLoader: ITreeNodeLoader;
   treeEvents: TreeEvents;
   descriptionsEnabled?: boolean;
   selectionMode: SelectionMode;
+  nodeHighlightingProps?: HighlightableTreeProps;
   treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
   spinnerRenderer?: () => React.ReactElement;
   noDataRenderer?: () => React.ReactElement;
@@ -42,13 +41,15 @@ export interface ControlledTreeProps extends CommonProps {
  */
 // tslint:disable-next-line: variable-name
 export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
+  const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
     <TreeNodeRenderer
       {...nodeProps}
       descriptionEnabled={props.descriptionsEnabled}
+      nodeHighlightProps={highlightingEngine ? highlightingEngine.createRenderProps(nodeProps.node) : undefined}
     />
-  ), [props.descriptionsEnabled]);
+  ), [props.descriptionsEnabled, highlightingEngine]);
 
   const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
 
@@ -58,7 +59,8 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
     treeActions: eventDispatcher,
     nodeLoader: props.nodeLoader,
     visibleNodes: props.visibleNodes,
-  }), [nodeRenderer, nodeHeight, eventDispatcher, props.nodeLoader, props.visibleNodes]);
+    nodeHighlightingProps: props.nodeHighlightingProps,
+  }), [nodeRenderer, nodeHeight, eventDispatcher, props.nodeLoader, props.visibleNodes, props.nodeHighlightingProps]);
 
   const loading = useRootNodeLoader(props.visibleNodes, props.nodeLoader);
   const noData = props.visibleNodes.getNumRootNodes() === 0;
@@ -69,10 +71,10 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
   );
 };
 
-function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: TreeNodeLoader): boolean {
+function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
   useEffect(() => {
     if (visibleNodes.getNumRootNodes() === undefined) {
-      const subscription = from(nodeLoader.loadNode(undefined, 0)).subscribe();
+      const subscription = from(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
       return () => subscription.unsubscribe();
     }
 
@@ -82,7 +84,7 @@ function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: TreeNodeL
   return visibleNodes.getNumRootNodes() === undefined;
 }
 
-function useEventDispatcher(nodeLoader: TreeNodeLoader, treeEvents: TreeEvents, selectionMode: SelectionMode, visibleNodes: VisibleTreeNodes) {
+function useEventDispatcher(nodeLoader: ITreeNodeLoader, treeEvents: TreeEvents, selectionMode: SelectionMode, visibleNodes: VisibleTreeNodes) {
   /* istanbul ignore next */
   const getVisibleNodes = useCallback(() => visibleNodes, [visibleNodes]);
   const eventDispatcher = useMemo(() => new TreeEventDispatcher(treeEvents, nodeLoader, selectionMode), [treeEvents, nodeLoader, selectionMode]);

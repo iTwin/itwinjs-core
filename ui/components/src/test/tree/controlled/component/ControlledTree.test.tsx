@@ -7,21 +7,22 @@ import * as React from "react";
 import * as moq from "typemoq";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
-import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { VisibleTreeNodes, TreeModel, MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { TreeEvents } from "../../../../ui-components";
-import { TreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeModelSource";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { CheckBoxState } from "@bentley/ui-core";
+import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
+import { VisibleTreeNodes, MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
+import { from } from "../../../../ui-components/tree/controlled/Observable";
 import TestUtils from "../../../TestUtils";
 import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
 
 describe("ControlledTree", () => {
 
   const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
-  const nodeLoaderMock = moq.Mock.ofType<TreeNodeLoader>();
+  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
-  const modelMock = moq.Mock.ofType<TreeModel>();
+  const treeModelMock = moq.Mock.ofType<TreeModel>();
   let node: MutableTreeModelNode;
 
   before(async () => {
@@ -51,7 +52,9 @@ describe("ControlledTree", () => {
     };
 
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 0);
-    nodeLoaderMock.setup((x) => x.loadNode(undefined, moq.It.isAny())).returns(() => from([{ loadedNodes: [], model: modelMock.object }]));
+    visibleNodesMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ depth: -1, id: undefined, numChildren: undefined }));
+    nodeLoaderMock.setup((x) => x.loadNode(moq.It.isAny(), moq.It.isAny())).returns(() => from([]));
   });
 
   const mockVisibleNode = () => {
@@ -117,6 +120,30 @@ describe("ControlledTree", () => {
       />);
 
     getByText("Test Node Description");
+  });
+
+  it("renders highlighted node", () => {
+    mockVisibleNode();
+    const highlightProps: HighlightableTreeProps = {
+      searchText: node.label,
+      activeMatch: {
+        nodeId: node.id,
+        matchIndex: 0,
+      },
+    };
+
+    const { container } = render(
+      <ControlledTree
+        visibleNodes={visibleNodesMock.object}
+        nodeLoader={nodeLoaderMock.object}
+        treeEvents={treeEventsMock.object}
+        descriptionsEnabled={true}
+        selectionMode={SelectionMode.Single}
+        nodeHighlightingProps={highlightProps}
+      />);
+
+    const tree = container.querySelector(`.${HighlightingEngine.ACTIVE_CLASS_NAME}`);
+    expect(tree).to.not.be.null;
   });
 
   it("uses provided tree renderer", () => {

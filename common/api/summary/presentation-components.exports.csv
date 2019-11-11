@@ -3,6 +3,10 @@ Release Tag;API Item
 public;CacheInvalidationProps
 internal;ContentBuilder
 public;ContentDataProvider 
+alpha;controlledTreeWithFilteringSupport
+alpha;ControlledTreeWithFilteringSupportProps
+alpha;controlledTreeWithModelSource
+alpha;ControlledTreeWithModelSourceProps 
 alpha;controlledTreeWithUnifiedSelection
 alpha;ControlledTreeWithUnifiedSelectionProps
 public;DataProvidersFactory
@@ -27,6 +31,7 @@ public;treeWithFilteringSupport
 public;TreeWithFilteringSupportProps
 public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
-alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource
+alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
+alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

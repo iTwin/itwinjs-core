@@ -20,12 +20,14 @@ import ViewportContentControl from "../viewport/ViewportContentControl";
 
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import { ControlledTreeWidget } from "../tree-widget/ControlledTreeWidget";
+import { TreeSelector, TreeType } from "../tree-selector/TreeSelector";
+import { TreeWidget } from "../tree-widget/TreeWidget";
 
 export interface State {
   imodel?: IModelConnection;
   currentRulesetId?: string;
   currentViewDefinitionId?: Id64String;
+  currentTreeType?: TreeType;
   rightPaneRatio: number;
   rightPaneHeight?: number;
   contentRatio: number;
@@ -63,6 +65,11 @@ export default class App extends React.Component<{}, State> {
     this.tryPreloadHierarchy(this.state.imodel, rulesetId);
 
     this.setState({ ...this.state, currentRulesetId: rulesetId });
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private onTreeTypeSelected = (treeType: TreeType) => {
+    this.setState({ ...this.state, currentTreeType: treeType });
   }
 
   private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {
@@ -145,7 +152,7 @@ export default class App extends React.Component<{}, State> {
     }
   }
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String, treeType: TreeType) {
     return (
       <div
         className="app-content"
@@ -182,7 +189,7 @@ export default class App extends React.Component<{}, State> {
           style={{
             gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
           }}>
-          <ControlledTreeWidget imodel={imodel} rulesetId={rulesetId} />
+          <TreeWidget treeType={treeType} imodel={imodel} rulesetId={rulesetId} />
           <div className="app-content-right-separator">
             <hr />
             <ElementSeparator
@@ -225,8 +232,8 @@ export default class App extends React.Component<{}, State> {
 
   public render() {
     let imodelComponents = null;
-    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId)
-      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId);
+    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId && this.state.currentTreeType !== undefined)
+      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId, this.state.currentTreeType);
 
     return (
       <div className="app">
@@ -235,6 +242,7 @@ export default class App extends React.Component<{}, State> {
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />
         <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
+        <TreeSelector onTreeTypeSelected={this.onTreeTypeSelected} />
         {imodelComponents}
       </div>
     );

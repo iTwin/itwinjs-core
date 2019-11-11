@@ -39,7 +39,7 @@ export const createRandomTreeNodeItems = (count?: number, parentId?: string, cre
   const items: TreeNodeItemData[] = [];
   let itemCount = count || faker.random.number({ min: 3, max: 9 });
   while (itemCount--) {
-    const treeNodeItem = createRandomTreeNodeItem(parentId);
+    const treeNodeItem = createRandomTreeNodeItem(undefined, parentId);
     if (itemCount % 2 === 0)
       items.push({ ...treeNodeItem, children: createChildren ? createRandomTreeNodeItems(undefined, treeNodeItem.id, false) : undefined });
     else

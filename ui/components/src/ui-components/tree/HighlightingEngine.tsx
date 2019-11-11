@@ -6,7 +6,6 @@
 
 import Highlighter from "react-highlight-words";
 import * as React from "react";
-import { BeInspireTreeNode } from "./component/BeInspireTree";
 import "./HighlightingEngine.scss";
 
 /** Active match info for highlightable [[Tree]]
@@ -48,15 +47,15 @@ export class HighlightingEngine {
     this._activeMatch = props.activeMatch;
   }
 
-  public isNodeActive(node: BeInspireTreeNode<any>) {
+  public isNodeActive(node: { id?: string }) {
     return this._activeMatch && node.id === this._activeMatch.nodeId;
   }
 
-  public getActiveMatchIndex(node: BeInspireTreeNode<any>) {
+  public getActiveMatchIndex(node: { id?: string }) {
     return this.isNodeActive(node) ? this._activeMatch!.matchIndex : undefined;
   }
 
-  public createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps {
+  public createRenderProps(node: { id?: string }): HighlightableTreeNodeProps {
     return {
       searchText: this._searchText,
       activeMatchIndex: this.getActiveMatchIndex(node),

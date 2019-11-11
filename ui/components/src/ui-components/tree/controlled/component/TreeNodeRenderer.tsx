@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
+import * as React from "react";
+import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@bentley/ui-core";
 import { TreeActions } from "../TreeActions";
 import { TreeModelNode, CheckBoxInfo } from "../TreeModel";
-import { TreeNodeContent } from "../component/NodeContent";
+import { TreeNodeContent } from "./NodeContent";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-
-import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@bentley/ui-core";
-
-import * as React from "react";
+import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 
 /**
  * Properties for [[TreeNodeRenderer]].
@@ -20,6 +19,7 @@ import * as React from "react";
 export interface TreeNodeRendererProps extends CommonProps {
   node: TreeModelNode;
   treeActions: TreeActions;
+  onLabelRendered?: (node: TreeModelNode) => void;
 }
 
 /**
@@ -29,6 +29,7 @@ export interface TreeNodeRendererProps extends CommonProps {
 export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
   checkboxRenderer?: NodeCheckboxRenderer;
   descriptionEnabled?: boolean;
+  nodeHighlightProps?: HighlightableTreeNodeProps;
 }
 
 /**
@@ -43,6 +44,8 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
       node={props.node}
       showDescription={props.descriptionEnabled}
       valueRendererManager={PropertyValueRendererManager.defaultManager}
+      highlightProps={props.nodeHighlightProps}
+      onLabelRendered={props.onLabelRendered}
     />
   );
 

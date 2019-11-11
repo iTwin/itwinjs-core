@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-.RulesetSelector {
-  padding: 10px 0px 0px 10px;
+.TreeSelector {
+  padding: 10px 0px 10px 10px;
+  border-bottom: 1px solid black;
 }

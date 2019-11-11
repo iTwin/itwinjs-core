@@ -70,6 +70,8 @@ internal;ContextMenuProps
 alpha;ControlledTree: React.FC
 alpha;ControlledTreeProps 
 public;ConvertedPrimitives
+alpha;createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void
+alpha;createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader):
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 alpha;CustomNumberEditor 
@@ -158,13 +160,15 @@ public;ItemStyle
 public;ItemStyleProvider:
 public;ITreeDataProvider
 public;ITreeImageLoader 
+alpha;ITreeNodeLoader
+alpha;ITreeNodeLoaderWithProvider
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
 public;LoadedBinaryImage 
 public;LoadedImage
-internal;LoadedNodeHierarchy
-internal;LoadedNodeHierarchyItem
+alpha;LoadedNodeHierarchy
+alpha;LoadedNodeHierarchyItem
 public;MapPayloadToInspireNodeCallback
 public;matchLinks: (text: string) =>
 internal;MenuItem
@@ -197,6 +201,7 @@ public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
 alpha;OperatorValueFilterDescriptor 
 alpha;OperatorValueFilterDescriptorCollection 
+alpha;PagedTreeNodeLoader
 public;PageOptions
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -332,12 +337,10 @@ alpha;TreeModelNodeInput
 alpha;TreeModelNodePlaceholder
 alpha;TreeModelRootNode
 alpha;TreeModelSource
-internal;TreeModelUpdaterParams
 alpha;TreeNodeEvent
 public;TreeNodeItem
 alpha;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 alpha;TreeNodeLoader
-alpha;TreeNodeLoadResult
 alpha;TreeNodeRenderer: React.MemoExoticComponent
 alpha;TreeNodeRendererProps 
 public;TreeProps 
@@ -352,7 +355,10 @@ public;TypeConverterManager
 beta;TypeEditor
 public;UiComponents
 alpha;Unsubscribable
-alpha;useVisibleTreeNodes(modelSource: TreeModelSource
+alpha;useModelSource(nodeLoader: ITreeNodeLoader | undefined): TreeModelSource | undefined
+alpha;useNodeLoader
+alpha;usePagedNodeLoader
+alpha;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
 public;ViewClassFullNameChangedEvent 
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 

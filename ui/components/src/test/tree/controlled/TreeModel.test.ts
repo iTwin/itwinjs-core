@@ -11,7 +11,6 @@ import {
   TreeModelNodeInput, TreeModelRootNode, TreeModelNode, isTreeModelNode, TreeModelNodePlaceholder, isTreeModelRootNode,
 } from "../../../ui-components/tree/controlled/TreeModel";
 import { SparseTree, SparseArray } from "../../../ui-components/tree/controlled/internal/SparseTree";
-
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {

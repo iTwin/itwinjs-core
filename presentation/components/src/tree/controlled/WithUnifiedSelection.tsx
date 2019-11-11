@@ -5,29 +5,31 @@
 /** @module Tree */
 
 import * as React from "react";
-import { ControlledTreeProps, TreeModelSource, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ITreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { useControlledTreeUnifiedSelection } from "./UseUnifiedSelection";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { ControlledTreeWithModelSourceProps } from "./WithModelSource";
 
 /**
  * Props that are injected to the ControlledTreeWithUnifiedSelection HOC component.
  * @alpha
  */
 export interface ControlledTreeWithUnifiedSelectionProps {
-  /** Model source used by ControlledTree. */
-  modelSource: TreeModelSource<IPresentationTreeDataProvider>;
+  /** Node loader used to load nodes for tree. */
+  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
 /**
  * A HOC component that adds unified selection functionality to the supplied
  * controlled tree component.
  *
- * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
+ * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
+ * wrap supplied tree component in [[controlledTreeWithModelSource]] HOC
  *
  * @alpha
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeProps>(TreeComponent: React.FC<P>) {
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>) {
 
   type CombinedProps = P & ControlledTreeWithUnifiedSelectionProps;
   type TreeWithUnifiedSelectionProps = Omit<CombinedProps, "visibleNodes">;
@@ -36,13 +38,12 @@ export function controlledTreeWithUnifiedSelection<P extends ControlledTreeProps
   const treeWithUnifiedSelection: React.FC<TreeWithUnifiedSelectionProps> = (props: TreeWithUnifiedSelectionProps) => {
     const { modelSource, treeEvents, ...strippedProps } = props;
 
-    const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(modelSource, props.treeEvents);
-    const visibleNodes = useVisibleTreeNodes(modelSource);
+    const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(modelSource, treeEvents, strippedProps.nodeLoader.getDataProvider());
 
     return (
       <TreeComponent
+        modelSource={modelSource}
         treeEvents={unifiedSelectionEventHandler}
-        visibleNodes={visibleNodes}
         {...strippedProps as CombinedProps}
       />
     );

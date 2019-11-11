@@ -4,24 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
+import { EMPTY } from "rxjs/internal/observable/empty";
 import { Observable } from "../Observable";
 import { CheckboxStateChange } from "../TreeEvents";
-import { TreeModelSource, TreeNodeLoadResult } from "../TreeModelSource";
-
-import { EMPTY } from "rxjs/internal/observable/empty";
-import { TreeDataProvider } from "../../TreeDataProvider";
+import { TreeModelSource } from "../TreeModelSource";
+import { ITreeNodeLoader } from "../TreeNodeLoader";
 
 /** @internal */
 export class TreeModelMutator {
-  private _modelSource: TreeModelSource<TreeDataProvider>;
+  private _modelSource: TreeModelSource;
+  private _nodeLoader: ITreeNodeLoader;
   private _collapsedChildrenDisposalEnabled: boolean;
 
-  constructor(modelSource: TreeModelSource<TreeDataProvider>, collapsedChildrenDisposalEnabled: boolean) {
+  constructor(modelSource: TreeModelSource, nodeLoader: ITreeNodeLoader, collapsedChildrenDisposalEnabled: boolean) {
     this._modelSource = modelSource;
+    this._nodeLoader = nodeLoader;
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
 
-  public expandNode(nodeId: string): Observable<TreeNodeLoadResult> {
+  public expandNode(nodeId: string): Observable<string[]> {
     let needToLoadChildren = false;
     this._modelSource.modifyModel((model) => {
       const node = model.getNode(nodeId);
@@ -37,7 +38,8 @@ export class TreeModelMutator {
       }
     });
 
-    return needToLoadChildren ? this._modelSource.loadNode(nodeId, 0) : EMPTY;
+    const expandedNode = this._modelSource.getModel().getNode(nodeId);
+    return needToLoadChildren && expandedNode ? this._nodeLoader.loadNode(expandedNode, 0) : EMPTY;
   }
 
   public collapseNode(nodeId: string) {

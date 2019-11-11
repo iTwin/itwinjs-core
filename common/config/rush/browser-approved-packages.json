@@ -159,6 +159,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@testing-library/react-hooks",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
     },

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { Observable, Subscription } from "./Observable";
 import { CheckBoxState } from "@bentley/ui-core";
+import { Observable, Subscription } from "./Observable";
 
 /**
  * Tree events listener used to listen and handle tree events.
