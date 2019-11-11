@@ -40,8 +40,15 @@ export class StatusBarItemsManager {
   }
 
   public add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>) {
-    let itemsToAdd = isInstance(itemOrItems) ? [itemOrItems] : itemOrItems;
+    let itemsToAdd;
+    if (isInstance(itemOrItems))
+      itemsToAdd = [itemOrItems];
+    else {
+      itemsToAdd = itemOrItems.filter((itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index);
+    }
     itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
+    if (itemsToAdd.length === 0)
+      return;
     const items = [
       ...this._items,
       ...itemsToAdd,

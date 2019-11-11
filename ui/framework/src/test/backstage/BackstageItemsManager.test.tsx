@@ -149,6 +149,29 @@ describe("BackstageItemsManager", () => {
       spy.calledOnce.should.true;
       sut.items.length.should.eq(2);
     });
+
+    it("should not add multiple items with same id", () => {
+      const sut = new BackstageItemsManager();
+
+      const spy = sinon.spy();
+      sut.onChanged.addListener(spy);
+      sut.add([getActionItem(), getActionItem()]);
+
+      spy.calledOnce.should.true;
+      sut.items.length.should.eq(1);
+    });
+
+    it("should not add item that is already added", () => {
+      const sut = new BackstageItemsManager();
+
+      const spy = sinon.spy();
+      sut.onChanged.addListener(spy);
+      sut.add(getActionItem());
+      sut.add(getActionItem());
+
+      spy.calledOnce.should.true;
+      sut.items.length.should.eq(1);
+    });
   });
 
   describe("remove", () => {

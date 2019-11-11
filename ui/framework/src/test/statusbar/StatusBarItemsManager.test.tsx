@@ -43,6 +43,16 @@ describe("StatusBarItemsManager", () => {
       expect(sut.items.length).to.eq(1);
     });
 
+    it("add ignores duplicate items", () => {
+      const sut = new StatusBarItemsManager();
+
+      const item1 = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
+      const item2 = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
+
+      sut.add([item1, item2]);
+      sut.items.length.should.eq(1);
+    });
+
     it("attempt to add duplicate item ignores it", () => {
       const sut = new StatusBarItemsManager();
 
