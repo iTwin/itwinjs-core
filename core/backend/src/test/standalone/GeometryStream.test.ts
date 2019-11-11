@@ -18,6 +18,7 @@ import {
   GeometryParams,
   GeometryPartProps,
   GeometryStreamBuilder,
+  GeometryStreamFlags,
   GeometryStreamIterator,
   GeometryStreamProps,
   Gradient,
@@ -33,7 +34,7 @@ import { assert, expect } from "chai";
 import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("GeometryStream", () => {
+describe("GeometryStream", () => {
   let imodel: IModelDb;
 
   before(() => {
@@ -922,6 +923,53 @@ describe.only("GeometryStream", () => {
       assert.equal(entry.primitive.type, "brep");
       assert.isDefined(entry.brep);
     }
+  });
+
+  it("should preserve header with flags", () => {
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
+
+    const roundTrip = () => {
+      const partProps: GeometryPartProps = {
+        classFullName: GeometryPart.classFullName,
+        iModel: imodel,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        geom: builder.geometryStream,
+      };
+
+      const part = imodel.elements.createElement(partProps);
+      const partId = imodel.elements.insertElement(part);
+      imodel.saveChanges();
+
+      const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
+      expect(json.geom).not.to.be.undefined;
+      expect(json.geom!.length).to.equal(2);
+      expect(json.geom![0].header).not.to.be.undefined;
+      const flags = json.geom![0].header!.flags;
+      expect(flags).to.equal(builder.isViewIndependent ? GeometryStreamFlags.ViewIndependent : GeometryStreamFlags.None);
+
+      if (undefined !== builder.getHeader())
+        expect(JSON.stringify(builder.geometryStream[0])).to.equal(JSON.stringify(json.geom![0]));
+    };
+
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = true;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.true;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
   });
 });
 

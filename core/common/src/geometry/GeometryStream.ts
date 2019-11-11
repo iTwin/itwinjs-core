@@ -150,7 +150,8 @@ export enum GeometryStreamFlags {
   /** No flags. */
   None = 0,
   /** When the geometry is displayed, it is always oriented to face the viewer. The placement origin of the element associated with the geometry is used as the rotation point.
-   * If the placement origin is outside of the view, the geometry will not necessarily be displayed, even if rotating it to face the viewer would cause its range to intersect the viewed volume. */
+   * If the placement origin is outside of the view, the geometry will not necessarily be displayed, even if rotating it to face the viewer would cause its range to intersect the viewed volume.
+   */
   ViewIndependent = 1 << 0,
 }
 
@@ -362,6 +363,42 @@ export class GeometryStreamBuilder {
     };
     this.geometryStream.push({ brep: localBrep });
     return true;
+  }
+
+  /** @internal */
+  public getHeader(): GeometryStreamHeaderProps | undefined {
+    return 0 < this.geometryStream.length ? this.geometryStream[0].header : undefined;
+  }
+
+  /** @internal */
+  public obtainHeader(): GeometryStreamHeaderProps {
+    const hdr = this.getHeader();
+    if (undefined !== hdr)
+      return hdr;
+
+    const entry = { header: { flags: GeometryStreamFlags.None } };
+    this.geometryStream.unshift(entry);
+    return entry.header;
+  }
+
+  /** Controls whether or not the geometry in the stream should be displayed as view-independent.
+   * When view-independent geometry is displayed, it is always oriented to face the viewer, using the placement origin of the element as the rotation point.
+   * If the placement origin is outside of the view, the geometry will not necessarily be displayed, even if rotating it to face the viewer would cause its range to intersect the viewed volume
+   * @public
+   */
+  public get isViewIndependent(): boolean {
+    const hdr = this.getHeader();
+    return undefined !== hdr && GeometryStreamFlags.None !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
+  }
+  public set isViewIndependent(viewIndependent: boolean) {
+    if (viewIndependent === this.isViewIndependent)
+      return;
+
+    const hdr = this.obtainHeader();
+    if (viewIndependent)
+      hdr.flags |= GeometryStreamFlags.ViewIndependent;
+    else
+      hdr.flags &= ~GeometryStreamFlags.ViewIndependent;
   }
 }
 
