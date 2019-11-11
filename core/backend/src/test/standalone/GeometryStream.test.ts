@@ -5,11 +5,31 @@
 import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType,
-  GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, Gradient,
-  IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps,
+  AreaPattern,
+  BackgroundFill,
+  BRepEntity,
+  Code,
+  ColorByName,
+  ColorDef,
+  FillDisplay,
+  FontProps,
+  FontType,
+  GeometricElement3dProps,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamIterator,
+  GeometryStreamProps,
+  Gradient,
+  IModel,
+  LinePixels,
+  LineStyle,
+  MassPropertiesOperation,
+  MassPropertiesRequestProps,
+  TextString,
+  TextStringProps,
 } from "@bentley/imodeljs-common";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -651,13 +671,21 @@ describe("GeometryStream", () => {
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
+    let gotHeader = false;
     for (const entry of value.geom) {
-      assert.isDefined(entry.textString);
-      const origin = new Point3d(entry.textString.origin);
-      const rotation = new YawPitchRollAngles(entry.textString.rotation);
-      assert.isTrue(origin.isAlmostZero);
-      assert.isTrue(rotation.isIdentity());
+      expect(undefined === entry.header).to.equal(gotHeader);
+      if (undefined !== entry.header) {
+        gotHeader = true;
+      } else {
+        assert.isDefined(entry.textString);
+        const origin = Point3d.fromJSON(entry.textString!.origin);
+        const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
+        assert.isTrue(origin.isAlmostZero);
+        assert.isTrue(rotation.isIdentity());
+      }
     }
+
+    expect(gotHeader).to.be.true;
 
     const itLocal = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of itLocal) {
