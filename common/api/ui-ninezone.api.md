@@ -180,7 +180,7 @@ export class CssProperties {
     static fromPosition(props: PointProps): React_2.CSSProperties;
 }
 
-// @alpha
+// @alpha @deprecated
 export const DefaultHistoryManager: HistoryManager;
 
 // @beta
@@ -256,9 +256,11 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 
 // @beta
 export interface ExpandableItemProps extends CommonProps {
+    // @deprecated
     history?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    // @deprecated
     onIsHistoryExtendedChange?: (isExtended: boolean) => void;
     panel?: React.ReactNode;
 }
@@ -462,28 +464,28 @@ export class HandleModeHelpers {
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
 }
 
-// @alpha
+// @alpha @deprecated
 export type History<TItem> = Array<HistoryEntry<TItem>>;
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryEntry<TItem> {
     item: TItem;
     key: HistoryKey;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryIcon extends React.PureComponent<HistoryItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryItem extends React.PureComponent<HistoryItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryItemProps extends CommonProps {
     children?: React.ReactNode;
     isActive?: boolean;
@@ -492,10 +494,10 @@ export interface HistoryItemProps extends CommonProps {
     title?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export type HistoryKey = number | string;
 
-// @alpha
+// @alpha @deprecated
 export class HistoryManager {
     constructor(maxItemCount: number);
     addItem<TItem extends {}>(key: HistoryKey, item: TItem, history: History<TItem>): History<TItem>;
@@ -503,13 +505,13 @@ export class HistoryManager {
     readonly maxItemCount: number;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
     direction?: Direction;
     isExtended?: boolean;
@@ -1566,7 +1568,7 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
 
 // @alpha
 export interface ToolbarItem {
-    // (undocumented)
+    // @deprecated (undocumented)
     readonly history: HTMLElement;
     // (undocumented)
     readonly panel: HTMLElement;

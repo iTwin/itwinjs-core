@@ -47,8 +47,6 @@ import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
 import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
 import { Group } from "@src/toolbar/item/expandable/group/Group";
 import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
-import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
-import { HistoryTray, History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Direction } from "@src/utilities/Direction";
@@ -182,13 +180,6 @@ enum FooterWidget {
   SnapMode,
 }
 
-interface HistoryItem {
-  toolId: string;
-  trayId: string;
-  columnId: string;
-  itemId: string;
-}
-
 interface ToolGroupItem {
   trayId?: string;
   isDisabled?: boolean;
@@ -215,8 +206,6 @@ interface ToolGroup extends SimpleTool {
   backTrays: ReadonlyArray<string>;
   trays: { [id: string]: ToolGroupTray };
   direction: Direction;
-  history: History<HistoryItem>;
-  isExtended?: boolean;
   isOverflow?: boolean;
   isPanelOpen?: boolean;
 }
@@ -1537,17 +1526,15 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
 }
 
 interface ToolbarItemProps {
-  history: React.ReactNode | undefined;
   itemRef: React.Ref<HTMLDivElement>;
   onClick: (toolId: string) => void;
-  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   panel: React.ReactNode | undefined;
   tool: Tool;
 }
 
 class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
   public render() {
-    const { itemRef, onIsHistoryExtendedChange, tool, ...props } = this.props;
+    const { itemRef, tool, ...props } = this.props;
     if (!isToolGroup(tool))
       return (
         <div
@@ -1585,7 +1572,6 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
         {...props}
         isActive={tool.isActive}
         isDisabled={tool.isDisabled}
-        onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
       >
         <div
           className="nzdemo-item"
@@ -1604,68 +1590,6 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
 
   private _handleClick = () => {
     this.props.onClick(this.props.tool.id);
-  }
-
-  private _handleIsHistoryExtendedChange = (isExtended: boolean) => {
-    this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
-  }
-}
-
-interface ToolbarItemHistoryTrayProps {
-  onHistoryItemClick: (item: HistoryItem) => void;
-  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
-  tool: ToolGroup;
-}
-
-class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayProps> {
-  public render() {
-    return (
-      <HistoryTray
-        direction={this.props.tool.direction}
-        isExtended={this.props.tool.isExtended}
-        onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
-        items={
-          this.props.tool.history.map((entry) => {
-            return (
-              <ToolbarItemHistoryItem
-                history={entry.item}
-                key={entry.key}
-                onClick={this._handleHistoryItemClick}
-              />
-            );
-          })
-        }
-      />
-    );
-  }
-
-  private _handleHistoryItemClick = (item: HistoryItem) => {
-    this.props.onHistoryItemClick(item);
-  }
-
-  private _handleIsHistoryExtendedChange = (isExtended: boolean) => {
-    this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
-  }
-}
-
-interface ToolbarItemHistoryItemProps {
-  history: HistoryItem;
-  onClick: (history: HistoryItem) => void;
-}
-
-class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemProps> {
-  public render() {
-    return (
-      <HistoryIcon
-        onClick={this._handleClick}
-      >
-        {placeholderIcon}
-      </HistoryIcon>
-    );
-  }
-
-  private _handleClick = () => {
-    this.props.onClick(this.props.history);
   }
 }
 
@@ -1820,8 +1744,6 @@ interface Zone1Props {
   horizontalTools: Tools;
   isInFooterMode: boolean;
   onAppButtonClick: () => void;
-  onHistoryItemClick: (item: HistoryItem) => void;
-  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onPanelBack: (toolId: string) => void;
   onPanelOutsideClick: (toolId: string) => void;
@@ -1853,8 +1775,6 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             getNumberOfVisibleTools(this.props.horizontalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
-              onHistoryItemClick={this.props.onHistoryItemClick}
-              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
               onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -1868,8 +1788,6 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             getNumberOfVisibleTools(this.props.verticalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Right}
-              onHistoryItemClick={this.props.onHistoryItemClick}
-              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
               onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -1904,8 +1822,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             getNumberOfVisibleTools(this.props.horizontalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
-              onHistoryItemClick={this.props.onHistoryItemClick}
-              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
               onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -1919,8 +1835,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             getNumberOfVisibleTools(this.props.verticalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Left}
-              onHistoryItemClick={this.props.onHistoryItemClick}
-              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
               onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -1939,8 +1853,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
 interface ToolZoneToolbarProps {
   children: (items: React.ReactNode) => React.ReactNode;
   expandsTo: Direction;
-  onHistoryItemClick: (item: HistoryItem) => void;
-  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onPanelBack: (toolId: string) => void;
   onPanelOutsideClick: (toolId: string) => void;
@@ -1993,24 +1905,11 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
         />
       ) : undefined;
 
-      const history = isToolGroup(tool) &&
-        !tool.isPanelOpen &&
-        tool.history.length > 0 ? (
-          <ToolbarItemHistoryTray
-            key={tool.id}
-            onHistoryItemClick={this.props.onHistoryItemClick}
-            onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
-            tool={tool}
-          />
-        ) : undefined;
-
       const item = (
         <ToolbarItem
-          history={history}
           itemRef={this._getItemRef(tool.id)}
           key={tool.id}
           onClick={this.props.onToolClick}
-          onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
           panel={panel}
           tool={tool}
         />
@@ -2522,7 +2421,6 @@ const hiddenZoneTools: HiddenZoneTools = {
           },
         },
         direction: Direction.Right,
-        history: [],
       },
     },
   },
@@ -2548,7 +2446,6 @@ const hiddenZoneTools: HiddenZoneTools = {
           },
         },
         direction: Direction.Left,
-        history: [],
       },
       chat: {
         id: "chat",
@@ -2584,7 +2481,6 @@ const zoneTools: ZoneTools = {
           },
         },
         direction: Direction.Right,
-        history: [],
       },
     },
   },
@@ -2595,7 +2491,6 @@ const zoneTools: ZoneTools = {
       d2: {
         backTrays: [],
         direction: Direction.Bottom,
-        history: [],
         id: "d2",
         trayId: "3d",
         trays: {
@@ -2617,7 +2512,6 @@ const zoneTools: ZoneTools = {
       overflow: {
         backTrays: [],
         direction: Direction.Bottom,
-        history: [],
         id: "overflow",
         isOverflow: true,
         trayId: "root",
@@ -2660,7 +2554,6 @@ const zoneTools: ZoneTools = {
           },
         },
         direction: Direction.Left,
-        history: [],
       },
       document: {
         id: "document",
@@ -2684,8 +2577,6 @@ interface ZonesExampleProps {
   onAppButtonClick: () => void;
   onCloseBottomMostPanel: () => void;
   onHideMessage: () => void;
-  onHistoryItemClick: (item: HistoryItem) => void;
-  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onOpenWidgetChange: (openWidget: FooterWidget) => void;
   onResize: () => void;
@@ -2869,8 +2760,6 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         isInFooterMode={this.props.zones.isInFooterMode}
         key={zoneId}
         onAppButtonClick={this.props.onAppButtonClick}
-        onHistoryItemClick={this.props.onHistoryItemClick}
-        onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
         onOpenPanelGroup={this.props.onOpenPanelGroup}
         onPanelBack={this.props.onPanelBack}
         onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -2945,8 +2834,6 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         horizontalTools={this.props.tools[zoneId].horizontal}
         isInFooterMode={this.props.zones.isInFooterMode}
         key={zoneId}
-        onHistoryItemClick={this.props.onHistoryItemClick}
-        onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
         onOpenPanelGroup={this.props.onOpenPanelGroup}
         onPanelBack={this.props.onPanelBack}
         onPanelOutsideClick={this.props.onPanelOutsideClick}
@@ -3193,8 +3080,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           onAppButtonClick={this._handleAppButtonClick}
           onCloseBottomMostPanel={this._handleToggleBottomMostPanel}
           onHideMessage={this._handleHideMessage}
-          onHistoryItemClick={this._handleHistoryItemClick}
-          onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
           onOpenPanelGroup={this._handleExpandPanelGroup}
           onOpenWidgetChange={this._handleOpenWidgetChange}
           onStagePanelInitialize={this._handleStagePanelInitialize}
@@ -3556,34 +3441,11 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
     });
   }
 
-  private _handleIsToolHistoryExtendedChange = (toolId: string, isExtended: boolean) => {
-    this.setState((prevState) => {
-      const location = this.getToolLocation(toolId, prevState.tools);
-      const prevDirections = prevState.tools[location.zoneKey];
-      const prevTools = prevDirections[location.directionKey];
-      return {
-        tools: {
-          ...prevState.tools,
-          [location.zoneKey]: {
-            ...prevDirections,
-            [location.directionKey]: {
-              ...prevTools,
-              [toolId]: {
-                ...prevTools[toolId],
-                isExtended,
-              },
-            },
-          },
-        },
-      };
-    });
-  }
-
   private _handlePanelOutsideClick = (toolId: string) => {
     this.setState((prevState) => ({ tools: this.closePanel(toolId, prevState.tools) }));
   }
 
-  private _handlePanelToolClick = ({ toolId, trayId, columnId, itemId }: ToolbarItemGroupToolClickArgs) => {
+  private _handlePanelToolClick = ({ toolId }: ToolbarItemGroupToolClickArgs) => {
     this.setState((prevState) => {
       const location = this.getToolLocation(toolId, prevState.tools);
       const prevDirections = prevState.tools[location.zoneKey];
@@ -3592,8 +3454,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
       if (!isToolGroup(tool))
         throw new TypeError();
 
-      const key = columnId + "-" + itemId;
-      const item: HistoryItem = { toolId, trayId, columnId, itemId };
       return {
         tools: {
           ...prevState.tools,
@@ -3603,9 +3463,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
               ...prevTools,
               [toolId]: {
                 ...prevTools[toolId],
-                isExtended: false,
                 isPanelOpen: false,
-                history: DefaultHistoryManager.addItem(key, item, tool.history),
               },
             },
           },
@@ -3667,34 +3525,6 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
                 ...prevState.tools[location.zoneKey][location.directionKey][toolId],
                 trayId,
                 backTrays,
-              },
-            },
-          },
-        },
-      };
-    });
-  }
-
-  private _handleHistoryItemClick = (item: HistoryItem) => {
-    this.setState((prevState) => {
-      const location = this.getToolLocation(item.toolId, prevState.tools);
-      const prevDirections = prevState.tools[location.zoneKey];
-      const prevTools = prevDirections[location.directionKey];
-      const tool = prevTools[item.toolId];
-      if (!isToolGroup(tool))
-        throw new TypeError();
-
-      return {
-        tools: {
-          ...prevState.tools,
-          [location.zoneKey]: {
-            ...prevDirections,
-            [location.directionKey]: {
-              ...prevTools,
-              [item.toolId]: {
-                ...prevTools[item.toolId],
-                isExtended: false,
-                history: DefaultHistoryManager.addItem(item.columnId + "-" + item.itemId, item, tool.history),
               },
             },
           },

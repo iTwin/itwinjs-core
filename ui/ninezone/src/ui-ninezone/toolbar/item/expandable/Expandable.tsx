@@ -15,15 +15,19 @@ import "./Expandable.scss";
  * @beta
  */
 export interface ExpandableItemProps extends CommonProps {
-  /** History of the toolbar. See [[]] */
+  /** History of the toolbar.
+   * @deprecated
+   */
   history?: React.ReactNode;
   /** Describes if item is active. */
   isActive?: boolean;
   /** Describes if item is disabled. */
   isDisabled?: boolean;
-  /** Function called when history tray should be extended or shrank. */
+  /** Function called when history tray should be extended or shrank.
+   * @deprecated
+   */
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
-  /** Panel of the toolbar. See [[]] */
+  /** Panel of the toolbar. */
   panel?: React.ReactNode;
 }
 
@@ -45,7 +49,7 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
     ), this.panel);
     const history = ReactDOM.createPortal((
       <div className="nz-history">
-        {this.props.history}
+        {this.props.history /* tslint:disable-line: deprecation */}
       </div>
     ), this.history);
     return (
@@ -64,11 +68,11 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
   }
 
   private _handleMouseEnter = () => {
-    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true); // tslint:disable-line: deprecation
   }
 
   private _handleMouseLeave = () => {
-    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false); // tslint:disable-line: deprecation
   }
 }
 

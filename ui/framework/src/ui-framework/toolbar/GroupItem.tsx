@@ -11,8 +11,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
-  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
-  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
+  Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
+  NestedGroup as NestedToolGroupComponent, Direction,
 } from "@bentley/ui-ninezone";
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
@@ -151,12 +151,6 @@ export class GroupItemDef extends ActionButtonItemDef {
 // GroupItem component, props & state
 // -----------------------------------------------------------------------------
 
-interface HistoryItem {
-  trayKey: string;
-  columnIndex: number;
-  itemKey: string;
-}
-
 interface ToolGroupItem {
   iconSpec?: IconSpec;
   label: string;
@@ -187,8 +181,6 @@ interface GroupItemState extends BaseItemState {
   trayId: string;
   backTrays: ReadonlyArray<string>;
   trays: ToolGroupTrayMap;
-  history: History<HistoryItem>;
-  isExtended: boolean;
 }
 
 /** Group Item React component.
@@ -277,8 +269,6 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
     const state = {
       groupItemDef,
-      history: [],
-      isExtended: false,
       isPressed: groupItemDef.isPressed,
       isEnabled: groupItemDef.isEnabled,
       isVisible: groupItemDef.isVisible,
@@ -394,9 +384,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         {...props}
         className={classNames}
         key={this.state.groupItemDef.id}
-        onIsHistoryExtendedChange={(isExtended: boolean) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
-        history={this.getHistoryTray()}
       >
         <div ref={this._ref}>
           <Item
@@ -417,7 +405,6 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   private _toggleGroupButton = () => {
     this.setState((prevState) => ({
       ...prevState,
-      isExtended: false,
       isPressed: !prevState.isPressed,
     }));
   }
@@ -433,32 +420,19 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
     this.setState((prevState) => ({
       ...prevState,
-      isExtended: false,
       isPressed: false,
       trayId,
       backTrays: [],
     }));
   }
 
-  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
-    // If any popups are open, don't show history
-    if (Panel.isPanelOpen)
-      return;
-
-    this.setState({ isExtended });
-  }
-
-  private handleToolGroupItemClicked(trayKey: string, columnIndex: number, itemKey: string) {
+  private handleToolGroupItemClicked(trayKey: string, itemKey: string) {
     this.setState(
       (prevState) => {
-        const key = columnIndex + "-" + itemKey;
-        const item = { trayKey, columnIndex, itemKey };
         const trayId = this.resetTrayId();
         return {
           ...prevState,
-          isExpanded: false,
           isPressed: false,
-          history: DefaultHistoryManager.addItem(key, item, prevState.history),
           trayId,
           backTrays: [],
         };
@@ -470,76 +444,6 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
-    );
-  }
-
-  private _handleOnHistoryItemClick = (item: HistoryItem) => {
-    this.setState(
-      (prevState) => {
-        return {
-          ...prevState,
-          isExpanded: false,
-          history: DefaultHistoryManager.addItem(item.columnIndex + "-" + item.itemKey, item, prevState.history),
-        };
-      },
-      () => {
-        const tray = this.getTray(item.trayKey);
-        const childItem = tray.groupItemDef.getItemById(item.itemKey);
-        // istanbul ignore else
-        if (childItem && childItem instanceof ActionButtonItemDef)
-          childItem.execute();
-      },
-    );
-  }
-
-  private getHistoryTray(): React.ReactNode {
-    if (this.state.isPressed)
-      return undefined;
-    if (this.state.history.length <= 0)
-      return undefined;
-
-    return (
-      <HistoryTray
-        direction={this.state.groupItemDef.direction}
-        isExtended={this.state.isExtended}
-        items={
-          this.state.history.map((entry: HistoryEntry<HistoryItem>) => {
-            const tray = this.state.trays.get(entry.item.trayKey)!;
-            const column = tray.columns.get(entry.item.columnIndex)!;
-            const item = column.items.get(entry.item.itemKey)!;
-            const icon = <Icon iconSpec={item.iconSpec} />;
-
-            let isVisible = true;
-            let isActive = false;
-            let isEnabled = true;
-
-            // istanbul ignore else
-            if (item instanceof ItemDefBase) {
-              isVisible = item.isVisible;
-              isActive = item.isActive;
-              isEnabled = item.isEnabled;
-              if (item.stateFunc) {
-                const newState = item.stateFunc({ isVisible, isActive, isEnabled });
-                isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
-                isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
-                isActive = undefined !== newState.isActive ? newState.isActive : isActive;
-              }
-            }
-
-            return (
-              isVisible && <HistoryIcon
-                isDisabled={!isEnabled}
-                isActive={isActive}
-                key={entry.key}
-                onClick={() => this._handleOnHistoryItemClick(entry.item)}
-                title={item.label}
-              >
-                {icon}
-              </HistoryIcon>
-            );
-          })
-        }
-      />
     );
   }
 
@@ -602,7 +506,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 key={itemKey}
                 ref={itemKey}
                 label={item.label}
-                onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
+                onClick={() => this.handleToolGroupItemClicked(this.state.trayId, itemKey)}
                 icon={icon}
                 badge={badge}
               />

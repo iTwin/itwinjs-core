@@ -11,6 +11,7 @@ import "./Item.scss";
 
 /** Properties of [[HistoryItem]] component.
  * @alpha
+ * @deprecated History tray removed from design standard.
  */
 export interface HistoryItemProps extends CommonProps {
   /** Item content. */
@@ -28,8 +29,9 @@ export interface HistoryItemProps extends CommonProps {
 /** Basic history item used in [[HistoryTray]] component.
  * @note See [[Icon]] for item with icon.
  * @alpha
+ * @deprecated History tray removed from design standard.
  */
-export class HistoryItem extends React.PureComponent<HistoryItemProps> {
+export class HistoryItem extends React.PureComponent<HistoryItemProps> { // tslint:disable-line: deprecation
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-history-item",

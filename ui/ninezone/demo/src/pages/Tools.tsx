@@ -3,8 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { HistoryTray } from "@src/toolbar/item/expandable/history/Tray";
-import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
 import { Panel } from "@src/toolbar/item/expandable/group/Panel";
 import { Group } from "@src/toolbar/item/expandable/group/Group";
 import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
@@ -60,14 +58,14 @@ export default class Tools extends React.PureComponent<{}, State> {
         <div style={cols2}>
           <Toolbar
             expandsTo={Direction.Left}
-            items={this.getItems1(Direction.Left)}
+            items={this.getItems1()}
           />
           <Toolbar
-            items={this.getItems1(Direction.Bottom)}
+            items={this.getItems1()}
           />
           <Toolbar
             expandsTo={Direction.Right}
-            items={this.getItems1(Direction.Right)}
+            items={this.getItems1()}
           />
         </div>
         <h1>Overflow</h1>
@@ -160,29 +158,7 @@ export default class Tools extends React.PureComponent<{}, State> {
     this.setState({ expandableButton });
   }
 
-  private getItems1(direction: Direction) {
-    const historyItem = (
-      <HistoryIcon>
-        <i className="icon icon-placeholder" />
-      </HistoryIcon>
-    );
-    const historyItems = (
-      <>
-        {historyItem}
-        <HistoryIcon
-          isActive
-        >
-          <i className="icon icon-placeholder" />
-        </HistoryIcon>
-        <HistoryIcon
-          isActive
-          isDisabled
-        >
-          <i className="icon icon-placeholder" />
-        </HistoryIcon>
-      </>
-    );
-
+  private getItems1() {
     return [
       <ExpandableItem
         key={0}
@@ -194,12 +170,6 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
-        history={
-          <HistoryTray
-            direction={direction}
-            items={historyItem}
-          />
-        }
         key={1}
         isActive
       >
@@ -212,13 +182,6 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
-        history={
-          !this.state.isPanelVisible &&
-          <HistoryTray
-            direction={direction}
-            items={historyItems}
-          />
-        }
         key={2}
         isDisabled
         panel={
@@ -236,13 +199,6 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
-        history={
-          <HistoryTray
-            direction={direction}
-            isExtended
-            items={historyItems}
-          />
-        }
         key={3}
         isDisabled
         isActive

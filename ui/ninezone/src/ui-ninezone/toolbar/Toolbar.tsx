@@ -88,7 +88,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     for (const ref of this._refs) {
       if (!ref.current)
         continue;
-      histories.appendChild(ref.current.history);
+      histories.appendChild(ref.current.history); // tslint:disable-line: deprecation
     }
   }
 
@@ -231,6 +231,7 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
  */
 export interface ToolbarItem {
   readonly panel: HTMLElement;
+  /** @deprecated */
   readonly history: HTMLElement;
 }
 
