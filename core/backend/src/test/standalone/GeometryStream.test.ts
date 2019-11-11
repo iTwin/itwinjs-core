@@ -930,6 +930,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
 
     const roundTrip = () => {
+      const iter = new GeometryStreamIterator(builder.geometryStream);
+      expect((iter.flags === GeometryStreamFlags.ViewIndependent)).to.equal(builder.isViewIndependent);
+
       const partProps: GeometryPartProps = {
         classFullName: GeometryPart.classFullName,
         iModel: imodel,
