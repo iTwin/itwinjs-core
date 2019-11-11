@@ -7,7 +7,7 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 
-import { LoadingSpinner, FillCentered, DialogAlignment } from "@bentley/ui-core";
+import { LoadingSpinner, FillCentered } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
 import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
 
@@ -73,6 +73,8 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     /* Demo values */
     const width = 400;
     const height = 300;
+    const x = window.innerWidth - width - 50;
+    const y = window.innerHeight - height - 50;
 
     return (
       <ModelessDialog
@@ -82,7 +84,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
         resizable={true}
         movable={true}
         width={width} height={height}
-        alignment={DialogAlignment.BottomRight}
+        x={x} y={y}
         minWidth={200} minHeight={100}
         onClose={() => this._handleClose()}
         onEscape={() => this._handleClose()}

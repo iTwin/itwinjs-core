@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Fixed Dialog component position, size and moving",
+      "comment": "Fixed Dialog position after moving or resizing. Fixed sizing on Firefox for different alignments.",
       "type": "none"
     }
   ],

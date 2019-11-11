@@ -23,70 +23,69 @@
     display: block;
   }
 
-  &.core-dialog-modeless {
-    background: transparent;
-    pointer-events: none;
-  }
-
-  .core-dialog-alignment {
-    @include uicore-full-size;
-    display: flex;
-
-    &.core-dialog-top-left {
-      justify-content: flex-start;
-      align-items: flex-start;
-    }
-
-    &.core-dialog-top {
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    &.core-dialog-top-right {
-      justify-content: flex-end;
-      align-items: flex-start;
-    }
-
-    &.core-dialog-left {
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    &.core-dialog-center {
-      justify-content: center;
-      align-items: center;
-    }
-
-    &.core-dialog-right {
-      justify-content: flex-end;
-      align-items: center;
-    }
-
-    &.core-dialog-bottom-left {
-      justify-content: flex-start;
-      align-items: flex-end;
-    }
-
-    &.core-dialog-bottom {
-      justify-content: center;
-      align-items: flex-end;
-    }
-
-    &.core-dialog-bottom-right {
-      justify-content: flex-end;
-      align-items: flex-end;
-    }
+  &.core-dialog-hidden {
+    width: 0;
+    height: 0;
   }
 
   .core-dialog-container {
     position: fixed;
+
+    &.core-dialog-top-left {
+      top: 0;
+      left: 0;
+    }
+
+    &.core-dialog-top {
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+
+    &.core-dialog-top-right {
+      top: 0;
+      right: 0;
+    }
+
+    &.core-dialog-left {
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &.core-dialog-center {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+    }
+
+    &.core-dialog-right {
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &.core-dialog-bottom-left {
+      bottom: 0;
+      left: 0;
+    }
+
+    &.core-dialog-bottom {
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    &.core-dialog-bottom-right {
+      bottom: 0;
+      right: 0;
+    }
 
     margin: auto;
     width: 60%;
     display: flex;
     flex-direction: column;
     height: fit-content;
-    pointer-events: auto;
 
     .core-dialog-area {
       display: flex;
