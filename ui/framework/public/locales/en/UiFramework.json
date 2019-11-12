@@ -141,6 +141,17 @@
     "backToPreviousFrontstage": "Back to previous Frontstage"
   },
   "tools": {
+    "clearSelection": "Clear Selection",
+    "hideSelected": "Hide Elements",
+    "hide": "Hide Tools",
+    "hideCategories": "Hide Categories",
+    "hideModels": "Hide Models",
+    "isolate": "Isolate Tools",
+    "isolateSelected": "Isolate Elements",
+    "isolateCategories": "Isolate Categories",
+    "isolateModels": "Isolate Models",
+    "emphasizeSelected": "Emphasize Selected",
+    "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
     "measureTools": "Measure Tools",

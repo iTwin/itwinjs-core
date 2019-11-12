@@ -63,7 +63,7 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "1.8.0-dev.12",
-    "@bentley/icons-generic-webfont": "^0.0.31",
+    "@bentley/icons-generic-webfont": "^0.0.43",
     "@bentley/ui-core": "1.8.0-dev.12",
     "@bentley/webpack-tools": "1.8.0-dev.12",
     "@types/chai": "^4.1.4",

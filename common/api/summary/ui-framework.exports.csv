@@ -59,6 +59,8 @@ alpha;CategoryTree
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
+beta;ClearEmphasisStatusField 
+beta;ClearEmphasisStatusFieldProps 
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
 public;CombinedReducerState
@@ -194,6 +196,7 @@ internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defPr
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
+beta;getSelectionContextSyncEventIds(): string[]
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React.FunctionComponent
 public;GroupButtonProps 
@@ -331,6 +334,8 @@ alpha;RealityDataPickerControl
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
+beta;ReviewToolWidget 
+beta;ReviewToolWidgetProps
 internal;RotationData
 alpha;SafeAreaContext: React.Context
 beta;SavedView
@@ -339,6 +344,9 @@ beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField 
+beta;selectionContextStateFunc(state: Readonly
+beta;SelectionContextToolDefinitions
+alpha;SelectionContextUtilities
 public;SelectionInfoField: any
 public;SelectionScopeField: any
 public;SeparatorBackstageItem 

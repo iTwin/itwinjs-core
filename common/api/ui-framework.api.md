@@ -16,6 +16,7 @@ import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BadgeType } from '@bentley/ui-abstract';
+import { BaseItemState as BaseItemState_2 } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -684,6 +685,23 @@ export interface ChangeSetInfo {
     smallThumbnail?: string;
     // (undocumented)
     userCreated?: string;
+}
+
+// @beta
+export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatusFieldProps, any> {
+    constructor(props: ClearEmphasisStatusFieldProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @beta
+export interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
+    // (undocumented)
+    hideWhenUnused?: boolean;
 }
 
 // @beta
@@ -2245,6 +2263,9 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
+// @beta
+export function getSelectionContextSyncEventIds(): string[];
+
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation) => StagePanelType;
 
@@ -3500,6 +3521,21 @@ export type ReducerActions<R> = R extends Reducer<any, infer X> ? (X extends Act
 // @public
 export type ReducerMapActions<R> = ReducerActions<R[keyof R]>;
 
+// @beta
+export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any> {
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @beta
+export interface ReviewToolWidgetProps {
+    prefixHorizontalItems?: ItemList;
+    prefixVerticalItems?: ItemList;
+    showCategoryAndModelsContextTools?: boolean;
+    suffixHorizontalItems?: ItemList;
+    suffixVerticalItems?: ItemList;
+}
+
 // @internal (undocumented)
 export interface RotationData {
     // (undocumented)
@@ -3574,6 +3610,52 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
+    }
+
+// @beta
+export function selectionContextStateFunc(state: Readonly<BaseItemState_2>): BaseItemState_2;
+
+// @beta
+export class SelectionContextToolDefinitions {
+    // (undocumented)
+    static readonly emphasizeElementsItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly hideCategoriesInSelectionItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly hideElementsItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly hideModelsInSelectionItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly hideSectionToolGroup: GroupItemDef;
+    // (undocumented)
+    static readonly isolateCategoriesInSelectionItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly isolateElementsItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly isolateModelsInSelectionItemDef: CommandItemDef;
+    // (undocumented)
+    static readonly isolateSelectionToolGroup: GroupItemDef;
+}
+
+// @alpha
+export class SelectionContextUtilities {
+    static areFeatureOverridesActive(vp: Viewport): boolean;
+    static clearEmphasize(vp: Viewport): void;
+    // (undocumented)
+    static emphasizeElementsChanged: BeEvent<() => void>;
+    static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
+    static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static hideCommand(vp: Viewport): Promise<void>;
+    static hideSelected(vp: Viewport): void;
+    static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static hideSelectedElementsModel(vp: Viewport): Promise<void>;
+    static initializeSubjectModelCache(iModelConnection: IModelConnection): void;
+    static isolateCommand(vp: Viewport): Promise<void>;
+    static isolateSelected(vp: Viewport): void;
+    static isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
+    static isolateSelectedModel(vp: Viewport): Promise<void>;
+    static isolateSelectedSubject(vp: Viewport): Promise<void>;
     }
 
 // @public

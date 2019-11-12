@@ -27,9 +27,11 @@ interface IndicatorProps extends CommonProps {
   opened: boolean;
   /** Describes whether the footer is in footer or widget mode. */
   isInFooterMode?: boolean;
+  /** Tooltip text */
+  toolTip?: string;
 }
 
-/** General-purpose [[Footer]] indicator.
+/** General-purpose [[Footer]] indicator. Shows an icon and supports an optional popup dialog.
  * @beta
  */
 export class Indicator extends React.Component<IndicatorProps, any> {
@@ -63,6 +65,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     return (
       <div
         className={className}
+        title={this.props.toolTip ? this.props.toolTip : this.props.label}
         style={this.props.style}>
         <div className="nz-balloon-container">
           <div>

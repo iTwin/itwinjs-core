@@ -47,6 +47,7 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
   public componentDidMount() {
     ViewClipDecorationProvider.create().onActiveClipChanged.addListener(this._handleClipChanged);
 
+    // istanbul ignore next
     if (IModelApp.viewManager.selectedView) {
       const toggleDisabled = undefined === IModelApp.viewManager.selectedView.view.getViewClip();
       this.setState({
@@ -61,6 +62,7 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
   }
 
   /** Handle clip creation to enable/disable the toggle */
+  // istanbul ignore next
   private _handleClipChanged = (_viewport: Viewport, eventType: ClipEventType, _provider: ViewClipDecorationProvider) => {
     if (IModelApp.viewManager.selectedView) {
       const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
@@ -74,6 +76,7 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
 
   /** Handle opening/closing the dialog */
   private _handleIndicatorClick = () => {
+    // istanbul ignore next
     if (IModelApp.viewManager.selectedView) {
       const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
       const toggleDisabled = undefined === IModelApp.viewManager.selectedView.view.getViewClip();
@@ -92,6 +95,7 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
   }
 
   /** Clears sections */
+  // istanbul ignore next
   private _handleClear = () => {
     IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
 
@@ -103,6 +107,7 @@ export class SectionsStatusField extends React.Component<StatusFieldProps, Secti
   }
 
   /** Shows/hides the section manipulators */
+  // istanbul ignore next
   private _handleShowHideManipulators = (_checked: boolean) => {
     if (IModelApp.viewManager.selectedView) {
       ViewClipDecorationProvider.create().toggleDecoration(IModelApp.viewManager.selectedView);

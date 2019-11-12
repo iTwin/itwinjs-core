@@ -114,6 +114,7 @@ export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";
 export * from "./ui-framework/widgets/DefaultNavigationWidget";
+export * from "./ui-framework/widgets/ReviewToolWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -196,6 +197,10 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
+
+export * from "./ui-framework/selection/SelectionContextItemDef";
+export * from "./ui-framework/selection/SelectionContextUtilities";
+export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
