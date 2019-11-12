@@ -158,7 +158,7 @@ export namespace IModelTransformerUtils {
       commonString: "Common",
       commonDouble: 7.3,
       extraString: "Extra",
-    };
+    } as GeometricElement3dProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     // Insert ElementAspects
@@ -173,7 +173,7 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -185,7 +185,7 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -197,17 +197,17 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceUniqueAspectToExclude",
       element: new ElementOwnsUniqueAspect(physicalObjectId1),
       description: "SourceUniqueAspect1",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspectToExclude",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
       description: "SourceMultiAspect1",
-    });
+    } as ElementAspectProps);
     // Insert DrawingGraphics
     const drawingGraphicProps: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
@@ -258,7 +258,7 @@ export namespace IModelTransformerUtils {
       sourceDouble: 1.1,
       sourceLong: spatialCategoryId,
       sourceGuid: Guid.createValue(),
-    });
+    } as any);
     const relationshipId2: Id64String = sourceDb.relationships.insertInstance(relationship2);
     assert.isTrue(Id64.isValidId64(relationshipId2));
   }
@@ -283,7 +283,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: RelationshipProps = sourceDb.relationships.getInstanceProps(
+    const relWithProps: any = sourceDb.relationships.getInstanceProps(
       "TestTransformerSource:SourceRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -473,7 +473,7 @@ export namespace IModelTransformerUtils {
     // DrawingGraphicRepresentsElement
     assert.exists(targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId, targetId: physicalObjectId1 }));
     // TargetRelWithProps
-    const relWithProps: RelationshipProps = targetDb.relationships.getInstanceProps(
+    const relWithProps: any = targetDb.relationships.getInstanceProps(
       "TestTransformerTarget:TargetRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -501,7 +501,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: RelationshipProps = targetDb.relationships.getInstanceProps(
+    const relWithProps: any = targetDb.relationships.getInstanceProps(
       "TestTransformerTarget:TargetRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -765,7 +765,7 @@ export class IModelTransformer3d extends IModelTransformer {
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
       if (placement.isValid) {
         placement.multiplyTransform(this._transform3d);
-        targetElementProps.placement = placement;
+        (targetElementProps as GeometricElement3dProps).placement = placement;
       }
     }
     return targetElementProps;
@@ -923,7 +923,7 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
   protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+    const targetElementProps: any = super.transformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
     }
@@ -936,7 +936,7 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
   protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
-    const targetElementAspectProps: ElementAspectProps = super.transformElementAspect(sourceElementAspect, targetElementId);
+    const targetElementAspectProps: any = super.transformElementAspect(sourceElementAspect, targetElementId);
     if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
       targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
@@ -963,7 +963,7 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
   protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
-    const targetRelationshipProps: RelationshipProps = super.transformRelationship(sourceRelationship);
+    const targetRelationshipProps: any = super.transformRelationship(sourceRelationship);
     if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
       targetRelationshipProps.targetString = targetRelationshipProps.sourceString;

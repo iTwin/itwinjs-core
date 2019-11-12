@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps } from "@bentley/imodeljs-common";
+import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -80,7 +80,7 @@ describe("RobotWorldRpc", () => {
       const barrier2Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0).toJSON(), Angle.createDegrees(90).toJSON(), 5);
 
       await iModel.saveChanges();
-      const barrier1 = (await iModel.elements.getProps(barrier1Id))[0];
+      const barrier1 = (await iModel.elements.getProps(barrier1Id))[0] as GeometricElement3dProps;
       /* const barrier2 = */
       await iModel.elements.getProps(barrier2Id);
       assert.equal(await roRead.countRobots(iToken), 1);
@@ -99,10 +99,10 @@ describe("RobotWorldRpc", () => {
       //  |                   V
       //  +-- -- -- -- -- -- --
       if (true) {
-        await roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
+        await roWrite.moveRobot(iToken, robot1Id, barrier1.placement!.origin);
         await iModel.saveChanges();
-        const r1 = (await iModel.elements.getProps(robot1Id))[0];
-        assert.deepEqual(r1.placement.origin, barrier1.placement.origin);
+        const r1 = (await iModel.elements.getProps(robot1Id))[0] as GeometricElement3dProps;
+        assert.deepEqual(r1.placement!.origin, barrier1.placement!.origin);
         const barriersHit = await roRead.queryObstaclesHitByRobot(iToken, robot1Id);
         assert.equal(barriersHit.length, 1, "expect a collision");
         assert.equal(barriersHit[0].toString(), barrier1.id);

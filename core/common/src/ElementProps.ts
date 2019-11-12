@@ -132,6 +132,8 @@ export interface SectionLocationProps extends GeometricElement3dProps {
   modelSelectorId?: Id64String;
   /** The element Id of the [CategorySelector]($backend) for this SectionLocation */
   categorySelectorId?: Id64String;
+  /** Optional Id of the associated [[ViewAttachmentProps]]. */
+  viewAttachment?: Id64String;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)
@@ -257,7 +259,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
 /** Properties of a [LineStyle]($backend)
  * @beta
  */
-export interface LineStyleProps extends ElementProps {
+export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
   data: string;
 }
@@ -272,7 +274,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 /** Parameters of a [Category]($backend)
  * @public
  */
-export interface CategoryProps extends ElementProps {
+export interface CategoryProps extends DefinitionElementProps {
   rank?: Rank;
   description?: string;
 }
@@ -280,7 +282,7 @@ export interface CategoryProps extends ElementProps {
 /** Parameters of a [SubCategory]($backend)
  * @public
  */
-export interface SubCategoryProps extends ElementProps {
+export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
   description?: string;
 }

@@ -129,9 +129,12 @@ describe("ElementAspectPerfomance", () => {
     const imodeldb = imodeldbhub.createSnapshot(snapshotPath);
     assert.exists(imodeldb);
 
+    interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string; }
+    class TestAspect extends ElementAspect implements ElementAspectProps { public testUniqueAspectProperty: string = ""; }
+
     const count1 = 10000;
     let eleId: Id64String;
-    let aspectProps: ElementAspectProps;
+    let aspectProps: TestAspectProps;
     let totalTimeInsert = 0;
     let totalTimeUpdate = 0;
     let totalTimeDelete = 0;
@@ -157,7 +160,7 @@ describe("ElementAspectPerfomance", () => {
       // read element with unique aspect
       const startTime4 = new Date().getTime();
       const returnEle1 = imodeldb.elements.getElement(eleId);
-      const aspects4: ElementAspect[] = imodeldb.elements.getAspects(returnEle1.id, aspectProps.classFullName);
+      const aspects4 = imodeldb.elements.getAspects(returnEle1.id, aspectProps.classFullName) as TestAspect[];
       const endTime4 = new Date().getTime();
       const elapsedTime4 = (endTime4 - startTime4) / 1000.0;
       assert.exists(returnEle1);
@@ -169,14 +172,14 @@ describe("ElementAspectPerfomance", () => {
       const returnEle2 = imodeldb.elements.getElement(eleId);
       returnEle1.userLabel = returnEle1.userLabel + "updated";
       imodeldb.elements.updateElement(returnEle1);
-      const aspects: ElementAspect[] = imodeldb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
-      (aspects[0] as any).testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
+      const aspects = imodeldb.elements.getAspects(returnEle2.id, aspectProps.classFullName) as TestAspect[];
+      aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
       imodeldb.elements.updateAspect(aspects[0]);
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-      const aspectsUpdated: ElementAspect[] = imodeldb.elements.getAspects(eleId, aspectProps.classFullName);
+      const aspectsUpdated = imodeldb.elements.getAspects(eleId, aspectProps.classFullName) as TestAspect[];
       assert.equal(aspectsUpdated.length, 1);
-      assert.equal((aspectsUpdated[0] as any).testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
+      assert.equal(aspectsUpdated[0].testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
       totalTimeUpdate = totalTimeUpdate + elapsedTime2;
 
       // delete element with unique aspect
@@ -213,7 +216,7 @@ describe("ElementAspectPerfomance", () => {
       const startTime1 = new Date().getTime();
       eleId = imodeldb.elements.insertElement(IModelTestUtils.createPhysicalObject(imodeldb, r.modelId, r.spatialCategoryId));
       assert.exists(eleId);
-      const aspectProps: ElementAspectProps = {
+      const aspectProps = {
         classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
         element: { id: eleId },
         testMultiAspectProperty: "MultiAspectInsertTest1",

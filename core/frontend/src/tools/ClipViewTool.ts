@@ -838,10 +838,12 @@ export class ViewClipByElementTool extends ViewClipTool {
       const range = new Range3d();
       const transform = Transform.createIdentity();
       for (const props of elementProps) {
-        if (undefined === props.placement)
+        const placementProps = (props as any).placement;
+        if (undefined === placementProps)
           continue;
+
         const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-        const placement = hasAngle(props.placement) ? Placement2d.fromJSON(props.placement) : Placement3d.fromJSON(props.placement);
+        const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
         if (!alwaysUseRange && 1 === elementProps.length) {
           range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
           transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...

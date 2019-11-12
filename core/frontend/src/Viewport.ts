@@ -2305,8 +2305,9 @@ export abstract class Viewport implements IDisposable {
       return;
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
-      if (props.placement !== undefined && this.view.viewsModel(props.model))
-        placementProps.push(props.placement);
+      const placement = (props as any).placement;
+      if (placement !== undefined && this.view.viewsModel(props.model))
+        placementProps.push(placement);
     }
     this.zoomToPlacementProps(placementProps, options);
   }

@@ -718,7 +718,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
+  constructor(props: DefinitionElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = true === props.isPrivate; }
   /** @internal */
   public toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;

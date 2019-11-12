@@ -7,12 +7,17 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { createRandomId } from "./Misc";
 
+interface RandomEntityProps extends EntityProps {
+  type: string;
+}
+
 export const createRandomEntityProps = (): EntityProps => {
-  return {
+  const props: RandomEntityProps = {
     classFullName: faker.random.word(),
     id: createRandomId(),
     type: faker.random.word(),
   };
+  return props;
 };
 
 export const createRandomTransientId = () => Id64.fromLocalAndBriefcaseIds(123, 0xffffff);

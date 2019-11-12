@@ -688,7 +688,7 @@ export class IModelTransformer {
         } else if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
           changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
         } else {
-          changed = model.asAny[propertyName] !== modelProps[propertyName];
+          changed = model.asAny[propertyName] !== (modelProps as any)[propertyName];
         }
       }
     }, true);
@@ -1006,7 +1006,7 @@ export class IModelTransformer {
     targetElementAspectProps.element.id = targetElementId;
     sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        targetElementAspectProps[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
+        (targetElementAspectProps as any)[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
       }
     }, true);
     return targetElementAspectProps;
@@ -1047,7 +1047,7 @@ export class IModelTransformer {
   private hasElementAspectChanged(aspect: ElementAspect, aspectProps: ElementAspectProps): boolean {
     let changed: boolean = false;
     aspect.forEachProperty((propertyName: string) => {
-      if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== aspectProps[propertyName])) {
+      if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== (aspectProps as any)[propertyName])) {
         changed = true;
       }
     }, true);

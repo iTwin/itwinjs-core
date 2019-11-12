@@ -92,9 +92,13 @@ export class DisplayStyle2d extends DisplayStyle {
       code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
       isPrivate: false,
-      backgroundColor: new ColorDef(),
-      monochromeColor: ColorDef.white,
-      viewFlags: ViewFlags.createFrom(),
+      jsonProperties: {
+        styles: {
+          backgroundColor: new ColorDef(),
+          monochromeColor: ColorDef.white,
+          viewflags: ViewFlags.createFrom(),
+        },
+      },
     };
     return new DisplayStyle2d(displayStyleProps, iModelDb);
   }

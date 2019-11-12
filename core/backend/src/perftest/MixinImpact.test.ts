@@ -23,7 +23,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   let propCount = 0;
   const reporter = new Reporter();
 
-  function createElemProps(imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -38,7 +38,6 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
     // Create props
     const elementProps: GeometricElementProps = {
       classFullName: className,
-      iModel: imodel,
       model: modId,
       category: catId,
       code: Code.createEmpty(),

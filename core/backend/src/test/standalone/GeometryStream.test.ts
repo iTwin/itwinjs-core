@@ -6,7 +6,7 @@ import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType,
-  GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, Gradient,
+  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, Gradient,
   IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -69,7 +69,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -161,7 +160,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -211,7 +209,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -242,7 +239,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -277,7 +273,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -315,7 +310,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -400,7 +394,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -413,11 +406,11 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     let iShape = 0;
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
@@ -497,7 +490,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -546,7 +538,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -559,11 +550,11 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     let iShape = 0;
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery);
@@ -634,7 +625,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -648,18 +638,18 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    for (const entry of value.geom) {
+    for (const entry of value.geom!) {
       assert.isDefined(entry.textString);
-      const origin = new Point3d(entry.textString.origin);
-      const rotation = new YawPitchRollAngles(entry.textString.rotation);
+      const origin = Point3d.fromJSON(entry.textString!.origin);
+      const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
       assert.isTrue(origin.isAlmostZero);
       assert.isTrue(rotation.isIdentity());
     }
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "textString");
       assert.isDefined(entry.textString);
@@ -667,7 +657,7 @@ describe("GeometryStream", () => {
       assert.isTrue(entry.textString!.rotation.isIdentity());
     }
 
-    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value);
     for (const entry of itWorld) {
       assert.equal(entry.primitive.type, "textString");
       assert.isDefined(entry.textString);
@@ -696,7 +686,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -707,7 +696,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
@@ -744,7 +733,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -757,11 +745,11 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
@@ -790,7 +778,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -803,10 +790,10 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery);
@@ -865,7 +852,6 @@ describe("GeometryStream", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -879,10 +865,10 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true, wantBRepData: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true, wantBRepData: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "brep");
       assert.isDefined(entry.brep);
@@ -923,7 +909,6 @@ describe("Mass Properties", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -960,7 +945,6 @@ describe("Mass Properties", () => {
 
     const elementProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: imodel,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),

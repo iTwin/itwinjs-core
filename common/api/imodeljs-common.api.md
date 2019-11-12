@@ -563,7 +563,7 @@ export class CartographicRange {
     }
 
 // @public
-export interface CategoryProps extends ElementProps {
+export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -1545,10 +1545,11 @@ export interface EntityMetaDataProps {
 
 // @public
 export interface EntityProps {
-    // (undocumented)
-    [propName: string]: any;
     classFullName: string;
     id?: Id64String;
+    jsonProperties?: {
+        [key: string]: any;
+    };
 }
 
 // @public
@@ -2898,7 +2899,7 @@ export namespace LineStyle {
 }
 
 // @beta
-export interface LineStyleProps extends ElementProps {
+export interface LineStyleProps extends DefinitionElementProps {
     // (undocumented)
     data: string;
     // (undocumented)
@@ -4568,6 +4569,7 @@ export interface SectionLocationProps extends GeometricElement3dProps {
     clipGeometry?: any;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
+    viewAttachment?: Id64String;
 }
 
 // @public
@@ -4926,7 +4928,7 @@ export class SubCategoryOverride {
 }
 
 // @public
-export interface SubCategoryProps extends ElementProps {
+export interface SubCategoryProps extends DefinitionElementProps {
     // (undocumented)
     appearance?: SubCategoryAppearance.Props;
     // (undocumented)

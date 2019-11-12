@@ -33,6 +33,7 @@ import {
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
   TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps,
+  SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -326,7 +327,6 @@ describe("iModel", () => {
     for (let i = 0; i < 25; i++) {
       const elementProps: GeometricElementProps = {
         classFullName: "Generic:PhysicalObject",
-        iModel: imodel2,
         model: seedElement.model,
         category: seedElement.category,
         code: Code.createEmpty(),
@@ -793,13 +793,13 @@ describe("iModel", () => {
   });
 
   it("should be able to query for ViewDefinitionProps", () => {
-    let viewDefinitionProps: ViewDefinitionProps[] = imodel2.views.queryViewDefinitionProps(); // query for all ViewDefinitions
+    const viewDefinitionProps: ViewDefinitionProps[] = imodel2.views.queryViewDefinitionProps(); // query for all ViewDefinitions
     assert.isAtLeast(viewDefinitionProps.length, 3);
     assert.isTrue(viewDefinitionProps[0].classFullName.includes("ViewDefinition"));
     assert.isFalse(viewDefinitionProps[1].isPrivate);
-    viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
-    assert.isAtLeast(viewDefinitionProps.length, 3);
-    assert.exists(viewDefinitionProps[2].modelSelectorId);
+    const spatialViewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition") as SpatialViewDefinitionProps[]; // limit query to SpatialViewDefinitions
+    assert.isAtLeast(spatialViewDefinitionProps.length, 3);
+    assert.exists(spatialViewDefinitionProps[2].modelSelectorId);
   });
 
   it("should iterate ViewDefinitions", () => {
@@ -1454,7 +1454,6 @@ describe("iModel", () => {
       // Create a couple of TestPhysicalObjects
       const elementProps: GeometricElementProps = {
         classFullName: "TestBim:TestPhysicalObject",
-        iModel: testImodel,
         model: newModelId,
         category: spatialCategoryId,
         code: Code.createEmpty(),
@@ -1465,9 +1464,9 @@ describe("iModel", () => {
 
       // The second one should point to the first.
       elementProps.id = Id64.invalid;
-      elementProps.relatedElement = { id: id1, relClassName: trelClassName };
+      (elementProps as any).relatedElement = { id: id1, relClassName: trelClassName };
       elementProps.parent = { id: id1, relClassName: trelClassName };
-      elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
+      (elementProps as any).longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
       assert.isTrue(Id64.isValidId64(id2));
@@ -1727,8 +1726,8 @@ describe("iModel", () => {
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
-
-      const element: Element = ifperfimodel.elements.createElement({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: Id64.invalid, code: Code.createEmpty(), category: defaultCategoryId });
+      const elementProps = { classFullName: "DgnPlatformTest:ImodelJsTestElement", model: modelId, id: Id64.invalid, code: Code.createEmpty(), category: defaultCategoryId };
+      const element: Element = ifperfimodel.elements.createElement(elementProps);
 
       element.asAny.integerProperty1 = i;
       element.asAny.integerProperty2 = i;

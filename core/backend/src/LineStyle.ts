@@ -371,7 +371,6 @@ export namespace LineStyleDefinition {
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",
-        iModel: imodel,
         model: scopeModelId,
         code: LineStyle.createCode(imodel, scopeModelId, name),
         data: JSON.stringify(props),

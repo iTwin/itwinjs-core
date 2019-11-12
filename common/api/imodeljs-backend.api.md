@@ -747,7 +747,7 @@ export interface CrashReportingConfigNameValuePair {
 // @public
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
-    constructor(props: ElementProps, iModel: IModelDb);
+    constructor(props: DefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
     isPrivate: boolean;

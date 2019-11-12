@@ -10,6 +10,7 @@ import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
   QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
+  TextureProps,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -1170,7 +1171,7 @@ export abstract class RenderSystem implements IDisposable {
     if (1 !== elemProps.length)
       return undefined;
 
-    const textureProps = elemProps[0];
+    const textureProps = elemProps[0] as TextureProps;
     if (undefined === textureProps.data || "string" !== typeof (textureProps.data) || undefined === textureProps.format || "number" !== typeof (textureProps.format))
       return undefined;
 
