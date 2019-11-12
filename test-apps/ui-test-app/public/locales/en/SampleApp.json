@@ -137,6 +137,7 @@
     "messageDemos": "Message Demos",
     "dialogDemos": "Dialog Demos",
     "viewportDialog": "Viewport Dialog",
+    "spinnerTestDialog": "Spinner Test",
     "openNestedAnimationStage": "Open Stage to Play Animations",
     "reduceWidgetOpacity": "Reduce Widget Opacity",
     "defaultWidgetOpacity": "Default Widget Opacity",

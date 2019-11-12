@@ -2,59 +2,25 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../style/index.scss";
+@import "./mixins";
 
-.core-spinner {
-  animation: rotate 2s linear infinite;
-  z-index: 2;
+$spinner-size-xlarge: 96px;
+$spinner-size-large:  64px;
+$spinner-size-medium: 32px;
+$spinner-size-small:  16px;
 
-  .fill {
-    stroke: $buic-background-control-stroke;
-    animation: dash 1.5s ease-in-out infinite;
-  }
-
-  .shape {
-    stroke: $buic-foreground-primary;
-  }
-
-  @keyframes rotate {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes dash {
-    0% {
-      stroke-dasharray: 1, 150;
-      stroke-dashoffset: 0;
-    }
-    50% {
-      stroke-dasharray: 90, 150;
-      stroke-dashoffset: -35;
-    }
-    100% {
-      stroke-dasharray: 90, 150;
-      stroke-dashoffset: -124;
-    }
-  }
-}
-
-.core-spinner-small {
-  width: 1rem;
-  height: 1rem;
-}
-
-.core-spinner-medium {
-  width: 2rem;
-  height: 2rem;
+.core-spinner-xlarge {
+  @include uicore-spinner($spinner-size-xlarge);
 }
 
 .core-spinner-large {
-  width: 4rem;
-  height: 4rem;
+  @include uicore-spinner($spinner-size-large);
 }
 
-.core-spinner-xlarge {
-  width: 6rem;
-  height: 6rem;
+.core-spinner-medium {
+  @include uicore-spinner($spinner-size-medium);
+}
+
+.core-spinner-small {
+  @include uicore-spinner($spinner-size-small);
 }

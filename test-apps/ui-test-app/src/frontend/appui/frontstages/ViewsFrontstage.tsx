@@ -71,6 +71,8 @@ import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { ViewportDialog } from "../dialogs/ViewportDialog";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 
@@ -86,7 +88,6 @@ import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
-import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
@@ -465,6 +466,12 @@ class AdditionalTools {
     });
   }
 
+  private get _spinnerTestDialogItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+    });
+  }
+
   private _viewportDialogCnt: number = 0;
 
   private openViewportDialog(): void {
@@ -697,7 +704,10 @@ class AdditionalTools {
       labelKey: "SampleApp:buttons.dialogDemos",
       panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      items: [
+        this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._spinnerTestDialogItem,
+        this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem,
+      ],
       badgeType: BadgeType.New,
     }),
     new GroupItemDef({

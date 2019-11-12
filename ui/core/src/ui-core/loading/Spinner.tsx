@@ -5,8 +5,10 @@
 /** @module Loading */
 
 import * as React from "react";
+
 import "./Spinner.scss";
-import classnames from "classnames";
+
+// cspell:ignore xlarge
 
 /** Size for [[Spinner]] component
  * @public
@@ -56,16 +58,8 @@ export class Spinner extends React.PureComponent<SpinnerProps> {
       }
     }
 
-    const svgClassName = classnames(
-      "core-spinner",
-      sizeClass,
-    );
-
     return (
-      <svg className={svgClassName} viewBox="0 0 50 50">
-        <circle className="shape" cx="25" cy="25" r="20" fill="none" strokeWidth="4"></circle>
-        <circle className="fill" cx="25" cy="25" r="20" fill="none" strokeWidth="4"></circle>
-      </svg>
+      <div className={sizeClass} />
     );
   }
 }
