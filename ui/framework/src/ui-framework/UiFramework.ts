@@ -98,9 +98,9 @@ export class UiFramework {
 
     // istanbul ignore next
     if (oidcConfig) {
-      UiFramework.oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = UiFramework.oidcClient.initialize(new ClientRequestContext())
-        .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
+      const oidcClient = new OidcBrowserClient(oidcConfig);
+      const initOidcPromise = oidcClient.initialize(new ClientRequestContext())
+        .then(() => (UiFramework.oidcClient = oidcClient, IModelApp.authorizationClient = UiFramework._oidcClient));
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
