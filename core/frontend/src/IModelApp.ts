@@ -108,7 +108,7 @@ export interface IModelAppOptions {
  * @public
  */
 export class IModelApp {
-  private static _copyrightNotice = '© 2017-2019 <a href="https://www.bentley.com">Bentley Systems, Inc.</a>';
+  private static _copyrightNotice = '© 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
   private static _initialized = false;
   private static _accuDraw: AccuDraw;
   private static _accuSnap: AccuSnap;
