@@ -117,6 +117,7 @@ export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export * from "./ui-components/tree/component/Tree";
 export * from "./ui-components/tree/component/BeInspireTree";
+export * from "./ui-components/tree/component/Node";
 export * from "./ui-components/tree/CellEditingEngine";
 export * from "./ui-components/tree/ImageLoader";
 export * from "./ui-components/tree/hocs/withDragDrop";

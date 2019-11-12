@@ -1978,6 +1978,12 @@ export interface NextObserver<T> {
     next: (value: T) => void;
 }
 
+// @public
+export interface NodeCheckboxProps extends Omit<NodeCheckboxProps_2, "onClick"> {
+    // (undocumented)
+    onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
+}
+
 // @internal
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
@@ -3509,10 +3515,32 @@ export class TreeModelSource {
     onModelChanged: BeUiEvent<TreeModel>;
     }
 
+// @public
+export class TreeNode extends React.Component<TreeNodeProps> {
+    constructor(props: TreeNodeProps);
+    // (undocumented)
+    componentDidUpdate(_prevProps: TreeNodeProps): void;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TreeNodeProps): boolean;
+}
+
 // @alpha
 export interface TreeNodeEvent {
     // (undocumented)
     nodeId: string;
+}
+
+// @public
+export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps>;
+
+// @public
+export interface TreeNodeIconProps extends React.Attributes {
+    // (undocumented)
+    imageLoader: ITreeImageLoader;
+    // (undocumented)
+    node: BeInspireTreeNode<TreeNodeItem>;
 }
 
 // @public
@@ -3558,6 +3586,37 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
     }
+
+// @public
+export interface TreeNodeProps extends CommonProps {
+    // @beta (undocumented)
+    cellEditing?: CellEditingEngine;
+    // (undocumented)
+    checkboxProps?: NodeCheckboxProps;
+    // @beta (undocumented)
+    highlightProps?: HighlightableTreeNodeProps;
+    imageLoader?: ITreeImageLoader;
+    // (undocumented)
+    node: BeInspireTreeNode<TreeNodeItem>;
+    // (undocumented)
+    onClick?: (e: React.MouseEvent) => void;
+    onFinalRenderComplete?: (renderId: string) => void;
+    // (undocumented)
+    onMouseDown?: (e: React.MouseEvent) => void;
+    // (undocumented)
+    onMouseMove?: (e: React.MouseEvent) => void;
+    // (undocumented)
+    onMouseUp?: (e: React.MouseEvent) => void;
+    renderId?: string;
+    // (undocumented)
+    renderOverrides?: {
+        renderCheckbox?: NodeCheckboxRenderer;
+    };
+    // (undocumented)
+    showDescription?: boolean;
+    // (undocumented)
+    valueRendererManager: PropertyValueRendererManager;
+}
 
 // @alpha
 export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNodeRendererProps) => JSX.Element>;

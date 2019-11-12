@@ -183,6 +183,7 @@ alpha;MutableTreeModelNode
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 alpha;NextObserver
+public;NodeCheckboxProps 
 internal;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
 internal;NodesSelectedCallback = OnItemsSelectedCallback
@@ -337,10 +338,14 @@ alpha;TreeModelNodeInput
 alpha;TreeModelNodePlaceholder
 alpha;TreeModelRootNode
 alpha;TreeModelSource
+public;TreeNode 
 alpha;TreeNodeEvent
+public;TreeNodeIcon: React.FunctionComponent
+public;TreeNodeIconProps 
 public;TreeNodeItem
 alpha;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 alpha;TreeNodeLoader
+public;TreeNodeProps 
 alpha;TreeNodeRenderer: React.MemoExoticComponent
 alpha;TreeNodeRendererProps 
 public;TreeProps 
