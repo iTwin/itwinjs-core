@@ -137,8 +137,10 @@ export class UiFramework {
 
     if (oidcClient) {
       oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
-        .then((accessToken: AccessToken | undefined) => {
+        .then((accessToken: AccessToken) => {
           UiFramework.setAccessTokenInternal(accessToken);
+        }).catch(() => {
+          UiFramework.setAccessTokenInternal(undefined);
         });
       UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
     }
