@@ -22,6 +22,7 @@
   > .nz-grip {
     background-color: $buic-background-5;
     flex: 0 0 auto;
+    touch-action: none;
   }
 
   &.nz-vertical {

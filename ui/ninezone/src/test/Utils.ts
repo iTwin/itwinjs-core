@@ -14,6 +14,14 @@ export const createRect = (left: number, top: number, right: number, bottom: num
   height: bottom - top,
 });
 
+// tslint:disable: completed-docs
+export const createPointerEvent = (props?: Partial<PointerEvent>): PointerEvent => ({
+  clientX: 0,
+  clientY: 0,
+  preventDefault: () => { },
+  ...props,
+} as PointerEvent);
+
 export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 export type SinonStub<T extends (...args: any) => any> = sinon.SinonStub<Parameters<T>, ReturnType<T>>;
 export type CreateRefStub<T = unknown> = sinon.SinonStub<Parameters<typeof React.createRef>, React.RefObject<T>>;

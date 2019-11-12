@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { PointProps } from "@bentley/ui-core";
-import { createRect } from "../../../Utils";
+import { createRect, createPointerEvent } from "../../../Utils";
 import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
 import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
@@ -105,7 +105,7 @@ describe("<Tab />", () => {
     result.bottom.should.eq(0);
   });
 
-  it("should prevent default on mouse down", () => {
+  it("should prevent default on pointer down", () => {
     const sut = mount(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
       mode={TabMode.Open}
@@ -113,10 +113,10 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    const spy = sinon.spy(mouseDown, "preventDefault");
+    const pointerDown = createPointerEvent();
+    const spy = sinon.spy(pointerDown, "preventDefault");
 
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     spy.calledOnceWithExactly().should.true;
   });
@@ -145,12 +145,12 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseMove = new MouseEvent("");
-    sinon.stub(mouseMove, "clientX").get(() => 6);
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    sinon.stub(pointerMove, "clientX").get(() => 6);
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     const expectedInitialPosition: PointProps = {
       x: 0,
@@ -159,7 +159,7 @@ describe("<Tab />", () => {
     spy.calledOnceWithExactly(sinon.match(expectedInitialPosition)).should.true;
   });
 
-  it("should not invoke onDragStart handler if mouse down was not received", () => {
+  it("should not invoke onDragStart handler if pointer down was not received", () => {
     const spy = sinon.spy();
     const sut = mount(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
@@ -169,9 +169,9 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseMove = new MouseEvent("");
-    sinon.stub(mouseMove, "clientX").get(() => 6);
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    sinon.stub(pointerMove, "clientX").get(() => 6);
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
   });
@@ -190,12 +190,12 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseMove = new MouseEvent("");
-    sinon.stub(mouseMove, "clientX").get(() => 6);
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    sinon.stub(pointerMove, "clientX").get(() => 6);
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     const expectedInitialPosition: PointProps = {
       x: -4,
@@ -218,11 +218,11 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.calledOnceWithExactly().should.true;
   });
@@ -244,13 +244,13 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
   });
 
-  it("should not invoke onClick handler if mouse is released outside of tab bounds", () => {
+  it("should not invoke onClick handler if pointer is released outside of tab bounds", () => {
     const spy = sinon.spy();
     const sut = mount(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
@@ -262,8 +262,8 @@ describe("<Tab />", () => {
     const tabElement = sut.find("div").first().getDOMNode() as HTMLDivElement;
     sinon.stub(tabElement, "getBoundingClientRect").returns(createRect(10, 10, 15, 15));
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
   });

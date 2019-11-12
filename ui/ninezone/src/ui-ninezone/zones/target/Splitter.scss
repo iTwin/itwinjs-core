@@ -18,7 +18,7 @@
 
   @include uicore-z-index(zone-target);
 
-  &:hover {
+  @include nz-internal-targeted {
     background-color: $nz-splitter-targeted-color;
   }
 }

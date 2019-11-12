@@ -9,49 +9,49 @@ import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {
-    mount(<PointerCaptor isMouseDown={false} />);
+    mount(<PointerCaptor isPointerDown={false} />);
   });
 
   it("renders correctly", () => {
-    shallow(<PointerCaptor isMouseDown={false} />).should.matchSnapshot();
+    shallow(<PointerCaptor isPointerDown={false} />).should.matchSnapshot();
   });
 
-  it("should respect isMouseDown prop over state", () => {
-    shallow(<PointerCaptor isMouseDown />).should.matchSnapshot();
+  it("should respect isPointerDown prop over state", () => {
+    shallow(<PointerCaptor isPointerDown />).should.matchSnapshot();
   });
 
   it("should unmount", () => {
-    const sut = mount(<PointerCaptor isMouseDown={false} />);
+    const sut = mount(<PointerCaptor isPointerDown={false} />);
     sut.unmount();
   });
 
-  it("should call mouse down prop", () => {
+  it("should call pointer down prop", () => {
     const spy = sinon.spy();
-    const sut = mount(<PointerCaptor isMouseDown={false} onMouseDown={spy} />);
-    sut.simulate("mouseDown");
+    const sut = mount(<PointerCaptor isPointerDown={false} onPointerDown={spy} />);
+    sut.simulate("pointerDown");
 
     spy.calledOnce.should.true;
   });
 
-  it("should call mouse up if mouse is down", () => {
+  it("should call pointer up if pointer is down", () => {
     const spy = sinon.spy();
-    mount(<PointerCaptor isMouseDown onMouseUp={spy} />);
+    mount(<PointerCaptor isPointerDown onPointerUp={spy} />);
 
-    const mouseUp = document.createEvent("HTMLEvents");
-    mouseUp.initEvent("mouseup");
-    document.dispatchEvent(mouseUp);
+    const pointerUp = document.createEvent("HTMLEvents");
+    pointerUp.initEvent("pointerup");
+    document.dispatchEvent(pointerUp);
 
     spy.calledOnce.should.true;
   });
 
-  it("should call mouse move if mouse is down", () => {
+  it("should call pointer move if pointer is down", () => {
     const spy = sinon.spy();
-    const sut = mount(<PointerCaptor isMouseDown onMouseMove={spy} />);
-    sut.simulate("mouseDown");
+    const sut = mount(<PointerCaptor isPointerDown onPointerMove={spy} />);
+    sut.simulate("pointerDown");
 
-    const mouseMove = document.createEvent("HTMLEvents");
-    mouseMove.initEvent("mousemove");
-    document.dispatchEvent(mouseMove);
+    const pointerMove = document.createEvent("HTMLEvents");
+    pointerMove.initEvent("pointermove");
+    document.dispatchEvent(pointerMove);
 
     spy.calledOnce.should.true;
   });

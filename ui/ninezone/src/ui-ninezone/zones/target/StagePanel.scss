@@ -5,6 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/z-index";
 @import "../../safearea";
 @import "../variables";
+@import "variables";
 
 .nz-zones-target-stagePanel {
   @mixin background($direction) {
@@ -12,8 +13,10 @@
       background-image: linear-gradient($direction, transparent, 25%, rgba(#000, 0.6));
     }
 
-    &:hover:after {
-      background-image: linear-gradient($direction, transparent, 25%, $nz-outline-color);
+    @include nz-internal-targeted {
+      &:after {
+        background-image: linear-gradient($direction, transparent, 25%, $nz-outline-color);
+      }
     }
   }
 
@@ -76,8 +79,10 @@
       width: 100%;
     }
 
-    &:hover:after {
-      height: $hovered-gradient-size;
+    @include nz-internal-targeted {
+      &:after {
+        height: $hovered-gradient-size;
+      }
     }
   }
 
@@ -90,8 +95,10 @@
       width: $gradient-size;
     }
 
-    &:hover:after {
-      width: $hovered-gradient-size;
+    @include nz-internal-targeted {
+      &:after {
+        width: $hovered-gradient-size;
+      }
     }
   }
 
