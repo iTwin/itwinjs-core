@@ -9,10 +9,10 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run extract && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush",
-    "docs": "",
+    "docs": "npm run extract",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint --project . 1>&2",
     "test:integration": "mocha --opts ./mocha.opts ./lib/**/*.js",

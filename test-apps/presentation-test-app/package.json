@@ -12,9 +12,9 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "clean": "rimraf lib .rush",
-    "docs": "",
+    "docs": "npm run extract",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "electron": "electron ./lib/backend/main.js",
