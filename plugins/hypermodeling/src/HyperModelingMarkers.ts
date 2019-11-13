@@ -5,8 +5,29 @@
 import { Logger, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, XYAndZ, XAndY, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
 import { SectionLocationProps, SectionType, Placement3d, ViewAttachmentProps, RelatedElement } from "@bentley/imodeljs-common";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Viewport, ScreenViewport, ViewClipTool, Marker, BeButtonEvent, BeButton, DecorateContext, Cluster, MarkerImage, MarkerSet, IModelApp, imageElementFromUrl, InputSource, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  IModelApp,
+  IModelConnection,
+  InputSource,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  OutputMessageType,
+  ScreenViewport,
+  TiledGraphicsProvider,
+  ViewClipTool,
+  ViewState,
+  Viewport,
+  imageElementFromUrl,
+} from "@bentley/imodeljs-frontend";
 import { HyperModelingPlugin } from "./HyperModeling";
+import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
 import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 
 interface PopupToolbarProvider {
@@ -61,6 +82,7 @@ class PopupToolbarManager {
 class SectionLocation extends Marker implements PopupToolbarProvider {
   private static _size = Point2d.create(40, 40);
   private _clip?: ClipVector;
+  private _tiledGraphicsProvider?: TiledGraphicsProvider;
   public isSelected: boolean = false;
 
   /** Create a new SectionLocation */
@@ -97,16 +119,29 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
   }
 
   private toggleClip(vp: ScreenViewport): void {
-    this.isSelected = !this.isSelected;
     ViewClipTool.enableClipVolume(vp);
     ViewClipTool.setViewClip(vp, this.isSelected ? this.clip : undefined);
     SectionLocationSetDecoration.props.display.selectedOnly = this.isSelected;
     SectionLocationSetDecoration.show(vp, true, false); // tslint:disable-line:no-floating-promises
   }
 
+  private async toggleAttachment(vp: ScreenViewport): Promise<void> {
+    if (undefined !== this._tiledGraphicsProvider) {
+      vp.dropTiledGraphicsProvider(this._tiledGraphicsProvider);
+      this._tiledGraphicsProvider = undefined;
+    }
+
+    if (!this.isSelected)
+      return Promise.resolve();
+
+    this._tiledGraphicsProvider = await createSectionGraphicsProvider(this.props, vp.iModel);
+    vp.addTiledGraphicsProvider(this._tiledGraphicsProvider);
+  }
+
   private async toggleSection(vp: ScreenViewport): Promise<void> {
+    this.isSelected = !this.isSelected;
     this.toggleClip(vp);
-    // ###TODO Display attachment...
+    return this.toggleAttachment(vp);
   }
 
   private async openSection(vp: ScreenViewport): Promise<void> {

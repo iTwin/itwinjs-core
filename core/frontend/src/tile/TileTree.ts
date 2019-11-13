@@ -515,6 +515,9 @@ export namespace TileTree {
      * @internal
      */
     dispose(): void;
+
+    /** It is generally not a good idea to await the TileTree - use load() instead. */
+    loadTree(): Promise<TileTree | undefined>;
   }
 
   /** Interface adopted by an object which can supply a [[TileTree]] for rendering.

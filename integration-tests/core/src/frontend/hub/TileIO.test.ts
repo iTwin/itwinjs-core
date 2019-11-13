@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, IModelTileIO, IModelTile } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
 import { CloudStorageTileCache, ModelProps, RelatedElementProps, BatchType, ServerTimeoutError, TileContentIdentifier } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
-import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
+import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileRequest, TileTree } from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./TileIO.data.1.2";

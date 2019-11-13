@@ -7775,6 +7775,42 @@ export abstract class TileLoader {
 }
 
 // @internal
+export class TileRequest {
+    constructor(tile: Tile, vp: Viewport);
+    // (undocumented)
+    addViewport(vp: Viewport): void;
+    cancel(): void;
+    dispatch(onHttpResponse: () => void): Promise<void>;
+    // (undocumented)
+    readonly isCanceled: boolean;
+    // (undocumented)
+    readonly isQueued: boolean;
+    // (undocumented)
+    readonly loader: TileLoader;
+    // (undocumented)
+    priority: number;
+    // (undocumented)
+    readonly state: TileRequest.State;
+    readonly tile: Tile;
+    // (undocumented)
+    readonly tree: TileTree;
+    viewports: TileAdmin.ViewportSet;
+}
+
+// @internal (undocumented)
+export namespace TileRequest {
+    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+    export type ResponseData = Uint8Array | ImageSource;
+    export const enum State {
+        Completed = 3,
+        Dispatched = 1,
+        Failed = 4,
+        Loading = 2,
+        Queued = 0
+    }
+}
+
+// @internal
 export class TileTree implements IDisposable, RenderMemory.Consumer {
     constructor(props: TileTree.Params);
     // (undocumented)
@@ -7858,6 +7894,7 @@ export namespace TileTree {
         dispose(): void;
         load(): TileTree | undefined;
         readonly loadStatus: TileTree.LoadStatus;
+        loadTree(): Promise<TileTree | undefined>;
         readonly tileTree: TileTree | undefined;
     }
     export interface Params {

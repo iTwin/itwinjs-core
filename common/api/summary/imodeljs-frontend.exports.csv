@@ -374,6 +374,8 @@ alpha;TileAdmin
 internal;ViewportSet 
 internal;TiledGraphicsProvider
 internal;class TileLoader
+internal;TileRequest
+internal;TileRequest
 internal;TileTree 
 internal;TileTree
 internal;TileTreeDiscloser
