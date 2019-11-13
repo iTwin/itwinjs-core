@@ -102,6 +102,10 @@ export class DrawParams {
       } else {
         Matrix4.fromTransform(modelMatrix, this._modelMatrix);
         modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+
+        const doViewIndependent = false; // undefined !== geometry.viewIndependentOrigin;
+        if (doViewIndependent)
+          modelViewMatrix.matrix.setIdentity();
       }
 
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);

@@ -573,7 +573,11 @@ export namespace IModelTileIO {
       return AuxChannelTable.fromJSON(props);
     }
 
-    private readInstances(primitive: any): InstancedGraphicParams | undefined {
+    private readInstances(primitive: any): Point3d | InstancedGraphicParams | undefined {
+      const viJson = primitive.viewIndependentOrigin;
+      if (undefined !== viJson)
+        return Point3d.fromJSON(viJson);
+
       const json = primitive.instances;
       if (undefined === json)
         return undefined;
@@ -615,7 +619,7 @@ export namespace IModelTileIO {
       return undefined !== bytes ? new VertexIndices(bytes) : undefined;
     }
 
-    private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
+    private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const indices = this.readVertexIndices(primitive.indices);
       if (undefined === indices)
         return undefined;
@@ -639,7 +643,7 @@ export namespace IModelTileIO {
       };
     }
 
-    private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
+    private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const polyline = this.readTesselatedPolyline(primitive);
       if (undefined === polyline)
         return undefined;
@@ -734,7 +738,7 @@ export namespace IModelTileIO {
       return { succeeded, params };
     }
 
-    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
+    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const surface = this.readSurface(primitive, displayParams);
       if (undefined === surface)
         return undefined;
