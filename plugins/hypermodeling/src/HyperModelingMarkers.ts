@@ -95,7 +95,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
   private get clip(): ClipVector {
     if (undefined === this._clip) {
-      this._clip = ClipVector.fromJSON(JSON.parse(this.props.clipGeometry));
+      this._clip = this.props.clipGeometry ? ClipVector.fromJSON(JSON.parse(this.props.clipGeometry)) : ClipVector.createEmpty();
       if (undefined !== this.props.placement)
         this._clip.transformInPlace(Placement3d.fromJSON(this.props.placement).transform);
     }

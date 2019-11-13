@@ -4566,7 +4566,7 @@ export interface SceneLightsProps {
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
-    clipGeometry?: any;
+    clipGeometry?: string;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
     viewAttachment?: Id64String;

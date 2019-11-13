@@ -3169,11 +3169,13 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     categorySelectorId: Id64String;
     // @internal (undocumented)
     static readonly className: string;
-    clipGeometry?: ClipVector;
+    clipGeometry?: string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    getClip(): ClipVector | undefined;
     modelSelectorId: Id64String;
     sectionType: SectionType;
+    setClip(clip?: ClipVector): void;
     // @internal (undocumented)
     toJSON(): SectionLocationProps;
 }

@@ -127,7 +127,7 @@ export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
   /** Details on how this section was clipped. A placement local ClipVector stored as a json string. */
-  clipGeometry?: any;
+  clipGeometry?: string;
   /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
   modelSelectorId?: Id64String;
   /** The element Id of the [CategorySelector]($backend) for this SectionLocation */
