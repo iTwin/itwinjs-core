@@ -572,7 +572,6 @@ export class ToolAdmin {
     if (this.filterViewport(vp))
       return;
 
-    vp.setAnimator();
     const ev = new BeTouchEvent({ touchEvent });
     const current = this.currentInputState;
     const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEvent.targetTouches.length ? touchEvent.targetTouches : touchEvent.changedTouches, vp);
@@ -580,6 +579,7 @@ export class ToolAdmin {
     switch (touchEvent.type) {
       case "touchstart":
       case "touchend":
+        vp.setAnimator();
         current.setKeyQualifiers(touchEvent);
         break;
     }
@@ -607,6 +607,9 @@ export class ToolAdmin {
 
         if (undefined === current.lastTouchStart)
           return;
+
+        if (ev.touchEvent.timeStamp - current.lastTouchStart.touchEvent.timeStamp > (2.0 * ToolSettings.doubleTapTimeout.milliseconds))
+          return; // Too much time has passed from touchstart to be considered a tap...
 
         // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
