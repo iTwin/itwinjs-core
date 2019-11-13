@@ -100,12 +100,16 @@ export class DrawParams {
       if (undefined !== instancedGeom) {
         modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), modelViewMatrix);
       } else {
-        Matrix4.fromTransform(modelMatrix, this._modelMatrix);
-        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
-
-        const doViewIndependent = false; // undefined !== geometry.viewIndependentOrigin;
-        if (doViewIndependent)
-          modelViewMatrix.matrix.setIdentity();
+        const vio = geometry.viewIndependentOrigin;
+        if (undefined !== vio) {
+          const viewToWorldRot = this.target.viewMatrix.matrix.inverse()!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix);
+          modelViewMatrix.multiplyTransformTransform(viModelMatrix, modelViewMatrix);
+        } else {
+          Matrix4.fromTransform(modelMatrix, this._modelMatrix);
+          modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+        }
       }
 
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);

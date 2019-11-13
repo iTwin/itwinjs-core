@@ -8,6 +8,7 @@ import {
   ClipPlaneContainment,
   ClipUtilities,
   ClipVector,
+  InverseMatrixState,
   Matrix4d,
   Point2d,
   Point3d,
@@ -722,6 +723,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
       this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.useLogZ);
     }
+
+    this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
   }
 
   public changeRenderPlan(plan: RenderPlan): void {
