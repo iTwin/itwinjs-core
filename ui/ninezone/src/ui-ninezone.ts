@@ -82,6 +82,7 @@ export * from "./ui-ninezone/toolbar/Toolbar";
 export * from "./ui-ninezone/utilities/Cell";
 export * from "./ui-ninezone/utilities/Css";
 export * from "./ui-ninezone/utilities/Direction";
+export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
 export * from "./ui-ninezone/widget/Stacked";

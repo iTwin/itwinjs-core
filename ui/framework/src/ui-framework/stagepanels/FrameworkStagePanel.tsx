@@ -132,6 +132,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
                         >
                           <WidgetStack
                             activeTabIndex={activeTabIndex}
+                            disabledResizeHandles={undefined}
                             draggedWidget={undefined}
                             fillZone={true}
                             getWidgetContentRef={this.props.getWidgetContentRef}

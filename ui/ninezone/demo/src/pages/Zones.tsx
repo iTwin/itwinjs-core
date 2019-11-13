@@ -50,6 +50,7 @@ import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
 import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Direction } from "@src/utilities/Direction";
+import { DisabledResizeHandles } from "@src/utilities/DisabledResizeHandles";
 import { SafeAreaInsets } from "@src/utilities/SafeAreaInsets";
 import { WidgetContent } from "@src/widget/rectangular/Content";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
@@ -608,6 +609,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
 }
 
 interface FloatingWidgetProps {
+  disabledResizeHandles: DisabledResizeHandles;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   fillZone: boolean;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -634,6 +636,7 @@ class FloatingWidget extends React.PureComponent<FloatingWidgetProps> {
       <Stacked
         contentRef={this.props.openWidgetId ? this.props.getWidgetContentRef(this.props.openWidgetId) : undefined}
         fillZone={this.props.fillZone}
+        disabledResizeHandles={this.props.disabledResizeHandles}
         horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
         isDragged={!!this.props.draggedWidget}
@@ -685,6 +688,7 @@ class FloatingWidget extends React.PureComponent<FloatingWidgetProps> {
 }
 
 interface FloatingZoneWidgetProps {
+  disabledResizeHandles: DisabledResizeHandles;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   isInFooterMode: boolean;
@@ -715,6 +719,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
         style={zIndex}
       >
         {widget && <FloatingWidget
+          disabledResizeHandles={this.props.disabledResizeHandles}
           draggedWidget={draggedWidget}
           fillZone={zone.isLayoutChanged || !!zone.floating}
           getWidgetContentRef={this.props.getWidgetContentRef}
@@ -2196,6 +2201,7 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
             const tabIndex = openWidgetId ? this.props.widgets[openWidgetId].tabIndex : 0;
             return (
               <StagePanelWidget
+                disabledResizeHandles={DisabledResizeHandles.None}
                 draggedWidget={undefined}
                 fillZone
                 getWidgetContentRef={this.props.getWidgetContentRef}
@@ -2569,6 +2575,7 @@ const initialTheme: Theme = "light";
 
 interface ZonesExampleProps {
   getContainerSize: () => SizeProps;
+  getDisabledResizeHandles: (zoneId: WidgetZoneId) => DisabledResizeHandles;
   getDropTarget: (zoneId: WidgetZoneId) => ZoneTargetType | undefined;
   getGhostOutlineBounds: (zoneId: WidgetZoneId) => RectangleProps | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -2888,6 +2895,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         key={zone.id}
       >
         <FloatingZoneWidget
+          disabledResizeHandles={this.props.getDisabledResizeHandles(zone.id)}
           draggedWidget={draggedWidget && (draggedWidget.id === zoneId) ? draggedWidget : undefined}
           getWidgetContentRef={this.props.getWidgetContentRef}
           isInFooterMode={this.props.zones.isInFooterMode}
@@ -3071,6 +3079,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         <Content />
         <ZonesExample
           getContainerSize={this._handleGetContainerSize}
+          getDisabledResizeHandles={this._handleGetDisabledResizeHandles}
           getDropTarget={this._getDropTarget}
           getGhostOutlineBounds={this._getGhostOutlineBounds}
           getWidgetContentRef={this._getWidgetContentRef}
@@ -3574,6 +3583,11 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
 
   private _handleGetContainerSize = () => {
     return Rectangle.create(this._zoneBounds).getSize();
+  }
+
+  private _handleGetDisabledResizeHandles = (zoneId: WidgetZoneId) => {
+    const manager = this._nineZone.getZonesManager();
+    return manager.getDisabledResizeHandles(zoneId, this.state.nineZone.zones);
   }
 
   private _getDropTarget = (zoneId: WidgetZoneId) => {

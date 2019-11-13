@@ -6,7 +6,10 @@
 
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import { ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
+import {
+  ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
+  ToolSettingsWidgetMode, DisabledResizeHandles,
+} from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
@@ -58,6 +61,7 @@ export interface ZoneProps extends CommonProps {
  */
 export interface ZoneRuntimeProps {
   activeTabIndex: number;
+  disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   dropTarget: ZoneTargetType | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -194,6 +198,7 @@ export class Zone extends React.Component<ZoneProps> {
       <FrameworkZone
         activeTabIndex={runtimeProps.activeTabIndex}
         className={this.props.className}
+        disabledResizeHandles={runtimeProps.disabledResizeHandles}
         draggedWidget={runtimeProps.draggedWidget}
         dropTarget={runtimeProps.dropTarget}
         fillZone={zoneDef.shouldFillZone}

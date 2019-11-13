@@ -219,6 +219,32 @@ export class DirectionHelpers {
     static readonly TOP_CLASS_NAME = "nz-direction-top";
 }
 
+// @beta
+export enum DisabledResizeHandles {
+    // (undocumented)
+    Bottom = 8,
+    // (undocumented)
+    Left = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 4,
+    // (undocumented)
+    Top = 2
+}
+
+// @internal (undocumented)
+export class DisabledResizeHandlesHelpers {
+    // (undocumented)
+    static isBottomDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isLeftDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isRightDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isTopDisabled(flags: DisabledResizeHandles): boolean;
+}
+
 // @internal
 export class DraggedWidgetManager {
     // (undocumented)
@@ -1168,6 +1194,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
 export interface StackedProps extends CommonProps, NoChildrenProps {
     content?: React.ReactNode;
     contentRef?: React.Ref<HTMLDivElement>;
+    disabledResizeHandles?: DisabledResizeHandles;
     fillZone?: boolean;
     horizontalAnchor: HorizontalAnchor;
     isCollapsed?: boolean;
@@ -1941,7 +1968,9 @@ export class ZonesManager {
     readonly draggedWidgetManager: DraggedWidgetManager;
     // (undocumented)
     findZoneWithWidget(widgetId: WidgetZoneId, props: ZonesManagerProps): ZoneManagerProps | undefined;
-    // @internal (undocumented)
+    // (undocumented)
+    getDisabledResizeHandles(zoneId: WidgetZoneId, props: ZonesManagerProps): DisabledResizeHandles;
+    // (undocumented)
     getDropTarget(zoneId: WidgetZoneId, props: ZonesManagerProps): ZoneTargetType | undefined;
     // (undocumented)
     getGhostOutlineBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps | undefined;

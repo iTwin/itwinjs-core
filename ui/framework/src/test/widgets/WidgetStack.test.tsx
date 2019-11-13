@@ -124,6 +124,7 @@ describe("WidgetStack", () => {
   const widgetChangeHandler = moq.Mock.ofType<WidgetStackProps["widgetChangeHandler"]>();
   const props = {
     activeTabIndex: 0,
+    disabledResizeHandles: undefined,
     draggedWidget: undefined,
     fillZone: false,
     getWidgetContentRef: getWidgetContentRef.object,
@@ -167,7 +168,6 @@ describe("WidgetStack", () => {
   });
 
   it("should not render w/o tabs", () => {
-
     const sut = shallow(<WidgetStack
       {...props}
     />);

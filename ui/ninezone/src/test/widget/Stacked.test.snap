@@ -220,3 +220,44 @@ exports[`<Stacked /> renders with tab bar correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<Stacked /> should disable resize handles 1`] = `
+<div
+  className="nz-widget-stacked nz-closed nz-right-anchor nz-middle-anchor"
+>
+  <div
+    className="nz-content-container"
+  >
+    <div
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+      onResizeEnd={[Function]}
+      onResizeStart={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    />
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-primary-grip"
+    direction={1}
+    onResize={[Function]}
+    onResizeEnd={[Function]}
+    onResizeStart={[Function]}
+  />
+</div>
+`;

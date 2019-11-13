@@ -13,6 +13,7 @@ import {
   WidgetZoneId,
   DraggedWidgetManagerProps,
   WidgetManagerProps,
+  DisabledResizeHandles,
 } from "@bentley/ui-ninezone";
 import { WidgetChangeHandler, TargetChangeHandler } from "../frontstage/FrontstageComposer";
 import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
@@ -25,6 +26,7 @@ import { Outline } from "./Outline";
  */
 export interface FrameworkZoneProps extends CommonProps {
   activeTabIndex: number;
+  disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   dropTarget: ZoneTargetType | undefined;
   fillZone?: boolean;
@@ -91,6 +93,7 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
     return (
       <WidgetStack
         activeTabIndex={this.props.activeTabIndex}
+        disabledResizeHandles={this.props.disabledResizeHandles}
         draggedWidget={this.props.draggedWidget}
         fillZone={this.props.fillZone || this.props.zone.isLayoutChanged}
         getWidgetContentRef={this.props.getWidgetContentRef}

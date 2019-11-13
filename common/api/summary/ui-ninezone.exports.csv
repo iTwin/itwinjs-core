@@ -29,6 +29,8 @@ beta;Dialog
 beta;DialogProps 
 beta;Direction
 internal;DirectionHelpers
+beta;DisabledResizeHandles
+internal;DisabledResizeHandlesHelpers
 internal;DraggedWidgetManager
 beta;DraggedWidgetManagerProps
 alpha;ExpandableButton 

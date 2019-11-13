@@ -32,6 +32,7 @@ import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DescriptionProps as DescriptionProps_2 } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
+import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
@@ -1876,6 +1877,8 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
 export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     activeTabIndex: number;
+    // (undocumented)
+    disabledResizeHandles: DisabledResizeHandles | undefined;
     // (undocumented)
     draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
@@ -5292,6 +5295,8 @@ export interface WidgetStackProps extends CommonProps {
     // (undocumented)
     activeTabIndex: number;
     // (undocumented)
+    disabledResizeHandles: DisabledResizeHandles | undefined;
+    // (undocumented)
     draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
     fillZone: boolean;
@@ -5679,6 +5684,8 @@ export interface ZoneProps extends CommonProps {
 export interface ZoneRuntimeProps {
     // (undocumented)
     activeTabIndex: number;
+    // (undocumented)
+    disabledResizeHandles: DisabledResizeHandles | undefined;
     // (undocumented)
     draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)

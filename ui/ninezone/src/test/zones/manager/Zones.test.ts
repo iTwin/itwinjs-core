@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { RectangleProps, PointProps, Rectangle } from "@bentley/ui-core";
 import {
   ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
-  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager, ToolSettingsWidgetMode,
+  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager, ToolSettingsWidgetMode, DisabledResizeHandles,
 } from "../../../ui-ninezone";
 import { TestProps } from "./TestProps";
 import { widgetZoneIds, getColumnZones } from "../../../ui-ninezone/zones/manager/Zones";
@@ -1170,6 +1170,74 @@ describe("ZonesManager", () => {
       const bounds = sut.getGhostOutlineBounds(3, props);
 
       (!!bounds).should.false;
+    });
+  });
+
+  describe("getDisabledResizeHandles", () => {
+    it("should not disable for floating widget", () => {
+      const sut = new ZonesManager();
+      sut.getDisabledResizeHandles(6, TestProps.floatingOpenedZone6).should.eq(DisabledResizeHandles.None);
+    });
+
+    it("should disable top handle", () => {
+      const sut = new ZonesManager();
+      sinon.stub(sut.growTop, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkTop, "getMaxResize").returns(0);
+
+      sinon.stub(sut.growLeft, "getMaxResize").returns(10);
+      sinon.stub(sut.growRight, "getMaxResize").returns(10);
+      sinon.stub(sut.growBottom, "getMaxResize").returns(10);
+
+      sut.getDisabledResizeHandles(6, TestProps.defaultProps).should.eq(DisabledResizeHandles.Top);
+    });
+
+    it("should disable bottom handle", () => {
+      const sut = new ZonesManager();
+      sinon.stub(sut.growBottom, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkBottom, "getMaxResize").returns(0);
+
+      sinon.stub(sut.growLeft, "getMaxResize").returns(10);
+      sinon.stub(sut.growRight, "getMaxResize").returns(10);
+      sinon.stub(sut.growTop, "getMaxResize").returns(10);
+
+      sut.getDisabledResizeHandles(6, TestProps.defaultProps).should.eq(DisabledResizeHandles.Bottom);
+    });
+
+    it("should disable left handle", () => {
+      const sut = new ZonesManager();
+      sinon.stub(sut.growLeft, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkLeft, "getMaxResize").returns(0);
+
+      sinon.stub(sut.growRight, "getMaxResize").returns(10);
+      sinon.stub(sut.growTop, "getMaxResize").returns(10);
+      sinon.stub(sut.growBottom, "getMaxResize").returns(10);
+
+      sut.getDisabledResizeHandles(6, TestProps.defaultProps).should.eq(DisabledResizeHandles.Left);
+    });
+
+    it("should disable right handle", () => {
+      const sut = new ZonesManager();
+      sinon.stub(sut.growRight, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkRight, "getMaxResize").returns(0);
+
+      sinon.stub(sut.growLeft, "getMaxResize").returns(10);
+      sinon.stub(sut.growTop, "getMaxResize").returns(10);
+      sinon.stub(sut.growBottom, "getMaxResize").returns(10);
+
+      sut.getDisabledResizeHandles(6, TestProps.defaultProps).should.eq(DisabledResizeHandles.Right);
+    });
+
+    it("should disable multiple handles", () => {
+      const sut = new ZonesManager();
+      sinon.stub(sut.growRight, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkRight, "getMaxResize").returns(0);
+      sinon.stub(sut.growTop, "getMaxResize").returns(0);
+      sinon.stub(sut.shrinkTop, "getMaxResize").returns(0);
+
+      sinon.stub(sut.growLeft, "getMaxResize").returns(10);
+      sinon.stub(sut.growBottom, "getMaxResize").returns(10);
+
+      sut.getDisabledResizeHandles(6, TestProps.defaultProps).should.eq(DisabledResizeHandles.Right | DisabledResizeHandles.Top);
     });
   });
 
