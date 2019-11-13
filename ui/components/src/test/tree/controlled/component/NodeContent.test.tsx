@@ -72,6 +72,32 @@ describe("NodeContent", () => {
     await waitForElement(() => renderedNode.getByText("Test label"));
   });
 
+  it("rerenders label with asynchronous function", async () => {
+    const renderedNode = render(
+      <TreeNodeContent
+        node={node}
+        valueRendererManager={rendererManagerMock.object}
+      />,
+    );
+
+    renderedNode.getByText("Test label");
+
+    rendererManagerMock.reset();
+    rendererManagerMock.setup((m) => m.render(moq.It.isAny(), moq.It.isAny())).returns(async () => "Async label");
+    const newNode = { ...node };
+
+    renderedNode.rerender(
+      <TreeNodeContent
+        node={newNode}
+        valueRendererManager={rendererManagerMock.object}
+      />,
+    );
+
+    renderedNode.getByText("Test label");
+
+    await waitForElement(() => renderedNode.getByText("Async label"));
+  });
+
   it("highlights label", () => {
     const highlightingProps: HighlightableTreeNodeProps = { searchText: "label" };
 
@@ -176,8 +202,7 @@ describe("NodeContent", () => {
       />,
     );
 
-    // first call when component is rendered with placeholder, second when label rendered
-    expect(spy).to.be.calledTwice;
+    expect(spy).to.be.calledOnce;
   });
 
 });

@@ -6,9 +6,9 @@
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import classnames from "classnames";
-import { TreeNodePlaceholder, isPromiseLike, CommonProps } from "@bentley/ui-core";
+import { TreeNodePlaceholder, isPromiseLike, CommonProps, useEffectSkipFirst } from "@bentley/ui-core";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { TreeModelNode } from "../TreeModel";
 import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
@@ -79,34 +79,40 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
 };
 
 function useLabel(node: TreeModelNode, valueRendererManager: PropertyValueRendererManager, highlightProps?: HighlightableTreeNodeProps) {
-  const [label, setLabel] = useState<React.ReactNode>(<TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />);
+  const getLabel = useCallback((): React.ReactNode | Promise<React.ReactNode> => {
+    // handle filtered matches' highlighting
+    let labelElement: React.ReactNode = node.label;
+    if (highlightProps)
+      labelElement = HighlightingEngine.renderNodeLabel(node.label, highlightProps);
 
-  useEffect(() => {
-    const getLabel = (): React.ReactNode | Promise<React.ReactNode> => {
-      // handle filtered matches' highlighting
-      let labelElement: React.ReactNode = node.label;
-      if (highlightProps)
-        labelElement = HighlightingEngine.renderNodeLabel(node.label, highlightProps);
-
-      // handle custom cell rendering
-      const context: PropertyValueRendererContext = {
-        containerType: PropertyContainerType.Tree,
-        decoratedTextElement: labelElement,
-        style: getStyle(node.item.style, node.isSelected),
-      };
-
-      const nodeRecord = nodeToPropertyRecord(node);
-      return valueRendererManager.render(nodeRecord, context);
+    // handle custom cell rendering
+    const context: PropertyValueRendererContext = {
+      containerType: PropertyContainerType.Tree,
+      decoratedTextElement: labelElement,
+      style: getStyle(node.item.style, node.isSelected),
     };
 
+    const nodeRecord = nodeToPropertyRecord(node);
+    return valueRendererManager.render(nodeRecord, context);
+  }, [node, highlightProps, valueRendererManager]);
+
+  const [label, setLabel] = useState<React.ReactNode>(() => {
     const newLabel = getLabel();
     if (isPromiseLike(newLabel)) {
-      // tslint:disable-next-line:no-floating-promises
-      newLabel.then((result) => setLabel(result));
+      newLabel.then((result) => setLabel(result)); // tslint:disable-line: no-floating-promises
+      return <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />;
+    }
+    return newLabel;
+  });
+
+  useEffectSkipFirst(() => {
+    const newLabel = getLabel();
+    if (isPromiseLike(newLabel)) {
+      newLabel.then((result) => setLabel(result)); // tslint:disable-line: no-floating-promises
     } else {
       setLabel(newLabel);
     }
-  }, [node, highlightProps, valueRendererManager]);
+  }, [getLabel]);
 
   return label;
 }

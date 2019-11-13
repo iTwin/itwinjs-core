@@ -100,7 +100,7 @@ export interface ControlledTreeWithFilteringSupportProps {
 }
 
 // @alpha
-export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
 
 // @alpha
 export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {

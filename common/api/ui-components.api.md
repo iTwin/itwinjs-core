@@ -906,6 +906,8 @@ export interface ControlledTreeProps extends CommonProps {
     // (undocumented)
     descriptionsEnabled?: boolean;
     // (undocumented)
+    iconsEnabled?: boolean;
+    // (undocumented)
     noDataRenderer?: () => React.ReactElement;
     // (undocumented)
     nodeHighlightingProps?: HighlightableTreeProps;
@@ -1324,6 +1326,8 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     checkboxRenderer?: NodeCheckboxRenderer;
     // (undocumented)
     descriptionEnabled?: boolean;
+    // (undocumented)
+    imageLoader?: ITreeImageLoader;
     // (undocumented)
     nodeHighlightProps?: HighlightableTreeNodeProps;
 }

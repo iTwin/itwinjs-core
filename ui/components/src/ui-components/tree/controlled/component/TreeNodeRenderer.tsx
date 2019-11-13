@@ -11,6 +11,8 @@ import { TreeModelNode, CheckBoxInfo } from "../TreeModel";
 import { TreeNodeContent } from "./NodeContent";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
 import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
+import { ITreeImageLoader } from "../../ImageLoader";
+import { ImageRenderer } from "../../../common/ImageRenderer";
 
 /**
  * Properties for [[TreeNodeRenderer]].
@@ -30,6 +32,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
   checkboxRenderer?: NodeCheckboxRenderer;
   descriptionEnabled?: boolean;
   nodeHighlightProps?: HighlightableTreeNodeProps;
+  imageLoader?: ITreeImageLoader;
 }
 
 /**
@@ -75,6 +78,7 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
       isSelected={props.node.isSelected}
       isLoading={props.node.isLoading}
       isLeaf={props.node.numChildren === 0}
+      icon={props.imageLoader ? <TreeNodeIcon node={props.node} imageLoader={props.imageLoader} /> : undefined}
       label={label}
       level={props.node.depth}
       onClick={(event) => props.treeActions.onNodeClicked(props.node.id, event)}
@@ -85,3 +89,18 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
     />
   );
 });
+
+interface TreeNodeIconProps {
+  node: TreeModelNode;
+  imageLoader: ITreeImageLoader;
+}
+
+const TreeNodeIcon: React.FC<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
+  const image = imageLoader.load(node.item);
+
+  if (!image)
+    return null;
+
+  const renderer = new ImageRenderer();
+  return <>{renderer.render(image)}</>;
+};

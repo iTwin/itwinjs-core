@@ -11,6 +11,7 @@ import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActio
 import { TreeNodeRenderer } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
 import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
 
 describe("TreeNodeRenderer", () => {
 
@@ -45,6 +46,33 @@ describe("TreeNodeRenderer", () => {
 
     const inputNode = container.querySelector("input");
     expect(inputNode).to.not.be.undefined;
+  });
+
+  it("renders tree node with icon", () => {
+    const imageLoaderMock = moq.Mock.ofType<ITreeImageLoader>();
+    imageLoaderMock.setup((x) => x.load(moq.It.isAny())).returns(() => ({ sourceType: "core-icon", value: "test-icon" }));
+    const { container } = render(
+      <TreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        imageLoader={imageLoaderMock.object}
+      />);
+
+    const inputNode = container.querySelector(".test-icon");
+    expect(inputNode).to.not.be.undefined;
+  });
+
+  it("renders tree node without loaded icon", () => {
+    const imageLoaderMock = moq.Mock.ofType<ITreeImageLoader>();
+    imageLoaderMock.setup((x) => x.load(moq.It.isAny())).returns(() => undefined);
+    const { getByText } = render(
+      <TreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        imageLoader={imageLoaderMock.object}
+      />);
+
+    getByText(node.label);
   });
 
   describe("events", () => {

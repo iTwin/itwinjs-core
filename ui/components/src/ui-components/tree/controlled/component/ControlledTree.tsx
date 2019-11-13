@@ -18,6 +18,7 @@ import { TreeEvents } from "../TreeEvents";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
+import { TreeImageLoader } from "../../ImageLoader";
 
 /**
  * Properties for [[ControlledTree]]
@@ -27,8 +28,9 @@ export interface ControlledTreeProps extends CommonProps {
   visibleNodes: VisibleTreeNodes;
   nodeLoader: ITreeNodeLoader;
   treeEvents: TreeEvents;
-  descriptionsEnabled?: boolean;
   selectionMode: SelectionMode;
+  descriptionsEnabled?: boolean;
+  iconsEnabled?: boolean;
   nodeHighlightingProps?: HighlightableTreeProps;
   treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
   spinnerRenderer?: () => React.ReactElement;
@@ -43,13 +45,15 @@ export interface ControlledTreeProps extends CommonProps {
 export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
   const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
+  const imageLoader = useMemo(() => new TreeImageLoader(), []);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
     <TreeNodeRenderer
       {...nodeProps}
       descriptionEnabled={props.descriptionsEnabled}
       nodeHighlightProps={highlightingEngine ? highlightingEngine.createRenderProps(nodeProps.node) : undefined}
+      imageLoader={props.iconsEnabled ? imageLoader : undefined}
     />
-  ), [props.descriptionsEnabled, highlightingEngine]);
+  ), [props.descriptionsEnabled, props.iconsEnabled, imageLoader, highlightingEngine]);
 
   const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
 

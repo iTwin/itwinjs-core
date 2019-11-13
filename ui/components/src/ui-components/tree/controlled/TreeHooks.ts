@@ -34,7 +34,7 @@ export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNo
  * @alpha
  */
 export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider) {
-  const [nodeLoader, setNodeLoader] = useState(new TreeNodeLoader(dataProvider));
+  const [nodeLoader, setNodeLoader] = useState(() => new TreeNodeLoader(dataProvider));
 
   useEffectSkipFirst(() => {
     setNodeLoader(new TreeNodeLoader(dataProvider));
@@ -47,7 +47,7 @@ export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvid
  * @alpha
  */
 export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number) {
-  const [nodeLoader, setNodeLoader] = useState(new PagedTreeNodeLoader(dataProvider, pageSize));
+  const [nodeLoader, setNodeLoader] = useState(() => new PagedTreeNodeLoader(dataProvider, pageSize));
 
   useEffectSkipFirst(() => {
     setNodeLoader(new PagedTreeNodeLoader(dataProvider, pageSize));
@@ -60,7 +60,7 @@ export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataP
  * @alpha
  */
 export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
-  const [modelSource, setModelSource] = useState(nodeLoader ? new TreeModelSource() : undefined);
+  const [modelSource, setModelSource] = useState(() => nodeLoader ? new TreeModelSource() : undefined);
   const modifyModel = useCallback(createOnNodeLoadedHandler(modelSource), [modelSource]);
 
   useEffectSkipFirst(() => {

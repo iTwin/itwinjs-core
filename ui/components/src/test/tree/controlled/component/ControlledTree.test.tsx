@@ -122,6 +122,23 @@ describe("ControlledTree", () => {
     getByText("Test Node Description");
   });
 
+  it("renders node with icon", () => {
+    mockVisibleNode();
+    node.item.icon = "test-icon";
+
+    const { container } = render(
+      <ControlledTree
+        visibleNodes={visibleNodesMock.object}
+        nodeLoader={nodeLoaderMock.object}
+        treeEvents={treeEventsMock.object}
+        iconsEnabled={true}
+        selectionMode={SelectionMode.Single}
+      />);
+
+    const iconNode = container.querySelector(".test-icon");
+    expect(iconNode).to.not.be.undefined;
+  });
+
   it("renders highlighted node", () => {
     mockVisibleNode();
     const highlightProps: HighlightableTreeProps = {
