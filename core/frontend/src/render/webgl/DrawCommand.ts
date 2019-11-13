@@ -6,7 +6,7 @@
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
-import { Transform, Range3d } from "@bentley/geometry-core";
+import { Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderMode, ViewFlag, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
@@ -55,6 +55,9 @@ export class ShaderProgramParams {
 }
 
 const _scratchTransform = Transform.createIdentity();
+const _scratchViewToWorld = Matrix3d.createIdentity();
+const _scratchAboutOrigin = Transform.createIdentity();
+const _scratchVIModelMatrix = Transform.createIdentity();
 
 /** @internal */
 export class DrawParams {
@@ -102,9 +105,9 @@ export class DrawParams {
       } else {
         const vio = geometry.viewIndependentOrigin;
         if (undefined !== vio) {
-          const viewToWorldRot = this.target.viewMatrix.matrix.inverse()!;
-          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot);
-          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix);
+          const viewToWorldRot = this.target.viewMatrix.matrix.inverse(_scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, _scratchAboutOrigin);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix, _scratchVIModelMatrix);
           modelViewMatrix.multiplyTransformTransform(viModelMatrix, modelViewMatrix);
         } else {
           Matrix4.fromTransform(modelMatrix, this._modelMatrix);
