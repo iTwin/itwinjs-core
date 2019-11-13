@@ -234,7 +234,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         bottomCenter={
           <Zone
             widgets={[
-              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} control={AppStatusBarWidgetControl} />,
             ]}
           />
         }

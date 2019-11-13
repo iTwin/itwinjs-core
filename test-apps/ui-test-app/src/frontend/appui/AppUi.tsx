@@ -7,7 +7,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
   TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework, CoreTools,
-  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager, WorkflowProps,
+  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager, WorkflowProps, StatusBarItemsManager,
 } from "@bentley/ui-framework";
 
 /** Include application registered Controls in Webpack
@@ -39,6 +39,8 @@ import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { AppStatusBarItemProvider } from "./statusbars/AppStatusBarItemProvider";
+import { SmallStatusBarItemProvider } from "./statusbars/SmallStatusBarItemProvider";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -53,6 +55,16 @@ export class AppUi {
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
+
+    const mainItemsManager = new StatusBarItemsManager();
+    const appStatusBarItemProvider = new AppStatusBarItemProvider();
+    mainItemsManager.add(appStatusBarItemProvider.statusBarItems);
+    UiFramework.statusBarManager.addItemsManager("main", mainItemsManager);
+
+    const smallItemsManager = new StatusBarItemsManager();
+    const smallStatusBarItemProvider = new SmallStatusBarItemProvider();
+    smallItemsManager.add(smallStatusBarItemProvider.statusBarItems);
+    UiFramework.statusBarManager.addItemsManager("small", smallItemsManager);
   }
 
   /** Define Frontstages

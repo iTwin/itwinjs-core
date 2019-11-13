@@ -44,20 +44,20 @@ export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatu
   }
 
   // istanbul ignore next
-  private _dettachFromVp = (vp: ScreenViewport) => {
+  private _detachFromVp = (vp: ScreenViewport) => {
     vp.onFeatureOverridesChanged.removeListener(this._updateState);
   }
 
   public componentDidMount() {
     SelectionContextUtilities.emphasizeElementsChanged.addListener(this._updateState);
     IModelApp.viewManager.onViewOpen.addListener(this._attachToVp);
-    IModelApp.viewManager.onViewClose.addListener(this._dettachFromVp);
+    IModelApp.viewManager.onViewClose.addListener(this._detachFromVp);
   }
 
   public componentWillUnmount() {
     SelectionContextUtilities.emphasizeElementsChanged.removeListener(this._updateState);
     IModelApp.viewManager.onViewOpen.removeListener(this._attachToVp);
-    IModelApp.viewManager.onViewClose.removeListener(this._dettachFromVp);
+    IModelApp.viewManager.onViewClose.removeListener(this._detachFromVp);
   }
 
   private _wantShow() {
@@ -80,7 +80,8 @@ export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatu
     const classes = (this.props.hideWhenUnused && !this.state.wantShow) ? "uifw-indicator-fade-out" : "uifw-indicator-fade-in";
 
     return (
-      <Indicator toolTip={this._toolTip} className={classes} opened={false} onClick={this._clearEmphasize} iconName="icon-visibility" />
+      <Indicator toolTip={this._toolTip} className={classes} opened={false} onClick={this._clearEmphasize} iconName="icon-visibility"
+        isInFooterMode={this.props.isInFooterMode} />
     );
   }
 }

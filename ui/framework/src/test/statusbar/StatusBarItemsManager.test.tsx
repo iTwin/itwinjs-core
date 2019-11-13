@@ -91,7 +91,7 @@ describe("StatusBarItemsManager", () => {
       ];
 
       const spy = sinon.spy();
-      StatusBarItemsManager.onStatusBarItemsChanged.addListener(spy);
+      sut.onItemsChanged.addListener(spy);
       sut.setIsVisible("test1", false);
 
       spy.calledOnce.should.true;
@@ -101,7 +101,7 @@ describe("StatusBarItemsManager", () => {
     it("should not update if item is not found", () => {
       const sut = new StatusBarItemsManager();
       const spy = sinon.spy();
-      StatusBarItemsManager.onStatusBarItemsChanged.addListener(spy);
+      sut.onItemsChanged.addListener(spy);
       sut.setIsVisible("test1", false);
 
       spy.calledOnce.should.false;
@@ -114,7 +114,7 @@ describe("StatusBarItemsManager", () => {
       ];
 
       const spy = sinon.spy();
-      StatusBarItemsManager.onStatusBarItemsChanged.addListener(spy);
+      sut.onItemsChanged.addListener(spy);
       sut.setIsVisible("test1", true);
 
       spy.calledOnce.should.false;

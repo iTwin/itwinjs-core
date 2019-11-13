@@ -24,6 +24,7 @@ import {
   ActivityCenterField,
 } from "../../ui-framework";
 import { StatusBarSection } from "../../ui-framework/statusbar/StatusBarItem";
+import { StatusBarItemsManager } from "../../ui-framework/statusbar/StatusBarItemsManager";
 
 describe("StatusBarComposer", () => {
 
@@ -34,7 +35,7 @@ describe("StatusBarComposer", () => {
 
     public getReactNode(): React.ReactNode {
       return (
-        <StatusBarComposer />
+        <StatusBarComposer itemsManager={UiFramework.statusBarManager.getItemsManager("test")!} />
       );
     }
   }
@@ -49,6 +50,8 @@ describe("StatusBarComposer", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.statusBarManager.addItemsManager("test", new StatusBarItemsManager());
+    UiFramework.statusBarManager.addItemsManager("test2", new StatusBarItemsManager());
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,
@@ -64,7 +67,7 @@ describe("StatusBarComposer", () => {
   });
 
   beforeEach(() => {
-    UiFramework.statusBarManager.itemsManager.removeAll();
+    UiFramework.statusBarManager.getItemsManager("test")!.removeAll();
   });
 
   it("StatusBarComposer should be instantiated", () => {
@@ -82,44 +85,81 @@ describe("StatusBarComposer", () => {
   });
 
   it("StatusBarComposer should render items", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
     const items: StatusBarItem[] = [
-      StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <AppStatusBarComponent />),
-      StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Center, 1, <AppStatusBarComponent />),
-      StatusBarItemUtilities.createStatusBarItem("test3", StatusBarSection.Right, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item2", StatusBarSection.Center, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item3", StatusBarSection.Right, 1, <AppStatusBarComponent />),
     ];
 
-    UiFramework.statusBarManager.itemsManager.add(items);
-    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(3);
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(3);
 
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
+    const leftItems = wrapper.find("div.uifw-statusbar-left");
+    expect(leftItems.length).to.eq(1);
+    expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    const centerItems = wrapper.find("div.uifw-statusbar-center");
+    expect(centerItems.length).to.eq(1);
+    expect(centerItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    const rightItems = wrapper.find("div.uifw-statusbar-right");
+    expect(rightItems.length).to.eq(1);
+    expect(rightItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
+  it("StatusBarComposer should support changing props", () => {
+    const items: StatusBarItem[] = [
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 1, <AppStatusBarComponent />),
+    ];
+
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(1);
+
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
+    const leftItems = wrapper.find("div.uifw-statusbar-left");
+    expect(leftItems.length).to.eq(1);
+    expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    const items2: StatusBarItem[] = [
+      StatusBarItemUtilities.createStatusBarItem("item2", StatusBarSection.Center, 1, <AppStatusBarComponent />),
+    ];
+
+    const itemsManager2 = new StatusBarItemsManager();
+    itemsManager2.add(items2);
+    expect(itemsManager2.items.length).to.eq(1);
+
+    wrapper.setProps({ itemsManager: itemsManager2 });
     wrapper.update();
-    expect(wrapper.find("div.uifw-statusbar-left").length).to.eq(1);
-    expect(wrapper.find("div.uifw-statusbar-center").length).to.eq(1);
-    expect(wrapper.find("div.uifw-statusbar-right").length).to.eq(1);
+
+    const centerItems = wrapper.find("div.uifw-statusbar-center");
+    expect(centerItems.length).to.eq(1);
+    expect(centerItems.find(AppStatusBarComponent).length).to.eq(1);
 
     wrapper.unmount();
   });
 
   it("StatusBarComposer should sort items", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
     const items: StatusBarItem[] = [
-      StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
-      StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />),
-      StatusBarItemUtilities.createStatusBarItem("test3", StatusBarSection.Left, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item2", StatusBarSection.Left, 5, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item3", StatusBarSection.Left, 1, <AppStatusBarComponent />),
     ];
 
-    UiFramework.statusBarManager.itemsManager.add(items);
-    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(3);
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(3);
 
-    wrapper.update();
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
     const leftItems = wrapper.find("div.uifw-statusbar-left");
-
     expect(leftItems.length).to.eq(1);
-    expect(wrapper.find("div.uifw-statusbar-center").length).to.eq(0);
-    expect(wrapper.find("div.uifw-statusbar-right").length).to.eq(0);
-
     expect(leftItems.find(AppStatusBarComponent).length).to.eq(3);
 
     wrapper.unmount();
@@ -129,20 +169,18 @@ describe("StatusBarComposer", () => {
     // tslint:disable-next-line: variable-name
     const ActivityCenter = withStatusFieldProps(ActivityCenterField);
 
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
     const items: StatusBarItem[] = [
-      StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <ActivityCenter />),
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <ActivityCenter />),
     ];
 
-    UiFramework.statusBarManager.itemsManager.add(items);
-    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(1);
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(1);
 
-    wrapper.update();
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
     const leftItems = wrapper.find("div.uifw-statusbar-left");
-
     expect(leftItems.length).to.eq(1);
-
     expect(leftItems.find(ActivityCenterField).length).to.eq(1);
 
     wrapper.unmount();
@@ -152,41 +190,39 @@ describe("StatusBarComposer", () => {
     // tslint:disable-next-line: variable-name
     const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
     const items: StatusBarItem[] = [
-      StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <MessageCenter />),
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <MessageCenter />),
     ];
 
-    UiFramework.statusBarManager.itemsManager.add(items);
-    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(1);
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(1);
 
-    wrapper.update();
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
     const leftItems = wrapper.find("div.uifw-statusbar-left");
-
     expect(leftItems.length).to.eq(1);
-
     expect(leftItems.find(MessageCenterField).length).to.eq(1);
 
     wrapper.unmount();
   });
 
   it("StatusBarComposer should support item.isVisible", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
     const items: StatusBarItem[] = [
       StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
       StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isVisible: false }),
     ];
 
-    UiFramework.statusBarManager.itemsManager.add(items);
-    expect(UiFramework.statusBarManager.itemsManager.items.length).to.eq(2);
+    const itemsManager = new StatusBarItemsManager();
+    itemsManager.add(items);
+    expect(itemsManager.items.length).to.eq(2);
 
-    wrapper.update();
+    const wrapper = mount(<StatusBarComposer itemsManager={itemsManager} />);
+
     let leftItems = wrapper.find("div.uifw-statusbar-left");
     expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
 
-    UiFramework.statusBarManager.itemsManager.setIsVisible("test2", true);
+    itemsManager.setIsVisible("test2", true);
     wrapper.update();
     leftItems = wrapper.find("div.uifw-statusbar-left");
     expect(leftItems.find(AppStatusBarComponent).length).to.eq(2);

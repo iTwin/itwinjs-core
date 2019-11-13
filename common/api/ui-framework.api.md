@@ -4152,15 +4152,22 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
 
 // @beta
-export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposerState> {
+export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
     // @internal (undocumented)
     componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: StatusBarComposerProps): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: StatusBarComposerState;
+}
+
+// @beta
+export interface StatusBarComposerProps {
+    itemsManager: StatusBarItemsManager;
 }
 
 // @internal
@@ -4187,16 +4194,13 @@ export class StatusBarItemsChangedEvent extends UiEvent<{}> {
 
 // @beta
 export class StatusBarItemsManager {
-    // (undocumented)
     add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>): void;
     // @internal (undocumented)
     items: ReadonlyArray<StatusBarItem>;
-    static readonly onStatusBarItemsChanged: StatusBarItemsChangedEvent;
-    // (undocumented)
+    readonly onItemsChanged: StatusBarItemsChangedEvent;
     remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
     // @internal (undocumented)
     removeAll(): void;
-    // (undocumented)
     setIsVisible(id: StatusBarItemId, isVisible: boolean): void;
 }
 
@@ -4210,9 +4214,12 @@ export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps>;
 
 // @beta
 export class StatusBarManager {
-    // (undocumented)
-    readonly itemsManager: StatusBarItemsManager;
-    }
+    addItemsManager(id: string, itemsManager: StatusBarItemsManager): boolean;
+    getItemsManager(id: string): StatusBarItemsManager | undefined;
+    // @internal (undocumented)
+    removeAll(): void;
+    removeItemsManager(id: string): boolean;
+}
 
 // @public
 export interface StatusBarProps extends CommonProps {

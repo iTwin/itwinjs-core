@@ -9,15 +9,13 @@ import {
   StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
 } from "@bentley/ui-framework";
 
-import "./AppStatusBar.scss";
-
-export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
   public getReactNode(_args: StatusBarWidgetControlArgs): React.ReactNode {
-    const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
+    const itemsManager = UiFramework.statusBarManager.getItemsManager("small");
     if (itemsManager)
       return (
         <StatusBarComposer itemsManager={itemsManager} />
@@ -26,4 +24,4 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+ConfigurableUiManager.registerControl("SmallStatusBar", SmallStatusBarWidgetControl);

@@ -43,11 +43,16 @@ export class AppTools {
       description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
+
         const backstageItems = AppTools.getBackstageItems();
         UiFramework.backstageManager.itemsManager.add(backstageItems);
+
         const statusBarItem = StatusBarItemUtilities.createStatusBarItem(this._sampleStatusFieldId, StatusBarSection.Left, 10, <SampleStatus />);
-        UiFramework.statusBarManager.itemsManager.add(statusBarItem);
-        UiFramework.statusBarManager.itemsManager.setIsVisible("ViewAttributes", false);
+        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
+        if (itemsManager) {
+          itemsManager.add(statusBarItem);
+          itemsManager.setIsVisible("ViewAttributes", false);
+        }
       },
     });
   }
@@ -60,10 +65,15 @@ export class AppTools {
       tooltipKey: "SampleApp:tools.Tool2.description",
       execute: () => {
         IModelApp.tools.run(Tool2.toolId);
+
         const backstageItems = AppTools.getBackstageItems().map((item) => item.id);
         UiFramework.backstageManager.itemsManager.remove(backstageItems);
-        UiFramework.statusBarManager.itemsManager.remove(this._sampleStatusFieldId);
-        UiFramework.statusBarManager.itemsManager.setIsVisible("ViewAttributes", true);
+
+        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
+        if (itemsManager) {
+          itemsManager.remove(this._sampleStatusFieldId);
+          itemsManager.setIsVisible("ViewAttributes", true);
+        }
       },
     });
   }

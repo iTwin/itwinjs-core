@@ -394,6 +394,7 @@ public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection: React.FunctionComponent
 beta;StatusBarComposer 
+beta;StatusBarComposerProps
 internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
 beta;StatusBarItem

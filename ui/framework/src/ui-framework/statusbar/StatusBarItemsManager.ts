@@ -25,8 +25,9 @@ export class StatusBarItemsManager {
   private _items: ReadonlyArray<StatusBarItem> = [];
 
   /** Event raised when StatusBar items are changed. */
-  public static readonly onStatusBarItemsChanged = new StatusBarItemsChangedEvent();
+  public readonly onItemsChanged = new StatusBarItemsChangedEvent();
 
+  /** Get an array of the StatusBar items  */
   public get items(): ReadonlyArray<StatusBarItem> {
     return this._items;
   }
@@ -36,9 +37,10 @@ export class StatusBarItemsManager {
     if (this._items === items)
       return;
     this._items = items;
-    StatusBarItemsManager.onStatusBarItemsChanged.emit({ items });
+    this.onItemsChanged.emit({ items });
   }
 
+  /** Add a StatusBar item or an array of the StatusBar items  */
   public add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>) {
     let itemsToAdd;
     if (isInstance(itemOrItems))
@@ -56,6 +58,7 @@ export class StatusBarItemsManager {
     this.items = items;
   }
 
+  /** Remove StatusBar items based on id */
   public remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>) {
     const items = this._items.filter((item) => {
       return isInstance(itemIdOrItemIds) ? item.id !== itemIdOrItemIds : !itemIdOrItemIds.find((itemId) => itemId === item.id);
@@ -63,6 +66,7 @@ export class StatusBarItemsManager {
     this.items = items;
   }
 
+  /** Set the visibility of a StatusBar item */
   public setIsVisible(id: StatusBarItemId, isVisible: boolean) {
     const itemIndex = this._items.findIndex((i) => i.id === id);
     if (itemIndex < 0)

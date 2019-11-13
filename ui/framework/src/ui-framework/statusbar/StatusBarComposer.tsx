@@ -6,9 +6,16 @@
 
 import * as React from "react";
 import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection } from "./StatusBar";
-import { UiFramework } from "../UiFramework";
 import { StatusBarSection, StatusBarItem } from "./StatusBarItem";
 import { StatusBarItemsManager } from "./StatusBarItemsManager";
+
+/** Properties for the [[StatusBarComposer]] React components
+ * @beta
+ */
+export interface StatusBarComposerProps {
+  /** StatusBar items manager containing status fields */
+  itemsManager: StatusBarItemsManager;
+}
 
 /** @internal */
 interface StatusBarComposerState {
@@ -18,8 +25,7 @@ interface StatusBarComposerState {
 /** StatusBar component composed from [[StatusBarItem]].
  * @beta
  */
-export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposerState> {
-
+export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
   /** @internal */
   public readonly state: StatusBarComposerState = {
     statusBarItems: [],
@@ -27,17 +33,26 @@ export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposer
 
   /** @internal */
   public componentDidMount() {
-    StatusBarItemsManager.onStatusBarItemsChanged.addListener(this._handleStatusBarItemsChanged);
-    this.setState({ statusBarItems: UiFramework.statusBarManager.itemsManager.items });
+    this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
+    this.setState({ statusBarItems: this.props.itemsManager.items });
   }
 
   /** @internal */
   public componentWillUnmount() {
-    StatusBarItemsManager.onStatusBarItemsChanged.removeListener(this._handleStatusBarItemsChanged);
+    this.props.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
+  }
+
+  /** @internal */
+  public componentDidUpdate(prevProps: StatusBarComposerProps) {
+    if (this.props.itemsManager !== prevProps.itemsManager) {
+      prevProps.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
+      this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
+      this.setState({ statusBarItems: this.props.itemsManager.items });
+    }
   }
 
   private _handleStatusBarItemsChanged = () => {
-    this.setState({ statusBarItems: UiFramework.statusBarManager.itemsManager.items });
+    this.setState({ statusBarItems: this.props.itemsManager.items });
   }
 
   private getSectionItems(section: StatusBarSection): React.ReactNode[] {
@@ -60,21 +75,15 @@ export class StatusBarComposer extends React.PureComponent<{}, StatusBarComposer
 
     return (
       <StatusBarSpaceBetween>
-        {leftItems.length > 0 &&
-          <StatusBarLeftSection>
-            {leftItems}
-          </StatusBarLeftSection>
-        }
-        {centerItems.length > 0 &&
-          <StatusBarCenterSection>
-            {centerItems}
-          </StatusBarCenterSection>
-        }
-        {rightItems.length > 0 &&
-          <StatusBarRightSection>
-            {rightItems}
-          </StatusBarRightSection>
-        }
+        <StatusBarLeftSection>
+          {leftItems}
+        </StatusBarLeftSection>
+        <StatusBarCenterSection>
+          {centerItems}
+        </StatusBarCenterSection>
+        <StatusBarRightSection>
+          {rightItems}
+        </StatusBarRightSection>
       </StatusBarSpaceBetween>
     );
   }
