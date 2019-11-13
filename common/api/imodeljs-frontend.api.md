@@ -1786,6 +1786,19 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
+// @internal
+export abstract class ContextTileLoader extends TileLoader {
+    constructor();
+    // (undocumented)
+    computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    // (undocumented)
+    readonly drawAsRealityTiles: boolean;
+    // (undocumented)
+    readonly preloadRealityParentDepth: number;
+    // (undocumented)
+    readonly preloadRealityParentSkip: number;
+    }
+
 // @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
@@ -3928,7 +3941,7 @@ export interface MapTileGeometryAttributionProvider {
 }
 
 // @internal (undocumented)
-export abstract class MapTileLoaderBase extends TileLoader {
+export abstract class MapTileLoaderBase extends ContextTileLoader {
     constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
     // (undocumented)
     protected _applyLights: boolean;
@@ -3954,8 +3967,6 @@ export abstract class MapTileLoaderBase extends TileLoader {
     abstract readonly maxDepth: number;
     // (undocumented)
     protected _modelId: Id64String;
-    // (undocumented)
-    readonly parentsAndChildrenExclusive: boolean;
     // (undocumented)
     readonly priority: Tile.LoadPriority;
     // (undocumented)
@@ -7349,7 +7360,7 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
 // @internal
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
     // (undocumented)
-    computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    readonly clipLowResolutionTiles: boolean;
     // (undocumented)
     abstract readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
@@ -7391,6 +7402,12 @@ export class ThreeAxes {
 export class Tile implements IDisposable, RenderMemory.Consumer {
     constructor(props: Tile.Params);
     // (undocumented)
+    addBoundingRectangle(builder: GraphicBuilder, color: ColorDef): void;
+    // (undocumented)
+    allChildrenIncluded(tiles: Tile[]): boolean;
+    // (undocumented)
+    protected readonly _anyChildNotFound: boolean;
+    // (undocumented)
     readonly center: Point3d;
     // (undocumented)
     readonly children: Tile[] | undefined;
@@ -7425,6 +7442,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     readonly emptySubRangeMask: number;
     // (undocumented)
     protected _emptySubRangeMask?: number;
+    // (undocumented)
+    getContentClip(): ClipVector | undefined;
+    // (undocumented)
+    getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
     // (undocumented)
     protected _graphic?: RenderGraphic;
     // (undocumented)
@@ -7464,6 +7485,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly isUndisplayableRootTile: boolean;
     // (undocumented)
+    protected loadChildren(): TileTree.LoadStatus;
+    // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)
     readonly loadStatus: Tile.LoadStatus;
@@ -7491,6 +7514,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     protected _request?: TileRequest;
     // (undocumented)
     readonly root: TileTree;
+    // (undocumented)
+    protected selectRealityChildren(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails): void;
+    // (undocumented)
+    selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails): void;
     // (undocumented)
     selectTiles(selected: Tile[], args: Tile.DrawArgs, numSkipped?: number): Tile.SelectParent;
     // (undocumented)
@@ -7640,6 +7667,10 @@ export namespace Tile {
 
 // @alpha
 export abstract class TileAdmin {
+    // @internal (undocumented)
+    abstract readonly contextPreloadParentDepth: number;
+    // @internal (undocumented)
+    abstract readonly contextPreloadParentSkip: number;
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
     // @internal (undocumented)
@@ -7695,6 +7726,8 @@ export abstract class TileAdmin {
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
+        contextPreloadParentDepth?: number;
+        contextPreloadParentSkip?: number;
         disableMagnification?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
@@ -7747,6 +7780,8 @@ export abstract class TileLoader {
     // (undocumented)
     readonly containsPointClouds: boolean;
     // (undocumented)
+    readonly drawAsRealityTiles: boolean;
+    // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
@@ -7762,6 +7797,10 @@ export abstract class TileLoader {
     abstract readonly maxDepth: number;
     // (undocumented)
     readonly parentsAndChildrenExclusive: boolean;
+    // (undocumented)
+    readonly preloadRealityParentDepth: number;
+    // (undocumented)
+    readonly preloadRealityParentSkip: number;
     // (undocumented)
     abstract readonly priority: Tile.LoadPriority;
     // (undocumented)
@@ -7832,13 +7871,23 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     debugForcedDepth?: number;
     // (undocumented)
+    static debugMissingTiles: boolean;
+    // (undocumented)
+    static debugSelectedRanges: boolean;
+    // (undocumented)
+    static debugSelectedTiles: boolean;
+    // (undocumented)
     dispose(): void;
     // (undocumented)
     draw(args: Tile.DrawArgs): void;
     // (undocumented)
+    drawRealityTiles(args: Tile.DrawArgs): void;
+    // (undocumented)
     drawScene(context: SceneContext): void;
     // (undocumented)
     expirationTime: BeDuration;
+    // (undocumented)
+    getTraversalChildren(depth: number): TraversalChildrenDetails;
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -7863,9 +7912,13 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     protected _rootTile: Tile;
     // (undocumented)
+    selectRealityTiles(args: Tile.DrawArgs, displayedDescendants: Tile[][]): Tile[];
+    // (undocumented)
     selectTiles(args: Tile.DrawArgs): Tile[];
     // (undocumented)
     selectTilesForScene(context: SceneContext): Tile[];
+    // (undocumented)
+    traversalChildrenByDepth: TraversalChildrenDetails[];
     // (undocumented)
     readonly viewFlagOverrides: ViewFlag.Overrides;
     // (undocumented)
@@ -8372,6 +8425,41 @@ export class TouchCursor implements CanvasDecoration {
     protected _size: number;
     // (undocumented)
     protected _yOffset: number;
+}
+
+// @internal (undocumented)
+export class TraversalChildrenDetails {
+    // (undocumented)
+    combine(parentDetails: TraversalDetails): void;
+    // (undocumented)
+    getChildDetail(index: number): TraversalDetails;
+    // (undocumented)
+    initialize(): void;
+}
+
+// @internal (undocumented)
+export class TraversalDetails {
+    // (undocumented)
+    initialize(): void;
+    // (undocumented)
+    queuedChildren: Tile[];
+}
+
+// @internal (undocumented)
+export class TraversalSelectionContext {
+    constructor(selected: Tile[], displayedDescendants: Tile[][]);
+    // (undocumented)
+    displayedDescendants: Tile[][];
+    // (undocumented)
+    missing: Tile[];
+    // (undocumented)
+    preload(tile: Tile): void;
+    // (undocumented)
+    preloaded: Set<Tile>;
+    // (undocumented)
+    selected: Tile[];
+    // (undocumented)
+    selectOrQueue(tile: Tile, traversalDetails: TraversalDetails): void;
 }
 
 // @alpha
@@ -9972,6 +10060,8 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     readonly maxDepth: number;
+    // (undocumented)
+    readonly parentsAndChildrenExclusive: boolean;
     // (undocumented)
     requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
 }

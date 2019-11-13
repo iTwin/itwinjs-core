@@ -53,6 +53,10 @@ export abstract class TileAdmin {
   public abstract get realityTileExpirationTime(): BeDuration;
   /** @internal */
   public abstract get tileTreeExpirationTime(): BeDuration | undefined;
+  /** @internal */
+  public abstract get contextPreloadParentDepth(): number;
+  /** @internal */
+  public abstract get contextPreloadParentSkip(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -254,6 +258,25 @@ export namespace TileAdmin {
      * Default value: false
      */
     disableMagnification?: boolean;
+
+    /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
+     * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default
+     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents.  This generally preloas around 20% more tiles than are required.
+     * Default value: 2.
+     * Minimum value 0.
+     * Maximum value 8.
+     * @alpha
+     */
+    contextPreloadParentDepth?: number;
+    /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
+     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded.  The default value of 1 will skip
+     * immediate parents and significantly reduce the number of preloaded tiles without significant reducing the value of preloading.
+     * Default value: 1;
+     * Minimum value: 0.
+     * Maximum value: 5.
+     * @alpha
+     */
+    contextPreloadParentSkip?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -406,6 +429,8 @@ class Admin extends TileAdmin {
   private readonly _tileExpirationTime: BeDuration;
   private readonly _realityTileExpirationTime: BeDuration;
   private readonly _treeExpirationTime?: BeDuration;
+  private readonly _contextPreloadParentDepth: number;
+  private readonly _contextPreloadParentSkip: number;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -460,6 +485,10 @@ class Admin extends TileAdmin {
     this._treeExpirationTime = clamp(options.tileTreeExpirationTime, 10, 3600);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
+    // If unspecified preload 2 levels of parents for context tiles.
+    this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
+    // If unspecified skip one leveo before prealoading  of parents of context tiles.
+    this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
@@ -468,7 +497,8 @@ class Admin extends TileAdmin {
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
-
+  public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }
+  public get contextPreloadParentSkip() { return this._contextPreloadParentSkip; }
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     // The input is from the backend, telling us precisely the maximum major+minor version it can produce.
     // Ensure front-end does not request tiles of a newer major version than backend can supply or it can read; and also limit major version

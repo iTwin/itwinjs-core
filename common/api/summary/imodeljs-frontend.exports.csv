@@ -83,6 +83,7 @@ internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
 internal;ContextMode
 internal;ContextRealityModelState
+internal;class ContextTileLoader 
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
@@ -402,6 +403,9 @@ public;ToolTipOptions
 internal;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;TraversalChildrenDetails
+internal;TraversalDetails
+internal;TraversalSelectionContext
 alpha;TwoWayViewportSync
 alpha;UiItemNode
 alpha;UiProviderRegisteredEventArgs

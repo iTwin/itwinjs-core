@@ -176,14 +176,14 @@ export class TerrainSettings {
   public readonly providerName: TerrainProviderName;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration.  Default value: 1.0 */
   public readonly exaggeration: number;
-  /**  Applying lighting can help to visualize subtle terrain variations. Default value: true */
+  /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
   public readonly applyLighting: boolean;
   /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value 0.0 */
   public readonly heightOrigin: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: ground */
   public readonly heightOriginMode: TerrainHeightOriginMode;
 
-  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = true, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Ground) {
+  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Ground) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;

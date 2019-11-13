@@ -158,10 +158,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     const boundRadius = streamBuffer.nextFloat64;
     const horizonOcclusion = streamBuffer.nextPoint3d64;
     const mapTile = tile as MapTile;
-    if (undefined !== mapTile) {
-      await mapTile.reprojectCorners();
-      mapTile.adjustHeights(minHeight, maxHeight);
-    }
+    if (undefined !== mapTile) mapTile.adjustHeights(minHeight, maxHeight);
 
     if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
     const vertexCount = streamBuffer.nextUint32;
