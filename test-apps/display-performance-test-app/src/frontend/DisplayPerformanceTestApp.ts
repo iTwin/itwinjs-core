@@ -1276,6 +1276,14 @@ async function main() {
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
   const testConfig = new DefaultConfigs(jsonData);
+
+  // Sign In to iModelHub if needed
+  if (jsonData.signIn) {
+    const signedIn: boolean = await signIn();
+    if (!signedIn)
+      return;
+  }
+
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];

@@ -27,6 +27,7 @@ The default configuration file allows you to specify the following:
 * where you want to output the files created by the test program
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using the iModelHub)
+* if you want to force the test to sign in to the iModelHub when the tests first start (i.e. set "signIn" to true to force user to sign in)
 * what size you want the view screen to be
 * how many times the scene should be rendered and skipped
 * how many times the scene should be be rendered and timings taken to later be averaged
@@ -167,6 +168,7 @@ Below is an example json config file:
     {
       "iModelName": "Wraith_MultiMulti.ibim",
       "outputPath": "D:/output/TimingTests/Wrath_MultiMultiPics",
+      "signIn": true,
       "view": {
         "width": 500,
         "height": 500
