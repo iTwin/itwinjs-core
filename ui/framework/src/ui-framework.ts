@@ -127,7 +127,7 @@ export * from "./ui-framework/zones/toolsettings/ToolUiManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 
-export * from "./ui-framework/tileloading/TileLoadingIndicator";
+export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";
 
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";

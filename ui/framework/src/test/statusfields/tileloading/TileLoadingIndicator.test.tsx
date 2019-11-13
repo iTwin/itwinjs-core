@@ -7,8 +7,8 @@ import * as enzyme from "enzyme";
 
 import { MockRender } from "@bentley/imodeljs-frontend";
 
-import TestUtils from "../TestUtils";
-import { TileLoadingIndicator } from "../../ui-framework";
+import TestUtils from "../../TestUtils";
+import { TileLoadingIndicator } from "../../../ui-framework";
 
 describe("TileLoadingIndicator", () => {
   before(async () => {
@@ -21,14 +21,20 @@ describe("TileLoadingIndicator", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("should render correctly", () => {
+  it("should render correctly footer", () => {
     enzyme.shallow(
-      <TileLoadingIndicator />,
+      <TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
+    ).should.matchSnapshot();
+  });
+
+  it("should render correctly not footer", () => {
+    enzyme.shallow(
+      <TileLoadingIndicator isInFooterMode={false} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
     ).should.matchSnapshot();
   });
 
   it("should unmount correctly", () => {
-    const sut = enzyme.mount(<TileLoadingIndicator />);
+    const sut = enzyme.mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
     sut.unmount();
   });
 });

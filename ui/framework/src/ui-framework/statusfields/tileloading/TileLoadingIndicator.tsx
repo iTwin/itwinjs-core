@@ -2,17 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @module StatusBar */
 
 import * as React from "react";
 import classnames from "classnames";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
-import { CommonProps, LoadingBar } from "@bentley/ui-core";
+import { UiFramework } from "../../UiFramework";
+import { StatusFieldProps } from "../StatusFieldProps";
 
 import "./TileLoadingIndicator.scss";
-import { UiFramework } from "../UiFramework";
+import { LoadingBar } from "@bentley/ui-core";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;
@@ -32,8 +33,8 @@ interface TileLoadingIndicatorState {
  * @internal
  */
 // istanbul ignore next
-export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
-  constructor(props: CommonProps) {
+export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
+  constructor(props: StatusFieldProps) {
     super(props);
     this.state = { label: "", progress: 0, enabled: false, finished: true };
   }
@@ -100,7 +101,12 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
 
   /** Renders TileLoadingIndicator */
   public render() {
-    const classes = classnames("uifw-tile-loading-bar", this.state.enabled && "uifw-tile-loading-bar-visible", this.props.className);
+    const classes = classnames(
+      "uifw-tile-loading-bar",
+      this.state.enabled && "uifw-tile-loading-bar-visible",
+      this.props.isInFooterMode && "nz-footer-mode",
+      this.props.className,
+    );
     return (
       <div className={classes} style={this.props.style}>
         <span>{this.state.label}</span>

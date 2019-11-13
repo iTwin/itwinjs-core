@@ -4461,8 +4461,8 @@ export interface TaskPropsList {
 export const ThemeManager: any;
 
 // @internal
-export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
-    constructor(props: CommonProps);
+export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
+    constructor(props: StatusFieldProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)

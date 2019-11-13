@@ -8,7 +8,8 @@ import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, SectionsStatusField, ViewAttributesStatusField,
   SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
-  StatusBarItem, StatusBarSection, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps, BooleanSyncUiListener,
+  StatusBarItem, StatusBarSection, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
+  BooleanSyncUiListener, TileLoadingIndicator,
 } from "@bentley/ui-framework";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
@@ -33,6 +34,8 @@ const SelectionInfo = withStatusFieldProps(SelectionInfoField);
 const SelectionScope = withStatusFieldProps(SelectionScopeField);
 // tslint:disable-next-line: variable-name
 const ClearEmphasis = withStatusFieldProps(ClearEmphasisStatusField);
+// tslint:disable-next-line: variable-name
+const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
 
 export class AppStatusBarItemProvider {
   public static readonly id = "ui-test-app.AppStatusBarItemProvider";
@@ -41,23 +44,24 @@ export class AppStatusBarItemProvider {
   public get statusBarItems(): ReadonlyArray<StatusBarItem> {
     if (!this._statusBarItems) {
       this._statusBarItems = [
-        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 1, <ToolAssistance />),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance />),
 
-        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Center, 2, <MessageCenter />),
-        StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 4, <DisplayStyle />),
-        StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 1, <ActivityCenter />),
-        StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 6, <ViewAttributes />),
-        StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 5, <Sections />),
-        StatusBarItemUtilities.createStatusBarItem("ClearEmphasis", StatusBarSection.Center, 4, <ClearEmphasis hideWhenUnused={true} />),
+        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Center, 20, <MessageCenter />),
+        StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 40, <DisplayStyle />),
+        StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 10, <ActivityCenter />),
+        StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 60, <ViewAttributes />),
+        StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 50, <Sections />),
+        StatusBarItemUtilities.createStatusBarItem("ClearEmphasis", StatusBarSection.Center, 40, <ClearEmphasis hideWhenUnused={true} />),
 
-        StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 3, (
+        StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 30, (
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(isVisible: boolean) => isVisible && <SnapMode />}
           </BooleanSyncUiListener>
         )),
 
-        StatusBarItemUtilities.createStatusBarItem("SelectionInfo", StatusBarSection.Right, 2, <SelectionInfo />),
-        StatusBarItemUtilities.createStatusBarItem("SelectionScope", StatusBarSection.Right, 1, <SelectionScope />),
+        StatusBarItemUtilities.createStatusBarItem("TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadIndicator />),
+        StatusBarItemUtilities.createStatusBarItem("SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />),
+        StatusBarItemUtilities.createStatusBarItem("SelectionScope", StatusBarSection.Right, 20, <SelectionScope />),
       ];
     }
     return this._statusBarItems;
