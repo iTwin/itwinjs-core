@@ -69,13 +69,13 @@ The samples are included in [imodeljs-samples](https://github.com/imodeljs/imode
 
 Depending on your choice of application type from step 3, you should start out with one of the following:
 
-[Basic Viewport App](https://github.com/imodeljs/imodeljs-samples/master/interactive-app/basic-viewport-app)<br/>
+[Basic Viewport App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/basic-viewport-app)<br/>
 An example of an *interactive application* which demonstrates how to:
 
 - Embed an iModel.js viewport into your application to display graphical data.
 - Include built-in tools for view navigation such as Pan, Rotate, Zoom.
 
-[iModel Query Agent](https://github.com/imodeljs/imodeljs-samples/master/agent-app/query-agent)<br/>
+[iModel Query Agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent)<br/>
 An example of an *agent application* which demonstrates how to:
 
 - Listen to changes made to an iModel on the iModelHub.
