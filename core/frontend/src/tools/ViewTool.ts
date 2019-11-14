@@ -13,7 +13,7 @@ import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
 import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator, areViewportsCompatible, DepthPointSource } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings, CoreTools } from "./Tool";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, ToolSettings, CoreTools } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -465,7 +465,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
 
     const prevSourceId = this.getDepthPointGeometryId();
-    const showDepthChanged = ((0 === this.nPts && undefined !== this.getDepthPoint(ev, true)) || this.clearDepthPoint());
+    const showDepthChanged = (undefined !== this.getDepthPoint(ev, true) || this.clearDepthPoint());
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
@@ -588,7 +588,18 @@ export abstract class ViewManip extends ViewTool {
       if (this.inHandleModify)
         return;
       if (IModelApp.tentativePoint.isActive) {
-        this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
+        let tentPt = IModelApp.tentativePoint.getPoint();
+        if (!IModelApp.tentativePoint.isSnapped) {
+          if (undefined === this._depthPreview && this.targetCenterLocked) {
+            const ev = new BeButtonEvent();
+            IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+            this.targetCenterLocked = false; // Depth preview won't be active (or requested) if target is currently locked...
+            this.getDepthPoint(ev, true);
+          }
+          if (undefined !== this._depthPreview && !this._depthPreview.isDefaultDepth)
+            tentPt = this._depthPreview.plane.getOriginRef(); // Prefer valid depth preview point to unsnapped tentative location...
+        }
+        this.setTargetCenterWorld(tentPt, true, false);
         IModelApp.tentativePoint.clear(true); // Clear tentative, there won't be a datapoint to accept...
       }
       return;
@@ -792,11 +803,10 @@ export abstract class ViewManip extends ViewTool {
 class ViewTargetCenter extends ViewingToolHandle {
   public get handleType() { return ViewHandleType.TargetCenter; }
   public checkOneShot(): boolean { return false; } // Don't exit tool after moving target in single-shot mode...
-
   public firstPoint(ev: BeButtonEvent) {
-    if (!ev.viewport)
+    if (undefined === ev.viewport)
       return false;
-    IModelApp.accuSnap.enableSnap(true);
+    ev.viewport.viewCmdTargetCenter = undefined; // Clear current saved target, must accept a new location with ctrl...
     return true;
   }
 
@@ -852,6 +862,9 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (!this.viewTool.targetCenterLocked && !this.viewTool.inHandleModify)
       return; // Don't display default target center, will be updated to use pick point on element...
 
+    if (hasFocus && this.viewTool.inHandleModify)
+      return; // Cross display handled by preview depth point...
+
     let sizeInches = 0.2;
     if (!hasFocus && this.viewTool.inHandleModify) {
       const hitHandle = this.viewTool.viewHandles.hitHandle;
@@ -865,16 +878,19 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
-    if (ev.viewport !== this.viewTool.viewport)
+    if (inDynamics || ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics, InputSource.Touch === ev.inputSource ? false : !inDynamics);
-    ev.viewport!.invalidateDecorations();
-
-    if (!inDynamics)
-      IModelApp.accuSnap.enableSnap(false);
+    const visiblePoint = this.viewTool.getDepthPoint(ev);
+    this.viewTool.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : ev.point, true, ev.isControlKey); // Lock target for just this tool instance, only save if control is down...
 
     return false; // false means don't do screen update
+  }
+
+  /** @internal */
+  public needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean {
+    const focusHandle = this.viewTool.inHandleModify ? this.viewTool.viewHandles.focusHandle : undefined;
+    return (undefined !== focusHandle && ViewHandleType.TargetCenter === focusHandle.handleType);
   }
 }
 
