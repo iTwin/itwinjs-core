@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geo-photo-plugin",
-  "version": "1.8.0-dev.14",
+  "version": "1.8.0-dev.15",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {
@@ -57,12 +57,12 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "1.8.0-dev.14",
-    "@bentley/build-tools": "1.8.0-dev.14",
-    "@bentley/webpack-tools": "1.8.0-dev.14",
-    "@bentley/config-loader": "1.8.0-dev.14",
-    "@bentley/express-server": "1.8.0-dev.14",
-    "@bentley/imodeljs-backend": "1.8.0-dev.14",
+    "@bentley/certa": "1.8.0-dev.15",
+    "@bentley/build-tools": "1.8.0-dev.15",
+    "@bentley/webpack-tools": "1.8.0-dev.15",
+    "@bentley/config-loader": "1.8.0-dev.15",
+    "@bentley/express-server": "1.8.0-dev.15",
+    "@bentley/imodeljs-backend": "1.8.0-dev.15",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
@@ -79,17 +79,17 @@
     "source-map-loader": "^0.2.3"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.8.0-dev.14",
-    "@bentley/geometry-core": "1.8.0-dev.14",
-    "@bentley/imodeljs-clients": "1.8.0-dev.14",
-    "@bentley/imodeljs-common": "1.8.0-dev.14",
-    "@bentley/imodeljs-i18n": "1.8.0-dev.14",
-    "@bentley/imodeljs-frontend": "1.8.0-dev.14",
-    "@bentley/imodeljs-quantity": "1.8.0-dev.14",
-    "@bentley/ui-core": "1.8.0-dev.14",
-    "@bentley/ui-components": "1.8.0-dev.14",
-    "@bentley/ui-ninezone": "1.8.0-dev.14",
-    "@bentley/ui-framework": "1.8.0-dev.14",
+    "@bentley/bentleyjs-core": "1.8.0-dev.15",
+    "@bentley/geometry-core": "1.8.0-dev.15",
+    "@bentley/imodeljs-clients": "1.8.0-dev.15",
+    "@bentley/imodeljs-common": "1.8.0-dev.15",
+    "@bentley/imodeljs-i18n": "1.8.0-dev.15",
+    "@bentley/imodeljs-frontend": "1.8.0-dev.15",
+    "@bentley/imodeljs-quantity": "1.8.0-dev.15",
+    "@bentley/ui-core": "1.8.0-dev.15",
+    "@bentley/ui-components": "1.8.0-dev.15",
+    "@bentley/ui-ninezone": "1.8.0-dev.15",
+    "@bentley/ui-framework": "1.8.0-dev.15",
     "react": "^16.8.0"
   }
 }
