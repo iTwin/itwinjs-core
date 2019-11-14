@@ -19,6 +19,7 @@
 - [Organizing Models and Elements](./intro/organizing-models-and-elements.md)
 - [Modeling Systems](./intro/modeling-systems.md)
 - [Overlapping Systems](./intro/overlapping-systems.md)
+- [3D Guidance](./intro/3d-guidance.md)
 - [Physical Models and Elements](./intro/physical-models-and-elements.md)
 - [Functional Models and Elements](./intro/functional-models-and-elements.md)
 - [Analysis Models and Elements](./intro/analysis-models-and-elements.md)

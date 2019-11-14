@@ -46,6 +46,7 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 |---|-------------|------|
 | Rule | Use singular form | E.g. `File` not `Files`|
 | Rule | When combining terms, arrange them in increasing order of significance|E.g. `CableCar`, `AnalogWaterMeter`<br><br>**Exceptions:** `2d` and `3d` because names can't start with numerals |
+| Rec. | Names of direct or indirect specializations of `bis:ElementAspect` should end with `Aspect`.|
 | Rec. | Do not use prepositions such as `Of`, `With`, `On`, `An`, `In`, `From`, etc... | |
 
 ## Property (including “Navigation” Properties)

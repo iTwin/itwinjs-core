@@ -11,6 +11,7 @@
 - [Relationship Fundamentals](./relationship-fundamentals.md)
 - [Schemas (“Domains”)](./schemas-domains.md)
 - [Information Hierarchy](./information-hierarchy.md)
+- [3D Guidance](./3d-guidance.md)
 - [Physical Models and Elements](./physical-models-and-elements.md)
 - [Functional Models and Elements](./functional-models-and-elements.md)
 - [Analysis Models and Elements](./analysis-models-and-elements.md)
