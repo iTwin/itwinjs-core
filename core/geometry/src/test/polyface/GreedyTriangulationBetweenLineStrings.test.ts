@@ -24,24 +24,33 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     const z0 = 0;
     const z1 = 1;
     const dataA = [[0, 0, z0], [1, 0, z0], [2, 0, z0], [2, 1, z0], [3, 1, z0], [3, 2, z0]];
-    const dataB = [[0, 0, z1], [1, 0, z1], [1.5, 0, z1], [2, 0, z1], [2, 1, z1], [3, 1, z1], [3, 2, z1]];
+    const dataB0 = [[0, 0, z1], [1, 0, z1], [1.5, 0, z1], [2, 0, z1], [2, 1, z1], [3, 1, z1], [3, 2, z1]];
+    const dataB1 = [[0, 1, z1], [1, 0, z1], [1.5, 0, z1], [2, 0, z1], [2, 1, z1], [3, 1, z1], [3, 2, z1]];
     let x0 = 0.0;
     const dx = 8;
     const dy = 8;
     const dz = 0.01;  // output stringers a little above and below
-    for (let nA = 2; nA <= dataA.length; nA++) {
-      const pointA = GrowableXYZArray.create(dataA.slice(0, nA));
-      let y0 = 0;
-      for (let nB = 1; nB <= dataB.length; nB++) {
-        const pointB = GrowableXYZArray.create(dataB.slice(0, nB));
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA), x0, y0, -dz);
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointB), x0, y0, dz);
-        const builder = PolyfaceBuilder.create();
-        builder.addGreedyTriangulationBetweenLineStrings(pointA, pointB);
-        GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
-        y0 += dy;
+    for (const dataB of [dataB0, dataB1]) {
+      for (let nA = 2; nA <= dataA.length; nA++) {
+        const pointA = GrowableXYZArray.create(dataA.slice(0, nA));
+        let y0 = 0;
+        for (let nB = 1; nB <= dataB.length; nB++) {
+          const pointB = GrowableXYZArray.create(dataB.slice(0, nB));
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA), x0, y0, -dz);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointB), x0, y0, dz);
+          const builder = PolyfaceBuilder.create();
+          builder.addGreedyTriangulationBetweenLineStrings(pointA, pointB);
+          y0 += dy;
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
+          const builder1 = PolyfaceBuilder.create();
+          builder1.addGreedyTriangulationBetweenLineStrings(pointB, pointA);
+          y0 += dy;
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x0, y0);
+          y0 += 2 * dy;
+        }
+        x0 += dx;
       }
-      x0 += dx;
+      x0 += 2 * dx;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "zigzag");
