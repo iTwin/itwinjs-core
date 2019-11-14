@@ -19,10 +19,12 @@
     "NoElements": "No Elements Found",
     "ByApp": "Element not valid for tool",
     "Transient": "Decoration is not valid for this tool",
-    "NotSnappable": "SubCategory has snapping turned off",
-    "NotLocatable": "SubCategory has locate turned off",
+    "NotSnappable": "Not snappable with current snap mode(s)",
+    "NotLocatable": "Element is not locatable",
     "ExternalIModel": "iModel is not locatable",
-    "RealityModelSnapMode": "Reality models restricted to nearest snap"
+    "RealityModelSnapMode": "Reality models restricted to nearest snap",
+    "NotSnappableSubCategory": "SubCategory has snapping turned off",
+    "NotLocatableSubCategory": "SubCategory has locate turned off"
   },
   "Element": {
     "Id": "Id",
