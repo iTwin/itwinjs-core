@@ -440,7 +440,7 @@ export class GpuProfiler {
 
 // @alpha
 export class InspectElementTool extends PrimitiveTool {
-    constructor(options?: GeometrySummaryOptions, elementId?: Id64String);
+    constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]);
     // (undocumented)
     autoLockTarget(): void;
     // (undocumented)
