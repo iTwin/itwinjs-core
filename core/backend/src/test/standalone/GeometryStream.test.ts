@@ -670,8 +670,8 @@ describe("GeometryStream", () => {
         gotHeader = true;
       } else {
         assert.isDefined(entry.textString);
-      const origin = Point3d.fromJSON(entry.textString!.origin);
-      const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
+        const origin = Point3d.fromJSON(entry.textString!.origin);
+        const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
         assert.isTrue(origin.isAlmostZero);
         assert.isTrue(rotation.isIdentity());
       }
