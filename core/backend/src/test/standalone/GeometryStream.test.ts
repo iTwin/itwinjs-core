@@ -922,7 +922,6 @@ describe("GeometryStream", () => {
 
       const partProps: GeometryPartProps = {
         classFullName: GeometryPart.classFullName,
-        iModel: imodel,
         model: IModel.dictionaryId,
         code: Code.createEmpty(),
         geom: builder.geometryStream,
