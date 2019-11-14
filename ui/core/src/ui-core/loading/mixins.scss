@@ -6,7 +6,7 @@
 
 @mixin uicore-spinner($size, $borderSize: $size / 8, $activeColor: $buic-foreground-primary, $selector: "&::after", $time: 1.5s) {
   // Animation Keyframes
-  @keyframes spinner {
+  @keyframes uicoreSpinner {
     0% {
       transform: translate3d(-50%, -50%, 0) rotate(0deg);
     }
@@ -43,7 +43,7 @@
     left: 50%;
     top: 50%;
 
-    animation: $time linear infinite spinner;
+    animation: $time 0.1s linear infinite uicoreSpinner;
     transform: translate3d(-50%, -50%, 0);
     transform-origin: center;
     will-change: transform;

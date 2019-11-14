@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { Dialog, Spinner, SpinnerSize, LoadingSpinner, FillCentered } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
@@ -33,42 +33,97 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
         opened={this.state.opened}
         modal={true}
         width={470}
-        height={370}
+        height={700}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
         onOutsideClick={this._handleCancel}
       >
-        <div style={{ width: "450px" }}>
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
+        <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
+          <span style={{ flex: "1", marginRight: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
+          <span style={{ flex: "1", marginLeft: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
         </div>
-        <div style={{ width: "450px" }}>
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
+        <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
+          <span style={{ flex: "1", marginRight: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
+          <span style={{ flex: "1", marginLeft: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
         </div>
-        <div style={{ width: "450px" }}>
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
-          <Spinner size={SpinnerSize.XLarge} />
-          <Spinner size={SpinnerSize.Large} />
-          <Spinner size={SpinnerSize.Medium} />
-          <Spinner size={SpinnerSize.Small} />
+        <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
+          <span style={{ flex: "1", marginRight: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
+          <span style={{ flex: "1", marginLeft: "5px" }}>
+            <FillCentered>
+              <Spinner size={SpinnerSize.XLarge} />
+              <Spinner size={SpinnerSize.Large} />
+              <Spinner size={SpinnerSize.Medium} />
+              <Spinner size={SpinnerSize.Small} />
+            </FillCentered>
+          </span>
         </div>
-      </Dialog>
+        <br />
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <span style={{ flex: "1", marginRight: "5px" }}>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.XLarge} message="This is a LoadingSpinner" />
+            </div>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.Large} message="This is a LoadingSpinner" />
+            </div>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.Medium} message="This is a LoadingSpinner" />
+            </div>
+            <div style={{ border: "1px solid black" }}>
+              <LoadingSpinner size={SpinnerSize.Small} message="This is a LoadingSpinner" />
+            </div>
+          </span>
+          <span style={{ flex: "1", marginLeft: "5px" }}>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.XLarge} message="This is a LoadingSpinner" messageOnTop={true} />
+            </div>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.Large} message="This is a LoadingSpinner" messageOnTop={true} />
+            </div>
+            <div style={{ border: "1px solid black", marginBottom: "10px" }}>
+              <LoadingSpinner size={SpinnerSize.Medium} message="This is a LoadingSpinner" messageOnTop={true} />
+            </div>
+            <div style={{ border: "1px solid black" }}>
+              <LoadingSpinner size={SpinnerSize.Small} message="This is a LoadingSpinner" messageOnTop={true} />
+            </div>
+          </span>
+        </div>
+      </Dialog >
     );
   }
 
