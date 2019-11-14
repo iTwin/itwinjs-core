@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
 import { PolylineParams } from "../primitives/VertexTable";
 import { Target } from "./Target";
@@ -34,8 +35,8 @@ export class PolylineGeometry extends LUTGeometry {
 
   public get lutBuffers() { return this._buffers.buffers; }
 
-  private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams) {
-    super();
+  private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams, viOrigin: Point3d | undefined) {
+    super(viOrigin);
     this.vertexParams = params.vertices.qparams;
     this._hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     this.lineWeight = params.weight;
@@ -120,7 +121,7 @@ export class PolylineGeometry extends LUTGeometry {
     bufs.unbind();
   }
 
-  public static create(params: PolylineParams): PolylineGeometry | undefined {
+  public static create(params: PolylineParams, viewIndependentOrigin: Point3d | undefined): PolylineGeometry | undefined {
     const lut = VertexLUT.createFromVertexTable(params.vertices);
     if (undefined === lut)
       return undefined;
@@ -129,6 +130,6 @@ export class PolylineGeometry extends LUTGeometry {
     if (undefined === buffers)
       return undefined;
 
-    return new PolylineGeometry(lut, buffers, params);
+    return new PolylineGeometry(lut, buffers, params, viewIndependentOrigin);
   }
 }
