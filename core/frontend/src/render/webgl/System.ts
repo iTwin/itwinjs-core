@@ -52,7 +52,7 @@ import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
@@ -537,6 +537,12 @@ const enum VertexAttribState {
   InstancedEnabled = Instanced | Enabled,
 }
 
+function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGeometry | undefined, instancesOrVIOrigin: InstancedGraphicParams | Point3d | undefined): RenderGraphic | undefined {
+  const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
+  const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
+  return Primitive.create(() => createGeom(viOrigin), instances);
+}
+
 /** @internal */
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer {
   public readonly canvas: HTMLCanvasElement;
@@ -694,9 +700,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
 
-  public createMesh(params: MeshParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
-  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return Primitive.create(() => PolylineGeometry.create(params), instances); }
-  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return Primitive.create(() => PointStringGeometry.create(params), instances); }
+  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
+  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
+  }
+  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    return createPrimitive((viOrigin) => PointStringGeometry.create(params, viOrigin), instances);
+  }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }

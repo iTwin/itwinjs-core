@@ -5,6 +5,7 @@
 /** @module WebGL */
 
 import { IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
@@ -41,9 +42,11 @@ export class MeshData implements IDisposable {
   public readonly hasBakedLighting: boolean;
   public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
+  public readonly viewIndependentOrigin?: Point3d;
 
-  private constructor(lut: VertexLUT, params: MeshParams) {
+  private constructor(lut: VertexLUT, params: MeshParams, viOrigin: Point3d | undefined) {
     this.lut = lut;
+    this.viewIndependentOrigin = viOrigin;
 
     this.hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
@@ -62,9 +65,9 @@ export class MeshData implements IDisposable {
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
   }
 
-  public static create(params: MeshParams): MeshData | undefined {
+  public static create(params: MeshParams, viOrigin: Point3d | undefined): MeshData | undefined {
     const lut = VertexLUT.createFromVertexTable(params.vertices, params.auxChannels);
-    return undefined !== lut ? new MeshData(lut, params) : undefined;
+    return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
 
   public dispose() {
@@ -91,12 +94,14 @@ export class MeshGraphic extends Graphic {
   private readonly _primitives: Primitive[] = [];
   private readonly _instances?: InstanceBuffers;
 
-  public static create(params: MeshParams, instances?: InstancedGraphicParams): MeshGraphic | undefined {
+  public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | Point3d): MeshGraphic | undefined {
+    const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
+    const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
     const buffers = undefined !== instances ? InstanceBuffers.create(instances, true) : undefined;
     if (undefined === buffers && undefined !== instances)
       return undefined;
 
-    const data = MeshData.create(params);
+    const data = MeshData.create(params, viOrigin);
     return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
   }
 
@@ -177,7 +182,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
-    super();
+    super(mesh.viewIndependentOrigin);
     this._numIndices = numIndices;
     this.mesh = mesh;
   }
