@@ -3407,39 +3407,12 @@ export class IModelApp {
     static readonly initialized: boolean;
     // @internal (undocumented)
     static readonly locateManager: ElementLocateManager;
-    // @beta
-    static logoParams: {
-        card: {
-            className: string;
-            style: {
-                width: string;
-                whiteSpace: string;
-                border: string;
-                padding: string;
-                margin: string;
-                background: string;
-                boxShadow: string;
-                borderRadius: string;
-                borderTopStyle: string;
-                borderLeftStyle: string;
-            };
-        };
-        image: {
-            source: string;
-            width: number;
-            height: number;
-            className: string;
-            opacity: string;
-        };
-    };
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     // @internal (undocumented)
-    static makeLogo(): HTMLImageElement;
+    static makeIModelJsLogoCard(): HTMLDivElement;
     // @beta
-    static makeLogoCard(el?: HTMLElement): HTMLDivElement;
-    // @internal (undocumented)
-    static makeLogoCards(vp: ScreenViewport): HTMLDivElement;
+    static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
     static readonly notifications: NotificationManager;
     // @internal (undocumented)
     static readonly pluginAdmin: PluginAdmin;
@@ -6207,6 +6180,7 @@ export class ScreenViewport extends Viewport {
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
+    readonly logo: HTMLImageElement;
     maxUndoSteps: number;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;

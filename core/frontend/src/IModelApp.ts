@@ -29,6 +29,7 @@ import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
+import { UiAdmin } from "@bentley/ui-abstract";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -44,9 +45,22 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { ScreenViewport } from "./Viewport";
+
 declare var BUILD_SEMVER: string;
+
+// add the iModel.js frontend .css styles into DOM when we load
+(() => {
+  const style = document.createElement("style");
+  style.appendChild(document.createTextNode(`
+  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none;}
+  .logo-cards-div {position:relative;top:0%;left:0%;transition:top .3s;transition-timing-function:ease-out}
+  .logo-card p {margin:0;}
+  .logo-cards-container {position:absolute;bottom:0px;z-index:50;pointer-events:none;overflow:hidden;left:34px;height:0px}
+  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65));}
+  .imodeljs-logo:hover {opacity:1.0;}`,
+  ));
+  document.head.prepend(style);
+})();
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -354,93 +368,44 @@ export class IModelApp {
     };
   }
 
-  /** Parameters of the logo in the lower left corner and Logo Cards
-   * @beta
-   */
-  public static logoParams = {
-    card: {
-      className: "logo-card",
-      style: {
-        width: "300px",
-        whiteSpace: "normal",
-        border: "1px black solid",
-        padding: "5px",
-        margin: "5px",
-        background: "#b0c4de",
-        boxShadow: "#3c3c3c 3px 3px 10px",
-        borderRadius: "5px",
-        borderTopStyle: "none",
-        borderLeftStyle: "none",
-      },
-    },
-    image: {
-      source: "images/imodeljs.svg",
-      width: 32,
-      height: 32,
-      className: "imodeljs-logo",
-      opacity: ".6",
-    },
-  };
-
-  /** Supply a Logo Card for the application.
+  /** Applications may implement this method to supply a Logo Card.
    * @beta
    */
   public static applicationLogoCard?: () => HTMLDivElement;
 
-  /** Make a new Logo Card, optionally supplying its content.
+  /** Make a new Logo Card, optionally supplying its content and id.
    * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
    * @beta
    */
-  public static makeLogoCard(el?: HTMLElement): HTMLDivElement {
+  public static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement {
     const card = document.createElement("div");
-    card.className = this.logoParams.card.className;
-    const style = card.style as any;
-    const styles = this.logoParams.card.style as any;
-    for (const val in styles) {
-      if (val)
-        style[val] = styles[val];
-    }
+    card.className = "logo-card";
+    if (undefined !== id)
+      card.id = id;
     if (undefined !== el)
       card.appendChild(el);
     return card;
   }
 
-  private static getIModelJsLogoCard() {
+  /** @internal */
+  public static makeIModelJsLogoCard() {
     const imjsP = document.createElement("p");
-    imjsP.className = "imjs-attribution";
-    imjsP.style.margin = "0px";
     const poweredBy = document.createElement("span");
     poweredBy.innerText = this.i18n.translate("Notices.PoweredBy");
-    const logo = new Image();
+    const version = document.createElement("span");
+    version.innerText = this.applicationVersion;
+    const logo = document.createElement("img");
     logo.src = "images/imodeljs-logo.svg";
     logo.width = 80;
     logo.style.boxShadow = "black 1px 1px 5px";
+    logo.style.marginLeft = "5px";
+    logo.style.marginRight = "5px"; //
     const copyright = document.createElement("p");
-    copyright.style.margin = "0";
     copyright.innerHTML = this._copyrightNotice;
     imjsP.appendChild(poweredBy);
     imjsP.appendChild(logo);
+    imjsP.appendChild(version);
     imjsP.appendChild(copyright);
-    return this.makeLogoCard(imjsP);
-  }
-
-  /** @internal */
-  public static makeLogoCards(vp: ScreenViewport): HTMLDivElement {
-    const attrDiv = document.createElement("div");
-    if (undefined !== this.applicationLogoCard)
-      attrDiv.appendChild(this.applicationLogoCard());
-    attrDiv.appendChild(this.getIModelJsLogoCard());
-    vp.displayStyle.getAttribution(attrDiv, vp);
-    return attrDiv;
-  }
-  /** @internal */
-  public static makeLogo(): HTMLImageElement {
-    const imageProps = this.logoParams.image;
-    const image = new Image();
-    image.src = imageProps.source;
-    image.width = imageProps.width;
-    image.height = imageProps.height;
-    image.className = imageProps.className;
-    return image;
+    return this.makeLogoCard(imjsP, "imodeljs-logo-card");
   }
 }

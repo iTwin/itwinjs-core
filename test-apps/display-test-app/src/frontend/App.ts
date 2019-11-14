@@ -41,6 +41,8 @@ import {
   Surface,
 } from "./Surface";
 
+declare var BUILD_SEMVER: string;
+
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
@@ -227,15 +229,17 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard = () => {
       const div = document.createElement("div");
       const image = new Image();
-      image.src = "cold.svg";
-      image.width = 80;
+      image.src = "DTA.png";
+      image.width = 300;
       div.appendChild(image);
 
       const attr = document.createElement("p");
-      attr.style.margin = "0";
-      attr.innerText = "Display Test App";
+      attr.style.textAlign = "center";
+      attr.style.fontStyle = "italic";
+      attr.style.fontWeight = "bold";
+      attr.innerHTML = "Display Test App " + BUILD_SEMVER;
       div.appendChild(attr);
-      return IModelApp.makeLogoCard(div);
+      return IModelApp.makeLogoCard(div, "dta-app-name");
     };
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");

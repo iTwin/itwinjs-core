@@ -2878,16 +2878,7 @@ export class ScreenViewport extends Viewport {
   /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
   private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
-    // get the (computed) z-index value of the parent, as an integer.
-    let parentZ = 0;
-    const styleZ = window.getComputedStyle(this.vpDiv).zIndex;
-    if (null !== styleZ) {
-      parentZ = parseInt(styleZ, 10);
-      if (Number.isNaN(parentZ))
-        parentZ = 0;
-    }
-
-    element.style.zIndex = (parentZ + zIndex).toString();
+    element.style.zIndex = zIndex.toString();
     parent.appendChild(element);
   }
 
@@ -2901,42 +2892,57 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
+  private makeLogoCards(): HTMLDivElement {
+    const logoDiv = document.createElement("div");
+    logoDiv.className = "logo-cards-div";
+    logoDiv.appendChild(IModelApp.makeIModelJsLogoCard());
+    if (undefined !== IModelApp.applicationLogoCard)
+      logoDiv.appendChild(IModelApp.applicationLogoCard());
+    this.displayStyle.getAttribution(logoDiv, this);
+    return logoDiv;
+  }
+
+  private _logo!: HTMLImageElement;
+  /** internal */
+  public get logo() { return this._logo; }
+
   /** @internal */
   protected addLogo() {
-    const logo = IModelApp.makeLogo();
-    const logoStyle = logo.style;
-    logoStyle.left = logoStyle.bottom = "5px";
-    logoStyle.position = "absolute";
-    logoStyle.opacity = IModelApp.logoParams.image.opacity;
-    logoStyle.zIndex = "11";
+    const logo = document.createElement("img");
+    this._logo = logo;
+    logo.src = "images/imodeljs.svg";
+    logo.className = "imodeljs-logo";
     this.vpDiv.appendChild(logo);
 
     let popup: HTMLDivElement | undefined;
     const stopProp = (ev: MouseEvent, fn: () => void) => { fn(); ev.stopPropagation(); };
     logo.onmouseenter = (ev) => stopProp(ev, () => {
-      logoStyle.opacity = "1.0";
-      popup = IModelApp.makeLogoCards(this);
-      const popupStyle = popup.style;
-      popupStyle.position = "absolute";
-      popupStyle.bottom = "0px";
-      popupStyle.left = logo.width + 2 + "px";
-      popupStyle.zIndex = "50";
-      popupStyle.pointerEvents = "none";
+      popup = document.createElement("div"); // this div is to allow the logo cards to animate from the bottom of the view
+      popup.className = "logo-cards-container";
       this.vpDiv.appendChild(popup);
+
+      const cards = this.makeLogoCards();
+      cards.style.top = "100%"; // set it at the bottom of the container so it is entirely clipped off
+      popup.appendChild(cards);
+
+      setTimeout(() => {
+        if (popup)
+          popup.style.height = cards.clientHeight + 10 + "px"; // wait for a delay to allow the cards to load. We need to set the height before we start the animation
+        cards.style.top = "0%"; // this causes the "up" animation
+      }, 10);
     });
     logo.onclick = (ev) => stopProp(ev, () => {
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, IModelApp.makeLogoCards(this), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, this.makeLogoCards(), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
     });
     logo.onmouseleave = (ev) => stopProp(ev, () => {
-      logoStyle.opacity = IModelApp.logoParams.image.opacity;
-      if (undefined !== popup) {
+      if (undefined !== popup) { // if we have a popup showing, remove it
         this.vpDiv.removeChild(popup);
         popup = undefined;
       }
     });
     logo.onmousemove = (ev) => ev.stopPropagation();
-
   }
+
   /** @internal */
   protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, view: ViewState) {
     super(target, view);
@@ -2950,7 +2956,6 @@ export class ScreenViewport extends Viewport {
     div.className = "imodeljs-vp";
     this.addChildDiv(this.parentDiv, div, 0);
 
-    canvas.style.pointerEvents = "auto";
     this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
