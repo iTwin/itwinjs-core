@@ -126,6 +126,22 @@ export class MapTile extends Tile {
     public getContentClip(): ClipVector | undefined {
         return ClipVector.createCapture([ClipShape.createShape(this.getBoundaryShape())!]);
     }
+    public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
+        if (this.isEmpty || this.isRegionCulled(args))
+            return Tile.Visibility.OutsideFrustum;
+
+        if (!this.isDisplayable)
+            return Tile.Visibility.TooCoarse;
+
+        let pixelSize = args.getPixelSize(this);
+        const maxSize = this.maximumSize;
+
+        // In a parallel view, use the dot product with the map plane to limit the pixel size - this will avoid loading huge amounts of tiles that are not visible on edge.
+        if (!args.context.viewport.isCameraOn)
+            pixelSize *= Math.sqrt(Math.abs(args.context.viewport.rotation.coffs[8]));
+
+        return (pixelSize > maxSize) ? Tile.Visibility.TooCoarse : Tile.Visibility.Visible;
+    }
 }
 
 /**
@@ -195,7 +211,7 @@ export class MapTileTree extends TileTree {
         if (undefined === tile.children)
             return;
 
-        assert (rowCount * columnCount === tile.children.length);
+        assert(rowCount * columnCount === tile.children.length);
         for (let row = 0; row < rowCount; row++) {
             for (let column = 0; column < columnCount; column++) {
                 const child = tile.children![row * columnCount + column] as MapTile;
