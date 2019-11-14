@@ -8,7 +8,7 @@ import { TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { assert } from "@bentley/bentleyjs-core";
 import { QuadId, computeMercatorFractionToDb } from "./WebMapTileTree";
-import { Point3d, Range1d, Range3d, Transform, XYZProps, Angle, ClipVector, ClipShape, BilinearPatch } from "@bentley/geometry-core";
+import { Point3d, Range1d, Range3d, Transform, Angle, ClipVector, ClipShape } from "@bentley/geometry-core";
 import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -67,47 +67,41 @@ export class MapTile extends Tile {
         if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
             if (undefined === this._children) {
                 this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-                this._children = [];
-                const level = this.quadId.level + 1;
-                const column = this.quadId.column * 2;
-                const row = this.quadId.row * 2;
                 const mapTree = this._mapTree;
-                const rowMax = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesY : 2;
-                const columnMax = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesX : 2;
-                const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
-                const bilinearPatch = new BilinearPatch(this.corners[0], this.corners[1], this.corners[2], this.corners[3]);
-                const fractionalCorners = mapTree.getFractionalTileCorners(this.quadId);
-                const reprojectionRequired = mapTree.reprojectionRequired(this.depth + 1);
+                const rowCount = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesY : 2;
+                const columnCount = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesX : 2;
+                this.createChildren(mapTree.getChildCorners(this, columnCount, rowCount), columnCount, rowCount);
 
-                for (let i = 0; i < columnMax; i++) {
-                    for (let j = 0; j < rowMax; j++) {
-                        const quadId = new QuadId(level, column + i, row + j);
-                        const childFractionalCorners = mapTree.getFractionalTileCorners(quadId);
-                        const corners = [];
-                        for (let k = 0; k < 4; k++) {
-                            const u = (childFractionalCorners[k].x - fractionalCorners[0].x) / (fractionalCorners[1].x - fractionalCorners[0].x);
-                            const v = (childFractionalCorners[k].y - fractionalCorners[0].y) / (fractionalCorners[2].y - fractionalCorners[0].y);
-                            corners.push(bilinearPatch.uvFractionToPoint(u, v));
-                        }
-                        const range = Range3d.createArray(MapTile.computeRangeCorners(corners, this.heightRange));
-                        const child = new MapTile({ root: mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, mapTree.heightRange);
-                        this._children.push(child);
-                    }
+                if (mapTree.reprojectionRequired(this.depth + 1)) {
+                    mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
+                        this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+                    }).catch((_err) => {
+                        assert(false);
+                        this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
+                    });
                 }
-                if (reprojectionRequired) {
-                    const promises = new Array<Promise<void>>();
-                    for (const child of this._children)
-                        promises.push(mapTree.reprojectTileCorners(child as MapTile));
-
-                    Promise.all(promises).then((_) => { this._childrenLoadStatus = TileTree.LoadStatus.Loaded; }).catch((_err) => { assert(false);  this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
-                } else {
-                    this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
-                }
-            } else {
-                this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
             }
+            this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         }
         return this._childrenLoadStatus;
+    }
+    private createChildren(childCorners: Point3d[][], columnCount: number, rowCount: number) {
+        const mapTree = this._mapTree;
+        const level = this.quadId.level + 1;
+        const column = this.quadId.column * 2;
+        const row = this.quadId.row * 2;
+        const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
+        this._children = [];
+        for (let j = 0; j < rowCount; j++) {
+            for (let i = 0; i < columnCount; i++) {
+                const quadId = new QuadId(level, column + i, row + j);
+                const corners = childCorners[j * columnCount + i];
+                const range = Range3d.createArray(MapTile.computeRangeCorners(corners, this.heightRange));
+                const child = new MapTile({ root: this._mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, mapTree.heightRange);
+                this._children.push(child);
+            }
+        }
+        this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
     }
 
     public getBoundaryShape(z?: number) {
@@ -156,29 +150,69 @@ export class MapTileTree extends TileTree {
         const linearRangeSquared: number = params.iModel.projectExtents.diagonal().magnitudeSquared();
         this._gcsConverter = (gcsConverterAvailable && linearRangeSquared > 1000.0 * 1000.0) ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     }
-    public reprojectionRequired(depth: number): boolean { return this._gcsConverter !== undefined || depth >= MapTileTree.minReprojectionDepth; }
+    public reprojectionRequired(depth: number): boolean { return this._gcsConverter !== undefined && depth >= MapTileTree.minReprojectionDepth; }
+    private getChildGridPoints(tile: MapTile, columnCount: number, rowCount: number): Point3d[] {
+        const gridPoints = [];
+        const quadId = tile.quadId;
+        const deltaX = 1.0 / columnCount, deltaY = 1.0 / rowCount;
+        for (let row = 0; row <= rowCount; row++)
+            for (let column = 0; column <= columnCount; column++)
+                gridPoints.push(Point3d.create(this.mapTilingScheme.tileXToFraction(quadId.column + column * deltaX, quadId.level), this.mapTilingScheme.tileYToFraction(quadId.row + row * deltaY, quadId.level), 0.0));
 
-    public async reprojectTileCorners(tile: MapTile): Promise<void> {
-        if (!this._gcsConverter || tile.depth < MapTileTree.minReprojectionDepth)
-            return;
-        const fractionalCorners = this.getFractionalTileCorners(tile.quadId);
-        const requestProps = new Array<XYZProps>();
+        return gridPoints;
+    }
 
-        for (const fractionalCorner of fractionalCorners)
+    private getChildCornersFromGridPoints(gridPoints: Point3d[], columnCount: number, rowCount: number) {
+        const childCorners = new Array<Point3d[]>();
+        for (let row = 0; row < rowCount; row++) {
+            for (let column = 0; column < columnCount; column++) {
+                const index0 = column + row * (columnCount + 1);
+                const index1 = index0 + (columnCount + 1);
+                childCorners.push([gridPoints[index0], gridPoints[index0 + 1], gridPoints[index1], gridPoints[index1 + 1]]);
+            }
+        }
+        return childCorners;
+    }
+    public async reprojectTileCorners(tile: MapTile, columnCount: number, rowCount: number): Promise<void> {
+        const gridPoints = this.getChildGridPoints(tile, columnCount, rowCount);
+        const requestProps = [];
+        for (const gridPoint of gridPoints)
             requestProps.push({
-                x: this.mapTilingScheme.xFractionToLongitude(fractionalCorner.x) * Angle.degreesPerRadian,
-                y: this.mapTilingScheme.yFractionToLatitude(fractionalCorner.y) * Angle.degreesPerRadian,
+                x: this.mapTilingScheme.xFractionToLongitude(gridPoint.x) * Angle.degreesPerRadian,
+                y: this.mapTilingScheme.yFractionToLatitude(gridPoint.y) * Angle.degreesPerRadian,
                 z: this.groundBias,
             });
 
-        let iModelCoordinates = this._gcsConverter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+        let iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
         if (undefined !== iModelCoordinates.missing) {
-            await this._gcsConverter.getIModelCoordinatesFromGeoCoordinates(iModelCoordinates.missing);
-            iModelCoordinates = this._gcsConverter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+            await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(iModelCoordinates.missing);
+            iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
             assert(undefined === iModelCoordinates.missing);
         }
-        for (let i = 0; i < 4; i++)
-            tile.corners[i] = Point3d.fromJSON(iModelCoordinates.result[i]!.p);
+        for (let i = 0; i < gridPoints.length; i++)
+            gridPoints[i] = Point3d.fromJSON(iModelCoordinates.result[i]!.p);
+
+        if (undefined === tile.children)
+            return;
+
+        assert (rowCount * columnCount === tile.children.length);
+        for (let row = 0; row < rowCount; row++) {
+            for (let column = 0; column < columnCount; column++) {
+                const child = tile.children![row * columnCount + column] as MapTile;
+                const index0 = column + row * (columnCount + 1);
+                const index1 = index0 + (columnCount + 1);
+                child.corners[0].setFromPoint3d(gridPoints[index0]);
+                child.corners[1].setFromPoint3d(gridPoints[index0 + 1]);
+                child.corners[2].setFromPoint3d(gridPoints[index1]);
+                child.corners[3].setFromPoint3d(gridPoints[index1 + 1]);
+            }
+        }
+    }
+
+    public getChildCorners(tile: MapTile, columnCount: number, rowCount: number): Point3d[][] {
+        const gridPoints = this.getChildGridPoints(tile, columnCount, rowCount);
+        this._mercatorFractionToDb.multiplyPoint3dArrayInPlace(gridPoints);
+        return this.getChildCornersFromGridPoints(gridPoints, columnCount, rowCount);
     }
 
     public getFractionalTileCorners(quadId: QuadId): Point3d[] {

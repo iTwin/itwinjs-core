@@ -280,7 +280,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     /** The most recent time when tiles were selected for drawing. Used for purging least-recently-used tile trees to free up memory. */
     public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
 
-    public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
+    public selectTilesForScene(context: SceneContext): Tile[] { return this.loader.drawAsRealityTiles ? this.selectRealityTiles(this.createDrawArgs(context), new Array<Tile[]>()) : this.selectTiles(this.createDrawArgs(context)); }
     public selectTiles(args: Tile.DrawArgs): Tile[] {
         this._lastSelected = BeTimePoint.now();
         const selected: Tile[] = [];
