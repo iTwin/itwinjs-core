@@ -84,6 +84,9 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
 
+  public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
+  public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
+
   public get isEdge(): boolean {
     switch (this.renderOrder) {
       case RenderOrder.Edge:
@@ -149,11 +152,14 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
  * @internal
  */
 export abstract class LUTGeometry extends CachedGeometry {
+  private readonly _viewIndependentOrigin?: Point3d;
+
   public abstract get lutBuffers(): BuffersContainer;
 
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
   public get asLUT() { return this; }
+  public get viewIndependentOrigin() { return this._viewIndependentOrigin; }
 
   protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void { this._draw(0); }
@@ -166,7 +172,10 @@ export abstract class LUTGeometry extends CachedGeometry {
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get hasAnimation() { return this.lut.hasAnimation; }
 
-  protected constructor() { super(); }
+  protected constructor(viewIndependentOrigin?: Point3d) {
+    super();
+    this._viewIndependentOrigin = viewIndependentOrigin;
+  }
 }
 
 /** Parameters used to construct an IndexedGeometry

@@ -5,6 +5,7 @@
 /** @module WebGL */
 
 import { dispose, assert } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
 import { Target } from "./Target";
 import { LUTGeometry } from "./CachedGeometry";
@@ -31,8 +32,8 @@ export class PointStringGeometry extends LUTGeometry {
 
   public get lutBuffers() { return this.buffers; }
 
-  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean) {
-    super();
+  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean, viOrigin: Point3d | undefined) {
+    super(viOrigin);
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
     assert(undefined !== attrPos);
@@ -62,7 +63,7 @@ export class PointStringGeometry extends LUTGeometry {
     bufs.unbind();
   }
 
-  public static create(params: PointStringParams): PointStringGeometry | undefined {
+  public static create(params: PointStringParams, viOrigin: Point3d | undefined): PointStringGeometry | undefined {
     const indices = BufferHandle.createArrayBuffer(params.indices.data);
     if (undefined === indices)
       return undefined;
@@ -72,7 +73,7 @@ export class PointStringGeometry extends LUTGeometry {
       return undefined;
 
     const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
-    return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures);
+    return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
   }
 
   public dispose() {

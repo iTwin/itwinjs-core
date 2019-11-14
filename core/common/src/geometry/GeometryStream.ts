@@ -142,11 +142,34 @@ export interface GeometryPartInstanceProps {
   scale?: number;
 }
 
+/** Flags applied to the entire contents of a [[GeometryStreamProps]].
+ * @see GeometryStreamHeaderProps
+ * @public
+ */
+export enum GeometryStreamFlags {
+  /** No flags. */
+  None = 0,
+  /** When the geometry is displayed, it is always oriented to face the viewer. The placement origin of the element associated with the geometry is used as the rotation point.
+   * If the placement origin is outside of the view, the geometry will not necessarily be displayed, even if rotating it to face the viewer would cause its range to intersect the viewed volume.
+   */
+  ViewIndependent = 1 << 0,
+}
+
+/** An entry in a [[GeometryStreamProps]] containing [[GeometryStreamFlags]] that apply to the geometry stream as a whole.
+ * If this entry exists in the [[GeometryStreamProps]] array, it will always be the *first* entry.
+ * @public
+ */
+export interface GeometryStreamHeaderProps {
+  /** The flags applied to the geometry stream. */
+  flags: GeometryStreamFlags;
+}
+
 /** Allowed GeometryStream entries - should only set one value.
  * @see [GeometryStream]($docs/learning/common/geometrystream.md)
  * @public
  */
 export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
+  header?: GeometryStreamHeaderProps;
   appearance?: GeometryAppearanceProps;
   styleMod?: LineStyle.ModifierProps;
   fill?: AreaFillProps;
@@ -341,6 +364,42 @@ export class GeometryStreamBuilder {
     this.geometryStream.push({ brep: localBrep });
     return true;
   }
+
+  /** @internal */
+  public getHeader(): GeometryStreamHeaderProps | undefined {
+    return 0 < this.geometryStream.length ? this.geometryStream[0].header : undefined;
+  }
+
+  /** @internal */
+  public obtainHeader(): GeometryStreamHeaderProps {
+    const hdr = this.getHeader();
+    if (undefined !== hdr)
+      return hdr;
+
+    const entry = { header: { flags: GeometryStreamFlags.None } };
+    this.geometryStream.unshift(entry);
+    return entry.header;
+  }
+
+  /** Controls whether or not the geometry in the stream should be displayed as view-independent.
+   * When view-independent geometry is displayed, it is always oriented to face the viewer, using the placement origin of the element as the rotation point.
+   * If the placement origin is outside of the view, the geometry will not necessarily be displayed, even if rotating it to face the viewer would cause its range to intersect the viewed volume
+   * @public
+   */
+  public get isViewIndependent(): boolean {
+    const hdr = this.getHeader();
+    return undefined !== hdr && GeometryStreamFlags.None !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
+  }
+  public set isViewIndependent(viewIndependent: boolean) {
+    if (viewIndependent === this.isViewIndependent)
+      return;
+
+    const hdr = this.obtainHeader();
+    if (viewIndependent)
+      hdr.flags |= GeometryStreamFlags.ViewIndependent;
+    else
+      hdr.flags &= ~GeometryStreamFlags.ViewIndependent;
+  }
 }
 
 /** Holds current state information for [[GeometryStreamIterator]]. Each entry represents exactly one geometry primitive in the stream.
@@ -438,6 +497,8 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public geometryStream: GeometryStreamProps;
   /** Current entry information */
   public entry: GeometryStreamIteratorEntry;
+  /** Flags applied to the entire geometry stream. */
+  public readonly flags: GeometryStreamFlags;
   /** Current entry position */
   private _index = 0;
 
@@ -447,6 +508,12 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {
     this.geometryStream = geometryStream;
     this.entry = new GeometryStreamIteratorEntry(category !== undefined ? category : Id64.invalid);
+    if (0 < geometryStream.length && undefined !== geometryStream[0].header) {
+      this.flags = geometryStream[0].header.flags;
+      ++this._index;
+    } else {
+      this.flags = GeometryStreamFlags.None;
+    }
   }
 
   /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
@@ -609,4 +676,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry> {
     return this;
   }
+
+  /** @internal */
+  public get isViewIndependent(): boolean { return GeometryStreamFlags.None !== (this.flags & GeometryStreamFlags.ViewIndependent); }
 }

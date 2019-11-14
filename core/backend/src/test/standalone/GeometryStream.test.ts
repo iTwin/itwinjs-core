@@ -5,11 +5,33 @@
 import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType,
-  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, Gradient,
-  IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps,
+  AreaPattern,
+  BackgroundFill,
+  BRepEntity,
+  Code,
+  ColorByName,
+  ColorDef,
+  FillDisplay,
+  FontProps,
+  FontType,
+  GeometricElement3dProps,
+  GeometricElementProps,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamFlags,
+  GeometryStreamIterator,
+  GeometryStreamProps,
+  Gradient,
+  IModel,
+  LinePixels,
+  LineStyle,
+  MassPropertiesOperation,
+  MassPropertiesRequestProps,
+  TextString,
+  TextStringProps,
 } from "@bentley/imodeljs-common";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -641,13 +663,21 @@ describe("GeometryStream", () => {
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
+    let gotHeader = false;
     for (const entry of value.geom!) {
-      assert.isDefined(entry.textString);
+      expect(undefined === entry.header).to.equal(gotHeader);
+      if (undefined !== entry.header) {
+        gotHeader = true;
+      } else {
+        assert.isDefined(entry.textString);
       const origin = Point3d.fromJSON(entry.textString!.origin);
       const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
-      assert.isTrue(origin.isAlmostZero);
-      assert.isTrue(rotation.isIdentity());
+        assert.isTrue(origin.isAlmostZero);
+        assert.isTrue(rotation.isIdentity());
+      }
     }
+
+    expect(gotHeader).to.be.true;
 
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
@@ -802,6 +832,7 @@ describe("GeometryStream", () => {
 
     const geometryStream: GeometryStreamProps = [];
 
+    geometryStream.push({ header: { flags: 0 } });
     geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
     geometryStream.push({ fill: { display: FillDisplay.ByView } });
     geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
@@ -879,6 +910,56 @@ describe("GeometryStream", () => {
       assert.equal(entry.primitive.type, "brep");
       assert.isDefined(entry.brep);
     }
+  });
+
+  it("should preserve header with flags", () => {
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
+
+    const roundTrip = () => {
+      const iter = new GeometryStreamIterator(builder.geometryStream);
+      expect((iter.flags === GeometryStreamFlags.ViewIndependent)).to.equal(builder.isViewIndependent);
+
+      const partProps: GeometryPartProps = {
+        classFullName: GeometryPart.classFullName,
+        iModel: imodel,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        geom: builder.geometryStream,
+      };
+
+      const part = imodel.elements.createElement(partProps);
+      const partId = imodel.elements.insertElement(part);
+      imodel.saveChanges();
+
+      const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
+      expect(json.geom).not.to.be.undefined;
+      expect(json.geom!.length).to.equal(2);
+      expect(json.geom![0].header).not.to.be.undefined;
+      const flags = json.geom![0].header!.flags;
+      expect(flags).to.equal(builder.isViewIndependent ? GeometryStreamFlags.ViewIndependent : GeometryStreamFlags.None);
+
+      if (undefined !== builder.getHeader())
+        expect(JSON.stringify(builder.geometryStream[0])).to.equal(JSON.stringify(json.geom![0]));
+    };
+
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = true;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.true;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
   });
 });
 
