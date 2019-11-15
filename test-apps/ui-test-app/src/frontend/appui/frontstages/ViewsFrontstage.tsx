@@ -266,6 +266,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             />}
             defaultState={StagePanelState.Minimized}
             size={280}
+            minSize={300}
+            maxSize={800}
             widgets={this._leftPanel.widgets}
           />
         }

@@ -1803,7 +1803,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
     componentDidUpdate(): void;
     // (undocumented)
     render(): React.ReactNode;
-}
+    }
 
 // @internal
 export interface FrameworkStagePanelProps {
@@ -1825,6 +1825,10 @@ export interface FrameworkStagePanelProps {
     isTargeted: boolean;
     // (undocumented)
     location: StagePanelLocation;
+    // (undocumented)
+    maxSize?: number;
+    // (undocumented)
+    minSize?: number;
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
     // (undocumented)
@@ -4052,6 +4056,8 @@ export interface StagePanelProps {
     applicationData?: any;
     defaultState?: StagePanelState;
     header?: React.ReactNode;
+    maxSize?: number;
+    minSize?: number;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
