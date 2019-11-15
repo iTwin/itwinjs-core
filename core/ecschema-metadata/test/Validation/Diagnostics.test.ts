@@ -71,16 +71,15 @@ describe("Diagnostics tests", () => {
   });
 
   it("createSchemaDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createSchemaDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
+    const newClass = Diagnostics.createSchemaDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.Schema);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create Schema Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createSchemaDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
-    const instance = new newClass(testSchema, ["arg"]);
+    const newClass = Diagnostics.createSchemaDiagnosticClass("TestRuleSet-100", "Test Message");
+    const instance = new newClass(testSchema, ["arg"], Diagnostics.DiagnosticCategory.Message);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.Schema);
@@ -91,24 +90,23 @@ describe("Diagnostics tests", () => {
 
   it("createSchemaDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createSchemaDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createSchemaDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createSchemaDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createSchemaDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 
   it("createSchemaItemDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createSchemaItemDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
+    const newClass = Diagnostics.createSchemaItemDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create SchemaItem Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createSchemaItemDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
+    const newClass = Diagnostics.createSchemaItemDiagnosticClass("TestRuleSet-100", "Test Message");
     const entityClass = new EntityClass(testSchema, "TestClass");
-    const instance = new newClass(entityClass, ["arg"]);
+    const instance = new newClass(entityClass, ["arg"], Diagnostics.DiagnosticCategory.Message);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
@@ -119,24 +117,23 @@ describe("Diagnostics tests", () => {
 
   it("createSchemaItemDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createSchemaItemDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createSchemaItemDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createSchemaItemDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createSchemaItemDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 
   it("createClassDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createClassDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
+    const newClass = Diagnostics.createClassDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create Class Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createClassDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Message);
+    const newClass = Diagnostics.createClassDiagnosticClass("TestRuleSet-100", "Test Message");
     const entityClass = new EntityClass(testSchema, "TestClass");
-    const instance = new newClass(entityClass, ["arg"]);
+    const instance = new newClass(entityClass, ["arg"], Diagnostics.DiagnosticCategory.Message);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
@@ -147,25 +144,24 @@ describe("Diagnostics tests", () => {
 
   it("createClassDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createClassDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createClassDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createClassDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createClassDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 
   it("createPropertyDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createPropertyDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Warning);
+    const newClass = Diagnostics.createPropertyDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.Property);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Warning);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create Property Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createPropertyDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Warning);
+    const newClass = Diagnostics.createPropertyDiagnosticClass("TestRuleSet-100", "Test Message");
     const entityClass = new EntityClass(testSchema, "TestClass");
     const property = new PrimitiveProperty(entityClass, "TestProperty");
-    const instance = new newClass(property, ["arg"]);
+    const instance = new newClass(property, ["arg"], Diagnostics.DiagnosticCategory.Warning);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.Property);
@@ -176,25 +172,24 @@ describe("Diagnostics tests", () => {
 
   it("createPropertyDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createPropertyDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createPropertyDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createPropertyDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createPropertyDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 
   it("createRelationshipConstraintDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createRelationshipConstraintDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Error);
+    const newClass = Diagnostics.createRelationshipConstraintDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.RelationshipConstraint);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Error);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create RelationshipConstraint Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createRelationshipConstraintDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Error);
+    const newClass = Diagnostics.createRelationshipConstraintDiagnosticClass("TestRuleSet-100", "Test Message");
     const relationship = new RelationshipClass(testSchema, "TestRelationship");
     const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
-    const instance = new newClass(constraint, ["arg"]);
+    const instance = new newClass(constraint, ["arg"], Diagnostics.DiagnosticCategory.Error);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.RelationshipConstraint);
@@ -205,24 +200,23 @@ describe("Diagnostics tests", () => {
 
   it("createRelationshipConstraintDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createRelationshipConstraintDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createRelationshipConstraintDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createRelationshipConstraintDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createRelationshipConstraintDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 
   it("createCustomAttributeContainerDiagnosticClass, class created properly", async () => {
-    const newClass = Diagnostics.createCustomAttributeContainerDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Error);
+    const newClass = Diagnostics.createCustomAttributeContainerDiagnosticClass("TestRuleSet-100", "Test Message");
     expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.CustomAttributeContainer);
     expect(newClass.prototype.code).to.equal("TestRuleSet-100");
-    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Error);
     expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
   it("create RelationshipConstraint Diagnostic, instance created properly", async () => {
-    const newClass = Diagnostics.createCustomAttributeContainerDiagnosticClass("TestRuleSet-100", "Test Message", Diagnostics.DiagnosticCategory.Error);
+    const newClass = Diagnostics.createCustomAttributeContainerDiagnosticClass("TestRuleSet-100", "Test Message");
     const entityClass = new EntityClass(testSchema, "TestClass");
-    const instance = new newClass(entityClass, ["arg"]);
+    const instance = new newClass(entityClass, ["arg"], Diagnostics.DiagnosticCategory.Error);
 
     expect(instance.schema).to.equal(testSchema);
     expect(instance.diagnosticType).to.equal(Diagnostics.DiagnosticType.CustomAttributeContainer);
@@ -233,9 +227,9 @@ describe("Diagnostics tests", () => {
 
   it("createCustomAttributeContainerDiagnosticClass, invalid code, throws", () => {
     let code = "InvalidCode";
-    expect(() => Diagnostics.createCustomAttributeContainerDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createCustomAttributeContainerDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
 
     code = "Invalid:NotNumber";
-    expect(() => Diagnostics.createCustomAttributeContainerDiagnosticClass(code, "Test Message", Diagnostics.DiagnosticCategory.Error)).to.throw(Error, invalidCodeMsg(code));
+    expect(() => Diagnostics.createCustomAttributeContainerDiagnosticClass(code, "Test Message")).to.throw(Error, invalidCodeMsg(code));
   });
 });

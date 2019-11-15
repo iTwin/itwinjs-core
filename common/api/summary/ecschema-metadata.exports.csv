@@ -81,6 +81,8 @@ beta;IDiagnosticReporter
 beta;InvertedUnit 
 beta;IRule
 beta;IRuleSet
+beta;IRuleSuppressionMap
+beta;IRuleSuppressionSet
 alpha;ISchemaChange
 alpha;ISchemaChanges
 alpha;ISchemaComparer
@@ -88,6 +90,7 @@ alpha;ISchemaCompareReporter
 beta;ISchemaItemLocater
 beta;ISchemaLocater
 beta;ISchemaPartVisitor
+beta;ISuppressionRule
 beta;KindOfQuantity 
 alpha;KindOfQuantityChanges 
 beta;LazyLoadedConstant = LazyLoadedSchemaItem
