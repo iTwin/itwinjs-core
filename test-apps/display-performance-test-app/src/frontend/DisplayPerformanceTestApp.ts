@@ -466,8 +466,8 @@ function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = fal
   testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
 }
 
-async function savePng(fileName: string): Promise<void> {
-  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+async function savePng(fileName: string, canvas?: HTMLCanvasElement): Promise<void> {
+  if (!canvas) canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const img = canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
@@ -1042,15 +1042,15 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       });
       if (elemIdImgData !== undefined) {
         ctx.putImageData(elemIdImgData, 0, 0);
-        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"), canvas);
       }
       if (depthImgData !== undefined) {
         ctx.putImageData(depthImgData, 0, 0);
-        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"), canvas);
       }
       if (typeImgData !== undefined) {
         ctx.putImageData(typeImgData, 0, 0);
-        await savePng(getImageString(testConfig, "type_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "type_" + pixStr + "_"), canvas);
       }
     }
   }
