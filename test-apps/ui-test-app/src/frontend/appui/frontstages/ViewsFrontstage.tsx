@@ -116,7 +116,7 @@ export class ViewsFrontstage extends FrontstageProvider {
   };
 
   private _bottomPanel = {
-    allowedZones: [2],
+    allowedZones: [2, 7],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {

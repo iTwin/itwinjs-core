@@ -282,5 +282,13 @@
         "description": "Remove this property from Favorite category"
       }
     }
+  },
+  "table": {
+    "context-menu": {
+      "sample-item": {
+        "label": "Sample menu item",
+        "description": "A sample of a context menu item"
+      }
+    }
   }
 }

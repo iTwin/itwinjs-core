@@ -2974,6 +2974,15 @@ export class TableArrayValueRenderer extends React.PureComponent<TableSpecificVa
     render(): JSX.Element;
 }
 
+// @beta
+export interface TableCellContextMenuArgs {
+    cellItem?: CellItem;
+    cellKey: string;
+    colIndex: number;
+    event: React.MouseEvent;
+    rowIndex: number;
+}
+
 // @public
 export interface TableCellEditorState {
     // (undocumented)
@@ -3084,6 +3093,8 @@ export interface TableProps extends CommonProps {
     isRowSelected?: (row: RowItem) => boolean;
     // @internal (undocumented)
     onApplyFilter?: () => void;
+    // @beta
+    onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
     onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
     // @beta

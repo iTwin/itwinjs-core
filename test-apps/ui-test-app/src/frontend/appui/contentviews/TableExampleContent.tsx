@@ -9,7 +9,7 @@ import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription
 import {
   Table, ColumnDescription, RowItem, TableDataProvider, FilterRenderer,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
-  PropertyUpdatedArgs, TableCellUpdatedArgs,
+  PropertyUpdatedArgs, TableCellUpdatedArgs, TableCellContextMenuArgs,
 } from "@bentley/ui-components";
 import { BodyText } from "@bentley/ui-core";
 import { LoremIpsum } from "lorem-ipsum";
@@ -232,6 +232,11 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ topRow: topRowIndex });
   }
 
+  private _handleCellContextMenu = (args: TableCellContextMenuArgs) => {
+    // tslint:disable-next-line: no-console
+    console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
+  }
+
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
@@ -260,6 +265,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             onPropertyUpdated={this._handlePropertyUpdated}
             scrollToRow={this.state.requestedTopRow}
             onScrollToRow={this._onScrollToRow}
+            onCellContextMenu={this._handleCellContextMenu}
           />
         </div>
       </div>

@@ -9,6 +9,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
+import { DragDropContext } from "react-dnd";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { LocalUiSettings } from "@bentley/ui-core";
@@ -16,17 +17,15 @@ import {
   PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
 } from "@bentley/imodeljs-frontend";
 
+import TestUtils from "../../TestUtils";
 import {
   Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
   TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyUpdatedArgs, EditorContainer,
 } from "../../../ui-components";
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
-import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-
-import TestUtils from "../../TestUtils";
 
 describe("Table", () => {
 
@@ -1403,10 +1402,29 @@ describe("Table", () => {
       expect(await dataProvider.getRowsCount()).to.eq(10);
     });
 
-    // it("debug", () => {
-    //   console.log(filterTable.debug()); // tslint:disable-line:no-console
-    // });
-
   });
 
+  describe("context menu", async () => {
+    const onCellContextMenuSpy = sinon.spy();
+
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onCellContextMenu={onCellContextMenuSpy}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+
+      onCellContextMenuSpy.resetHistory();
+    });
+
+    it("should open context menu", () => {
+      const cells = table.find(cellClassName);
+      expect(cells.length).to.be.greaterThan(0);
+      cells.at(0).simulate("contextmenu", { currentTarget: cells.at(0), clientX: 1, clientY: 1 });
+      expect(onCellContextMenuSpy.calledOnce).to.be.true;
+    });
+
+  });
 });

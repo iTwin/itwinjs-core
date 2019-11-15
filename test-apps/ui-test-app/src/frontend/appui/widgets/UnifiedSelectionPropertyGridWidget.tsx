@@ -34,7 +34,7 @@ interface UnifiedSelectionPropertyGridWidgetProps {
   rulesetId: string;
 }
 
-type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
+export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
 
 export interface State {
   dataProvider: PresentationPropertyDataProvider;
@@ -66,7 +66,6 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
     args.event.persist();
-    this.setState({ contextMenu: args });
     // tslint:disable-next-line: no-floating-promises
     this.buildContextMenu(args);
   }
@@ -88,6 +87,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
       if (Presentation.favoriteProperties.has(field, projectId, imodelId)) {
         items.push({
           key: "remove-favorite",
+          icon: "icon-remove-2",
           onSelect: () => this._onRemoveFavorite(field),
           title: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.description"),
           label: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.label"),
@@ -95,13 +95,15 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
       } else {
         items.push({
           key: "add-favorite",
+          icon: "icon-add",
           onSelect: () => this._onAddFavorite(field),
           title: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.description"),
           label: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.label"),
         });
       }
     }
-    this.setState({ contextMenuItemInfos: items.length > 0 ? items : undefined });
+
+    this.setState({ contextMenu: args, contextMenuItemInfos: items.length > 0 ? items : undefined });
   }
 
   private renderContextMenu() {
@@ -115,6 +117,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
           key={info.key}
           onSelect={info.onSelect}
           title={info.title}
+          icon={info.icon}
         >
           {info.label}
         </ContextMenuItem>,
@@ -127,8 +130,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
         onOutsideClick={this._onContextMenuOutsideClick}
         onEsc={this._onContextMenuEsc}
         identifier="PropertiesWidget"
-        x={this.state.contextMenu!.event.clientX}
-        y={this.state.contextMenu!.event.clientY}
+        x={this.state.contextMenu.event.clientX}
+        y={this.state.contextMenu.event.clientY}
       >
         {items}
       </GlobalContextMenu>

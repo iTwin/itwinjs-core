@@ -43,10 +43,11 @@ import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterD
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
 
+// cspell:ignore Overscan
+
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
 
-// const selectors = Data.Selectors;
 const {
   NumericFilter,
   MultiSelectFilter,
@@ -151,6 +152,9 @@ export interface TableProps extends CommonProps {
   onScrollToRow?: (rowIndex: number) => void;
   /** @internal */
   onApplyFilter?: () => void;
+
+  /** Called to show a context menu when a cell is right-clicked. @beta */
+  onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
 }
 
 /** Properties for a Table cell
@@ -179,6 +183,12 @@ interface RowsLoadResult {
   selectedCellKeys: CellKey[];
 }
 
+interface ReactDataGridColumnEventArgs {
+  rowIdx: number;
+  idx: number;
+  name: string;
+}
+
 /** Cell/Property Editor state
  * @public
  */
@@ -196,6 +206,22 @@ export interface TableCellUpdatedArgs {
   rowIndex: number;
   colIndex: number;
   cellKey: string;
+}
+
+/** Arguments for `TableProps.onCellContextMenu` callback
+ * @beta
+ */
+export interface TableCellContextMenuArgs {
+  /** Index of the row clicked */
+  rowIndex: number;
+  /** Index of the column clicked */
+  colIndex: number;
+  /** Key of the cell clicked */
+  cellKey: string;
+  /** An event which caused the context menu callback */
+  event: React.MouseEvent;
+  /** CellItem of the cell clicked */
+  cellItem?: CellItem;
 }
 
 /** @internal */
@@ -595,10 +621,14 @@ export class Table extends React.Component<TableProps, TableState> {
       filterable: !!columnDescription.filterable,
     };
 
+    column.events = {};
+
+    if (this.props.onCellContextMenu) {
+      column.events.onContextMenu = this.cellContextMenu.bind(this, column);
+    }
+
     if (isEditable) {
-      column.events = {
-        onClick: this.cellEditOnClick.bind(this, column),
-      };
+      column.events.onClick = this.cellEditOnClick.bind(this, column);
     }
 
     if (columnDescription.filterRenderer !== undefined) {
@@ -1151,8 +1181,9 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   }
 
-  private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: { rowIdx: number, idx: number, name: string }): void {
+  private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: ReactDataGridColumnEventArgs): void {
     // Prevent editing when property record is not primitive
+    // istanbul ignore else
     if (this.state.rows[args.rowIdx]) {
       const record = this._getCellItem(this.state.rows[0].item, column.key).record;
       if (record && record.value.valueFormat !== PropertyValueFormat.Primitive)
@@ -1169,6 +1200,25 @@ export class Table extends React.Component<TableProps, TableState> {
       this.activateCellEditor(args.rowIdx, args.idx, column.key);
     else
       this._deactivateCellEditor();
+  }
+
+  private cellContextMenu(column: ReactDataGridColumn, e: React.SyntheticEvent<any>, args: ReactDataGridColumnEventArgs): void {
+    // istanbul ignore else
+    if (this.props.onCellContextMenu) {
+      const contextMenuArgs: TableCellContextMenuArgs = {
+        rowIndex: args.rowIdx,
+        colIndex: args.idx,
+        cellKey: column.key,
+        event: e as unknown as React.MouseEvent,
+      };
+
+      // istanbul ignore else
+      if (this.state.rows[args.rowIdx])
+        contextMenuArgs.cellItem = this._getCellItem(this.state.rows[args.rowIdx].item, column.key);
+
+      e.preventDefault();
+      this.props.onCellContextMenu(contextMenuArgs);
+    }
   }
 
   private activateCellEditor(rowIndex: number, colIndex: number, cellKey: string): void {
@@ -1220,7 +1270,7 @@ export class Table extends React.Component<TableProps, TableState> {
       .map((tableColumn: TableColumn) => tableColumn.reactDataGridColumn);
   }
 
-  private _showContextMenu = (e: React.MouseEvent) => {
+  private _handleShowHideContextMenu = (e: React.MouseEvent) => {
     const header = e.currentTarget.querySelector(".react-grid-Header");
     // istanbul ignore else
     if (header) {
@@ -1377,7 +1427,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return (
       <>
         <div className={tableClassName} style={this.props.style}
-          onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
+          onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}
