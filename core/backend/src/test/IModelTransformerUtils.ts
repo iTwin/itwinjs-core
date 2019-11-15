@@ -7,7 +7,7 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelProps, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
+  IModel, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -15,7 +15,7 @@ import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
   DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
-  GeometricElement3d, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition,
+  GeometricElement3d, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -734,21 +734,6 @@ export namespace IModelTransformerUtils {
   }
 }
 
-/** Debugging aid that asserts valid Ids before native code is called */
-export class IModelTransformerWithAsserts extends IModelTransformer {
-  /** Override of insertElement that asserts valid Ids */
-  protected insertElement(targetElementProps: ElementProps): Id64String {
-    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.model));
-    assert.doesNotThrow(() => this.targetDb.models.getModel(targetElementProps.model));
-    assert.doesNotThrow(() => this.targetDb.codeSpecs.getById(targetElementProps.code.spec));
-    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.code.scope));
-    if (targetElementProps.parent) {
-      assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.parent!.id));
-    }
-    return super.insertElement(targetElementProps);
-  }
-}
-
 /** Test IModelTransformer that applies a 3d transform to all GeometricElement3d instances. */
 export class IModelTransformer3d extends IModelTransformer {
   /** The Transform to apply to all GeometricElement3d instances. */
@@ -759,8 +744,8 @@ export class IModelTransformer3d extends IModelTransformer {
     this._transform3d = transform3d;
   }
   /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
-  protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
       if (placement.isValid) {
@@ -774,23 +759,6 @@ export class IModelTransformer3d extends IModelTransformer {
 
 /** Specialization of IModelTransformer for testing */
 export class TestIModelTransformer extends IModelTransformer {
-  public numInsertElementCalls = 0;
-  public numInsertElementProvenanceCalls = 0;
-  public numUpdateElementCalls = 0;
-  public numUpdateElementProvenanceCalls = 0;
-  public numExcludedElementCalls = 0;
-
-  public numModelsInserted = 0;
-  public numModelsUpdated = 0;
-  public numElementsInserted = 0;
-  public numElementsUpdated = 0;
-  public numElementsDeleted = 0;
-  public numElementsExcluded = 0;
-
-  public numRelationshipsExcluded = 0;
-  public numCodeSpecsExcluded = 0;
-  public numElementAspectsExcluded = 0;
-
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb);
     this.initExclusions();
@@ -801,12 +769,12 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Initialize some sample exclusion rules for testing */
   private initExclusions(): void {
-    super.excludeCodeSpec("ExtraCodeSpec");
-    super.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
-    super.excludeSubject("/Only in Source");
-    super.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
-    super.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
-    super.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
+    this.exporter.excludeCodeSpec("ExtraCodeSpec");
+    this.exporter.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
+    this.exporter.excludeElement(this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Only in Source"))!);
+    this.exporter.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
+    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
+    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
   }
 
   /** Initialize some CodeSpec remapping rules for testing */
@@ -822,7 +790,7 @@ export class TestIModelTransformer extends IModelTransformer {
     const targetCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
     assert.isTrue(Id64.isValidId64(subjectId) && Id64.isValidId64(definitionModelId) && Id64.isValidId64(sourceCategoryId) && Id64.isValidId64(targetCategoryId));
     this.context.remapElement(sourceCategoryId, targetCategoryId);
-    super.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
+    this.exporter.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
   /** Initialize some class remapping rules for testing */
@@ -830,100 +798,14 @@ export class TestIModelTransformer extends IModelTransformer {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
   }
 
-  /** Override insertElement to count calls */
-  protected insertElement(targetElementProps: ElementProps): Id64String {
-    this.numInsertElementCalls++;
-    return super.insertElement(targetElementProps);
-  }
-
-  /** Override insertElementProvenance to count calls */
-  protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this.numInsertElementProvenanceCalls++;
-    return super.insertElementProvenance(sourceElement, targetElementId);
-  }
-
-  /** Override updateElement to count calls */
-  protected updateElement(targetElementProps: ElementProps): void {
-    this.numUpdateElementCalls++;
-    super.updateElement(targetElementProps);
-  }
-
-  /** Override insertElementProvenance to count calls */
-  protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this.numUpdateElementProvenanceCalls++;
-    return super.updateElementProvenance(sourceElement, targetElementId);
-  }
-
-  /** Override shouldExcludeElement to count calls and exclude all Element from the Functional schema */
-  protected shouldExcludeElement(sourceElement: Element): boolean {
-    const excluded: boolean =
-      super.shouldExcludeElement(sourceElement) ||
-      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
-
-    if (excluded) { this.numExcludedElementCalls++; }
-    return excluded;
-  }
-
-  /** Count the number of CodeSpecs excluded in this callback */
-  protected onCodeSpecExcluded(codeSpecName: string): void {
-    this.numCodeSpecsExcluded++;
-    super.onCodeSpecExcluded(codeSpecName);
-  }
-
-  /** Count the number of Relationships excluded in this callback */
-  protected onRelationshipExcluded(sourceRelationship: Relationship): void {
-    this.numRelationshipsExcluded++;
-    super.onRelationshipExcluded(sourceRelationship);
-  }
-
-  /** Count the number of ElementAspects excluded in this callback */
-  protected onElementAspectExcluded(sourceElementAspect: ElementAspect): void {
-    this.numElementAspectsExcluded++;
-    super.onElementAspectExcluded(sourceElementAspect);
-  }
-
-  /** Count the number of Elements inserted in this callback */
-  protected onElementInserted(sourceElement: Element, targetElementProps: ElementProps): void {
-    this.numElementsInserted++;
-    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
-    super.onElementInserted(sourceElement, targetElementProps);
-  }
-
-  /** Count the number of Elements updated in this callback */
-  protected onElementUpdated(sourceElement: Element, targetElementProps: ElementProps): void {
-    this.numElementsUpdated++;
-    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
-    super.onElementUpdated(sourceElement, targetElementProps);
-  }
-
-  /** Count the number of Elements deleted in this callback */
-  protected onElementDeleted(targetElement: Element): void {
-    this.numElementsDeleted++;
-    assert.isTrue(Id64.isValidId64(targetElement.id));
-    super.onElementDeleted(targetElement);
-  }
-
-  /** Count the number of Elements excluded in this callback */
-  protected onElementExcluded(sourceElement: Element): void {
-    this.numElementsExcluded++;
-    super.onElementExcluded(sourceElement);
-  }
-
-  /** Count the number of Models inserted in this callback */
-  protected onModelInserted(sourceModel: Model, targetModelProps: ModelProps): void {
-    this.numModelsInserted++;
-    super.onModelInserted(sourceModel, targetModelProps);
-  }
-
-  /** Count the number of Models updated in this callback */
-  protected onModelUpdated(sourceModel: Model, targetModelProps: ModelProps): void {
-    this.numModelsUpdated++;
-    super.onModelUpdated(sourceModel, targetModelProps);
+  /** Override shouldExportElement to exclude all elements from the Functional schema. */
+  public shouldExportElement(sourceElement: Element): boolean {
+    return sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ? false : super.shouldExportElement(sourceElement);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: any = super.transformElement(sourceElement);
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: any = super.onTransformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
     }
@@ -935,8 +817,8 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
-  protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
-    const targetElementAspectProps: any = super.transformElementAspect(sourceElementAspect, targetElementId);
+  protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+    const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
     if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
       targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
@@ -962,8 +844,8 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
-  protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
-    const targetRelationshipProps: any = super.transformRelationship(sourceRelationship);
+  protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
+    const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
     if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
       targetRelationshipProps.targetString = targetRelationshipProps.sourceString;

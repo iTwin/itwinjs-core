@@ -10,7 +10,7 @@ import * as path from "path";
 import * as semver from "semver";
 import {
   AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, ConcurrencyControl,
-  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship,
+  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship, IModelExporter,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -155,7 +155,7 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(sourceDbChanges.relationships.deletedIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        transformer.importAll();
+        transformer.processAll();
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
@@ -212,7 +212,7 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(sourceDbChanges.relationships.deletedIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        transformer.importAll();
+        transformer.processAll();
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
@@ -309,8 +309,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
       // import sourceDb changes into targetDb
-      const transformer = new IModelTransformer(sourceDb, targetDb);
-      transformer.importAll();
+      const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
+      transformer.processAll();
       transformer.dispose();
       IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
       await targetDb.concurrencyControl.request(requestContext);

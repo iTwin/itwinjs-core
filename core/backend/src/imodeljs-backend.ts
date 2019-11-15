@@ -39,6 +39,8 @@ export * from "./domains/LinearReferencingRelationships";
 export * from "@bentley/imodeljs-native/IModelJsNative";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
+export * from "./IModelExporter";
+export * from "./IModelImporter";
 export * from "./IModelTransformer";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
