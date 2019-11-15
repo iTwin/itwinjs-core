@@ -529,8 +529,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
-   * @param parentSubjectId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
-   * @param codeValue The Drawing name
+   * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
+   * @param codeValue The child Subject name
    */
   public static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
@@ -870,10 +870,14 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Create a code that can be used for any kind of InformationPartitionElement. */
-  public static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code {
+  /** Create a code that can be used for any subclass of InformationPartitionElement.
+   * @param iModelDb The IModelDb
+   * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
+   * @param codeValue The InformationPartitionElement name
+   */
+  public static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
-    return new Code({ spec: codeSpec.id, scope: scopeElementId, value: codeValue });
+    return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
   }
 }
 

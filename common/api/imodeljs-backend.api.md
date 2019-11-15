@@ -2358,7 +2358,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
     constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-    static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code;
+    static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     description?: string;
 }
