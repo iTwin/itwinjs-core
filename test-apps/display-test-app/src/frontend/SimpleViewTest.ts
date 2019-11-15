@@ -143,6 +143,9 @@ async function main() {
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
 
+  if (configuration.disableMeshDecimation)
+    DisplayTestApp.tileAdminProps.enableMeshDecimation = false;
+
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
 

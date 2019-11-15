@@ -43,7 +43,7 @@ export namespace IModelTile {
   const enum ContentFlags {
     None = 0,
     AllowInstancing = 1 << 0,
-    All = AllowInstancing,
+    NoMeshDecimation = 1 << 1,
   }
 
   /** Describes the components of a tile's content Id.
@@ -166,7 +166,10 @@ export namespace IModelTile {
 
     public constructor(allowInstancing: boolean) {
       super();
-      const flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      let flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      if (!IModelApp.tileAdmin.enableMeshDecimation)
+        flags |= ContentFlags.NoMeshDecimation;
+
       this._prefix = this._separator + flags.toString(16) + this._separator;
     }
 

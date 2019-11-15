@@ -43,6 +43,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get enableInstancing(): boolean;
   /** @internal */
+  public abstract get enableMeshDecimation(): boolean;
+  /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get disableMagnification(): boolean;
@@ -188,6 +190,12 @@ export namespace TileAdmin {
      * Default value: true
      */
     enableInstancing?: boolean;
+
+    /** If true, during tile generation meshes may be decimated to reduce polygon count.
+     *
+     * Default value: true
+     */
+    enableMeshDecimation?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
@@ -409,6 +417,7 @@ class Admin extends TileAdmin {
   private _maxActiveRequests: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _enableMeshDecimation: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
@@ -461,7 +470,8 @@ class Admin extends TileAdmin {
 
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
-    this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
+    this._enableInstancing = false !== options.enableInstancing;
+    this._enableMeshDecimation = false !== options.enableMeshDecimation;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
     this._useProjectExtents = true === options.useProjectExtents;
@@ -492,6 +502,7 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableMeshDecimation() { return this._enableMeshDecimation; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
