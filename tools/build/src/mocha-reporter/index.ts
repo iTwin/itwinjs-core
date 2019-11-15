@@ -63,7 +63,7 @@ class BentleyMochaReporter extends Spec {
     // Also log warnings in CI builds when tests have been skipped.
     const currentPkgJson = path.join(process.cwd(), "package.json");
 
-    if (fs.exists(currentPkgJson)) {
+    if (fs.existsSync(currentPkgJson)) {
       const currentPackage = require(currentPkgJson).name;
       if (this.stats.pending === 1)
         logBuildWarning(`1 test skipped in ${currentPackage}`);
