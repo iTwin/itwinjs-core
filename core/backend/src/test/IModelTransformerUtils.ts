@@ -7,7 +7,7 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
+  IModel, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride, ModelProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -15,7 +15,7 @@ import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
   DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
-  GeometricElement3d, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -759,8 +759,8 @@ export class IModelTransformer3d extends IModelTransformer {
 
 /** Specialization of IModelTransformer for testing */
 export class TestIModelTransformer extends IModelTransformer {
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
-    super(sourceDb, targetDb);
+  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter) {
+    super(source, target);
     this.initExclusions();
     this.initCodeSpecRemapping();
     this.initCategoryRemapping();
@@ -858,5 +858,57 @@ export class TestIModelTransformer extends IModelTransformer {
       targetRelationshipProps.sourceGuid = undefined;
     }
     return targetRelationshipProps;
+  }
+}
+
+/** Specialization of IModelImporter that counts the number of times each callback is called. */
+export class CountingIModelImporter extends IModelImporter {
+  public numModelsInserted: number = 0;
+  public numModelsUpdated: number = 0;
+  public numElementsInserted: number = 0;
+  public numElementsUpdated: number = 0;
+  public numElementsDeleted: number = 0;
+  public numElementAspectsInserted: number = 0;
+  public numElementAspectsUpdated: number = 0;
+  public numRelationshipsInserted: number = 0;
+  public numRelationshipsUpdated: number = 0;
+  public constructor(targetDb: IModelDb) {
+    super(targetDb);
+  }
+  protected onInsertModel(modelProps: ModelProps): void {
+    this.numModelsInserted++;
+    super.onInsertModel(modelProps);
+  }
+  protected onUpdateModel(modelProps: ModelProps): void {
+    this.numModelsUpdated++;
+    super.onUpdateModel(modelProps);
+  }
+  protected onInsertElement(elementProps: ElementProps): Id64String {
+    this.numElementsInserted++;
+    return super.onInsertElement(elementProps);
+  }
+  protected onUpdateElement(elementProps: ElementProps): void {
+    this.numElementsUpdated++;
+    super.onUpdateElement(elementProps);
+  }
+  protected onDeleteElement(elementId: Id64String): void {
+    this.numElementsDeleted++;
+    super.onDeleteElement(elementId);
+  }
+  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+    this.numElementAspectsInserted++;
+    super.onInsertElementAspect(aspectProps);
+  }
+  protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
+    this.numElementAspectsUpdated++;
+    super.onUpdateElementAspect(aspectProps);
+  }
+  protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
+    this.numRelationshipsInserted++;
+    return super.onInsertRelationship(relationshipProps);
+  }
+  protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
+    this.numRelationshipsUpdated++;
+    super.onUpdateRelationship(relationshipProps);
   }
 }

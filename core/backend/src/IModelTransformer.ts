@@ -147,8 +147,7 @@ export class IModelTransformer extends IModelExportHandler {
       }
     });
     targetElementIds.forEach((targetElementId: Id64String) => {
-      this.targetDb.elements.deleteElement(targetElementId);
-      Logger.logInfo(loggerCategory, `[Target] Deleted element ${targetElementId}`);
+      this.importer.deleteElement(targetElementId);
     });
   }
 

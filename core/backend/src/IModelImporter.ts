@@ -49,12 +49,12 @@ export class IModelImporter {
     try {
       const model: Model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
       if (this.hasModelChanged(model, modelProps)) {
-        this.updateModel(modelProps);
+        this.onUpdateModel(modelProps);
       }
     } catch (error) {
       // catch NotFound error and insertModel
       if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-        this.insertModel(modelProps);
+        this.onInsertModel(modelProps);
         return;
       }
       throw error;
@@ -82,14 +82,18 @@ export class IModelImporter {
     return changed;
   }
 
-  /** Create a new Model from the specified ModelProps and insert it into the target iModel. */
-  private insertModel(modelProps: ModelProps): void {
+  /** Create a new Model from the specified ModelProps and insert it into the target iModel.
+   * @note A subclass may override this method to customize insert behavior but should call `super.onInsertModel`.
+   */
+  protected onInsertModel(modelProps: ModelProps): void {
     this.targetDb.models.insertModel(modelProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
   }
 
-  /** Update an existing Model in the target iModel from the specified ModelProps. */
-  private updateModel(modelProps: ModelProps): void {
+  /** Update an existing Model in the target iModel from the specified ModelProps.
+   * @note A subclass may override this method to customize update behavior but should call `super.onUpdateModel`.
+   */
+  protected onUpdateModel(modelProps: ModelProps): void {
     this.targetDb.models.updateModel(modelProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatModelForLogger(modelProps)}`);
   }
@@ -101,11 +105,10 @@ export class IModelImporter {
 
   /** Import the specified ElementProps (either as an insert or an update) into the target iModel. */
   public importElement(elementProps: ElementProps): Id64String {
-    this.checkProjectExtents(elementProps);
     if (undefined !== elementProps.id) {
-      this.updateElement(elementProps);
+      this.onUpdateElement(elementProps);
     } else {
-      this.insertElement(elementProps); // targetElementProps.id assigned by insertElement
+      this.onInsertElement(elementProps); // targetElementProps.id assigned by insertElement
     }
     return elementProps.id!;
   }
@@ -132,20 +135,38 @@ export class IModelImporter {
 
   /** Create a new Element from the specified ElementProps and insert it into the target iModel.
    * @returns The Id of the newly inserted Element.
+   * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElement`.
    */
-  private insertElement(elementProps: ElementProps): Id64String {
+  protected onInsertElement(elementProps: ElementProps): Id64String {
+    this.checkProjectExtents(elementProps);
     const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
     return elementId;
   }
 
-  /** Update an existing Element in the target iModel from the specified ElementProps. */
-  private updateElement(elementProps: ElementProps): void {
+  /** Update an existing Element in the target iModel from the specified ElementProps.
+   * @note A subclass may override this method to customize update behavior but should call `super.onUpdateElement`.
+   */
+  protected onUpdateElement(elementProps: ElementProps): void {
     if (!elementProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
+    this.checkProjectExtents(elementProps);
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
+  }
+
+  /** Delete the specified Element from the target iModel.
+   * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteElement`.
+   */
+  protected onDeleteElement(elementId: Id64String): void {
+    this.targetDb.elements.deleteElement(elementId);
+    Logger.logInfo(loggerCategory, `Deleted element ${elementId}`);
+  }
+
+  /** Delete the specified Element from the target iModel. */
+  public deleteElement(elementId: Id64String): void {
+    this.onDeleteElement(elementId);
   }
 
   /** Format an Element for the Logger. */
@@ -158,10 +179,10 @@ export class IModelImporter {
   public importElementUniqueAspect(aspectProps: ElementAspectProps): void {
     const aspects: ElementAspect[] = this.targetDb.elements.getAspects(aspectProps.element.id, aspectProps.classFullName);
     if (aspects.length === 0) {
-      this.insertElementAspect(aspectProps);
+      this.onInsertElementAspect(aspectProps);
     } else if (this.hasElementAspectChanged(aspects[0], aspectProps)) {
       aspectProps.id = aspects[0].id;
-      this.updateElementAspect(aspectProps);
+      this.onUpdateElementAspect(aspectProps);
     }
   }
 
@@ -188,10 +209,10 @@ export class IModelImporter {
           if (index < currentAspects.length) {
             aspectProps.id = currentAspects[index].id;
             if (this.hasElementAspectChanged(currentAspects[index], aspectProps)) {
-              this.updateElementAspect(aspectProps);
+              this.onUpdateElementAspect(aspectProps);
             }
           } else {
-            this.insertElementAspect(aspectProps);
+            this.onInsertElementAspect(aspectProps);
           }
           index++;
         });
@@ -201,10 +222,10 @@ export class IModelImporter {
           if (index < proposedAspects.length) {
             proposedAspects[index].id = aspect.id;
             if (this.hasElementAspectChanged(aspect, proposedAspects[index])) {
-              this.updateElementAspect(proposedAspects[index]);
+              this.onUpdateElementAspect(proposedAspects[index]);
             }
           } else {
-            this.deleteElementAspect(aspect);
+            this.onDeleteElementAspect(aspect);
           }
           index++;
         });
@@ -227,20 +248,26 @@ export class IModelImporter {
     return changed;
   }
 
-  /** Insert the transformed ElementAspect into the target iModel. */
-  private insertElementAspect(aspectProps: ElementAspectProps): void {
+  /** Insert the ElementAspect into the target iModel.
+   * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElementAspect`.
+   */
+  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
     this.targetDb.elements.insertAspect(aspectProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
   }
 
-  /** Update the transformed ElementAspect in the target iModel. */
-  private updateElementAspect(aspectProps: ElementAspectProps): void {
+  /** Update the ElementAspect within the target iModel.
+   * @note A subclass may override this method to customize update behavior but should call `super.onUpdateElementAspect`.
+   */
+  protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.targetDb.elements.updateAspect(aspectProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementAspectForLogger(aspectProps)}`);
   }
 
-  /** Delete the specified ElementAspect from the target iModel. */
-  private deleteElementAspect(targetElementAspect: ElementAspect): void {
+  /** Delete the specified ElementAspect from the target iModel.
+   * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteElementAspect`.
+   */
+  protected onDeleteElementAspect(targetElementAspect: ElementAspect): void {
     this.targetDb.elements.deleteAspect(targetElementAspect.id);
     Logger.logInfo(loggerCategory, `Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
   }
@@ -269,13 +296,13 @@ export class IModelImporter {
       // if relationship found, update it
       relationshipProps.id = relationship.id;
       if (this.hasRelationshipChanged(relationship, relationshipProps)) {
-        this.updateRelationship(relationshipProps);
+        this.onUpdateRelationship(relationshipProps);
       }
       return relationshipProps.id;
     } catch (error) {
       // catch NotFound error and insert relationship
       if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
-        return this.insertRelationship(relationshipProps);
+        return this.onInsertRelationship(relationshipProps);
       } else {
         throw error;
       }
@@ -299,15 +326,18 @@ export class IModelImporter {
 
   /** Create a new Relationship from the specified RelationshipProps and insert it into the target iModel.
    * @returns The instance Id of the newly inserted relationship.
+   * @note A subclass may override this method to customize insert behavior but should call `super.onInsertRelationship`.
    */
-  private insertRelationship(relationshipProps: RelationshipProps): Id64String {
+  protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
     const targetRelInstanceId: Id64String = this.targetDb.relationships.insertInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
     return targetRelInstanceId;
   }
 
-  /** Update an existing Relationship in the target iModel from the specified RelationshipProps. */
-  private updateRelationship(relationshipProps: RelationshipProps): void {
+  /** Update an existing Relationship in the target iModel from the specified RelationshipProps.
+   * @note A subclass may override this method to customize update behavior but should call `super.onUpdateRelationship`.
+   */
+  protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
     if (!relationshipProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
     }

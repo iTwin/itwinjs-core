@@ -2231,13 +2231,24 @@ export class IModelHostConfiguration {
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     readonly autoExtendProjectExtents: boolean;
+    deleteElement(elementId: Id64String): void;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
+    protected onDeleteElement(elementId: Id64String): void;
+    protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onInsertElement(elementProps: ElementProps): Id64String;
+    protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
+    protected onInsertModel(modelProps: ModelProps): void;
+    protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
+    protected onUpdateElement(elementProps: ElementProps): void;
+    protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
+    protected onUpdateModel(modelProps: ModelProps): void;
+    protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
     readonly targetDb: IModelDb;
-    }
+}
 
 // @alpha
 export interface IModelImportOptions {
