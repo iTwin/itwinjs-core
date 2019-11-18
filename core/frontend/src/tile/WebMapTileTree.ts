@@ -530,9 +530,9 @@ class BingImageryProvider extends ImageryProvider {
         const tiles = tileProvider.getTilesForView(vp);
         const matchingAttributions = this.getMatchingAttributions(tiles);
         for (const match of matchingAttributions) {
-            const li = document.createElement("li");
-            li.innerText = match.copyrightMessage;
-            copyrights.appendChild(li);
+            const p = document.createElement("p");
+            p.innerText = match.copyrightMessage;
+            copyrights.appendChild(p);
         }
         div.appendChild(copyrights);
         return IModelApp.makeLogoCard(div);

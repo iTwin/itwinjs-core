@@ -2829,6 +2829,7 @@ export class ScreenViewport extends Viewport {
   private readonly _backStack: ViewStateUndo[] = [];
   private _currentBaseline?: ViewStateUndo;
   private _webglCanvas?: HTMLCanvasElement;
+  private _logo!: HTMLImageElement;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2902,8 +2903,9 @@ export class ScreenViewport extends Viewport {
     return logoDiv;
   }
 
-  private _logo!: HTMLImageElement;
-  /** internal */
+  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+   * @beta
+   */
   public get logo() { return this._logo; }
 
   /** @internal */
@@ -2931,11 +2933,11 @@ export class ScreenViewport extends Viewport {
         }
       }, 10);
     });
-    const openMessageBox = (ev: Event) => stopProp(ev, () => {
+    const showLogos = (ev: Event) => stopProp(ev, () => {
       IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, this.makeLogoCards(), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
     });
-    logo.onclick = openMessageBox;
-    logo.addEventListener("touchstart", openMessageBox);
+    logo.onclick = showLogos;
+    logo.addEventListener("touchstart", showLogos);
     logo.onmouseleave = (ev) => stopProp(ev, () => {
       if (undefined !== popup) { // if we have a popup showing, remove it
         this.vpDiv.removeChild(popup);

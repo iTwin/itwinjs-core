@@ -298,3 +298,23 @@ export class IncidentMarkerDemo {
   }
 }
 // __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ Application_LogoCard
+
+IModelApp.applicationLogoCard = () => {
+  const div = document.createElement("div");
+  const image = document.createElement("img");
+  image.src = "MyApp.png";
+  image.width = 300;
+  div.appendChild(image);
+
+  const attr = document.createElement("p");
+  attr.style.textAlign = "center";
+  attr.style.fontStyle = "italic";
+  attr.style.fontWeight = "bold";
+  attr.innerHTML = "My Great Application";
+  div.appendChild(attr);
+  return IModelApp.makeLogoCard(div, "my-app-name");
+};
+
+// __PUBLISH_EXTRACT_END__

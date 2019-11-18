@@ -3409,7 +3409,7 @@ export class IModelApp {
     static readonly locateManager: ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
-    // @internal (undocumented)
+    // @internal
     static makeIModelJsLogoCard(): HTMLDivElement;
     // @beta
     static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
@@ -6180,6 +6180,7 @@ export class ScreenViewport extends Viewport {
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
+    // @beta
     readonly logo: HTMLImageElement;
     maxUndoSteps: number;
     // @internal (undocumented)
