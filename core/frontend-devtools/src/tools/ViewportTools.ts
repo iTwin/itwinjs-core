@@ -252,3 +252,46 @@ export class FadeOutTool extends Tool {
     return true;
   }
 }
+
+/** Sets the default tile size modifier used for all viewports that don't explicitly override it.
+ * @alpha
+ */
+export class DefaultTileSizeModifierTool extends Tool {
+  public static toolId = "DefaultTileSizeMod";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public run(modifier?: number): boolean {
+    if (undefined !== modifier)
+      IModelApp.tileAdmin.defaultTileSizeModifier = modifier;
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(Number.parseFloat(args[0]));
+  }
+}
+
+/** Sets or clears the tile size modifier override for the selected viewport.
+ * @alpha
+ */
+export class ViewportTileSizeModifierTool extends Tool {
+  public static toolId = "ViewportTileSizeMod";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public run(modifier?: number): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      vp.setTileSizeModifier(modifier);
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const arg = args[0].toLowerCase();
+    let modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
+    return this.run(modifier);
+  }
+}

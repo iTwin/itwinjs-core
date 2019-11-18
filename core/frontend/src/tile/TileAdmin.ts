@@ -560,7 +560,7 @@ class Admin extends TileAdmin {
 
   public get defaultTileSizeModifier() { return this._defaultTileSizeModifier; }
   public set defaultTileSizeModifier(modifier: number) {
-    if (modifier !== this._defaultTileSizeModifier && modifier > 0) {
+    if (modifier !== this._defaultTileSizeModifier && modifier > 0 && !Number.isNaN(modifier)) {
       this._defaultTileSizeModifier = modifier;
       IModelApp.viewManager.invalidateScenes();
     }

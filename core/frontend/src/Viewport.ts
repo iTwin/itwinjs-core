@@ -2805,10 +2805,14 @@ export abstract class Viewport implements IDisposable {
    * @alpha
    */
   public setTileSizeModifier(modifier: number | undefined) {
-    if (modifier !== this._tileSizeModifier && (undefined === modifier || modifier > 0)) {
-      this._tileSizeModifier = modifier;
-      this.invalidateScene();
-    }
+    if (modifier === this._tileSizeModifier)
+      return;
+
+    if (undefined !== modifier && (Number.isNaN(modifier) || modifier <= 0))
+      return;
+
+    this._tileSizeModifier = modifier;
+    this.invalidateScene();
   }
 }
 
