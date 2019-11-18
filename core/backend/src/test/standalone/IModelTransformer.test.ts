@@ -9,7 +9,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { CountingIModelImporter, IModelTransformer3d, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
+import { ClassCounter, CountingIModelImporter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
@@ -82,6 +82,22 @@ describe("IModelTransformer", () => {
     const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
     assert.isAtLeast(numTargetUniqueAspects, 1);
     assert.isAtLeast(numTargetMultiAspects, 1);
+
+    if (true) { // tests of IModelExporter
+      // test #1 - export structure
+      const exportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Export.txt");
+      assert.isFalse(IModelJsFs.existsSync(exportFileName));
+      const exporter = new IModelToTextFileExporter(sourceDb, exportFileName);
+      exporter.export();
+      assert.isTrue(IModelJsFs.existsSync(exportFileName));
+
+      // test #2 - count occurrences of classFullNames
+      const classCountsFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Counts.txt");
+      assert.isFalse(IModelJsFs.existsSync(classCountsFileName));
+      const classCounter = new ClassCounter(sourceDb, classCountsFileName);
+      classCounter.count();
+      assert.isTrue(IModelJsFs.existsSync(classCountsFileName));
+    }
 
     if (true) { // second import with no changes to source, should be a no-op
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");

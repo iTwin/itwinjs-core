@@ -159,7 +159,8 @@ export class IModelExporter {
   public exportAll(): void {
     this.exportCodeSpecs();
     this.exportFonts();
-    this.exportChildElements(IModel.rootSubjectId);
+    this.exportModelContainer(IModel.repositoryModelId);
+    this.exportElement(IModel.rootSubjectId);
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
   }
@@ -167,7 +168,7 @@ export class IModelExporter {
   /** Export all CodeSpecs from the source iModel. */
   public exportCodeSpecs(): void {
     Logger.logTrace(loggerCategory, `exportCodeSpecs()`);
-    const sql = `SELECT Name FROM BisCore:CodeSpec`;
+    const sql = `SELECT Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const codeSpecName: string = statement.getValue(0).getString();
@@ -250,7 +251,7 @@ export class IModelExporter {
   /** Export the model contents. */
   public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
     Logger.logTrace(loggerCategory, `exportModelContents()`);
-    const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
+    const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("modelId", modelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -260,10 +261,10 @@ export class IModelExporter {
   }
 
   /** Export the sub-models directly below the specified model. */
-  private exportSubModels(parentModelId: Id64String): void {
+  public exportSubModels(parentModelId: Id64String): void {
     const definitionModelIds: Id64String[] = [];
     const otherModelIds: Id64String[] = [];
-    const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("parentModelId", parentModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {

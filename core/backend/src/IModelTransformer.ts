@@ -18,7 +18,7 @@ import { IModelImporter } from "./IModelImporter";
 import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
-import { Relationship, RelationshipProps } from "./Relationship";
+import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -504,7 +504,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Import everything from the source iModel into the target iModel. */
   public processAll(): void {
     this.initFromExternalSourceAspects();
-    this.exporter.exportAll();
+    this.exporter.exportCodeSpecs();
+    this.exporter.exportFonts();
+    // The RepositoryModel and root Subject of the target iModel should not be transformed.
+    this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
+    this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
+    this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     this.processSkippedElements();
     this.detectElementDeletes();
   }

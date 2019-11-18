@@ -5,18 +5,19 @@
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride, ModelProps,
+  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
+  Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
-  GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement,
+  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect, ExternalSourceAspect,
+  FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
+  InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -910,5 +911,152 @@ export class CountingIModelImporter extends IModelImporter {
   protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsUpdated++;
     super.onUpdateRelationship(relationshipProps);
+  }
+}
+
+/** Specialization of IModelExport that exports to an output text file. */
+export class IModelToTextFileExporter extends IModelExportHandler {
+  public outputFileName: string;
+  public exporter: IModelExporter;
+  public constructor(sourceDb: IModelDb, outputFileName: string) {
+    super();
+    this.outputFileName = outputFileName;
+    this.exporter = new IModelExporter(sourceDb);
+    this.exporter.registerHandler(this);
+  }
+  public export(): void {
+    this.exporter.exportAll();
+  }
+  private writeLine(line: string, indentLevel: number = 0): void {
+    for (let i = 0; i < indentLevel; i++) {
+      IModelJsFs.appendFileSync(this.outputFileName, "  ");
+    }
+    IModelJsFs.appendFileSync(this.outputFileName, line);
+    IModelJsFs.appendFileSync(this.outputFileName, "\n");
+  }
+  private getIndentLevelForModel(model: Model): number {
+    if (IModel.repositoryModelId === model.id) {
+      return 0;
+    }
+    const parentModel: Model = this.exporter.sourceDb.models.getModel(model.parentModel);
+    return 1 + this.getIndentLevelForModel(parentModel);
+  }
+  private getIndentLevelForElement(element: Element): number {
+    if ((undefined !== element.parent) && (Id64.isValidId64(element.parent.id))) {
+      const parentElement: Element = this.exporter.sourceDb.elements.getElement(element.parent.id);
+      return 1 + this.getIndentLevelForElement(parentElement);
+    }
+    const model: Model = this.exporter.sourceDb.models.getModel(element.model);
+    return 1 + this.getIndentLevelForModel(model);
+  }
+  private getIndentLevelForElementAspect(aspect: ElementAspect): number {
+    const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
+    return 1 + this.getIndentLevelForElement(element);
+  }
+  protected onExportCodeSpec(codeSpec: CodeSpec): void {
+    this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}`);
+    super.onExportCodeSpec(codeSpec);
+  }
+  protected onExportFont(font: FontProps): void {
+    this.writeLine(`[Font] ${font.id}, ${font.name}`);
+    super.onExportFont(font);
+  }
+  protected onExportModel(model: Model): void {
+    const indentLevel: number = this.getIndentLevelForModel(model);
+    this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}`, indentLevel);
+    super.onExportModel(model);
+  }
+  protected onExportElement(element: Element): void {
+    const indentLevel: number = this.getIndentLevelForElement(element);
+    this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}`, indentLevel);
+    super.onExportElement(element);
+  }
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+    const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
+    this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
+    super.onExportElementUniqueAspect(aspect);
+  }
+  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+    const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
+    for (const aspect of aspects) {
+      this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
+    }
+    super.onExportElementMultiAspects(aspects);
+  }
+  protected onExportRelationship(relationship: Relationship): void {
+    this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}`);
+    super.onExportRelationship(relationship);
+  }
+}
+
+/** Specialization of IModelExport that counts occurrences of classes. */
+export class ClassCounter extends IModelExportHandler {
+  public outputFileName: string;
+  public exporter: IModelExporter;
+  private _modelClassCounts: Map<string, number> = new Map<string, number>();
+  private _elementClassCounts: Map<string, number> = new Map<string, number>();
+  private _aspectClassCounts: Map<string, number> = new Map<string, number>();
+  private _relationshipClassCounts: Map<string, number> = new Map<string, number>();
+  public constructor(sourceDb: IModelDb, outputFileName: string) {
+    super();
+    this.outputFileName = outputFileName;
+    this.exporter = new IModelExporter(sourceDb);
+    this.exporter.registerHandler(this);
+  }
+  public count(): void {
+    this.exporter.exportAll();
+    this.outputAllClassCounts();
+  }
+  private incrementClassCount(map: Map<string, number>, classFullName: string): void {
+    const count: number | undefined = map.get(classFullName);
+    if (undefined === count) {
+      map.set(classFullName, 1);
+    } else {
+      map.set(classFullName, 1 + count);
+    }
+  }
+  private sortClassCounts(map: Map<string, number>): any[] {
+    return Array.from(map).sort((a: [string, number], b: [string, number]): number => {
+      if (a[1] === b[1]) {
+        return a[0] > b[0] ? 1 : -1;
+      } else {
+        return a[1] > b[1] ? -1 : 1;
+      }
+    });
+  }
+  private outputAllClassCounts(): void {
+    this.outputClassCounts("Model", this.sortClassCounts(this._modelClassCounts));
+    this.outputClassCounts("Element", this.sortClassCounts(this._elementClassCounts));
+    this.outputClassCounts("ElementAspect", this.sortClassCounts(this._aspectClassCounts));
+    this.outputClassCounts("Relationship", this.sortClassCounts(this._relationshipClassCounts));
+  }
+  private outputClassCounts(title: string, classCounts: Array<[string, number]>): void {
+    IModelJsFs.appendFileSync(this.outputFileName, `=== ${title} Class Counts ===\n`);
+    classCounts.forEach((value: [string, number]) => {
+      IModelJsFs.appendFileSync(this.outputFileName, `${value[1]}, ${value[0]}\n`);
+    });
+    IModelJsFs.appendFileSync(this.outputFileName, `\n`);
+  }
+  protected onExportModel(model: Model): void {
+    this.incrementClassCount(this._modelClassCounts, model.classFullName);
+    super.onExportModel(model);
+  }
+  protected onExportElement(element: Element): void {
+    this.incrementClassCount(this._elementClassCounts, element.classFullName);
+    super.onExportElement(element);
+  }
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+    this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
+    super.onExportElementUniqueAspect(aspect);
+  }
+  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+    for (const aspect of aspects) {
+      this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
+    }
+    super.onExportElementMultiAspects(aspects);
+  }
+  protected onExportRelationship(relationship: Relationship): void {
+    this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
+    super.onExportRelationship(relationship);
   }
 }
