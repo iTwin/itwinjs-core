@@ -466,6 +466,10 @@ function getConfig(env) {
             loader: require.resolve("file-loader"),
             options: {
               name: "static/media/[name].[hash:8].[ext]",
+              // If the output is going into a version-based subFolder, then the url must have "../" prepended to it.
+              publicPath: (env.subFolder) ? (url, resourcePath, context) => {
+                return `../${url}`;
+              } : undefined,
             },
           }
         },

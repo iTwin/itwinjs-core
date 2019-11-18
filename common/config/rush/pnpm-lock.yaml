@@ -171,7 +171,7 @@ dependencies:
   express: 4.17.1
   faker: 4.1.0
   fast-sass-loader: 1.5.0_node-sass@4.13.0+webpack@4.41.2
-  file-loader: 1.1.11_webpack@4.41.2
+  file-loader: 4.2.0_webpack@4.41.2
   file-saver: 2.0.2
   fork-ts-checker-webpack-plugin: 1.6.0
   form-data: 2.5.1
@@ -4851,18 +4851,18 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-OrGi0qYsi/tDGgyUy3l6L84nyWI=
-  /file-loader/1.1.11_webpack@4.41.2:
+  /file-loader/4.2.0_webpack@4.41.2:
     dependencies:
       loader-utils: 1.2.3
-      schema-utils: 0.4.7
+      schema-utils: 2.5.0
       webpack: 4.41.2_webpack@4.41.2
     dev: false
     engines:
-      node: '>= 4.3 < 5.0.0 || >= 5.10'
+      node: '>= 8.9.0'
     peerDependencies:
-      webpack: ^2.0.0 || ^3.0.0 || ^4.0.0
+      webpack: ^4.0.0
     resolution:
-      integrity: sha512-TGR4HU7HUsGg6GCOPJnFk06RhWgEWFLAGWiT6rcD+GRC2keU3s9RGJ+b3Z6/U73jwwNb2gKLJ7YCrp+jvU4ALg==
+      integrity: sha512-+xZnaK5R8kBJrHK0/6HRlrKNamvVS5rjyuju+rnyxRGuwUJwpAMsVzUl5dz6rK8brkzjV6JpcFNjp6NqV0g1OQ==
   /file-saver/2.0.2:
     dev: false
     resolution:
@@ -11129,6 +11129,15 @@ packages:
       node: '>= 4'
     resolution:
       integrity: sha512-i27Mic4KovM/lnGsy8whRCHhc7VicJajAjTrYg11K9zfZXnYIt4k5F+kZkwjnrhKzLic/HLU4j11mjsz2G/75g==
+  /schema-utils/2.5.0:
+    dependencies:
+      ajv: 6.10.2
+      ajv-keywords: 3.4.1_ajv@6.10.2
+    dev: false
+    engines:
+      node: '>= 8.9.0'
+    resolution:
+      integrity: sha512-32ISrwW2scPXHUSusP8qMg5dLUawKkyV+/qIEV9JdXKx+rsM6mi8vZY8khg2M69Qom16rtroWXD3Ybtiws38gQ==
   /scss-tokenizer/0.2.3:
     dependencies:
       js-base64: 2.5.1
@@ -14292,6 +14301,8 @@ packages:
       react: 16.11.0
       rimraf: 2.7.1
       source-map-loader: 0.2.4
+      svg-baker-runtime: 1.4.3
+      svg-sprite-loader: 3.9.2
       tsconfig-paths: 3.9.0
       tslint: 5.20.1_typescript@3.6.4
       tslint-etc: 1.9.2_tslint@5.20.1+typescript@3.6.4
@@ -14301,7 +14312,7 @@ packages:
     dev: false
     name: '@rush-temp/geo-photo-plugin'
     resolution:
-      integrity: sha512-wa0luqT+Cez5ZyGIGhYNJPOmV7gneSINpsB4pbl4rS1L4BzqqVomDkKiX73scYJN9iABrkDALCA+iskYg7gFQA==
+      integrity: sha512-PVWNNqZxtgPXVFfJ2u4WBjsBZ6ZJ4aVJH+GPgvw4YSYjJ9Rg4zypwpj4wutXUW1iy08LPH1aC+unXEhcExETIA==
       tarball: 'file:projects/geo-photo-plugin.tgz'
     version: 0.0.0
   'file:projects/geometry-core.tgz':
@@ -15438,7 +15449,7 @@ packages:
       escape-string-regexp: 1.0.5
       exports-loader: 0.7.0
       fast-sass-loader: 1.5.0_node-sass@4.13.0+webpack@4.41.2
-      file-loader: 1.1.11_webpack@4.41.2
+      file-loader: 4.2.0_webpack@4.41.2
       fork-ts-checker-webpack-plugin: 1.6.0
       fs-extra: 6.0.1
       glob: 7.1.6
@@ -15492,7 +15503,7 @@ packages:
     dev: false
     name: '@rush-temp/webpack-tools'
     resolution:
-      integrity: sha512-+str646L+sC4pRGoPykHsAoYX0Gjg2xNilw6Z/FWoWT50fnbCE0uJzpztqxpTs085TFHFRzPHokarPHmS9sbuQ==
+      integrity: sha512-G+FyQbBOvQ89hZPMpsiDgybMO7y32yqk1GBHCfpfi+kEfSE/nsNHWmu99olcm9a6G7i3GNNNp9QtW9OV03Mk8g==
       tarball: 'file:projects/webpack-tools.tgz'
     version: 0.0.0
   'file:projects/webworker-test-app.tgz':
@@ -15524,6 +15535,7 @@ packages:
       integrity: sha512-VGfql6hFY6Tl7r8XtvjahIMelQxEsp8kE0RQ5tRCYbpxvxS+b/3nOwlzT4ywYJ3Vx8OgAqPiqhTI4T8FBjgaKg==
       tarball: 'file:projects/wms-plugin-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': ^10.4.0
   '@bentley/icons-generic': ^0.0.43
@@ -15697,7 +15709,7 @@ specifiers:
   express: ^4.16.3
   faker: ^4.1.0
   fast-sass-loader: ^1.5.0
-  file-loader: ^1.1.11
+  file-loader: ^4.2.0
   file-saver: ^2.0.2
   fork-ts-checker-webpack-plugin: ^1.3.7
   form-data: ^2.3.2
