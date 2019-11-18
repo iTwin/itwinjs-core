@@ -748,7 +748,7 @@
     },
     {
       "name": "svg-baker-runtime",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "svg-react-loader",
@@ -756,7 +756,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "sw-precache-webpack-plugin",

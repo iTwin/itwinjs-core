@@ -36,24 +36,22 @@ class GeoPhotoMarker extends Marker {
   private static _imageOffset = Point2d.create(-8, 22);
   private static _amber = new ColorDef(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
+  private static _tooCloseYaw: number = 3.0;
+  private static _tooClosePitch: number = 1.0;
   private _manager: GeoPhotoMarkerManager;
   private _color: ColorDef;
   public photoFile: PhotoFile;
-  private static _tooCloseYaw: number = 3.0;
-  private static _tooClosePitch: number = 1.0;
-  private static _minDistance: number = 10;
-  private static _maxDistance: number = 100.0;
-  private static _eyeHeight: number = 7.0;
 
   // tslint:disable:no-console
-  private static chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Bearing[] {
+  private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Bearing[] {
+    const eyeHeight = this._manager.plugin.settings.eyeHeight;
     const bearings: Bearing[] = [];
     // get the bearings to each file.
     for (const file of closeFiles) {
       const delta = centerFile.spatial!.vectorTo(file.spatial!);
       const yaw = Math.atan2(delta.x, delta.y) * 180.0 / Math.PI;
       const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-      const pitch = Math.atan2(GeoPhotoMarker._eyeHeight, distance) * -180.0 / Math.PI;
+      const pitch = Math.atan2(eyeHeight, distance) * -180.0 / Math.PI;
       bearings.push({ file, distance, pitch, yaw });
       console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
     }
@@ -79,7 +77,7 @@ class GeoPhotoMarker extends Marker {
     return bearings;
   }
 
-  private static async hotSpotClicked(_event: MouseEvent, args: any[]) {
+  private async hotSpotClicked(_event: MouseEvent, args: any[]) {
     const viewer: PannellumViewer = (args[0] as PannellumViewer);
     const photoFile: PhotoFile = (args[1] as Bearing).file;
     const manager: GeoPhotoMarkerManager = (args[2] as GeoPhotoMarkerManager);
@@ -95,7 +93,7 @@ class GeoPhotoMarker extends Marker {
     }
 
     try {
-      const viewerData = await GeoPhotoMarker.getViewerData(photoFile, manager);
+      const viewerData = await this.getViewerData(photoFile, manager);
       if (viewerData) {
         viewer.newPanorama(viewerData.panoBlob, viewerData.config);
       }
@@ -116,12 +114,14 @@ class GeoPhotoMarker extends Marker {
     }).catch((_err) => { });
   }
 
-  private static hotSpotSetStyle(hs: PannellumHotSpot, args: any) {
+  private hotSpotSetStyle(hs: PannellumHotSpot, args: any) {
+    const minDistance = this._manager.plugin.settings.minDistance;
+    const maxDistance = this._manager.plugin.settings.maxDistance;
     const hsBearing: Bearing = args[0] as Bearing;
     let distance = hsBearing.distance;
-    if (distance < GeoPhotoMarker._minDistance)
-      distance = GeoPhotoMarker._minDistance;
-    let hsSize: number = 80 - (60 * (distance - GeoPhotoMarker._minDistance) / (GeoPhotoMarker._maxDistance - GeoPhotoMarker._minDistance));
+    if (distance < minDistance)
+      distance = minDistance;
+    let hsSize: number = 80 - (60 * (distance - minDistance) / (maxDistance - minDistance));
     hsSize = Math.floor(hsSize);
     hs.div!.style.backgroundSize = `${hsSize}px ${hsSize}px`;
     const sizeString = `${hsSize}px`;
@@ -133,11 +133,12 @@ class GeoPhotoMarker extends Marker {
     FrontstageManager.closeModalFrontstage();
   }
 
-  private static async getViewerData(photoFile: PhotoFile, manager: GeoPhotoMarkerManager): Promise<ViewerData | undefined> {
+  private async getViewerData(photoFile: PhotoFile, manager: GeoPhotoMarkerManager): Promise<ViewerData | undefined> {
+    const maxDistance = this._manager.plugin.settings.maxDistance;
     const title = photoFile.name;
     const config: PannellumViewerConfig = { title, escapeKeyFunc: GeoPhotoMarker.escapeKey };
     const fileContentsPromise: Promise<ArrayBuffer> = photoFile.getFileContents();
-    const closestNeighborPromise: Promise<PhotoFile[]> = photoFile.getClosestNeighbors(true, GeoPhotoMarker._maxDistance);
+    const closestNeighborPromise: Promise<PhotoFile[]> = photoFile.getClosestNeighbors(true, maxDistance);
     const baseYaw = (undefined === photoFile.track) ? 0.0 : photoFile.track;
     try {
       const values: any[] = await Promise.all([fileContentsPromise, closestNeighborPromise]);
@@ -145,7 +146,7 @@ class GeoPhotoMarker extends Marker {
       const closeFiles: PhotoFile[] = values[1];
       console.log(`thisFile:  ${photoFile.name}, x: ${photoFile.spatial!.x}, y: ${photoFile.spatial!.y}`);
       if (closeFiles.length > 0) {
-        const displayedNeighbors: Bearing[] = GeoPhotoMarker.chooseNeighborsToDisplay(photoFile, closeFiles);
+        const displayedNeighbors: Bearing[] = this.chooseNeighborsToDisplay(photoFile, closeFiles);
         const hotSpots: PannellumHotSpot[] = [];
         for (const neighbor of displayedNeighbors) {
           const funcArgs = [neighbor, manager];
@@ -162,9 +163,9 @@ class GeoPhotoMarker extends Marker {
             cssClassName: neighbor.file.visited ? "pnlm-visited-marker" : "pnlm-pin-marker",
             createTooltipFunc: GeoPhotoMarker.hotSpotTooltip,
             createTooltipArgs: funcArgs,
-            clickHandlerFunc: GeoPhotoMarker.hotSpotClicked,
+            clickHandlerFunc: this.hotSpotClicked.bind(this),
             clickHandlerArgs: funcArgs,
-            styleFunc: GeoPhotoMarker.hotSpotSetStyle,
+            styleFunc: this.hotSpotSetStyle.bind(this),
             styleArgs: funcArgs,
           });
         }
@@ -203,7 +204,7 @@ class GeoPhotoMarker extends Marker {
           } else {
             try {
               // open the Pannellum frontstage.
-              const viewerData = await GeoPhotoMarker.getViewerData(this.photoFile, this._manager);
+              const viewerData = await this.getViewerData(this.photoFile, this._manager);
               if (viewerData) {
                 await PannellumModalFrontstage.open(viewerData.panoBlob, viewerData.photoFile, viewerData.config, this._manager.plugin);
               }
@@ -310,10 +311,12 @@ class GeoPhotoClusterMarker extends Marker {
 /** A MarkerSet to hold geotagged Photo markers. This class supplies the `getClusterMarker` method to create GeoPhotoClusterMarkers. */
 class GeoPhotoMarkerSet extends MarkerSet<GeoPhotoMarker> {
   public minimumClusterSize = 3;
+
   constructor(private _markerManager: GeoPhotoMarkerManager) {
     super();
     this._markerManager.traverseTree(this.createMarkers.bind(this));
   }
+
   private async createMarkers(photoFile: PhotoFile) {
     if (undefined !== photoFile.spatial) {
       const icon = await this._markerManager.getMarkerImage(photoFile.visited, photoFile.isPanorama);

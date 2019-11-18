@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Logger, GuidString } from "@bentley/bentleyjs-core";
+import { Logger, GuidString, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
 import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { loggerCategory, GeoPhotoTags, PhotoTreeHandler, PhotoFolder, PhotoFile, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
+import { loggerCategory, GeoPhotoTags, GPLoadTracker, PhotoTreeHandler, PhotoFolder, PhotoFile, PhotoTree, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
 
 // ------------------------ Project Share TreeHandler implementation ---------------------
 
@@ -85,21 +85,30 @@ export class PSPhotoFile extends PhotoFile {
 /** The TreeHandler subclass that reads from Project Share. */
 export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTreeHandler {
   private _projectShareClient: ProjectShareClient;
-  private _rootFolder: PSPhotoFolder | undefined;
+  private _photoTree: PhotoTree | undefined;
   private static readonly _customPropertyName = "JpegInfoV1";
+  private _loadTracker: GPLoadTracker | undefined;
 
-  constructor(private _context: AuthorizedFrontendRequestContext, private _i18n: I18N, iModel: IModelConnection) {
+  constructor(private _context: AuthorizedFrontendRequestContext, private _i18n: I18N, iModel: IModelConnection, loadTracker: GPLoadTracker | undefined) {
     super(iModel);
+    this._loadTracker = loadTracker;
     this._projectShareClient = new ProjectShareClient();
   }
 
   /** Create the root folder for a Project Share file repository */
-  public async createRootFolder(): Promise<PhotoFolder> {
-    this._rootFolder = new PSPhotoFolder(this, undefined, this._i18n, undefined);
+  public async createPhotoTree(): Promise<PhotoTree> {
+    this._photoTree = new PhotoTree(this, this._i18n);
 
     // Always get the contents of the root folder. (ends up back at our readFolderContents method)
-    await this._rootFolder.getFolderContents(true);
-    return this._rootFolder;
+    await this._photoTree.getFolderContents(true);
+
+    // update the ui.
+    if (this._loadTracker) {
+      this._loadTracker.foundFile(true);
+      this._loadTracker.setLoadPhase(1);
+    }
+
+    return this._photoTree;
   }
 
   private findCustomProperty(file: ProjectShareFile): FoundProperty | undefined {
@@ -195,11 +204,22 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     }
   }
 
+  private nextFolder(_folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    if (this._loadTracker)
+      this._loadTracker.nextFolder();
+  }
+
   /** Get the Cartographic (lat/long) positions for the specified file. */
   private async getPhotoFileCartographic(file: PhotoFile, _folder: PhotoFolder): Promise<void> {
     const psFile = file as PSPhotoFile;
 
+    // tell UI that we are evaluating the next file.
+    if (this._loadTracker) {
+      this._loadTracker.nextFile(false);
+    }
+
     let tags = this.readTags(psFile);
+    await BeDuration.wait(5);
     if (tags === undefined || !this.validateTags(psFile, tags))
       tags = await this.updateTags(this._context, this._iModel.iModelToken.contextId!, psFile);
 
@@ -213,13 +233,30 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     psFile.track = tags.track;
     psFile.takenTime = tags.time;
     psFile.probablyPano = tags.probablyPano;
+
+    // inform UI that we have found either a panorama or a standard photo.
+    if (this._loadTracker) {
+      if (psFile.probablyPano) {
+        this._loadTracker.foundPanorama(false);
+      } else {
+        this._loadTracker.foundPhoto(false);
+      }
+    }
   }
 
   /** Traverses the files to get their Cartographic positions. This is set up as a separate pass to facility
    *  future optimization. Currently, it just does the files one by one.
    */
   public async getCartographicPositions(folder: PhotoFolder, subFolders: boolean): Promise<void> {
-    await folder.traversePhotos(this.getPhotoFileCartographic.bind(this), subFolders, false);
+    await folder.traversePhotos(this.getPhotoFileCartographic.bind(this), this.nextFolder.bind(this), subFolders, false);
+    // tell the tracker that we're done finding files so it can make the final report.
+    if (this._loadTracker) {
+      this._loadTracker.nextFile(true);
+      this._loadTracker.foundPanorama(true);
+      this._loadTracker.foundPhoto(true);
+    }
+    // the current folder needs to be counted.
+    this.nextFolder(folder, folder.parent);
   }
 
   /** Reads the contents (both folders and files) in specified folder */
@@ -228,6 +265,9 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     const projectId = this._iModel.iModelToken.contextId;
     if (!projectId)
       return entries;
+
+    if (this._loadTracker)
+      this._loadTracker.startFolder(folder.name);
 
     // Note: undefined folderId is interpreted as the root folder.
     let folderId = (folder as PSPhotoFolder).folderId;
@@ -238,6 +278,12 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
       entries.push(new PSPhotoFolder(this, folder, this._i18n, thisPsFolder));
     }
 
+    // This stopwatch is to interrupt this tight loop every .1 second to allow the UI to update, if there's a loadTracker.
+    let stopWatch: StopWatch | undefined;
+    let nextET: number = 0;
+    if (this._loadTracker) {
+      stopWatch = new StopWatch (undefined, true);
+    }
     const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, new ProjectShareFileQuery().inFolder(folderId!));
     for (const thisFile of files) {
       // we want only jpeg files.
@@ -245,9 +291,19 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
         const lcName: string = thisFile.name.toLowerCase();
         if (lcName.endsWith("jpg") || lcName.endsWith("jpeg")) {
           entries.push(new PSPhotoFile(this, folder, this._i18n, thisFile));
+          if (this._loadTracker) {
+            if (stopWatch!.elapsed.milliseconds > nextET) {
+              await BeDuration.wait(0);
+              nextET += 200;
+              }
+            this._loadTracker.foundFile(false);
+          }
         }
       }
     }
+
+    if (this._loadTracker)
+      this._loadTracker.doneFolder();
 
     if (subFolders) {
       for (const thisEntry of entries) {

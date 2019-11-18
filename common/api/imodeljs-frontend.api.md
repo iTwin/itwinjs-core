@@ -5066,6 +5066,7 @@ export abstract class Plugin {
     name: string;
     abstract onExecute(_args: string[]): void;
     onLoad(_args: string[]): void;
+    reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }

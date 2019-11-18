@@ -118,6 +118,11 @@ export abstract class Plugin {
   public setI18n(defaultNamespace?: string, options?: I18NOptions) {
     this._i18n = new I18N(defaultNamespace, options);
   }
+
+  /** When a Plugin has been loaded, and there is a subsequent call to load the same Plugin, returning false from this method prevents the system from reporting the reload. */
+  public reportReload(): boolean {
+    return true;
+  }
 }
 
 /**
@@ -540,7 +545,10 @@ export class PluginAdmin {
       // it has been loaded (or at least we have started to load it) already. If it is registered, call its reload method. (Otherwise reload called when we're done the initial load)
       const registeredPlugin = this._registeredPlugins.get(pluginNameLC);
       if (registeredPlugin) {
+        // plugin is already loaded.
         registeredPlugin.onExecute(args);
+        if (!registeredPlugin.reportReload())
+          return undefined;
       }
       return pendingPlugin.promise;
     }

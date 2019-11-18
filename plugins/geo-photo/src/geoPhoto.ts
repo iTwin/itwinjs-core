@@ -8,10 +8,12 @@ import {
   Plugin, ScreenViewport, Tool, AuthorizedFrontendRequestContext,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { SettingsStatus } from "@bentley/imodeljs-clients";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
-import { PhotoTreeHandler, PhotoFolder, PhotoTraverseFunction } from "./PhotoTree";
+import { PhotoTreeHandler, PhotoFolder, PhotoTree, PhotoTraverseFunction } from "./PhotoTree";
 import { ProjectShareHandler } from "./ProjectSharePhotoTree";
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
+import { GPDialogUiProvider } from "./ui/GPDialogUiProvider";
 
 /*-----------------------------------------------------------------------
 This is the source for an iModel.js Plugin that displays on-screen markers
@@ -28,43 +30,44 @@ into an appropriately configured browser or Electron process.
 /* ----------------------- The top level container class that holds the tree of photos --------------------- */
 /** The container class for the GeoPhoto tree and associated Markers */
 export class GeoPhotos {
-  public rootFolder: PhotoFolder | undefined;
+  public photoTree: PhotoTree | undefined;
   private _markers: GeoPhotoMarkerManager | undefined;
   private _photoCount: number = 0;
 
   /** Constructs GeoPhotos container. Specify the tree handler to access the storage mechanism.
    * The GeoPhotos container is stored on the associated IModelConnection object.
    */
-  constructor(public plugin: GeoPhotoPlugin, public treeHandler: PhotoTreeHandler, public iModel: IModelConnection) {
-    this.rootFolder = undefined;
+  constructor(public plugin: GeoPhotoPlugin, public treeHandler: PhotoTreeHandler, public iModel: IModelConnection, public uiProvider: GPDialogUiProvider | undefined) {
+    this.photoTree = undefined;
     this._markers = undefined;
     (iModel as any).geoPhotos = this;
     IModelConnection.onClose.addListener(this.onCloseIModel.bind(this));
   }
 
   /** Uses the tree handler to read the folders and files in the tree */
-  public async readTreeContents(): Promise<void> {
+  public async readTreeContents(): Promise<PhotoTree> {
     // readRootFolder reads the folder.
-    this.rootFolder = await this.treeHandler.createRootFolder();
-    await this.treeHandler.getCartographicPositions(this.rootFolder, true);
-    await this.treeHandler.getSpatialPositions(this.rootFolder, true);
+    this.photoTree = await this.treeHandler.createPhotoTree();
+    await this.treeHandler.getCartographicPositions(this.photoTree, true);
+    await this.treeHandler.getSpatialPositions(this.photoTree, true);
+    return this.photoTree;
   }
 
   /** Traverse the tree, calling the func for each PhotoFile. */
   public async traverseTree(func: PhotoTraverseFunction, visibleOnly: boolean) {
-    if (this.rootFolder)
-      await this.rootFolder.traversePhotos(func, true, visibleOnly);
+    if (this.photoTree)
+      await this.photoTree.traversePhotos(func, undefined, true, visibleOnly);
   }
 
   /** Creates a GeoPhotoMarkerManager to display markers for each photo. */
-  public showMarkers() {
+  public async showMarkers(): Promise<void> {
     if (!this._markers) {
       this._markers = new GeoPhotoMarkerManager(this.plugin, this);
     }
     const message: string = this.plugin.i18n.translate("geoPhoto:messages.ShowingMarkers");
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
-    this._markers.startDecorating().catch((_err) => { });
+    return this._markers.startDecorating();
   }
 
   /** Stops drawing and discards the photo markers. */
@@ -75,10 +78,15 @@ export class GeoPhotos {
     }
   }
 
+  private removeUi() {
+    this.plugin.removeUi();
+  }
+
   /** callback for iModel closed - removes the markers. */
   private onCloseIModel(iModel: IModelConnection) {
     if (this.iModel === iModel) {
       this.removeMarkers();
+      this.removeUi();
       (iModel as any).geoPhotos = undefined;
     }
   }
@@ -88,22 +96,22 @@ export class GeoPhotos {
     return (undefined !== this._markers) && this._markers.nowDecorating();
   }
 
-  private countFunc(folder: PhotoFolder, _parent: PhotoFolder): void {
+  private countFunc(folder: PhotoFolder, _parent: PhotoFolder | undefined): void {
     this._photoCount += folder.photoCount;
   }
 
   public getPhotoCount(): number {
-    if (!this.rootFolder)
+    if (!this.photoTree)
       return SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
     this._photoCount = 0;
-    this.rootFolder.traverseFolders(this.countFunc.bind(this), true, true);
+    this.photoTree.traverseFolders(this.countFunc.bind(this), true, true);
     return this._photoCount;
   }
 }
 
 /** An Immediate Tool that can be used to execute the operations in GeoPhotoPlugin. */
-class GeoTagTool extends Tool {
-  public static toolId = "GeoTagTool";
+class GeoPhotoTool extends Tool {
+  public static toolId = "GeoPhotoTool";
   public static plugin: GeoPhotoPlugin | undefined;
   public static get maxArgs() { return 1; }
   public static get minArgs() { return 0; }
@@ -115,7 +123,7 @@ class GeoTagTool extends Tool {
     // the plugin does the actual work.
     if (IModelApp.viewManager.selectedView) {
       const arg: string = ((undefined !== args) && (args.length > 0)) ? args[0] : "toggle";
-      GeoTagTool.plugin!.markerOperation(arg);
+      GeoPhotoTool.plugin!.geoPhotoOperation(arg);
     }
     return true;
   }
@@ -128,9 +136,35 @@ const enum Operation {
   Toggle = 2,
 }
 
+// settings for the plugin.
+// We don't currently provide a way to change minDistance, maxDistance, or eyeHeight.
+class GeoPhotoSettings {
+  // In the pannellum viewer, the minimum distance that a nearby marker is drawn from the center.
+  public minDistance: number = 10;
+  // In the pannellum viewer, the maximum distance for nearby markers. Beyond that distance, they are not drawn.
+  public maxDistance: number = 100.0;
+  // In the pannellum viewer, the assumed height above the ground of the panoramic camera.
+  public eyeHeight: number = 7.0;
+}
+
+class GeoPhotoFullSettings extends GeoPhotoSettings {
+  public visiblePaths: string[] = [];
+
+  public getPathList(photoTree: PhotoTree) {
+    photoTree.traverseFolders(this.gatherPaths.bind(this), true, true);
+  }
+
+  // traverse
+  public gatherPaths(folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    this.visiblePaths.push(folder.fullPath);
+  }
+}
+
 /** The plugin class that is instantiated when the plugin is loaded, and executes the operations */
 export class GeoPhotoPlugin extends Plugin {
   private _i18NNamespace?: I18NNamespace;
+  public uiProvider?: GPDialogUiProvider;
+  public settings: GeoPhotoSettings = new GeoPhotoSettings();
 
   // displays the GeoPhoto markers for the specified iModel.
   public async showGeoPhotoMarkers(iModel: IModelConnection): Promise<void> {
@@ -142,22 +176,52 @@ export class GeoPhotoPlugin extends Plugin {
     }
 
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
+    let photoTree: PhotoTree | undefined;
     if (undefined === geoPhotos) {
+      const requestContext = await AuthorizedFrontendRequestContext.create();
+      const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoPlugin", "Settings", false, iModel.iModelToken.contextId, iModel.iModelToken.iModelId);
+
+      if (this.uiProvider)
+        this.uiProvider.showGeoPhotoDialog();
+
       let message: string = this.i18n.translate("geoPhoto:messages.GatheringPhotos");
       let msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
       IModelApp.notifications.outputMessage(msgDetails);
 
-      const requestContext = await AuthorizedFrontendRequestContext.create();
-      const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel);
-      geoPhotos = new GeoPhotos(this, treeHandler!, iModel);
-      await geoPhotos.readTreeContents();
+      const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel, this.uiProvider);
+      geoPhotos = new GeoPhotos(this, treeHandler!, iModel, this.uiProvider);
+      photoTree = await geoPhotos.readTreeContents();
+
+      const settingsResult = await settingsPromise;
+      if (SettingsStatus.Success === settingsResult.status) {
+        // process the returned settings.
+        const settings: any = settingsResult.setting;
+        if ((settings.visiblePaths) && Array.isArray(settings.visiblePaths)) {
+          geoPhotos.photoTree!.traverseFolders(this.checkFolderVisibility.bind(this, settings.visiblePaths), true, false);
+        }
+      }
 
       const photoCount: number = geoPhotos.getPhotoCount();
       message = this.i18n.translate("geoPhoto:messages.GeneratingMarkers", { photoCount });
       msgDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
       IModelApp.notifications.outputMessage(msgDetails);
     }
-    geoPhotos.showMarkers();
+    await geoPhotos.showMarkers();
+    if (photoTree && this.uiProvider) {
+      this.uiProvider.setLoadPhase(2);
+      this.uiProvider.syncTreeData(photoTree);
+      this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
+    }
+  }
+
+  private checkFolderVisibility(visiblePaths: string[], folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    const path: string = folder.fullPath;
+    for (const thisPath of visiblePaths) {
+      if (thisPath === path)
+        return;
+    }
+    // not found in visiblePaths, turn it off.
+    folder.visible = false;
   }
 
   /** displays the GeoPhoto markers for the specified iModel. */
@@ -178,32 +242,66 @@ export class GeoPhotoPlugin extends Plugin {
       return Operation.Toggle;
   }
 
+  // returns true if we are currently displaying geoPhoto markers.
   private showingMarkers(view: ScreenViewport) {
     const geoPhotos: GeoPhotos = (view.iModel as any).geoPhotos;
     return (geoPhotos && geoPhotos.showingMarkers());
   }
 
-  public markerOperation(opArg: string) {
+  // turns geoPhotos off or on depending on argument
+  public geoPhotoOperation(opArg: string) {
     const view = IModelApp.viewManager.selectedView;
-    if (!view)
+    if (!view || !view.iModel)
       return;
 
     const operation = this.getOperation(opArg);
-    if ((Operation.Show === operation) || ((Operation.Toggle === operation) && !this.showingMarkers(view)))
+    if ((Operation.Show === operation) || ((Operation.Toggle === operation) && !this.showingMarkers(view))) {
+      if (undefined === this.uiProvider)
+        this.uiProvider = new GPDialogUiProvider(this);
       this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
-    else if ((Operation.Hide === operation) || ((Operation.Toggle === operation) && this.showingMarkers(view)))
+    } else if ((Operation.Hide === operation) || ((Operation.Toggle === operation) && this.showingMarkers(view))) {
       this.hideGeoPhotoMarkers(view.iModel);
+    }
+  }
+
+  // called from GPDialogUiProvider when the visibility of part of the marker set is changed.
+  public async visibilityChange(): Promise<void> {
+    const view = IModelApp.viewManager.selectedView;
+    if (!view || !view.iModel)
+      return;
+    // change the markers on the screen.
+    if (this.showingMarkers(view)) {
+      this.hideGeoPhotoMarkers(view.iModel);
+      this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
+    }
+    this.saveSettings().catch((_err) => { });
+  }
+
+  private async saveSettings(): Promise<void> {
+    const view = IModelApp.viewManager.selectedView;
+    if (!view || !view.iModel)
+      return;
+
+    // store settings to SettingsManager
+    const geoPhotos: GeoPhotos = (view.iModel as any).geoPhotos;
+    if (geoPhotos && geoPhotos.photoTree) {
+      const newSettings: GeoPhotoFullSettings = new GeoPhotoFullSettings();
+      const fullSettings = Object.assign(newSettings, this.settings);
+      fullSettings.getPathList(geoPhotos.photoTree);
+      const requestContext = await AuthorizedFrontendRequestContext.create();
+      IModelApp.settings.saveUserSetting(requestContext, fullSettings, "GeoPhotoPlugin", "Settings", false, view.iModel.iModelToken.contextId, view.iModel.iModelToken.iModelId).catch((_err) => { });
+    }
   }
 
   /** Invoked the first time this plugin is loaded. */
   public onLoad(_args: string[]): void {
     // store the plugin in the tool prototype.
-    GeoTagTool.plugin = this;
+    GeoPhotoTool.plugin = this;
 
     this._i18NNamespace = this.i18n.registerNamespace("geoPhoto");
     this._i18NNamespace!.readFinished.then(() => {
-      IModelApp.tools.register(GeoTagTool, this._i18NNamespace, this.i18n);
-      GeoTagTool.plugin = this;
+      IModelApp.tools.register(GeoPhotoTool, this._i18NNamespace, this.i18n);
+      GeoPhotoTool.plugin = this;
     }).catch(() => { });
   }
 
@@ -214,8 +312,22 @@ export class GeoPhotoPlugin extends Plugin {
       return;
 
     this._i18NNamespace!.readFinished.then(() => {
-      this.markerOperation(args.length > 1 ? args[1] : "toggle");
+      this.geoPhotoOperation(args.length > 1 ? args[1] : "toggle");
     }).catch((_err: Error) => { });
+  }
+
+  // returning false blocks output of message for subsequent "load Plugin" attempts. onExecute is called.
+  public reportReload() {
+    return false;
+  }
+
+  // called when an iModel is closed to remove the dialog
+  public removeUi() {
+    if (this.uiProvider) {
+      this.uiProvider.removeUi();
+      // discard the UiProvider, another will be created when
+      this.uiProvider = undefined;
+    }
   }
 }
 

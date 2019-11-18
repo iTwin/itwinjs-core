@@ -31,8 +31,16 @@
       "type": "plugin",
       "sourceResources": [
         {
+          "source": "./src/**/*.scss",
+          "dest": "./lib"
+        },
+        {
           "source": "./src/public/**/*",
           "dest": "./lib/build"
+        },
+        {
+          "source": "./src/**/*.svg",
+          "dest": "./lib"
         },
         {
           "source": "./src/public/*.svg",
@@ -76,7 +84,7 @@
     "typescript": "~3.6.2",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.0",
-    "source-map-loader": "^0.2.3"
+    "svg-baker-runtime": "^1.4.2"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "1.8.0-dev.18",
@@ -86,10 +94,12 @@
     "@bentley/imodeljs-i18n": "1.8.0-dev.18",
     "@bentley/imodeljs-frontend": "1.8.0-dev.18",
     "@bentley/imodeljs-quantity": "1.8.0-dev.18",
+    "@bentley/ui-abstract": "1.8.0-dev.18",
     "@bentley/ui-core": "1.8.0-dev.18",
     "@bentley/ui-components": "1.8.0-dev.18",
     "@bentley/ui-ninezone": "1.8.0-dev.18",
     "@bentley/ui-framework": "1.8.0-dev.18",
-    "react": "^16.8.0"
+    "react": "^16.8.0",
+    "svg-sprite-loader": "^3.8.0"
   }
 }

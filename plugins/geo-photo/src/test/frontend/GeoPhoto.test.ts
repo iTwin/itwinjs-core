@@ -8,7 +8,7 @@ import { AuthorizedClientRequestContext, HubIModel, ImsTestAuthorizationClient, 
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelConnection, IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { ProjectShareHandler, PSPhotoFile } from "../../ProjectSharePhotoTree";
-import { PhotoFile, PhotoFolder } from "../../PhotoTree";
+import { PhotoFile, PhotoFolder, PhotoTree } from "../../PhotoTree";
 import { TestConfig, TestUsers } from "../TestConfig";
 
 chai.should();
@@ -32,7 +32,7 @@ export class GeoPhotoTest {
 
   public async deleteTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     this._currentCount = 0;
-    await folder.traversePhotos(this.deleteFileTag.bind(this), subFolders, false);
+    await folder.traversePhotos(this.deleteFileTag.bind(this), undefined, subFolders, false);
   }
 
   private async validateFileTag(file: PhotoFile, folder: PhotoFolder): Promise<void> {
@@ -54,7 +54,7 @@ export class GeoPhotoTest {
 
   public async validateTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     this._currentCount = 0;
-    await folder.traversePhotos(this.validateFileTag.bind(this), subFolders, false);
+    await folder.traversePhotos(this.validateFileTag.bind(this), undefined, subFolders, false);
   }
 
   private async validateDeletedFileTag(file: PhotoFile, folder: PhotoFolder): Promise<void> {
@@ -68,7 +68,7 @@ export class GeoPhotoTest {
 
   public async validateDeletedTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     this._currentCount = 0;
-    await folder.traversePhotos(this.validateDeletedFileTag.bind(this), subFolders, false);
+    await folder.traversePhotos(this.validateDeletedFileTag.bind(this), undefined, subFolders, false);
   }
 
   private async updateFileTag(file: PhotoFile, _folder: PhotoFolder): Promise<void> {
@@ -81,7 +81,7 @@ export class GeoPhotoTest {
 
   public async updateTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     this._currentCount = 0;
-    await folder.traversePhotos(this.updateFileTag.bind(this), subFolders, false);
+    await folder.traversePhotos(this.updateFileTag.bind(this), undefined, subFolders, false);
   }
 
   private async countPhoto(_file: PhotoFile, _folder: PhotoFolder): Promise<void> {
@@ -90,7 +90,7 @@ export class GeoPhotoTest {
 
   public async getPhotoCount(folder: PhotoFolder, subFolders: boolean): Promise<number> {
     this._totalCount = 0;
-    await folder.traversePhotos(this.countPhoto.bind(this), subFolders, false);
+    await folder.traversePhotos(this.countPhoto.bind(this), undefined, subFolders, false);
     return this._totalCount;
   }
 
@@ -108,7 +108,7 @@ export class GeoPhotoTest {
 
   public async deleteCustomProperties(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     this._currentCount = 0;
-    await folder.traversePhotos(this.deleteFileCustomProperties.bind(this), subFolders, false);
+    await folder.traversePhotos(this.deleteFileCustomProperties.bind(this), undefined, subFolders, false);
   }
 }
 
@@ -117,7 +117,7 @@ describe("GeoPhoto (#integration)", () => {
   let iModel: IModelConnection;
   let requestContext: AuthorizedClientRequestContext;
   let geoPhotoTest: GeoPhotoTest;
-  let rootFolder: PhotoFolder;
+  let rootFolder: PhotoTree;
   const subFolders = true;
 
   before(async () => {
@@ -135,9 +135,9 @@ describe("GeoPhoto (#integration)", () => {
     const hubIModel: HubIModel = await TestConfig.queryIModel(requestContext, projectId, "PhotoTest");
     iModel = await IModelConnection.open(projectId, hubIModel.wsgId, OpenMode.Readonly, IModelVersion.latest());
 
-    const treeHandler = new ProjectShareHandler(requestContext, undefined as any, iModel);
+    const treeHandler = new ProjectShareHandler(requestContext, undefined as any, iModel, undefined);
     geoPhotoTest = new GeoPhotoTest(requestContext, iModel, treeHandler);
-    rootFolder = await treeHandler.createRootFolder();
+    rootFolder = await treeHandler.createPhotoTree();
   });
 
   it("should be able to count all images", async () => {
