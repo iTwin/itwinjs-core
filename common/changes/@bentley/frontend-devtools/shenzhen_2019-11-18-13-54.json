@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Added keyins for adjusting tile size modifiers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Paul.Connelly@bentley.com"
+}

@@ -291,7 +291,7 @@ export class ViewportTileSizeModifierTool extends Tool {
 
   public parseAndRun(...args: string[]): boolean {
     const arg = args[0].toLowerCase();
-    let modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
+    const modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
     return this.run(modifier);
   }
 }

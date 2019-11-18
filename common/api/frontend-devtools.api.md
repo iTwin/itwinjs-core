@@ -331,6 +331,20 @@ export interface DataListProps {
     parent?: HTMLElement;
 }
 
+// @alpha
+export class DefaultTileSizeModifierTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(modifier?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState>;
 
@@ -976,6 +990,20 @@ export class ToolSettingsTracker {
     // (undocumented)
     dispose(): void;
     }
+
+// @alpha
+export class ViewportTileSizeModifierTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(modifier?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 
 // (No @packageDocumentation comment for this package)
