@@ -1240,6 +1240,7 @@ export abstract class Viewport implements IDisposable {
   private _scheduleTime = 0.0;
   private _selectionSetDirty = true;
   private readonly _perModelCategoryVisibility = new PerModelCategoryVisibilityOverrides(this);
+  private _tileSizeModifier?: number;
 
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
@@ -2779,8 +2780,6 @@ export abstract class Viewport implements IDisposable {
     this.discloseTileTrees(trees);
     for (const tree of trees.trees)
       tree.collectStatistics(stats);
-
-    // ###TODO: Want to record memory used by RenderTarget?
   }
 
   /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
@@ -2790,6 +2789,26 @@ export abstract class Viewport implements IDisposable {
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
     if (this.view.refreshForModifiedModels(modelIds))
       this.invalidateScene();
+  }
+
+  /** A multiplier applied to the size in pixels of a [[Tile]] during tile selection for this viewport. Defaults to [[TileAdmin.defaultTileSizeModifier]] but can be overridden per-viewport.
+   * A value greater than 1.0 causes lower-resolution tiles to be selected; a value less than 1.0 causes higher-resolution tiles to be selected.
+   * This can allow an application to sacrifice quality for performance or vice-versa.
+   * @alpha
+   */
+  public get tileSizeModifier(): number {
+    return undefined !== this._tileSizeModifier ? this._tileSizeModifier : IModelApp.tileAdmin.defaultTileSizeModifier;
+  }
+
+  /** Controls this Viewport's [[tileSizeModifier]].
+   * @param modifier If defined, overrides [[TileAdmin.defaultTileSizeModifier]]; otherwise, resets it to that default. Must be greater than zero.
+   * @alpha
+   */
+  public setTileSizeModifier(modifier: number | undefined) {
+    if (modifier !== this._tileSizeModifier && (undefined === modifier || modifier > 0)) {
+      this._tileSizeModifier = modifier;
+      this.invalidateScene();
+    }
   }
 }
 
