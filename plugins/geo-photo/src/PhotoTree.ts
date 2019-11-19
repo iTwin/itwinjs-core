@@ -220,6 +220,13 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
     return sorter;
   }
 
+  public clearDistanceSort() {
+    this._sortedByXNoChildren = undefined;
+    this._sortedByXWithChildren = undefined;
+    this._sortedByYNoChildren = undefined;
+    this._sortedByYWithChildren = undefined;
+  }
+
   /** traverse each photo in this folder, calling func. Recurses into subFolders if desired. */
   public async traversePhotos(func: PhotoTraverseFunction, folderFunc: FolderTraverseFunction | undefined, subFolders: boolean, visibleOnly: boolean) {
     if (!this.entries)
@@ -301,6 +308,7 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     return this._i18n.translate("geoPhoto:messages.RootFolderName");
   }
 
+  // implementation of ITreeDataProvider.getNodesCount
   public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
     // return count of the folder nodes.
     if (!parent)
@@ -316,6 +324,7 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     return count;
   }
 
+  // implementation of ITreeDataProvider.getNodes
   public async getNodes(parent?: TreeNodeItem, _page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
     // return only the folder nodes.
     if (!parent)
@@ -326,12 +335,26 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
 
     return parent.getSubFolders();
   }
+
+  // traverse callback to clear the distance sort results for an individual folder
+  private _clearFolderDistanceSort (folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    folder.clearDistanceSort();
+  }
+
+  /** Called when different folders are chosen to be visible. We have to reset the distance sorter to calculate the new set of visible photos. */
+  public clearCloseNeighborData() {
+    this.clearDistanceSort();
+    this.traverseFolders(this._clearFolderDistanceSort.bind(this), true, false);
+  }
+
 }
 
+// not actually used yet.
 export class GeoPhotoThumbnail {
   constructor(public comp: number, public xRes: number, public yRes: number, public resUnit: number, public offset: number, public byteCount: number) {
   }
 }
+
 /**
  * Subset of Jpeg Tags that are of interest to the geo-photo plugin.
  */
@@ -365,7 +388,7 @@ export abstract class PhotoFile extends FolderEntry {
   /** Gets an Url that corresponds to the photo file. */
   public abstract get accessUrl(): string;
 
-  public get visible() {
+  public get visible(): boolean {
     return this.parent!.visible && this._visible;
   }
 

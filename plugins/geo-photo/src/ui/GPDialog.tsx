@@ -38,25 +38,23 @@ interface GeoPhotoDialogState {
 export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhotoDialogState> {
   public readonly state: Readonly<GeoPhotoDialogState>;
   public static readonly id = "GPDialog";
-  private _initialDialogTitle: string;
   private _i18n: I18N;
 
   constructor(props: GeoPhotoDialogProps) {
     super(props);
     this._i18n = this.props.dataProvider.plugin.i18n;
-    this._initialDialogTitle = this._i18n.translate("geoPhoto:LoadDialog.LoadTitle");
 
     this.state = {
-      dialogTitle: this._initialDialogTitle,
-      loadPhase: 0,
-      folderCount: 0,
-      folderName: "",
-      fileCount: 0,
-      currentFolder: 0,
-      currentFile: 0,
-      geoPanoramaCount: 0,
-      geoPhotoCount: 0,
-      treeDataProvider: undefined,
+      dialogTitle: props.dataProvider.title,
+      loadPhase: props.dataProvider.loadPhase,
+      folderCount: props.dataProvider.folderCount,
+      folderName: " ",
+      fileCount: props.dataProvider.fileCount,
+      currentFolder: props.dataProvider.currentFolder,
+      currentFile: props.dataProvider.currentFile,
+      geoPanoramaCount: props.dataProvider.panoramaCount,
+      geoPhotoCount: props.dataProvider.photoCount,
+      treeDataProvider: props.dataProvider.treeDataProvider,
     };
   }
 

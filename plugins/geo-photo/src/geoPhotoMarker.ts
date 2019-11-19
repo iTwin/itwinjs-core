@@ -42,7 +42,6 @@ class GeoPhotoMarker extends Marker {
   private _color: ColorDef;
   public photoFile: PhotoFile;
 
-  // tslint:disable:no-console
   private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Bearing[] {
     const eyeHeight = this._manager.plugin.settings.eyeHeight;
     const bearings: Bearing[] = [];
@@ -53,7 +52,7 @@ class GeoPhotoMarker extends Marker {
       const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
       const pitch = Math.atan2(eyeHeight, distance) * -180.0 / Math.PI;
       bearings.push({ file, distance, pitch, yaw });
-      console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
+      // console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
     }
 
     // eliminate any have closer neighbors within tooCloseYaw and tooClosePitch.
@@ -144,7 +143,7 @@ class GeoPhotoMarker extends Marker {
       const values: any[] = await Promise.all([fileContentsPromise, closestNeighborPromise]);
       const panoBlob: Blob = new Blob([values[0]], { type: "image/jpeg" });
       const closeFiles: PhotoFile[] = values[1];
-      console.log(`thisFile:  ${photoFile.name}, x: ${photoFile.spatial!.x}, y: ${photoFile.spatial!.y}`);
+      // console.log(`thisFile:  ${photoFile.name}, x: ${photoFile.spatial!.x}, y: ${photoFile.spatial!.y}`);
       if (closeFiles.length > 0) {
         const displayedNeighbors: Bearing[] = this.chooseNeighborsToDisplay(photoFile, closeFiles);
         const hotSpots: PannellumHotSpot[] = [];
@@ -195,7 +194,7 @@ class GeoPhotoMarker extends Marker {
           const newImage = await this._manager.visitedImage!;
           if (newImage)
             this.setImage(newImage);
-          if (0 === (ev.keyModifiers & (BeModifierKeys.Shift | BeModifierKeys.Control))) {
+          if (0 !== (ev.keyModifiers & (BeModifierKeys.Shift | BeModifierKeys.Control))) {
             // this opens the pannellum viewer in a separate tab (on Chrome)
             const title = this.photoFile.name;
             const encodedURL = encodeURIComponent(this.photoFile.accessUrl);

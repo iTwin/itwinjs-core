@@ -40,7 +40,11 @@
       "pseudoLocalize": {
         "source": "./lib/build/locales/en",
         "dest": "./lib/build/locales/en-PSEUDO"
-      }
+      },
+      "installTo": [
+        "../../test-apps/ui-test-app",
+        "../../test-apps/display-test-app"
+      ]
     }
   },
   "devDependencies": {
@@ -48,6 +52,8 @@
     "@bentley/build-tools": "1.9.0-dev.0",
     "@bentley/webpack-tools": "1.9.0-dev.0",
     "@bentley/config-loader": "1.9.0-dev.0",
+    "ui-test-app": "0.0.0",
+    "display-test-app": "1.8.0",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",

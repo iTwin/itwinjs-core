@@ -13,7 +13,6 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   Plugin,
-  PluginAdmin,
   ScreenViewport,
   TiledGraphicsProvider,
   TileTree,
@@ -194,4 +193,4 @@ class WMSPlugin extends Plugin {
 
 declare var PLUGIN_NAME: string;
 
-PluginAdmin.register(new WMSPlugin(PLUGIN_NAME));
+IModelApp.pluginAdmin.register(new WMSPlugin(PLUGIN_NAME));

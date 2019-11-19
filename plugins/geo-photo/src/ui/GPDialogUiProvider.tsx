@@ -62,8 +62,10 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
 
   public readonly id = "GPDialogUiProvider";
 
+  public treeDataProvider: ITreeDataProvider | undefined = undefined;
   public onSyncDataTreeEvent = new SyncDataTreeChangeEvent();
 
+  public title: string = this.plugin.i18n.translate("geoPhoto:LoadDialog.LoadTitle");
   public onSyncTitleEvent = new SyncTitleEvent();
 
   private _reportStopWatch: StopWatch | undefined = undefined;
@@ -118,10 +120,12 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
   }
 
   public syncTitle(title: string) {
+    this.title = title;
     this.onSyncTitleEvent.emit({ title });
   }
 
   public syncTreeData(treeData: ITreeDataProvider) {
+    this.treeDataProvider = treeData;
     this.onSyncDataTreeEvent.emit({ treeData });
   }
 

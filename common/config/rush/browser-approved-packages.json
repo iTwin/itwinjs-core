@@ -295,6 +295,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "display-test-app",
+      "allowedCategories": [ "internal", "plugins" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },
@@ -845,6 +849,10 @@
     {
       "name": "uglifyjs-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ui-test-app",
+      "allowedCategories": [ "internal", "plugins" ]
     },
     {
       "name": "url-loader",

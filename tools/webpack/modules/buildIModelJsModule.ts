@@ -926,6 +926,7 @@ class IModelJsModuleBuilder {
     return Promise.resolve(dependentTracker.symlinkOrCopyExternalModules(outputDirectory));
   }
 
+  // makes a config file
   private makeConfig(): Promise<Result> {
     let useCreateConfig: boolean = false;
     if (!this._moduleDescription.makeConfig)
@@ -989,6 +990,62 @@ class IModelJsModuleBuilder {
         resolve(new Result("Make Config", 1, e));
       });
     }
+  }
+
+  private installPlugin(): Promise<Result> {
+    if (this._detail > 0)
+      console.log("Install plugins to specified applications");
+
+    // only attempt if this is a plugin, with an installTo key, and we can symlink.
+    if ((this._moduleDescription.type !== "plugin") || !this._moduleDescription.installTo || this._alwaysCopy)
+      return Promise.resolve(new Result("installPlugin", 0));
+    if (!Array.isArray(this._moduleDescription.installTo))
+      return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, "iModelJs.buildModule.installTo must be an array of strings containing test applications to install the plugin to."));
+    try {
+      for (const installDest of this._moduleDescription.installTo) {
+        // the string must be a path relative to the directory of package.json
+        if (typeof installDest !== "string") {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, "iModelJs.buildModule.installTo must be an array of strings containing test applications to install the plugin to."));
+        }
+
+        if (this._detail > 2)
+          console.log(`  Install plugin ${this._moduleDescription.webpack.bundleName} to specified ${installDest}`);
+
+        // see if we can find the path.
+        const destRoot: string = path.resolve(process.cwd(), installDest);
+        if (!fs.existsSync(destRoot)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the root directory of the destination: ${destRoot}`));
+        }
+
+        const destWebResources = path.join(destRoot, "lib/webresources");
+        if (!fs.existsSync(destWebResources)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the output webresources directory of the destination: ${destWebResources}`));
+        }
+
+        const pluginDirectory = path.join(destWebResources, "imjs_plugins");
+        if (!fs.existsSync(pluginDirectory)) {
+          fs.mkdirSync(pluginDirectory);
+        }
+
+        const buildDir = path.resolve(process.cwd(), this._moduleDescription.webpack.build);
+        if (!fs.existsSync(buildDir)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the build directory of the plugin: ${destWebResources}`));
+        }
+
+        const outDir = path.resolve (pluginDirectory, this._moduleDescription.webpack.bundleName);
+        if (fs.existsSync(outDir)) {
+          if (this._detail > 3) {
+            console.log (`  Plugin ${this._moduleDescription.webpack.bundleName} is already installed to ${pluginDirectory}`);
+          }
+          continue;
+        }
+        fs.symlinkSync(buildDir, outDir);
+      }
+    }
+    catch (e) {
+      return Promise.resolve(new Result("installPlugin", 1, e));
+    }
+    return Promise.resolve(new Result("installPlugin", 0));
   }
 
   // find webpack executable.
@@ -1383,6 +1440,11 @@ class IModelJsModuleBuilder {
 
     const makeConfigResult: Result = await this.makeConfig();
     exitCode = this.reportResults([makeConfigResult]);
+    if (0 != exitCode)
+      return exitCode;
+
+    const installPluginResult: Result = await this.installPlugin();
+    exitCode = this.reportResults([installPluginResult]);
 
     return exitCode;
   }
