@@ -7421,6 +7421,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     getContentClip(): ClipVector | undefined;
     // (undocumented)
+    protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean;
+    // (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
     // (undocumented)
     protected _graphic?: RenderGraphic;
@@ -8432,6 +8434,8 @@ export class TraversalSelectionContext {
     preload(tile: Tile): void;
     // (undocumented)
     preloaded: Set<Tile>;
+    // (undocumented)
+    select(tiles: Tile[]): void;
     // (undocumented)
     selected: Tile[];
     // (undocumented)

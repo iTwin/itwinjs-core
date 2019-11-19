@@ -167,6 +167,12 @@ export class TraversalSelectionContext {
     if (!tile.isReady)
       this.missing.push(tile);
   }
+  public select(tiles: Tile[]): void {
+    for (const tile of tiles) {
+      this.selected.push(tile);
+      this.displayedDescendants.push([]);
+    }
+  }
 }
 
 /**

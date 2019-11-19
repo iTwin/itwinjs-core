@@ -143,6 +143,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _localContentRange?: ElementAlignedBox3d;
   protected _emptySubRangeMask?: number;
   private _state: TileState;
+  private static _loadedRealityChildren = new Array<Tile>();
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -447,6 +448,19 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         return false;
     return true;
   }
+  protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean {
+    if (this._childrenLoadStatus !== TileTree.LoadStatus.Loaded || this._children === undefined)
+      return false;
+
+    for (const child of this._children) {
+      if (child.isReady && Tile.Visibility.Visible === child.computeVisibility(args)) {
+        this._childrenLastUsed = args.now;
+        Tile._loadedRealityChildren.push(child);
+      } else if (!child.getLoadedRealityChildren(args))
+        return false;
+    }
+    return true;
+  }
 
   public selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails) {
     const vis = this.computeVisibility(args);
@@ -455,7 +469,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return;
     }
 
-    if (this.isDisplayable && (vis === Tile.Visibility.Visible || this.isLeaf || this._anyChildNotFound)) { //  || this.root.tileNeedsReprojection(this)) {
+    if (this.isDisplayable && (vis === Tile.Visibility.Visible || this.isLeaf || this._anyChildNotFound)) {
       context.selectOrQueue(this, traversalDetails);
       const preloadSkip = this.root.loader.preloadRealityParentSkip;
       let preloadCount = this.root.loader.preloadRealityParentDepth + preloadSkip;
@@ -464,6 +478,12 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         if (parent.children!.length > 1 && ++parentDepth > preloadSkip) {
           context.preload(parent);
           preloadCount--;
+        }
+
+        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
+          if (this.getLoadedRealityChildren(args))
+            context.select(Tile._loadedRealityChildren);
+          Tile._loadedRealityChildren.length = 0;
         }
       }
     } else {
