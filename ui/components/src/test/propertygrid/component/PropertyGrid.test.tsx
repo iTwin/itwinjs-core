@@ -8,6 +8,8 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as React from "react";
+import ReactResizeDetector from "react-resize-detector";
+
 import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
@@ -51,7 +53,7 @@ describe("PropertyGrid", () => {
   describe("rendering", () => {
 
     it("renders correctly horizontally", async () => {
-      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} isOrientationFixed={true} />);
 
       await TestUtils.flushAsyncOperations();
 
@@ -61,7 +63,7 @@ describe("PropertyGrid", () => {
     });
 
     it("renders correctly vertically", async () => {
-      const wrapper = mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />);
+      const wrapper = mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} isOrientationFixed={true} />);
 
       await TestUtils.flushAsyncOperations();
 
@@ -402,6 +404,7 @@ describe("PropertyGrid", () => {
         <PropertyGrid
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider}
+          isOrientationFixed={true}
         />);
 
       await TestUtils.flushAsyncOperations();
@@ -416,46 +419,36 @@ describe("PropertyGrid", () => {
 
     describe("responsive behavior", () => {
 
-      const getBoundingClientRect = Element.prototype.getBoundingClientRect;
-
-      after(() => {
-        Element.prototype.getBoundingClientRect = getBoundingClientRect;
-      });
-
       it("changes orientation when width is lower than 300", async () => {
         const propertyGridMount = mount(
           <PropertyGrid
             dataProvider={dataProvider}
+            horizontalOrientationMinWidth={275}
+            isOrientationFixed={false}
           />);
 
         await TestUtils.flushAsyncOperations();
         propertyGridMount.update();
 
-        const box = {
-          bottom: 0,
-          height: 0,
-          left: 0,
-          right: 0,
-          toJSON: () => { },
-          top: 0,
-          width: 250,
-          x: 0,
-          y: 0,
-        };
+        const resizeDetector = propertyGridMount.find(ReactResizeDetector);
+        expect(resizeDetector.length).to.eq(1);
 
-        Element.prototype.getBoundingClientRect = () => box;
-        propertyGridMount.unmount();
-        propertyGridMount.mount();
-        await TestUtils.flushAsyncOperations();
+        resizeDetector.prop("onResize")!(250, 400);
         propertyGridMount.update();
 
         expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
 
-        box.width = 500;
-        Element.prototype.getBoundingClientRect = () => box;
-        propertyGridMount.unmount();
-        propertyGridMount.mount();
-        await TestUtils.flushAsyncOperations();
+        resizeDetector.prop("onResize")!(274, 400);
+        propertyGridMount.update();
+
+        expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
+
+        resizeDetector.prop("onResize")!(400, 400);
+        propertyGridMount.update();
+
+        expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Horizontal);
+
+        resizeDetector.prop("onResize")!(400, 500);
         propertyGridMount.update();
 
         expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Horizontal);
@@ -521,6 +514,7 @@ describe("PropertyGrid", () => {
           dataProvider={dataProvider}
           isPropertySelectionEnabled={false}
           onPropertySelectionChanged={onPropertySelectionChanged}
+          isOrientationFixed={true}
         />);
 
       await TestUtils.flushAsyncOperations();
@@ -641,6 +635,7 @@ describe("PropertyGrid", () => {
           isPropertySelectionEnabled={true}
           isPropertySelectionOnRightClickEnabled={false}
           onPropertySelectionChanged={onPropertySelectionChanged}
+          isOrientationFixed={true}
         />);
 
       await TestUtils.flushAsyncOperations();
@@ -753,6 +748,7 @@ describe("PropertyGrid", () => {
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider}
           onPropertyContextMenu={callback}
+          isOrientationFixed={true}
         />);
       await TestUtils.flushAsyncOperations();
       wrapper.update();

@@ -86,13 +86,13 @@ describe("<SolarTimeline />", () => {
 
     fireEvent.click(playButton);
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await TestUtils.tick(100);
+    await TestUtils.tick(500);
     expect(dataProvider.timeChangeCallbackCalled).to.be.true;
     expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
 
     // hit play/pause button to pause animation
     fireEvent.click(playButton);
-    await TestUtils.tick(100);
+    await TestUtils.tick(500);
     expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
   });
 

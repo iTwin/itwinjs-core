@@ -2322,8 +2322,6 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<PropertyGridState>;
     }
 
 // @public
@@ -2345,6 +2343,10 @@ export interface PropertyGridContextMenuArgs {
 // @public
 export interface PropertyGridProps extends CommonProps {
     dataProvider: IPropertyDataProvider;
+    // @beta
+    horizontalOrientationMinWidth?: number;
+    // @beta
+    isOrientationFixed?: boolean;
     // @beta
     isPropertyEditingEnabled?: boolean;
     isPropertyHoverEnabled?: boolean;

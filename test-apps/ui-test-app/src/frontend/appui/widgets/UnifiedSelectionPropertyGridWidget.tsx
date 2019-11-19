@@ -141,15 +141,13 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   public render() {
     if (this.props.iModelConnection && this.props.rulesetId)
       return (
-        <div>
-          <div>
-            <UnifiedSelectionPropertyGrid
-              dataProvider={this.state.dataProvider}
-              orientation={Orientation.Horizontal}
-              isPropertyHoverEnabled={true}
-              onPropertyContextMenu={this._onPropertyContextMenu}
-            />
-          </div>
+        <div style={{ height: "100%" }}>
+          <UnifiedSelectionPropertyGrid
+            dataProvider={this.state.dataProvider}
+            orientation={Orientation.Horizontal}
+            isPropertyHoverEnabled={true}
+            onPropertyContextMenu={this._onPropertyContextMenu}
+          />
           {this.renderContextMenu()}
         </div>
       );
