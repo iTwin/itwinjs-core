@@ -3,7 +3,7 @@
 # Notes on compact table notation
 
 * Many arguments which might be strongly typed as `Point3d`, `Vector3d`, `Point3d`, `Vector3d` are weakly typed as `XYandZ` or `XandY`.
-  * These allow any object that has `x` and `y ` properties to be passed as inputs.
+  * These allow any object that has `x` and `y` properties to be passed as inputs.
 * Many methods have optional result args.
   * The optional arg is NOT indicated here.
   * If the caller supplies the optional arg, that preexisting object will be reinitialized.
@@ -49,8 +49,6 @@ Typical names in the tables are:
 | Create from polar radius, angle, and z | | p = Point3d.createPolar (radius, angle, z) | p = Point2d.createPolar (radius, angle)| |
 | Create from spherical radius, xy angle, elevation angle | | p = Pointd.createSpherical (radius, xyAngle, elevationAngle) | | |
 
-
-
 ## "create" via instance methods on existing objects
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
@@ -78,7 +76,6 @@ Typical names in the tables are:
 | vector rotated 90 degrees towards a target vector.  Rotation is in the plane containing both inputs. | | newVector = oldVector.rotate90Towards () | | |
 | vector rotated 90 degrees around an axis vector. | | newVector = oldVector.rotate90Around () | | |
 | vector to the intersection of offsets | | | | `vector = Vector2d.createOffsetBisector (unitPerpendicularA, unitPerpendicularB, offsetDistance) :Vector2d | undefined` |
-
 
 ## create by Interpolation and addition
 
@@ -118,10 +115,8 @@ Typical names in the tables are:
 | (scalar) triple product of three vectors  | | value = vectorA.tripleProduct (vectorB, vectorC) : number| | |
 | project instance onto a line segment, return fractional postition | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number | fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number|fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number |
 | in the instance, accumulate crossproduct of vectors from (baseX. baseY, baseZ) to (ax, ay, az) and (bx, by, bz) | | vector.addCrossProductToTargetsInPlace (baseX, baseY, baseZ, ax, ay, az, bx, by, bz) | |
-| dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | |a = basePoint.dotVectorsToTargets (pointA,
-pointB) | |
-| dot product of instance vector with vector from startPoint to endPoint.  | | a = vector.dotProductStartEnd (startPoint, endPoint)  : number| | a = vector.dotProductStartEnd (startPoint, endPoint)  : number |
-
+| dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | | a = basePoint.dotVectorsToTargets (pointA, pointB) | |
+| dot product of instance vector with vector from startPoint to endPoint.  | | a = vector.dotProductStartEnd (startPoint, endPoint)  : number| | a = vector.dotProductStartEnd (startPoint, endPoint) : number |
 | dot product of instance vector with vector from startPoint to endPoint.  endPoint given as x,y,z,w to be unweighted. returns zero if weighth is zero.| | a = vector.dotProductStartEndXYZW (startPoint, x,y,x,z)  : number| | | |
 | squared magnitude of cross product | | value = vectorA.crossProductMagnitudeSquared (vectorB) | | |
 | magnitude of cross product | | value = vectorA.crossProductMagnitude (vectorB) | | |
@@ -153,6 +148,7 @@ pointB) | |
 | scale coordinates | p.scaleInPlace (scaleFactor) | v.scaleInPlace (scaleFactor) | | |
 
 ## unary queries (instance methods)
+
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
 | metric zero test on all components| p.isAlmostZero () | v.isAlmostZero () | p.isAlmostZero () | v.isAlmostZero () |
@@ -172,8 +168,7 @@ These are static methods on the XYZ class.  Hence they are inherited by Point3d 
 | has z propertiy  | XYZ.hasZ (anyObject) |
 | has x, y and z properties (z not tested) | XYZ.isXYAndZ (anyObject) |
 
-
-##  binary queries(instance methods)
+## binary queries (instance methods)
 
 (methods that take the "other" point or vector as direct numbers in the call list are considered "binary" for this table.)
 | category | Point3d | Vector3d | Point2d | Vector2d |
@@ -187,4 +182,3 @@ These are static methods on the XYZ class.  Hence they are inherited by Point3d 
 | distance between, ignore z | p.distanceXY (otherXYAndZ) | v.distanceXY (otherXYAndZ) |
 | squared distance between, ignore z | p.distanceSquaredXY (otherXYAndZ) | v.distanceSquaredXY (otherXYAndZ) |
 | max component difference | p.maxDiff (otherXYAndZ) | v.maxDiff (otherXYAndZ) | p.maxDiff (otherXAndY) | v.maxDiff (otherXAndY) |
-

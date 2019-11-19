@@ -4,7 +4,7 @@
 
 Writing an iModel.js application requires the following software:
 
-- [Node.js](https://nodejs.org) (latest 10.x LTS version)
+- [Node.js](https://nodejs.org) (latest 10.x or 12.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Google Chrome](https://www.google.com/chrome/)
@@ -31,7 +31,7 @@ To be able to view/read [iModel](../learning/imodels) data, you will need access
 
 **[Register here](https://ims.bentley.com/IMS/Registration)**
 
-_Note: Skip to step 3, if you already have a Bentley User Account._
+> Note: Skip to step 3, if you already have a Bentley User Account.
 
 ## 3. Register your Application
 
