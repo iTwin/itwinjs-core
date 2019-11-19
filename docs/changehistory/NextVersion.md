@@ -30,6 +30,22 @@ Use [GeometryStreamBuilder.isViewIndependent]($common) to configure this behavio
 ![view independent geometry](./assets/view_independent.png "The same marker viewed from two different angles")
 <p align="center">The same marker viewed from two different angles.</p>
 
+## Viewing Tool Improvements
+
+Added new view cursors for rotate, look, walk, and zoom view tools.
+
+Viewing tools that require identification of an object to define the point the tool will operate about now provide better feedback for the current cursor location.
+
+* The 3d rotate view tool now shows a preview of the point it will rotate about.
+* Pan, zoom, and scroll view tools now show a preview of the depth point used when the camera is on.
+
+![depth point preview](./assets/depth_point_preview.png "Rotate point preview: 1) Cursor over sky 2) Cursor over element 3) Cursor over terrain")
+<p align="center">Rotate view tool showing rotate point used for various cursor locations</p>
+
+1) Current cursor location doesn't identify anything. Uses default rotate point, which may not be meaningful.
+2) Current cursor location identifies a valid depth point on an element.
+3) Current cursor location identifies a valid depth point on terrain or background map.
+
 ## Removal of `EntityProps` String Indexer
 
 In prior releases, the `EntityProps` interface implemented by most types that represent data inside an iModel exposed an [indexer](https://basarat.gitbooks.io/typescript/docs/types/index-signatures.html) declared as follows:
