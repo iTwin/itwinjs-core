@@ -60,6 +60,7 @@ export * from "./ui-ninezone/stage-panels/manager/StagePanels";
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
 export * from "./ui-ninezone/toolbar/item/expandable/Expandable";
+export * from "./ui-ninezone/toolbar/item/expandable/WithDragInteraction";
 
 export * from "./ui-ninezone/toolbar/item/expandable/group/BackArrow";
 export * from "./ui-ninezone/toolbar/item/expandable/group/Column";

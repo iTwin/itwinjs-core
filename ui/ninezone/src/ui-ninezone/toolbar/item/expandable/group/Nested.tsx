@@ -19,6 +19,8 @@ import "./Nested.scss";
 export interface NestedGroupProps extends GroupProps {
   /** Function called when the back arrow is clicked. */
   onBack?: () => void;
+  /** Function called when pointer up event is received for back arrow. */
+  onBackPointerUp?: () => void;
 }
 
 /** Nested tool group component. Used in [[ExpandableItem]] component.
@@ -35,6 +37,7 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
         <div
           className="nz-back-arrow-container"
           onClick={this.props.onBack}
+          onPointerUp={this.props.onBackPointerUp}
         >
           <BackArrow />
         </div>

@@ -36,6 +36,7 @@
     margin-right: $space-between-icon-and-label;
     margin-left: 8px;
     filter: $shadow;
+    position: relative;
 
     > .nz-badge {
       position: absolute;
@@ -72,12 +73,14 @@
     }
   }
 
-  &:active:not(.nz-disabled) {
-    background: $buic-row-selection;
-    color: $pressed-label-color;
+  &:active, &.nz-pointer-up:hover {
+    &:not(.nz-disabled) {
+      background: $buic-row-selection;
+      color: $pressed-label-color;
 
-    > .nz-icon, .nz-label {
-      filter: $no-shadow;
+      > .nz-icon, .nz-label {
+        filter: $no-shadow;
+      }
     }
   }
 

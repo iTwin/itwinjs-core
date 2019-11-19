@@ -9,6 +9,8 @@ import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import "./Item.scss";
 
+// tslint:disable: deprecation
+
 /** Properties of [[HistoryItem]] component.
  * @alpha
  * @deprecated History tray removed from design standard.

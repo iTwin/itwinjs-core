@@ -2138,6 +2138,8 @@ export class FrontstageManager {
     static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
+    // @internal
+    static readonly onToolPanelOpenedEvent: UiEvent<void>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -2259,6 +2261,12 @@ export const getBackstageItemStateFromProps: (props: BackstageItemProps) => Back
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
 // @internal (undocumented)
+export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+
+// @internal (undocumented)
+export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
+
+// @internal (undocumented)
 export const getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps;
 
 // @internal (undocumented)
@@ -2295,6 +2303,8 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState): void;
     // (undocumented)
     componentWillUnmount(): void;
+    // (undocumented)
+    getItemById(id: string): ItemDefBase | undefined;
     // (undocumented)
     render(): React.ReactNode;
     // (undocumented)
@@ -2342,6 +2352,8 @@ export class GroupItemDef extends ActionButtonItemDef {
 
 // @public
 export interface GroupItemProps extends ItemProps {
+    // (undocumented)
+    defaultActiveItemId?: string;
     // (undocumented)
     direction?: Direction;
     // (undocumented)
@@ -2836,7 +2848,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     isExpanded: () => boolean;
     minimize: () => void;
     render(): JSX.Element;
-    }
+}
 
 // @beta
 export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
@@ -3311,7 +3323,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     readonly label: string;
     minimize: () => void;
     render(): JSX.Element | null;
-    }
+}
 
 // @public
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
@@ -4628,6 +4640,9 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 // @public
 export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
+
+// @internal (undocumented)
+export const ToolGroupPanelContext: React.Context<boolean>;
 
 // @public
 export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> {

@@ -29,6 +29,14 @@ describe("<GroupTool />", () => {
     shallow(<GroupTool isDisabled />).should.matchSnapshot();
   });
 
+  it("renders with badge correctly", () => {
+    shallow(<GroupTool badge />).should.matchSnapshot();
+  });
+
+  it("renders with pointer up correctly", () => {
+    shallow(<GroupTool onPointerUp={sinon.spy()} />).should.matchSnapshot();
+  });
+
   it("should invoke onClick handler", () => {
     const spy = sinon.spy();
     const sut = mount(<GroupTool onClick={spy} />);
@@ -43,10 +51,10 @@ describe("<GroupTool />", () => {
     spy.notCalled.should.true;
   });
 
-  it("renders with badge correctly", () => {
-    const sut = mount(<GroupTool badge />);
-    const badge = sut.find("div.nz-badge");
-    badge.length.should.eq(1);
+  it("should invoke onPointerUp handler", () => {
+    const spy = sinon.spy();
+    const sut = mount(<GroupTool onPointerUp={spy} />);
+    sut.simulate("pointerup");
+    spy.calledOnce.should.true;
   });
-
 });

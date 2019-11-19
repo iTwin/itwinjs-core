@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<WithDragInteraction /> renders correctly 1`] = `
+<div
+  onClick={[Function]}
+  onPointerDown={[Function]}
+  style={
+    Object {
+      "touchAction": "none",
+    }
+  }
+>
+  <Component />
+</div>
+`;

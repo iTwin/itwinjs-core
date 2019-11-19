@@ -4,6 +4,7 @@ exports[`<GroupTool /> renders active correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item nz-active"
   onClick={[Function]}
+  onPointerUp={[Function]}
 >
   <div
     className="nz-icon"
@@ -18,6 +19,7 @@ exports[`<GroupTool /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item"
   onClick={[Function]}
+  onPointerUp={[Function]}
 >
   <div
     className="nz-icon"
@@ -32,6 +34,7 @@ exports[`<GroupTool /> renders disabled correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item nz-disabled"
   onClick={[Function]}
+  onPointerUp={[Function]}
 >
   <div
     className="nz-icon"
@@ -46,6 +49,43 @@ exports[`<GroupTool /> renders focused correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item nz-focused"
   onClick={[Function]}
+  onPointerUp={[Function]}
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<GroupTool /> renders with badge correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+  onClick={[Function]}
+  onPointerUp={[Function]}
+>
+  <div
+    className="nz-icon"
+  >
+    <div
+      className="nz-badge"
+    >
+      <Component />
+    </div>
+  </div>
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<GroupTool /> renders with pointer up correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item nz-pointer-up"
+  onClick={[Function]}
+  onPointerUp={[Function]}
 >
   <div
     className="nz-icon"

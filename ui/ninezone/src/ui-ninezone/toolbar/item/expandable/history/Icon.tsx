@@ -9,6 +9,8 @@ import * as React from "react";
 import { HistoryItem, HistoryItemProps } from "./Item";
 import "./Icon.scss";
 
+// tslint:disable: deprecation
+
 /** History item with icon. Used in [[HistoryTray]] component.
  * @note See [[HistoryItem]] for basic history item.
  * @alpha

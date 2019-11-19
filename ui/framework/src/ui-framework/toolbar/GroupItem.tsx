@@ -12,7 +12,7 @@ import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } f
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
-  NestedGroup as NestedToolGroupComponent, Direction,
+  NestedGroup as NestedToolGroupComponent, Direction, withDragInteraction, ToolbarDirectionContext,
 } from "@bentley/ui-ninezone";
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
@@ -25,11 +25,15 @@ import { UiFramework } from "../UiFramework";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
 import { ItemDefFactory } from "../shared/ItemDefFactory";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
 // tslint:disable-next-line: variable-name
 const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
+// tslint:disable-next-line:variable-name
+const ItemWithDragInteraction = withDragInteraction(Item);
 
 // -----------------------------------------------------------------------------
 // GroupItemDef class
@@ -69,7 +73,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey);
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey); // tslint:disable-line: deprecation
     this.items = groupItemProps.items;
   }
 
@@ -157,26 +161,23 @@ interface ToolGroupItem {
   trayId?: string;
   badgeType?: BadgeType;
 }
-type ColumnItemMap = Map<string, ToolGroupItem>;
-
-interface ToolGroupColumn {
-  items: ColumnItemMap;
-}
-type ToolGroupColumnMap = Map<number, ToolGroupColumn>;
 
 interface ToolGroupTray {
   title: string;
-  columns: ToolGroupColumnMap;
+  items: Map<string, ToolGroupItem>;
   groupItemDef: GroupItemDef;
 }
 type ToolGroupTrayMap = Map<string, ToolGroupTray>;
 
 interface GroupItemComponentProps extends CommonProps {
+  defaultActiveItemId?: string;
   groupItemDef: GroupItemDef;
   onSizeKnown?: (size: SizeProps) => void;
 }
 
 interface GroupItemState extends BaseItemState {
+  activeItemId: string; // One of group items id.
+  activeToolId: string; // FrontstageManager.activeToolId
   groupItemDef: GroupItemDef;
   trayId: string;
   backTrays: ReadonlyArray<string>;
@@ -187,21 +188,21 @@ interface GroupItemState extends BaseItemState {
  * @internal
  */
 export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
-
   /** @internal */
   public readonly state: Readonly<GroupItemState>;
   private _componentUnmounting = false;
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
   private _trayIndex = 0;
-  private _ref = React.createRef<HTMLDivElement>();
+  private _closeOnPanelOpened = true;
 
   constructor(props: GroupItemComponentProps) {
     super(props);
 
     this._loadChildSyncIds(props);
-    this.state = this.getGroupItemState(this.props.groupItemDef);
+    this.state = this.getGroupItemState(this.props);
   }
+
   private _loadChildSyncIds(props: GroupItemComponentProps) {
     // istanbul ignore else
     if (props.groupItemDef && props.groupItemDef.items.length > 0) {
@@ -215,6 +216,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       });
     }
   }
+
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore next
     if (this._componentUnmounting) return;
@@ -236,12 +238,18 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       }
     }
   }
+
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
+
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   public shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
@@ -260,17 +268,21 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     return false;
   }
 
-  private getGroupItemState(groupItemDef: GroupItemDef): GroupItemState {
+  private getGroupItemState(props: GroupItemComponentProps): GroupItemState {
+    const groupItemDef = props.groupItemDef;
     // Separate into trays
     const trays = new Map<string, ToolGroupTray>();
     const trayId = this.resetTrayId();
 
     this.processGroupItemDef(groupItemDef, trayId, trays);
 
+    const activeItemId = props.defaultActiveItemId !== undefined ? props.defaultActiveItemId : getFirstItemId(props.groupItemDef);
     const state = {
+      activeItemId,
+      activeToolId: FrontstageManager.activeToolId,
       groupItemDef,
-      isPressed: groupItemDef.isPressed,
       isEnabled: groupItemDef.isEnabled,
+      isPressed: groupItemDef.isPressed,
       isVisible: groupItemDef.isVisible,
       trayId,
       backTrays: [],
@@ -291,42 +303,28 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   private processGroupItemDef(groupItemDef: GroupItemDef, trayId: string, trays: ToolGroupTrayMap): void {
     // Separate into column items
-    const columns = new Map<number, ToolGroupColumn>();
-    const numberOfColumns = Math.ceil(groupItemDef.itemCount / groupItemDef.itemsInColumn);
-    const numberItemsInColumn = Math.ceil(groupItemDef.itemCount / numberOfColumns);
-    let itemIndex: number = 0;
+    const items = new Map<string, ToolGroupItem>();
+    for (let itemIndex = 0; itemIndex < groupItemDef.itemCount; itemIndex++) {
+      const item = groupItemDef.getItemByIndex(itemIndex)!;
+      if (item instanceof GroupItemDef) {
+        item.resolveItems();
 
-    for (let columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
-      const columnItems: ColumnItemMap = new Map<string, ToolGroupItem>();
-      const columnItemMax = Math.min(groupItemDef.itemCount, itemIndex + numberItemsInColumn);
+        this._trayIndex++;
+        const itemTrayId = this.generateTrayId();
+        const groupItem: ToolGroupItem = {
+          iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
+          badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
+        };
 
-      for (; itemIndex < columnItemMax; itemIndex++) {
-        const item = groupItemDef.getItemByIndex(itemIndex);
-        // istanbul ignore else
-        if (item) {
-          if (item instanceof GroupItemDef) {
-            item.resolveItems();
-
-            this._trayIndex++;
-            const itemTrayId = this.generateTrayId();
-            const groupItem: ToolGroupItem = {
-              iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
-              badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
-            };
-
-            columnItems.set(item.id, groupItem);
-            this.processGroupItemDef(item, itemTrayId, trays);
-          } else {
-            columnItems.set(item.id, item);
-          }
-        }
+        items.set(item.id, groupItem);
+        this.processGroupItemDef(item, itemTrayId, trays);
+      } else {
+        items.set(item.id, item);
       }
-
-      columns.set(columnIndex, { items: columnItems });
     }
 
     trays.set(trayId, {
-      columns,
+      items,
       title: groupItemDef.panelLabel ? groupItemDef.panelLabel : groupItemDef.tooltip, // we fallback to use tooltip since tooltip was originally (and confusingly) used as a panelLabel
       groupItemDef,
     });
@@ -336,9 +334,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (this.props !== prevProps) {
       if (this.props.groupItemDef !== prevProps.groupItemDef)
         Logger.logTrace(UiFramework.loggerCategory(this), `Different GroupItemDef for same groupId of ${this.state.groupItemDef.groupId}`);
-      this.setState(this.getGroupItemState(this.props.groupItemDef));
+      this.setState(this.getGroupItemState(this.props));
     }
   }
+
   private get _tray() {
     const tray = this.state.trays.get(this.state.trayId);
     // istanbul ignore next
@@ -360,7 +359,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
     if (e.key === "Escape") {
-      this._closeGroupButton();
+      this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }
   }
@@ -369,9 +368,12 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (!this.state.isVisible)
       return null;
 
-    const { groupItemDef, className, ...props } = this.props;
+    const activeItem = this.getItemById(this.state.activeItemId);
+    if (!activeItem)
+      return null;
 
-    const iconSpec: IconSpec = groupItemDef.overflow ? "nz-ellipsis" : groupItemDef.iconSpec;
+    const { groupItemDef, className, ...props } = this.props;
+    const iconSpec: IconSpec = groupItemDef.overflow ? "nz-ellipsis" : activeItem.iconSpec;
     const icon = <Icon iconSpec={iconSpec} />;
     const classNames = classnames(
       className,
@@ -380,42 +382,64 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
 
     return (
-      <ExpandableItem
-        {...props}
-        className={classNames}
-        key={this.state.groupItemDef.id}
-        panel={this.getGroupTray()}
-      >
-        <div ref={this._ref}>
-          <Item
-            className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-            isDisabled={!this.state.isEnabled}
-            title={this.state.groupItemDef.label}
-            onClick={() => this._toggleGroupButton()}
-            onKeyDown={this._handleKeyDown}
-            icon={icon}
-            onSizeKnown={this.props.onSizeKnown}
-            badge={badge}
-          />
-        </div>
-      </ExpandableItem>
+      <ToolbarDirectionContext.Consumer>
+        {(direction) => (
+          <ExpandableItem
+            {...props}
+            className={classNames}
+            key={this.state.groupItemDef.id}
+            panel={this.getGroupTray()}
+          >
+            <ItemWithDragInteraction
+              direction={direction}
+              className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+              isActive={this.state.activeToolId === this.state.activeItemId}
+              isDisabled={!this.state.isEnabled}
+              title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
+              onClick={this._handleClick}
+              onOpenPanel={this._handleOpenPanel}
+              onKeyDown={this._handleKeyDown}
+              icon={icon}
+              onSizeKnown={this.props.onSizeKnown}
+              badge={badge}
+            />
+          </ExpandableItem>
+        )}
+      </ToolbarDirectionContext.Consumer>
     );
   }
 
-  private _toggleGroupButton = () => {
-    this.setState((prevState) => ({
-      ...prevState,
-      isPressed: !prevState.isPressed,
-    }));
+  private _handleOpenPanel = () => {
+    this.setState({
+      isPressed: true,
+    });
+    this._closeOnPanelOpened = false;
+    FrontstageManager.onToolPanelOpenedEvent.emit();
+    this._closeOnPanelOpened = true;
   }
 
-  private _handleOutsideClick = (e: MouseEvent) => {
-    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
+  private _handleClick = () => {
+    const activeItem = this.getItemById(this.state.activeItemId);
+    activeItem && activeItem instanceof ActionButtonItemDef && activeItem.execute();
+  }
+
+  private _handleOutsideClick = () => {
+    this.closeGroupButton();
+  }
+
+  private _handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
+    this.setState({
+      activeToolId: toolId,
+    });
+  }
+
+  private _handleToolPanelOpenedEvent = () => {
+    if (!this._closeOnPanelOpened)
       return;
-    this._closeGroupButton();
+    this.closeGroupButton();
   }
 
-  private _closeGroupButton = () => {
+  private closeGroupButton() {
     const trayId = this.resetTrayId();
 
     this.setState((prevState) => ({
@@ -427,22 +451,17 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   }
 
   private handleToolGroupItemClicked(trayKey: string, itemKey: string) {
-    this.setState(
-      (prevState) => {
-        const trayId = this.resetTrayId();
-        return {
-          ...prevState,
-          isPressed: false,
-          trayId,
-          backTrays: [],
-        };
-      },
+    const trayId = this.resetTrayId();
+    this.setState({
+      activeItemId: itemKey,
+      isPressed: false,
+      trayId,
+      backTrays: [],
+    },
       () => {
         const tray = this.getTray(trayKey);
         const childItem = tray.groupItemDef.getItemById(itemKey);
-        // istanbul ignore else
-        if (childItem && childItem instanceof ActionButtonItemDef)
-          childItem.execute();
+        childItem && childItem instanceof ActionButtonItemDef && childItem.execute();
       },
     );
   }
@@ -451,99 +470,139 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (!this.state.isPressed)
       return undefined;
 
-    const tray = this._tray;
-    const columns = Array.from(this._tray.columns.keys()).map((columnIndex) => {
-      const column = tray.columns.get(columnIndex)!;
-      return (
-        <GroupColumn key={columnIndex}>
-          {Array.from(column.items.keys()).map((itemKey) => {
-            const item = column.items.get(itemKey)!;
-            const icon = <Icon iconSpec={item.iconSpec} />;
-            let isVisible = true;
-            let isActive = false;
-            let isEnabled = true;
-            const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
+    return (
+      <ToolGroupPanelContext.Consumer>
+        {(activateOnPointerUp) => {
+          const tray = this._tray;
+          const itemsInColumn = tray.groupItemDef.itemsInColumn;
+          const items = [...tray.items.keys()];
 
-            if (item instanceof ItemDefBase) {
-              isVisible = item.isVisible;
-              isActive = item.isActive;
-              isEnabled = item.isEnabled;
-              if (item.stateFunc) {
-                const newState = item.stateFunc({ isVisible, isActive, isEnabled });
-                isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
-                isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
-                isActive = undefined !== newState.isActive ? newState.isActive : isActive;
-              }
+          // Divide items equally between columns.
+          const numberOfColumns = Math.ceil(items.length / itemsInColumn);
+          const numberItemsInColumn = Math.ceil(items.length / numberOfColumns);
+
+          const columnToItems = items.reduce<ReadonlyArray<ReadonlyArray<string>>>((acc, item, index) => {
+            const columnIndex = Math.floor(index / numberItemsInColumn);
+            if (columnIndex >= acc.length) {
+              return [
+                ...acc,
+                [item],
+              ];
             }
+            return [
+              ...acc.slice(0, columnIndex),
+              [
+                ...acc[columnIndex],
+                item,
+              ],
+              ...acc.slice(columnIndex + 1),
+            ];
+          }, []);
+          const columns = (columnToItems.map((columnItems, columnIndex) =>
+            <GroupColumn key={columnIndex}>
+              {columnItems.map((itemKey) => {
+                const item = tray.items.get(itemKey)!;
+                const icon = <Icon iconSpec={item.iconSpec} />;
+                let isVisible = true;
+                let isActive = itemKey === this.state.activeToolId;
+                let isEnabled = true;
+                const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
-            const trayId = item.trayId;
-            if (trayId) {
-              return (
-                isVisible &&
-                <GroupToolExpander
-                  isDisabled={!isEnabled}
-                  key={itemKey}
-                  ref={itemKey}
-                  label={item.label}
-                  icon={icon}
-                  badge={badge}
-                  onClick={() => this.setState((prevState) => {
-                    return {
-                      ...prevState,
-                      trayId,
-                      backTrays: [...prevState.backTrays, prevState.trayId],
-                    };
-                  })}
-                />
-              );
-            }
+                if (item instanceof ItemDefBase) {
+                  isVisible = item.isVisible;
+                  isEnabled = item.isEnabled;
+                  if (item.stateFunc) {
+                    const newState = item.stateFunc({ isVisible, isActive, isEnabled });
+                    isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
+                    isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
+                    isActive = undefined !== newState.isActive ? newState.isActive : isActive;
+                  }
+                }
 
+                const trayId = item.trayId;
+                if (trayId) {
+                  return (
+                    isVisible &&
+                    <GroupToolExpander
+                      isDisabled={!isEnabled}
+                      key={itemKey}
+                      label={item.label}
+                      icon={icon}
+                      badge={badge}
+                      onClick={() => this._handleExpanderClick(trayId)}
+                      onPointerUp={activateOnPointerUp ? () => this._handleExpanderClick(trayId) : undefined}
+                    />
+                  );
+                }
+
+                return (
+                  isVisible &&
+                  <GroupTool
+                    isDisabled={!isEnabled}
+                    isActive={isActive}
+                    key={itemKey}
+                    label={item.label}
+                    onClick={() => this.handleToolGroupItemClicked(this.state.trayId, itemKey)}
+                    onPointerUp={activateOnPointerUp ? () => this.handleToolGroupItemClicked(this.state.trayId, itemKey) : undefined}
+                    icon={icon}
+                    badge={badge}
+                  />
+                );
+              })}
+            </GroupColumn>,
+          ));
+
+          if (this.state.backTrays.length > 0)
             return (
-              isVisible &&
-              <GroupTool
-                isDisabled={!isEnabled}
-                isActive={isActive}
-                key={itemKey}
-                ref={itemKey}
-                label={item.label}
-                onClick={() => this.handleToolGroupItemClicked(this.state.trayId, itemKey)}
-                icon={icon}
-                badge={badge}
+              <NestedToolGroup
+                columns={columns}
+                onBack={this._handleBack}
+                onBackPointerUp={activateOnPointerUp ? this._handleBack : undefined}
+                onOutsideClick={this._handleOutsideClick}
+                title={tray.title}
               />
             );
-          })}
-        </GroupColumn>
-      );
-    });
 
-    if (this.state.backTrays.length > 0)
-      return (
-        <NestedToolGroup
-          columns={columns}
-          onBack={() => this.setState((prevState) => {
-            let trayId = prevState.trayId;
-            if (prevState.backTrays.length > 0)
-              trayId = prevState.backTrays[prevState.backTrays.length - 1];
-
-            const backTrays = prevState.backTrays.slice(0, -1);
-            return {
-              ...prevState,
-              trayId,
-              backTrays,
-            };
-          })}
-          onOutsideClick={this._handleOutsideClick}
-          title={tray.title}
-        />
-      );
-
-    return (
-      <ToolGroup
-        columns={columns}
-        onOutsideClick={this._handleOutsideClick}
-        title={tray.title}
-      />
+          return (
+            <ToolGroup
+              columns={columns}
+              onOutsideClick={this._handleOutsideClick}
+              title={tray.title}
+            />
+          );
+        }}
+      </ToolGroupPanelContext.Consumer>
     );
+  }
+
+  public getItemById(id: string): ItemDefBase | undefined {
+    for (const [, tray] of this.state.trays) {
+      const item = tray.groupItemDef.getItemById(id);
+      if (item)
+        return item;
+    }
+    return undefined;
+  }
+
+  private _handleBack = () => {
+    this.setState((prevState) => {
+      const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : prevState.trayId;
+      const backTrays = prevState.backTrays.slice(0, -1);
+      return {
+        ...prevState,
+        trayId,
+        backTrays,
+      };
+    });
+  }
+
+  private _handleExpanderClick = (trayId: string) => {
+    this.setState((prevState) => {
+      return {
+        trayId,
+        backTrays: [...prevState.backTrays, prevState.trayId],
+      };
+    });
   }
 }
 
@@ -566,4 +625,24 @@ export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) =>
       groupItemDef={groupItemDef}
     />
   );
+};
+
+/** @internal */
+export const getFirstItem = (groupItemDef: GroupItemDef): AnyItemDef | undefined => {
+  for (const item of groupItemDef.items) {
+    if (item instanceof GroupItemDef) {
+      const firstItem = getFirstItem(item);
+      if (firstItem)
+        return firstItem;
+      continue;
+    }
+    return item;
+  }
+  return undefined;
+};
+
+/** @internal */
+export const getFirstItemId = (groupItemDef: GroupItemDef): string => {
+  const item = getFirstItem(groupItemDef);
+  return item ? item.id : "";
 };

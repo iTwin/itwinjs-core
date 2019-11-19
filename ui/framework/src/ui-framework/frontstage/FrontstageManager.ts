@@ -196,6 +196,11 @@ export class FrontstageManager {
   /** Get Tool Activated event. */
   public static readonly onToolActivatedEvent = new ToolActivatedEvent();
 
+  /** Get Tool Panel Opened event.
+   * @internal
+   */
+  public static readonly onToolPanelOpenedEvent = new UiEvent<void>();
+
   /** Get Tool Icon Changed event. */
   public static readonly onToolIconChangedEvent = new ToolIconChangedEvent();
 

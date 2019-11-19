@@ -2,6 +2,7 @@
 
 exports[`ListPicker ListPickerBase should render correctly 1`] = `
 <ExpandableItem
+  hideIndicator={true}
   items={
     Array [
       Object {
