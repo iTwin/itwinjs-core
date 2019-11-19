@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geo-photo-plugin",
-  "version": "1.8.0-dev.19",
+  "version": "1.8.0-dev.20",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {
@@ -65,12 +65,12 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "1.8.0-dev.19",
-    "@bentley/build-tools": "1.8.0-dev.19",
-    "@bentley/webpack-tools": "1.8.0-dev.19",
-    "@bentley/config-loader": "1.8.0-dev.19",
-    "@bentley/express-server": "1.8.0-dev.19",
-    "@bentley/imodeljs-backend": "1.8.0-dev.19",
+    "@bentley/certa": "1.8.0-dev.20",
+    "@bentley/build-tools": "1.8.0-dev.20",
+    "@bentley/webpack-tools": "1.8.0-dev.20",
+    "@bentley/config-loader": "1.8.0-dev.20",
+    "@bentley/express-server": "1.8.0-dev.20",
+    "@bentley/imodeljs-backend": "1.8.0-dev.20",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
@@ -87,18 +87,18 @@
     "svg-baker-runtime": "^1.4.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.8.0-dev.19",
-    "@bentley/geometry-core": "1.8.0-dev.19",
-    "@bentley/imodeljs-clients": "1.8.0-dev.19",
-    "@bentley/imodeljs-common": "1.8.0-dev.19",
-    "@bentley/imodeljs-i18n": "1.8.0-dev.19",
-    "@bentley/imodeljs-frontend": "1.8.0-dev.19",
-    "@bentley/imodeljs-quantity": "1.8.0-dev.19",
-    "@bentley/ui-abstract": "1.8.0-dev.19",
-    "@bentley/ui-core": "1.8.0-dev.19",
-    "@bentley/ui-components": "1.8.0-dev.19",
-    "@bentley/ui-ninezone": "1.8.0-dev.19",
-    "@bentley/ui-framework": "1.8.0-dev.19",
+    "@bentley/bentleyjs-core": "1.8.0-dev.20",
+    "@bentley/geometry-core": "1.8.0-dev.20",
+    "@bentley/imodeljs-clients": "1.8.0-dev.20",
+    "@bentley/imodeljs-common": "1.8.0-dev.20",
+    "@bentley/imodeljs-i18n": "1.8.0-dev.20",
+    "@bentley/imodeljs-frontend": "1.8.0-dev.20",
+    "@bentley/imodeljs-quantity": "1.8.0-dev.20",
+    "@bentley/ui-abstract": "1.8.0-dev.20",
+    "@bentley/ui-core": "1.8.0-dev.20",
+    "@bentley/ui-components": "1.8.0-dev.20",
+    "@bentley/ui-ninezone": "1.8.0-dev.20",
+    "@bentley/ui-framework": "1.8.0-dev.20",
     "react": "^16.8.0",
     "svg-sprite-loader": "^3.8.0"
   }
