@@ -46,7 +46,7 @@ describe("<ToolSettings />", () => {
 
   it("should get bounds", () => {
     const sut = mount<ToolSettings>(<ToolSettings />);
-    const element = sut.getDOMNode() as HTMLDivElement;
+    const element = sut.find(".nz-widget").getDOMNode() as HTMLDivElement;
     sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();

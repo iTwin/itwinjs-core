@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/breakpoints";
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 $nz-tab-height: 60px;
@@ -29,3 +30,11 @@ $nz-widget-border-color: $buic-background-widget-stroke;
 $nz-widget-border-width: 1px;
 $nz-widget-border-radius: 3px;
 $nz-widget-min-size: $nz-tab-height + 10px;
+
+@mixin nz-internal-grip-offset($property) {
+  #{$property}: -$nz-resize-grip-size / 2;
+
+  @include for-tablet-landscape-down {
+    #{$property}: -$nz-resize-grip-size-large / 2;
+  }
+}

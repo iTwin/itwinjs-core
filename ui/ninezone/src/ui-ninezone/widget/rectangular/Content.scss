@@ -26,12 +26,5 @@
     }
   }
 
-  > .nz-container {
-    min-height: 100%;
-    min-width: 100%;
-    height: fit-content;
-    width: fit-content;
-  }
-
   @include nz-scrollbar();
 }

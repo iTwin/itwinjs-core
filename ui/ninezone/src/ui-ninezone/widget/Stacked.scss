@@ -9,7 +9,6 @@
 
 .nz-widget-stacked {
   $min-height: 200px;
-  $grip-offset: $nz-resize-grip-size / 2;
 
   display: flex;
   max-height: 100%;
@@ -192,15 +191,16 @@
         border-top-left-radius: 0;
       }
 
+
       > .nz-content-grip {
-        bottom: -$grip-offset;
+        @include nz-internal-grip-offset(bottom);
       }
     }
 
     > .nz-tabs-column {
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
-          bottom: -$grip-offset;
+          @include nz-internal-grip-offset(bottom);
         }
       }
     }
@@ -215,14 +215,14 @@
       }
 
       > .nz-content-grip {
-        top: -$grip-offset;
+        @include nz-internal-grip-offset(top);
       }
     }
 
     > .nz-tabs-column {
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
-          top: -$grip-offset;
+          @include nz-internal-grip-offset(top);
         }
       }
     }
@@ -230,10 +230,6 @@
 
   &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
     height: 100%;
-
-    &:not(.nz-fill-zone) {
-      max-height: fit-content;
-    }
 
     > .nz-tabs-column {
       flex-direction: row;
@@ -252,12 +248,12 @@
 
       > .nz-secondary-grip {
         top: 0;
-        right: -$grip-offset;
+        @include nz-internal-grip-offset(right);
       }
     }
 
     > .nz-primary-grip {
-      left: -$grip-offset;
+      @include nz-internal-grip-offset(left);
     }
   }
 
@@ -269,14 +265,14 @@
         }
 
         > .nz-content-grip {
-          left: -$grip-offset;
+          @include nz-internal-grip-offset(left);
         }
       }
 
       > .nz-tabs-column {
         > .nz-tabs-grip-container {
           > .nz-tabs-grip {
-            left: -$grip-offset;
+            @include nz-internal-grip-offset(left);
           }
         }
       }
@@ -289,14 +285,14 @@
         }
 
         > .nz-content-grip {
-          right: -$grip-offset;
+          @include nz-internal-grip-offset(right);
         }
       }
 
       > .nz-tabs-column {
         > .nz-tabs-grip-container {
           > .nz-tabs-grip {
-            right: -$grip-offset;
+            @include nz-internal-grip-offset(right);
           }
         }
       }
@@ -304,7 +300,7 @@
 
     > .nz-content-container {
       > .nz-secondary-grip {
-        bottom: -$grip-offset;
+        @include nz-internal-grip-offset(bottom);
       }
 
       > .nz-content-grip {
@@ -319,7 +315,7 @@
     }
 
     > .nz-primary-grip {
-      top: -$grip-offset;
+      @include nz-internal-grip-offset(top);
     }
   }
 }
