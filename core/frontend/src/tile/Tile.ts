@@ -837,7 +837,7 @@ export namespace Tile {
     }
 
     /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
-     * @see [[Viewport.tileSizeModifier.
+     * @see [[Viewport.tileSizeModifier]].
      */
     public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
