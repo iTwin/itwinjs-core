@@ -43,7 +43,6 @@ export namespace IModelTile {
   const enum ContentFlags {
     None = 0,
     AllowInstancing = 1 << 0,
-    All = AllowInstancing,
   }
 
   /** Describes the components of a tile's content Id.
