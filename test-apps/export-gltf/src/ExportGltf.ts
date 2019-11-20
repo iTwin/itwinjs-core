@@ -331,7 +331,7 @@ class TranslationRotationScale {
       this.translation = [xform[3], xform[11], -xform[7]]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
 
     // Uniform and positive scale guaranteed by exportGraphics
-    const xColumnMagnitude = Math.hypot(xform[0], xform[4], xform[8]);
+    const xColumnMagnitude = Geometry.hypotenuseXYZ(xform[0], xform[4], xform[8]);
     if (!almostEqual(1, xColumnMagnitude))
       this.scale = [xColumnMagnitude, xColumnMagnitude, xColumnMagnitude];
 

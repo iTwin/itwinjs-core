@@ -9,8 +9,9 @@ import { Store } from "redux";
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient } from "@bentley/imodeljs-frontend";
-import { UiEvent, UiError, getClassName } from "@bentley/ui-core";
+import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { UiError, getClassName } from "@bentley/ui-abstract";
+import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
 
 import { ProjectServices } from "./clientservices/ProjectServices";
@@ -18,11 +19,13 @@ import { DefaultProjectServices } from "./clientservices/DefaultProjectServices"
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
-import { FrameworkState } from "./FrameworkState";
+import { FrameworkState } from "./redux/FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
-import { SessionStateActionId, PresentationSelectionScope } from "./SessionState";
+import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./redux/SessionState";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
+import { BackstageManager } from "./backstage/BackstageManager";
+import { StatusBarManager } from "./statusbar/StatusBarManager";
 
 // cSpell:ignore Mobi
 
@@ -49,6 +52,8 @@ export class UiFramework {
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
+  private static _backstageManager?: BackstageManager;
+  private static _statusBarManager?: StatusBarManager;
 
   /** Get Show Ui event.
    * @beta
@@ -56,24 +61,24 @@ export class UiFramework {
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
   /**
-   * Called by IModelApp to initialize the UiFramework
-   * @param store The single redux store created by the IModelApp.
-   * @param i18n The internationalization service created by the IModelApp.
+   * Called by the app to initialize the UiFramework
+   * @param store The single redux store created by the app.
+   * @param i18n The internationalization service created by the app.
    * @param oidcConfig Configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
    */
   public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any> {
     return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
   }
 
   /**
-   * Called by IModelApp to initialize the UiFramework
-   * @param store The single redux store created by the IModelApp.
-   * @param i18n The internationalization service created by the IModelApp.
+   * Called by the app to initialize the UiFramework
+   * @param store The single redux store created by the app.
+   * @param i18n The internationalization service created by the app.
    * @param oidcConfig Optional configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
-   * @param projectServices Optional IModelApp defined projectServices.If not specified DefaultProjectServices will be used.
-   * @param iModelServices Optional IModelApp defined iModelServices.If not specified DefaultIModelServices will be used.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
+   * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
@@ -88,11 +93,14 @@ export class UiFramework {
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
+    UiFramework._backstageManager = new BackstageManager();
+    UiFramework._statusBarManager = new StatusBarManager();
 
+    // istanbul ignore next
     if (oidcConfig) {
-      UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
-        .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
+      const oidcClient = new OidcBrowserClient(oidcConfig);
+      const initOidcPromise = oidcClient.initialize(new ClientRequestContext())
+        .then(() => (UiFramework.oidcClient = oidcClient, IModelApp.authorizationClient = UiFramework._oidcClient));
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
@@ -108,12 +116,34 @@ export class UiFramework {
     UiFramework._i18n = undefined;
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
+    UiFramework._backstageManager = undefined;
+    UiFramework._statusBarManager = undefined;
   }
 
-  private static _oidcClient: IOidcFrontendClient;
+  private static _oidcClient: IOidcFrontendClient | undefined;
+  private static _removeUserStateListener: () => void;
   /** @beta */
-  public static get oidcClient(): IOidcFrontendClient {
+  public static get oidcClient(): IOidcFrontendClient | undefined {
     return UiFramework._oidcClient;
+  }
+
+  /** @beta */
+  // istanbul ignore next
+  public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
+    if (UiFramework._removeUserStateListener)
+      UiFramework._removeUserStateListener();
+
+    UiFramework._oidcClient = oidcClient;
+
+    if (oidcClient) {
+      oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
+        .then((accessToken: AccessToken) => {
+          UiFramework.setAccessTokenInternal(accessToken);
+        }).catch(() => {
+          UiFramework.setAccessTokenInternal(undefined);
+        });
+      UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
+    }
   }
 
   /** @beta */
@@ -136,7 +166,7 @@ export class UiFramework {
     return UiFramework._store;
   }
 
-  /** The internationalization service created by the IModelApp. */
+  /** The internationalization service created by the app. */
   public static get i18n(): I18N {
     if (!UiFramework._i18n)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
@@ -146,6 +176,22 @@ export class UiFramework {
   /** The internationalization service namespace. */
   public static get i18nNamespace(): string {
     return "UiFramework";
+  }
+
+  /** @beta */
+  public static get backstageManager(): BackstageManager {
+    // istanbul ignore next
+    if (!UiFramework._backstageManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._backstageManager;
+  }
+
+  /** @beta */
+  public static get statusBarManager(): StatusBarManager {
+    // istanbul ignore next
+    if (!UiFramework._statusBarManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._statusBarManager;
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
@@ -213,6 +259,21 @@ export class UiFramework {
     }
   }
 
+  /** @beta */
+  public static openCursorMenu(menuData: CursorMenuData | undefined): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, menuData);
+  }
+
+  /** @beta */
+  public static closeCursorMenu(): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, undefined);
+  }
+
+  /** @beta */
+  public static getCursorMenuData(): CursorMenuData | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : undefined;
+  }
+
   public static getActiveIModelId(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelId : /* istanbul ignore next */  "";
   }
@@ -229,7 +290,12 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
+  /** @deprecated Token is managed internally, and there is no need for the caller to explicitly set the access token. */
+  public static setAccessToken(accessToken: AccessToken | undefined, immediateSync = false) {
+    this.setAccessTokenInternal(accessToken, immediateSync);
+  }
+
+  private static setAccessTokenInternal(accessToken: AccessToken | undefined, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
   }
 
@@ -253,6 +319,12 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewId : /* istanbul ignore next */  undefined;
   }
 
+  public static setDefaultViewState(viewState: ViewState, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultViewState, viewState, immediateSync);
+  }
+  public static getDefaultViewState(): ViewState | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewState : /* istanbul ignore next */  undefined;
+  }
   public static setDefaultRulesetId(viewId: string, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultRulesetId, viewId, immediateSync);
   }
@@ -304,6 +376,7 @@ export class UiFramework {
 
   // TODO: Need better way of determining if Mobile environment
   /** @beta */
+  // istanbul ignore next
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
     if ((/Mobi|Android/i.test(navigator.userAgent))) {
@@ -314,5 +387,4 @@ export class UiFramework {
     }
     return mobile;
   }
-
 }

@@ -2,6 +2,105 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-ninezone_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed mouse interaction for Navigation Aids"
+          },
+          {
+            "comment": "Made the Status Bar & Backstage more responsive on smaller screens"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Merge zone to save window resize settings and update target zone bounds."
+          },
+          {
+            "comment": "Fix footer offset in widget mode."
+          },
+          {
+            "comment": "Enable pointer events over toolbar instead of toolbar container."
+          },
+          {
+            "comment": "Persist zones layout on window resize."
+          },
+          {
+            "comment": "Fix Safari high CPU issue."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-ninezone_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Ability to drag and resize tool settings widget."
+          },
+          {
+            "comment": "Change prop type from RefObject<T> to T."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-ninezone_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "copyright headers"
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Tool Assistance for Ctrl+Z and other chars"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Prevent BackstageItem label overflow."
+          },
+          {
+            "comment": "Make components aware of safe area insets."
+          },
+          {
+            "comment": "Enable backstage scrolling."
+          },
+          {
+            "comment": "Scrollable tool settings content."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/ui-ninezone_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/ui-ninezone_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

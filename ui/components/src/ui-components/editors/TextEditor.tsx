@@ -6,11 +6,15 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams } from "@bentley/imodeljs-frontend";
+import {
+  PropertyValueFormat, PropertyValue, PrimitiveValue,
+  PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams,
+} from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 import "./TextEditor.scss";
+import { Input, IconInput, Icon, InputProps } from "@bentley/ui-core";
 
 /** @internal */
 interface TextEditorState {
@@ -19,13 +23,13 @@ interface TextEditorState {
   isDisabled?: boolean;
   size?: number;
   maxLength?: number;
+  iconSpec?: string;
 }
 
 /** TextEditor React component that is a property editor with text input
  * @beta
  */
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
-  private _input: HTMLInputElement | null = null;
   private _isMounted = false;
 
   /** @internal */
@@ -49,13 +53,6 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     }
 
     return propertyValue;
-  }
-
-  private setFocus(): void {
-    // istanbul ignore else
-    if (this._input && !this.state.isDisabled) {
-      this._input.focus();
-    }
   }
 
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,12 +94,12 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
     let size: number | undefined;
     let maxLength: number | undefined;
+    let iconSpec: string | undefined;
 
     const isDisabled = record ? record.isDisabled : undefined;
 
     if (record && record.property && record.property.editor && record.property.editor.params) {
       const editorSizeParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.InputEditorSize) as InputEditorSizeParams;
-      // istanbul ignore else
       if (editorSizeParams) {
         // istanbul ignore else
         if (editorSizeParams.size)
@@ -111,42 +108,55 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
         if (editorSizeParams.maxLength)
           maxLength = editorSizeParams.maxLength;
       }
+
+      const iconParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.Icon) as IconEditorParams;
+      if (iconParams) {
+        iconSpec = iconParams.definition.iconSpec;
+      }
     }
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState(
-        { inputValue: initialValue, readonly, size, maxLength, isDisabled },
-        () => {
-          if (this.props.setFocus) {
-            this.setFocus();
-            // istanbul ignore else
-            if (this._input)
-              this._input.select();
-          }
-        },
-      );
+      this.setState({ inputValue: initialValue, readonly, size, maxLength, isDisabled, iconSpec });
   }
 
   /** @internal */
-  public render() {
+  public render(): React.ReactNode {
     const className = classnames("cell", "components-cell-editor", "components-text-editor", this.props.className);
 
-    return (
-      <input
-        ref={(node) => this._input = node}
-        type="text"
-        onBlur={this.props.onBlur}
-        className={className}
-        style={this.props.style}
-        readOnly={this.state.readonly}
-        disabled={this.state.isDisabled}
-        size={this.state.size}
-        maxLength={this.state.maxLength}
-        defaultValue={this.state.inputValue}
-        onChange={this._updateInputValue}
-        data-testid="components-text-editor"
-      />
-    );
+    const inputProps: InputProps = {
+      type: "text",
+      className,
+      style: this.props.style,
+      readOnly: this.state.readonly,
+      disabled: this.state.isDisabled,
+      size: this.state.size,
+      maxLength: this.state.maxLength,
+      defaultValue: this.state.inputValue,
+      onBlur: this.props.onBlur,
+      onChange: this._updateInputValue,
+      setFocus: this.props.setFocus && !this.state.isDisabled,
+    };
+
+    let reactNode: React.ReactNode;
+    if (this.state.iconSpec) {
+      const icon = <Icon iconSpec={this.state.iconSpec} />;
+      reactNode = (
+        <IconInput
+          {...inputProps}
+          icon={icon}
+          data-testid="components-text-editor"
+        />
+      );
+    } else {
+      reactNode = (
+        <Input
+          {...inputProps}
+          data-testid="components-text-editor"
+        />
+      );
+    }
+
+    return reactNode;
   }
 }

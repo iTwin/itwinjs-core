@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Complex } from "../../numerics/Complex";
-import { Range1d } from "../../geometry3d/Range";
+import { Range1d, Range2d } from "../../geometry3d/Range";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -15,6 +15,10 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
+import { SineCosinePolynomial } from "../../numerics/Polynomials";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { LineString3d } from "../../curve/LineString3d";
 
 /* tslint:disable:no-console */
 class AngleTests {
@@ -204,6 +208,56 @@ describe("AngleSweep", () => {
     ck.testCoordinate(sweep.endAngle.degrees, theta0.degrees + dTheta.degrees);
     ck.testTrue(sweep.isAlmostEqualNoPeriodShift(sweep1));
     ck.checkpoint("AngleSweeps.Hello");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SineWaveRange", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const degreesA = 10.0;
+    const degreesB = 20.0;
+    const degreesC = 290;
+    const a0 = 2.0;
+    const a1 = 1.5;
+    const a2 = -0.3;
+    const trigFunction = new SineCosinePolynomial(a0, a1, a2);
+    const func = (radians: number) => a0 + a1 * Math.cos(radians) + a2 * Math.sin(radians);
+    const x0 = 0;
+    let y0 = 0;
+    const sweeps = [
+      AngleSweep.createStartEndDegrees(degreesA, degreesB),
+      AngleSweep.createStartEndDegrees(degreesA, degreesB + 180),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA + 360),
+      AngleSweep.createStartEndDegrees(degreesA, degreesC),
+      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360)];
+
+    for (let theta0 = 0; theta0 < 360; theta0 += 35) {
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 40));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 85));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, -40));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, -85));
+      sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 230));
+    }
+
+    for (const sweep of sweeps) {
+      const sampledRange = Range2d.createNull();
+      const ls = LineString3d.create();
+      for (let f = 0; f <= 1.0; f += 1 / 32) {
+        const theta = sweep.fractionToRadians(f);
+        const y = func(theta);
+        ls.addPointXYZ(theta, y);
+        sampledRange.extendXY(theta, y);
+      }
+      const analyticRange1d = trigFunction.rangeInSweep(sweep);
+      const analyticRange = Range2d.createXYXY(sampledRange.low.x, analyticRange1d.low, sampledRange.high.x, analyticRange1d.high);
+      ck.testTrue(analyticRange.containsRange(sampledRange));
+      const expandedSampledRange = sampledRange.clone();
+      expandedSampledRange.expandInPlace(0.2);
+      ck.testTrue(expandedSampledRange.containsRange(analyticRange));
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, analyticRange, x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, ls, x0, y0);
+      y0 += 4.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SineWaveRange");
     expect(ck.getNumErrors()).equals(0);
   });
 });

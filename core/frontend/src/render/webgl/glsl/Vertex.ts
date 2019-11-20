@@ -21,7 +21,7 @@ const unquantizePosition = `
 vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
 `;
 
-const unquantizeVertexPosition = `
+export const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 
@@ -70,38 +70,24 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
-const scratchRTC = new Float32Array(3);
-
-const computeInstancedModelMatrix = `
-  g_instancedModelMatrix = g_modelMatrixRTC;
-  g_instancedModelMatrix[3].xyz = u_instancedRTC;
+const computeInstancedRtcMatrix = `
+  g_instancedRtcMatrix = u_instanced_rtc * g_modelMatrixRTC;
 `;
 
 /** @internal */
-export function addModelMatrix(vert: VertexShaderBuilder): void {
+export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
     assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
     if (undefined === vert.find("g_instancedModelMatrix")) {
-      vert.addUniform("u_instancedRTC", VariableType.Vec3, (prog) => {
-        prog.addGraphicUniform("u_instancedRTC", (uniform, params) => {
-          const rtc = params.geometry.asInstanced!.rtcCenter;
-          scratchRTC[0] = rtc.x;
-          scratchRTC[1] = rtc.y;
-          scratchRTC[2] = rtc.z;
-          uniform.setUniform3fv(scratchRTC);
+      vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
+        prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
+          const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
+          uniform.setMatrix4(Matrix4.fromTransform(modelt));
         });
       });
-
-      vert.addGlobal("g_instancedModelMatrix", VariableType.Mat4);
-      vert.addInitializer(computeInstancedModelMatrix);
+      vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
+      vert.addInitializer(computeInstancedRtcMatrix);
     }
-  } else if (undefined === vert.find("u_modelMatrix")) {
-    vert.addUniform("u_modelMatrix", VariableType.Mat4, (prog) => {
-      // ###TODO: We only need 3 rows, not 4...
-      prog.addGraphicUniform("u_modelMatrix", (uniform, params) => {
-        uniform.setMatrix4(params.modelMatrix);
-      });
-    });
   }
 }
 

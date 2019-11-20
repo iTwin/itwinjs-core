@@ -15,11 +15,13 @@ export * from "./IModelClient";
 export * from "./ImsClients";
 export * from "./ClientsLoggerCategory";
 export * from "./Config";
+export * from "./projectshare/ProjectShareClient";
 export * from "./Request";
 export * from "./RealityDataServicesClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
 export * from "./AuthorizedClientRequestContext";
+export * from "./WsgQuery";
 
 export * from "./imodelbank/IModelBankClient";
 export * from "./imodelbank/IModelBankHandler";
@@ -27,7 +29,7 @@ export * from "./imodelbank/IModelBankFileSystemContextClient";
 
 export * from "./imodelhub/BaseHandler";
 export * from "./imodelhub/Client";
-export * from "./imodelhub/Query";
+export * from "./imodelhub/HubQuery";
 export * from "./imodelhub/Errors";
 export * from "./imodelhub/Briefcases";
 export * from "./imodelhub/ChangeSets";
@@ -62,34 +64,23 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * It works both on [backend]($docs/learning/backend/index.md) and [frontend]($docs/learning/frontend/index.md).
  */
 /**
+ * @docs-group-description Configuration
+ * Class for easily managing configuration variables for an iModel.js application.
+ */
+/**
  * @docs-group-description Authentication
  * Classes for managing [AccessToken]($clients) used for all requests in other classes.
  */
 /**
- * @docs-group-description BaseClients
- * Base classes for creating service clients.
+ * @docs-group-description iTwinServiceClients
+ * Classes for communicating with various iTwin services.
  */
+
 /**
- * @docs-group-description ConnectServices
- * Classes for communicating with various CONNECT services.
- */
-/**
- * @docs-group-description iModelHub
+ * @docs-group-description iModelHubClient
  * Classes for communicating directly with [iModelHub]($docs/learning/iModelHub/index.md).
  */
 /**
- * @docs-group-description iModelHubEvents
- * Classes for receiving [IModelHubEvent]($clients)s. See [working with events]($docs/learning/iModelHub/Events).
- */
-/**
- * @docs-group-description iModelHubGlobalEvents
- * Classes for receiving [IModelHubGlobalEvent]($clients)s. See [working with global events]($docs/learning/iModelHub/GlobalEvents). **Currently only available to internal Bentley products.**
- */
-/**
- * @docs-group-description iModels
- * Classes for abstracting access to [iModelHub]($docs/learning/iModelHub/index.md).
- */
-/**
- * @docs-group-description Utils
- * Utilities for implementing clients.
+ * @docs-group-description Logging
+ * Logger categories used by this package.
  */

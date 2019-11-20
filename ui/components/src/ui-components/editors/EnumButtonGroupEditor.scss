@@ -27,7 +27,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
   background: $buic-background-control;
-  width: 100%;
+  width: fit-content;
 
   $divider-color: $buic-background-toolbutton-stroke;
   $border-color: $buic-background-toolbutton-stroke;
@@ -38,7 +38,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   border-radius: $border-radius;
   border-style: solid;
   overflow: hidden;
-  display: inline-block;
+  display: flex;
   vertical-align: bottom;
   box-sizing: border-box;
 

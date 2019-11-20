@@ -5,7 +5,7 @@
 /** @module iModels */
 import {
   ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
-  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration,
+  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration, ChangeSetStatus,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
@@ -14,7 +14,7 @@ import {
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
   ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
-  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
+  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps, SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -192,6 +192,7 @@ export class IModelDb extends IModel {
     super(iModelToken);
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
+    this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
   }
 
@@ -208,8 +209,8 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** @internal */
-  public static performUpgrade(pathname: string) {
+  /** @deprecated @internal */
+  public static performUpgrade(pathname: string): DbResult {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
     if (DbResult.BE_SQLITE_OK === res)
@@ -348,6 +349,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
+    imodelDb.setDefaultConcurrentControlAndPolicy();
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
     perfLogger.dispose();
@@ -840,7 +842,7 @@ export class IModelDb extends IModel {
   }
 
   /** Update the IModelProps of this iModel in the database. */
-  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
+  public updateIModelProps(): void { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -848,7 +850,7 @@ export class IModelDb extends IModel {
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
-  public saveChanges(description?: string) {
+  public saveChanges(description?: string): void {
     if (this.openParams.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
@@ -863,7 +865,7 @@ export class IModelDb extends IModel {
   }
 
   /** Abandon pending changes in this iModel */
-  public abandonChanges() {
+  public abandonChanges(): void {
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
   }
@@ -880,22 +882,28 @@ export class IModelDb extends IModel {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
-  /** Push changes to iModelHub
+  /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
-   * @throws [[IModelError]] If the pull and merge fails.
+   * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
+   * @note This function is a no-op if there are no changes to push.
    * @beta
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
+    if (this.briefcase.nativeDb.hasUnsavedChanges()) {
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory));
+    } else if (!this.briefcase.nativeDb.hasSavedChanges()) {
+      return Promise.resolve(); // nothing to push
+    }
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this._token.changeSetId = this.briefcase.currentChangeSetId;
+    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -947,20 +955,23 @@ export class IModelDb extends IModel {
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
-   * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
-   * this method must first obtain the schema lock from the IModel server.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param requestContext The client request context
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
-   * @throws IModelError if the schema lock cannot be obtained.
-   * @see containsClass
+   * @throws IModelError if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * @see querySchemaVersion
    */
   public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
+      if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
       return;
     }
 
@@ -973,6 +984,9 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
 
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
@@ -1014,7 +1028,16 @@ export class IModelDb extends IModel {
   /** Get the ConcurrencyControl for this IModel.
    * @beta
    */
-  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
+  public get concurrencyControl(): ConcurrencyControl {
+    if (this._concurrency === undefined)
+      this.setDefaultConcurrentControlAndPolicy();
+    return this._concurrency!;
+  }
+
+  private setDefaultConcurrentControlAndPolicy() {
+    this._concurrency = new ConcurrencyControl(this);
+    this._concurrency!.setPolicy(ConcurrencyControl.PessimisticPolicy);
+  }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -1124,6 +1147,23 @@ export class IModelDb extends IModel {
   public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
     return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
+  }
+
+  /** Query for a schema of the specified name in this iModel.
+   * @returns The schema version as a semver-compatible string or `undefined` if the schema has not been imported.
+   */
+  public querySchemaVersion(schemaName: string): string | undefined {
+    const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
+    return this.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+      statement.bindString("schemaName", schemaName);
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const versionMajor: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
+        const versionWrite: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
+        const versionMinor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
+        return `${versionMajor}.${versionWrite}.${versionMinor}`;
+      }
+      return undefined;
+    });
   }
 
   /** Query a "file property" from this iModel, as a string.
@@ -1304,8 +1344,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<T>(this.getModelProps(modelId));
     }
 
-    /**
-     * Read the properties for a Model as a json string.
+    /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @return a json string with the properties of the model.
      */
@@ -1546,11 +1585,30 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
-      const childIds: Id64String[] = [];
-      for (const row of rows)
-        childIds.push(Id64.fromJSON(row.id));
-      return childIds;
+      const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
+        statement.bindId("elementId", elementId);
+        const childIds: Id64String[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          childIds.push(statement.getValue(0).getId());
+        }
+        return childIds;
+      });
+    }
+
+    /** Returns true if the specified Element has a sub-model.
+     * @see [[IModelDb.Models.getSubModel]]
+     */
+    public hasSubModel(elementId: Id64String): boolean {
+      if (IModel.rootSubjectId === elementId) {
+        return false; // Special case since the RepositoryModel does not sub-model the root Subject
+      }
+      // A sub-model will have the same Id value as the element it is describing
+      const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ECInstanceId=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", elementId);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
     }
 
     /** Get the root subject element. */
@@ -1560,29 +1618,37 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
-      if (rows.length === 0) {
-        return [];
-      }
-      const aspects: ElementAspect[] = [];
-      for (const row of rows) {
-        aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
-      }
-      return aspects;
+      const sql = `SELECT * FROM ${aspectClassName} WHERE Element.Id=:elementId`;
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
+        statement.bindId("elementId", elementId);
+        const aspects: ElementAspect[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const row: any = statement.getRow();
+          aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
+        }
+        return aspects;
+      });
     }
 
     /** Query for aspect by ECInstanceId
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE ECInstanceId=?`, [aspectInstanceId]);
-      if (rows.length !== 1) {
+      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
+          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
+          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps;
+        }
+        return undefined;
+      });
+      if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId, aspectClassName }));
       }
-      const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
-      aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
-      aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
-      return this._iModel.constructEntity<ElementAspect>(aspectProps);
+      return this._iModel.constructEntity<ElementAspect>(aspect);
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.
@@ -1715,8 +1781,11 @@ export namespace IModelDb {
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewStateData.viewDefinitionProps.categorySelectorId);
       viewStateData.displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
-        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(viewStateData.viewDefinitionProps.modelSelectorId);
+
+      const modelSelectorId = (viewStateData.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      if (modelSelectorId !== undefined)
+        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
+
       else if (viewDefinitionElement instanceof SheetViewDefinition) {
         viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
@@ -1724,6 +1793,7 @@ export namespace IModelDb {
           where: "Model.Id=" + viewDefinitionElement.baseModelId,
         }));
       }
+
       return viewStateData;
     }
 
@@ -1952,7 +2022,11 @@ export class TxnManager {
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus { return this._nativeDb.reverseTxns(numOperations); }
+  public reverseTxns(numOperations: number): IModelStatus {
+    const status = this._nativeDb.reverseTxns(numOperations);
+    this._iModel.concurrencyControl.onUndoRedo();
+    return status;
+  }
 
   /** Reverse the most recent operation. */
   public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }

@@ -14,15 +14,26 @@ import {
   WidgetState,
   FrontstageComposer,
   CoreTools,
+  getExtendedZone,
+  ZoneDefProvider,
+  WidgetDef,
 } from "../../ui-framework";
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
+import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
+import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
 
 describe("Frontstage", () => {
   let widgetElementComponentDidMountSpy: sinon.SinonSpy | undefined;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  after(() => {
+    sandbox.restore();
   });
 
   beforeEach(() => {
@@ -230,5 +241,57 @@ describe("Frontstage", () => {
     expect(forceUpdateSpy.calledOnce).true;
 
     wrapper.unmount();
+  });
+});
+
+describe("getExtendedZone", () => {
+  it("should extend zone 1 bounds over zone 4", () => {
+    const props = getDefaultZonesManagerProps();
+    sinon.stub(props.zones[4].bounds, "bottom").get(() => 500);
+    sinon.stub(props.zones[7].bounds, "bottom").get(() => 1000);
+    const getZoneDef = sinon.stub() as sinon.SinonStub<Parameters<ZoneDefProvider["getZoneDef"]>, ReturnType<ZoneDefProvider["getZoneDef"]>>;
+    getZoneDef.withArgs(4).returns(undefined);
+    const zoneDef7 = new ZoneDef();
+    zoneDef7.widgetDefs.push(new WidgetDef({}));
+    getZoneDef.withArgs(7).returns(zoneDef7);
+    const defProvider: ZoneDefProvider = {
+      getZoneDef,
+    };
+    const extended = getExtendedZone(1, props, defProvider);
+    expect(extended.bounds.bottom).to.eq(500);
+  });
+
+  it("should extend zone 1 bounds over zones 4 and 7", () => {
+    const props = getDefaultZonesManagerProps();
+    sinon.stub(props.zones[4].bounds, "bottom").get(() => 500);
+    sinon.stub(props.zones[7].bounds, "bottom").get(() => 1000);
+    const getZoneDef = sinon.stub() as sinon.SinonStub<Parameters<ZoneDefProvider["getZoneDef"]>, ReturnType<ZoneDefProvider["getZoneDef"]>>;
+    const defProvider: ZoneDefProvider = {
+      getZoneDef,
+    };
+    const extended = getExtendedZone(1, props, defProvider);
+    expect(extended.bounds.bottom).to.eq(1000);
+  });
+
+  it("should not modify zone props if bounds are not changed", () => {
+    const props = getDefaultZonesManagerProps();
+    sinon.stub(props.zones[3].bounds, "bottom").get(() => 500);
+    sinon.stub(props.zones[9].bounds, "bottom").get(() => 500);
+    const getZoneDef = sinon.stub() as sinon.SinonStub<Parameters<ZoneDefProvider["getZoneDef"]>, ReturnType<ZoneDefProvider["getZoneDef"]>>;
+    const defProvider: ZoneDefProvider = {
+      getZoneDef,
+    };
+    const extended = getExtendedZone(3, props, defProvider);
+    expect(extended).to.eq(props.zones[3]);
+  });
+
+  it("should not extend zones other than 1 or 3", () => {
+    const props = getDefaultZonesManagerProps();
+    const getZoneDef = sinon.stub() as sinon.SinonStub<Parameters<ZoneDefProvider["getZoneDef"]>, ReturnType<ZoneDefProvider["getZoneDef"]>>;
+    const defProvider: ZoneDefProvider = {
+      getZoneDef,
+    };
+    const extended = getExtendedZone(4, props, defProvider);
+    expect(extended).to.eq(props.zones[4]);
   });
 });

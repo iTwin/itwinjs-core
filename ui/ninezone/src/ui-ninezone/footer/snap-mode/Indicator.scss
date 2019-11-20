@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../_variables";
+@import "@bentley/ui-core/lib/ui-core/style/index";
+@import "../variables";
 
 .nz-footer-snapMode-indicator {
   > .nz-indicator {
@@ -14,6 +14,10 @@
     > .nz-label {
       margin-right: $space-between-text-and-icon;
       font-size: $text-font-size;
+
+      @include for-tablet-landscape-down {
+        display: none;
+      }
     }
 
     &:hover {

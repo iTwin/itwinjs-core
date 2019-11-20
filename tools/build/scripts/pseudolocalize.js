@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
+/** Generates pseudo localization files from the en localization JSON files.
+*/
+
 function pseudoLocalizeObject(objIn) {
   let objOut = {};
   for (let prop in objIn) {
@@ -42,10 +45,11 @@ const replacements = {
   y: "\u00FD\u00FF",
 };
 
+/** PseudoLocalizes a single string */
 function pseudoLocalize(inputString) {
   let inReplace = 0;
   let outString = "";
-  let replaceIndex = 0; // Note: the pseudoLocalize algorithm in Bim02 uses random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
+  let replaceIndex = 0; // Note: the pseudoLocalize algorithm would normally use random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
   for (let iChar = 0; iChar < inputString.length; iChar++) {
     let thisChar = inputString.charAt(iChar);
     let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;
@@ -79,7 +83,8 @@ function isJsonFile(fileName) {
 
 const argv = require("yargs").argv;
 const paths = require("./config/paths");
-const fs = require("fs-extra")
+const fs = require("fs-extra");
+const path = require("path");
 
 const englishDir = (argv.englishDir === undefined) ? paths.appLocalesEnglish : argv.englishDir;
 const inputFileNames = fs.readdirSync(englishDir).filter(isJsonFile);
@@ -90,11 +95,9 @@ try {
   console.log(e);// do nothing
 }
 
-
 for (const inputFileName of inputFileNames) {
-  const inputFilePath = englishDir + "/" + inputFileName;
-  const inputFileContents = fs.readFileSync(inputFilePath, "utf8");
-  const outputFileName = outDir + "/" + inputFileName;
+  const inputFilePath = path.join(englishDir, inputFileName);
+  const outputFileName = path.join(outDir, inputFileName);
 
   let jsonIn = fs.readFileSync(inputFilePath, { encoding: "utf8" });
   let objIn = JSON.parse(jsonIn);

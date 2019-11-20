@@ -5,14 +5,15 @@
 /** @module Elements */
 
 import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
-  ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
-  SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometryPartProps, GeometryStreamProps,
+  IModel, InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement,
+  SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
@@ -66,34 +67,51 @@ export class Element extends Entity implements ElementProps {
 
   /** Called before a new Element is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInsert(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDelete(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
+   * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
+   * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.
+   * @param _context The context that persists any remapping between the source iModel and target iModel.
+   * @param _sourceProps The ElementProps for the source Element that was cloned.
+   * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
+   * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
+   * @alpha
+   */
+  protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
   /** @beta */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
@@ -173,7 +191,7 @@ export class Element extends Entity implements ElementProps {
     const display = this.getDisplayLabel();
     msg.push(display ? display : addKey("Id") + this.id + ", " + addKey("Type") + this.className);
 
-    if (this.category)
+    if (this instanceof GeometricElement)
       msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
 
     msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
@@ -203,6 +221,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
+  /** The origin, orientation, and bounding box of this GeometricElement. */
+  public abstract get placement(): Placement2d | Placement3d;
 
   /** @internal */
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
@@ -216,7 +236,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   /** Type guard for instanceof [[GeometricElement2d]] */
   public is2d(): this is GeometricElement2d { return this instanceof GeometricElement2d; }
   /** Get the [Transform]($geometry) from the Placement of this GeometricElement */
-  public getPlacementTransform(): Transform { return this.placement.getTransform(); }
+  public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   /** @internal */
@@ -257,16 +277,14 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
-    if (this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
     return val;
   }
 
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
-    if (this.typeDefinition)
-      predecessorIds.add(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -301,16 +319,14 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
-    if (this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
     return val;
   }
 
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
-    if (this.typeDefinition)
-      predecessorIds.add(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -402,6 +418,70 @@ export class VolumeElement extends SpatialLocationElement {
   public static get className(): string { return "VolumeElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/** A SectionLocation element defines how a section drawing should be generated in a 3d view.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.6
+ * @beta
+ */
+export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
+  /** Section type */
+  public sectionType: SectionType;
+  /** Details on how this section was clipped. */
+  public clipGeometry?: string;
+  /** The element Id of the [[ModelSelector]] for this SectionLocation */
+  public modelSelectorId: Id64String;
+  /** The element Id of the [[CategorySelector]] for this SectionLocation */
+  public categorySelectorId: Id64String;
+  /** clipGeometry represented as a ClipVector. */
+  private _clipVector?: ClipVector;
+
+  /** @internal */
+  public static get className(): string { return "SectionLocation"; }
+
+  /** @internal */
+  public constructor(props: SectionLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
+    this.clipGeometry = props.clipGeometry;
+    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
+    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
+  }
+
+  /** @internal */
+  public toJSON(): SectionLocationProps {
+    const val = super.toJSON() as SectionLocationProps;
+    val.sectionType = this.sectionType;
+    val.clipGeometry = this.clipGeometry;
+    val.modelSelectorId = this.modelSelectorId;
+    val.categorySelectorId = this.categorySelectorId;
+    return val;
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.modelSelectorId);
+    predecessorIds.add(this.categorySelectorId);
+  }
+
+  /** Set the clip for this section location.
+   * @param clip the new clipping volume. If undefined, clipping is removed.
+   * @note The SectionLocation takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
+   */
+  public setClip(clip?: ClipVector) {
+    this._clipVector = clip;
+    this.clipGeometry = (clip && clip.isValid) ? clip.toJSON().toString() : undefined;
+  }
+
+  /** Get the clipping for this section location.
+   * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setClip]].
+   */
+  public getClip(): ClipVector | undefined {
+    if (undefined === this._clipVector)
+      this._clipVector = this.clipGeometry ? ClipVector.fromJSON(JSON.parse(this.clipGeometry)) : ClipVector.createEmpty();
+    return this._clipVector.isValid ? this._clipVector : undefined;
+  }
 }
 
 /** Information Content Element is an abstract base class for modeling pure information entities. Only the
@@ -577,6 +657,11 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.border) { predecessorIds.add(this.border); }
+  }
 }
 
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
@@ -597,7 +682,11 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
-
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
+  }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Sheet and provides the scope for its name.
@@ -652,7 +741,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
+  constructor(props: DefinitionElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = true === props.isPrivate; }
   /** @internal */
   public toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
@@ -670,6 +759,11 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
+  }
 }
 
 /** Defines a recipe for generating a *type*.
@@ -764,9 +858,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** An abstract base class for elements that introduce a new modeling
- * perspective within the overall iModel information hierarchy. An Information Partition is always parented
- * to a `Subject` and broken down by a `Model`.
+/** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
+ * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
+ * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
@@ -783,9 +877,9 @@ export abstract class InformationPartitionElement extends InformationContentElem
   }
 }
 
-/** An Element that indicates that there is a definition-related modeling perspective within
- * the overall iModel information hierarchy. A Definition Partition is always parented to a Subject and
- * broken down by a Definition Model.
+/** A DefinitionPartition element establishes a *Definition* modeling perspective for its parent Subject.
+ * A DefinitionPartition is always sub-modeled by a DefinitionModel.
+ * @see [[DefinitionModel]]
  * @public
  */
 export class DefinitionPartition extends InformationPartitionElement {
@@ -793,8 +887,9 @@ export class DefinitionPartition extends InformationPartitionElement {
   public static get className(): string { return "DefinitionPartition"; }
 }
 
-/** A Document Partition element indicates that there is a document-related modeling perspective within
- * the overall iModel information hierarchy. A Document Partition is always parented to a Subject and broken down by a Document List Model.
+/** A DocumentPartition element establishes a *Document* modeling perspective for its parent Subject.
+ * A DocumentPartition is always sub-modeled by a DocumentListModel.
+ * @see [[DocumentListModel]]
  * @public
  */
 export class DocumentPartition extends InformationPartitionElement {
@@ -802,9 +897,9 @@ export class DocumentPartition extends InformationPartitionElement {
   public static get className(): string { return "DocumentPartition"; }
 }
 
-/** A Group Information Partition element indicates that there is a group-information-related modeling perspective
- * within the overall iModel information hierarchy. A Group Information Partition is always parented to
- * a Subject and broken down by a Group Information Model.
+/** A GroupInformationPartition element establishes a *Group Information* modeling perspective for its parent Subject.
+ * A GroupInformationPartition is always sub-modeled by a GroupInformationModel.
+ * @see [[GroupInformationModel]]
  * @public
  */
 export class GroupInformationPartition extends InformationPartitionElement {
@@ -812,9 +907,20 @@ export class GroupInformationPartition extends InformationPartitionElement {
   public static get className(): string { return "GroupInformationPartition"; }
 }
 
-/** A Information Record Partition element indicates that there is an information-record-related modeling
- * perspective within the overall iModel information hierarchy. An Information Record Partition is always
- * parented to a Subject and broken down by an Information Record Model.
+/** A GraphicalPartition3d element establishes a *3D Graphical* modeling perspective for its parent Subject.
+ * A GraphicalPartition3d is always sub-modeled by a GraphicalModel3d.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.8
+ * @see [[GraphicalModel3d]]
+ * @public
+ */
+export class GraphicalPartition3d extends InformationPartitionElement {
+  /** @internal */
+  public static get className(): string { return "GraphicalPartition3d"; }
+}
+
+/** An InformationRecordPartition element establishes a *Information Record* modeling perspective for its parent Subject.
+ * A InformationRecordPartition is always sub-modeled by an InformationRecordModel.
+ * @see [[InformationRecordModel]]
  * @public
  */
 export class InformationRecordPartition extends InformationPartitionElement {
@@ -822,8 +928,8 @@ export class InformationRecordPartition extends InformationPartitionElement {
   public static get className(): string { return "InformationRecordPartition"; }
 }
 
-/** A Link Partition element indicates that there is a link-related modeling perspective within the overall
- * iModel information hierarchy. A Link Partition is always parented to a Subject and broken down by a LinkModel.
+/** A LinkPartition element establishes a *Link* modeling perspective for its parent Subject. A LinkPartition is always sub-modeled by a LinkModel.
+ * @see [[LinkModel]]
  * @public
  */
 export class LinkPartition extends InformationPartitionElement {
@@ -831,8 +937,8 @@ export class LinkPartition extends InformationPartitionElement {
   public static get className(): string { return "LinkPartition"; }
 }
 
-/** A Physical Partition element indicates that there is a physical modeling perspective within the overall
- * iModel information hierarchy. A Physical Partition is always parented to a Subject and broken down by a Physical Model.
+/** A PhysicalPartition element establishes a *Physical* modeling perspective for its parent Subject. A PhysicalPartition is always sub-modeled by a PhysicalModel.
+ * @see [[PhysicalModel]]
  * @public
  */
 export class PhysicalPartition extends InformationPartitionElement {
@@ -840,9 +946,9 @@ export class PhysicalPartition extends InformationPartitionElement {
   public static get className(): string { return "PhysicalPartition"; }
 }
 
-/** A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
- * within the overall iModel information hierarchy. A Spatial Location Partition is always parented to a
- * Subject and broken down by a Spatial Location Model.
+/** A SpatialLocationPartition element establishes a *SpatialLocation* modeling perspective for its parent Subject.
+ * A SpatialLocationPartition is always sub-modeled by a SpatialLocationModel.
+ * @see [[SpatialLocationModel]]
  * @public
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
@@ -850,8 +956,7 @@ export class SpatialLocationPartition extends InformationPartitionElement {
   public static get className(): string { return "SpatialLocationPartition"; }
 }
 
-/** Group Information is an abstract base class for modeling entities whose main purpose is to reference
- * a group of related elements.
+/** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.
  * @public
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {

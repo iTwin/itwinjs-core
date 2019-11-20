@@ -2,9 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-@import "../../../../../_math";
-@import "_variables";
+@import "../../../../../math";
+@import "variables";
 
 .nz-toolbar-item-expandable-group-tool-expander {
   > .nz-expansion-indicator {
@@ -17,6 +16,7 @@
     border-left: $border;
     margin-left: $expander-arrow-thickness;
     margin-top: $expander-arrow-thickness;
+    margin-right: $space-after-expander;
     box-sizing: border-box;
     transform: rotate(135deg);
   }

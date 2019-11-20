@@ -1,7 +1,46 @@
 # ECCustomAttributes
 
-A way to add custom metadata to any of the supported [CustomAttribute Container Types](./customattribute-container-types.md). To understand ECCustomAttributes, you need to understand [.NET "custom attributes"](https://docs.microsoft.com/dotnet/standard/attributes/index).
+Instances of [ECCustomAttributeClasses](./ec-custom-attribute-class.md) that are applied to other items in a schema to add new metadata attributes.  Any number of custom attributes may be applied to a schema item but only one instance of each class may be applied.
 
-ECCustomAttributes are the key aspect of the EC metadata abstractions that allow the addition of metadata concepts not in the EC specification. This gives ECObjects the flexibility needed to represent externally defined metadata with full fidelity.
+For example:
 
-ECCustomAttributes are the most unusual of the entities in an ECSchema, because they are actually instances of an ECCustomAttributeClass.
+```xml
+        <ECProperty propertyName="LastMod" typeName="dateTime" displayLabel="Last Modified" description="The last time any element in this Model was modified.">
+            <ECCustomAttributes>
+                <DateTimeInfo xmlns="CoreCustomAttributes.1.0">
+                    <DateTimeKind>Utc</DateTimeKind>
+                </DateTimeInfo>
+                <HiddenProperty xmlns="CoreCustomAttributes.1.0"/>
+            </ECCustomAttributes>
+       </ECProperty>
+```
+
+```json
+            {
+               "description" : "The last modified time of the bis:Element. This is maintained by the core framework and should not be set directly by applications.",
+               "isReadOnly" : true,
+               "label" : "Last Modified",
+               "name" : "LastMod",
+               "type" : "PrimitiveProperty",
+               "typeName" : "dateTime",
+               "customAttributes" : [
+                  {
+                     "DateTimeKind" : "Utc",
+                     "className" : "CoreCustomAttributes.DateTimeInfo"
+                  },
+                  {
+                     "className" : "CoreCustomAttributes.HiddenProperty"
+                  }
+               ]
+            },
+```
+
+Custom attributes allow any custom metadata to be applied because they are defined using a special type of ECClass.
+
+```xml
+    <ECCustomAttributeClass typeName="HiddenProperty" appliesTo="AnyProperty" modifier="Sealed" description="Identifies a property which is designed to be hidden from the user interface">
+        <ECProperty propertyName="Show" typeName="boolean" description="If set to true show the hidden property. Defaults to False.  Allows a property override to show a hidden property in a derived class" />
+    </ECCustomAttributeClass>
+```
+
+For more details about custom attributes see [ECCustomAttributeClass](./ec-custom-attribute-class.md)

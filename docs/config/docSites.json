@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.3.0": "changehistory"
+      "v1.7.0": "changehistory"
     },
     "packageAliases": {
       "backend": "imodeljs-backend",
@@ -55,10 +55,12 @@
       "i18n": "imodeljs-i18n",
       "markup": "imodeljs-markup",
       "quantity": "imodeljs-quantity",
-      "components": "ui-components",
-      "core": "ui-core",
-      "framework": "ui-framework",
-      "ninezone": "ui-ninezone",
+      "frontend-devtools": "frontend-devtools",
+      "ui-abstract": "ui-abstract",
+      "ui-components": "ui-components",
+      "ui-core": "ui-core",
+      "ui-framework": "ui-framework",
+      "ui-ninezone": "ui-ninezone",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",

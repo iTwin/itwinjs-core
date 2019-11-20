@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { initialize, terminate } from "../IntegrationTests";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, InstanceKey } from "@bentley/presentation-common";
@@ -14,13 +13,14 @@ import {
   DataProvidersFactory, IPresentationTableDataProvider,
 } from "@bentley/presentation-components";
 import { PropertyData, RowItem } from "@bentley/ui-components";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("Find Similar", () => {
 
   let imodel: IModelConnection;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;

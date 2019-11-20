@@ -8,10 +8,14 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 
-import "./ContextMenu.scss";
+import { BadgeType } from "@bentley/ui-abstract";
+
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
 import { Omit } from "../utils/typeUtils";
 import { CommonProps } from "../utils/Props";
+
+import "./ContextMenu.scss";
+import { BadgeUtilities } from "../badge/BadgeUtilities";
 
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
@@ -352,6 +356,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
               this._selectedElement.select();
             }
           });
+          event.stopPropagation();
           return;
         }
       }
@@ -492,6 +497,8 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
   icon?: string | React.ReactNode;
   /** Disables any onSelect calls, hover/keyboard highlighting, and grays item. */
   disabled?: boolean;
+  /** Badge to be overlaid on the item. */
+  badgeType?: BadgeType;
   /** @internal */
   onHover?: () => any;
   /* @internal */
@@ -524,11 +531,14 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   /** @internal */
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
-    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, ...props } = this.props;
+    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, ...props } = this.props;
+    const badge = BadgeUtilities.getComponentForBadge(badgeType);
+
     if (this._lastChildren !== this.props.children) {
       this._parsedChildren = TildeFinder.findAfterTilde(this.props.children).node;
       this._lastChildren = this.props.children;
     }
+
     return (
       <div
         {...props}
@@ -549,6 +559,11 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         <div className={"core-context-menu-content"}>
           {this._parsedChildren}
         </div>
+        {badge &&
+          <div className="core-context-menu-badge">
+            {badge}
+          </div>
+        }
       </div>
     );
   }
@@ -597,6 +612,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
+
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.keyCode === 13 && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
@@ -670,8 +686,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       label,
       opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu,
       onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed,
-      children, onClick, className, ...props } = this.props;
+      children, onClick, className, badgeType, ...props } = this.props;
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
+    const badge = BadgeUtilities.getComponentForBadge(badgeType);
 
     let renderDirection = this.state.direction;
     if (autoflip && this._menuElement) {
@@ -703,9 +720,15 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
           <div className={classnames("core-context-submenu-arrow", "icon", "icon-caret-right")} />
+          {badge &&
+            <div className="core-context-menu-badge">
+              {badge}
+            </div>
+          }
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
+          className="core-context-submenu-popup"
           opened={this.state.opened}
           selectedIndex={0}
           direction={renderDirection}

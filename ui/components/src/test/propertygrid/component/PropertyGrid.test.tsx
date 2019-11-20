@@ -84,7 +84,7 @@ describe("PropertyGrid", () => {
       expect(categoryBlock.exists(), "Second category block does not exist").to.be.true;
     });
 
-    it("if property record has links propertry set and onClick is not set, sets onClick property, otherwise not", async () => {
+    it("if property record has links property set and onClick is not set, sets onClick property, otherwise not", async () => {
       const testMatcher = (_displayValue: string) => [];
       const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       testRecord.links = {
@@ -191,7 +191,7 @@ describe("PropertyGrid", () => {
       expect(testNestedRecord2.links!.onClick).to.be.equal(propertyLinkClickFn);
     });
 
-    describe("default onPropertyLinkClick behaviour", () => {
+    describe("default onPropertyLinkClick behavior", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
       let testRecord: PropertyRecord;
       let wrapper: ReactWrapper<any, Readonly<{}>, React.Component<{}, {}, any>>;
@@ -290,10 +290,12 @@ describe("PropertyGrid", () => {
         await TestUtils.flushAsyncOperations();
         wrapper.update();
 
+        // cSpell:disable
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "pw://server.bentley.com:datasource-01/Documents/ProjectName"), "pw://server.bentley.com:datasource-01/Documents/ProjectName");
         expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+        // cSpell:enable
       });
     });
 
@@ -311,6 +313,34 @@ describe("PropertyGrid", () => {
 
       const isExpanded = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
       expect(isExpanded, "Category did not get collapsed").to.be.false;
+    });
+
+    it("keeps the collapsed state of PropertyCategoryBlock when data is refreshed", async () => {
+      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      const categoryBlock1 = wrapper.find(PropertyCategoryBlock).at(0);
+      const categoryBlock2 = wrapper.find(PropertyCategoryBlock).at(1);
+      expect(categoryBlock1.exists(), "First category block does not exist").to.be.true;
+      expect(categoryBlock2.exists(), "Second category block does not exist").to.be.true;
+
+      categoryBlock1.find(".header").simulate("click");
+      categoryBlock2.find(".header").simulate("click");
+
+      let isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+      let isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
+      expect(isExpanded1, "First category did not get collapsed").to.be.false;
+      expect(isExpanded2, "Second category did not get expanded").to.be.true;
+
+      // Refresh PropertyGrid data.
+      dataProvider.onDataChanged.raiseEvent();
+      await TestUtils.flushAsyncOperations();
+
+      isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+      isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
+      expect(isExpanded1, "First category did not stay collapsed").to.be.false;
+      expect(isExpanded2, "Second category did not stay expanded").to.be.true;
     });
 
     it("rerenders if data in the provider changes", async () => {
@@ -360,8 +390,7 @@ describe("PropertyGrid", () => {
         dataProvider.onDataChanged.raiseEvent();
 
       // resolve the data promise
-      dataPromise.resolve(data);
-      await TestUtils.flushAsyncOperations();
+      await dataPromise.resolve(data);
 
       // expect data to be requested one more time for the last change,
       // but not for intermediate ones
@@ -649,7 +678,7 @@ describe("PropertyGrid", () => {
       categoryBlock.find(".components--clickable").simulate("click");
       wrapper.update();
 
-      expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
 
       const inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);
@@ -703,7 +732,7 @@ describe("PropertyGrid", () => {
 
       categoryBlock.find(".components--clickable").simulate("click");
       wrapper.update();
-      expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
 
       const inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);

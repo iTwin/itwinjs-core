@@ -4,7 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride, BatchType } from "@bentley/imodeljs-common";
+import {
+  BatchType,
+  ColorDef,
+  Feature,
+  GeometryClass,
+  LinePixels,
+  RgbColor,
+  RgbColorProps,
+  SubCategoryOverride,
+} from "@bentley/imodeljs-common";
 import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
@@ -24,7 +33,7 @@ export namespace FeatureSymbology {
   /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {
     /** The color of the Appearance */
-    rgb?: RgbColor;
+    rgb?: RgbColorProps;
     /** The line weight of the Appearance */
     weight?: number;
     /** The transparency in the range [0.0, 1.0] where 0 indicates fully opaque and 1 indicates fully transparent. */
@@ -35,6 +44,10 @@ export namespace FeatureSymbology {
     ignoresMaterial?: true | undefined;
     /** If true, the associated [Feature]($common)s will not be drawn when using [[Viewport.readPixels]]. */
     nonLocatable?: true | undefined;
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
+     * @beta
+     */
+    emphasized?: true | undefined;
   }
 
   /** Defines overrides for selected aspects of a [Feature]($common)'s symbology.
@@ -54,12 +67,16 @@ export namespace FeatureSymbology {
     public readonly ignoresMaterial?: true | undefined;
     /** If true, ignore the [Feature]($common) when using [[Viewport.readPixels]]. */
     public readonly nonLocatable?: true | undefined;
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
+     * @beta
+     */
+    public readonly emphasized?: true | undefined;
 
     /** An Appearance which overrides nothing. */
     public static readonly defaults = new Appearance({});
 
     public static fromJSON(props?: AppearanceProps) {
-      if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.transparency && undefined === props.linePixels && !props.ignoresMaterial && !props.nonLocatable))
+      if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.transparency && undefined === props.linePixels && !props.ignoresMaterial && !props.nonLocatable && !props.emphasized))
         return this.defaults;
       else
         return new Appearance(props);
@@ -99,7 +116,13 @@ export namespace FeatureSymbology {
     public get isFullyTransparent(): boolean { return undefined !== this.transparency && this.transparency >= 1.0; }
 
     public equals(other: Appearance): boolean {
-      return this.rgbIsEqual(other.rgb) && this.weight === other.weight && this.transparency === other.transparency && this.linePixels === other.linePixels && this.ignoresMaterial === other.ignoresMaterial;
+      return this.rgbIsEqual(other.rgb)
+        && this.weight === other.weight
+        && this.transparency === other.transparency
+        && this.linePixels === other.linePixels
+        && this.ignoresMaterial === other.ignoresMaterial
+        && this.nonLocatable === other.nonLocatable
+        && this.emphasized === other.emphasized;
     }
 
     public toJSON(): AppearanceProps {
@@ -108,8 +131,9 @@ export namespace FeatureSymbology {
         weight: this.weight,
         transparency: this.transparency,
         linePixels: this.linePixels,
-        ignoresMaterial: this.ignoresMaterial ? true : undefined,
-        nonLocatable: this.nonLocatable ? true : undefined,
+        ignoresMaterial: this.ignoresMaterial,
+        nonLocatable: this.nonLocatable,
+        emphasized: this.emphasized,
       };
     }
 
@@ -125,17 +149,19 @@ export namespace FeatureSymbology {
       if (undefined === props.weight) props.weight = this.weight;
       if (undefined === props.ignoresMaterial && this.ignoresMaterial) props.ignoresMaterial = true;
       if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
+      if (undefined === props.emphasized && this.emphasized) props.emphasized = true;
 
       return Appearance.fromJSON(props);
     }
 
     private constructor(props: AppearanceProps) {
-      this.rgb = props.rgb;
+      this.rgb = undefined !== props.rgb ? RgbColor.fromJSON(props.rgb) : undefined;
       this.weight = props.weight;
       this.transparency = props.transparency;
       this.linePixels = props.linePixels;
       this.ignoresMaterial = props.ignoresMaterial;
       this.nonLocatable = props.nonLocatable;
+      this.emphasized = props.emphasized;
 
       if (undefined !== this.weight)
         this.weight = Math.max(1, Math.min(this.weight, 32));
@@ -307,8 +333,9 @@ export namespace FeatureSymbology {
      * @internal
      */
     public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
-      if (BatchType.VolumeClassifier === type)
-        return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi);
+
+      if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
+        return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi, animationNodeId);
 
       let app = !this._lineWeights ? Overrides._weight1Appearance : Appearance.defaults;
       const modelApp = this.getModelOverrides(modelLo, modelHi);
@@ -356,13 +383,13 @@ export namespace FeatureSymbology {
     /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
      * @internal
      */
-    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined {
+    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined {
       let app = Appearance.defaults;
       const modelApp = this.getModelOverrides(modelLo, modelHi);
       if (undefined !== modelApp)
         app = modelApp.extendAppearance(app);
 
-      const elemApp = this.getElementOverrides(elemLo, elemHi, 0);
+      const elemApp = this.getElementOverrides(elemLo, elemHi, animationNodeId);
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 

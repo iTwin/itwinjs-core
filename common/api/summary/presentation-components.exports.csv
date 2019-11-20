@@ -3,6 +3,12 @@ Release Tag;API Item
 public;CacheInvalidationProps
 internal;ContentBuilder
 public;ContentDataProvider 
+alpha;controlledTreeWithFilteringSupport
+alpha;ControlledTreeWithFilteringSupportProps
+alpha;controlledTreeWithModelSource
+alpha;ControlledTreeWithModelSourceProps 
+alpha;controlledTreeWithUnifiedSelection
+alpha;ControlledTreeWithUnifiedSelectionProps
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
 public;IContentDataProvider 
@@ -25,5 +31,8 @@ public;treeWithFilteringSupport
 public;TreeWithFilteringSupportProps
 public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
+alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
+alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
+alpha;usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

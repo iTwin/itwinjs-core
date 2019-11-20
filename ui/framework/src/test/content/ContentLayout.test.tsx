@@ -21,6 +21,7 @@ import {
 import TestUtils from "../TestUtils";
 
 // import SplitPane from "react-split-pane";
+const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
 describe("ContentLayout", () => {
 
@@ -167,20 +168,37 @@ describe("ContentLayout", () => {
   });
 
   // TODO - does not work
-  // it.skip("SplitPane onChanged", () => {
-  //   const wrapper = mount(
-  //     <div style={{ width: "100px", height: "100px" }}>
-  //       <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
-  //     </div>);
+  it("Vertical SplitPane onChanged", () => {
+    const wrapper = mount(
+      <div>
+        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
+      </div>);
 
-  //   const splitPanel = wrapper.find(SplitPane);
-  //   expect(splitPanel.length).to.eq(1);
+    const splitPanel = wrapper.find(SplitPane);
+    expect(splitPanel.length).to.eq(1);
 
-  //   splitPanel.simulate("change", { size: 60 });
-  //   wrapper.update();
+    splitPanel.prop("onChange")!(50);
 
-  //   wrapper.unmount();
-  // });
+    wrapper.update();
+
+    wrapper.unmount();
+  });
+
+  it("Horizontal SplitPane onChanged", () => {
+    const wrapper = mount(
+      <div>
+        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={true} />
+      </div>);
+
+    const splitPanel = wrapper.find(SplitPane);
+    expect(splitPanel.length).to.eq(1);
+
+    splitPanel.prop("onChange")!(50);
+
+    wrapper.update();
+
+    wrapper.unmount();
+  });
 
   it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {
     const layoutProps: ContentLayoutProps = {

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "_variables";
+@import "variables";
 
 .nz-toolbar-button-button {
   box-sizing: border-box;
@@ -18,6 +18,7 @@
     radius: $button-stroke-radius;
     style: solid;
   }
+  pointer-events: auto;
 
   > .nz-gradient {
     background: linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);

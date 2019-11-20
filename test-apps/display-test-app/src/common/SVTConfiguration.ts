@@ -17,12 +17,10 @@ export interface SVTConfiguration {
   disableInstancing?: boolean;
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
-  displaySolarShadows?: boolean; // default ON
+  useProjectExtents?: boolean;
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
-}
-
-export interface ConnectProjectConfiguration {
-  projectName: string;
-  iModelName: string;
+  filterMapTextures?: boolean;  // default OFF
+  filterMapDrapeTextures?: boolean; // default ON (if extension supported)
+  useFakeCloudStorageTileCache?: boolean; // default OFF
 }

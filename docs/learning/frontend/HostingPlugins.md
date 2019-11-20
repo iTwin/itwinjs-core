@@ -114,6 +114,9 @@ Localization files, for example, are external resources, so the code within the 
   /** Invoked the first time this plugin is loaded. */
   public onLoad(_args: string[]): void {
     this._i18NNamespace = this.i18n.registerNamespace("WmsPlugin");
+    this._i18NNamespace!.readFinished.then(() => {
+      IModelApp.tools.register(OurFirstTool, this._i18NNamespace, this.i18n);
+      IModelApp.tools.register(OurSecondTool, this._i18NNamespace, this.i18n);
     ...
   }
 
@@ -133,7 +136,7 @@ Localization files, for example, are external resources, so the code within the 
   }
 ```
 
-In the ```onLoad``` method, an i18n Namespace is registered, and in the ```onExecute``` method, a string from it is accessed.
+In the ```onLoad``` method, an i18n Namespace is registered, and tools that are implemented in the plugin are registered with the optional third argument (this.i18n). In the ```onExecute``` method, a string from the plugin's internationalization object and namespace is accessed.
 
 Similarly, a slight code modification is needed for loading other resources from the Plugin's web server. For example, suppose we want to load an .svg file for use in a Plugin. The following code in ```onLoad``` is used:
 

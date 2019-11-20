@@ -2,8 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BlockComparisonFunction } from "./GrowableFloat64Array";
 /** @module ArraysAndInterfaces */
+
+import { BlockComparisonFunction } from "./GrowableFloat64Array";
 
 /**
  * Array of contiguous doubles, indexed by block number and index within block.

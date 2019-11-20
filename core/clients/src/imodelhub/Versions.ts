@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHub */
+/** @module iModelHubClient */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -10,7 +10,7 @@ import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./Query";
+import { InstanceIdQuery } from "./HubQuery";
 import { ThumbnailSize } from "./Thumbnails";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;

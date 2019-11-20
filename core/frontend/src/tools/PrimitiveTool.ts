@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides } from "./Tool";
+import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides, CoreTools } from "./Tool";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -62,6 +62,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (this.targetModelId)
       return view.viewsModel(this.targetModelId); // If a specific target model is specified, only allow view that shows it.
 
+    if (view.isSpatialView() && this.targetView.view.isSpatialView())
+      return true; // No specific target, two spatial views are considered compatible.
+
     let allowView = false;
     view.forEachModel((model) => { if (!allowView && this.targetView!.view.viewsModel(model.id)) allowView = true; });
     return allowView; // Accept if this view shares a model in common with target.
@@ -98,7 +101,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents")));
 
     return false;
   }

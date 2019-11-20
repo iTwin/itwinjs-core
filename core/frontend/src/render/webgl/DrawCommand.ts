@@ -6,15 +6,15 @@
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
-import { Transform, Range3d } from "@bentley/geometry-core";
+import { Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlag, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
+import { Batch, Branch, Graphic, GraphicsArray, isFeatureHilited } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
-import { Target } from "./Target";
+import { Target, Hilites } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic, AnimationBranchState, ClippingType } from "../System";
 import { TechniqueId } from "./TechniqueId";
@@ -55,6 +55,9 @@ export class ShaderProgramParams {
 }
 
 const _scratchTransform = Transform.createIdentity();
+const _scratchViewToWorld = Matrix3d.createIdentity();
+const _scratchAboutOrigin = Transform.createIdentity();
+const _scratchVIModelMatrix = Transform.createIdentity();
 
 /** @internal */
 export class DrawParams {
@@ -98,10 +101,18 @@ export class DrawParams {
       // Shader will compute final model-view matrix based on this and the per-instance transform.
       const instancedGeom = geometry.asInstanced;
       if (undefined !== instancedGeom) {
-        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcTransform(modelMatrix), modelViewMatrix);
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), modelViewMatrix);
       } else {
-        Matrix4.fromTransform(modelMatrix, this._modelMatrix);
-        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+        const vio = geometry.viewIndependentOrigin;
+        if (undefined !== vio) {
+          const viewToWorldRot = this.target.viewMatrix.matrix.inverse(_scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, _scratchAboutOrigin);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix, _scratchVIModelMatrix);
+          modelViewMatrix.multiplyTransformTransform(viModelMatrix, modelViewMatrix);
+        } else {
+          Matrix4.fromTransform(modelMatrix, this._modelMatrix);
+          modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+        }
       }
 
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);
@@ -195,8 +206,12 @@ class BranchCommand extends DrawCommand {
           branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
         this._branch.localToWorldTransform = branchTransform;
       }
-      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes)
+      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes) {
         this._branch.clips = animationBranch.clip as ClipPlanesVolume;
+        const overrideClip = new ViewFlag.Overrides();
+        overrideClip.setShowClipVolume(true);
+        this._branch.branch.setViewFlagOverrides(overrideClip);
+      }
     }
   }
 
@@ -253,8 +268,18 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
       if (undefined !== featureElementId)
         return featureElementId.toString() === flashedId.toString();
     }
-
     return Id64.isInvalid(flashedId);
+  }
+
+  public computeIsHilited(hilites: Hilites): boolean {
+    const sp = this.primitive.cachedGeometry.asSurface;
+    if (undefined !== sp && undefined !== sp.mesh.uniformFeatureId) {
+      const fi = sp.mesh.uniformFeatureId;
+      const feature = this._batch.featureTable.getPackedFeature(fi);
+      if (undefined !== feature)
+        return isFeatureHilited(feature, hilites);
+    }
+    return false;
   }
 }
 
@@ -489,6 +514,12 @@ export class RenderCommands {
     return this._commands[idx];
   }
 
+  public replaceCommands(pass: RenderPass, cmds: DrawCommands): void {
+    const idx = pass as number;
+    this._commands[idx].splice(0);
+    this._commands[idx] = cmds;
+  }
+
   public addHiliteBranch(branch: Branch, batch: Batch, pass: RenderPass): void {
     this.pushAndPopBranchForPass(pass, branch, () => {
       branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, batch, pass));
@@ -697,10 +728,17 @@ export class RenderCommands {
       }
     }
 
+    const classifier = this._stack.top.planarClassifier;
+
     this._batchState.push(batch, true);
     if (this.currentViewFlags.transparency) {
       this._opaqueOverrides = overrides.anyOpaque;
       this._translucentOverrides = overrides.anyTranslucent;
+
+      if (undefined !== classifier) {
+        this._opaqueOverrides = this._opaqueOverrides || classifier.anyOpaque;
+        this._translucentOverrides = this._translucentOverrides || classifier.anyTranslucent;
+      }
     }
 
     (batch.graphic as Graphic).addCommands(this);
@@ -709,7 +747,7 @@ export class RenderCommands {
 
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
-    const planarClassifierHilited = this._stack.top.planarClassifier && this._stack.top.planarClassifier.anyHilited;
+    const planarClassifierHilited = undefined !== classifier && classifier.anyHilited;
     if (anyHilited || planarClassifierHilited)
       (batch.graphic as Graphic).addHiliteCommands(this, batch, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
 

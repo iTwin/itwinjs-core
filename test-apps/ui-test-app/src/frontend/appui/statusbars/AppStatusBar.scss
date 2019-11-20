@@ -4,3 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/index";
 
+.toolAssistance-separator {
+  @include for-tablet-landscape-down {
+    display: none;
+  }
+}

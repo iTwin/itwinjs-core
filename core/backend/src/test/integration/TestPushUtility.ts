@@ -9,13 +9,14 @@ import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import {
-  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector,
+  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
 } from "../../imodeljs-backend";
 import { IModelWriter } from "./IModelWriter";
 import { HubUtility } from "./HubUtility";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -52,7 +53,7 @@ export class TestPushUtility {
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
-      this.createTestChangeSet();
+      await this.createTestChangeSet();
       await this.pushTestChangeSet();
       await this.createNamedVersion();
       this._currentLevel++;
@@ -61,7 +62,7 @@ export class TestPushUtility {
   }
 
   private createStandalone(): string {
-    const pathname: string = path.join(__dirname, this.iModelName + ".bim");
+    const pathname: string = path.join(KnownTestLocations.outputDir, this.iModelName + ".bim");
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
@@ -114,8 +115,8 @@ export class TestPushUtility {
 
   private updateElement(name: string, newUserLabel: string, newSize: Point3d = new Point3d(10, 10, 10)) {
     const code = this.createCode(name);
-    const element = this._iModelDb!.elements.getElement(code);
-    if (!element)
+    const element = this._iModelDb!.elements.getElement<GeometricElement>(code);
+    if (!element || !(element instanceof GeometricElement))
       throw new Error(`Element with name ${name} not found`);
 
     element.userLabel = newUserLabel;
@@ -168,13 +169,16 @@ export class TestPushUtility {
     this.deleteTestElement(name);
   }
 
-  private createTestChangeSet() {
+  private async createTestChangeSet() {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
     this.updateTestElement(this._currentLevel - 1, 0);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
     this.deleteTestElements(this._currentLevel - 1, 1);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
   }
 

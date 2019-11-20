@@ -8,6 +8,12 @@ import * as sinon from "sinon";
 import { WidgetTarget } from "../../../ui-ninezone/zones/target/Target";
 
 describe("<WidgetTarget />", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should render", () => {
     mount(<WidgetTarget />);
   });
@@ -16,49 +22,56 @@ describe("<WidgetTarget />", () => {
     shallow(<WidgetTarget />).should.matchSnapshot();
   });
 
-  it("should invoke onTargetChanged handler when mouse enters", () => {
+  it("should invoke onTargetChanged handler when pointer enters", () => {
     const spy = sinon.spy();
     const sut = mount(<WidgetTarget onTargetChanged={spy} />);
+
     const target = sut.find(".nz-zones-target-target");
-    target.simulate("mouseEnter");
+    sinon.stub(target.getDOMNode(), "contains").returns(true);
+
+    const pointerMove = document.createEvent("HTMLEvents");
+    pointerMove.initEvent("pointermove");
+    document.dispatchEvent(pointerMove);
+
     spy.calledOnceWithExactly(true).should.true;
   });
 
-  it("should invoke onTargetChanged handler when mouse leaves", () => {
+  it("should invoke onTargetChanged handler when pointer leaves", () => {
     const spy = sinon.spy();
-    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
+    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
+    sut.setState({ isTargeted: true });
+
     const target = sut.find(".nz-zones-target-target");
-    target.simulate("mouseLeave");
+    sinon.stub(target.getDOMNode(), "contains").returns(false);
+
+    const pointerMove = document.createEvent("HTMLEvents");
+    pointerMove.initEvent("pointermove");
+    document.dispatchEvent(pointerMove);
+
     spy.calledOnceWithExactly(false).should.true;
   });
 
   it("should invoke onTargetChanged handler when component unmounts", () => {
     const spy = sinon.spy();
-    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
-    const target = sut.find(".nz-zones-target-target");
-    target.simulate("mouseEnter");
+    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
+    sut.setState({ isTargeted: true });
+
     sut.unmount();
-    spy.calledTwice.should.true;
-    spy.firstCall.calledWithExactly(true).should.true;
-    spy.secondCall.calledWithExactly(false).should.true;
+    spy.calledOnceWithExactly(false).should.true;
   });
 
-  it("should invoke onTargetChanged handler when mouse moves over target", () => {
-    const spy = sinon.spy();
-    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
-    const target = sut.find(".nz-zones-target-target");
-    target.simulate("mouseMove");
-    spy.firstCall.calledWithExactly(true).should.true;
+  it("should add event listeners", () => {
+    const spy = sandbox.spy(document, "addEventListener");
+    mount<WidgetTarget>(<WidgetTarget />);
+
+    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
   });
 
-  it("should not invoke onTargetChanged if already targeted", () => {
-    const spy = sinon.spy();
-    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
-    const target = sut.find(".nz-zones-target-target");
-    target.simulate("mouseEnter");
-    spy.resetHistory();
+  it("should remove event listeners", () => {
+    const spy = sandbox.spy(document, "removeEventListener");
+    const sut = mount<WidgetTarget>(<WidgetTarget />);
+    sut.unmount();
 
-    target.simulate("mouseMove");
-    spy.notCalled.should.true;
+    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
   });
 });

@@ -361,7 +361,7 @@ export class DelayedPromise<T> implements Promise<T> {
 // @beta (undocumented)
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
-// @beta (undocumented)
+// @beta
 export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
 
 // @beta (undocumented)
@@ -588,18 +588,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
     // (undocumented)
     protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
-    // (undocumented)
-    protected createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
     protected createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
     // (undocumented)
-    protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
+    protected createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
     protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
     // (undocumented)
-    protected createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+    protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
     protected createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
     // (undocumented)
-    protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+    protected createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
     protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+    // (undocumented)
+    protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
     // (undocumented)
     protected createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
     // (undocumented)
@@ -721,6 +721,8 @@ export enum ECObjectsStatus {
     InvalidPrimitiveType = 35064,
     // (undocumented)
     InvalidRelationshipEnd = 35068,
+    // (undocumented)
+    InvalidSchemaAlias = 35078,
     // (undocumented)
     InvalidSchemaComparisonArgument = 35077,
     // (undocumented)
@@ -862,9 +864,9 @@ export class Enumeration extends SchemaItem {
     readonly enumerators: Enumerator<string | number>[];
     // (undocumented)
     protected _enumerators: AnyEnumerator[];
+    getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
     getEnumerator(value: number): Enumerator<number> | undefined;
-    getEnumerator(value: string): Enumerator<string> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     readonly isInt: boolean;
@@ -1723,6 +1725,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     readonly fullName: string;
     // (undocumented)
     getCategorySync(): PropertyCategory | undefined;
+    getCustomAttributes(): Promise<CustomAttributeSet>;
+    getCustomAttributesSync(): CustomAttributeSet;
     // (undocumented)
     getKindOfQuantitySync(): KindOfQuantity | undefined;
     // (undocumented)
@@ -2045,12 +2049,10 @@ export class RelationshipMultiplicity {
 
 // @beta (undocumented)
 export class Schema implements CustomAttributeContainerProps {
+    constructor(context: SchemaContext, name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number);
+    constructor(context: SchemaContext, key: SchemaKey, alias: string);
     // @internal
     constructor(context: SchemaContext);
-    // @internal
-    constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
-    // @internal
-    constructor(context: SchemaContext, key: SchemaKey);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     // (undocumented)
@@ -2060,7 +2062,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected addReferenceSync(refSchema: Schema): void;
     // (undocumented)
-    readonly alias: string | undefined;
+    readonly alias: string;
     // (undocumented)
     protected _alias?: string;
     readonly context: SchemaContext;
@@ -2284,14 +2286,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined]): {
+        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+            messageArgs?: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -2447,14 +2449,14 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat]): {
+        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [Format | OverrideFormat] | undefined;
+            messageArgs?: [OverrideFormat | Format] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };

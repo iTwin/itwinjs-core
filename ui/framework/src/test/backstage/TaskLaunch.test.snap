@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when active 1`] = `
-<BackstageItem
+<WithSafeArea
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -13,11 +13,11 @@ exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders c
   onClick={[Function]}
 >
   tests.label
-</BackstageItem>
+</WithSafeArea>
 `;
 
 exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
-<BackstageItem
+<WithSafeArea
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -29,5 +29,5 @@ exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders c
   onClick={[Function]}
 >
   tests.label
-</BackstageItem>
+</WithSafeArea>
 `;

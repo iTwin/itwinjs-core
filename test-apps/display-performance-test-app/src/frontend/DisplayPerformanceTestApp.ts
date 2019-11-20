@@ -4,7 +4,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
-import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
+import { HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
@@ -15,12 +15,12 @@ import {
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
   FeatureOverrideProvider, FeatureSymbology,
 } from "@bentley/imodeljs-frontend";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
+import * as path from "path";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -164,7 +164,7 @@ function getRenderOpts(): string {
         if (value) optString += "+shadeSrc";
         break;
       case "displaySolarShadows":
-        if (value) optString += "+solShd";
+        if (!value) optString += "-solShd";
         break;
       case "logarithmicZBuffer":
         if (value) optString += "+logZBuf";
@@ -341,11 +341,10 @@ async function waitForTilesToLoad(modelLocation?: string) {
     theViewport!.sync.invalidateScene();
     theViewport!.renderFrame();
 
+    // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
     const sceneContext = theViewport!.createSceneContext();
     activeViewState.viewState!.createScene(sceneContext);
     sceneContext.requestMissingTiles();
-
-    // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
 
     // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
@@ -366,7 +365,10 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const w = configs.view!.width * devicePixelRatio;
+  const h = configs.view!.height * devicePixelRatio;
+  rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
@@ -430,15 +432,10 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 }
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
-  let output = configs.outputPath ? configs.outputPath : "";
-  const lastChar = output[output.length - 1];
-  if (lastChar !== "/" && lastChar !== "\\")
-    output += "\\";
-  let filename = "";
-  filename += getTestName(configs, prefix, true);
-  output += filename;
-  output += ".png";
-  return output;
+  const filename = getTestName(configs, prefix, true) + ".png";
+  if (MobileRpcConfiguration.isMobileFrontend)
+    return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
+  return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
 
 function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, ignoreDupes = false): string {
@@ -470,8 +467,9 @@ function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = fal
 }
 
 async function savePng(fileName: string): Promise<void> {
-  if (theViewport && theViewport.canvas) {
-    const img = theViewport.canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
+  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+  if (canvas !== undefined) {
+    const img = canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
     return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
   }
@@ -483,6 +481,8 @@ class ViewSize {
 
   constructor(w = 0, h = 0) { this.width = w; this.height = h; }
 }
+
+type TestType = "timing" | "readPixels" | "interactive" | "image" | "both";
 
 class DefaultConfigs {
   public view?: ViewSize;
@@ -500,11 +500,11 @@ class DefaultConfigs {
   public viewStatePropsString?: string;
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
-  public testType?: string;
+  public testType?: TestType;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
-  public renderOptions?: RenderSystem.Options;
+  public renderOptions: RenderSystem.Options = {};
   public tileProps?: TileAdmin.Props;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
@@ -513,7 +513,7 @@ class DefaultConfigs {
       this.numRendersToTime = 100;
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
-      this.outputPath = "D:\\output\\performanceData\\";
+      this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
       this.iModelName = "Wraith2.bim";
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
@@ -741,12 +741,17 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
+    const devicePixelRatio = window.devicePixelRatio || 1;
+
+    // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
+    viewSize.width /= devicePixelRatio;
+    viewSize.height /= devicePixelRatio;
+
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
-    debugPrint("theViewport: " + theViewport);
+    theViewport.rendersToScreen = true;
     const canvas = theViewport.canvas as HTMLCanvasElement;
-    debugPrint("canvas: " + canvas);
     canvas.style.width = String(viewSize.width) + "px";
     canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
@@ -761,11 +766,19 @@ async function initializeOidc(requestContext: FrontendRequestContext) {
   if (activeViewState.oidcClient)
     return;
 
-  const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
-  const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
+  let oidcConfiguration: OidcFrontendClientConfiguration;
+  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+  if (ElectronRpcConfiguration.isElectron) {
+    const clientId = "imodeljs-electron-test";
+    const redirectUri = "electron://frontend/signin-callback";
+    oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+  } else {
+    const clientId = "imodeljs-spa-test";
+    const redirectUri = "http://localhost:3000/signin-callback";
+    oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+  }
 
-  const oidcClient = new OidcBrowserClient(oidcConfig);
+  const oidcClient = new OidcBrowserClient(oidcConfiguration);
   await oidcClient.initialize(requestContext);
   activeViewState.oidcClient = oidcClient;
   IModelApp.authorizationClient = oidcClient;
@@ -793,7 +806,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState.viewState;
 
   // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined);
+  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
       activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
@@ -808,7 +821,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   }
 
   // Open an iModel from the iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
       return false;
@@ -948,7 +961,6 @@ function restartIModelApp(testConfig: DefaultConfigs) {
       renderSys: testConfig.renderOptions,
       tileAdmin: TileAdmin.create(curTileProps),
     });
-    (IModelApp.renderSystem as System).techniques.compileShaders();
   }
 }
 
@@ -956,15 +968,16 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   const width = testConfig.view!.width;
   const height = testConfig.view!.height;
   const viewRect = new ViewRect(0, 0, width, height);
-  if (theViewport && theViewport.canvas) {
-    const ctx = theViewport.canvas.getContext("2d");
+  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+  if (canvas !== undefined) {
+    const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
       const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
       const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
 
-      theViewport.readPixels(viewRect, pix, (pixels: any) => {
+      theViewport!.readPixels(viewRect, pix, (pixels: any) => {
         if (undefined === pixels)
           return;
         for (let y = viewRect.top; y < viewRect.bottom; ++y) {
@@ -1043,6 +1056,50 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   }
 }
 
+async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>): Promise<void> {
+  IModelApp.viewManager.addViewport(vp);
+
+  const target = vp.target as Target;
+  const metrics = target.performanceMetrics!;
+  target.performanceMetrics = undefined;
+
+  const numFramesToIgnore = 120;
+  let ignoreFrameCount = 0;
+  let frameCount = 0;
+  vp.continuousRendering = true;
+  return new Promise((resolve: () => void, _reject) => {
+    const timer = new StopWatch();
+    const removeListener = vp.onRender.addListener((_) => {
+      // Ignore the first N frames - they seem to have more variable frame rate.
+      ++ignoreFrameCount;
+      if (ignoreFrameCount <= numFramesToIgnore) {
+        if (ignoreFrameCount === numFramesToIgnore) {
+          // Time to start recording.
+          target.performanceMetrics = metrics;
+          timer.start();
+        }
+
+        return;
+      }
+
+      timer.stop();
+      timings[frameCount] = metrics.frameTimings;
+      timings[frameCount].set("Total Time", timer.current.milliseconds);
+
+      if (++frameCount === numFrames) {
+        removeListener();
+        IModelApp.viewManager.dropViewport(vp, false);
+        resolve();
+      } else {
+        vp.sync.setRedrawPending();
+        timer.start();
+      }
+    });
+  });
+
+  vp.continuousRendering = false;
+}
+
 async function runTest(testConfig: DefaultConfigs) {
   // Restart the IModelApp if needed
   restartIModelApp(testConfig);
@@ -1050,7 +1107,7 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
   if (!loaded) {
-    await closeIModel(testConfig.iModelLocation !== undefined);
+    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
     return; // could not properly open the given model or saved view so skip test
   }
 
@@ -1061,7 +1118,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
   const csvFormat = testConfig.csvFormat!;
 
-  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
+  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels" || testConfig.testType === "interactive") {
     // Throw away the first n renderFrame times, until it's more consistent
     for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
       theViewport!.sync.setRedrawPending();
@@ -1069,7 +1126,7 @@ async function runTest(testConfig: DefaultConfigs) {
     }
 
     // Turn on performance metrics to start collecting data when we render things
-    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
+    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics("interactive" !== testConfig.testType, false);
 
     // Add a pause so that user can start the GPU Performance Capture program
     // await resolveAfterXMilSeconds(7000);
@@ -1100,11 +1157,16 @@ async function runTest(testConfig: DefaultConfigs) {
       await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
     } else {
       const timer = new StopWatch(undefined, true);
-      for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-        theViewport!.sync.setRedrawPending();
-        theViewport!.renderFrame();
-        finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+      if ("interactive" === testConfig.testType) {
+        await renderAsync(theViewport!, testConfig.numRendersToTime!, finalFrameTimings);
+      } else {
+        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
+          theViewport!.sync.setRedrawPending();
+          theViewport!.renderFrame();
+          finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+        }
       }
+
       timer.stop();
       updateTestNames(testConfig); // Update the list of timing test names
       if (wantConsoleOutput) {
@@ -1127,7 +1189,7 @@ async function runTest(testConfig: DefaultConfigs) {
   }
 
   // Close the imodel
-  await closeIModel(testConfig.iModelLocation !== undefined);
+  await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
 }
 
 // selects the configured view.
@@ -1214,6 +1276,14 @@ async function main() {
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
   const testConfig = new DefaultConfigs(jsonData);
+
+  // Sign In to iModelHub if needed
+  if (jsonData.signIn) {
+    const signedIn: boolean = await signIn();
+    if (!signedIn)
+      return;
+  }
+
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];
@@ -1267,7 +1337,6 @@ window.onload = () => {
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
   // Cheap hacky workaround until that's fixed.
   DisplayPerfTestApp.startup();
-  (IModelApp.renderSystem as System).techniques.compileShaders();
 
   main(); // tslint:disable-line:no-floating-promises
 };

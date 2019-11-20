@@ -5,9 +5,12 @@
 /** @module Tools */
 
 import {
-  Tool, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec,
-  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+  Tool, PluginUiProvider, PluginUiManager, UiItemNode,
 } from "@bentley/imodeljs-frontend";
+import {
+  ActionItemInsertSpec, GroupItemInsertSpec,
+  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+} from "@bentley/ui-abstract";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
 /** alpha test code */
@@ -87,7 +90,6 @@ class TestUiProvider implements PluginUiProvider {
         label: "test action tool (navH)",
       };
       return [navHorizontalSpec];
-
     } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
       const navVerticalSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
@@ -110,18 +112,26 @@ class TestUiProvider implements PluginUiProvider {
 
 /** An Immediate Tool that toggles the test ui provider defined above. */
 export class UiProviderTool extends Tool {
-  private static _testPluginLoaded = "";
+  public static testPluginLoaded = "";
 
   public static toolId = "TestUiProvider";
   public run(_args: any[]): boolean {
-    if (UiProviderTool._testPluginLoaded.length > 0) {
-      PluginUiManager.unregister(UiProviderTool._testPluginLoaded);
-      UiProviderTool._testPluginLoaded = "";
+    if (UiProviderTool.testPluginLoaded.length > 0) {
+      PluginUiManager.unregister(UiProviderTool.testPluginLoaded);
+      UiProviderTool.testPluginLoaded = "";
     } else {
-      const uiProvider = new TestUiProvider();
-      PluginUiManager.register(uiProvider);
-      UiProviderTool._testPluginLoaded = uiProvider.id;
+      const testUiProvider = new TestUiProvider();
+      PluginUiManager.register(testUiProvider);
+      UiProviderTool.testPluginLoaded = testUiProvider.id;
     }
     return true;
   }
+}
+
+// used to test loading Plugin that provides  Ui items at startup
+const testPluginLoadedAtStartup = false;
+if (testPluginLoadedAtStartup) {
+  const uiProvider = new TestUiProvider();
+  PluginUiManager.register(uiProvider);
+  UiProviderTool.testPluginLoaded = uiProvider.id;
 }

@@ -3,10 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-/** @alpha */
+/** @module Controls */
+
+/** Wraps an HTML text input field.
+ * @beta
+ */
 export interface TextBox {
+  /** The label, if the text box has one. */
   label?: HTMLLabelElement;
+  /** The text input element. */
   textbox: HTMLInputElement;
+  /** The div containing the text box. */
   div: HTMLDivElement;
 }
 
@@ -19,7 +26,7 @@ export type TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEve
 /** @alpha */
 export interface TextBoxProps {
   label?: string;
-  id: string;
+  id?: string;
   parent?: HTMLElement;
   handler?: TextBoxHandler;
   keypresshandler?: TextBoxKeyPressHandler;
@@ -38,14 +45,18 @@ export function createTextBox(props: TextBoxProps): TextBox {
   let label;
   if (undefined !== props.label) {
     label = document.createElement("label") as HTMLLabelElement;
-    label.htmlFor = props.id;
     label.innerText = props.label;
+    if (undefined !== props.id)
+      label.htmlFor = props.id;
+
     div.appendChild(label);
   }
 
   const textbox = document.createElement("input") as HTMLInputElement;
   textbox.type = "text";
-  textbox.id = props.id;
+  if (undefined !== props.id)
+    textbox.id = props.id;
+
   div.appendChild(textbox);
 
   if (undefined !== props.parent)

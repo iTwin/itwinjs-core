@@ -75,9 +75,17 @@ export class PresentationManager {
     }>;
     getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
+    // @beta
+    loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
     readonly props: PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
+}
+
+// @beta
+export enum PresentationManagerMode {
+    ReadOnly = 0,
+    ReadWrite = 1
 }
 
 // @public
@@ -89,8 +97,14 @@ export interface PresentationManagerProps {
     // @internal
     id?: string;
     localeDirectories?: string[];
+    // @beta
+    mode?: PresentationManagerMode;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
+    // @alpha
+    taskAllocationsMap?: {
+        [priority: number]: number;
+    };
 }
 
 // @public

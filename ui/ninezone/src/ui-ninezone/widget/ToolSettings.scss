@@ -3,30 +3,77 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "tool-settings/_variables";
+@import "tool-settings/variables";
+@import "../scrollbar";
 @import "../widgetopacity";
 
 .nz-widget-toolSettings {
+  $grip-offset: $nz-resize-grip-size / 2;
+
   border: {
     color: $nz-widget-border-color;
     radius: $nz-widget-border-radius;
     style: solid;
     width: $nz-widget-border-width;
   }
-
   background-color: $nz-widget-background-color;
   height: fit-content;
   width: fit-content;
   pointer-events: auto;
   margin: 0 auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 
   @include nz-widget-opacity;
 
-  > .nz-title {
-    min-height: $nz-tool-settings-title-bar-min-height;
+  > .nz-handle {
+    > .nz-title {
+      min-height: $nz-tool-settings-title-bar-min-height;
+    }
   }
 
   > .nz-content {
-    padding: $nz-tool-settings-content-padding;
+    overflow: auto;
+
+    @include nz-scrollbar;
+
+    > div {
+      padding: $nz-tool-settings-content-padding;
+      width: fit-content;
+      height: fit-content;
+    }
+  }
+
+  > .nz-left-grip {
+    top: 0;
+    left: -$grip-offset;
+  }
+
+  > .nz-top-grip {
+    left: 0;
+    top: -$grip-offset;
+  }
+
+  > .nz-right-grip {
+    top: 0;
+    right: -$grip-offset;
+  }
+
+  > .nz-bottom-grip {
+    left: 0;
+    bottom: -$grip-offset;
+  }
+
+  &.nz-draggable {
+    > .nz-handle {
+      cursor: pointer;
+    }
+  }
+
+  &.nz-fill {
+    height: 100%;
+    width: 100%;
   }
 }

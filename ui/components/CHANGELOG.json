@@ -2,6 +2,147 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-components_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to have Table provide top visible row feedback"
+          },
+          {
+            "comment": "Made PropertyGrid categories keep the collapsed state when data is refreshed."
+          },
+          {
+            "comment": "Added New badge for UI items"
+          },
+          {
+            "comment": "Added Table column filtering support"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Added DataProvider getter on TreeModelSource"
+          },
+          {
+            "comment": "Fix tree attempting to highlight empty text in nodes"
+          },
+          {
+            "comment": "Fix tree no re-rendering delay loaded nodes after reload"
+          },
+          {
+            "comment": "Added initial implementation of ControlledTree"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-components_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clear internal row/column selection data when number or rows change in Table. Add definitions for platform MeasureTools."
+          },
+          {
+            "comment": "Allow width defined in ColumnDescription to be passed into <Table> component to set initial column width."
+          },
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Focus EnumButtonGroupEditor without scrolling."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-components_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core."
+          },
+          {
+            "comment": "Added ability to automatically expand non primitive properties"
+          },
+          {
+            "comment": "Ability to Scroll to Table row via scrollToRow Prop"
+          },
+          {
+            "comment": "Add alwaysMinimized prop to TimelineComponent."
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+          },
+          {
+            "comment": "In the Model/Category/Spatial trees, center the error message"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment"
+          },
+          {
+            "comment": "Tree: Clear page caches when reloading tree data"
+          },
+          {
+            "comment": "this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/ui-components_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning."
+          },
+          {
+            "comment": "Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index."
+          },
+          {
+            "comment": "Color picker had incorrect styling after focus trap added."
+          },
+          {
+            "comment": "Added support for content view minSize properties"
+          },
+          {
+            "comment": "Added support for ProjectWise Explorer links."
+          },
+          {
+            "comment": "Added a new component for the Poc, an icon picker."
+          },
+          {
+            "comment": "Addressed some warnings introduced with React 16.9"
+          },
+          {
+            "comment": "Timeline: added display for times"
+          },
+          {
+            "comment": "Fixed bug in style of the weight picker popup"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/ui-components_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

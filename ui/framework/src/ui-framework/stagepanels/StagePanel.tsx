@@ -45,21 +45,32 @@ export enum StagePanelLocation {
   BottomMost,
 }
 
+/** @internal */
+export const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
+  StagePanelLocation.Top,
+  StagePanelLocation.TopMost,
+  StagePanelLocation.Left,
+  StagePanelLocation.Right,
+  StagePanelLocation.Bottom,
+  StagePanelLocation.BottomMost,
+];
+
 /** Properties of a [[StagePanel]] component
  * @alpha
  */
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
   allowedZones?: ZoneLocation[];
-  /** Default size of the panel. */
-  size?: number;
-  /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
-  defaultState?: StagePanelState;
-  /** Indicates whether the panel is resizable. Defaults to true. */
-  resizable: boolean;
   /** Any application data to attach to this Panel. */
   applicationData?: any;
-
+  /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
+  defaultState?: StagePanelState;
+  /** Stage panel header. */
+  header?: React.ReactNode;
+  /** Indicates whether the panel is resizable. Defaults to true. */
+  resizable: boolean;
+  /** Default size of the panel. */
+  size?: number;
   /** Properties for the Widgets in this Panel. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
@@ -78,6 +89,7 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 export interface StagePanelRuntimeProps {
   draggedWidgetId: WidgetZoneId | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  isInFooterMode: boolean;
   isTargeted: boolean;
   panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;
@@ -99,9 +111,8 @@ export class StagePanel extends React.Component<StagePanelProps> {
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
     panelDef.size = props.size;
     panelDef.location = panelLocation;
-
-    if (props.defaultState)
-      panelDef.panelState = props.defaultState;
+    if (props.defaultState !== undefined)
+      panelDef.initializePanelState(props.defaultState);
     panelDef.resizable = props.resizable;
     if (props.applicationData !== undefined)
       panelDef.applicationData = props.applicationData;

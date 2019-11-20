@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Display Performance Test App</title>
   <style>
     html,
@@ -13,11 +14,11 @@
     }
 
     .root {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
+      position: relative;
+      height: 100%;
+      width: 100%;
+      top: 0;
+      left: 0;
     }
 
     .topdiv {
@@ -36,10 +37,13 @@
       height: 1000px;
       width: auto;
     }
-
   </style>
+  <!-- check the browser to verify it is supported. -->
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
+
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
-  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
+    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 
 <body>

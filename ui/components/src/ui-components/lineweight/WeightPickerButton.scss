@@ -16,24 +16,32 @@
   }
 }
 
-.components-weightpicker-popup-container {
-  border: 1px solid $buic-inputs-border;
-  color: $buic-foreground-body;
-  background: $buic-background-control;
-  min-width: 100px;
-  padding: 0 4px;
+.components-weightpicker-popup {
 
-  >ul {
-    padding: 4px 0;
-    list-style: none;
-    margin: 0.5rem 0;
+  &.core-popup {
+    background: $buic-background-control;
+    border: 1px solid $buic-inputs-border;
+  }
 
-    > .components-weightpicker-swatch:hover {
-      background: $buic-row-hover;
-    }
+  .components-weightpicker-popup-container {
+    color: $buic-foreground-body;
+    background: $buic-background-control;
+    min-width: 100px;
+    padding: 0 4px;
+    border-radius: 4px;
 
-    > .components-weightpicker-swatch.active {
-      background: $buic-row-selection;
+    >ul {
+      padding: 4px 0;
+      list-style: none;
+      margin: 0.25rem 0;
+
+      > .components-weightpicker-swatch:hover {
+        background: $buic-row-hover;
+      }
+
+      > .components-weightpicker-swatch.active {
+        background: $buic-row-selection;
+      }
     }
   }
 }

@@ -15,6 +15,7 @@ import { TechniqueId } from "../TechniqueId";
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeColor = "return vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
+const checkForClassifiedDiscard = "return baseColor.a == 0.0;";
 
 function createBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PointCloud, false));
@@ -32,7 +33,8 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   if (classified) {
-    addColorPlanarClassifier(builder);
+    addColorPlanarClassifier(builder, false);
+    builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
     if (FeatureMode.None !== featureMode)
       addFeaturePlanarClassifier(builder);
   }
@@ -44,10 +46,8 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
   addUniformHiliter(builder);
-  if (classified) {
-    addColorPlanarClassifier(builder);
+  if (classified)
     addHilitePlanarClassifier(builder, false);
-  }
 
   return builder;
 }

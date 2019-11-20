@@ -7,11 +7,12 @@
 import * as React from "react";
 import * as _ from "lodash";
 import { IModelApp, SpatialViewState, Viewport, IModelConnection } from "@bentley/imodeljs-frontend";
-import { RegisteredRuleset, NodeKey } from "@bentley/presentation-common";
+import { RegisteredRuleset, NodeKey, Ruleset } from "@bentley/presentation-common";
 import { treeWithFilteringSupport, PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Tree, TreeNodeItem, SelectionMode, FilteringInput } from "@bentley/ui-components";
 import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
+import { connectIModelConnection } from "../../redux/connectIModel";
 import "./CategoriesTree.scss";
 
 /**
@@ -20,6 +21,7 @@ import "./CategoriesTree.scss";
  */
 // const CategoryFilterTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree)); // tslint:disable-line:variable-name
 const CategoryFilterTree = treeWithFilteringSupport(Tree); // tslint:disable-line:variable-name
+const RULESET: Ruleset = require("./Categories.json"); // tslint:disable-line: no-var-requires
 
 interface Category {
   key: string;
@@ -54,6 +56,11 @@ export interface CategoryTreeProps {
   selectAll?: boolean;
   /** clear all */
   clearAll?: boolean;
+  /**
+   * Start loading hierarchy as soon as the component is created
+   * @alpha
+   */
+  enablePreloading?: boolean;
 }
 
 /**
@@ -77,7 +84,13 @@ export interface CategoryTreeState {
 // istanbul ignore next
 export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTreeState> {
   private _isMounted = false;
-  private _ruleset?: RegisteredRuleset;
+  private _rulesetRegistration?: RegisteredRuleset;
+
+  /**
+   * Presentation rules used by this component
+   * @internal
+   */
+  public static readonly RULESET: Ruleset = RULESET;
 
   constructor(props: CategoryTreeProps) {
     super(props);
@@ -113,8 +126,8 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
   public componentWillUnmount() {
     this._isMounted = false;
 
-    if (this._ruleset)
-      Presentation.presentation.rulesets().remove(this._ruleset); // tslint:disable-line:no-floating-promises
+    if (this._rulesetRegistration)
+      Presentation.presentation.rulesets().remove(this._rulesetRegistration); // tslint:disable-line:no-floating-promises
 
     //  const provider = this.state.dataProvider;
     //  if (provider)
@@ -134,16 +147,14 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
   }
 
   private _initialize = async () => {
-    return Presentation.presentation.rulesets().add(require("./Categories.json")) // tslint:disable-line:no-floating-promises
-      .then((ruleset: RegisteredRuleset) => {
-        this._ruleset = ruleset;
-        const dataProvider = new PresentationTreeDataProvider(this.props.iModel, this._ruleset!.id);
-        this._setViewType(ruleset).then(() => { // tslint:disable-line:no-floating-promises
-          this._loadCategoriesFromViewport(this.state.activeView).then(() => { // tslint:disable-line:no-floating-promises
-            this.setState({ dataProvider });
-          });
-        });
-      });
+    this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
+    const dataProvider = new PresentationTreeDataProvider(this.props.iModel, RULESET.id);
+    await this._setViewType();
+    if (this.props.enablePreloading && dataProvider.loadHierarchy)
+      await dataProvider.loadHierarchy();
+
+    await this._loadCategoriesFromViewport(this.state.activeView);
+    this.setState({ dataProvider });
   }
 
   private async _loadCategoriesFromViewport(vp?: Viewport) {
@@ -224,13 +235,13 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
    * Sets provided ruleset as new ruleset for tree.
    * @param activeRuleset Ruleset to provide to tree.
    */
-  private _setViewType = async (ruleset: RegisteredRuleset) => {
+  private _setViewType = async () => {
     if (!IModelApp.viewManager || !this.state.activeView)
       return;
 
     const view = this.state.activeView.view as SpatialViewState;
     const viewType = view.is3d() ? "3d" : "2d";
-    await Presentation.presentation.vars(ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+    await Presentation.presentation.vars(RULESET.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
   }
 
   private _getIdFromTreeNode = (node: TreeNodeItem) => {
@@ -493,3 +504,8 @@ export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTre
 // selectedNodes={this._getSelectedNodes}
 // onNodesSelected={this._onNodesSelected}
 // onNodesDeselected={this._onNodesDeselected
+
+/** CategoryTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // tslint:disable-line:variable-name

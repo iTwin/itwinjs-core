@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
-<BackstageItem
+<WithSafeArea
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -14,11 +14,11 @@ exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageIt
   subtitle=""
 >
   tests.label
-</BackstageItem>
+</WithSafeArea>
 `;
 
 exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
-<BackstageItem
+<WithSafeArea
   icon={
     <Unknown
       iconSpec="icon-placeholder"
@@ -31,5 +31,5 @@ exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageIt
   subtitle=""
 >
   tests.label
-</BackstageItem>
+</WithSafeArea>
 `;

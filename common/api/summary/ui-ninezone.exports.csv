@@ -16,8 +16,6 @@ alpha;BackTarget
 alpha;BackTargetProps 
 alpha;Cell 
 alpha;CellProps
-alpha;Chevron 
-alpha;ChevronProps 
 alpha;Columns 
 alpha;ColumnsProps 
 alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
@@ -31,6 +29,8 @@ beta;Dialog
 beta;DialogProps 
 beta;Direction
 internal;DirectionHelpers
+beta;DisabledResizeHandles
+internal;DisabledResizeHandlesHelpers
 internal;DraggedWidgetManager
 beta;DraggedWidgetManagerProps
 alpha;ExpandableButton 
@@ -38,7 +38,6 @@ alpha;ExpandableButtonProps
 beta;ExpandableItem 
 beta;ExpandableItemProps 
 beta;Footer 
-internal;FOOTER_HEIGHT = 40
 beta;FooterIndicator 
 beta;FooterIndicatorProps 
 beta;FooterPopup 
@@ -49,12 +48,14 @@ beta;FooterProps
 beta;FooterSeparator 
 beta;FooterSeparatorProps 
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
+internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
 internal;getDefaultAllowsMerging: (id: WidgetZoneId) => boolean
 alpha;getDefaultNineZoneStagePanelManagerProps: () => NineZoneStagePanelManagerProps
 alpha;getDefaultNineZoneStagePanelPaneManagerProps: () => NineZoneStagePanelPaneManagerProps
 alpha;getDefaultNineZoneStagePanelsManagerProps: () => NineZoneStagePanelsManagerProps
 beta;getDefaultStagePanelManagerProps: () => StagePanelManagerProps
 beta;getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps
+internal;getDefaultToolSettingsWidgetManagerProps: () => ToolSettingsWidgetManagerProps
 internal;getDefaultWidgetHorizontalAnchor: (id: WidgetZoneId) => HorizontalAnchor
 internal;getDefaultWidgetManagerProps: (id: WidgetZoneId) => WidgetManagerProps
 internal;getDefaultWidgetVerticalAnchor: (id: WidgetZoneId) => VerticalAnchor.Bottom | VerticalAnchor.Middle
@@ -64,6 +65,7 @@ internal;getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps
 internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
 alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;getToolbarItemProps: 
+internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
 internal;getZoneCell: (id: ZoneId) => Cell
 internal;getZoneIdFromCell: (cell: CellProps) => WidgetZoneId
 alpha;Group 
@@ -118,6 +120,8 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 alpha;NineZoneManager
+internal;NineZoneManagerHiddenWidget
+internal;NineZoneManagerHiddenWidgets =
 alpha;NineZoneManagerPanelTarget
 alpha;NineZoneManagerPaneTarget 
 alpha;NineZoneManagerProps
@@ -147,12 +151,10 @@ alpha;ResizeGrip
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
-alpha;Scrollable 
-alpha;ScrollableDefaultProps = Pick
-alpha;ScrollableProps 
+beta;SafeAreaInsets
+internal;SafeAreaInsetsHelpers
 beta;ScrollableToolSettings 
 beta;ScrollableToolSettingsProps 
-alpha;ScrollIndicator 
 beta;Snap 
 beta;SnapMode 
 beta;SnapModePanel 
@@ -226,6 +228,8 @@ beta;ToolSettingsPopupProps
 beta;ToolSettingsProps 
 beta;ToolSettingsTab 
 beta;ToolSettingsTabProps 
+beta;ToolSettingsWidgetManagerProps 
+beta;ToolSettingsWidgetMode
 alpha;ToolsProps 
 beta;Tooltip 
 beta;TooltipDefaultProps = Pick
@@ -238,6 +242,7 @@ alpha;WidgetContent
 alpha;WidgetContentProps 
 beta;WidgetManagerProps
 alpha;WidgetTabDragStartArguments
+internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray
 alpha;withContainIn: 
@@ -257,3 +262,4 @@ beta;ZonesManagerWidgetsProps =
 beta;ZonesManagerZonesProps =
 beta;ZonesProps 
 beta;ZoneTargetType
+internal;ZoneWindowResizeSettings

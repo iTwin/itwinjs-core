@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ChangeOpCode, ColorDef, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangeOpCode, ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSummaryExtractOptions, InstanceChange } from "../../ChangeSummaryManager";
-import { ElementAspect, ExternalSourceAspect } from "../../ElementAspect";
-import { Entity } from "../../Entity";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
-import { Model } from "../../Model";
-import { Relationship } from "../../Relationship";
+import * as semver from "semver";
+import {
+  AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, ConcurrencyControl,
+  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { assertTargetDbContents, assertUpdatesInTargetDb, populateSourceDb, populateTeamIModel, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb } from "../IModelTransformerUtils";
+import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
@@ -102,7 +101,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const sourceSeedDb: IModelDb = IModelDb.createSnapshot(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await prepareSourceDb(sourceSeedDb);
+    await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
     sourceSeedDb.closeSnapshot();
     const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -115,7 +114,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb: IModelDb = IModelDb.createSnapshot(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await prepareTargetDb(targetSeedDb);
+    await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
     targetSeedDb.closeSnapshot();
     const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
@@ -130,26 +129,27 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #1
       if (true) {
-        populateSourceDb(sourceDb);
+        IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Populate source");
 
         const sourceDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, sourceDb, { currentVersionOnly: true });
-        // expect inserts from populateSourceDb
+        // expect inserts and 1 update from populateSourceDb
         assert.isAtLeast(sourceDbChanges.codeSpecs.insertedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.elements.insertedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.elementAspects.insertedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.models.insertedIds.size, 1);
+        assert.equal(sourceDbChanges.models.updatedIds.size, 1, "Expect the RepositoryModel to be updated");
+        assert.isTrue(sourceDbChanges.models.updatedIds.has(IModel.repositoryModelId));
         assert.isAtLeast(sourceDbChanges.relationships.insertedIds.size, 1);
-        // expect no update nor deletes from populateSourceDb
+        // expect no other updates nor deletes from populateSourceDb
         assert.equal(sourceDbChanges.codeSpecs.updatedIds.size, 0);
         assert.equal(sourceDbChanges.codeSpecs.deletedIds.size, 0);
         assert.equal(sourceDbChanges.elements.updatedIds.size, 0);
         assert.equal(sourceDbChanges.elements.deletedIds.size, 0);
         assert.equal(sourceDbChanges.elementAspects.updatedIds.size, 0);
         assert.equal(sourceDbChanges.elementAspects.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.models.updatedIds.size, 0);
         assert.equal(sourceDbChanges.models.deletedIds.size, 0);
         assert.equal(sourceDbChanges.relationships.updatedIds.size, 0);
         assert.equal(sourceDbChanges.relationships.deletedIds.size, 0);
@@ -160,14 +160,16 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #1");
-        assertTargetDbContents(sourceDb, targetDb);
+        IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
-        // expect inserts and a few FederationGuid updates from transforming the result of populateSourceDb
+        // expect inserts and a few updates from transforming the result of populateSourceDb
         assert.isAtLeast(targetDbChanges.elements.insertedIds.size, 1);
-        assert.equal(targetDbChanges.elements.updatedIds.size, 2); // FederationGuid updated for the Dictionary and RealityDataSources InformationPartitionElements
+        assert.equal(targetDbChanges.elements.updatedIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
         assert.isAtLeast(targetDbChanges.elementAspects.insertedIds.size, 1);
         assert.isAtLeast(targetDbChanges.models.insertedIds.size, 1);
+        assert.equal(targetDbChanges.models.updatedIds.size, 1, "Expect the RepositoryModel to be updated");
+        assert.isTrue(targetDbChanges.models.updatedIds.has(IModel.repositoryModelId));
         assert.isAtLeast(targetDbChanges.relationships.insertedIds.size, 1);
         // expect no other changes from transforming the result of populateSourceDb
         assert.equal(targetDbChanges.codeSpecs.insertedIds.size, 0);
@@ -176,7 +178,6 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.elements.deletedIds.size, 0);
         assert.equal(targetDbChanges.elementAspects.updatedIds.size, 0);
         assert.equal(targetDbChanges.elementAspects.deletedIds.size, 0);
-        assert.equal(targetDbChanges.models.updatedIds.size, 0);
         assert.equal(targetDbChanges.models.deletedIds.size, 0);
         assert.equal(targetDbChanges.relationships.updatedIds.size, 0);
         assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
@@ -184,7 +185,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #2
       if (true) {
-        updateSourceDb(sourceDb);
+        IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Update source");
@@ -199,7 +200,7 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect some updates from updateSourceDb
         assert.isAtLeast(sourceDbChanges.elements.updatedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.elementAspects.updatedIds.size, 1);
-        assert.equal(sourceDbChanges.models.updatedIds.size, 0); // WIP: will be at least 1 after GeometricModel.GeometryGuid changes are merged in
+        assert.isAtLeast(sourceDbChanges.models.updatedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.relationships.updatedIds.size, 1);
         // expect some deletes from updateSourceDb
         assert.isAtLeast(sourceDbChanges.elements.deletedIds.size, 1);
@@ -216,7 +217,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #2");
-        assertUpdatesInTargetDb(targetDb);
+        IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
         // expect no inserts from transforming the result of updateSourceDb
@@ -228,7 +229,7 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect some updates from transforming the result of updateSourceDb
         assert.isAtLeast(targetDbChanges.elements.updatedIds.size, 1);
         assert.isAtLeast(targetDbChanges.elementAspects.updatedIds.size, 1);
-        assert.equal(targetDbChanges.models.updatedIds.size, 0); // WIP: will be at least 1 after GeometricModel.GeometryGuid changes are merged in
+        assert.isAtLeast(targetDbChanges.models.updatedIds.size, 1);
         assert.isAtLeast(targetDbChanges.relationships.updatedIds.size, 1);
         // expect some deletes from transforming the result of updateSourceDb
         assert.isAtLeast(targetDbChanges.elements.deletedIds.size, 1);
@@ -248,8 +249,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  // WIP: Need fix from Raman before IModelTransformer portion of test can be added
-  it.skip("Clone/upgrade test", async () => {
+  it("Clone/upgrade test", async () => {
     const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
     const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
@@ -260,41 +260,68 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
-      const bisCoreSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", "BisCore.ecschema.xml");
-
       // open/upgrade sourceDb
       const sourceDb: IModelDb = await IModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.1"));
       assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      await sourceDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.8"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push sourceDb schema changes
       await sourceDb.concurrencyControl.request(requestContext);
-      sourceDb.saveChanges();
-      await sourceDb.pushChanges(requestContext, () => "Upgrade BisCore");
+      assert.isTrue(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+      assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
+      await sourceDb.pushChanges(requestContext, () => "Import schemas to upgrade BisCore"); // should actually push schema changes
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+
+      // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
+      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
+      assert.isFalse(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to be a no-op");
+      assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
+      sourceDb.saveChanges(); // will be no changes to save in this case
+      await sourceDb.pushChanges(requestContext, () => "Import schemas again"); // will be no changes to push in this case
+      assert.isTrue(await sourceDb.concurrencyControl.hasSchemaLock(requestContext)); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // populate sourceDb
-      populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, () => "Populate Source");
+      assert.isFalse(await sourceDb.concurrencyControl.hasSchemaLock(requestContext));
 
       // open/upgrade targetDb
       const targetDb: IModelDb = await IModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
       assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      await targetDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push targetDb schema changes
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore"); // WIP: currently causes BeAssert in RevisionManager::CreateRevisionObject renaming temp revision changes file
+      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
+      // import sourceDb changes into targetDb
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
+      await targetDb.concurrencyControl.request(requestContext);
+      targetDb.saveChanges();
+      await targetDb.pushChanges(requestContext, () => "Import changes from sourceDb");
+
+      // close iModel briefcases
       await sourceDb.close(requestContext, KeepBriefcase.No);
       await targetDb.close(requestContext, KeepBriefcase.No);
     } finally {
+      // delete iModel briefcases
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }

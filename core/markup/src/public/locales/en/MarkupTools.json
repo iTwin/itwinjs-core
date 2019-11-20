@@ -14,87 +14,59 @@
         "keyin": "Markup Select",
         "description": "Markup selection tool",
         "Prompts": {
-          "IdentifyMarkup": "Identify markup element."
+          "IdentifyMarkup": "Identify markup element",
+          "AcceptMarkup": "Accept markup element"
         }
       },
       "Line": {
         "keyin": "Markup Line",
-        "description": "Draw line",
-        "Prompts": {
-          "FirstPoint": "Identify start of line.",
-          "NextPoint": "Identify end of line."
-        }
+        "description": "Draw line"
       },
       "Rectangle": {
         "keyin": "Markup Rectangle",
-        "description": "Draw rectangle",
-        "Prompts": {
-          "FirstPoint": "Identify corner of rectangle.",
-          "NextPoint": "Identify opposite corner of rectangle."
-        }
+        "description": "Draw rectangle"
       },
       "Polygon": {
         "keyin": "Markup Polygon",
         "description": "Draw polygon",
         "Prompts": {
-          "FirstPoint": "Identify center of polygon.",
-          "NextPoint": "Identify point on edge."
+          "FirstPoint": "Identify center",
+          "NextPoint": "Define point on edge"
         }
       },
       "Circle": {
         "keyin": "Markup Circle",
         "description": "Draw circle",
         "Prompts": {
-          "FirstPoint": "Identify center.",
-          "NextPoint": "Define radius."
+          "FirstPoint": "Identify center",
+          "NextPoint": "Define radius"
         }
       },
       "Ellipse": {
         "keyin": "Markup Ellipse",
-        "description": "Draw ellipse",
-        "Prompts": {
-          "FirstPoint": "Identify corner for ellipse.",
-          "NextPoint": "Identify opposite corner for ellipse."
-        }
+        "description": "Draw ellipse"
       },
       "Arrow": {
         "keyin": "Markup Arrow",
-        "description": "Draw arrow",
-        "Prompts": {
-          "FirstPoint": "Identify start of arrow.",
-          "NextPoint": "Identify end of arrow."
-        }
+        "description": "Draw arrow"
       },
       "Distance": {
         "keyin": "Markup Distance",
-        "description": "Markup distance between points",
-        "Prompts": {
-          "FirstPoint": "Enter point to measure from.",
-          "NextPoint": "Enter point to measure to,"
-        }
+        "description": "Markup distance between points"
       },
       "Cloud": {
         "keyin": "Markup Cloud",
-        "description": "Draw cloud",
-        "Prompts": {
-          "FirstPoint": "Identify corner of cloud.",
-          "NextPoint": "Identify opposite corner of cloud."
-        }
+        "description": "Draw cloud"
       },
       "Sketch": {
         "keyin": "Markup Sketch",
-        "description": "Draw freehand sketch",
-        "Prompts": {
-          "FirstPoint": "Identify start of sketch.",
-          "NextPoint": "Identify end of sketch."
-        }
+        "description": "Draw freehand sketch"
       },
       "Symbol": {
         "keyin": "Markup Symbol",
         "description": "Place symbol",
         "Prompts": {
-          "FirstPoint": "Click to place symbol by center, drag to place symbol by corners.",
-          "NextPoint": "Identify opposite corner of symbol."
+          "FirstPoint": "Define center or drag to define corners"
         }
       },
       "Text": {
@@ -102,14 +74,14 @@
           "keyin": "Place Markup Text",
           "description": "Add text box",
           "Prompts": {
-            "FirstPoint": "Identify text location."
+            "FirstPoint": "Identify text location"
           }
         },
         "Edit": {
           "keyin": "Edit Markup Text",
           "description": "Edit text",
           "Prompts": {
-            "FirstPoint": "Identify text to edit."
+            "FirstPoint": "Enter text"
           }
         }
       }

@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Curve */
 
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -9,13 +10,12 @@ import { CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { LineSegment3d } from "./LineSegment3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { CurveCurveApproachType } from "./CurveLocationDetail";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Path } from "./Path";
 import { Loop } from "./Loop";
 import { Arc3d } from "./Arc3d";
 import { CurveCurve } from "./CurveCurve";
-import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
 import { Angle } from "../geometry3d/Angle";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -293,11 +293,11 @@ class Joint {
     }
   }
   // Select the index at which summed fraction difference is smallest.
-  private selectIntersectionIndexByFraction(fractionA: number, fractionB: number, intersections: CurveLocationDetailArrayPair): number {
+  private selectIntersectionIndexByFraction(fractionA: number, fractionB: number, intersections: CurveLocationDetailPair[]): number {
     let index = -1;
     let aMin = Number.MAX_VALUE;
-    for (let i = 0; i < intersections.dataA.length; i++) {
-      const a = Math.abs(intersections.dataA[i].fraction - fractionA) + Math.abs(intersections.dataB[i].fraction - fractionB);
+    for (let i = 0; i < intersections.length; i++) {
+      const a = Math.abs(intersections[i].detailA.fraction - fractionA) + Math.abs(intersections[i].detailB.fraction - fractionB);
       if (a < aMin) {
         aMin = a;
         index = i;
@@ -324,29 +324,36 @@ class Joint {
       const ray0 = this.curve0.fractionToPointAndDerivative(0.0); // And we know that is full length ray !
       const ray1 = this.curve1.fractionToPointAndDerivative(0.0); // ditto
       if (this.curve0 instanceof LineSegment3d && this.curve1 instanceof LineSegment3d) {
-        const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
-        if (intersection.approachType === CurveCurveApproachType.Intersection) {
-          this.fraction0 = intersection.detailA.fraction;
-          this.fraction1 = intersection.detailB.fraction;
-          if (this.fraction0 >= 1.0 && this.fraction1 <= 0.0) {
-            this.annotateExtension(options);
-          } else if (this.fraction0 < 1.0 && this.fraction1 > 0.0) {
-            this.flexure = JointMode.Trim;
-          } else if (this.fraction0 > 1.0 && this.fraction1 > 1.0) {
-            this.flexure = JointMode.Gap;
-            this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
-            this.fraction0 = 1.0;
-            this.fraction1 = 0.0;
+        // check for direct intersection -- occurs on offset of colinear base segments.
+        if (this.curve0.endPoint().isAlmostEqual(this.curve1.startPoint())) {
+          this.fraction0 = 1.0;
+          this.fraction1 = 0.0;
+          this.flexure = JointMode.Trim;
+        } else {
+          const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
+          if (intersection.approachType === CurveCurveApproachType.Intersection) {
+            this.fraction0 = intersection.detailA.fraction;
+            this.fraction1 = intersection.detailB.fraction;
+            if (this.fraction0 >= 1.0 && this.fraction1 <= 0.0) {
+              this.annotateExtension(options);
+            } else if (this.fraction0 < 1.0 && this.fraction1 > 0.0) {
+              this.flexure = JointMode.Trim;
+            } else if (this.fraction0 > 1.0 && this.fraction1 > 1.0) {
+              this.flexure = JointMode.Gap;
+              this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
+              this.fraction0 = 1.0;
+              this.fraction1 = 0.0;
+            }
           }
         }
       } else {
         // generic pair of curves ...
-        const intersections = CurveCurve.intersectionXY(this.curve0, false, this.curve1, false);
+        const intersections = CurveCurve.intersectionXYPairs(this.curve0, false, this.curve1, false);
         const intersectionIndex = this.selectIntersectionIndexByFraction(1.0, 0.0, intersections);
         if (intersectionIndex >= 0) {
           this.flexure = JointMode.Trim;
-          this.fraction0 = intersections.dataA[intersectionIndex].fraction;
-          this.fraction1 = intersections.dataB[intersectionIndex].fraction;
+          this.fraction0 = intersections[intersectionIndex].detailA.fraction;
+          this.fraction1 = intersections[intersectionIndex].detailB.fraction;
         } else {
           this.annotateExtension(options);
         }
@@ -491,6 +498,10 @@ export class PolygonWireOffsetContext {
     }
     if (wrap)
       Joint.link(previousJoint, joint0);
+    else {
+      newJoint = new Joint(fragment0, undefined, points[numPoints - 1]);
+      Joint.link(previousJoint, newJoint);
+    }
     Joint.annotateChain(joint0, options, numPoints);
     for (let pass = 0; pass++ < 5;) {
       const state = Joint.removeDegeneratePrimitives(joint0, options, numPoints);

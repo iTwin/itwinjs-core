@@ -11,9 +11,12 @@ import {
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
+  DisplayStyle3dState,
   IModelConnection,
+  SpatialViewState,
   ViewState,
 } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
   private _defaultViewId = Id64.invalid;
@@ -57,9 +60,6 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
 
     const query = { wantPrivate: false };
     const specs = await iModel.views.getViewList(query);
-    if (0 === specs.length)
-      return Promise.resolve();
-
     for (const spec of specs)
       this.insert(spec);
 
@@ -72,7 +72,7 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
       }
     }
 
-    if (Id64.isInvalid(this._defaultViewId)) {
+    if (Id64.isInvalid(this._defaultViewId) && 0 < this._array.length) {
       this._defaultViewId = this._array[0].id;
       const defaultViewId = await iModel.views.queryDefaultViewId();
       for (const spec of this) {
@@ -83,8 +83,36 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
       }
     }
 
-    const selectedView = await iModel.views.load(this._defaultViewId);
+    if (Id64.isInvalid(this._defaultViewId))
+      this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName });
+
+    const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureSpatialView(iModel) : await iModel.views.load(this._defaultViewId);
     this._views.set(this._defaultViewId, selectedView);
+  }
+
+  // create a new spatial view initialized to show the project extents from top view. Model and
+  // category selectors are empty, so this is really only useful for testing backgroundMaps and
+  // reality models.
+  private manufactureSpatialView(iModel: IModelConnection): SpatialViewState {
+    const ext = iModel.projectExtents;
+
+    // start with a new "blank" spatial view to show the extents of the project, from top view
+    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
+
+    // turn on the background map
+    const style = blankView.displayStyle as DisplayStyle3dState;
+    const viewFlags = style.viewFlags;
+    viewFlags.backgroundMap = true;
+    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+
+    style.backgroundColor = ColorDef.white;
+
+    // turn on the skybox in the environment
+    const env = style.environment;
+    env.sky.display = true;
+    style.environment = env; // call to accessor to get the json properties to reflect the changes
+
+    return blankView;
   }
 }
 

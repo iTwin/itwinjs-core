@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "../_variables";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "../variables";
 
 .nz-footer-toolAssistance-dialog {
   min-width: $nz-footer-popup-min-width;
@@ -13,7 +13,7 @@
 
   .nz-content {
     color: $buic-text-color;
-    min-width: 240px;
-    max-width: 340px;
+    min-width: 250px;
+    max-width: 360px;
   }
 }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
-import { assert } from "chai";
+import { Point3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
+import { assert, expect } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { UpdateModelOptions } from "../../IModelDb";
@@ -37,7 +37,7 @@ describe("TxnManager", () => {
       intProperty: 100,
       placement: {
         origin: new Point3d(1, 2, 0),
-        angle: Angle.createDegrees(0),
+        angles: new YawPitchRollAngles(),
       },
       geom: builder.geometryStream,
     };
@@ -211,6 +211,17 @@ describe("TxnManager", () => {
     model = models.getModel(modelId);
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
+
+    // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
+    await pause(300); // for lastMod...
+    const guid4 = model.geometryGuid;
+    toModify.delete();
+    imodel.saveChanges("save deletion of element");
+    assert.throws(() => elements.getElement(modifyId));
+    model = models.getModel(modelId);
+    expect(model.geometryGuid).not.to.equal(guid4);
+    const lastMod3 = models.queryLastModifiedTime(modelId);
+    expect(lastMod3).not.to.equal(lastMod2);
   });
 
   it("Element drives element events", async () => {

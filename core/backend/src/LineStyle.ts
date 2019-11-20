@@ -6,7 +6,7 @@
 
 import { DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@bentley/imodeljs-common";
-import { LineStyle } from "./Element";
+import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
 
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
@@ -313,7 +313,7 @@ export namespace LineStyleDefinition {
     public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
       // if part extents weren't supplied, set them up now.
       if (!props.baseX && !props.baseY && !props.baseZ && !props.sizeX && !props.sizeY && !props.sizeZ) {
-        const geomPart = iModel.elements.getElement(props.geomPartId);
+        const geomPart = iModel.elements.getElement<GeometryPart>(props.geomPartId);
         if (!geomPart)
           return undefined;
 
@@ -371,7 +371,6 @@ export namespace LineStyleDefinition {
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",
-        iModel: imodel,
         model: scopeModelId,
         code: LineStyle.createCode(imodel, scopeModelId, name),
         data: JSON.stringify(props),

@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import { OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ToolItemProps } from "./ItemProps";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { ToolItemProps } from "./ItemProps";
 
 /** An Item that starts the execution of a Tool.
  * @public
@@ -14,8 +15,8 @@ import { ActionButtonItemDef } from "./ActionButtonItemDef";
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";
 
-  constructor(toolItemProps: ToolItemProps) {
-    super(toolItemProps);
+  constructor(toolItemProps: ToolItemProps, onItemExecuted?: OnItemExecutedFunc) {
+    super(toolItemProps, onItemExecuted);
 
     if (toolItemProps.execute) {
       this._commandHandler = { execute: toolItemProps.execute, parameters: toolItemProps.parameters, getCommandArgs: toolItemProps.getCommandArgs };
@@ -34,7 +35,7 @@ export class ToolItemDef extends ActionButtonItemDef {
       toolId: tool.toolId,
       iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : "icon-placeholder",
       label: () => tool.flyover,
-      tooltip: () => tool.description,
+      description: () => tool.description,
       execute: () => { IModelApp.tools.run(tool.toolId, args); },
     });
   }

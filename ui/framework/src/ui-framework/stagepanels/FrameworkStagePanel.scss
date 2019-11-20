@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/dialog/variables";
 
 .uifw-stagepanel {
   background-color: $buic-background-widget;
@@ -22,5 +23,16 @@
 
   &.nz-panel-bottom {
     border-top: 1px solid $buic-background-widget-stroke;
+  }
+
+  .uifw-content {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+
+    > .uifw-widgets {
+      flex: 1;
+      position: relative;
+    }
   }
 }

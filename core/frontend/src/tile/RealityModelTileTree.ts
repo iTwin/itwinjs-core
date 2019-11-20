@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @module Utils */
 
 import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
@@ -17,7 +17,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeSet, TileLoader, BatchedTileIdMap } from "./TileTree";
+import { TileTree, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -28,7 +28,6 @@ import { SceneContext } from "../ViewContext";
 import { RenderMemory } from "../render/System";
 import { ViewState } from "../ViewState";
 import { DisplayStyleState } from "../DisplayStyleState";
-import { Viewport } from "../Viewport";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -205,13 +204,11 @@ class FindChildResult {
 const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
 realityModelViewFlagOverrides.clearClipVolume();
 
-const scratchTileCenterWorld = new Point3d();
-const scratchTileCenterView = new Point3d();
-
 /** @internal */
-class RealityModelTileLoader extends TileLoader {
+class RealityModelTileLoader extends ContextTileLoader {
   private readonly _tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
+  public get drawAsRealityTiles(): boolean { return true; }
 
   public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap) {
     super();
@@ -226,6 +223,7 @@ class RealityModelTileLoader extends TileLoader {
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public get viewFlagOverrides() { return realityModelViewFlagOverrides; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
+  public get clipLowResolutionTiles(): boolean { return true; }
 
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
@@ -303,20 +301,6 @@ class RealityModelTileLoader extends TileLoader {
     }
 
     return new FindChildResult(thisParentId, foundChild, transformToRoot);
-  }
-
-  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
-    // Prioritize tiles closer to eye.
-    // NB: In NPC coords, 0 = far plane, 1 = near plane.
-    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
-    let minDistance = 1.0;
-    for (const viewport of viewports) {
-      const npc = viewport.worldToNpc(center, scratchTileCenterView);
-      const distance = 1.0 - npc.z;
-      minDistance = Math.min(distance, minDistance);
-    }
-
-    return minDistance;
   }
 }
 

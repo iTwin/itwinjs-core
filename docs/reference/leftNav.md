@@ -8,15 +8,20 @@ packageClassification:  [
          "imodeljs-common",
          "imodeljs-backend",
          "imodeljs-clients",
+         "imodeljs-clients-backend",
          "imodeljs-markup",
+         "imodeljs-i18n",
          "bentleyjs-core",
-         "geometry-core"
+         "frontend-devtools",
+         "geometry-core",
+         "logger-config"
       ]
    },
    {
       "order":"2",
       "header":"iModel.js UI Packages",
       "packages":[
+         "ui-abstract",
          "ui-core",
          "ui-components",
          "ui-ninezone",

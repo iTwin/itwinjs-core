@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
+@import "../widget/variables";
 
 .nz-stagePanels-splitter {
   $grip-size: 5px;
@@ -21,6 +22,7 @@
   > .nz-grip {
     background-color: $buic-background-5;
     flex: 0 0 auto;
+    touch-action: none;
   }
 
   &.nz-vertical {
@@ -29,6 +31,10 @@
     > .nz-grip {
       height: $grip-size;
       cursor: ns-resize;
+
+      @include for-tablet-landscape-down {
+        height: $nz-resize-grip-size-large;
+      }
     }
   }
 
@@ -38,6 +44,10 @@
     > .nz-grip {
       width: $grip-size;
       cursor: ew-resize;
+
+      @include for-tablet-landscape-down {
+        width: $nz-resize-grip-size-large;
+      }
     }
   }
 }

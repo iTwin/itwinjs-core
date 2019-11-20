@@ -34,7 +34,7 @@ export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
         className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)}> {label} </div>
+          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <Select disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
         {message &&

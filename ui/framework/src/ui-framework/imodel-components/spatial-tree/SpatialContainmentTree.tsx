@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { RegisteredRuleset } from "@bentley/presentation-common";
+import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, treeWithUnifiedSelection, PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Tree } from "@bentley/ui-components";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -14,6 +14,7 @@ import "./SpatialContainmentTree.scss";
 
 // tslint:disable-next-line:variable-name naming-convention
 const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
+const RULESET: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
 
 /**
  * Properties for the [[SpatialContainmentTree]] component
@@ -21,6 +22,11 @@ const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
  */
 export interface SpatialContainmentTreeProps {
   iModel: IModelConnection;
+  /**
+   * Start loading hierarchy as soon as the component is created
+   * @alpha
+   */
+  enablePreloading?: boolean;
 }
 
 /**
@@ -38,7 +44,13 @@ export interface SpatialContainmentTreeState {
  */
 // istanbul ignore next
 export class SpatialContainmentTree extends React.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
-  private _ruleset?: RegisteredRuleset;
+  private _rulesetRegistration?: RegisteredRuleset;
+
+  /**
+   * Presentation rules used by this component
+   * @internal
+   */
+  public static readonly RULESET: Ruleset = RULESET;
 
   constructor(props: SpatialContainmentTreeProps) {
     super(props);
@@ -53,17 +65,16 @@ export class SpatialContainmentTree extends React.Component<SpatialContainmentTr
 
   /** @internal */
   public componentWillUnmount() {
-    if (this._ruleset)
-      Presentation.presentation.rulesets().remove(this._ruleset); // tslint:disable-line:no-floating-promises
+    if (this._rulesetRegistration)
+      Presentation.presentation.rulesets().remove(this._rulesetRegistration); // tslint:disable-line:no-floating-promises
   }
 
   private _initialize = async () => {
-    return Presentation.presentation.rulesets().add(require("./SpatialBreakdown.json")) // tslint:disable-line:no-floating-promises
-      .then((ruleset: RegisteredRuleset) => {
-        this._ruleset = ruleset;
-        const dataProvider = new PresentationTreeDataProvider(this.props.iModel, this._ruleset!.id);
-        this.setState({ dataProvider });
-      });
+    this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
+    const dataProvider = new PresentationTreeDataProvider(this.props.iModel, RULESET.id);
+    if (this.props.enablePreloading && dataProvider.loadHierarchy)
+      await dataProvider.loadHierarchy();
+    this.setState({ dataProvider });
   }
 
   /** @internal */

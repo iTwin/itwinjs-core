@@ -21,6 +21,10 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
   <title>iModel.js Presentation Test App</title>
+
+  <!-- check the browser to verify it is supported. -->
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
+  
   <!-- get the IModelJs loader to load the system -->
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>

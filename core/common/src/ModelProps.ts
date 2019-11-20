@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { EntityProps, EntityQueryParams } from "./EntityProps";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { XYProps } from "@bentley/geometry-core";
-import { Id64String } from "@bentley/bentleyjs-core";
 import { RelatedElementProps } from "./ElementProps";
+import { EntityProps, EntityQueryParams } from "./EntityProps";
 
 /** Properties that define a [Model]($docs/bis/intro/model-fundamentals)
  * @public
@@ -38,12 +38,23 @@ export interface GeometricModelProps extends ModelProps {
    * assume the appearance of all of the geometry in the model is the same (Note: other properties of elements may have changed.)
    * If undefined, the state of the geometry is unknown.
    */
-  geometryGuid?: string;
+  geometryGuid?: GuidString;
 }
 
 /** Properties that define a [GeometricModel2d]($backend)
  * @public
  */
 export interface GeometricModel2dProps extends GeometricModelProps {
+  /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   globalOrigin?: XYProps;
+}
+
+/** Properties that define a [GeometricModel3d]($backend)
+ * @public
+ */
+export interface GeometricModel3dProps extends GeometricModelProps {
+  /** If true, then the elements in this GeometricModel3d are not in real-world coordinates and will not be in the spatial index. */
+  isNotSpatiallyLocated?: boolean;
+  /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane. */
+  isPlanProjection?: boolean;
 }

@@ -2,19 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-@import "_variables";
+@import "variables";
 
 .nz-toolbar-item-expandable-group-title {
-  $horizontal-margin: 20px;
-
   white-space: nowrap;
   text-align: center;
   color: $title-color;
   filter: drop-shadow(0 1px 0 $buic-foreground-body-reverse);
   margin-bottom: 9px;
-  margin-left: $horizontal-margin;
-  margin-right: $horizontal-margin;
+  margin-left: $title-horizontal-margin;
+  margin-right: $title-horizontal-margin;
 
   @include title;
 }

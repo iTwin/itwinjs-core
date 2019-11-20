@@ -1,0 +1,37 @@
+sep=;
+Release Tag;API Item
+beta;AbstractCommandItemProps 
+beta;AbstractConditionalItemProps 
+beta;AbstractGroupItemProps 
+beta;AbstractIconProps
+beta;AbstractItemProps 
+beta;AbstractMenuItemProps 
+beta;AbstractToolbarProps 
+beta;AbstractToolItemProps 
+alpha;ActionItemInsertSpec 
+beta;AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | AbstractGroupItemProps
+beta;AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps
+beta;BadgeType
+beta;BaseItemState
+beta;CommandHandler
+alpha;ConditionalDisplaySpecification
+beta;ConditionalDisplayType
+beta;DescriptionProps
+internal;getClassName: (obj: any) => string
+beta;GroupButtonDirection
+alpha;GroupItemInsertSpec 
+beta;IconSpecUtilities
+alpha;InsertSpec
+beta;LabelProps
+beta;OnCancelFunc = () => void
+beta;OnItemExecutedFunc = (item: any) => void
+beta;OnNumberCommitFunc = (value: number) => void
+public;RelativePosition
+beta;StringGetter = () => string
+beta;SyncUiProps
+alpha;ToolbarItemInsertSpec 
+alpha;ToolbarItemType
+beta;TooltipProps
+public;UiAbstract
+beta;UiAdmin
+public;UiError 

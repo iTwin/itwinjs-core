@@ -39,6 +39,8 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
 
   public get filter(): string { return this._filter; }
 
+  public get parentDataProvider(): IPresentationTreeDataProvider { return this._parentDataProvider; }
+
   private createHierarchy(paths: ReadonlyArray<Readonly<NodePathElement>>, hierarchy: SimpleTreeDataProviderHierarchy, parentId?: string) {
     const treeNodes: DelayLoadedTreeNodeItem[] = [];
     for (let i = 0; i < paths.length; i++) {
@@ -108,6 +110,12 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
 
   public getNodeKey(node: TreeNodeItem): NodeKey {
     return this._parentDataProvider.getNodeKey(node);
+  }
+
+  /** @alpha */
+  // istanbul ignore next
+  public async loadHierarchy() {
+    // the hierarchy is already loaded when this provider is created
   }
 
 }

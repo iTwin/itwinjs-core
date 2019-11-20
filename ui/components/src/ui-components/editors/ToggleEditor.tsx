@@ -47,9 +47,6 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     return propertyValue;
   }
 
-  private setFocus(): void {
-  }
-
   private _updateToggleValue = (toggleValue: boolean): any => {
     // istanbul ignore else
     if (this._isMounted) {
@@ -99,18 +96,12 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState(
-        { toggleValue },
-        () => {
-          if (this.props.setFocus)
-            this.setFocus();
-        },
-      );
+      this.setState({ toggleValue });
   }
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-toggle-editor", this.props.className);
+    const className = classnames("cell", "components-cell-editor", this.props.className);
     const inOn = this.state.toggleValue;
 
     return (
@@ -120,7 +111,8 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         style={this.props.style}
         isOn={inOn}
         onChange={this._updateToggleValue}
-        data-testid="components-toggle-editor" />
+        data-testid="components-toggle-editor"
+        setFocus={this.props.setFocus} />
     );
   }
 }

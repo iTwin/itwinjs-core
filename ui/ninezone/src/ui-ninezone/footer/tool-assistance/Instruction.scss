@@ -7,9 +7,9 @@
 .nz-footer-toolAssistance-instruction {
   display: grid;
   align-items: center;
-  grid-gap: 8px;
+  grid-gap: 6px;
   grid-auto-flow: column;
-  grid-template-columns: 36px 1fr;
+  grid-template-columns: 48px 1fr;
   line-height: 16px;
   font-size: $text-font-size;
   position: relative;

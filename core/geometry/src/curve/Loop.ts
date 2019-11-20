@@ -13,13 +13,14 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { CurveChain } from "./CurveCollection";
 import { AnyCurve } from "./CurveChain";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.
  * @public
  */
 export class Loop extends CurveChain {
+   /** String name for schema properties */
   public readonly curveCollectionType = "loop";
 
   /** tag value that can be set to true for user code to mark inner and outer loops. */
@@ -51,7 +52,7 @@ export class Loop extends CurveChain {
     return result;
   }
   /** Create a loop from an array of points */
-  public static createPolygon(points: GrowableXYZArray | Point3d[]): Loop {
+  public static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop {
     const linestring = LineString3d.create(points);
     linestring.addClosurePoint();
     return Loop.create(linestring);

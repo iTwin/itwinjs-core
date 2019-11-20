@@ -30,19 +30,29 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
    * }
    */
   options: string[] | { [key: string]: string };
+  /** Indicates whether to set focus to the select element */
+  setFocus?: boolean;
 }
 
 /** Basic select component
  * @public
  */
 export class Select extends React.PureComponent<SelectProps> {
+  private _selectElement = React.createRef<HTMLSelectElement>();
+
+  public componentDidMount() {
+    if (this.props.setFocus && this._selectElement.current) {
+      this._selectElement.current.focus();
+    }
+  }
+
   public render(): JSX.Element {
-    const { required, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
+    const { required, setFocus, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
     const isRequired = showPlaceholder || required;
     const options = this.props.options;
     return (
-      <select {...otherProps}
+      <select ref={this._selectElement} {...otherProps}
         required={isRequired}
         className={classnames("uicore-inputs-select", this.props.className)}
         style={this.props.style}>

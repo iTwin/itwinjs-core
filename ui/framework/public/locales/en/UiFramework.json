@@ -10,7 +10,12 @@
     "keyin": "Key-in",
     "args": "Arguments",
     "argsTip": "'|' separated arguments",
-    "execute": "Execute"
+    "execute": "Execute",
+    "placeholder": "Type key-in",
+    "incorrectArgs": "Incorrect number of key-in arguments",
+    "failedToRun": "Key-in failed to run",
+    "exceptionOccurred": "Key-in caused the following exception to occur",
+    "couldNotFindTool": "Could not find a tool with the given key-in"
   },
   "general": {
     "sheet": "Sheet",
@@ -18,7 +23,8 @@
     "alert": "Alert",
     "settings": "Settings",
     "minimize": "Minimize",
-    "overflow": "Overflow"
+    "overflow": "Overflow",
+    "no-content": "No data for this content view"
   },
   "rotations": {
     "top": "Top",
@@ -125,7 +131,8 @@
   },
   "buttons": {
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "clearSelection": "Clear Selection"
   },
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
@@ -134,6 +141,22 @@
     "backToPreviousFrontstage": "Back to previous Frontstage"
   },
   "tools": {
+    "clearSelection": "Clear Selection",
+    "hideSelected": "Hide Elements",
+    "hide": "Hide Tools",
+    "hideCategories": "Hide Categories",
+    "hideModels": "Hide Models",
+    "isolate": "Isolate Tools",
+    "isolateSelected": "Isolate Elements",
+    "isolateCategories": "Isolate Categories",
+    "isolateModels": "Isolate Models",
+    "emphasizeSelected": "Emphasize Selected",
+    "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
+    "sectionTools": "Section Tools",
+    "sectionClear": "Clear Sections",
+    "measureTools": "Measure Tools",
+    "sectionShowHandles": "Section Handles",
+    "viewZoomingTools": "Zooming Tools",
     "View": {
       "Fly": {
         "description": "Fly in view",
@@ -161,14 +184,27 @@
   "listTools": {
     "searchViews": "Search Views...",
     "listView": "List",
-    "thumbnailView": "Thumbnails"
+    "thumbnailView": "Thumbnails",
+    "camera": "Camera",
+    "selectVersion": "Select Version",
+    "views": "Saved Views",
+    "viewAttributes": "View Attributes",
+    "constructions": "Constructions",
+    "acs": "ACS",
+    "grid": "Grid",
+    "visEdges": "Visible Edges",
+    "hidEdges": "Hidden Edges",
+    "monochrome": "Monochrome Display",
+    "ambientOcclusion": "Ambient Occlusion",
+    "shadows": "Shadows"
   },
   "visibilityWidget": {
     "modeltree": "Model Tree",
     "categories": "Categories",
     "containment": "Spatial Containment",
     "options": "Options",
-    "visibilityTree": "Visibility Tree"
+    "visibilityTree": "Visibility Tree",
+    "noImodelConnection": "No data to display since there is no available iModel Connection."
   },
   "visibilityTree": {
     "status": {
@@ -206,6 +242,7 @@
     "promptAtCursor": "Show prompt at cursor",
     "moreInfo": "Click for more information",
     "mouse": "Mouse",
-    "touch": "Touch"
+    "touch": "Touch",
+    "pin": "Pin"
   }
 }

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, ViewClipDecorationProvider, ViewClipSettingsProvider, SavedClipEntry, IModelApp, ViewClipTool, Viewport, ClipOrientation, ClipEventType, ActiveClipStatus } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, ViewClipDecorationProvider, ViewClipSettingsProvider, SavedClipEntry, IModelApp, ViewClipTool, Viewport, ClipEventType, ActiveClipStatus, EditManipulator } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 import { SettingsStatus, ImsTestAuthorizationClient, ConnectSettingsClient } from "@bentley/imodeljs-clients";
 import { ClientRequestContext, LogLevel, Logger, GuidString } from "@bentley/bentleyjs-core";
@@ -24,7 +24,7 @@ export class NamedClipTestUtils {
     }
   }
 
-  public static createClipPlane(viewport: Viewport, orientation: ClipOrientation, origin: Point3d, planeSet: ConvexClipPlaneSet): ClipVector | undefined {
+  public static createClipPlane(viewport: Viewport, orientation: EditManipulator.RotationType, origin: Point3d, planeSet: ConvexClipPlaneSet): ClipVector | undefined {
     const normal = ViewClipTool.getPlaneInwardNormal(orientation, viewport);
     assert.isFalse(undefined === normal, "get clip plane normal from standard view");
     const plane = Plane3dByOriginAndUnitNormal.create(origin, normal!);
@@ -36,7 +36,7 @@ export class NamedClipTestUtils {
     return clip;
   }
 
-  public static setClipPlane(viewport: Viewport, orientation: ClipOrientation, origin: Point3d, clearExistingPlanes: boolean): boolean {
+  public static setClipPlane(viewport: Viewport, orientation: EditManipulator.RotationType, origin: Point3d, clearExistingPlanes: boolean): boolean {
     const normal = ViewClipTool.getPlaneInwardNormal(orientation, viewport);
     assert.isFalse(undefined === normal, "get clip plane normal from standard view");
     const status = ViewClipTool.doClipToPlane(viewport, origin, normal!, clearExistingPlanes);
@@ -203,13 +203,13 @@ describe("ViewClipDecorationProvider (#integration)", () => {
     });
 
     // Create a new view clip...
-    NamedClipTestUtils.setClipPlane(viewport, ClipOrientation.Top, Point3d.create(), true);
+    NamedClipTestUtils.setClipPlane(viewport, EditManipulator.RotationType.Top, Point3d.create(), true);
     viewClipDecoProvider.onNewClipPlane(viewport);
     assert.isTrue(1 === allEvents.length && ClipEventType.NewPlane === allEvents[0]);
     assert.isTrue(1 === allStatus.length && ActiveClipStatus.Unsaved === allStatus[0]);
 
     // Modify unnamed active view clip...
-    NamedClipTestUtils.setClipPlane(viewport, ClipOrientation.Top, Point3d.create(0, 0, 1), true);
+    NamedClipTestUtils.setClipPlane(viewport, EditManipulator.RotationType.Top, Point3d.create(0, 0, 1), true);
     viewClipDecoProvider.onModifyClip(viewport);
     assert.isTrue(2 === allEvents.length && ClipEventType.Modify === allEvents[1]);
     assert.isTrue(2 === allStatus.length && ActiveClipStatus.Unsaved === allStatus[1]);
@@ -225,7 +225,7 @@ describe("ViewClipDecorationProvider (#integration)", () => {
     assert.isTrue(ActiveClipStatus.Saved === viewClipDecoProvider.settings.getActiveClipStatus(viewport));
 
     // Modify named active view clip...
-    NamedClipTestUtils.setClipPlane(viewport, ClipOrientation.Top, Point3d.create(0, 0, 2), true);
+    NamedClipTestUtils.setClipPlane(viewport, EditManipulator.RotationType.Top, Point3d.create(0, 0, 2), true);
     viewClipDecoProvider.onModifyClip(viewport);
     assert.isTrue(3 === allEvents.length && ClipEventType.Modify === allEvents[2]);
     assert.isTrue(3 === allStatus.length && ActiveClipStatus.Modified === allStatus[2]);
@@ -250,14 +250,14 @@ describe("ViewClipDecorationProvider (#integration)", () => {
 
     // Create a new "front" clip plane...
     const planeSetF = ConvexClipPlaneSet.createEmpty();
-    const frontClip = NamedClipTestUtils.createClipPlane(viewport, ClipOrientation.Front, Point3d.create(), planeSetF);
+    const frontClip = NamedClipTestUtils.createClipPlane(viewport, EditManipulator.RotationType.Front, Point3d.create(), planeSetF);
     assert.isFalse(undefined === frontClip, "created front clip plane");
     const frontId = await viewClipDecoProvider.settings.newClip(viewport.iModel, shared, frontClip!, "Front");
     assert.isFalse(undefined === frontId, "front clip plane successfully saved");
 
     // Create a new "right" clip plane...
     const planeSetR = ConvexClipPlaneSet.createEmpty();
-    const rightClip = NamedClipTestUtils.createClipPlane(viewport, ClipOrientation.Right, Point3d.create(), planeSetR);
+    const rightClip = NamedClipTestUtils.createClipPlane(viewport, EditManipulator.RotationType.Right, Point3d.create(), planeSetR);
     assert.isFalse(undefined === rightClip, "created right clip plane");
     const rightId = await viewClipDecoProvider.settings.newClip(viewport.iModel, shared, rightClip!, "Right");
     assert.isFalse(undefined === rightId, "right clip plane successfully saved");

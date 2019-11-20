@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module KeyboardShortcut */
 
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 
-import { ItemProps } from "../shared/ItemProps";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { UiFramework } from "../UiFramework";
 import { CursorInformation } from "../cursor/CursorInformation";
+import { ItemProps } from "../shared/ItemProps";
 
 /** Enumeration for Function Keys
  * @public
@@ -61,9 +61,9 @@ export interface KeyboardShortcutProps extends ItemProps {
    */
   key: string | FunctionKey | SpecialKey;
 
-  /** The item to execute when this shortcut is invoked. Either 'items' or 'shortcuts' must be specified. */
+  /** The item to execute when this shortcut is invoked. Either 'item' or 'shortcuts' must be specified. */
   item?: ActionButtonItemDef;
-  /** Nested array of shortcut props. Either 'items' or 'shortcuts' must be specified. */
+  /** Nested array of shortcut props. Either 'item' or 'shortcuts' must be specified. */
   shortcuts?: KeyboardShortcutProps[];
 
   /** Indicates whether the Alt key required. Default - false */
@@ -94,9 +94,9 @@ export class KeyboardShortcut extends ItemDefBase {
 
     this._key = props.key;
 
-    if (Object.values(FunctionKey).includes(this._key))
+    if (this._key in FunctionKey)
       this._isFunctionKey = true;
-    if (Object.values(SpecialKey).includes(this._key))
+    if (this._key in SpecialKey)
       this._isSpecialKey = true;
 
     this._shortcuts = new KeyboardShortcutContainer();

@@ -7,7 +7,8 @@
 import * as React from "react";
 
 import { IModelConnection, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
-import { CommonProps, UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
+import { CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 
@@ -56,6 +57,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     if (FrontstageManager.isLoading)
       return null;
 
+    // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
@@ -64,6 +66,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       this._navigationAidControl.initialize();
     }
 
+    // istanbul ignore else
     if (this._navigationAidControl) {
       const size = this._navigationAidControl.getSize() || "64px";
       const divStyle: React.CSSProperties = {
@@ -176,26 +179,44 @@ interface Props extends CommonProps {
   verticalToolbar?: React.ReactNode;
 }
 
+interface NavigationWidgetWithDefState {
+  horizontalToolbar: React.ReactNode;
+  verticalToolbar: React.ReactNode;
+  cornerItem: React.ReactNode;
+}
+
 /** Navigation Widget React component that's passed a NavigationWidgetDef.
  */
-class NavigationWidgetWithDef extends React.Component<Props> {
+class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWithDefState> {
 
   constructor(props: Props) {
     super(props);
+
+    if (PluginUiManager.hasRegisteredProviders) {
+      this.props.navigationWidgetDef.generateMergedItemLists();
+    }
+
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+    this.state = { horizontalToolbar, verticalToolbar, cornerItem: null };
+  }
+
+  private reloadToolbars() {
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+    this.setState({ horizontalToolbar, verticalToolbar });
   }
 
   private _handleNavigationAidActivatedEvent = (args: NavigationAidActivatedEventArgs): void => {
     this.props.navigationWidgetDef.updateNavigationAid(args.navigationAidId, args.iModelConnection);
-
-    this.setState((_prevState) => ({ navigationAidId: args.navigationAidId, imodel: args.iModelConnection }));
+    const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
+    this.setState((_prevState) => ({ cornerItem: navigationAid }));
   }
 
   private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
     // create, merge, and cache ItemList from plugins
     this.props.navigationWidgetDef.generateMergedItemLists();
-
-    // force update when list of registered UiPluginProvides change
-    this.forceUpdate();
+    this.reloadToolbars();
   }
 
   public componentDidMount() {
@@ -208,18 +229,19 @@ class NavigationWidgetWithDef extends React.Component<Props> {
     PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
-  public render(): React.ReactNode {
-    const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+  public componentDidUpdate(prevProps: Props) {
+    if (this.props !== prevProps)
+      this.reloadToolbars();
+  }
 
+  public render(): React.ReactNode {
     return (
       <NZ_ToolsWidget isNavigation
         className={this.props.className}
         style={this.props.style}
-        button={navigationAid}
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
+        button={this.state.cornerItem}
+        horizontalToolbar={this.state.horizontalToolbar}
+        verticalToolbar={this.state.verticalToolbar}
         preserveSpace={true}
         onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />

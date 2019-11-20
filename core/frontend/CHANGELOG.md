@@ -1,6 +1,167 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Anisotropic filting of draped map tiles.
+- Add debug tool for drape frustum.
+- Added MarkerSet.changeViewport
+- Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. 
+- Tweaks to ambient occlusion settings.
+- Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications.
+- Update DefaultToolSettingsProvider to create responisve UI.
+- Reduce size of Cesium ION copyright logo.
+- Cleanup AO settings.
+- Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
+- Concatenate projection and model matrix to avoid jitter.
+- Make toJSON methods of EmphasizeElements and FeatureSymbology.Appearance return pure JSON types.
+- Added support for English key-ins in addition to translated key-ins
+- Simplify fitView. Hypermodeling plugin cleanup.
+- Rework perspective frustum calculation for planar projections
+- Fix plugin loader to honor the bundleName from the manifest file of the plugin.
+- Prevent background map terrain from being affected by default symbology overrides.
+- Fix failure to report shader compilation errors to user in debug builds.
+- Create terrain tiles about center to correct drape jitter.
+- Fix terrain skirt quantization
+- Fixes for making volume classifiers work.
+- Fixes to volume classifier hilite & flashing
+- Fixed EmphasizeElements.wantEmphasis having no effect if neither color nor transparency were overridden.
+- Added better control over auto-disposal of decoration graphics.
+- New wip plugin for hypermodeling support.
+- Added popup toolbar when cursor stops over marker or marker is tapped.
+- Add imageUtil functions that are used in Design Review and needed in other packages.
+- Improve horizon calculation
+- Fixed bug that caused duplicated points to be handled improperly in batched spatial<->geocoord conversions
+- MarkerSet applies only to a single ScreenViewport
+- Make viewport member of MarkerSet public
+- More OIDC fixes for logout of electron apps. 
+- Improve performance for multiple viewports.
+- Added New badge for UI items
+- Cross-platform function to open an image in a new window.
+- Reduce planar texture frustum by clipping to view planes.
+- Fix planar-classified regions not displaying hilite silhouettes in perspective views.
+- Prioritize loading of map tiles.
+- RenderSystem.Options.displaySolarShadows now defaults to true; and directScreenRendering has no effect (deprecated).
+- Ensure shadows are continually updated using the best available tiles.
+- Apply transparency cutoff to shadows
+- Ensure transparency threshold takes into account material and feature overrides.
+- Make shadows not apply to world decorations
+- Reduce threshold for moving camera in planar texture projection
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Implement proper flashing and hiliting of classified geometry.
+- Add new range that represents the dipslayed extents.  This is currently used to set the displayed depths.
+- Dont expand displayed extents for unbounded trees.
+- Added support for overriding feature symbology to use a hilite effect.
+- Fix display artifacts caused by interpolation of material settings.
+- Rework frustum calculation for terrain draping.
+- Fix inability to locate polylines and edges if their transparency was overridden.
+- Add GPU timing queries for devtools.
+- Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)
+- Enable display of non-spatial, spatially-located models in spatial views.
+- Geometry of planar classifier models is not required to itself be planar.
+- #165461 #183765 #184303 Fixes for getting image from readMarkup
+- Refine planar texture frustum calculation to handle parallel views.
+- Errors during shader program compilation produce exceptions.
+- Improve shadow lighting to match shadow direction
+- Fixed multiple viewport shadows
+- Refine classification frustum calculation.
+- Support transparency for terrain and planar classification.
+- #168481 Tool assistance for viewing tools. Prompt punctuation consistency.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
+- Support animation and classification in same tiles.
+- Always adjust y dimension for aspectRatioSkew
+- added support for blank IModelConnections
+- Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled.
+- add checkbrowser.js, refine i18n in Tool
+- #168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
+- Refine frustum calculation for planar projection to create a tighter fit. 
+- #136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip.
+- Various EVSM shadow tweaks
+- Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue.
+- Fixed elements failing to draw if transparency was overridden to be exactly 15.
+- Fix marker decorations not updating when markers are added or deleted; fix canvas decorations sometimes failing to display in Firefox.
+- Fix a problem with direct-screen rendering (black viewport in certain situations).
+- Fix edges of instanced geometry failing to respect edge color override defined by display style.
+- Fix transparency for some shaders
+- Added Viewport.readImageToCanvas() to obtain viewport image as a HTMLCanvasElement with a 2d rendering context.
+- Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails.
+- Fix failure to locate an element if it also serves as a modeled element for a sub-model.
+- #168481 Added missing iconSpec to measure and clipping tools.
+- Correct ViewClipByPlaneTool icon.
+- Add minArgs, maxArgs, and parseAndRun to PluginTool
+- Added ToolTipProvider interface to augment tool tips.
+- Fix tool tip formatting for terrain.
+- Enable display of non-spatial, spatially-located models in spatial views.
+- Add public Tool method translateWithNamespace to allow plugins to supply their own localization.
+- Support animation of models within RenderSchedule.
+- Added support for iterating a Viewport's per-model category visibility overrides.
+- Refine planar projection frustum
+- Added autoExpand property to PropertyRecord
+- Add QuantityFormatter.onInitialized method to set up default formatting and parsing Specs. Update SetupCameraTool to use new LengthDescription (PropertyDescription)
+- Only apply pseudo-rtc workaround if no true RTC exist in GLTF
+- Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport.
+- #168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs.
+- Fix for pinch zoom not being smooth.
+- Added facility to load plugins specified in settings at startup
+- Add ability for QuantityFormatter to generate station formatting.
+- Allow cached tiles to be used across revisions as long as the model geometry has not changed.
+- Tool Assistance changes per UX Design
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- Added touch entries to ToolAssistanceImage
+- Only force update of tool assistance for touch tap that creates the touch cursor.
+- upgrade to TypeScript 3.6.2
+- Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Register tools for AccuDraw shortcuts to support keyboard shortcuts.
+- Partially support animation of classifiers for MicroSoft Poc.  
+- Prevent ambient occlusion from being applied to unlit geometry.
+- Add methods for setting render schedule in display style
+- Identify classified reality data to avoid snap using classification element geometry.
+- Apply pseudo bias to batch range when tileset has huge offset.
+- Add workaround for ContextCapture tiles with large offsets.
+- load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script
+- Refine tile corners on reprojection.  Fix bing HTTP request
+- Added a new component for the Poc, an icon picker.
+- Support symbology overrides with no batchId for render schedules, Plugin case fixes.
+- Don't display markers that are very close to eye point.
+- Change how Marker scale is computed for views background map displayed.
+- Report coordinates to message center for copy to clipboard. Support drawing views.
+- Ensure texture memory is properly tracked.
+- Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions
+- Added access to debugging features to RenderSystem via RenderSystemDebugControl; includes support for forcing webgl context loss and toggling pseudo-wiremesh surface display.
+- Support reality model masking via black classifier geometry.
+- Support nearest snap for reality models.
+- Remove doubling of planar classifier size.  This caused excessive generation time.
+- Refine texture projection calculation to include height range (for terrain). 
+- Ensure DisplayStyle3dState.sunDirection is synchronized with DisplayStyle3dSettings JSON.
+- Clip volume applied to view also applies to reality models.
+- Added SetupCameraTool for defining camera by eye point and target point.
+- Prioritize requests for reality model tiles based on distance from camera.
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Tweak tile priorities so that reality models don't block quicker maps and classifiers.
+- Call to pickNearestVisibleGeometry on 1st data button almost always succeeds now that acs plane is used, remove from updateTargetCenter.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

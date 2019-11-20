@@ -22,7 +22,7 @@ describe("EntityClass", () => {
     let schema: Schema;
 
     beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     });
 
     it("from mixins", async () => {
@@ -490,7 +490,7 @@ describe("EntityClass", () => {
     };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testClass = new EntityClass(schema, "TestEntity");
     });
 
@@ -507,7 +507,7 @@ describe("EntityClass", () => {
     });
   });
   describe("toJson", () => {
-    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     const testEntityClass = new EntityClass(schema, "testClass");
     const schemaJsonOne = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

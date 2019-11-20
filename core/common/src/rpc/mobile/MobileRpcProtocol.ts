@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
@@ -71,15 +73,6 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
-
-    /*
-    This is WIP.
-    The problem is that the data sent over the socket to the frontend is not received (by the JS WebSockets layer -- it may very well be received at lower levels).
-    There are no errors on either end. Also, the maximum sustained send burst size (that reaches the frontend) is related to the chunk size.
-    A 1024 byte chunk size appears to work. However, WE DO NOT KNOW WHY! Research is in progress...
-    */
-    this.transferChunkThreshold = 1024;
-
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
     } else if (endPoint === RpcEndpoint.Backend) {
@@ -91,8 +84,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     if (typeof (WebSocket) === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
     }
-
-    this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
+    if (!MobileRpcConfiguration.args.port) {
+      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol require 'port' parameter");
+    }
+    this.socket = new WebSocket(`ws://localhost:${MobileRpcConfiguration.args.port}`);
     this.socket.binaryType = "arraybuffer";
     this.socket.addEventListener("message", async (event) => this.handleMessageFromBackend(event.data));
     this.socket.addEventListener("open", (_event) => this.scheduleSend());

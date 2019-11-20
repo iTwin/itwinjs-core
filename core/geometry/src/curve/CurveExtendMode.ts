@@ -2,8 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Curve */
+
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Geometry } from "../Geometry";
+/** module Curve */
 /** enumeration of condition for extending a curve beyond start or end point.
  * * Not all CurvePrimitives support these modes.
  * @public

@@ -206,6 +206,34 @@ export abstract class Property implements CustomAttributeContainerProps {
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
+
+  /**
+   * Retrieve all custom attributes in the current property and its base
+   * This is the async version of getCustomAttributesSync()
+   */
+  public async getCustomAttributes(): Promise<CustomAttributeSet> {
+    return this.getCustomAttributesSync();
+  }
+
+  /**
+   * Retrieve all custom attributes in the current property and its base.
+   */
+  public getCustomAttributesSync(): CustomAttributeSet {
+    let customAttributes: Map<string, CustomAttribute> | undefined = this._customAttributes;
+    if (undefined === customAttributes) {
+      customAttributes = new Map<string, CustomAttribute>();
+    }
+
+    const baseProperty = this.class.getInheritedPropertySync(this.name);
+    let baseCustomAttributes;
+    if (undefined !== baseProperty)
+      baseCustomAttributes = baseProperty.getCustomAttributesSync();
+    if (undefined !== baseCustomAttributes) {
+      customAttributes = new Map<string, CustomAttribute>([...baseCustomAttributes, ...customAttributes]);
+    }
+
+    return customAttributes!;
+  }
 }
 
 /** @beta */

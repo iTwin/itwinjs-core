@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { PluginUiProvider, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, UiItemNode, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
 import { ModelessDialogManager, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
@@ -45,13 +46,13 @@ export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
 
   public showIotDialog = () => {
     if (!ModelessDialogManager.getDialogInfo(IotSettingsDialog.id))
-      ModelessDialogManager.openDialog(<IotSettingsDialog dataProvider={this}/>, IotSettingsDialog.id);
+      ModelessDialogManager.openDialog(<IotSettingsDialog dataProvider={this} />, IotSettingsDialog.id);
   }
   /** Method called by applications that support plugins provided tool buttons. All nine-zone based apps will supports PluginUiProviders */
   public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
     // For 9-zone apps the toolbarId will be in form -[stageName]ToolWidget|NavigationWidget-horizontal|vertical
     // examples:"[ViewsFrontstage]ToolWidget-horizontal" "[ViewsFrontstage]NavigationWidget-vertical"
-    if (toolBarId.includes("ToolWidget-vertical")) {
+    if (toolBarId.includes("ToolWidget-horizontal")) {
       const lastActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
         insertBefore: false,
@@ -161,11 +162,16 @@ export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
       }
     }
 
-    // get duration in minutes.
-    let duration: number = (this.endTime.getTime() - this.startTime.getTime()) / (60.0 * 1000.0);
-    if (duration < 10)
-      duration = 10;
-    this.plugin.runAnimation(this.currentAnimationType, duration, this.startTime.getTime());
-    return { status: PropertyChangeStatus.Success };
+    if (this.monitorMode) {
+      this.plugin.runMonitor(this.currentAnimationType);
+      return { status: PropertyChangeStatus.Success };
+    } else {
+      // get duration in minutes.
+      let duration: number = (this.endTime.getTime() - this.startTime.getTime()) / (60.0 * 1000.0);
+      if (duration < 10)
+        duration = 10;
+      this.plugin.runAnimation(this.currentAnimationType, duration, this.startTime.getTime());
+      return { status: PropertyChangeStatus.Success };
+    }
   }
 }

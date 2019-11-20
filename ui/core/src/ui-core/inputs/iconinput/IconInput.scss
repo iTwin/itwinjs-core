@@ -1,0 +1,32 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+.core-iconInput-container {
+  position: relative;
+  padding:  0;
+  margin:   0;
+
+  input {
+    margin:       0;
+    padding-left: 32px;
+  }
+
+  .core-iconInput-icon {
+    position: absolute;
+    top:      0;
+    left:     0;
+    width:    30px;
+    height:   100%;
+    display:  flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon {
+      width:  16px;
+      height: 16px;
+    }
+  }
+
+}

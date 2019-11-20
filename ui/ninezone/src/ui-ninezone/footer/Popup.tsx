@@ -27,14 +27,16 @@ export interface FooterPopupProps extends CommonProps {
   children?: React.ReactNode;
   /** Describes content type. */
   contentType: FooterPopupContentType;
-  /** Describes if the popup is open. */
+  /** Indicates if the popup is open. */
   isOpen?: boolean;
   /** Function called when the popup is closed. */
   onClose?: () => void;
   /** Function called when user clicks outside of the popup.  */
   onOutsideClick?: (e: MouseEvent) => void;
   /** Popup target. */
-  target?: React.RefObject<HTMLElement>;
+  target?: HTMLElement | null;
+  /** Indicates if the popup is pinned. */
+  isPinned?: boolean;
 }
 
 /** Default properties of [[FooterPopup]] component.
@@ -42,29 +44,16 @@ export interface FooterPopupProps extends CommonProps {
  */
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
-/** State of [[FooterPopup]] component. */
-interface FooterPopupState {
-  target: HTMLElement | null;
-}
-
 /** Popup component used in [[Footer]] component.
  * @beta
  */
-export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPopupState> {
+export class FooterPopup extends React.PureComponent<FooterPopupProps> {
   public static readonly defaultProps: FooterPopupDefaultProps = {
     contentType: FooterPopupContentType.Dialog,
   };
 
-  public readonly state: FooterPopupState = {
-    target: null,
-  };
-
-  public componentDidMount() {
-    this.setState((_, props) => ({ target: props.target ? props.target.current : null }));
-  }
-
   public render() {
-    const { className, contentType, target, ...props } = this.props;
+    const { className, contentType, ...props } = this.props;
     return (
       <Popup
         className={classnames(
@@ -75,7 +64,6 @@ export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPop
         position={Position.Top}
         showArrow
         showShadow={false}
-        target={this.state.target}
         {...props}
       >
         {this.props.children}

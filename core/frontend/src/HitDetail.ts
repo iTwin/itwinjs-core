@@ -140,10 +140,7 @@ export class HitDetail {
   public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean {
-    if (undefined !== this.modelId && this.sourceId === this.modelId)
-      return true;
-
-    return this.iModel.models.getLoaded(this.sourceId) !== undefined;
+    return this.modelId === this.sourceId;
   }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {

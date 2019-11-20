@@ -25,7 +25,7 @@ import {
   StagePanel,
 } from "@bentley/ui-framework";
 
-import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 // import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
@@ -48,11 +48,11 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   private _leftPanel = {
-    allowedZones: [9, 4, 7],
+    allowedZones: [2, 4, 7, 9],
   };
 
   private _rightPanel = {
-    allowedZones: [9],
+    allowedZones: [2, 9],
     widgets: [
       <Widget element={<h2>Right panel</h2>} />,
     ],
@@ -65,7 +65,7 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   private _bottomMostPanel = {
-    allowedZones: [9, 4],
+    allowedZones: [2, 4, 9],
     widgets: [
       <Widget element={<h2>BottomMost panel</h2>} />,
     ],
@@ -89,6 +89,7 @@ export class Frontstage1 extends FrontstageProvider {
         }
         topCenter={
           <Zone
+            allowsMerging
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
@@ -129,7 +130,7 @@ export class Frontstage1 extends FrontstageProvider {
         bottomCenter={
           <Zone defaultState={ZoneState.Open}
             widgets={[
-              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} control={SmallStatusBarWidgetControl} />,
             ]}
           />
         }

@@ -457,48 +457,68 @@ describe("Matrix4d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
   it("Inverse", () => {
     const ck = new bsiChecker.Checker();
-    const identity = Matrix4d.createIdentity();
-    const matrixA = Matrix4d.createRowValues(
-      10, 2, 3, 4,
-      5, 20, 2, 1,
-      4, 6, 30, 2,
-      3, 2, 1, 30);
-    const inverse = matrixA.createInverse();
-    if (ck.testPointer(inverse) && inverse) {
-      // console.log(prettyPrint(inverse.rowArrays()));
-      const product = inverse.multiplyMatrixMatrix(matrixA);
-      // console.log(prettyPrint(product.rowArrays()));
-      const e = product.maxDiff(Matrix4d.createIdentity());
-      const p1 = product.clone();
-      p1.setIdentity();
-      ck.testTrue(p1.isAlmostEqual(identity), "identity by create versus set");
-      ck.testCoordinate(0, e, "A*AInverse error");
-      // console.log("  max error in A*AInverse - I: " + e);
-      Matrix4d.createZero(p1);
 
-      for (const singularMatrix of [
-        Matrix4d.createRowValues(     // row 1,2 match
-          10, 2, 3, 4,
-          5, 20, 2, 1,
-          5, 20, 2, 1,
-          3, 2, 1, 30),
-        Matrix4d.createRowValues(   // column 2,3 match
-          10, 2, 4, 4,
-          5, 20, 2, 2,
-          4, 6, 2, 2,
-          3, 2, 30, 30),
-        Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
-          10, 2, 3, 4,
-          5, 20, 2, 1,
-          5, 20, 2, 1,
-          20, 42, 7, 6),
-      ]) {
-        ck.testUndefined(singularMatrix.createInverse());
+    for (const matrixA of [
+      Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+      Matrix4d.createRowValues(
+        1, 0, 0, 0,
+        0, 2, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1),
+      Matrix4d.createRowValues(
+        10, 2, 3, 4,
+        5, 20, 2, 1,
+        4, 6, 30, 2,
+        3, 2, 1, 30),
+      Matrix4d.createRowValues(
+        -4509.659901029264, -2398.122299764309, 0, 4192.763181336376,
+        1705.3435500113474, -6341.664102191739, 0, 312.814982291711,
+        0, -0, 179.36736748646942, -118.00864861439914,
+        0, -0, 0, 1),
+      Matrix4d.createRowValues(
+        -5.199577930106449e-8, 5.5878993626914775e-8, 0, 0.005147466964956382,
+        - 2.116903271812029e-10, - 7.745682382609335e-10, 0, 0.009886485615341636,
+        1.0596550131841224e-8, 3.877244310855186e-8, 1.1236140303104357e-7, 0.00017487220506423595,
+        2.119310026368245e-8, 7.754488621710374e-8, 0, 0.010227421860234953),
+      Matrix4d.createRowValues(
+        -0.00006936056809344464, 0.00002622893965818147, 0, 0.49974485667496793,
+        -0.00001813902597199655, -0.00004796736591244489, 0, 0.3652941567347317,
+        0, 0, 0.0013814942135607167, 0.3550280429194092,
+        0, 0, 0, 1)])
+      verifyInverse(ck, matrixA, "diagonally dominant");
+
+    for (const a33 of [1, 10, 100]) {
+      verifyInverse(ck,
+        Matrix4d.createRowValues(
+          0, 1, 0, 0,
+          - 0.6643638388299198, 0, 0.7474093186836596, 0,
+          0.7474093186836597, 0, 0.6643638388299198, 0,
+          0, 0, 0, a33), "David S example with scale " + a33);
+    }
+
+    for (const singularMatrix of [
+      Matrix4d.createRowValues(     // row 1,2 match
+        10, 2, 3, 4,
+        5, 20, 2, 1,
+        5, 20, 2, 1,
+        3, 2, 1, 30),
+      Matrix4d.createRowValues(   // column 2,3 match
+        10, 2, 4, 4,
+        5, 20, 2, 2,
+        4, 6, 2, 2,
+        3, 2, 30, 30),
+      Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
+        10, 2, 3, 4,
+        5, 20, 2, 1,
+        5, 20, 2, 1,
+        20, 42, 7, 6)]) {
+      for (const scaleFactor of [1.0, 0.232136936231648, 1.0 / 3.8798797912312, Math.sqrt(2), Math.sqrt(20), Math.sqrt(200)]) {
+        const scaledMatrix = singularMatrix.clone();
+        scaledMatrix.scaleRowsInPlace(scaleFactor, scaleFactor, scaleFactor, scaleFactor);
+        ck.testUndefined(scaledMatrix.createInverse());
       }
-      ck.testExactNumber(p1.maxAbs(), 0);
     }
 
     const matrixB = Matrix4d.createRowValues(
@@ -832,3 +852,60 @@ describe("Map4d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+function verifyInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, name: string): boolean {
+  const inverse = matrixA.createInverse();
+  if (ck.testPointer(inverse, "Expect inverse ", name, matrixA) && inverse) {
+    const product = matrixA.multiplyMatrixMatrix(inverse);
+    ck.testTrue(product.isIdentity(), "Expect A*inverse = I", name, prettyPrint(matrixA), prettyPrint(inverse), prettyPrint(product));
+
+    const matrixB = matrixA.clone();
+    const detA = matrixA.determinant();
+    for (const ij of [[0, 1], [0, 2], [3, 1]]) {
+      matrixB.rowOperation(ij[0], ij[1], 0, 2.0);
+      const detB = matrixB.determinant();
+      ck.testCoordinate(detA, detB, "row operation does not change determinant");
+    }
+    exerciseNearInverse(ck, matrixA, 0, 1, name);
+    exerciseNearInverse(ck, matrixA, 1, 2, name);
+    exerciseNearInverse(ck, matrixA, 2, 3, name);
+    exerciseNearInverse(ck, matrixA, 3, 1, name);
+
+    return true;
+  }
+  return false;
+}
+/**
+ * * Input a nonsingular matrix.
+ * * make a sequence of "near singular" matrices
+ * * repeat for k = each column index
+ *   * COPY row i to row j.  Now it is singular.
+ *   * Add small value e to [j][k].
+ *   * increase e until the matrix becomes nonsingular
+ */
+export function exerciseNearInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, i: number, j: number, name: string) {
+  const inverse = matrixA.createInverse();
+  const aMax = matrixA.maxAbs();
+  if (ck.testDefined(inverse) && inverse !== undefined) {
+    let e;
+    let ok = false;
+    // copying row i to row j makes it singular.
+    // We expect that adding modest sized e "somewhere along row j" will make it nonsingular
+    for (e = 1.0e-15 * aMax; !ok && e < aMax; e *= 10) {
+      for (let k = 0; k < 4 && !ok; k++) {
+        const matrixB = matrixA.clone();
+        for (let m = 0; m < 4; m++)
+          matrixB.setAtIJ(j, m, matrixB.atIJ(i, m));
+        const b0 = matrixB.atIJ(j, k);
+        ck.testUndefined(matrixB.createInverse());
+        matrixB.setAtIJ(j, k, b0 + e);
+        const inverseB = matrixB.createInverse();
+        if (inverseB !== undefined) {
+          ok = true;
+        }
+      }
+    }
+    if (!ck.testTrue(ok, "unable to make step in invertible", name, i, j, matrixA))
+      console.log("matrixA " + prettyPrint(matrixA));
+  }
+}

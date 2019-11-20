@@ -15,10 +15,10 @@ import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
-import { IModelHost, Platform } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import * as path from "path";
@@ -330,7 +330,7 @@ export class BriefcaseManager {
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
       // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      if (Platform.isMobile) {
+      if (MobileRpcConfiguration.isMobileBackend) {
         this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
       } else {
         this._imodelClient = new IModelHubClient(new AzureFileHandler());
@@ -943,12 +943,13 @@ export class BriefcaseManager {
         const changeSetsToDownload = new Array<ChangeSet>(changeSet);
         await BriefcaseManager.imodelClient.changeSets.download(requestContext, changeSetsToDownload, changeSetsPath);
         requestContext.enter();
-      } catch {
+      } catch (error) {
         requestContext.enter();
         // Note: If the cache was shared across processes, it's possible that the download was completed by another process
         if (BriefcaseManager.wasChangeSetDownloaded(changeSet, changeSetsPath))
           continue;
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download changesets", Logger.logError, loggerCategory));
+        Logger.logError(loggerCategory, "Could not download changesets", () => ({ iModelId }));
+        throw error;
       }
     }
     perfLogger.dispose();

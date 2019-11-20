@@ -42,7 +42,7 @@ describe("ModelState", () => {
     const out = selector.toJSON();
     assert.isArray(out.models);
     assert.equal(out.models.length, 3);
-    out.iModel = imodel;
+    (out as any).iModel = imodel;
     const sel3 = selector.clone();
     assert.deepEqual(sel3, selector, "clone worked");
   });

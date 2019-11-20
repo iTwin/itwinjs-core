@@ -10,8 +10,11 @@ import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomDescriptor, createRandomRuleset, createRandomContent, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {
+  createRandomDescriptor, createRandomRuleset, createRandomContent,
+  createRandomECInstanceKey, createRandomPropertiesField,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { IModelConnection, PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   Descriptor, Field,
   SelectionInfo, Item,
@@ -571,6 +574,62 @@ describe("ContentDataProvider", () => {
       const spy = sinon.spy(provider, "shouldConfigureContentDescriptor");
       await provider.getContent();
       expect(spy).to.not.be.called;
+    });
+
+  });
+
+  describe("getFieldByPropertyRecord", () => {
+
+    let propertyRecord: PropertyRecord;
+
+    before(() => {
+      const value: PrimitiveValue = {
+        displayValue: "displayValue",
+        value: "rawValue",
+        valueFormat: 0,
+      };
+
+      const description: PropertyDescription = {
+        name: "propertyName",
+        displayLabel: "labelString",
+        typename: "number",
+        editor: undefined,
+      };
+
+      propertyRecord = new PropertyRecord(value, description);
+      propertyRecord.isReadonly = false;
+    });
+
+    beforeEach(() => {
+      provider.keys = new KeySet([createRandomECInstanceKey()]);
+    });
+
+    it("return undefined if descriptor is not set", async () => {
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => undefined)
+        .verifiable(moq.Times.once());
+
+      const field = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(field).to.be.undefined;
+    });
+
+    it("return a field", async () => {
+      const descriptor = createRandomDescriptor();
+      const field = createRandomPropertiesField();
+      field.name = faker.random.word();
+      descriptor.fields = [field];
+      propertyRecord.property.name = field.name;
+
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+
+      const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(resultField).to.be.eq(field);
     });
 
   });

@@ -47,7 +47,10 @@ export interface TreeNodeContentProps extends CommonProps {
 /** @internal */
 export interface TreeNodeContentState {
   label: React.ReactNode;
-  renderTimestamp?: number;
+  renderInfo?: {
+    timestamp: number;
+    counter: number;
+  };
 }
 
 /** React component for displaying [[TreeNode]] label
@@ -121,7 +124,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
 
     // tslint:disable-next-line:no-floating-promises
     this.updateLabel(this.props);
-    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
+    this.setState({ renderInfo: createRenderInfo(this.props.node) });
   }
 
   private static doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
@@ -132,8 +135,13 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   private static needsLabelUpdate(state: TreeNodeContentState, prevProps: TreeNodeContentProps, nextProps: TreeNodeContentProps) {
-    return this.doPropsDiffer(prevProps, nextProps)
-      || nextProps.node.itree!.dirtyTimestamp && (!state.renderTimestamp || state.renderTimestamp < nextProps.node.itree!.dirtyTimestamp!);
+    if (this.doPropsDiffer(prevProps, nextProps)) {
+      return true;
+    }
+    if (nextProps.node.itree!.dirtyTimestamp && (!state.renderInfo || state.renderInfo.timestamp < nextProps.node.itree!.dirtyTimestamp || state.renderInfo.counter < nextProps.node.itree!.dirtyCounter!)) {
+      return true;
+    }
+    return false;
   }
 
   public componentDidUpdate(prevProps: TreeNodeContentProps) {
@@ -142,7 +150,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.updateLabel(this.props);
     }
 
-    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
+    this.setState({ renderInfo: createRenderInfo(this.props.node) });
   }
 
   public componentWillUnmount() {
@@ -200,3 +208,8 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     );
   }
 }
+
+const createRenderInfo = (node: BeInspireTreeNode<TreeNodeItem>) => ({
+  timestamp: node.itree!.dirtyTimestamp || 0,
+  counter: node.itree!.dirtyCounter || 0,
+});

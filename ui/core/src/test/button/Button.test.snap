@@ -2,7 +2,7 @@
 
 exports[`<Button /> disabled renders correctly 1`] = `
 <button
-  className="uicore-buttons-blue"
+  className="uicore-buttons-primary"
   disabled={true}
 >
   Label
@@ -11,7 +11,7 @@ exports[`<Button /> disabled renders correctly 1`] = `
 
 exports[`<Button /> renders correctly 1`] = `
 <button
-  className="uicore-buttons-blue"
+  className="uicore-buttons-primary"
 />
 `;
 
@@ -35,19 +35,19 @@ exports[`<Button /> should render hollow 1`] = `
 
 exports[`<Button /> should render large 1`] = `
 <button
-  className="uicore-buttons-blue-large"
+  className="uicore-buttons-primary-large"
 />
 `;
 
 exports[`<Button /> should render primary 1`] = `
 <button
-  className="uicore-buttons-blue"
+  className="uicore-buttons-primary"
 />
 `;
 
 exports[`<Button /> with children renders correctly 1`] = `
 <button
-  className="uicore-buttons-blue"
+  className="uicore-buttons-primary"
 >
   children
 </button>

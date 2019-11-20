@@ -148,9 +148,12 @@ export class SweepContour {
           if (PolygonOps.sumTriangleAreasXY(points) < 0)
             points.reverse();
           const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-          const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
-          this._facets = unflippedPoly;
-          this._facets.tryTransformInPlace(this.localToWorld);
+          if (graph) {
+            Triangulator.flipTriangles(graph);
+            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
+            this._facets = unflippedPoly;
+            this._facets.tryTransformInPlace(this.localToWorld);
+          }
         }
       } else if (this.curves instanceof ParityRegion) {
         this._xyStrokes = this.curves.cloneStroked(options);
@@ -168,6 +171,7 @@ export class SweepContour {
           }
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
           if (graph) {
+            Triangulator.flipTriangles(graph);
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);

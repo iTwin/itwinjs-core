@@ -9,7 +9,6 @@ import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@b
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import ViewItem, { ViewItemProps } from "./ViewItem";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import "./ViewsList.scss";
 
 /** Properties for [[ViewsList]] component
@@ -20,8 +19,6 @@ export interface ViewsListProps extends CommonProps {
   refreshEvent?: BeEvent<(args: any) => void>;
   /** IModelConnection to use to query views */
   iModelConnection?: IModelConnection;
-  /** Access Token to use in the client. Only used for saved views functionality */
-  accessToken?: AccessToken;
   /** Forced view flags when applying view state, will be spread into the view flags */
   forcedViewFlags?: any;
   /** Show views stored in the iModel */
@@ -95,7 +92,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     }
   }
 
-  public async componentWillReceiveProps(nextProps: ViewsListProps) {
+  public async componentDidUpdate(nextProps: ViewsListProps) {
     // if no incoming imodel exists or either the incoming imodel's id or changeset id is different from the current imodel then clear cache
     if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelToken.iModelId !== nextProps.iModelConnection.iModelToken.iModelId || this.props.iModelConnection.iModelToken.changeSetId !== nextProps.iModelConnection.iModelToken.changeSetId))) {
       // Clear cache

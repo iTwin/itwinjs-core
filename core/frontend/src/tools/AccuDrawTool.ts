@@ -6,7 +6,7 @@
 
 import { AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { BeButtonEvent, InputCollector, EventHandled, CoordinateLockOverrides, Tool } from "./Tool";
+import { BeButtonEvent, InputCollector, EventHandled, CoordinateLockOverrides, Tool, CoreTools } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { Vector3d, Point3d, Matrix3d, Geometry, Transform } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
@@ -1132,7 +1132,7 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
   public doManipulationStart(): void {
     super.doManipulationStart();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.RotateAxes.Prompts.FirstPoint");
+    CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
   }
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
@@ -1170,7 +1170,7 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
 
   public doManipulationStart(): void {
     super.doManipulationStart();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.RotateElement.Prompts.FirstPoint");
+    CoreTools.outputPromptByKey("AccuDraw.RotateElement.Prompts.FirstPoint");
   }
 
   public updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
@@ -1212,7 +1212,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 
   public doManipulationStart(): void {
     super.doManipulationStart();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.DefineACSByElement.Prompts.FirstPoint");
+    CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint");
   }
 
   public updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
@@ -1268,12 +1268,12 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     super.doManipulationStart();
     const tentativePoint = IModelApp.tentativePoint;
     if (!tentativePoint.isActive) {
-      IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.DefineACSByPoints.Prompts.FirstPoint");
+      CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.FirstPoint");
       return;
     }
 
     const origin = tentativePoint.getPoint().clone();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.DefineACSByPoints.Prompts.SecondPoint");
+    CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.SecondPoint");
     IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
     this._points.push(origin);
     tentativePoint.clear(true);
@@ -1300,7 +1300,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
       return true;
     }
 
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.AccuDraw.DefineACSByPoints.Prompts" + (1 === this._points.length ? ".SecondPoint" : ".NextPoint"));
+    CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts" + (1 === this._points.length ? ".SecondPoint" : ".NextPoint"));
     return false;
   }
 

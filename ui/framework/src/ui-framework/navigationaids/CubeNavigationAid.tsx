@@ -19,6 +19,7 @@ import { UiFramework } from "../UiFramework";
 import { ViewRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControl } from "../content/ContentControl";
+import { connectIModelConnection } from "../redux/connectIModel";
 
 /** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport
  * @alpha
@@ -28,7 +29,10 @@ export class CubeNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <CubeNavigationAid iModelConnection={options.imodel} />;
+    if (options.imodel)
+      this.reactElement = <CubeNavigationAid iModelConnection={options.imodel} />;
+    else
+      this.reactElement = <IModelConnectedCubeNavigationAid />;
   }
 
   public getSize(): string | undefined { return "96px"; }
@@ -462,6 +466,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     });
   }
 }
+
+/** CubeNavigationAid that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedCubeNavigationAid = connectIModelConnection(null, null)(CubeNavigationAid); // tslint:disable-line:variable-name
 
 /** @internal */
 export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {

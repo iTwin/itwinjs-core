@@ -206,6 +206,7 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
  * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
+   /** String name for schema properties */
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
@@ -281,6 +282,7 @@ export abstract class CurveCollection extends GeometryQuery {
   }
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
   public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+
   /** Support method for ICurvePrimitive ... one line call to specific announce method . . */
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** clone an empty collection. */
@@ -421,6 +423,7 @@ export abstract class CurveChain extends CurveCollection {
  * @public
  */
 export class BagOfCurves extends CurveCollection {
+   /** String name for schema properties */
   public readonly curveCollectionType = "bagOfCurves";
 
   /** test if `other` is an instance of `BagOfCurves` */
@@ -483,4 +486,18 @@ export class BagOfCurves extends CurveCollection {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBagOfCurves(this);
   }
+}
+/**
+ * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
+ * @public
+ */
+export class ConsolidateAdjacentCurvePrimitivesOptions {
+  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
+  public consolidateLinearGeometry: boolean = true;
+  /** True to consolidate contiguous arcs */
+  public consolidateCompatibleArcs: boolean = true;
+  /** Tolerance for collapsing identical points */
+  public duplicatePointTolerance = Geometry.smallMetricDistance;
+  /** Tolerance for removing interior colinear points. */
+  public colinearPointTolerance = Geometry.smallMetricDistance;
 }

@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@mixin nz-safe-area-left($property: padding-left) {
+  @include nz-internal-safe-area($property, safe-area-inset-left);
+}
+
+@mixin nz-safe-area-top($property: padding-top) {
+  @include nz-internal-safe-area($property, safe-area-inset-top);
+}
+
+@mixin nz-safe-area-right($property: padding-right) {
+  @include nz-internal-safe-area($property, safe-area-inset-right);
+}
+
+@mixin nz-safe-area-bottom($property: padding-bottom) {
+  @include nz-internal-safe-area($property, safe-area-inset-bottom);
+}
+
+@mixin nz-internal-safe-area($property, $variable) {
+  /* iOS 11 */
+  #{$property}: constant($variable);
+  /* iOS 11.2+ */
+  #{$property}: env($variable);
+}

@@ -4,15 +4,15 @@ exports[`TableDataProvider getColumns returns columns for a single instance 1`] 
 Array [
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
-    "filterable": true,
-    "key": "PhysicalModel_ModeledElement",
+    "filterable": false,
+    "key": "Model_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
   },
@@ -23,15 +23,15 @@ exports[`TableDataProvider getColumns returns columns for multiple instances 1`]
 Array [
   Object {
     "editable": false,
-    "filterable": true,
+    "filterable": false,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
-    "filterable": true,
-    "key": "PhysicalModel_RepositoryModel_ModeledElement",
+    "filterable": false,
+    "key": "Model_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
   },
@@ -59,13 +59,13 @@ Object {
       },
     },
     Object {
-      "key": "PhysicalModel_ModeledElement",
+      "key": "Model_ModeledElement",
       "record": PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "PhysicalModel_ModeledElement",
+          "name": "Model_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
@@ -102,13 +102,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -141,13 +141,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -180,13 +180,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -224,13 +224,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -263,13 +263,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -302,13 +302,13 @@ Array [
         },
       },
       Object {
-        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+        "key": "Model_ModeledElement",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
+            "name": "Model_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {

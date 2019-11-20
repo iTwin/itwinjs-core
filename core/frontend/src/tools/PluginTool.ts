@@ -5,7 +5,7 @@
 /** @module Tools */
 
 import { Tool } from "./Tool";
-import { PluginAdmin, PluginLoadResults } from "../plugin/Plugin";
+import { PluginAdmin, PluginLoadResults, Plugin } from "../plugin/Plugin";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
@@ -23,11 +23,11 @@ export class PluginTool extends Tool {
 
   public run(args: any[]): boolean {
     if (args && args.length > 0 && args[0]) {
-      PluginAdmin.loadPlugin(args[0], args.slice(1))
+      IModelApp.pluginAdmin.loadPlugin(args[0], args.slice(1))
         .then(PluginTool.showLoadProblems.bind(null, args[0]))
         .catch((_err: any) => {
           // this should happen only on completely unexpected errors.
-          IModelApp.notifications.outputMessage(IModelApp.i18n.translate("PluginErrors.UnableToLoad", { pluginName: args[0] }));
+          IModelApp.notifications.outputMessage(IModelApp.i18n.translate("iModelJs:PluginErrors.UnableToLoad", { pluginName: args[0] }));
         });
     }
     return true;
@@ -35,26 +35,19 @@ export class PluginTool extends Tool {
 
   // displays the problems encountered while trying to load a plugin
   private static showLoadProblems(pluginName: string, pluginResults: PluginLoadResults) {
-    let problems: undefined | string[];
-    if (pluginResults && "string" === typeof (pluginResults))
-      problems = [pluginResults];
-    else if (Array.isArray(pluginResults))
-      problems = pluginResults;
-
-    if (problems) {
-      // report load errors to the user.
-      let allDetails: string = "";
-      for (const thisMessage of problems) {
-        allDetails = allDetails.concat("<br>", thisMessage);
+    if (!pluginResults || (("string" !== typeof (pluginResults)) && !Array.isArray(pluginResults))) {
+      if (pluginResults instanceof Plugin) {
+        const briefMessage = IModelApp.i18n.translate("iModelJs:PluginErrors.Success", { pluginName });
+        const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.InputField);
+        IModelApp.notifications.outputMessage(info);
+        Logger.logInfo(loggerCategory, briefMessage);
       }
-      const allDetailsFragment: any = document.createRange().createContextualFragment(allDetails);
-      const allDetailsHtml: HTMLElement = document.createElement("span");
-      allDetailsHtml.appendChild(allDetailsFragment);
+    } else {
+      const returnVal = PluginAdmin.detailsFromPluginLoadResults(pluginName, pluginResults, false);
       const briefMessage = IModelApp.i18n.translate("iModelJs:PluginErrors.CantLoad", { pluginName });
-      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, allDetailsHtml, OutputMessageType.Alert, OutputMessageAlert.Balloon);
+      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, returnVal.detailHTML, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
-
-      Logger.logError(loggerCategory, pluginName + " failed to load. Error=" + allDetails);
+      Logger.logError(loggerCategory, pluginName + " failed to load. Error=" + returnVal.detailStrings);
     }
   }
 }

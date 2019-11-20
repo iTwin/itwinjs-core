@@ -5,7 +5,7 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { UiError } from "@bentley/ui-core";
+import { UiError } from "@bentley/ui-abstract";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { NineZoneManagerProps } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "./FrontstageManager";
@@ -74,6 +74,9 @@ export class FrontstageDef {
   constructor() { }
 
   /** Handles when the Frontstage becomes activated */
+  protected _onActivated(): void { }
+
+  /** Handles when the Frontstage becomes activated */
   public onActivated(): void {
     this.contentLayoutDef = this.defaultLayout;
 
@@ -89,7 +92,12 @@ export class FrontstageDef {
     }
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.contentLayoutDef, contentGroup: this.contentGroup });
+
+    this._onActivated();
   }
+
+  /** Handles when the Frontstage becomes inactive */
+  protected _onDeactivated(): void { }
 
   /** Handles when the Frontstage becomes inactive */
   public onDeactivated(): void {
@@ -103,6 +111,8 @@ export class FrontstageDef {
 
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+
+    this._onDeactivated();
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
@@ -130,6 +140,9 @@ export class FrontstageDef {
   }
 
   /** Handles when the Frontstage becomes active */
+  protected _onFrontstageReady(): void { }
+
+  /** Handles when the Frontstage becomes active */
   public onFrontstageReady(): void {
     for (const control of this._widgetControls) {
       control.onFrontstageReady();
@@ -142,6 +155,8 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageReady();
+
+    this._onFrontstageReady();
   }
 
   /** Starts the default tool for the Frontstage */

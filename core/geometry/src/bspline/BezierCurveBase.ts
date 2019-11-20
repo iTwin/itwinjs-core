@@ -2,7 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 /** @module Bspline */
 
 // import { Point2d } from "../Geometry2d";
@@ -33,6 +32,7 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "bezierCurve";
 
   /** Control points */

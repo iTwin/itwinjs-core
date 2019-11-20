@@ -5,10 +5,10 @@
 /** @module IModelConnection */
 
 import {
-  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Set,
+  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus,
   ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelReadRpcInterface,
@@ -16,6 +16,7 @@ import {
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
   RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
   ViewDefinitionProps, ViewQueryParams, WipRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  EcefLocationProps, FontMapProps, EcefLocation,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -29,6 +30,20 @@ import { TileTree } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
+
+/** The properties for creating a [Blank IModelConnection]($docs/learning/frontend/BlankConnection)
+ * @beta
+ */
+export interface BlankConnectionProps {
+  /** A name for this blank connection. */
+  name: string;
+  /** The spatial location for the blank connection. */
+  location: Cartographic | EcefLocationProps;
+  /** The volume of interest, in meters, centered around `location` */
+  extents: Range3dProps;
+  /** An offset to be applied to all spatial coordinates. */
+  globalOrigin?: XYZProps;
+}
 
 /** A connection to an iModel database hosted on the backend.
  * @public
@@ -66,26 +81,46 @@ export class IModelConnection extends IModel {
   public readonly geoServices: GeoServices;
   /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;
+  /** @internal The displayed extents. Union of the the project extents and all displayed models. */
+  public readonly displayedExtents: AxisAlignedBox3d;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
+
+  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
+   * @beta
+   */
+  public readonly isBlank: boolean;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
-  /** Check if the IModelConnection is still open. Returns false after [[IModelConnection.close]] has been called.
-   * @alpha
+  /** Check if the IModelConnection is open (i.e. it has a *connection* to a backend server).
+   * Returns false for blank connections and after [[IModelConnection.close]] has been called.
+   * @note no RPC operations are valid on this IModelConnection if this method returns false.
+   * @beta
    */
-  public get isOpen(): boolean { return undefined !== (this._token as any); }
+  public get isOpen(): boolean { return undefined !== this._token; }
 
-  /** Check if the IModelConnection has been closed. Returns true after [[IModelConnection.close]] has been called.
-   * @alpha
+  /** Check if the IModelConnection is closed (i.e. it has no *connection* to a backend server).
+   * Returns true for blank connections and after [[IModelConnection.close]] has been called.
+   * @note no RPC operations are valid on this IModelConnection if this method returns true.
+   * @beta
    */
-  public get isClosed(): boolean { return !this.isOpen; }
+  public get isClosed(): boolean { return undefined === this._token; }
 
-  /** Event called immediately before an IModelConnection is closed.
+  /** Event called immediately before *any* IModelConnection is closed.
+   * @note This static event is called when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
+   * monitor closing a specific IModelConnection, use the `onClose` instance event.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** Event called immediately before *this* IModelConnection is closed.
+   * @note This event is called only for this IModelConnection. To monitor *all* IModelConnections,use the static event.
+   * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
+   * @beta
+   */
+  public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -94,7 +129,14 @@ export class IModelConnection extends IModel {
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
-    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON()))));
+    if (undefined === this.fontMap) {
+      this.fontMap = new FontMap();
+      if (this.isOpen) {
+        const fontProps = JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON())) as FontMapProps;
+        this.fontMap.addFonts(fontProps.fonts);
+      }
+    }
+    return this.fontMap;
   }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
@@ -111,23 +153,26 @@ export class IModelConnection extends IModel {
     ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
-    const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken.toJSON(), className);
-    // walk through the list until we find a registered base class
-    baseClasses.some((baseClass: string) => {
-      const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
-      if (test === undefined)
-        return false; // nope, not registered
+    if (this.isOpen) {
+      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken.toJSON(), className);
+      // walk through the list until we find a registered base class
+      baseClasses.some((baseClass: string) => {
+        const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
+        if (test === undefined)
+          return false; // nope, not registered
 
-      ctor = test; // found it, save it
-      IModelApp.registerEntityState(className, ctor); // and register the fact that our starting class is handled by this subclass.
-      return true; // stop
-    });
+        ctor = test; // found it, save it
+        IModelApp.registerEntityState(className, ctor); // and register the fact that our starting class is handled by this subclass.
+        return true; // stop
+      });
+    }
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
   private constructor(iModel: IModelProps, openMode: OpenMode) {
-    super(IModelToken.fromJSON(iModel.iModelToken!));
+    super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
     super.initialize(iModel.name!, iModel);
+    this.isBlank = undefined === iModel.iModelToken; // to differentiate between previously-open-but-now-closed vs. blank
     this.openMode = openMode;
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -138,6 +183,20 @@ export class IModelConnection extends IModel {
     this.tiles = new IModelConnection.Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
+    this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+  }
+
+  /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
+   * @param props The properties of the new blank IModelConnection.
+   * @beta
+   */
+  public static createBlank(props: BlankConnectionProps): IModelConnection {
+    return new this({
+      rootSubject: { name: props.name },
+      projectExtents: props.extents,
+      globalOrigin: props.globalOrigin,
+      ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
+    }, OpenMode.Readonly);
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
@@ -235,7 +294,7 @@ export class IModelConnection extends IModel {
       return;
 
     const iModelToken: IModelToken = request.parameters[0];
-    if (this._token.key !== iModelToken.key)
+    if (this.iModelToken.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
@@ -253,8 +312,16 @@ export class IModelConnection extends IModel {
     }
 
     Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelToken);
-    request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
+    request.parameters[0] = this.iModelToken; // Modify the token of the original request before resubmitting it.
     resubmit();
+  }
+
+  // called prior to connection closing. Raises close events and calls tiles.dispose.
+  // NOTE: this is called for blank connections too!
+  private beforeClose() {
+    this.onClose.raiseEvent(this); // event for this connection
+    IModelConnection.onClose.raiseEvent(this); // event for all connections
+    this.tiles.dispose();
   }
 
   /** Close this IModelConnection
@@ -262,22 +329,20 @@ export class IModelConnection extends IModel {
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
-    if (!this.iModelToken)
+    this.beforeClose();
+    if (!this.isOpen)
       return;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
-    IModelConnection.onClose.raiseEvent(this);
-    this.tiles.dispose();
-
     requestContext.useContextForRpc = true;
-    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't await-ed right away.
+    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
     try {
       await closePromise;
     } finally {
-      (this._token as any) = undefined; // prevent closed connection from being reused
+      this._token = undefined; // prevent closed connection from being reused
       this.subcategories.onIModelConnectionClose();
     }
   }
@@ -296,15 +361,14 @@ export class IModelConnection extends IModel {
    * @beta
    */
   public async closeSnapshot(): Promise<void> {
-    if (!this.iModelToken)
+    this.beforeClose();
+    if (!this.isOpen)
       return;
 
-    IModelConnection.onClose.raiseEvent(this);
-    this.tiles.dispose();
     try {
       await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
     } finally {
-      (this._token as any) = undefined; // prevent closed connection from being reused
+      this._token = undefined; // prevent closed connection from being reused
       this.subcategories.onIModelConnectionClose();
     }
   }
@@ -356,6 +420,7 @@ export class IModelConnection extends IModel {
    * @internal
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+
     return IModelReadRpcInterface.getClient().queryRows(this.iModelToken.toJSON(), ecsql, bindings, limit, quota, priority);
   }
 
@@ -411,7 +476,9 @@ export class IModelConnection extends IModel {
    * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
    */
-  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return new Set(await IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken.toJSON(), params)); }
+  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> {
+    return new Set(this.isOpen ? await IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken.toJSON(), params) : undefined);
+  }
 
   /** Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
@@ -460,13 +527,17 @@ export class IModelConnection extends IModel {
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snapRpc.request(props); }
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
+  }
 
   private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken.toJSON(), id));
   /** Request a tooltip from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
-  public async getToolTipMessage(id: Id64String): Promise<string[]> { return this._toolTipRpc.request(id); }
+  public async getToolTipMessage(id: Id64String): Promise<string[]> {
+    return this.isOpen ? this._toolTipRpc.request(id) : [];
+  }
 
   /** Request element mass properties from the backend.
    * @beta
@@ -484,13 +555,13 @@ export class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter();
+    const geoConverter = this.geoServices.getConverter()!;
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s)
       throw new IModelError(IModelStatus.BadRequest, "Error converting spatial to cartographic");
@@ -530,14 +601,14 @@ export class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter();
+    const geoConverter = this.geoServices.getConverter()!;
     const geoCoord = Point3d.create(Angle.radiansToDegrees(cartographic.longitude), Angle.radiansToDegrees(cartographic.latitude), cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
     if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s)
       throw new IModelError(IModelStatus.BadRequest, "Error converting cartographic to spatial");
@@ -594,7 +665,8 @@ export namespace IModelConnection {
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-      return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]);
+      const iModel = this._iModel;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getModelProps(iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
@@ -634,12 +706,13 @@ export namespace IModelConnection {
             this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
           }
         }
-      } catch (err) { }  // ignore error, we had nothing to do.
+      } catch (err) { } // ignore error, we had nothing to do.
     }
 
     /** Query for a set of model ranges by ModelIds. */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
-      return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]);
+      const iModel = this._iModel;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryModelRanges(iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -647,6 +720,9 @@ export namespace IModelConnection {
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
+      const iModel = this._iModel;
+      if (!iModel.isOpen)
+        return [];
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
@@ -658,7 +734,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken.toJSON(), params);
+      return IModelReadRpcInterface.getClient().queryModelProps(iModel.iModelToken.toJSON(), params);
     }
 
     /** Asynchronously stream ModelProps using the specified ModelQueryParams.
@@ -686,7 +762,8 @@ export namespace IModelConnection {
 
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-      return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(arg)]);
+      const iModel = this._iModel;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(arg)]) : [];
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query
@@ -694,7 +771,8 @@ export namespace IModelConnection {
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-      return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken.toJSON(), params);
+      const iModel = this._iModel;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryElementProps(iModel.iModelToken.toJSON(), params) : [];
     }
   }
 
@@ -759,6 +837,10 @@ export namespace IModelConnection {
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
+      const iModel = this._iModel;
+      if (iModel.isClosed)
+        return [];
+
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
@@ -766,7 +848,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken.toJSON(), params);
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModel.iModelToken.toJSON(), params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
     }
@@ -789,12 +871,13 @@ export namespace IModelConnection {
       return views;
     }
 
-    /** Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
+    /** Query the Id of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
      * @returns the ID of the default view, or an invalid ID if no default view is defined.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
-      return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken.toJSON());
+      const iModel = this._iModel;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getDefaultViewId(iModel.iModelToken.toJSON()) : Id64.invalid;
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
@@ -817,12 +900,12 @@ export namespace IModelConnection {
      */
     public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
       const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken.toJSON(), viewId.toString());
-      const intVals = new Uint32Array(val.buffer, 0, 4);
+      const intValues = new Uint32Array(val.buffer, 0, 4);
 
-      if (intVals[1] !== ImageSourceFormat.Jpeg && intVals[1] !== ImageSourceFormat.Png)
+      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
         return Promise.reject(new Error("Invalid thumbnail"));
 
-      return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 16, intVals[0]) };
+      return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
 
     /** Save a thumbnail for a view.
@@ -848,10 +931,19 @@ export namespace IModelConnection {
   export class Tiles {
     private _iModel: IModelConnection;
     private readonly _treesBySupplier = new Map<TileTree.Supplier, Dictionary<any, TreeOwner>>();
+    private _disposed = false;
+
+    public get isDisposed() { return this._disposed; }
 
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
     public dispose(): void {
+      this.reset();
+      this._disposed = true;
+    }
+
+    /** Intended strictly for tests. */
+    public reset(): void {
       for (const supplier of this._treesBySupplier)
         supplier[1].forEach((_key, value) => value.dispose());
 
@@ -862,8 +954,12 @@ export namespace IModelConnection {
       return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
     }
 
-    public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array> {
-      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled);
+    public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
+      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid);
+    }
+
+    public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
+      return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
     }
 
     public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {
@@ -915,7 +1011,9 @@ export namespace IModelConnection {
 class TreeOwner implements TileTree.Owner {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  public readonly load: () => TileTree | undefined;
+  private readonly _supplier: TileTree.Supplier;
+  private readonly _iModel: IModelConnection;
+
   public readonly id: any;
 
   public get tileTree(): TileTree | undefined { return this._tileTree; }
@@ -923,10 +1021,18 @@ class TreeOwner implements TileTree.Owner {
 
   public constructor(id: any, supplier: TileTree.Supplier, iModel: IModelConnection) {
     this.id = id;
-    this.load = () => {
-      this._load(supplier, iModel); // tslint:disable-line no-floating-promises
-      return this.tileTree;
-    };
+    this._supplier = supplier;
+    this._iModel = iModel;
+  }
+
+  public load(): TileTree | undefined {
+    this._load(); // tslint:disable-line no-floating-promises
+    return this.tileTree;
+  }
+
+  public async loadTree(): Promise<TileTree | undefined> {
+    await this._load();
+    return this.tileTree;
   }
 
   public dispose(): void {
@@ -934,7 +1040,7 @@ class TreeOwner implements TileTree.Owner {
     this._loadStatus = TileTree.LoadStatus.NotLoaded;
   }
 
-  private async _load(supplier: TileTree.Supplier, iModel: IModelConnection): Promise<void> {
+  private async _load(): Promise<void> {
     if (TileTree.LoadStatus.NotLoaded !== this.loadStatus)
       return;
 
@@ -942,7 +1048,7 @@ class TreeOwner implements TileTree.Owner {
     let tree: TileTree | undefined;
     let newStatus: TileTree.LoadStatus;
     try {
-      tree = await supplier.createTileTree(this.id, iModel);
+      tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTree.LoadStatus.Loaded : TileTree.LoadStatus.NotFound;
     } catch (err) {
       newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.NotFound;

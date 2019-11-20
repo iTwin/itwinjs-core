@@ -13,6 +13,7 @@ import {
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";
+import { Icon } from "@bentley/ui-core";
 
 /** @internal */
 interface EnumEditorState {
@@ -58,7 +59,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       if (propertyRecord.property.enum) {
         const numChoices = propertyRecord.property.enum.choices.length;
         this._enumIcons = new Array<IconDefinition>(numChoices);
-        this._enumIcons.fill({ iconClass: "icon icon-placeholder" });
+        this._enumIcons.fill({ iconSpec: "icon icon-placeholder" });
 
         // istanbul ignore else
         if (propertyRecord.property.editor && propertyRecord.property.editor.params) {
@@ -102,7 +103,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     const button = this._btnRefs.get(this.state.selectValue);
     // istanbul ignore else
     if (button)
-      button.focus();
+      button.focus({ preventScroll: true });
   }
 
   /** @internal */
@@ -127,7 +128,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       const button = this._btnRefs.get(state!.selectValue);
       // istanbul ignore else
       if (button)
-        button.focus();
+        button.focus({ preventScroll: true });
     }
   }
 
@@ -154,7 +155,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   private getIcon(index: number) {
     // istanbul ignore else
     if (this._enumIcons && this._enumIcons.length > index)
-      return (<i className={this._enumIcons[index].iconClass} />);
+      return (<Icon iconSpec={this._enumIcons[index].iconSpec} />);
     return null;
   }
 

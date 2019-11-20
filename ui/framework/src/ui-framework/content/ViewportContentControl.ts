@@ -107,6 +107,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   public get supportsViewSelectorChange(): boolean { return true; }
 
   /** Process a ViewSelector change. */
+  // istanbul ignore next
   public async processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void> {
     if (this.viewport) {
       if (IModelApp.viewManager && this.viewport === IModelApp.viewManager.selectedView)
@@ -118,5 +119,6 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   }
 
   /** Get the React.Element for a ViewSelector change. */
+  // istanbul ignore next
   public getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode { return null; }
 }

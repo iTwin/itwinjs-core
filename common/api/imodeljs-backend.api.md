@@ -27,6 +27,7 @@ import { ChangeSet } from '@bentley/imodeljs-clients';
 import { ChangeSetApplyOption } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -65,6 +66,7 @@ import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
@@ -121,6 +123,8 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { SectionLocationProps } from '@bentley/imodeljs-common';
+import { SectionType } from '@bentley/imodeljs-common';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -319,6 +323,8 @@ export class BackendRequestContext extends ClientRequestContext {
 export class BisCoreSchema extends Schema {
     // @internal (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }
@@ -661,6 +667,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
     readonly hasPendingRequests: boolean;
+    // @alpha
+    hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean>;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
@@ -671,6 +679,8 @@ export class ConcurrencyControl {
     onSaveChanges(): void;
     // @internal (undocumented)
     onSavedChanges(): void;
+    // @internal (undocumented)
+    onUndoRedo(): void;
     // @internal (undocumented)
     readonly pendingRequest: ConcurrencyControl.Request;
     // (undocumented)
@@ -737,7 +747,7 @@ export interface CrashReportingConfigNameValuePair {
 // @public
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
-    constructor(props: ElementProps, iModel: IModelDb);
+    constructor(props: DefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
     isPrivate: boolean;
@@ -841,6 +851,8 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract readonly settings: DisplayStyleSettings;
 }
@@ -1229,6 +1241,8 @@ export class Element extends Entity implements ElementProps {
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta (undocumented)
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @alpha
+    protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
     protected static onDelete(_props: ElementProps, _iModel: IModelDb): void;
     // @beta
@@ -1336,6 +1350,13 @@ export class ElementOwnsChildElements extends RelatedElement {
 }
 
 // @public
+export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class ElementOwnsMultiAspects extends RelatedElement {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
@@ -1380,17 +1401,16 @@ export class EmbeddedFileLink extends LinkElement {
 export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
-    // (undocumented)
-    [propName: string]: any;
+    // @internal
+    readonly asAny: any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
-    readonly classFullName: string;
     static readonly classFullName: string;
+    readonly classFullName: string;
     static readonly className: string;
     readonly className: string;
+    // @internal @deprecated
     clone(): this;
-    // @alpha
-    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1430,6 +1450,7 @@ export interface ExportGraphicsLines {
 // @public
 export interface ExportGraphicsMesh {
     indices: Int32Array;
+    isTwoSided: boolean;
     normals: Float32Array;
     params: Float32Array;
     points: Float64Array;
@@ -1528,12 +1549,10 @@ export interface ExportPartLinesInfo {
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
-    checksum: string;
+    checksum?: string;
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    // @alpha
-    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };
@@ -1634,6 +1653,8 @@ export class GenericSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
     static readonly schemaName: string;
 }
 
@@ -1652,6 +1673,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
+    abstract readonly placement: Placement2d | Placement3d;
     // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
@@ -1673,6 +1695,13 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
 }
 
 // @public
+export class GeometricElement2dHasTypeDefinition extends RelatedElement {
+    constructor(id: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -1689,28 +1718,45 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 }
 
 // @public
+export class GeometricElement3dHasTypeDefinition extends RelatedElement {
+    constructor(id: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class GeometricModel extends Model implements GeometricModelProps {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    geometryGuid?: string;
+    geometryGuid?: GuidString;
     queryExtents(): AxisAlignedBox3d;
 }
 
 // @public
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+    // @internal
+    constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
     globalOrigin?: Point2d;
+    // @internal (undocumented)
+    toJSON(): GeometricModel2dProps;
 }
 
 // @public
 export abstract class GeometricModel3d extends GeometricModel {
+    // @internal
+    constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    readonly isNotSpatiallyLocated: boolean;
+    readonly iSpatiallyLocated: boolean;
+    readonly isPlanProjection: boolean;
+    // @internal (undocumented)
+    toJSON(): GeometricModel3dProps;
 }
 
 // @public
@@ -1744,7 +1790,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
 }
 
 // @public
-export class GraphicalElement2dIsOfType extends RelatedElement {
+export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -1766,6 +1812,18 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
 
 // @public
 export abstract class GraphicalModel2d extends GeometricModel2d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
+export abstract class GraphicalModel3d extends GeometricModel3d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
+export class GraphicalPartition3d extends InformationPartitionElement {
     // @internal (undocumented)
     static readonly className: string;
 }
@@ -1838,6 +1896,26 @@ export class ILinearlyLocatedAttributesElement extends RelatedElement {
     static classFullName: string;
 }
 
+// @alpha
+export class IModelCloneContext {
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
+    // @internal
+    cloneElement(sourceElement: Element): ElementProps;
+    dispose(): void;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
+    // @internal
+    importCodeSpec(sourceCodeSpecId: Id64String): void;
+    // @internal
+    importFont(sourceFontNumber: number): void;
+    readonly isBetweenIModels: boolean;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+}
+
 // @public
 export class IModelDb extends IModel {
     abandonChanges(): void;
@@ -1860,9 +1938,9 @@ export class IModelDb extends IModel {
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
     // @beta
-    createSnapshot(snapshotFile: string): IModelDb;
-    // @beta
     static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb;
+    // @beta
+    createSnapshot(snapshotFile: string): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -1917,8 +1995,8 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
-    // @internal (undocumented)
-    static performUpgrade(pathname: string): any;
+    // @internal @deprecated (undocumented)
+    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -1934,6 +2012,7 @@ export class IModelDb extends IModel {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
+    querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
     // @beta
@@ -1974,6 +2053,7 @@ export namespace IModelDb {
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
+        hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
         queryChildren(elementId: Id64String): Id64String[];
@@ -2136,7 +2216,9 @@ export class IModelJsFsStats {
 
 // @alpha
 export class IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
+    constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions);
+    readonly autoExtendProjectExtents: boolean;
+    readonly context: IModelCloneContext;
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     detectElementDeletes(): void;
@@ -2155,8 +2237,6 @@ export class IModelTransformer {
     excludeRelationshipClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
     findMissingPredecessors(sourceElement: Element): Id64Set;
-    findTargetCodeSpecId(sourceId: Id64String): Id64String;
-    findTargetElementId(sourceElementId: Id64String): Id64String;
     protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string;
     protected formatElementForLogger(elementProps: ElementProps): string;
     protected formatIdForLogger(id: Id64String): string;
@@ -2170,11 +2250,12 @@ export class IModelTransformer {
     importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModels(modeledElementClass: string): void;
+    importModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    importSkippedElements(): void;
+    importSkippedElements(numRetries?: number): void;
+    importSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
@@ -2196,9 +2277,6 @@ export class IModelTransformer {
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
-    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
-    remapElement(sourceId: Id64String, targetId: Id64String): void;
-    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldDeleteElement(_targetElement: Element): boolean;
     protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
@@ -2207,9 +2285,9 @@ export class IModelTransformer {
     protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
-    protected _sourceDb: IModelDb;
-    protected _targetDb: IModelDb;
-    protected _targetScopeElementId: Id64String;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+    readonly targetScopeElementId: Id64String;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -2219,6 +2297,12 @@ export class IModelTransformer {
     protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
     protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
+}
+
+// @alpha
+export interface IModelTransformOptions {
+    autoExtendProjectExtents?: boolean;
+    targetScopeElementId?: Id64String;
 }
 
 // @internal @deprecated
@@ -2375,14 +2459,15 @@ export class LinearLocationReference {
 
 // @beta
 export class LinearlyLocated {
-    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps | undefined;
-    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps[];
-    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps | undefined;
-    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps[];
+    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined;
+    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation[];
+    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation | undefined;
+    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation[];
+    static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined;
     static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
     static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
-    static updateAtLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedAtLocationAspectProps): void;
-    static updateFromToLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedFromToLocationAspectProps): void;
+    static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+    static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 // @beta
@@ -2392,6 +2477,44 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
     attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
     static readonly className: string;
+}
+
+// @beta
+export interface LinearlyLocatedBase {
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
+}
+
+// @beta
+export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
+    // (undocumented)
+    getAtLocations(): LinearlyReferencedAtLocation[];
+    // (undocumented)
+    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {
+    // (undocumented)
+    getFromToLocations(): LinearlyReferencedFromToLocation[];
+    // (undocumented)
+    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
+    // (undocumented)
+    getAtLocation(): LinearlyReferencedAtLocation | undefined;
+    // (undocumented)
+    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+}
+
+// @beta
+export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
+    // (undocumented)
+    getFromToLocation(): LinearlyReferencedFromToLocation | undefined;
+    // (undocumented)
+    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 // @beta
@@ -2474,10 +2597,12 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 
 // @beta
 export class LinearReferencingSchema extends Schema {
-    // (undocumented)
+    // @deprecated (undocumented)
     static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }
@@ -2785,7 +2910,7 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
 }
 
 // @public
-export class PhysicalElementIsOfType extends RelatedElement {
+export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3037,12 +3162,32 @@ export class SectionDrawingModel extends DrawingModel {
     static readonly className: string;
 }
 
+// @beta
+export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
+    // @internal
+    constructor(props: SectionLocationProps, iModel: IModelDb);
+    categorySelectorId: Id64String;
+    // @internal (undocumented)
+    static readonly className: string;
+    clipGeometry?: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    getClip(): ClipVector | undefined;
+    modelSelectorId: Id64String;
+    sectionType: SectionType;
+    setClip(clip?: ClipVector): void;
+    // @internal (undocumented)
+    toJSON(): SectionLocationProps;
+}
+
 // @public
 export class Sheet extends Document implements SheetProps {
     // @internal
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     height: number;
@@ -3080,6 +3225,8 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
     border?: Id64String;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -3137,7 +3284,7 @@ export abstract class SpatialLocationElement extends SpatialElement {
 }
 
 // @public
-export class SpatialLocationIsOfType extends RelatedElement {
+export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3467,6 +3614,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     recipe?: RelatedElement;
 }
@@ -3495,6 +3644,8 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     view: RelatedElement;
 }

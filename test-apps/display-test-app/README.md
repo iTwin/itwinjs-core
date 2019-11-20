@@ -2,7 +2,7 @@
 
 ## About this Application
 
-The application contained within this directory provides a test environment for developers working on the frontend functionality of iModel.js. It also serves as an example of how a consumer-made application depending on iModel.js may be designed.
+The application contained within this directory provides a test environment for developers working on the frontend functionality of iModel.js. It is **not** intended to serve as an example or template for the design of "real" iModel.js applications.
 
 * package.json
   * Provides the npm start script for the application
@@ -39,10 +39,37 @@ npm run start:servers
 
 ## Using display-test-app
 
-* Upon starting display-test-app, an initial iModel will automatically be loaded from the Hub (unless a local one was specified via an environment variable). From here, there are many tools in the top banner of the application that may be used.
-* Users may open a new iModel by clicking the briefcase icon and navigating to a local file location.
-* Users can switch between stored views via the view dropdown menu.
-* The remaining tools contain ways to rotate the model, select parts of the view, undo and redo actions, and toggle on/off the camera as well as other view state settings.
+Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
+
+display-test-app's UI consists of:
+* A toolbar containing tools for interacting with the currently-selected viewport.
+* A status bar at the top containing:
+  * A key-in field into which key-in commands can be entered for execution.
+  * A combo-box for changing the current snap mode.
+  * A progress indicator showing progress of tile requests for all viewports.
+* A large central surface on which any number of floating windows (including iModel viewports) can be positioned.
+  * Within this surface, a window in which notifications are displayed.
+* A status bar at the bottom in which prompts and error messages are displayed.
+
+Much of display-test-app's functionality can be efficiently accessed via the key-in field. Press the backtick key to focus the key-in field. As you type, available key-in commands matching the input will be displayed. Press `Enter` to execute the key-in. See the list of key-ins below.
+
+Viewports are displayed as floating windows. The currently-focused window is indicated by a bright title bar and border. Windows can be manipulated as follows:
+* Left-drag title bar: move the window.
+* Left-click cross in top-left corner: close the window.
+* Left-drag triangle in top-right corner: resize the window
+* Double-click title bar: undock the window if docked; otherwise maximize the window.
+* Ctrl-h/l/j/k: dock to the left/right/bottom/top edge respectively. Behavior is similar to pressing the Windows key plus an array key in Windows.
+  * If the window is already docked, these shortcuts respect the current dock state. e.g., `ctrl-h` on a window docked to the bottom will cause the window to dock to the bottom-left.
+* Ctrl-[/]: focus previous/next window.
+* Ctrl-\: clone the focused viewport.
+* Ctrl-|: close the focused window.
+* Ctrl-p: toggle pinned state of the focused window. A pinned window renders on top of other windows even when it is not focused.  Pinned windows will show a right red tringle in the right right corner of the window.
+* Ctrl-m: maximize the focused window.
+* Ctrl-i: restore the focused window.
+
+The currently-selected viewport is indicated by a gold border. The toolbar always operates on the selected viewport, and many key-ins operate on the selected viewport if no explicit viewport ID argument is supplied.
+
+The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n again will restore focus to the previously-focused window.
 
 ## Debugging
 
@@ -65,17 +92,18 @@ rush install -c
 
 ## Environment Variables
 
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
 * SVT_STANDALONE_FILENAME
-  * Local path to an iModel, that be the one opened by default at start-up.
-* SVT_STANDALONE_FILEPATH
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
+  * Absolute path to an iModel to be opened on start-up.
+* SVT_STANDALONE_FILEPATH (browser only)
+  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels.
 * SVT_STANDALONE_VIEWNAME
-  * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
+  * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
-  * If defined (value does not matter), and SVT_STANDALONE_FILENAME is defined, the user will still be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
-* SVT_MAXIMIZE_WINDOW
-  * If defined, maximize the electron window on startup
-* SVT_NO_DEVTOOLS
+  * If defined (value does not matter), the user will be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+* SVT_NO_MAXIMIZE_WINDOW
+  * If defined, don't maximize the electron window on startup
+* SVT_NO_DEV_TOOLS
   * If defined, do not open the electron dev tools on startup
 * SVT_LOG_LEVEL
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
@@ -93,3 +121,30 @@ rush install -c
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
+* SVT_FAKE_CLOUD_STORAGE
+  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
+    * NOTE: This currently only works when running display-test-app in a browser.
+ * SVT_ENABLE_MAP_TEXTURE_FILTER
+  * If defined, the anisotropic filtering will be used for (planar) map tiles.
+ * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+  * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
+
+## Key-ins
+
+display-test-app has access to all key-ins defined in the imodeljs-frontend and frontend-devtools packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
+* **win resize** width height *windowId* - resize the content area of the specified of focused window to specified width and height.
+* **win focus** windowId - give focus to the specified window.
+* **win max** *windowId* - maximize the specified or focused window.
+* **win dock** dock *windowId* - dock the specified or focused window. `dock` is a 1- or 2-character combination of the characters `t`, `l`, `r`, and `b`. e.g., to dock the focused window into the bottom-left corner, execute `win dock bl`.
+* **win restore** *windowId* - restore (un-dock) the specified or focused window.
+* **win close** *windowId* - close the specified or focused window.
+* **vp clone** *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
+* **dta version compare** - emulate version comparison.
+* **dta save image** - open a new window containing a snapshot of the contents of the selected viewport.
+* **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
+* **dta incident markers** - toggle incident marker demo in the selected viewport.
+* **dta markup** - toggle markup on the selected viewport.
+* **dta drawing aid points** - start tool for testing AccuSnap.
+* **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
+* **dta shadow tiles** - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.

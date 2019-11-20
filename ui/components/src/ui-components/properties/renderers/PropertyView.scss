@@ -8,7 +8,7 @@ $text-font-size: $uicore-font-size;
 $text-font-color: $buic-text-color;
 
 .components-property-record--horizontal {
-  min-height: 22px;
+  min-height: 24px;
   display: grid;
   // Vertical padding fixes visual inconsistency between Firefox and Chrome when property is selected.
   padding: 1px 9px;
@@ -19,7 +19,7 @@ $text-font-color: $buic-text-color;
   }
 
   .components-property-record-value {
-    min-height: 20px;
+    min-height: 24px;
     font-size: $text-font-size;
     color: $text-font-color;
   }
@@ -35,7 +35,7 @@ $text-font-color: $buic-text-color;
   }
 
   .components-property-record-value {
-    min-height: 20px;
+    min-height: 24px;
     font-size: $text-font-size;
     color: $text-font-color;
     margin: 0 9px;

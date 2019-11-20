@@ -1,10 +1,15 @@
 sep=;
 Release Tag;API Item
+alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyViewTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
-alpha;ChangeViewFlagsTool 
+beta;ChangeEmphasisSettingsTool 
+beta;ChangeHiliteSettingsTool 
+beta;class ChangeHiliteTool 
+beta;ChangeUnitsTool 
+beta;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
@@ -16,60 +21,84 @@ alpha;ComboBox
 alpha;ComboBoxEntry
 alpha;ComboBoxHandler = (select: HTMLSelectElement) => void
 alpha;ComboBoxProps
+beta;CompileShadersTool 
 alpha;convertHexToRgb(hex: string): RgbColor | undefined
+beta;copyStringToClipboard(str: string): void
 alpha;createButton(props: ButtonProps): Button
 alpha;createCheckBox(props: CheckBoxProps): CheckBox
 alpha;createColorInput(props: ColorInputProps): ColorInput
 alpha;createComboBox(props: ComboBoxProps): ComboBox
+alpha;createDataList(props: DataListProps): DataList
 alpha;createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput
 alpha;createNestedMenu(props: NestedMenuProps): NestedMenu
 alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement
 alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
+alpha;DataList
+alpha;DataListEntry
+alpha;DataListHandler = (list: HTMLDataListElement) => void
+alpha;DataListProps
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
+beta;DiagnosticsPanelProps
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+beta;FadeOutTool 
 beta;FpsTracker
+beta;FreezeSceneTool 
 beta;FrontendDevTools
 beta;FrustumDecorator 
+alpha;GpuProfiler
+alpha;InspectElementTool 
 beta;IsolateSelectedElementsTool 
 beta;KeyinField
+beta;KeyinFieldProps
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
 beta;LoseWebGLContextTool 
+alpha;MeasureTileLoadTimeTool 
 beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
-alpha;ProjectExtentsDecoration 
-alpha;ProjectExtentsResizeTool 
+beta;parseToggle(arg: string | undefined): string | boolean | undefined
+beta;ProjectExtentsDecoration
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
+alpha;RealityTransitionTool 
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
 beta;SaveViewTool 
+beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
+alpha;SetAspectRatioSkewTool 
+internal;SetVolClassIntersectOff 
+internal;SetVolClassIntersectOn 
+beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
-alpha;TextBox
+beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
+alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
 alpha;ToggleLogZTool 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
-alpha;ToggleSkyboxTool 
+beta;ToggleSelectedViewFrustumTool 
+beta;ToggleShadowFrustumTool 
+beta;ToggleSkyboxTool 
+beta;ToggleTileRequestDecorationTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

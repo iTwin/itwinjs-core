@@ -19,9 +19,9 @@ import {
   Zone,
   Widget,
   CoreTools,
+  CommandItemDef,
 } from "@bentley/ui-framework";
 
-import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
@@ -35,6 +35,7 @@ import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { PopupTestDialog } from "../dialogs/PopupTest";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 
 export class Frontstage4 extends FrontstageProvider {
 
@@ -92,7 +93,7 @@ export class Frontstage4 extends FrontstageProvider {
         bottomCenter={
           <Zone
             widgets={[
-              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} classId="SmallStatusBar" />,
             ]}
           />
         }
@@ -181,6 +182,12 @@ export class Frontstage4 extends FrontstageProvider {
     );
   }
 
+  private get _spinnerTestDialogItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+    });
+  }
+
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
    */
   private getNavigationWidget(): React.ReactNode {
@@ -210,7 +217,9 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
-              AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+              AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
+              this._spinnerTestDialogItem,
+              ]}
               direction={Direction.Left}
               itemsInColumn={7}
             />

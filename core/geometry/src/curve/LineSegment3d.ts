@@ -33,6 +33,7 @@ import { Clipper } from "../clipping/ClipUtils";
  * @public
  */
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "lineSegment";
 
   /** test if `other` is of class `LineSegment3d` */

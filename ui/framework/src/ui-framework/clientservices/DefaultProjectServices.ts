@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ConnectClient, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
 import { Logger } from "@bentley/bentleyjs-core";
 
 import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
 import { UiFramework } from "../UiFramework";
+import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
+// istanbul ignore next
 class ProjectInfoImpl implements ProjectInfo {
   public readStatus: ProjectReadStatus;
 
@@ -22,6 +24,7 @@ class ProjectInfoImpl implements ProjectInfo {
  * Provides default [[ProjectServices]]
  * @internal
  */
+// istanbul ignore next
 export class DefaultProjectServices implements ProjectServices {
   private _connectClient: ConnectClient;
 
@@ -36,8 +39,8 @@ export class DefaultProjectServices implements ProjectServices {
   }
 
   /** Get projects accessible to the user based on various scopes/criteria */
-  public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+  public async getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
 
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work

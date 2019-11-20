@@ -317,6 +317,7 @@ class DependentTracker {
       new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/frontend-devtools", "frontend-devtools.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/ui-abstract", "ui-abstract.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
@@ -474,13 +475,6 @@ class DependentTracker {
           const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
           Utils.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath, this._alwaysCopy, this._detail);
 
-          // copy/symlink the iModelJsLoader.js file into the same directory as imodeljs-frontend
-          if (dependent.name === "imodeljs-frontend") {
-            const imjsLoaderSourceFile = moduleSourceFile.replace("imodeljs-frontend", "IModelJsLoader");
-            const imjsLoaderPath = path.resolve(outFilePath, "IModelJsLoader.js");
-            Utils.symlinkOrCopyModuleFile(imjsLoaderSourceFile, imjsLoaderPath, this._alwaysCopy, this._detail);
-          }
-
           // symlink any subModules in the build.
           const packageFileContents: any = Utils.readPackageFileContents(dependent.packageRoot);
           if (packageFileContents.iModelJs && packageFileContents.iModelJs.buildModule && packageFileContents.iModelJs.buildModule.subModules && Array.isArray(packageFileContents.iModelJs.buildModule.subModules)) {
@@ -569,7 +563,7 @@ class PseudoLocalizer {
   private convertString(inputString: string): string {
     let inReplace = 0;
     let outString = "";
-    let replaceIndex = 0; // Note: the pseudoLocalize algorithm in Bim02 uses random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
+    let replaceIndex = 0; // Note: the pseudoLocalize algorithm would normally use random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
     for (let iChar = 0; iChar < inputString.length; iChar++) {
       let thisChar = inputString.charAt(iChar);
       let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;
@@ -1088,7 +1082,7 @@ class IModelJsModuleBuilder {
     if (!webpack.dest || !webpack.entry || !webpack.bundleName) {
       return Promise.resolve(new Result("Webpack", 1, undefined, undefined, 'IModelJs.buildModule.webpack must have "dest", "entry", and "bundleName" properties'));
     }
-    
+
     const styleSheets: boolean = webpack.styleSheets ? true : false;
     let outputPath = path.resolve(process.cwd(), webpack.dest);
 

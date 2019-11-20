@@ -9,21 +9,24 @@ import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ZoneTargetType,
   Zone as NZ_Zone,
-  Outline,
   ZoneManagerProps,
   WidgetZoneId,
   DraggedWidgetManagerProps,
   WidgetManagerProps,
+  DisabledResizeHandles,
 } from "@bentley/ui-ninezone";
 import { WidgetChangeHandler, TargetChangeHandler } from "../frontstage/FrontstageComposer";
 import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { Outline } from "./Outline";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal
  */
 export interface FrameworkZoneProps extends CommonProps {
   activeTabIndex: number;
+  disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   dropTarget: ZoneTargetType | undefined;
   fillZone?: boolean;
@@ -44,28 +47,38 @@ export interface FrameworkZoneProps extends CommonProps {
  */
 export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
   public render(): React.ReactNode {
-    const zIndexStyle: React.CSSProperties | undefined = this.props.zone.floating ?
-      { zIndex: this.props.zone.floating.stackId, position: "relative" } : undefined;
-
+    const zIndexStyle = getFloatingZoneStyle(this.props.zone);
+    const floatingBounds = getFloatingZoneBounds(this.props.zone);
     return (
-      <span style={zIndexStyle}>
-        <NZ_Zone
-          bounds={this.props.zone.floating ? this.props.zone.floating.bounds : this.props.zone.bounds}
-          className={this.props.className}
-          style={this.props.style}
-          isHidden={this.props.isHidden}
-        >
-          {this._getWidget()}
-        </NZ_Zone>
-        <NZ_Zone bounds={this.props.zone.bounds}>
-          <ZoneTargets
-            zoneId={this.props.zone.id}
-            dropTarget={this.props.dropTarget}
-            targetChangeHandler={this.props.targetChangeHandler}
-          />
-        </NZ_Zone>
-        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
-      </span>
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <span style={zIndexStyle}>
+            <NZ_Zone
+              bounds={floatingBounds}
+              className={this.props.className}
+              style={this.props.style}
+              isFloating={!!this.props.zone.floating}
+              isHidden={this.props.isHidden}
+              id={this.props.zone.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              {this._getWidget()}
+            </NZ_Zone>
+            <NZ_Zone
+              bounds={this.props.zone.bounds}
+              id={this.props.zone.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              <ZoneTargets
+                zoneId={this.props.zone.id}
+                dropTarget={this.props.dropTarget}
+                targetChangeHandler={this.props.targetChangeHandler}
+              />
+            </NZ_Zone>
+            <Outline bounds={this.props.targetedBounds} />
+          </span>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 
@@ -80,12 +93,13 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
     return (
       <WidgetStack
         activeTabIndex={this.props.activeTabIndex}
+        disabledResizeHandles={this.props.disabledResizeHandles}
         draggedWidget={this.props.draggedWidget}
         fillZone={this.props.fillZone || this.props.zone.isLayoutChanged}
         getWidgetContentRef={this.props.getWidgetContentRef}
         horizontalAnchor={widget.horizontalAnchor}
         isCollapsed={false}
-        isFloating={this.props.zone.floating ? true : false}
+        isFloating={!!this.props.zone.floating}
         isInStagePanel={false}
         openWidgetId={this.props.openWidgetId}
         verticalAnchor={widget.verticalAnchor}
@@ -96,3 +110,16 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
     );
   }
 }
+
+/** @internal */
+export const getFloatingZoneBounds = (props: ZoneManagerProps) => {
+  return props.floating ? props.floating.bounds : props.bounds;
+};
+
+/** @internal */
+export const getFloatingZoneStyle = (props: ZoneManagerProps) => {
+  return props.floating ? {
+    zIndex: props.floating.stackId,
+    position: "relative" as "relative",
+  } : undefined;
+};

@@ -6,6 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
+import { render } from "@testing-library/react";
 
 import { Toggle, ToggleButtonType } from "../../ui-core";
 
@@ -27,6 +28,10 @@ describe("<Toggle />", () => {
     shallow(
       <Toggle />,
     ).should.matchSnapshot();
+  });
+
+  it("renders large correctly", () => {
+    shallow(<Toggle large={true} />).should.matchSnapshot();
   });
 
   it("Toggle should call onChange handler", () => {
@@ -103,6 +108,14 @@ describe("<Toggle />", () => {
     label.length.should.eq(1);
 
     wrapper.unmount();
+  });
+
+  it("focus into input with setFocus prop", () => {
+    const component = render(<Toggle setFocus={true} />);
+    const input = component.container.querySelector("input[type='checkbox']");
+
+    const element = document.activeElement as HTMLElement;
+    expect(element && element === input).to.be.true;
   });
 
 });

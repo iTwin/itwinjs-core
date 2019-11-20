@@ -5,8 +5,9 @@
 ```ts
 
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { Cartographic } from '@bentley/imodeljs-common';
-import { CheckBoxInfo } from '@bentley/ui-core';
+import { CheckBoxInfo as CheckBoxInfo_2 } from '@bentley/ui-core';
 import { CheckBoxState } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonProps } from '@bentley/ui-core';
@@ -14,6 +15,7 @@ import { ConnectDragPreview } from 'react-dnd';
 import { ConnectDragSource } from 'react-dnd';
 import { ConnectDropTarget } from 'react-dnd';
 import { ContextComponent } from 'react-dnd';
+import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { DndComponentClass } from 'react-dnd';
 import { Face } from '@bentley/ui-core';
@@ -23,12 +25,13 @@ import { HSVColor } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import * as Inspire from 'inspire-tree';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable as Observable_2 } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
@@ -40,6 +43,7 @@ import { Primitives } from '@bentley/imodeljs-frontend';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
 import { PropertyValue } from '@bentley/imodeljs-frontend';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
@@ -262,9 +266,9 @@ export class BeInspireTree<TNodePayload> {
     requestNodeLoad(parent: BeInspireTreeNode<TNodePayload> | undefined, index: number): Promise<void>;
     selectBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>, muteEvents?: boolean): Array<BeInspireTreeNode<TNodePayload>>;
     selected(): BeInspireTreeNodes<TNodePayload>;
-    updateNodesCheckboxes(nodes: BeInspireTreeNodes<TNodePayload>, checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo | Promise<CheckBoxInfo>), muteEvents?: boolean): Promise<void>;
+    updateNodesCheckboxes(nodes: BeInspireTreeNodes<TNodePayload>, checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo_2 | Promise<CheckBoxInfo_2>), muteEvents?: boolean): Promise<void>;
     updateNodesSelection(nodes: BeInspireTreeNodes<TNodePayload> | Inspire.TreeNodes, nodesToSelect?: string[] | ((payload: TNodePayload) => boolean), muteEvents?: boolean): void;
-    updateTreeCheckboxes(checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo | Promise<CheckBoxInfo>), muteEvents?: boolean): Promise<void>;
+    updateTreeCheckboxes(checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo_2 | Promise<CheckBoxInfo_2>), muteEvents?: boolean): Promise<void>;
     updateTreeSelection(nodesToSelect?: string[] | ((payload: TNodePayload) => boolean), muteEvents?: boolean): void;
     visible(): BeInspireTreeNodes<TNodePayload>;
     }
@@ -360,6 +364,8 @@ export interface BeInspireTreeNodeITree {
     // (undocumented)
     checkboxTooltip?: string;
     // (undocumented)
+    dirtyCounter?: number;
+    // (undocumented)
     dirtyTimestamp?: number;
     // (undocumented)
     icon?: string;
@@ -450,8 +456,14 @@ export class BooleanTypeConverter extends TypeConverter {
     convertFromString(value: string): boolean;
     // (undocumented)
     convertToString(value?: Primitives.Boolean): string;
+    // @internal (undocumented)
+    static getLocalizedTrueFalse(): void;
     // (undocumented)
     readonly isBooleanType: boolean;
+    // @internal (undocumented)
+    static sl10nFalse: string;
+    // @internal (undocumented)
+    static sl10nTrue: string;
     // (undocumented)
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
@@ -638,7 +650,7 @@ export interface BreadcrumbProps extends CommonProps {
 
 // @beta
 export class BreadcrumbTreeUtils {
-    static aliasNodeListToTableDataProvider: (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: import("../tree/TreeDataProvider").TreeDataProviderMethod | ImmediatelyLoadedTreeNodeItem[] | Promise<ImmediatelyLoadedTreeNodeItem[]> | import("../tree/TreeDataProvider").ITreeDataProvider | undefined) => TableDataProvider;
+    static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
     }
 
 // @beta
@@ -702,6 +714,26 @@ export interface CellProps {
     render: React.ComponentType<{
         isSelected: boolean;
     }>;
+}
+
+// @alpha
+export interface CheckBoxInfo {
+    // (undocumented)
+    readonly isDisabled: boolean;
+    // (undocumented)
+    readonly isVisible: boolean;
+    // (undocumented)
+    readonly state: CheckBoxState;
+    // (undocumented)
+    readonly tooltip?: string;
+}
+
+// @alpha
+export interface CheckboxStateChange {
+    // (undocumented)
+    newState: CheckBoxState;
+    // (undocumented)
+    nodeId: string;
 }
 
 // @beta
@@ -777,6 +809,8 @@ export interface ColumnDescription {
     filterable?: boolean;
     // (undocumented)
     filterCaseSensitive?: boolean;
+    // @alpha (undocumented)
+    filterRenderer?: FilterRenderer;
     // (undocumented)
     groupable?: boolean;
     // (undocumented)
@@ -807,6 +841,42 @@ export interface ColumnDescription {
     width?: number;
 }
 
+// @alpha
+export interface ColumnFilterDescriptor extends FilterDescriptor {
+    distinctFilter: DistinctValuesFilterDescriptor;
+    fieldFilter: FieldFilterDescriptor;
+}
+
+// @alpha (undocumented)
+export interface CompletionObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete: () => void;
+    // (undocumented)
+    error?: (err: any) => void;
+    // (undocumented)
+    next?: (value: T) => void;
+}
+
+// @alpha
+export interface CompositeFilterDescriptor extends FilterDescriptor {
+    filterDescriptorCollection: FilterDescriptorCollection;
+    logicalOperator: FilterCompositionLogicalOperator;
+}
+
+// @alpha
+export interface CompositeFilterDescriptorCollection {
+    add(item: FilterDescriptor): void;
+    clear(): void;
+    count: number;
+    evaluateRow(row: RowItem): boolean;
+    getColumnFilterDescriptor(columnKey: string): ColumnFilterDescriptor | undefined;
+    getFilterExpression(): string;
+    isColumnFilterActive(columnKey: string): boolean;
+    logicalOperator: FilterCompositionLogicalOperator;
+}
+
 // @internal
 export class ContextMenu extends React.Component<ContextMenuProps> {
     // (undocumented)
@@ -828,6 +898,33 @@ export interface ContextMenuProps extends CommonProps {
     position: Position;
 }
 
+// @alpha
+export const ControlledTree: React.FC<ControlledTreeProps>;
+
+// @alpha
+export interface ControlledTreeProps extends CommonProps {
+    // (undocumented)
+    descriptionsEnabled?: boolean;
+    // (undocumented)
+    iconsEnabled?: boolean;
+    // (undocumented)
+    noDataRenderer?: () => React.ReactElement;
+    // (undocumented)
+    nodeHighlightingProps?: HighlightableTreeProps;
+    // (undocumented)
+    nodeLoader: ITreeNodeLoader;
+    // (undocumented)
+    selectionMode: SelectionMode;
+    // (undocumented)
+    spinnerRenderer?: () => React.ReactElement;
+    // (undocumented)
+    treeEvents: TreeEvents;
+    // (undocumented)
+    treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
+    // (undocumented)
+    visibleNodes: VisibleTreeNodes;
+}
+
 // @public
 export namespace ConvertedPrimitives {
     export type Point = Point2d | Point3d;
@@ -843,6 +940,15 @@ export namespace ConvertedPrimitives {
     }
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
+
+// @alpha
+export function createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;
+
+// @alpha
+export function createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): {
+    modelSource: TreeModelSource;
+    disposeModelSource: () => void;
+};
 
 // @public
 export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs> {
@@ -869,7 +975,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
-    render(): JSX.Element | null;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<CustomNumberEditorState>;
     }
@@ -969,6 +1075,23 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     // (undocumented)
     hasChildren?: boolean;
+}
+
+// @alpha
+export class DistinctValueCollection {
+    constructor();
+    // (undocumented)
+    values: any[];
+    }
+
+// @alpha
+export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
+    addDistinctValue(distinctValue: any): void;
+    distinctValues: DistinctValueCollection;
+    distinctValuesComparisonOperator: FilterOperator;
+    filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
+    removeDistinctValue(distinctValue: any): boolean;
+    tryFindDescriptor(distinctValue: any): FilterDescriptor | undefined;
 }
 
 // @public
@@ -1175,7 +1298,19 @@ export class EnumTypeConverter extends TypeConverter {
     // (undocumented)
     convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Enum): string | Promise<string>;
     // (undocumented)
-    sortCompare(a: Primitives.Enum, b: Primitives.Enum, _ignoreCase?: boolean): number;
+    sortCompare(a: Primitives.Enum, b: Primitives.Enum, ignoreCase?: boolean): number;
+}
+
+// @alpha (undocumented)
+export interface ErrorObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete?: () => void;
+    // (undocumented)
+    error: (err: any) => void;
+    // (undocumented)
+    next?: (value: T) => void;
 }
 
 // @public
@@ -1184,6 +1319,79 @@ export class EventsMuteContext implements IDisposable {
     // (undocumented)
     dispose(): void;
     }
+
+// @alpha
+export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
+    // (undocumented)
+    checkboxRenderer?: NodeCheckboxRenderer;
+    // (undocumented)
+    descriptionEnabled?: boolean;
+    // (undocumented)
+    imageLoader?: ITreeImageLoader;
+    // (undocumented)
+    nodeHighlightProps?: HighlightableTreeNodeProps;
+}
+
+// @alpha
+export interface FieldFilterDescriptor extends FilterDescriptor {
+    addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
+    filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
+    logicalOperator: FilterCompositionLogicalOperator;
+    removeFieldValue(fieldValue: any, operator: FilterOperator): boolean;
+    tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
+}
+
+// @alpha
+export interface FilterableColumn {
+    columnFilterDescriptor: ColumnFilterDescriptor;
+    createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
+    filterableTable: FilterableTable;
+    filterMemberKey: string;
+    filterMemberType: string;
+    getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
+    isFilterActive: boolean;
+    showDistinctValueFilters: boolean;
+    showFieldFilters: boolean;
+}
+
+// @alpha
+export interface FilterableTable {
+    filterDescriptors: CompositeFilterDescriptorCollection;
+    getPropertyDisplayValueExpression(property: string): string;
+}
+
+// @alpha
+export enum FilterCompositionLogicalOperator {
+    // (undocumented)
+    And = 0,
+    // (undocumented)
+    Or = 1
+}
+
+// @alpha
+export interface FilterDescriptor {
+    clear(): void;
+    evaluateRow(row: RowItem): boolean;
+    getFilterExpression(): string;
+    isActive: boolean;
+    isFilterForColumn(columnKey: string): boolean;
+}
+
+// @alpha
+export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
+}
+
+// @alpha
+export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
+    constructor();
+    add(item: TDescriptor): void;
+    clear(): void;
+    readonly count: number;
+    // (undocumented)
+    readonly descriptors: TDescriptor[];
+    readonly isActive: boolean;
+    remove(item: TDescriptor): boolean;
+}
 
 // @public
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
@@ -1206,6 +1414,56 @@ export interface FilteringInputProps extends CommonProps {
     resultSelectorProps?: ResultSelectorProps;
 }
 
+// @alpha
+export enum FilterOperator {
+    // (undocumented)
+    Contains = 9,
+    // (undocumented)
+    DoesNotContain = 10,
+    // (undocumented)
+    EndsWith = 8,
+    // (undocumented)
+    IsContainedIn = 11,
+    // (undocumented)
+    IsEmpty = 13,
+    // (undocumented)
+    IsEqualTo = 0,
+    // (undocumented)
+    IsGreaterThan = 4,
+    // (undocumented)
+    IsGreaterThanOrEqualTo = 5,
+    // (undocumented)
+    IsLessThan = 2,
+    // (undocumented)
+    IsLessThanOrEqualTo = 3,
+    // (undocumented)
+    IsNotContainedIn = 12,
+    // (undocumented)
+    IsNotEmpty = 14,
+    // (undocumented)
+    IsNotEqualTo = 1,
+    // (undocumented)
+    IsNotNull = 16,
+    // (undocumented)
+    IsNull = 15,
+    // (undocumented)
+    Range = 6,
+    // (undocumented)
+    StartsWith = 7
+}
+
+// @alpha
+export enum FilterRenderer {
+    // (undocumented)
+    MultiSelect = 2,
+    // (undocumented)
+    Numeric = 1,
+    // (undocumented)
+    SingleSelect = 3,
+    // (undocumented)
+    Text = 4
+}
+
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
@@ -1213,6 +1471,9 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
 }
+
+// @alpha (undocumented)
+export function from<T>(iterable: Iterable<T>): Observable<T>;
 
 // @beta
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
@@ -1255,11 +1516,17 @@ export class HighlightingEngine {
     // (undocumented)
     static readonly ACTIVE_CLASS_NAME = "components-activehighlight";
     // (undocumented)
-    createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps;
+    createRenderProps(node: {
+        id?: string;
+    }): HighlightableTreeNodeProps;
     // (undocumented)
-    getActiveMatchIndex(node: BeInspireTreeNode<any>): number | undefined;
+    getActiveMatchIndex(node: {
+        id?: string;
+    }): number | undefined;
     // (undocumented)
-    isNodeActive(node: BeInspireTreeNode<any>): boolean | undefined;
+    isNodeActive(node: {
+        id?: string;
+    }): boolean | undefined;
     // (undocumented)
     static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode;
     }
@@ -1431,6 +1698,15 @@ export const isTreeDataProviderPromise: (provider: TreeDataProvider) => provider
 // @public
 export const isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[];
 
+// @alpha (undocumented)
+export function isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode;
+
+// @alpha (undocumented)
+export function isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder;
+
+// @alpha (undocumented)
+export function isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode;
+
 // @public
 export interface ItemColorOverrides {
     backgroundColor?: number;
@@ -1465,6 +1741,20 @@ export interface ITreeDataProvider {
 export interface ITreeImageLoader extends IImageLoader {
     // (undocumented)
     load: (item: TreeNodeItem | BeInspireTreeNodeITree) => LoadedImage | undefined;
+}
+
+// @alpha
+export interface ITreeNodeLoader {
+    // (undocumented)
+    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    // (undocumented)
+    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+}
+
+// @alpha
+export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends ITreeNodeLoader {
+    // (undocumented)
+    getDataProvider(): TDataProvider;
 }
 
 // @public
@@ -1511,6 +1801,28 @@ export interface LoadedImage {
     sourceType: ImageSourceType;
     // (undocumented)
     value: string;
+}
+
+// @alpha (undocumented)
+export interface LoadedNodeHierarchy {
+    // (undocumented)
+    hierarchyItems: LoadedNodeHierarchyItem[];
+    // (undocumented)
+    numChildren?: number;
+    // (undocumented)
+    offset: number;
+    // (undocumented)
+    parentId: string | undefined;
+}
+
+// @alpha (undocumented)
+export interface LoadedNodeHierarchyItem {
+    // (undocumented)
+    children?: LoadedNodeHierarchyItem[];
+    // (undocumented)
+    item: TreeNodeItemData;
+    // (undocumented)
+    numChildren?: number;
 }
 
 // @public
@@ -1564,6 +1876,18 @@ export interface MultiSelectionHandler<TItem> {
     updateSelection: (selections: TItem[], deselections: TItem[]) => void;
 }
 
+// @alpha
+export interface MutableCheckBoxInfo extends CheckBoxInfo {
+    // (undocumented)
+    isDisabled: boolean;
+    // (undocumented)
+    isVisible: boolean;
+    // (undocumented)
+    state: CheckBoxState;
+    // (undocumented)
+    tooltip?: string;
+}
+
 // @beta
 export interface MutableTableDataProvider extends TableDataProvider {
     // (undocumented)
@@ -1590,6 +1914,48 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
     removeNode(parent: TreeNodeItem | undefined, child: TreeNodeItem): void;
 }
 
+// @alpha
+export class MutableTreeModel implements TreeModel {
+    // (undocumented)
+    static [immerable]: boolean;
+    // (undocumented)
+    clearChildren(parentId: string | undefined): void;
+    // (undocumented)
+    computeVisibleNodes(): VisibleTreeNodes;
+    // (undocumented)
+    getChildren(parentId: string | undefined): SparseArray<string> | undefined;
+    // (undocumented)
+    getNode(id: string): MutableTreeModelNode | undefined;
+    // (undocumented)
+    getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
+    // (undocumented)
+    getRootNode(): TreeModelRootNode;
+    // (undocumented)
+    iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    // (undocumented)
+    setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
+    // (undocumented)
+    setNumChildren(parentId: string | undefined, numChildren: number): void;
+    }
+
+// @alpha
+export interface MutableTreeModelNode extends TreeModelNode {
+    // (undocumented)
+    checkbox: MutableCheckBoxInfo;
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    isExpanded: boolean;
+    // (undocumented)
+    isLoading: boolean;
+    // (undocumented)
+    isSelected: boolean;
+    // (undocumented)
+    item: TreeNodeItem;
+    // (undocumented)
+    label: string;
+}
+
 // @public
 export class NavigationPropertyTypeConverter extends TypeConverter {
     // (undocumented)
@@ -1602,6 +1968,24 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+}
+
+// @alpha (undocumented)
+export interface NextObserver<T> {
+    // (undocumented)
+    closed?: boolean;
+    // (undocumented)
+    complete?: () => void;
+    // (undocumented)
+    error?: (err: any) => void;
+    // (undocumented)
+    next: (value: T) => void;
+}
+
+// @public
+export interface NodeCheckboxProps extends Omit<NodeCheckboxProps_2, "onClick"> {
+    // (undocumented)
+    onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
 }
 
 // @internal
@@ -1651,6 +2035,16 @@ export interface NullableOperatorProcessor {
     isNull(value: Primitives.Value): boolean;
 }
 
+// @alpha
+export interface NumericRangeData {
+    // (undocumented)
+    begin: number;
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    type: number;
+}
+
 // @public
 export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
     // (undocumented)
@@ -1666,6 +2060,13 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
     // (undocumented)
     sortCompare(a: Primitives.Numeric, b: Primitives.Numeric, _ignoreCase?: boolean): number;
 }
+
+// @alpha
+export interface Observable<T> extends Subscribable<T> {
+}
+
+// @alpha
+export type Observer<T> = NextObserver<T> | ErrorObserver<T> | CompletionObserver<T>;
 
 // @public
 export type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
@@ -1683,6 +2084,32 @@ export interface OperatorProcessor {
     // (undocumented)
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
+
+// @alpha
+export interface OperatorValueFilterDescriptor extends FilterDescriptor {
+    isCaseSensitive: boolean;
+    memberKey: string;
+    memberType: string;
+    operator: FilterOperator;
+    value: any;
+}
+
+// @alpha
+export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
+}
+
+// @alpha
+export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
+    constructor(dataProvider: TDataProvider, pageSize: number);
+    // (undocumented)
+    getDataProvider(): TDataProvider;
+    // (undocumented)
+    getPageSize(): number;
+    // (undocumented)
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    // (undocumented)
+    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+    }
 
 // @public
 export interface PageOptions {
@@ -2071,6 +2498,7 @@ export interface RowItem {
     extendedData?: {
         [key: string]: any;
     };
+    getValueFromCell?: (columnKey: string) => any;
     // (undocumented)
     isDisabled?: boolean;
     key: string;
@@ -2304,10 +2732,14 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     // (undocumented)
     addRow(rowItem: RowItem): number;
+    // @alpha (undocumented)
+    applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void>;
     // (undocumented)
     deleteRow(rowItem: RowItem, raiseRowsChangedEvent?: boolean): void;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
+    // @alpha (undocumented)
+    getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection>;
     // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
     // (undocumented)
@@ -2397,15 +2829,27 @@ export interface StandardRotationChangeEventArgs {
 // @beta
 export enum StandardTypeConverterTypeNames {
     // (undocumented)
+    Bool = "bool",
+    // (undocumented)
     Boolean = "boolean",
+    // (undocumented)
+    DateTime = "dateTime",
+    // (undocumented)
+    Double = "double",
     // (undocumented)
     Enum = "enum",
     // (undocumented)
     Float = "float",
     // (undocumented)
+    Hex = "hex",
+    // (undocumented)
     Hexadecimal = "hexadecimal",
     // (undocumented)
     Int = "int",
+    // (undocumented)
+    Integer = "integer",
+    // (undocumented)
+    Navigation = "navigation",
     // (undocumented)
     Point2d = "point2d",
     // (undocumented)
@@ -2472,6 +2916,30 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
+// @alpha (undocumented)
+export interface Subscribable<T> {
+    // (undocumented)
+    subscribe(observer?: Observer<T>): Subscription;
+    // (undocumented)
+    subscribe(next: null | undefined, error: null | undefined, complete: () => void): Subscription;
+    // (undocumented)
+    subscribe(next: null | undefined, error: (error: any) => void, complete?: () => void): Subscription;
+    // (undocumented)
+    subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): Subscription;
+    // (undocumented)
+    subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription;
+}
+
+// @alpha (undocumented)
+export interface Subscription extends Unsubscribable {
+    // (undocumented)
+    add(tearDown: Unsubscribable | (() => void) | void): void;
+    // (undocumented)
+    readonly closed: boolean;
+    // (undocumented)
+    unsubscribe(): void;
+}
+
 // @public
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
@@ -2482,6 +2950,10 @@ export class Table extends React.Component<TableProps, TableState> {
     componentDidUpdate(previousProps: TableProps): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
+    // @internal
+    readonly filterDescriptors: CompositeFilterDescriptorCollection;
+    // @internal
+    getPropertyDisplayValueExpression(property: string): string;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2524,6 +2996,20 @@ export interface TableCellUpdatedArgs {
     rowIndex: number;
 }
 
+// @internal
+export class TableColumn extends FilterableColumnBase {
+    constructor(filterableTable: FilterableTable, columnDescription: ColumnDescription, reactDataGridColumn: ReactDataGridColumn);
+    // (undocumented)
+    dataProvider?: TableDataProvider;
+    // (undocumented)
+    distinctValueCollection?: DistinctValueCollection;
+    getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly reactDataGridColumn: ReactDataGridColumn;
+}
+
 // @public
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> {
 }
@@ -2533,8 +3019,14 @@ export type TableDataChangesListener = () => void;
 
 // @public
 export interface TableDataProvider {
+    // @alpha
+    applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
+    // @alpha
+    getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
+    // @alpha
+    getPropertyDisplayValueExpression?: (property: string) => string;
     // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
     // (undocumented)
@@ -2545,6 +3037,14 @@ export interface TableDataProvider {
     onRowsChanged: TableDataChangeEvent;
     // (undocumented)
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
+}
+
+// @alpha (undocumented)
+export interface TableDistinctValue {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: Primitives.Value;
 }
 
 // @beta
@@ -2582,6 +3082,8 @@ export interface TableProps extends CommonProps {
     hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
+    // @internal (undocumented)
+    onApplyFilter?: () => void;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
     onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
     // @beta
@@ -2593,11 +3095,14 @@ export interface TableProps extends CommonProps {
     onRowsDeselected?: (rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>;
     onRowsLoaded?: (firstRowIndex: number, lastRowIndex: number) => void;
     onRowsSelected?: (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>;
+    // @internal (undocumented)
+    onScrollToRow?: (rowIndex: number) => void;
     pageAmount?: number;
     propertyValueRendererManager?: PropertyValueRendererManager;
     // @internal (undocumented)
     renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
     reorderableColumns?: boolean;
+    scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
     showHideColumns?: boolean;
@@ -2659,7 +3164,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     // (undocumented)
     getValue(): string;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<TextEditorState>;
     }
@@ -2674,6 +3179,8 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 // @alpha
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
+    // (undocumented)
+    componentDidUpdate(prevProps: TimelineComponentProps): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -2789,10 +3296,32 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean;
     }
 
+// @alpha
+export interface TreeActions {
+    // (undocumented)
+    onNodeCheckboxClicked: (nodeId: string, newState: CheckBoxState) => void;
+    // (undocumented)
+    onNodeClicked: (nodeId: string, event: React_2.MouseEvent) => void;
+    // (undocumented)
+    onNodeCollapsed: (nodeId: string) => void;
+    // (undocumented)
+    onNodeExpanded: (nodeId: string) => void;
+    // (undocumented)
+    onNodeMouseDown: (nodeId: string) => void;
+    // (undocumented)
+    onNodeMouseMove: (nodeId: string) => void;
+}
+
 // @beta
 export interface TreeCellUpdatedArgs {
     newValue: string;
     node: BeInspireTreeNode<TreeNodeItem>;
+}
+
+// @alpha
+export interface TreeCheckboxStateChangeEvent {
+    // (undocumented)
+    stateChanges: Observable<CheckboxStateChange[]>;
 }
 
 // @public
@@ -2810,6 +3339,15 @@ export type TreeDataProviderPromise = Promise<TreeDataProviderRaw>;
 // @public
 export type TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[];
 
+// @internal (undocumented)
+export class TreeDataSource {
+    constructor(dataProvider: TreeDataProvider);
+    // (undocumented)
+    readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
+    // (undocumented)
+    requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable_2<TreeDataSourceResult>;
+}
+
 // @beta
 export interface TreeDragDropProps<DragDropObject = any> {
     // (undocumented)
@@ -2821,9 +3359,192 @@ export interface TreeDragDropProps<DragDropObject = any> {
 // @beta
 export type TreeDragDropType = {} | TreeNodeItem | TreeDataProvider;
 
+// @internal
+export class TreeEventDispatcher implements TreeActions {
+    constructor(treeEvents: TreeEvents, nodeLoader: ITreeNodeLoader, selectionMode: SelectionMode, getVisibleNodes?: () => VisibleTreeNodes);
+    // (undocumented)
+    onNodeCheckboxClicked(nodeId: string, newState: CheckBoxState): void;
+    // (undocumented)
+    onNodeClicked(nodeId: string, event: React_2.MouseEvent<Element, MouseEvent>): void;
+    // (undocumented)
+    onNodeCollapsed(nodeId: string): void;
+    // (undocumented)
+    onNodeExpanded(nodeId: string): void;
+    // (undocumented)
+    onNodeMouseDown(nodeId: string): void;
+    // (undocumented)
+    onNodeMouseMove(nodeId: string): void;
+    // (undocumented)
+    setVisibleNodes(visibleNodes: () => VisibleTreeNodes): void;
+    }
+
+// @alpha
+export class TreeEventHandler implements TreeEvents {
+    constructor(params: TreeEventHandlerParams);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    // (undocumented)
+    onNodeCollapsed({ nodeId }: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeExpanded({ nodeId }: TreeNodeEvent): void;
+    // (undocumented)
+    onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined;
+    // (undocumented)
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined;
+    }
+
+// @alpha
+export interface TreeEventHandlerParams {
+    // (undocumented)
+    collapsedChildrenDisposalEnabled?: boolean;
+    // (undocumented)
+    modelSource: TreeModelSource;
+    // (undocumented)
+    nodeLoader: ITreeNodeLoader;
+}
+
+// @alpha
+export interface TreeEvents {
+    // (undocumented)
+    onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    // (undocumented)
+    onNodeCollapsed?(event: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeExpanded?(event: TreeNodeEvent): void;
+    // (undocumented)
+    onSelectionModified?(event: TreeSelectionModificationEvent): Subscription | undefined;
+    // (undocumented)
+    onSelectionReplaced?(event: TreeSelectionReplacementEvent): Subscription | undefined;
+}
+
 // @public
 export class TreeImageLoader implements ITreeImageLoader {
     load(item: TreeNodeItem | BeInspireTreeNodeITree): LoadedImage | undefined;
+}
+
+// @alpha
+export interface TreeModel {
+    // (undocumented)
+    getChildren(parentId: string | undefined): SparseArray<string> | undefined;
+    // (undocumented)
+    getNode(id: string): TreeModelNode | undefined;
+    // (undocumented)
+    getNode(parentId: string | undefined, childIndex: number): TreeModelNode | TreeModelNodePlaceholder | undefined;
+    // (undocumented)
+    getNode(nodeId: string | undefined, childIndex?: number): TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
+    // (undocumented)
+    getRootNode(): TreeModelRootNode;
+    // (undocumented)
+    iterateTreeModelNodes(parentId?: string): IterableIterator<TreeModelNode>;
+}
+
+// @alpha
+export interface TreeModelNode {
+    // (undocumented)
+    readonly checkbox: CheckBoxInfo;
+    // (undocumented)
+    readonly depth: number;
+    // (undocumented)
+    readonly description: string | undefined;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly isExpanded: boolean;
+    // (undocumented)
+    readonly isLoading?: boolean;
+    // (undocumented)
+    readonly isSelected: boolean;
+    // (undocumented)
+    readonly item: TreeNodeItem;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly numChildren: number | undefined;
+    // (undocumented)
+    readonly parentId: string | undefined;
+}
+
+// @alpha
+export interface TreeModelNodeInput {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly isExpanded: boolean;
+    // (undocumented)
+    readonly isLoading: boolean;
+    // (undocumented)
+    readonly isSelected: boolean;
+    // (undocumented)
+    readonly item: TreeNodeItem;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly numChildren?: number;
+}
+
+// @alpha
+export interface TreeModelNodePlaceholder {
+    // (undocumented)
+    readonly childIndex: number;
+    // (undocumented)
+    readonly depth: number;
+    // (undocumented)
+    readonly parentId?: string;
+}
+
+// @alpha
+export interface TreeModelRootNode {
+    // (undocumented)
+    readonly depth: -1;
+    // (undocumented)
+    readonly id: undefined;
+    // (undocumented)
+    readonly numChildren: number | undefined;
+}
+
+// @alpha
+export class TreeModelSource {
+    constructor();
+    // (undocumented)
+    getModel(): TreeModel;
+    // (undocumented)
+    getVisibleNodes(): VisibleTreeNodes;
+    // (undocumented)
+    modifyModel(callback: (model: MutableTreeModel) => void): void;
+    // (undocumented)
+    onModelChanged: BeUiEvent<TreeModel>;
+    }
+
+// @public
+export class TreeNode extends React.Component<TreeNodeProps> {
+    constructor(props: TreeNodeProps);
+    // (undocumented)
+    componentDidUpdate(_prevProps: TreeNodeProps): void;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TreeNodeProps): boolean;
+}
+
+// @alpha
+export interface TreeNodeEvent {
+    // (undocumented)
+    nodeId: string;
+}
+
+// @public
+export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps>;
+
+// @public
+export interface TreeNodeIconProps extends React.Attributes {
+    // (undocumented)
+    imageLoader: ITreeImageLoader;
+    // (undocumented)
+    node: BeInspireTreeNode<TreeNodeItem>;
 }
 
 // @public
@@ -2856,12 +3577,70 @@ export interface TreeNodeItem {
     typename?: string;
 }
 
+// @alpha (undocumented)
+export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem;
+
+// @alpha
+export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
+    constructor(dataProvider: TDataProvider);
+    // (undocumented)
+    getDataProvider(): TDataProvider;
+    // (undocumented)
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<string[]>;
+    // (undocumented)
+    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+    }
+
+// @public
+export interface TreeNodeProps extends CommonProps {
+    // @beta (undocumented)
+    cellEditing?: CellEditingEngine;
+    // (undocumented)
+    checkboxProps?: NodeCheckboxProps;
+    // @beta (undocumented)
+    highlightProps?: HighlightableTreeNodeProps;
+    imageLoader?: ITreeImageLoader;
+    // (undocumented)
+    node: BeInspireTreeNode<TreeNodeItem>;
+    // (undocumented)
+    onClick?: (e: React.MouseEvent) => void;
+    onFinalRenderComplete?: (renderId: string) => void;
+    // (undocumented)
+    onMouseDown?: (e: React.MouseEvent) => void;
+    // (undocumented)
+    onMouseMove?: (e: React.MouseEvent) => void;
+    // (undocumented)
+    onMouseUp?: (e: React.MouseEvent) => void;
+    renderId?: string;
+    // (undocumented)
+    renderOverrides?: {
+        renderCheckbox?: NodeCheckboxRenderer;
+    };
+    // (undocumented)
+    showDescription?: boolean;
+    // (undocumented)
+    valueRendererManager: PropertyValueRendererManager;
+}
+
+// @alpha
+export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNodeRendererProps) => JSX.Element>;
+
+// @alpha
+export interface TreeNodeRendererProps extends CommonProps {
+    // (undocumented)
+    node: TreeModelNode;
+    // (undocumented)
+    onLabelRendered?: (node: TreeModelNode) => void;
+    // (undocumented)
+    treeActions: TreeActions;
+}
+
 // @public
 export interface TreeProps extends CommonProps {
     bulkCheckboxActionsDisabled?: boolean;
     // @beta
     cellEditing?: EditableTreeProps;
-    checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo_2 | Promise<CheckBoxInfo_2>;
     dataProvider: TreeDataProvider;
     disposeChildrenOnCollapse?: boolean;
     imageLoader?: ITreeImageLoader;
@@ -2899,6 +3678,59 @@ export interface TreeProps extends CommonProps {
     showIcons?: boolean;
 }
 
+// @alpha
+export const TreeRenderer: React.FC<TreeRendererProps>;
+
+// @alpha (undocumented)
+export const 
+/** @alpha */
+TreeRendererContextConsumer: React.ExoticComponent<React.ConsumerProps<TreeRendererContext>>;
+
+// @alpha (undocumented)
+export const 
+/** @alpha */
+TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<TreeRendererContext>>;
+
+// @alpha
+export interface TreeRendererProps {
+    // (undocumented)
+    cellEditing?: CellEditingEngine_2;
+    // (undocumented)
+    nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
+    // (undocumented)
+    nodeHighlightingProps?: HighlightableTreeProps;
+    // (undocumented)
+    nodeLoader: ITreeNodeLoader;
+    // (undocumented)
+    nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+    // (undocumented)
+    treeActions: TreeActions;
+    // (undocumented)
+    visibleNodes: VisibleTreeNodes;
+}
+
+// @alpha
+export interface TreeSelectionChange {
+    // (undocumented)
+    deselectedNodeIds: string[];
+    // (undocumented)
+    selectedNodeIds: string[];
+}
+
+// @alpha
+export interface TreeSelectionModificationEvent {
+    // (undocumented)
+    modifications: Observable<TreeSelectionChange>;
+}
+
+// @alpha
+export interface TreeSelectionReplacementEvent {
+    // (undocumented)
+    replacements: Observable<{
+        selectedNodeIds: string[];
+    }>;
+}
+
 // @internal
 export namespace TreeTest {
     // (undocumented)
@@ -2932,6 +3764,10 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor {
     readonly isLessGreaterType: boolean;
     // (undocumented)
     isNotEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
+    // (undocumented)
+    isNotNull(value: Primitives.Value): boolean;
+    // (undocumented)
+    isNull(value: Primitives.Value): boolean;
     // (undocumented)
     readonly isNullableType: boolean;
     // (undocumented)
@@ -2967,6 +3803,29 @@ export class UiComponents {
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
+
+// @alpha (undocumented)
+export interface Unsubscribable {
+    // (undocumented)
+    unsubscribe(): void;
+}
+
+// @alpha
+export function useModelSource(nodeLoader: ITreeNodeLoader | undefined): TreeModelSource | undefined;
+
+// @alpha
+export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider): TreeNodeLoader<TDataProvider>;
+
+// @alpha
+export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number): PagedTreeNodeLoader<TDataProvider>;
+
+// @alpha (undocumented)
+export const 
+/** @alpha */
+useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
+
+// @alpha
+export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes;
 
 // @public
 export class ViewClassFullNameChangedEvent extends UiEvent<ViewClassFullNameChangedEventArgs> {
@@ -3073,6 +3932,18 @@ export interface ViewRotationChangeEventArgs {
     animationTime?: number;
     // (undocumented)
     viewport: Viewport;
+}
+
+// @alpha
+export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {
+    // (undocumented)
+    getAtIndex(index: number): TreeModelNode | TreeModelNodePlaceholder | undefined;
+    // (undocumented)
+    getModel(): TreeModel;
+    // (undocumented)
+    getNumNodes(): number;
+    // (undocumented)
+    getNumRootNodes(): number | undefined;
 }
 
 // @beta

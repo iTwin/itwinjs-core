@@ -163,7 +163,7 @@ export class BriefcaseHandler {
     }
 
 // @internal
-export class BriefcaseQuery extends Query {
+export class BriefcaseQuery extends WsgQuery {
     byId(id: number): this;
     getId(): number | undefined;
     ownedByMe(): this;
@@ -273,7 +273,7 @@ export class CheckpointHandler {
     }
 
 // @alpha
-export class CheckpointQuery extends Query {
+export class CheckpointQuery extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
@@ -350,7 +350,7 @@ export class CodeHandler {
     }
 
 // @alpha
-export class CodeQuery extends Query {
+export class CodeQuery extends WsgQuery {
     constructor();
     byBriefcaseId(briefcaseId: number): this;
     byCodes(codes: HubCode[]): this;
@@ -403,10 +403,10 @@ export interface CodeUpdateOptions {
     unlimitedReporting?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export class Config {
     static readonly App: Config;
-    get(varName: string, defaultVal?: ValueType): any;
+    get(varName: string, defaultVal?: boolean | string | number): any;
     getBoolean(name: string, defaultVal?: boolean): boolean;
     getContainer(): any;
     getNumber(name: string, defaultVal?: number): number;
@@ -416,8 +416,8 @@ export class Config {
     merge(source: any): void;
     query(varName: string): any;
     remove(varName: string): void;
-    set(varName: string, value: ValueType): void;
-    }
+    set(varName: string, value: boolean | string | number): void;
+}
 
 // @alpha
 export class ConflictingCodesError extends IModelHubError {
@@ -472,6 +472,8 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     deleteSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    // (undocumented)
+    formErrorResponse(response: Response): SettingsResult;
     getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
     // (undocumented)
     getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -1100,7 +1102,7 @@ export enum InitializationState {
 }
 
 // @beta
-export class InstanceIdQuery extends Query {
+export class InstanceIdQuery extends WsgQuery {
     byId(id: GuidString): this;
     // @internal (undocumented)
     protected _byId?: GuidString;
@@ -1166,7 +1168,7 @@ export enum LockLevel {
 }
 
 // @alpha
-export class LockQuery extends Query {
+export class LockQuery extends WsgQuery {
     constructor();
     byBriefcaseId(briefcaseId: number): this;
     byLockLevel(lockLevel: LockLevel): this;
@@ -1316,24 +1318,100 @@ export class Project extends CommonContext {
     type?: string;
 }
 
-// @beta
-export class Query {
-    // @internal
-    protected addFilter(filter: string, operator?: "and" | "or"): void;
-    // @internal
-    protected addSelect(select: string): this;
-    filter(filter: string): this;
-    // @internal
-    getQueryOptions(): RequestQueryOptions;
-    orderBy(orderBy: string): this;
-    pageSize(n: number): this;
+// @alpha
+export class ProjectShareClient extends WsgClient {
+    constructor();
     // (undocumented)
-    protected _query: RequestQueryOptions;
-    // @internal
-    resetQueryOptions(): void;
-    select(select: string): this;
-    skip(n: number): this;
-    top(n: number): this;
+    static readonly configRegion = "imjs_project_share_client_region";
+    // (undocumented)
+    static readonly configRelyingPartyUri = "imjs_project_share_client_relying_party_uri";
+    // (undocumented)
+    static readonly configURL = "imjs_project_share_client_url";
+    protected getDefaultUrl(): string;
+    getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]>;
+    getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]>;
+    // (undocumented)
+    protected getRegion(): number | undefined;
+    // (undocumented)
+    protected getRelyingPartyUrl(): string;
+    getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
+    protected getUrlSearchKey(): string;
+    readFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile, maxByteCount?: number): Promise<Uint8Array>;
+    readFileNodeJs(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array>;
+    // (undocumented)
+    static readonly searchKey: string;
+    updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{
+        Name: string;
+        Value: string;
+    }>, deleteProperties?: string[]): Promise<ProjectShareFile>;
+}
+
+// @alpha
+export class ProjectShareFile extends WsgInstance {
+    accessUrl?: string;
+    // (undocumented)
+    contentType?: string;
+    // (undocumented)
+    createdBy?: string;
+    // (undocumented)
+    createdTimeStamp?: string;
+    // (undocumented)
+    customProperties?: any;
+    // (undocumented)
+    instanceId?: string;
+    // (undocumented)
+    modifiedBy?: string;
+    // (undocumented)
+    modifiedTimeStamp?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parentFolderWsgId?: string;
+    // (undocumented)
+    path?: string;
+    // (undocumented)
+    size?: number;
+}
+
+// @alpha
+export class ProjectShareFileQuery extends ProjectShareQuery {
+    startsWithPath(contextId: GuidString, path: string): this;
+}
+
+// @alpha
+export class ProjectShareFolder extends WsgInstance {
+    // (undocumented)
+    contentType?: string;
+    // (undocumented)
+    createdBy?: string;
+    // (undocumented)
+    createdTimeStamp?: string;
+    // (undocumented)
+    modifiedBy?: string;
+    // (undocumented)
+    modifiedTimeStamp?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parentFolderId?: string;
+    // (undocumented)
+    path?: string;
+    // (undocumented)
+    size?: number;
+}
+
+// @alpha
+export class ProjectShareFolderQuery extends ProjectShareQuery {
+    inPath(contextId: GuidString, path: string): this;
+}
+
+// @alpha
+export class ProjectShareQuery extends WsgQuery {
+    byWsgIds(...ids: GuidString[]): this;
+    inFolder(folderId: GuidString): this;
+    inFolderWithNameLike(folderId: GuidString, searchName: string): this;
+    inRootFolder(contextId: GuidString): this;
+    startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike?: string): this;
 }
 
 // @internal
@@ -1367,6 +1445,10 @@ export class RealityData extends WsgInstance {
     createdTimestamp?: string;
     // (undocumented)
     creatorId?: string;
+    // (undocumented)
+    dataAcquirer?: string;
+    // (undocumented)
+    dataAcquisitionDate?: string;
     // (undocumented)
     dataLocationGuid?: string;
     // (undocumented)
@@ -1405,6 +1487,8 @@ export class RealityData extends WsgInstance {
     ownerId?: string;
     // (undocumented)
     projectId: undefined | string;
+    // (undocumented)
+    referenceElevation?: number;
     // (undocumented)
     resolutionInMeters?: string;
     // (undocumented)
@@ -1683,7 +1767,7 @@ export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
 // @beta
-export class StringIdQuery extends Query {
+export class StringIdQuery extends WsgQuery {
     byId(id: string): this;
     // @internal (undocumented)
     protected _byId?: string;
@@ -1875,7 +1959,7 @@ export class UserInfoHandler {
 }
 
 // @alpha
-export class UserInfoQuery extends Query {
+export class UserInfoQuery extends WsgQuery {
     byId(id: string): this;
     // @internal (undocumented)
     protected _byId?: string;
@@ -1902,7 +1986,7 @@ export class UserStatisticsHandler {
     }
 
 // @alpha
-export class UserStatisticsQuery extends Query {
+export class UserStatisticsQuery extends WsgQuery {
     // @internal
     constructor();
     byId(id: string): this;
@@ -1920,7 +2004,7 @@ export class UserStatisticsQuery extends Query {
     selectPushedChangeSetsCount(): this;
     }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ValueType = string | boolean | number;
 
 // @beta
@@ -2002,6 +2086,26 @@ export abstract class WsgInstance extends ECInstance {
     eTag?: string;
     // (undocumented)
     wsgId: string;
+}
+
+// @beta
+export class WsgQuery {
+    // @internal
+    protected addFilter(filter: string, operator?: "and" | "or"): void;
+    // @internal
+    protected addSelect(select: string): this;
+    filter(filter: string): this;
+    // @internal
+    getQueryOptions(): RequestQueryOptions;
+    orderBy(orderBy: string): this;
+    pageSize(n: number): this;
+    // (undocumented)
+    protected _query: RequestQueryOptions;
+    // @internal
+    resetQueryOptions(): void;
+    select(select: string): this;
+    skip(n: number): this;
+    top(n: number): this;
 }
 
 // @beta

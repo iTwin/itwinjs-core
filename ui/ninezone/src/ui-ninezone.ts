@@ -76,16 +76,14 @@ export * from "./ui-ninezone/toolbar/item/expandable/history/Icon";
 export * from "./ui-ninezone/toolbar/item/expandable/history/Item";
 export * from "./ui-ninezone/toolbar/item/expandable/history/Tray";
 
-export * from "./ui-ninezone/toolbar/scroll/Chevron";
-export * from "./ui-ninezone/toolbar/scroll/Indicator";
-
 export * from "./ui-ninezone/toolbar/Items";
-export * from "./ui-ninezone/toolbar/Scrollable";
 export * from "./ui-ninezone/toolbar/Toolbar";
 
 export * from "./ui-ninezone/utilities/Cell";
 export * from "./ui-ninezone/utilities/Css";
 export * from "./ui-ninezone/utilities/Direction";
+export * from "./ui-ninezone/utilities/DisabledResizeHandles";
+export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
 export * from "./ui-ninezone/widget/Stacked";
 export * from "./ui-ninezone/widget/Tools";

@@ -6,6 +6,7 @@
 /** @module Tools */
 
 import { IModelApp } from "../IModelApp";
+import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
  * @beta
@@ -41,6 +42,10 @@ export enum ToolAssistanceImage {
   TwoTouchDrag,
   /** Touch image with two fingers pinching */
   TwoTouchPinch,
+  /** Touch cursor image with single finger tapping once */
+  TouchCursorTap,
+  /** Touch cursor image with single finger dragging */
+  TouchCursorDrag,
 }
 
 /** Input Method for Tool Assistance instruction
@@ -123,24 +128,27 @@ export class ToolAssistance {
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
+  private static translateKey(key: string) { return IModelApp.i18n.translate(CoreTools.namespace + ":toolAssistance." + key); }
+  private static translateTouch(cursor: string) { return IModelApp.i18n.translate(CoreTools.namespace + ":touchCursor." + cursor); }
+
   /** Alt key text. */
   public static get altKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.altKey");
+    return this.translateKey("altKey");
   }
 
   /** Ctrl key text. */
   public static get ctrlKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.ctrlKey");
+    return this.translateKey("ctrlKey");
   }
 
   /** Shift key text. */
   public static get shiftKey(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.shiftKey");
+    return this.translateKey("shiftKey");
   }
 
   /** Inputs text. */
   public static get inputsLabel(): string {
-    return IModelApp && IModelApp.i18n && IModelApp.i18n.translate("CoreTools:toolAssistance.inputs");
+    return this.translateKey("inputs");
   }
 
   /** Keyboard info for Alt key. */
@@ -169,6 +177,22 @@ export class ToolAssistance {
   /** Keyboard info for Shift key symbol. */
   public static get shiftSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo {
     return { keys: [` ${ToolAssistance.shiftKey} `] };
+  }
+
+  /** Ctrl key symbol. */
+  public static readonly ctrlSymbol: string = "\u2038";
+
+  /** Keyboard info for Ctrl key symbol. */
+  public static get ctrlSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo {
+    return { keys: [ToolAssistance.ctrlSymbol] };
+  }
+
+  /** Alt key symbol. */
+  public static readonly altSymbol: string = "\u2387";
+
+  /** Keyboard info for Alt key symbol. */
+  public static get altSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo {
+    return { keys: [ToolAssistance.altSymbol] };
   }
 
   /** Creates a [[ToolAssistanceInstruction]].
@@ -203,6 +227,25 @@ export class ToolAssistance {
     return instruction;
   }
 
+  /** Creates a [[ToolAssistanceInstruction]] with a modifier key and an image.
+   */
+  public static createModifierKeyInstruction(modifierKey: string, image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction {
+    if (inputMethod === undefined)
+      inputMethod = ToolAssistanceInputMethod.Both;
+
+    const keyboardInfo = { keys: [modifierKey] };
+
+    const instruction: ToolAssistanceInstruction = {
+      image,
+      text,
+      keyboardInfo,
+      isNew,
+      inputMethod,
+    };
+
+    return instruction;
+  }
+
   /** Creates a [[ToolAssistanceKeyboardInfo]].
    */
   public static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo {
@@ -211,6 +254,21 @@ export class ToolAssistance {
       bottomKeys,
     };
     return keyboardInfo;
+  }
+
+  /** Creates instructions for interaction with the touch cursor that are appended to the supplied [[ToolAssistanceInstruction]] array.
+   */
+  public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
+    const accuSnap = IModelApp.accuSnap;
+    if (accuSnap.isSnapEnabled && accuSnap.isSnapEnabledByUser && undefined === accuSnap.touchCursor) {
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch));
+      return true;
+    } else if (undefined !== accuSnap.touchCursor) {
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, this.translateTouch("IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, this.translateTouch("AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+      return true;
+    }
+    return false;
   }
 
   /** Creates a [[ToolAssistanceSection]].

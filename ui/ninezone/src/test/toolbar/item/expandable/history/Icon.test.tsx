@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { HistoryIcon } from "../../../../../ui-ninezone";
+
+// tslint:disable: deprecation
 
 describe("<HistoryIcon />", () => {
   it("should render", () => {

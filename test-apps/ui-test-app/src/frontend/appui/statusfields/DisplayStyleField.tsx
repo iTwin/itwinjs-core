@@ -39,7 +39,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
   private async setStateFromActiveContent(contentControl?: ContentControl): Promise<void> {
     if (contentControl && contentControl.viewport) {
-      const unnamedPrefix = IModelApp.i18n.translate("NavigatorApp:statusFields.unnamedDisplayStyle");
+      const unnamedPrefix = IModelApp.i18n.translate("SampleApp:statusFields.unnamedDisplayStyle");
       const displayStyles = new Map<Id64String, DisplayStyleState>();
       const view = contentControl.viewport.view;
       const is3d = view.is3d();
@@ -111,7 +111,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
         isInFooterMode={this.props.isInFooterMode}
       >
         <Select options={this.state.styleEntries} value={displayStyleId} onChange={this._handleDisplayStyleSelected}
-          title={IModelApp.i18n.translate("NavigatorApp:statusFields.displayStyle")}
+          title={IModelApp.i18n.translate("SampleApp:statusFields.displayStyle")}
           className="uifw-statusFields-displayStyle-selector" />
       </FooterIndicator >
     );

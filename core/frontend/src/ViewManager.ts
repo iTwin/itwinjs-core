@@ -206,6 +206,12 @@ export class ViewManager {
   /** Get the first opened view. */
   public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
+  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
+  private updateRenderToScreen() {
+    const renderToScreen = 1 === this._viewports.length;
+    this.forEachViewport((vp) => vp.rendersToScreen = renderToScreen);
+  }
+
   /** Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
    * @returns SUCCESS if vp was successfully added, ERROR if it was already present.
@@ -217,7 +223,7 @@ export class ViewManager {
 
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
-
+    this.updateRenderToScreen();
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
@@ -256,6 +262,9 @@ export class ViewManager {
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
+
+    vp.rendersToScreen = false;
+    this.updateRenderToScreen();
 
     if (disposeOfViewport)
       vp.dispose();
@@ -440,6 +449,10 @@ export class ViewManager {
   public get dynamicsCursor(): string { return "url(cursors/dynamics.cur), move"; }
   public get grabCursor(): string { return "url(cursors/openHand.cur), auto"; }
   public get grabbingCursor(): string { return "url(cursors/closedHand.cur), auto"; }
+  public get walkCursor(): string { return "url(cursors/walk.cur), auto"; }
+  public get rotateCursor(): string { return "url(cursors/rotate.cur), auto"; }
+  public get lookCursor(): string { return "url(cursors/look.cur), auto"; }
+  public get zoomCursor(): string { return "url(cursors/zoom.cur), auto"; }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.

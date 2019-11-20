@@ -7,10 +7,20 @@ import {
   PropertyRecord, PrimitiveValue, PropertyValueFormat,
   PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
   ParseResults,
+  ButtonGroupEditorParams,
+  ColorEditorParams,
+  CustomFormattedNumberParams,
+  BasePropertyEditorParams,
+  PropertyEditorInfo,
 } from "@bentley/imodeljs-frontend";
-import { UiComponents } from "../ui-components";
+import {
+  UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
+} from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { ColorByName } from "@bentley/imodeljs-common";
+import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
+
+// cSpell:ignore buttongroup
 
 // tslint:disable: completed-docs
 
@@ -49,7 +59,22 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
-  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {
+  public static createPropertyRecord(value: any, column: ColumnDescription, typename: string) {
+    const v: PrimitiveValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value,
+      displayValue: value,
+    };
+    const pd: PropertyDescription = {
+      typename,
+      name: column.key,
+      displayLabel: column.label,
+    };
+    column.propertyDescription = pd;
+    return new PropertyRecord(v, pd);
+  }
+
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
     const value: PrimitiveValue = {
       displayValue,
       value: rawValue,
@@ -61,6 +86,9 @@ export class TestUtils {
       name,
       typename: "string",
     };
+
+    if (editorInfo)
+      description.editor = editorInfo;
 
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -106,7 +134,7 @@ export class TestUtils {
     return property;
   }
 
-  public static createEnumProperty(name: string, index: string | number) {
+  public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: "",
       value: index,
@@ -129,6 +157,9 @@ export class TestUtils {
       { label: "Blue", value: 3 },
     ];
 
+    if (column)
+      column.propertyDescription = description;
+
     return propertyRecord;
   }
 
@@ -141,15 +172,15 @@ export class TestUtils {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconClass: "icon-yellow" },
-            { iconClass: "icon-red" },
-            { iconClass: "icon-green" },
+            { iconSpec: "icon-yellow" },
+            { iconSpec: "icon-red" },
+            { iconSpec: "icon-green" },
             {
-              iconClass: "icon-blue",
+              iconSpec: "icon-blue",
               isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
             },
           ],
-        },
+        } as ButtonGroupEditorParams,
       ],
     };
   }
@@ -202,7 +233,7 @@ export class TestUtils {
               ColorByName.pink as number,
             ],
             numColumns: 2,
-          },
+          } as ColorEditorParams,
         ],
       },
     };
@@ -236,7 +267,7 @@ export class TestUtils {
 
   private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
 
-  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string) {
+  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string, editorParams?: BasePropertyEditorParams[]) {
 
     const value: PrimitiveValue = {
       displayValue: displayVal,
@@ -262,16 +293,63 @@ export class TestUtils {
                 return { value: rtnValue };
               }
             },
-          },
+          } as CustomFormattedNumberParams,
         ],
       },
     };
+
+    if (editorParams) {
+      editorParams.forEach((params: BasePropertyEditorParams) => {
+        description.editor!.params!.push(params);
+      });
+    }
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
     return propertyRecord;
   }
 
+  /** Sleeps a specified number of milliseconds */
+  public static sleep(milliseconds: number) {
+    const start = new Date().getTime();
+    for (let i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds) {
+        break;
+      }
+    }
+  }
+
+  /** Sleeps a specified number of milliseconds then flushes async operations */
+  public static async tick(milliseconds: number) {
+    TestUtils.sleep(milliseconds);
+    await TestUtils.flushAsyncOperations();
+  }
+
+}
+
+/** @internal */
+export class TestFilterableTable implements FilterableTable {
+  private _filterDescriptors = new TableFilterDescriptorCollection();
+  private _columnDescriptions: ColumnDescription[];
+
+  constructor(colDescriptions: ColumnDescription[]) {
+    this._columnDescriptions = colDescriptions;
+  }
+
+  /** Gets the description of a column within the table. */
+  public getColumnDescription(columnKey: string): ColumnDescription | undefined {
+    return this._columnDescriptions.find((v: ColumnDescription) => v.key === columnKey);
+  }
+
+  /** Gets the filter descriptors for the table. */
+  public get filterDescriptors(): CompositeFilterDescriptorCollection {
+    return this._filterDescriptors;
+  }
+
+  /** Gets ECExpression to get property display value. */
+  public getPropertyDisplayValueExpression(property: string): string {
+    return property;
+  }
 }
 
 export default TestUtils;   // tslint:disable-line: no-default-export

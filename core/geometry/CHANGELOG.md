@@ -1,6 +1,50 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- #193588 bugs in PolygonOffsetContext
+- Mesh support: TVertexFixup and ColinearEdgeFixup
+- Lightweight iterator over Point3ds contained in an IndexedXYZCollection; Transform.multiplyRange() returns a null range if input is a null range.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- BUG#184729 and BUG#185436
+- (TASK#175760 Triangulate between linestrings) (TASK#184495 consolidateAdjacentPrimitives) (TASK#184489 Test if points are a rectangle)
+- BUG#184729 General matrix4d inverse
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Eliminate use of Math.hypot
+- add copyright headers to recent new files
+- Task#175760 and Task#175773
+- Polyface mesh "split to components"
+- Fast range filtering for cutFill (and other) searches
+- Incremental Edge Flipping, optimize Delauney circle test
+- Explicit undefined initialization for HalfEdge
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Region "in/on/out" tests
+- Triangulation of isolated point array
+- RegionOps methods to split curve sets
+- PolyfaceClip.computeCutFill method
+- New method ray3d.intersectionWithRange3d
+- Added AnyGeometryQuery and AnySolidPrimitive union types; added type discriminator fields to GeometryQuery, SolidPrimitive, CurvePrimitive, and CurveCollection; tightened `any` return types for IModelJson.Reader methods.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

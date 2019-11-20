@@ -6,7 +6,6 @@ import * as path from "path";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsElectronManager } from "@bentley/electron-manager";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -17,11 +16,6 @@ import * as electron from "electron";
 
 // Start the backend
 initializeBackend();
-
-// Set up logging (by default, no logging is enabled)
-const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
-const logLevel = undefined !== logLevelEnv ? Logger.parseLogLevel(logLevelEnv) : LogLevel.None;
-Logger.setLevelDefault(logLevel);
 
 if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
   DisplayPerfRpcInterface.jsonFilePath = process.argv[2];

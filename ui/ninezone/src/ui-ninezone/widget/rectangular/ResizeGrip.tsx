@@ -74,30 +74,38 @@ export interface ResizeGripProps extends CommonProps {
   direction: ResizeDirection;
 }
 
+interface ResizeGripState {
+  isPointerDown: boolean;
+}
+
 /** Resize grip used by [[Stacked]] component.
  * @alpha
  */
-export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
+export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
   private _grip = React.createRef<HTMLDivElement>();
   private _isResizing = false;
   private _movedBy = 0;
   private _lastPosition = new Point();
 
-  public render() {
-    const { className, onClick, ...props } = this.props;
+  /** @internal */
+  public readonly state: ResizeGripState = {
+    isPointerDown: false,
+  };
 
-    const pointerCaptorClassName = classnames(
+  public render() {
+    const className = classnames(
       "nz-widget-rectangular-resizeGrip",
       ResizeDirectionHelpers.getCssClassName(this.props.direction),
       this.props.className);
 
     return (
       <PointerCaptor
-        className={pointerCaptorClassName}
-        onMouseDown={this._handleMouseDown}
-        onMouseUp={this._handleMouseUp}
-        onMouseMove={this._handleMouseMove}
-        {...props}
+        className={className}
+        isPointerDown={this.state.isPointerDown}
+        onPointerDown={this._handlePointerDown}
+        onPointerUp={this._handlePointerUp}
+        onPointerMove={this._handlePointerMove}
+        style={this.props.style}
       >
         <div
           className="nz-grip"
@@ -114,7 +122,8 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
     this.props.onClick && this.props.onClick();
   }
 
-  private _handleMouseDown = (e: MouseEvent) => {
+  private _handlePointerDown = (e: PointerEvent) => {
+    this.setState({ isPointerDown: true });
     const grip = this._grip.current;
     if (!grip)
       return;
@@ -135,7 +144,8 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
     });
   }
 
-  private _handleMouseUp = (e: MouseEvent) => {
+  private _handlePointerUp = (e: PointerEvent) => {
+    this.setState({ isPointerDown: false });
     const grip = this._grip.current;
     if (!this._isResizing || !grip)
       return;
@@ -156,7 +166,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
     });
   }
 
-  private _handleMouseMove = (e: MouseEvent) => {
+  private _handlePointerMove = (e: PointerEvent) => {
     const grip = this._grip.current;
     if (!this._isResizing || !grip)
       return;

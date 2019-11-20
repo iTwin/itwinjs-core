@@ -18,6 +18,7 @@ export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
 export * from "./PriorityQueue";
+export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./SortedArray";
 export * from "./StringUtils";

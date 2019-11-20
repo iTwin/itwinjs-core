@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import {
   ECJsonTypeMap, AccessToken, UserInfo, Project, Asset, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
@@ -14,6 +14,7 @@ import {
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
   IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
   ImsUserCredentials,
+  WsgError,
 } from "@bentley/imodeljs-clients";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
@@ -22,6 +23,9 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
+import { UrlFileHandler } from "../../UrlFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -39,7 +43,14 @@ function configMockSettings() {
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
 }
-
+export function createFileHanlder(useDownloadBuffer?: boolean) {
+  if (MobileRpcConfiguration.isMobileBackend) {
+    return new IOSAzureFileHandler();
+  } else if (TestConfig.enableIModelBank) {
+    return new UrlFileHandler();
+  }
+  return new AzureFileHandler(useDownloadBuffer);
+}
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() {
@@ -98,7 +109,7 @@ let _imodelHubClient: IModelHubClient;
 function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(new AzureFileHandler());
+  _imodelHubClient = new IModelHubClient(createFileHanlder());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
@@ -181,8 +192,18 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  try { await bankContext.deleteContext(requestContext, projectName); } catch (_err) { }
-  await bankContext.createContext(requestContext, projectName);
+  let project: Project | undefined;
+  try {
+    project = await bankContext.queryProjectByName(requestContext, projectName);
+  } catch (err) {
+    if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
+      project = undefined;
+    } else {
+      throw err;
+    }
+  }
+  if (!project)
+    await bankContext.createContext(requestContext, projectName);
 
   bankProjects.push(projectName);
 }

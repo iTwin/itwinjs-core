@@ -27,7 +27,7 @@ describe("PropertyRule tests", () => {
 
   beforeEach(async () => {
     context = new SchemaContext();
-    schema = new Schema(context, "TestSchema", 1, 0, 0);
+    schema = new Schema(context, "TestSchema", "ts", 1, 0, 0);
     const mutable = schema as MutableSchema;
     testClass = await mutable.createEntityClass("TestClass");
     testBaseClass = await mutable.createEntityClass("TestBaseClass");
@@ -115,7 +115,7 @@ describe("PropertyRule tests", () => {
   });
 
   it("IncompatibleValueTypePropertyOverride, no base class, rule passes.", async () => {
-    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", 1, 2, 3), "TestEntity");
+    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
     await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
     const results = Rules.incompatibleValueTypePropertyOverride(entityClass.properties![0] as PrimitiveProperty);
@@ -176,7 +176,7 @@ describe("PropertyRule tests", () => {
   });
 
   it("IncompatibleTypePropertyOverride, no base class, rule passes.", async () => {
-    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", 1, 2, 3), "TestEntity");
+    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
     await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
     const results = Rules.incompatibleTypePropertyOverride(entityClass.properties![0] as PrimitiveProperty);

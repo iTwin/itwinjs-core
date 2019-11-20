@@ -2,6 +2,453 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-frontend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Anisotropic filting of draped map tiles."
+          },
+          {
+            "comment": "Add debug tool for drape frustum."
+          },
+          {
+            "comment": "Added MarkerSet.changeViewport"
+          },
+          {
+            "comment": "Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. "
+          },
+          {
+            "comment": "Tweaks to ambient occlusion settings."
+          },
+          {
+            "comment": "Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications."
+          },
+          {
+            "comment": "Update DefaultToolSettingsProvider to create responisve UI."
+          },
+          {
+            "comment": "Reduce size of Cesium ION copyright logo."
+          },
+          {
+            "comment": "Cleanup AO settings."
+          },
+          {
+            "comment": "Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract."
+          },
+          {
+            "comment": "Concatenate projection and model matrix to avoid jitter."
+          },
+          {
+            "comment": "Make toJSON methods of EmphasizeElements and FeatureSymbology.Appearance return pure JSON types."
+          },
+          {
+            "comment": "Added support for English key-ins in addition to translated key-ins"
+          },
+          {
+            "comment": "Simplify fitView. Hypermodeling plugin cleanup."
+          },
+          {
+            "comment": "Rework perspective frustum calculation for planar projections"
+          },
+          {
+            "comment": "Fix plugin loader to honor the bundleName from the manifest file of the plugin."
+          },
+          {
+            "comment": "Prevent background map terrain from being affected by default symbology overrides."
+          },
+          {
+            "comment": "Fix failure to report shader compilation errors to user in debug builds."
+          },
+          {
+            "comment": "Create terrain tiles about center to correct drape jitter."
+          },
+          {
+            "comment": "Fix terrain skirt quantization"
+          },
+          {
+            "comment": "Fixes for making volume classifiers work."
+          },
+          {
+            "comment": "Fixes to volume classifier hilite & flashing"
+          },
+          {
+            "comment": "Fixed EmphasizeElements.wantEmphasis having no effect if neither color nor transparency were overridden."
+          },
+          {
+            "comment": "Added better control over auto-disposal of decoration graphics."
+          },
+          {
+            "comment": "New wip plugin for hypermodeling support."
+          },
+          {
+            "comment": "Added popup toolbar when cursor stops over marker or marker is tapped."
+          },
+          {
+            "comment": "Add imageUtil functions that are used in Design Review and needed in other packages."
+          },
+          {
+            "comment": "Improve horizon calculation"
+          },
+          {
+            "comment": "Fixed bug that caused duplicated points to be handled improperly in batched spatial<->geocoord conversions"
+          },
+          {
+            "comment": "MarkerSet applies only to a single ScreenViewport"
+          },
+          {
+            "comment": "Make viewport member of MarkerSet public"
+          },
+          {
+            "comment": "More OIDC fixes for logout of electron apps. "
+          },
+          {
+            "comment": "Improve performance for multiple viewports."
+          },
+          {
+            "comment": "Added New badge for UI items"
+          },
+          {
+            "comment": "Cross-platform function to open an image in a new window."
+          },
+          {
+            "comment": "Reduce planar texture frustum by clipping to view planes."
+          },
+          {
+            "comment": "Fix planar-classified regions not displaying hilite silhouettes in perspective views."
+          },
+          {
+            "comment": "Prioritize loading of map tiles."
+          },
+          {
+            "comment": "RenderSystem.Options.displaySolarShadows now defaults to true; and directScreenRendering has no effect (deprecated)."
+          },
+          {
+            "comment": "Ensure shadows are continually updated using the best available tiles."
+          },
+          {
+            "comment": "Apply transparency cutoff to shadows"
+          },
+          {
+            "comment": "Ensure transparency threshold takes into account material and feature overrides."
+          },
+          {
+            "comment": "Make shadows not apply to world decorations"
+          },
+          {
+            "comment": "Reduce threshold for moving camera in planar texture projection"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-frontend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement proper flashing and hiliting of classified geometry."
+          },
+          {
+            "comment": "Add new range that represents the dipslayed extents.  This is currently used to set the displayed depths."
+          },
+          {
+            "comment": "Dont expand displayed extents for unbounded trees."
+          },
+          {
+            "comment": "Added support for overriding feature symbology to use a hilite effect."
+          },
+          {
+            "comment": "Fix display artifacts caused by interpolation of material settings."
+          },
+          {
+            "comment": "Rework frustum calculation for terrain draping."
+          },
+          {
+            "comment": "Fix inability to locate polylines and edges if their transparency was overridden."
+          },
+          {
+            "comment": "Add GPU timing queries for devtools."
+          },
+          {
+            "comment": "Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)"
+          },
+          {
+            "comment": "Enable display of non-spatial, spatially-located models in spatial views."
+          },
+          {
+            "comment": "Geometry of planar classifier models is not required to itself be planar."
+          },
+          {
+            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+          },
+          {
+            "comment": "Refine planar texture frustum calculation to handle parallel views."
+          },
+          {
+            "comment": "Errors during shader program compilation produce exceptions."
+          },
+          {
+            "comment": "Improve shadow lighting to match shadow direction"
+          },
+          {
+            "comment": "Fixed multiple viewport shadows"
+          },
+          {
+            "comment": "Refine classification frustum calculation."
+          },
+          {
+            "comment": "Support transparency for terrain and planar classification."
+          },
+          {
+            "comment": "#168481 Tool assistance for viewing tools. Prompt punctuation consistency."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-frontend_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Support animation and classification in same tiles."
+          },
+          {
+            "comment": "Always adjust y dimension for aspectRatioSkew"
+          },
+          {
+            "comment": "added support for blank IModelConnections"
+          },
+          {
+            "comment": "Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled."
+          },
+          {
+            "comment": "add checkbrowser.js, refine i18n in Tool"
+          },
+          {
+            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+          },
+          {
+            "comment": "Refine frustum calculation for planar projection to create a tighter fit. "
+          },
+          {
+            "comment": "#136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip."
+          },
+          {
+            "comment": "Various EVSM shadow tweaks"
+          },
+          {
+            "comment": "Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue."
+          },
+          {
+            "comment": "Fixed elements failing to draw if transparency was overridden to be exactly 15."
+          },
+          {
+            "comment": "Fix marker decorations not updating when markers are added or deleted; fix canvas decorations sometimes failing to display in Firefox."
+          },
+          {
+            "comment": "Fix a problem with direct-screen rendering (black viewport in certain situations)."
+          },
+          {
+            "comment": "Fix edges of instanced geometry failing to respect edge color override defined by display style."
+          },
+          {
+            "comment": "Fix transparency for some shaders"
+          },
+          {
+            "comment": "Added Viewport.readImageToCanvas() to obtain viewport image as a HTMLCanvasElement with a 2d rendering context."
+          },
+          {
+            "comment": "Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails."
+          },
+          {
+            "comment": "Fix failure to locate an element if it also serves as a modeled element for a sub-model."
+          },
+          {
+            "comment": "#168481 Added missing iconSpec to measure and clipping tools."
+          },
+          {
+            "comment": "Correct ViewClipByPlaneTool icon."
+          },
+          {
+            "comment": "Add minArgs, maxArgs, and parseAndRun to PluginTool"
+          },
+          {
+            "comment": "Added ToolTipProvider interface to augment tool tips."
+          },
+          {
+            "comment": "Fix tool tip formatting for terrain."
+          },
+          {
+            "comment": "Enable display of non-spatial, spatially-located models in spatial views."
+          },
+          {
+            "comment": "Add public Tool method translateWithNamespace to allow plugins to supply their own localization."
+          },
+          {
+            "comment": "Support animation of models within RenderSchedule."
+          },
+          {
+            "comment": "Added support for iterating a Viewport's per-model category visibility overrides."
+          },
+          {
+            "comment": "Refine planar projection frustum"
+          },
+          {
+            "comment": "Added autoExpand property to PropertyRecord"
+          },
+          {
+            "comment": "Add QuantityFormatter.onInitialized method to set up default formatting and parsing Specs. Update SetupCameraTool to use new LengthDescription (PropertyDescription)"
+          },
+          {
+            "comment": "Only apply pseudo-rtc workaround if no true RTC exist in GLTF"
+          },
+          {
+            "comment": "Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport."
+          },
+          {
+            "comment": "#168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs."
+          },
+          {
+            "comment": "Fix for pinch zoom not being smooth."
+          },
+          {
+            "comment": "Added facility to load plugins specified in settings at startup"
+          },
+          {
+            "comment": "Add ability for QuantityFormatter to generate station formatting."
+          },
+          {
+            "comment": "Allow cached tiles to be used across revisions as long as the model geometry has not changed."
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+          },
+          {
+            "comment": "Added touch entries to ToolAssistanceImage"
+          },
+          {
+            "comment": "Only force update of tool assistance for touch tap that creates the touch cursor."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/imodeljs-frontend_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Register tools for AccuDraw shortcuts to support keyboard shortcuts."
+          },
+          {
+            "comment": "Partially support animation of classifiers for MicroSoft Poc.  "
+          },
+          {
+            "comment": "Prevent ambient occlusion from being applied to unlit geometry."
+          },
+          {
+            "comment": "Add methods for setting render schedule in display style"
+          },
+          {
+            "comment": "Identify classified reality data to avoid snap using classification element geometry."
+          },
+          {
+            "comment": "Apply pseudo bias to batch range when tileset has huge offset."
+          },
+          {
+            "comment": "Add workaround for ContextCapture tiles with large offsets."
+          },
+          {
+            "comment": "load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script"
+          },
+          {
+            "comment": "Refine tile corners on reprojection.  Fix bing HTTP request"
+          },
+          {
+            "comment": "Added a new component for the Poc, an icon picker."
+          },
+          {
+            "comment": "Support symbology overrides with no batchId for render schedules, Plugin case fixes."
+          },
+          {
+            "comment": "Don't display markers that are very close to eye point."
+          },
+          {
+            "comment": "Change how Marker scale is computed for views background map displayed."
+          },
+          {
+            "comment": "Report coordinates to message center for copy to clipboard. Support drawing views."
+          },
+          {
+            "comment": "Ensure texture memory is properly tracked."
+          },
+          {
+            "comment": "Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions"
+          },
+          {
+            "comment": "Added access to debugging features to RenderSystem via RenderSystemDebugControl; includes support for forcing webgl context loss and toggling pseudo-wiremesh surface display."
+          },
+          {
+            "comment": "Support reality model masking via black classifier geometry."
+          },
+          {
+            "comment": "Support nearest snap for reality models."
+          },
+          {
+            "comment": "Remove doubling of planar classifier size.  This caused excessive generation time."
+          },
+          {
+            "comment": "Refine texture projection calculation to include height range (for terrain). "
+          },
+          {
+            "comment": "Ensure DisplayStyle3dState.sunDirection is synchronized with DisplayStyle3dSettings JSON."
+          },
+          {
+            "comment": "Clip volume applied to view also applies to reality models."
+          },
+          {
+            "comment": "Added SetupCameraTool for defining camera by eye point and target point."
+          },
+          {
+            "comment": "Prioritize requests for reality model tiles based on distance from camera."
+          },
+          {
+            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+          },
+          {
+            "comment": "Tweak tile priorities so that reality models don't block quicker maps and classifiers."
+          },
+          {
+            "comment": "Call to pickNearestVisibleGeometry on 1st data button almost always succeeds now that acs plane is used, remove from updateTargetCenter."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/imodeljs-frontend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

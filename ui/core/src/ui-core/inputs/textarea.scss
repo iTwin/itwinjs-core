@@ -8,6 +8,7 @@
 @mixin uicore-inputs-textarea {
 
     display:                block;
+    box-sizing:             border-box;
     width:                  100%;
     padding:                $uicore-inputs-padding-bordered $uicore-bordered-padding;
     margin:                 $uicore-inputs-margin 0;

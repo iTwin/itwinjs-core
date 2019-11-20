@@ -50,23 +50,21 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
   }
 
   public componentDidMount() {
-    document.addEventListener("mouseup", this._handleDocumentMouseUp);
-    document.addEventListener("mousemove", this._handleDocumentMouseMove);
+    document.addEventListener("pointerup", this._handleDocumentPointerUp);
+    document.addEventListener("pointermove", this._handleDocumentPointerMove);
   }
 
   public componentDidUpdate(prevProps: SplitterProps) {
     const prevCount = React.Children.count(prevProps.children);
     const count = React.Children.count(this.props.children);
     if (prevCount !== count) {
-      this.setState(() => ({
-        sizeByPaneId: this.getInitialPaneSizes(),
-      }));
+      this.setState({ sizeByPaneId: this.getInitialPaneSizes() });
     }
   }
 
   public componentWillUnmount() {
-    document.removeEventListener("mouseup", this._handleDocumentMouseUp);
-    document.removeEventListener("mousemove", this._handleDocumentMouseMove);
+    document.removeEventListener("pointerup", this._handleDocumentPointerUp);
+    document.removeEventListener("pointermove", this._handleDocumentPointerMove);
   }
 
   public render() {
@@ -102,7 +100,7 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
             <div
               className="nz-grip"
               key={order}
-              onMouseDown={(e) => this._handleMouseDown(e, index)}
+              onPointerDown={(e) => this._handlePointerDown(e, index)}
               ref={this.getGripRef(index)}
               style={{ order }}
             />
@@ -131,16 +129,16 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
     return sizeByPaneId;
   }
 
-  private _handleMouseDown = (e: React.MouseEvent, id: number) => {
+  private _handlePointerDown = (e: React.PointerEvent, id: number) => {
     e.preventDefault();
     this._draggedGrip = id;
   }
 
-  private _handleDocumentMouseUp = (_: MouseEvent) => {
+  private _handleDocumentPointerUp = (_: PointerEvent) => {
     this._draggedGrip = undefined;
   }
 
-  private _handleDocumentMouseMove = (e: MouseEvent) => {
+  private _handleDocumentPointerMove = (e: PointerEvent) => {
     this.setState((prevState) => {
       const gripRef = this._draggedGrip === undefined ? undefined : this.getGripRef(this._draggedGrip);
       if (this._draggedGrip === undefined ||
@@ -154,8 +152,8 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
 
       const gripBounds = gripRef.current.getBoundingClientRect();
       const gripCenterPosition = this.props.isVertical ? gripBounds.top + gripBounds.height / 2 : gripBounds.left + gripBounds.width / 2;
-      const mousePosition = this.props.isVertical ? e.clientY : e.clientX;
-      const resizeByPx = mousePosition - gripCenterPosition;
+      const pointerPosition = this.props.isVertical ? e.clientY : e.clientX;
+      const resizeByPx = pointerPosition - gripCenterPosition;
 
       const resizeBy = resizeByPx / splitterSize * 100;
       const shrinkPaneId = resizeBy < 0 ? gripId : gripId + 1;

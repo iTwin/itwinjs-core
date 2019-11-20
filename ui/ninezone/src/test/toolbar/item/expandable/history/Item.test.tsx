@@ -5,8 +5,9 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { HistoryItem } from "../../../../../ui-ninezone";
+
+// tslint:disable: deprecation
 
 describe("<HistoryItem />", () => {
   it("should render", () => {

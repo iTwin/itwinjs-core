@@ -6,18 +6,64 @@
       }
     },
     "Markup": {
+      "keyin": "dta markup",
       "TestSelect": {
-      "keyin": "dta markup select"
+        "keyin": "dta markupselect"
       }
     },
     "SVTSelect": {
       "keyin": "dta select"
     },
-    "ResizeViewport": {
-      "keyin": "dta resize viewport"
+    "ResizeWindow": {
+      "keyin": "win resize"
     },
     "RefreshTiles": {
       "keyin": "dta refresh tiles"
+    },
+    "CreateWindow": {
+      "keyin": "win create"
+    },
+    "CloneViewport": {
+      "keyin": "vp clone"
+    },
+    "FocusWindow": {
+      "keyin": "win focus"
+    },
+    "MaximizeWindow": {
+      "keyin": "win max"
+    },
+    "RestoreWindow": {
+      "keyin": "win restore"
+    },
+    "CloseWindow": {
+      "keyin": "win close"
+    },
+    "DockWindow": {
+      "keyin": "win dock"
+    },
+    "VersionComparison": {
+      "keyin": "dta version compare"
+    },
+    "SaveImage": {
+      "keyin": "dta save image"
+    },
+    "ZoomToSelectedElements": {
+      "keyin": "dta zoom selected"
+    },
+    "ToggleIncidentMarkers": {
+      "keyin": "dta incident markers"
+    },
+    "ShutDown": {
+      "keyin": "dta shutdown"
+    },
+    "ToggleFrustumIntersection": {
+      "keyin": "dta frustum intersection"
+    },
+    "ToggleShadowMapTiles": {
+      "keyin": "dta shadow tiles"
+    },
+    "PurgeTileTrees": {
+      "keyin": "dta purge tiletrees"
     }
   }
 }

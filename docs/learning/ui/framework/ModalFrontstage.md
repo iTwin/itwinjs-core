@@ -7,7 +7,7 @@ It is useful for application settings and data management user interfaces.
 
 ## Definition of Modal Frontstage
 
-The definition of a modal frontstage is in two parts: a [ModalFrontstageInfo]($framework) implementation and a React component.
+The definition of a modal frontstage is in two parts: a [ModalFrontstageInfo]($ui-framework) implementation and a React component.
 
 ```TSX
 /** Modal frontstage. */
@@ -44,7 +44,7 @@ The following code instantiates a modal frontstage and calls `FrontstageManager.
 
 ## API Reference
 
-* [ModalFrontstage]($framework)
-* [ModalFrontstageInfo]($framework)
-* [FrontstageManager]($framework)
-* [Frontstage]($framework:Frontstage)
+* [ModalFrontstage]($ui-framework)
+* [ModalFrontstageInfo]($ui-framework)
+* [FrontstageManager]($ui-framework)
+* [Frontstage]($ui-framework:Frontstage)

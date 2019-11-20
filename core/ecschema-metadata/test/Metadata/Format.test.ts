@@ -24,13 +24,13 @@ function createSchemaJson(koq: any) {
       ...koq,
     },
   }, {
-      references: [
-        {
-          name: "Formats",
-          version: "1.0.0",
-        },
-      ],
-    });
+    references: [
+      {
+        name: "Formats",
+        version: "1.0.0",
+      },
+    ],
+  });
 }
 
 describe("Format", () => {
@@ -194,7 +194,7 @@ describe("Format", () => {
 
   describe("deserialize formatted ECJSON", () => {
     beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testFormat = (schema as MutableSchema).createFormatSync("TestFormat");
     });
 
@@ -710,6 +710,9 @@ describe("Format", () => {
       function validateTestFormat(testFormat: Format | undefined) {
         assert.isDefined(testFormat);
 
+        expect(testFormat!.name).eq("TestFormat");
+        expect(testFormat!.fullName).eq("TestSchema.TestFormat");
+
         expect(testFormat!.includeZero).false;
         expect(testFormat!.spacer).eq("-");
 
@@ -845,11 +848,11 @@ describe("Format", () => {
       assert.strictEqual(units.length, 2);
 
       const firstUnit = units[0];
-      expect(firstUnit.textContent).to.eql("Formats:MILE");
+      expect(firstUnit.textContent).to.eql("f:MILE");
       expect(firstUnit.getAttribute("label")).to.eql("mile(s)");
 
       const secondUnit = units[1];
-      expect(secondUnit.textContent).to.eql("Formats:YRD");
+      expect(secondUnit.textContent).to.eql("f:YRD");
       expect(secondUnit.getAttribute("label")).to.eql("yard(s)");
     });
   });

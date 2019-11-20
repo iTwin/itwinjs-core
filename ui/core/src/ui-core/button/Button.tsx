@@ -62,7 +62,7 @@ export class Button extends React.PureComponent<ButtonProps> {
         break;
       case ButtonType.Primary:
       default:
-        typeClassName = "uicore-buttons-blue";
+        typeClassName = "uicore-buttons-primary";
         break;
     }
 

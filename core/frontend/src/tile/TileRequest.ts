@@ -35,7 +35,7 @@ export class TileRequest {
   public get isQueued() { return TileRequest.State.Queued === this._state; }
   public get isCanceled(): boolean {
     // If iModel was closed, cancel immediately
-    if (!this.tile.iModel.isOpen)
+    if (this.tile.iModel.tiles.isDisposed)
       return true;
 
     // After we've received the raw tile data, always finish processing it - otherwise tile may end up in limbo (and producing tile content should be faster than re-requesting raw data).
@@ -67,6 +67,9 @@ export class TileRequest {
     try {
       response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
       gotResponse = true;
+
+      // Set this now, so our `isCanceled` check can see it.
+      this._state = TileRequest.State.Loading;
     } catch (err) {
       if (err instanceof AbandonedError) {
         // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
@@ -133,8 +136,6 @@ export class TileRequest {
       this.setFailed();
       return Promise.resolve();
     }
-
-    this._state = TileRequest.State.Loading;
 
     try {
       const content = await this.loader.loadTileContent(this.tile, data, () => this.isCanceled);

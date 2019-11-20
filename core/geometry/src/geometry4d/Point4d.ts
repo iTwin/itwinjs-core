@@ -23,13 +23,12 @@ export type Point4dProps = number[];
  * @param ddh denominator second derivative
  * @param f primary function (g/h)
  * @param df derivative of (g/h)
- * @param divh = (1/h)
- * @param dgdivh previously computed first derivative of (g/h)
+ * @param divH = (1/h)
  * @internal
  */
 function quotientDerivative2(ddg: number, dh: number, ddh: number,
-  f: number, df: number, divh: number): number {
-  return divh * (ddg - 2.0 * df * dh - f * ddh);
+  f: number, df: number, divH: number): number {
+  return divH * (ddg - 2.0 * df * dh - f * ddh);
 }
 
 /** 4 Dimensional point (x,y,z,w) used in perspective calculations.
@@ -50,6 +49,14 @@ export class Point4d implements BeJSONFunctions {
     this.xyzw[2] = z;
     this.xyzw[3] = w;
     return this;
+  }
+  /** Set a component by index.
+   * * No change if index is out of range.
+   */
+  public setComponent(index: number, value: number) {
+    if (index >= 0 && index < 4) {
+      this.xyzw[index] = value;
+    }
   }
   /** Return the x component. */
   public get x() { return this.xyzw[0]; }
@@ -258,6 +265,10 @@ export class Point4d implements BeJSONFunctions {
   public altitude(point: Point3d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
   }
+  /** dotProduct with (x, y, z, 1) Used in PlaneAltitudeEvaluator interface */
+  public altitudeXYZ(x: number, y: number, z: number): number {
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3];
+  }
   /** dotProduct with (point.x, point.y, point.z, point.w) Used in PlaneAltitudeEvaluator interface */
   public weightedAltitude(point: Point4d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3] * point.w;
@@ -464,7 +475,7 @@ export class Point4d implements BeJSONFunctions {
       result = new Point4d();
     const maxSafeCosine = 0.9995;
 
-    // return exact quats for special values
+    // return exact quaternions for special values
     if (0.0 === fractionParameter) {
       result = quaternion0;
       return result;
@@ -489,7 +500,7 @@ export class Point4d implements BeJSONFunctions {
       dot = -dot;
     }
 
-    // if nearly parallel, use nlerp
+    // if nearly parallel, use interpolate and renormalize .
     if (dot > maxSafeCosine) {
       q0.interpolate(fractionParameter, q1, result);
       result.normalizeQuaternion();
@@ -508,8 +519,8 @@ export class Point4d implements BeJSONFunctions {
     q2.normalizeQuaternion();
 
     const angle = Math.acos(dot);
-    const angleOfInterpolant = angle * fractionParameter;
-    result = Point4d.createAdd2Scaled(q0, Math.cos(angleOfInterpolant), q2, Math.sin(angleOfInterpolant));
+    const angleOfInterpolation = angle * fractionParameter;
+    result = Point4d.createAdd2Scaled(q0, Math.cos(angleOfInterpolation), q2, Math.sin(angleOfInterpolation));
     return result;
   }
   /** Measure the "angle" between two points, using all 4 components in the dot product that

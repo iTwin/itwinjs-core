@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index.scss";
+
+.uifw-sections-footer-contents {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  padding: 8px;
+}
+
+.uifw-uifw-sections-toggle-container {
+  display: flex;
+  margin: $uicore-xs;
+  justify-content: center;
+}
+
+.uifw-sections-toggle {
+  align-self: center;
+  margin-right: $uicore-s;
+}
+
+.uifw-sections-label {
+  @include uicore-font-family;
+  color: $buic-text-color;
+  font-size: $uicore-font-size;
+  align-self: center;
+  margin: $uicore-s;
+
+  &.disabled {
+    color: $buic-text-color-disabled;
+  }
+}
+

@@ -22,7 +22,7 @@ import {
   CoreTools,
 } from "@bentley/ui-framework";
 
-import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
@@ -50,7 +50,7 @@ export class Frontstage2 extends FrontstageProvider {
       {
         contents: [
           {
-            classId: "IModelViewport",
+            classId: "UiFramework.IModelViewportControl",
             applicationData: { label: "Content 1a", bgColor: "black" },
           },
           {
@@ -58,7 +58,7 @@ export class Frontstage2 extends FrontstageProvider {
             applicationData: { label: "Content 2a", bgColor: "black" },
           },
           {
-            classId: "IModelViewport",
+            classId: "TestApp.IModelViewport",
             applicationData: { label: "Content 3a", bgColor: "black" },
           },
           {
@@ -113,7 +113,7 @@ export class Frontstage2 extends FrontstageProvider {
         bottomCenter={
           <Zone defaultState={ZoneState.Open}
             widgets={[
-              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} control={SmallStatusBarWidgetControl} />,
             ]}
           />
         }

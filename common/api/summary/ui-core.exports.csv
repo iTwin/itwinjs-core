@@ -2,6 +2,13 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+alpha;AutoSuggest 
+alpha;AutoSuggestData
+alpha;AutoSuggestProps 
+internal;Badge 
+internal;BadgeProps 
+internal;BadgeUtilities
+internal;BetaBadge: React.FunctionComponent
 public;BlockText: React.FunctionComponent
 public;BodyText: React.FunctionComponent
 alpha;BoundsFunctionProp = number | (() => number | undefined)
@@ -44,6 +51,7 @@ public;DialogButtonType
 public;DialogProps 
 internal;Div 
 internal;DivProps 
+beta;DivWithOutsideClick:
 public;ElementSeparator 
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
@@ -55,10 +63,18 @@ public;ExpansionToggle
 public;ExpansionToggleProps 
 beta;Face
 alpha;FeaturedTile: React.FunctionComponent
+alpha;Field 
+alpha;FieldDef
+alpha;FieldDefinitions
+alpha;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+alpha;FieldValues
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
 beta;FocusTrap 
+alpha;Form 
+alpha;FormContext: React.Context
+alpha;FormContextState 
 internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
@@ -69,9 +85,16 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
+public;Icon: React.FunctionComponent
+alpha;IconInput 
+alpha;IconInputProps 
+public;IconProps
+public;IconSpec = string | React.ReactNode
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
+public;InputLabel 
+public;InputLabelProps 
 public;InputProps 
 public;InputStatus
 internal;isPromiseLike(obj: unknown): obj is PromiseLike
@@ -82,6 +105,8 @@ public;LabeledSelect
 public;LabeledSelectProps 
 public;LabeledTextarea 
 public;LabeledTextareaProps 
+public;LabeledToggle 
+public;LabeledToggleProps 
 public;LeadingText: React.FunctionComponent
 public;LeadingText2: React.FunctionComponent
 internal;Line
@@ -104,6 +129,7 @@ public;MessageSeverity
 alpha;MinimalFeaturedTile: React.FunctionComponent
 alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
+internal;NewBadge: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
@@ -182,13 +208,14 @@ public;TreeNodePlaceholderProps
 public;TreeNodeProps 
 public;TreeProps 
 public;UiCore
-public;UiError 
+public;UiError: typeof UiError_2
 public;UiEvent
 beta;UiSettings
 beta;UiSettingsResult
 beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
+alpha;useEffectSkipFirst(callback: () => void, deps?: any[]): void
 public;VerticalAlignment
 beta;VerticalTabs 
 public;WebFontIcon: React.FunctionComponent

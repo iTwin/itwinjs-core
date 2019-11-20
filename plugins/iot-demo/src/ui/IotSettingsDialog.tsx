@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { Dialog, Select, Input, Button, ButtonType, Position, Popup } from "@bentley/ui-core";
-import { ToolSettingsPropertyItem, ToolSettingsValue, IModelApp } from "@bentley/imodeljs-frontend";
+import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
 import { ModelessDialogManager, SyncPropertiesChangeEventArgs } from "@bentley/ui-framework";
 import { IotUiProvider } from "./IotUiProvider";
 import { AnimationTypeName } from "../IoTDefinitions";
@@ -39,18 +39,28 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
   public static readonly id = "IotSettingsDialog";
   private _alarms: Map<string, string> = new Map<string, string>();
   private _sensors: { [key: string]: string } = {};
-  private _temperatureLabel = IModelApp.i18n.translate("IoTDemo:Dialog.Temperature");
-  private _heatingCoolingLabel = IModelApp.i18n.translate("IoTDemo:Dialog.HeatingCooling");
-  private _co2Label = IModelApp.i18n.translate("IoTDemo:Dialog.CO2");
-  private _occupancyLabel = IModelApp.i18n.translate("IoTDemo:Dialog.Occupancy");
-  private _smokeLabel = IModelApp.i18n.translate("IoTDemo:Dialog.Smoke");
-  private _fireLabel = IModelApp.i18n.translate("IoTDemo:Dialog.Fire");
-  private _historyLabel = IModelApp.i18n.translate("IoTDemo:Dialog.History");
-  private _monitorLabel = IModelApp.i18n.translate("IoTDemo:Dialog.Monitor");
-  private _dialogTitle = IModelApp.i18n.translate("IoTDemo:Dialog.Title");
+  private _temperatureLabel: string;
+  private _heatingCoolingLabel: string;
+  private _co2Label: string;
+  private _occupancyLabel: string;
+  private _smokeLabel: string;
+  private _fireLabel: string;
+  private _historyLabel: string;
+  private _monitorLabel: string;
+  private _dialogTitle: string;
 
   constructor(props: IotSettingsDialogProps) {
     super(props);
+    const i18n = this.props.dataProvider.plugin.i18n;
+    this._temperatureLabel = i18n.translate("iotDemo:Dialog.Temperature");
+    this._heatingCoolingLabel = i18n.translate("iotDemo:Dialog.HeatingCooling");
+    this._co2Label = i18n.translate("iotDemo:Dialog.CO2");
+    this._occupancyLabel = i18n.translate("iotDemo:Dialog.Occupancy");
+    this._smokeLabel = i18n.translate("iotDemo:Dialog.Smoke");
+    this._fireLabel = i18n.translate("iotDemo:Dialog.Fire");
+    this._historyLabel = i18n.translate("iotDemo:Dialog.History");
+    this._monitorLabel = i18n.translate("iotDemo:Dialog.Monitor");
+    this._dialogTitle = i18n.translate("iotDemo:Dialog.Title");
 
     this._sensors[AnimationTypeName.Temperature] = this._temperatureLabel;
     this._sensors[AnimationTypeName.HeatingCooling] = this._heatingCoolingLabel;

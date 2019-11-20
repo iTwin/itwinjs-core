@@ -10,7 +10,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId, Backstage,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
+  SyncUiEventId, UiFramework, Backstage, BackstageItem, BackstageItemUtilities, StatusBarItemUtilities, StatusBarSection, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -21,16 +22,37 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
+import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+
+// tslint:disable-next-line: variable-name
+const SampleStatus = withStatusFieldProps(SampleStatusField);
 
 export class AppTools {
+  public static getBackstageItems(): BackstageItem[] {
+    return [
+      BackstageItemUtilities.createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
+    ];
+  }
+  private static _sampleStatusFieldId = "tool1:statusField1";
+
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
       iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
-      tooltip: () => Tool1.description,
+      description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
+
+        const backstageItems = AppTools.getBackstageItems();
+        UiFramework.backstageManager.itemsManager.add(backstageItems);
+
+        const statusBarItem = StatusBarItemUtilities.createStatusBarItem(this._sampleStatusFieldId, StatusBarSection.Left, 10, <SampleStatus />);
+        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
+        if (itemsManager) {
+          itemsManager.add(statusBarItem);
+          itemsManager.setIsVisible("ViewAttributes", false);
+        }
       },
     });
   }
@@ -41,7 +63,18 @@ export class AppTools {
       iconSpec: Tool2.iconSpec,
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
-      execute: () => { IModelApp.tools.run(Tool2.toolId); },
+      execute: () => {
+        IModelApp.tools.run(Tool2.toolId);
+
+        const backstageItems = AppTools.getBackstageItems().map((item) => item.id);
+        UiFramework.backstageManager.itemsManager.remove(backstageItems);
+
+        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
+        if (itemsManager) {
+          itemsManager.remove(this._sampleStatusFieldId);
+          itemsManager.setIsVisible("ViewAttributes", true);
+        }
+      },
     });
   }
 
@@ -52,8 +85,10 @@ export class AppTools {
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
       execute: async () => {
+        // ==== The following is no longer required since the default specs will be loaded when the QuantityFormatters onInitialized method is processed
+        // as the ImodelApp starts. =====
         // make sure formatting and parsing data are cached before the tool starts.
-        await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
+        // await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
         IModelApp.tools.run(ToolWithSettings.toolId);
       },
     });
@@ -64,7 +99,7 @@ export class AppTools {
       toolId: AnalysisAnimationTool.toolId,
       iconSpec: "icon-camera-animation",
       label: () => AnalysisAnimationTool.flyover,
-      tooltip: () => AnalysisAnimationTool.description,
+      description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
       isVisible: false, // default to not show and then allow stateFunc to redefine.
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
@@ -240,7 +275,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Toast)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
     });
   }
 
@@ -445,6 +480,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOpen",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openPropertyGrid",
+      tooltip: "Open Vertical PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
@@ -462,6 +498,7 @@ export class AppTools {
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.closePropertyGrid",
+      tooltip: "Close PropertyGrid (Tooltip)",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {

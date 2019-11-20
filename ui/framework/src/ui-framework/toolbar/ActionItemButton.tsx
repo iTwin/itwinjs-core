@@ -6,17 +6,15 @@
 
 import * as React from "react";
 
-import { CommonProps, SizeProps } from "@bentley/ui-core";
+import { CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 
-import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties that must be specified for a ActionItemButton component
  * @public
@@ -125,6 +123,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     const { actionItem, ...props } = this.props;
     const icon = <Icon iconSpec={actionItem.iconSpec} />;
+    const badge = BadgeUtilities.getComponentForBadge(actionItem.badgeType, actionItem.betaBadge);  // tslint:disable-line: deprecation
 
     return (
       <Item
@@ -137,7 +136,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         onKeyDown={this._handleKeyDown}
         icon={icon}
         onSizeKnown={this.props.onSizeKnown}
-        badge={actionItem.betaBadge && <BetaBadge />}
+        badge={badge}
       />
     );
   }

@@ -5,16 +5,19 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { mount, shallow } from "enzyme";
+import { mount, shallow, ReactWrapper } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher } from "../../ui-framework";
-import { Direction } from "@bentley/ui-ninezone";
+import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem } from "../../ui-framework";
+import { Direction, GroupTool } from "@bentley/ui-ninezone";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { BadgeType } from "@bentley/ui-abstract";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
   label: "Tool 1",
   iconSpec: "icon-placeholder",
+  badgeType: BadgeType.New,
 });
 
 const toolItemEventId = "test-button-state";
@@ -179,82 +182,6 @@ describe("GroupItem", () => {
       wrapper.unmount();
     });
 
-    it("GroupButton opens & support history", () => {
-      const executeSpy = sinon.spy();
-
-      const testSpyTool = new CommandItemDef({
-        commandId: "spyTool",
-        iconSpec: "icon-placeholder",
-        labelKey: "SampleApp:buttons.spyTool",
-        execute: executeSpy,
-        stateSyncIds: [toolItemEventId],
-        stateFunc: toolItemStateFunc,
-      });
-
-      const wrapper = mount(
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconSpec="icon-placeholder"
-          items={[testSpyTool, tool1, tool2]}
-          direction={Direction.Bottom}
-          itemsInColumn={7}
-        />,
-      );
-
-      const expandableItem = wrapper.find("div.nz-toolbar-item-expandable-expandable");
-      expect(expandableItem.length).to.eq(1);
-      expandableItem.simulate("mouseenter");
-      expandableItem.simulate("mouseleave");
-
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
-      expect(buttonDiv.length).to.eq(1);
-
-      buttonDiv.simulate("click");
-      wrapper.update();
-
-      const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
-      expect(toolItems.length).to.eq(3);
-      toolItems.at(0).simulate("click");
-      expect(executeSpy.calledOnce).to.be.true;
-      wrapper.update();
-
-      const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
-      expect(historyItem.length).to.eq(1);
-      historyItem.simulate("click");
-      expect(executeSpy.calledTwice).to.be.true;
-
-      wrapper.unmount();
-    });
-
-    it("GroupButton supports history item with no sync", () => {
-      const wrapper = mount(
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconSpec="icon-placeholder"
-          items={[tool1]}
-          direction={Direction.Bottom}
-          itemsInColumn={7}
-        />,
-      );
-
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
-      expect(buttonDiv.length).to.eq(1);
-
-      buttonDiv.simulate("click");
-      wrapper.update();
-
-      const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
-      expect(toolItems.length).to.eq(1);
-      toolItems.at(0).simulate("click");
-      wrapper.update();
-
-      const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
-      expect(historyItem.length).to.eq(1);
-      historyItem.simulate("click");
-
-      wrapper.unmount();
-    });
-
     it("should set focus to home on Esc", () => {
       const wrapper = mount(<GroupButton items={[tool1, tool2]} />);
       const element = wrapper.find(".nz-toolbar-item-item");
@@ -287,6 +214,61 @@ describe("GroupItem", () => {
 
       wrapper.unmount();
     });
+
+    it("should minimize on outside click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1, tool2, group1],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      sut.setState({ isPressed: true });
+      const toolGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      sinon.stub(event, "target").get(() => document.createElement("div"));
+      toolGroup.prop("onOutsideClick")!(event);
+
+      expect(sut.state().isPressed).to.be.false;
+    });
+
+    it("should not minimize on outside click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1, tool2, group1],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      sut.setState({ isPressed: true });
+      const toolGroup = sut.findWhere((w) => {
+        return w.name() === "WithOnOutsideClick";
+      }) as ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      toolGroup.prop("onOutsideClick")!(event);
+
+      expect(sut.state().isPressed).to.be.true;
+    });
+
+    it("should execute active item on click", () => {
+      const execute = sinon.spy();
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({
+            execute,
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
+      sut.setState({ isPressed: true });
+      const groupTool = sut.find(GroupTool);
+      groupTool.prop("onClick")!();
+
+      expect(execute.calledOnceWithExactly()).to.false;
+    });
   });
 
   describe("GroupItemDef", () => {
@@ -294,6 +276,7 @@ describe("GroupItem", () => {
       const groupItemDef = new GroupItemDef({
         groupId: "my-group1",
         labelKey: "SampleApp:buttons.toolGroup",
+        panelLabel: "panel-label",
         iconSpec: "icon-placeholder",
         items: [tool1, tool2],
         direction: Direction.Bottom,
@@ -312,6 +295,31 @@ describe("GroupItem", () => {
 
       reactNode = groupItemDef.toolbarReactNode();
       expect(reactNode).to.not.be.undefined;
+    });
+
+    it("setPanelLabel sets panel label correctly", () => {
+      const panelLabel = "panel-label";
+      const groupItemDef = new GroupItemDef({
+        groupId: "my-group1",
+        panelLabel,
+        iconSpec: "icon-placeholder",
+        items: [tool1, tool2],
+      });
+
+      expect(groupItemDef.panelLabel).to.eq(panelLabel);
+
+      const newPanelLabel = "New Panel Label";
+      groupItemDef.setPanelLabel(newPanelLabel);
+      expect(groupItemDef.panelLabel).to.eq(newPanelLabel);
+    });
+
+    it("should generate id correctly", () => {
+      const groupItemDef = new GroupItemDef({
+        iconSpec: "icon-placeholder",
+        items: [tool1, tool2],
+      });
+
+      expect(groupItemDef.id.substr(0, GroupItemDef.groupIdPrefix.length)).to.eq(GroupItemDef.groupIdPrefix);
     });
 
   });

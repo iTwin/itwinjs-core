@@ -2,19 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-@import "../../_variables";
+@import "../../variables";
 
 .nz-toolbar-item-expandable-group-panel {
   $fill-color: $buic-background-panel;
 
   line-height: normal;
   background: $fill-color;
-  padding-left: 16px;
-  padding-right: 8px;
-  padding-top: 8px;
-  padding-bottom: 12px;
+  padding: 8px;
   border-radius: 4px;
   pointer-events: auto;
   border: 1px solid $buic-background-widget-stroke;
+  font-size: $font-size;
 }

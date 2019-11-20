@@ -7,6 +7,7 @@
 .nz-footer-dialog-button {
   color: $buic-foreground-muted;
   cursor: pointer;
+  position: relative;
 
   &:hover {
     color: $buic-foreground-activehover;

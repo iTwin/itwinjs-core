@@ -32,8 +32,7 @@ import { TileTree } from "./tile/TileTree";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { Viewport } from "./Viewport";
-import { DecorateContext } from "./ViewContext";
+import { Viewport, ScreenViewport } from "./Viewport";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { IModelApp } from "./IModelApp";
 
@@ -287,14 +286,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
   /** @internal */
-  public decorate(context: DecorateContext): void {
+  public getAttribution(div: HTMLDivElement, vp: ScreenViewport): void {
     if (this.viewFlags.backgroundMap)
-      this._backgroundMap.decorate(context);
+      this._backgroundMap.addLogoCards(div, vp);
   }
 
   /** @internal */
   public get wantShadows(): boolean {
-    return this.is3d() && this.viewFlags.shadows && !!IModelApp.renderSystem.options.displaySolarShadows;
+    return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
 }
 

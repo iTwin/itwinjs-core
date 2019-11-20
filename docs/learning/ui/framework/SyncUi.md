@@ -55,4 +55,4 @@ The `_determineWidgetStateForSelectionSet` function checks the selection set and
 
 ## API Reference
 
-* [SyncUi]($framework:SyncUi)
+* [SyncUi]($ui-framework:SyncUi)

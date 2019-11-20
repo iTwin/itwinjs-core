@@ -27,6 +27,7 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
+  /** String name for schema properties */
   public readonly solidPrimitiveType = "linearSweep";
 
   private _contour: SweepContour;

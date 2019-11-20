@@ -1,22 +1,33 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
 
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@bentley/ui-core";
+import { CommonProps, RectangleProps, PointProps } from "@bentley/ui-core";
 import {
   ToolSettings,
   ToolSettingsTab,
   Zone,
   TitleBarButton,
+  ResizeHandle,
+  ZoneManagerProps,
+  ZoneTargetType,
+  WidgetZoneId,
 } from "@bentley/ui-ninezone";
+import { WidgetChangeHandler, TargetChangeHandler } from "../../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
+import { SafeAreaContext } from "../../safearea/SafeAreaContext";
+import { ZoneTargets } from "../../dragdrop/ZoneTargets";
+import { Outline } from "../Outline";
+import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
+
+// cSpell:ignore safearea
 
 /** State for the ToolSettingsZone content.
  */
@@ -29,22 +40,32 @@ enum ToolSettingsZoneContent {
  */
 interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
+  title: string;
 }
 
 /** Properties for the [[ToolSettingsZone]] React component.
  * @internal
  */
 export interface ToolSettingsZoneProps extends CommonProps {
-  bounds: RectangleProps;
+  dropTarget: ZoneTargetType | undefined;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   isHidden: boolean;
   isClosed: boolean;
+  lastPosition: PointProps | undefined;
+  targetChangeHandler: TargetChangeHandler;
+  targetedBounds: RectangleProps | undefined;
+  widgetChangeHandler: WidgetChangeHandler;
+  zone: ZoneManagerProps;
 }
 
 /** Tool Settings Zone React component.
  * @internal
  */
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
-  private _settingsSuffix: string;
+  private _hiddenVisibility: React.CSSProperties = {
+    visibility: "hidden",
+  };
+  private _widget = React.createRef<ToolSettings>();
 
   /** @internal */
   public readonly state: Readonly<ToolSettingsZoneState>;
@@ -52,10 +73,18 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    this._settingsSuffix = UiFramework.translate("general.settings");
+    const title = `${ToolUiManager.activeToolLabel}`;
+
     this.state = {
       toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
+      title,
     };
+  }
+
+  private _handleToolActivatedEvent = (): void => {
+    // Update tool settings title when active tool changes.
+    const title = `${ToolUiManager.activeToolLabel}`;
+    this.setState({ title });
   }
 
   public componentDidMount(): void {
@@ -66,33 +95,40 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
-  private _handleToolActivatedEvent = () => {
-    this.forceUpdate();
-  }
-
   public render(): React.ReactNode {
-    if (FrontstageManager.activeToolSettingsNode) {
-      const divStyle: React.CSSProperties = {
-        display: "grid",
-        justifyItems: "center",
-        gridAutoRows: "min-content auto",
-      };
-
-      return (
-        <Zone
-          className={this.props.className}
-          style={this.props.style}
-          bounds={this.props.bounds}
-          isHidden={this.props.isHidden}
-        >
-          <div style={divStyle} >
-            {this.getToolSettingsWidget()}
-          </div>
-        </Zone>
-      );
-    }
-
-    return null;
+    const bounds = getFloatingZoneBounds(this.props.zone);
+    const zIndexStyle = getFloatingZoneStyle(this.props.zone);
+    return (
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <span style={zIndexStyle}>
+            <Zone
+              bounds={bounds}
+              className={this.props.className}
+              id={this.props.zone.id}
+              isFloating={!!this.props.zone.floating}
+              isHidden={this.props.isHidden}
+              safeAreaInsets={safeAreaInsets}
+              style={this.props.style}
+            >
+              {this.getToolSettingsWidget()}
+            </Zone>
+            <Zone
+              bounds={this.props.zone.bounds}
+              id={this.props.zone.id}
+              safeAreaInsets={safeAreaInsets}
+            >
+              <ZoneTargets
+                zoneId={this.props.zone.id}
+                dropTarget={this.props.dropTarget}
+                targetChangeHandler={this.props.targetChangeHandler}
+              />
+            </Zone>
+            <Outline bounds={this.props.targetedBounds} />
+          </span>
+        )}
+      </SafeAreaContext.Consumer>
+    );
   }
 
   private _processClick = () => {
@@ -116,45 +152,53 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private getToolSettingsWidget(): React.ReactNode {
     if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
-      const tooltip = `${ToolUiManager.activeToolLabel} - ${this._settingsSuffix}`;
 
       return (
         <ToolSettingsTab
           onClick={this._processClick}
           onKeyDown={this._handleKeyDown}
-          title={tooltip}
+          title={this.state.title}
           onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >
-          {this.getToolSettingsButton()}
+          <i className="icon icon-settings" />
         </ToolSettingsTab>
       );
     }
 
     return (
       <ToolSettings
-        buttons={[
-          <TitleBarButton key="0" onClick={this._processClick} title={UiFramework.translate("general.minimize")}>
-            <i className={"icon icon-chevron-up"} />
-          </TitleBarButton>,
-        ]}
-        title={ToolUiManager.activeToolLabel}
+        buttons={
+          <div style={this.props.zone.floating && this._hiddenVisibility}>
+            <TitleBarButton
+              onClick={this._processClick}
+              title={UiFramework.translate("general.minimize")}
+            >
+              <i className={"icon icon-chevron-up"} />
+            </TitleBarButton>
+          </div>
+        }
+        contentRef={this.props.getWidgetContentRef(this.props.zone.id)}
+        fillZone={this.props.zone.isLayoutChanged && !!this.props.zone.floating}
+        lastPosition={this.props.lastPosition}
+        onDrag={this.props.zone.allowsMerging ? this.props.widgetChangeHandler.handleTabDrag : undefined}
+        onDragEnd={this.props.widgetChangeHandler.handleTabDragEnd}
+        onDragStart={this._handleDragStart}
+        onResize={this.props.zone.floating && this._handleResize}
         onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-      >
-        {FrontstageManager.activeToolSettingsNode}
-      </ToolSettings>
+        ref={this._widget}
+        title={this.state.title}
+      />
     );
   }
 
-  private getToolSettingsButton(): React.ReactNode {
-    let button: React.ReactNode;
+  private _handleDragStart = (initialPosition: PointProps) => {
+    if (!this._widget.current)
+      return;
+    const bounds = this._widget.current.getBounds();
+    this.props.widgetChangeHandler.handleTabDragStart(this.props.zone.id, 0, initialPosition, bounds);
+  }
 
-    // istanbul ignore else
-    if (FrontstageManager.activeToolSettingsNode) {
-      button = (
-        <i className="icon icon-settings" />
-      );
-    }
-
-    return button;
+  private _handleResize = (resizeBy: number, handle: ResizeHandle) => {
+    this.props.widgetChangeHandler.handleResize(this.props.zone.id, resizeBy, handle, 0);
   }
 }

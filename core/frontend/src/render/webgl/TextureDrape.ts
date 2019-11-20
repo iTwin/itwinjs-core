@@ -7,31 +7,29 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderTextureDrape } from "../System";
 import { Texture } from "./Texture";
 import { Target } from "./Target";
-import { Matrix4 } from "./Matrix";
-import { ShaderProgramExecutor } from "./ShaderProgram";
+import { Matrix4d } from "@bentley/geometry-core";
 import { SceneContext } from "../../ViewContext";
 
 export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer {
   protected _texture?: Texture;
-  protected _projectionMatrix = new Matrix4();
+  protected _projectionMatrix = Matrix4d.createIdentity();
   public get texture(): Texture | undefined { return this._texture; }
-  public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
+  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public abstract collectGraphics(context: SceneContext): void;
   public abstract draw(target: Target): void;
   public get isReady(): boolean { return this._texture !== undefined; }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._texture)
       stats.addPlanarClassifier(this._texture.bytesUsed);
   }
+
   public dispose() {
     this._texture = dispose(this._texture);
   }
-  public push(exec: ShaderProgramExecutor) {
-    if (undefined !== this.texture)
-      exec.target.activeTextureDrapes.push(this);
-  }
-  public pop(target: Target) {
-    if (undefined !== this._texture)
-      target.activeTextureDrapes.pop();
+
+  public getParams(params: Float32Array): void {
+    params[0] = 5.0; // Inside, pure texture.
+    params[1] = 0.0; // Outside, off.
   }
 }

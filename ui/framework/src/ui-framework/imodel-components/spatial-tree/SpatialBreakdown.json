@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../presentation/common/Ruleset.schema.json",
+  "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
   "id": "ui-framework/SpatialBreakdown",
   "rules": [
     {
@@ -16,7 +16,22 @@
             }
           ],
           "arePolymorphic": true,
-          "instanceFilter": "this.ComposingElement = NULL",
+          "relatedInstances": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelContainsElements"
+              },
+              "requiredDirection": "Backward",
+              "class": {
+                "schemaName": "BisCore",
+                "className": "Model"
+              },
+              "isRequired": true,
+              "alias": "model"
+            }
+          ],
+          "instanceFilter": "NOT model.IsPrivate AND this.ComposingElement = NULL",
           "groupByClass": false,
           "groupByLabel": false
         }

@@ -105,7 +105,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
     let label = shortcut.label;
     const iconSpec = shortcut.iconSpec;
 
-    label = "~" + shortcutKey + " " + label;
+    label = "~" + shortcutKey.toLocaleUpperCase() + " " + label;
 
     if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
       const shortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();
@@ -119,9 +119,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
     } else {
       const sel = () => this._itemPicked(shortcut);
       node = (
-        <ContextMenuItem key={index}
-          onSelect={sel}
-          icon={iconSpec} >
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec}>
           {label}
         </ContextMenuItem>
       );

@@ -11,16 +11,18 @@ exports[`<PopupButton /> should invoke children as render prop 1`] = `
     </WithOnOutsideClick>
   }
 >
-  <Item
-    icon={
-      <Unknown
-        iconSpec={undefined}
-      />
-    }
-    onClick={[Function]}
-    onKeyDown={[Function]}
-    title=""
-  />
+  <div>
+    <Item
+      icon={
+        <Unknown
+          iconSpec={undefined}
+        />
+      }
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      title=""
+    />
+  </div>
 </ExpandableItem>
 `;
 
@@ -36,15 +38,17 @@ exports[`<PopupButton /> should render with no padding 1`] = `
     </WithOnOutsideClick>
   }
 >
-  <Item
-    icon={
-      <Unknown
-        iconSpec={undefined}
-      />
-    }
-    onClick={[Function]}
-    onKeyDown={[Function]}
-    title=""
-  />
+  <div>
+    <Item
+      icon={
+        <Unknown
+          iconSpec={undefined}
+        />
+      }
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      title=""
+    />
+  </div>
 </ExpandableItem>
 `;

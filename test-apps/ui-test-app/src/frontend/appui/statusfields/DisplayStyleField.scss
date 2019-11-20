@@ -6,21 +6,24 @@
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
 .uifw-statusFields-displayStyle {
-  $font-size-medium: 12px;
-  $font-size-small: $font-size-medium;
+  $font-size-medium: $uicore-font-size-small;
+  $font-size-small: $uicore-font-size-smaller;
   overflow: hidden;
   padding-right: 0px;
 
-  .uifw-statusFields-displayStyle-selector {
-    padding-top: 0px;
-    padding-bottom: 0px;
-  }
-
-  @media only screen and (max-width: 768px) {
+  @include for-tablet-portrait-down {
     font-size: $font-size-medium;
+
+    .uicore-inputs-select {
+      font-size: $font-size-medium;
+    }
   }
 
-  @media only screen and (max-width: 600px) {
+  @include for-phone-only {
     font-size: $font-size-small;
+
+    .uicore-inputs-select {
+      font-size: $font-size-small;
+    }
   }
 }

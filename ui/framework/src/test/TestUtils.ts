@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as enzyme from "enzyme";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   UiFramework,
@@ -200,6 +201,12 @@ export class TestUtils {
     await TestUtils.flushAsyncOperations();
   }
 
+  public static createBubbledEvent(type: string, props = {}) {
+    const event = new Event(type, { bubbles: true });
+    Object.assign(event, props);
+    return event;
+  }
+
 }
 
 // cSpell:ignore testuser mailinator saml
@@ -239,5 +246,8 @@ export const storageMock = () => {
     },
   };
 };
+
+export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
 export default TestUtils;   // tslint:disable-line: no-default-export

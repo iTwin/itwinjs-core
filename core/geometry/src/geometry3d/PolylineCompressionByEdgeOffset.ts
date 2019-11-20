@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
@@ -169,9 +173,17 @@ export class PolylineCompressionContext {
       return;
     let lastAcceptedIndex = 0;
     // back up from final point ..
-    let indexB = n - 2;
-    while (indexB > 0 && data.distanceIndexIndex(indexB, n - 1)! < edgeLength)
+    let indexB = n - 1;
+    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! < edgeLength)
       indexB--;
+    if (indexB === 0) {
+      // Theres only one point there.
+      data.length = 1;
+      return;
+    }
+    // we want the exact bits of the final point even if others were nearby ..
+    if (indexB < n - 1)
+      data.moveIndexToIndex(n - 1, indexB);
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
       if (data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)! >= edgeLength) {
@@ -180,8 +192,7 @@ export class PolylineCompressionContext {
       }
       candidateIndex++;
     }
-    data.moveIndexToIndex(n - 1, lastAcceptedIndex + 1);
-    data.length = lastAcceptedIndex + 2;
+    data.length = lastAcceptedIndex + 1;
   }
 
   /** Copy points from source to dest, omitting those too close to predecessor.
@@ -216,7 +227,8 @@ export class PolylineCompressionContext {
     let distanceSquared;
     const perpendicularDistanceSquared = perpendicularDistance * perpendicularDistance;
     let denominator;
-    for (let i1 = 1; i1 + 1 < n; i1++) {
+    let i1 = 1;
+    for (; i1 + 1 < n; i1++) {
       data.vectorIndexIndex(lastAcceptedIndex, i1 + 1, vector01);
       data.vectorIndexIndex(lastAcceptedIndex, i1, vectorQ);
       denominator = vector01.magnitudeSquared();
@@ -234,7 +246,8 @@ export class PolylineCompressionContext {
       }
       data.moveIndexToIndex(i1, ++lastAcceptedIndex);
     }
-    data.moveIndexToIndex(n - 1, ++lastAcceptedIndex);
+    if (i1 < n)
+      data.moveIndexToIndex(i1, ++lastAcceptedIndex);
     data.length = lastAcceptedIndex + 1;
   }
 }

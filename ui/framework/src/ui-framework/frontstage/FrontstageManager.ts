@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
 
+import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
@@ -19,6 +20,7 @@ import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidCont
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup } from "../content/ContentGroup";
+import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -121,7 +123,7 @@ export class FrontstageManager {
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
-  private static _nineZoneManager = new NineZoneManager();
+  private static _nineZoneManagers = new Map<string, NineZoneManager>();
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
@@ -209,8 +211,21 @@ export class FrontstageManager {
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  /** Get  Nine-zone State Manager. */
-  public static get NineZoneManager() { return this._nineZoneManager; }
+  /** Get Nine-zone State Manager. */
+  public static get NineZoneManager() {
+    const id = FrontstageManager.activeFrontstageId;
+    let manager = FrontstageManager._nineZoneManagers.get(id);
+    if (!manager) {
+      manager = new NineZoneManager();
+      FrontstageManager._nineZoneManagers.set(id, manager);
+    }
+    return manager;
+  }
+
+  /** Get Widget State Changed event.
+   * @alpha
+   */
+  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
 
   /** Clears the Frontstage map.
    */

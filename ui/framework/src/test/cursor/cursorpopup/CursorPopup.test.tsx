@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { Point } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Point } from "@bentley/ui-core";
 
 import { CursorPopup, CursorPopupContent, CursorPopupShow } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
 import { CursorPopupManager, CursorPopupOptions, CursorPopupRenderer } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";

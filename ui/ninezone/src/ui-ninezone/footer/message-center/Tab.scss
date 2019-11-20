@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../../_geometry";
+@import "../../geometry";
+@import "../../typography";
 
 .nz-footer-messageCenter-tab {
   $bar-size: 2px;
@@ -18,6 +19,8 @@
   justify-content: center;
   position: relative;
   color: $buic-text-color;
+
+  @include title;
 
   &:not(.nz-active) {
     border-bottom: 1px solid $buic-background-dialog-stroke;

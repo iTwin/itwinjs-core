@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+/** @module Curve */
+
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveLocationDetailArrayPair, CurveCurveIntersectXY } from "./CurveCurveIntersectXY";
@@ -16,6 +22,7 @@ export class CurveCurve {
    * @param extendA true to allow geometryA to extend
    * @param geometryB second geometry
    * @param extendB true to allow geometryB to extend
+   * @deprecated Use CurveCurve.intersectionXYPairs (..) to get results in preferred directly paired form.
    */
   public static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);

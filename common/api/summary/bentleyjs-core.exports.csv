@@ -65,6 +65,7 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
+beta;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator

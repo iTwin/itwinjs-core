@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
-import { Subscription } from "rxjs/internal/Subscription";
 import { throwError } from "rxjs/internal/observable/throwError";
 import { from } from "rxjs/internal/observable/from";
 import { of } from "rxjs/internal/observable/of";
 import { initializeTree, TestTreeDataProvider } from "./TestDataFactories";
 import { ResolvablePromise } from "../test-helpers/misc";
+import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
 import { makeObservableCallback, onCancelation, NodeSet, PendingNodeTracker, NodeLoadingOrchestrator, NodeKey } from "../../ui-components/tree/NodeLoadingOrchestrator";
 import { BeInspireTreeNode, BeInspireTree, toNodes, toNode } from "../../ui-components/tree/component/BeInspireTree";
 import { TreeNodeItem } from "../../ui-components";
@@ -33,24 +33,14 @@ describe("NodeLoadingOrchestrator", () => {
 
   /** Expects observable to emit nodes in a specific order. The order is defined by the sequence of groups of emitted node ids, e.g. `[[0], [1, 2]]`. */
   async function expectSequence(observable: Observable<Array<BeInspireTreeNode<TreeNodeItem>>>, expectedSequence: number[][]): Promise<void> {
+    const observedSequence = await extractSequence(observable);
     const actualSequence: string[][] = [];
-    const subscription = observable.subscribe({
-      next: (loadedNodes) => {
-        loadedNodes.forEach((node) => expect(node.payload).to.not.be.undefined);
-        actualSequence.push(loadedNodes.map((node) => node.id!));
-      },
-      complete: () => {
-        expect(actualSequence).to.eql(expectedSequence.map((ids) => ids.map((id) => id.toString())));
-      },
-    });
-    return waitForUnsubscription(subscription);
-  }
+    for (const loadedNodes of observedSequence) {
+      loadedNodes.forEach((node) => expect(node.payload).to.not.be.undefined);
+      actualSequence.push(loadedNodes.map((node) => node.id!));
+    }
 
-  /** Returns a promise which is resolved when the input subscription is disposed. */
-  async function waitForUnsubscription(subscription: Subscription): Promise<void> {
-    const promise = new ResolvablePromise<void>();
-    subscription.add(() => promise.resolve());
-    return promise;
+    expect(actualSequence).to.eql(expectedSequence.map((ids) => ids.map((id) => id.toString())));
   }
 
   describe("prepareNodes", () => {
@@ -99,13 +89,12 @@ describe("NodeLoadingOrchestrator", () => {
           await expectSequence(preparedNodes, [[0, 1]]);
         });
 
-        it("does not call load progression callbacks", (done) => {
+        it("does not call load progression callbacks", () => {
           preparedNodes.subscribe().add(() => {
             // Check expections when subscription is disposed
             expect(onLoadProgress).to.not.have.been.called;
             expect(onLoadCanceled).to.not.have.been.called;
             expect(onLoadFinished).to.not.have.been.called;
-            done();
           });
         });
       });
@@ -275,12 +264,11 @@ describe("NodeLoadingOrchestrator", () => {
           await expectSequence(preparedNodes, [[0, 1, 2]]);
         });
 
-        it("does not call load progression callbacks", (done) => {
+        it("does not call load progression callbacks", () => {
           preparedNodes.subscribe().add(() => {
             expect(onLoadProgress).to.not.have.been.called;
             expect(onLoadCanceled).to.not.have.been.called;
             expect(onLoadFinished).to.not.have.been.called;
-            done();
           });
         });
       });
@@ -810,49 +798,53 @@ describe("makeObservableCallback", () => {
 
 describe("onCancelation", () => {
   describe("returned observable", () => {
-    it("invokes callback if subscriber cancels subscription before the observable completes", (done) => {
+    it("invokes callback if subscriber cancels subscription before the observable completes", async () => {
+      const cancelationSpy = sinon.spy();
       const promise = new ResolvablePromise<void>();
       const subscription = from(promise)
         .pipe(
-          onCancelation(done),
+          onCancelation(cancelationSpy),
         )
         .subscribe();
-
       subscription.unsubscribe();
-      promise.resolve();
+      await promise.resolve();
+      expect(cancelationSpy).to.be.calledOnce;
     });
 
-    it("invokes callback if observable sends error notification", (done) => {
+    it("invokes callback if observable sends error notification", () => {
+      const cancelationSpy = sinon.spy();
       throwError(new Error())
         .pipe(
-          onCancelation(() => done()),
+          onCancelation(cancelationSpy),
         )
         .subscribe({
           error: () => { },
         });
+      expect(cancelationSpy).to.be.calledOnce;
     });
 
-    it("does not invoke callback if observable completes", (done) => {
+    it("does not invoke callback if observable completes", () => {
+      const cancelationSpy = sinon.spy();
       of([1, 2, 3])
         .pipe(
-          onCancelation(() => done(new Error("callback should not have been invoked"))),
+          onCancelation(cancelationSpy),
         )
         .subscribe();
-      done();
+      expect(cancelationSpy).to.not.be.called;
     });
 
-    it("invokes callback after subscriber handles error", (done) => {
+    it("invokes callback after subscriber handles error", () => {
       let errorHandled = false;
       throwError(new Error())
         .pipe(
           onCancelation(() => {
             expect(errorHandled).to.be.true;
-            done();
           }),
         )
         .subscribe({
           error: () => { errorHandled = true; },
         });
+      expect(errorHandled).to.be.true;
     });
   });
 });

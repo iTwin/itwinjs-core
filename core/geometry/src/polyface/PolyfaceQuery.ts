@@ -8,8 +8,8 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Polyface, PolyfaceVisitor } from "./Polyface";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Polyface, PolyfaceVisitor, IndexedPolyface } from "./Polyface";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { Loop } from "../curve/Loop";
@@ -24,6 +24,26 @@ import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { Geometry } from "../Geometry";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { ChainMergeContext } from "../topology/ChainMerge";
+import { UnionFindContext } from "../numerics/UnionFind";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { RangeLengthData } from "./RangeLengthData";
+import { XYPointBuckets } from "./multiclip/XYPointBuckets";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Range3d } from "../geometry3d/Range";
+import { Angle } from "../geometry3d/Angle";
+/**
+ * Structure to return multiple results from volume between facets and plane
+ * @public
+ */
+export interface FacetProjectedVolumeSums {
+  /** Summed (signed) volume */
+  volume: number;
+  /** summed area moments for positive contributions */
+  positiveProjectedFacetAreaMoments?: MomentData;
+  /** summed area moments for negative contributions */
+  negativeProjectedFacetAreaMoments?: MomentData;
+}
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each method.
  * @public
@@ -85,6 +105,77 @@ export class PolyfaceQuery {
     }
     return s / 6.0;
   }
+  /** sum (signed) volumes between facets and a plane.
+   * Return a structure with multiple sums:
+   * * volume = the sum of (signed) volumes between facets and the plane.
+   * * positiveAreaMomentData, negativeProjectedFacetAreaMoments = moment data with centroid, area, and second moments with respect to the centroid.
+   *
+  */
+  public static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums {
+    if (source instanceof Polyface)
+      return PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(source.createVisitor(0), plane);
+    const visitor = source as PolyfaceVisitor;
+    const facetOrigin = Point3d.create();
+    const targetA = Point3d.create();
+    const targetB = Point3d.create();
+    const triangleNormal = Vector3d.create();
+    const planeNormal = plane.getNormalRef();
+    let h0, hA, hB;
+    let signedVolumeSum = 0.0;
+    let signedTriangleArea;
+    let singleFacetArea;
+    const positiveAreaMomentSums = MomentData.create(undefined, true);
+    const negativeAreaMomentSums = MomentData.create(undefined, true);
+    const singleFacetProducts = Matrix4d.createZero();
+    const projectToPlane = plane.getProjectionToPlane();
+
+    visitor.reset();
+    // For each facet ..
+    //   Form triangles from facet origin to each far edge.
+    //   Sum signed area and volume contributions
+    // each "projectedArea" contribution is twice the area of a triangle.
+    // each volume contribution is  3 times the actual volume -- (1/3) of the altitude sums was the centroid altitude.
+    while (visitor.moveToNextFacet()) {
+      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
+      h0 = plane.altitude(facetOrigin);
+      singleFacetArea = 0;
+      // within a single facets, the singleFacetArea sum is accumulated with signs of individual triangles.
+      // For a non-convex facet, this can be a mixture of positive and negative areas.
+      // The absoluteProjectedAreaSum contribution is forced positive after the sum for the facet.
+      for (let i = 1; i + 1 < visitor.point.length; i++) {
+        visitor.point.getPoint3dAtUncheckedPointIndex(i, targetA);
+        visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
+        facetOrigin.crossProductToPoints(targetA, targetB, triangleNormal);
+        hA = plane.altitude(targetA);
+        hB = plane.altitude(targetB);
+        signedTriangleArea = planeNormal.dotProduct(triangleNormal);
+        singleFacetArea += signedTriangleArea;
+        signedVolumeSum += signedTriangleArea * (h0 + hA + hB);
+      }
+
+      singleFacetProducts.setZero();
+      visitor.point.multiplyTransformInPlace(projectToPlane);
+      PolygonOps.addSecondMomentAreaProducts(visitor.point, facetOrigin, singleFacetProducts);
+
+      if (singleFacetArea > 0) {
+        positiveAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
+      } else {
+        negativeAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
+
+      }
+    }
+    positiveAreaMomentSums.shiftOriginAndSumsToCentroidOfSums();
+    negativeAreaMomentSums.shiftOriginAndSumsToCentroidOfSums();
+    const positiveAreaMoments = MomentData.inertiaProductsToPrincipalAxes(positiveAreaMomentSums.origin, positiveAreaMomentSums.sums);
+    const negativeAreaMoments = MomentData.inertiaProductsToPrincipalAxes(negativeAreaMomentSums.origin, negativeAreaMomentSums.sums);
+
+    return {
+      volume: signedVolumeSum / 6.0,
+      positiveProjectedFacetAreaMoments: positiveAreaMoments,
+      negativeProjectedFacetAreaMoments: negativeAreaMoments,
+    };
+  }
+
   /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all all facets, as viewed from origin. */
   public static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
     if (source instanceof Polyface)
@@ -253,6 +344,114 @@ export class PolyfaceQuery {
       }
     }
   }
+
+  /** Search the facets for facet subsets that are connected with at least vertex contact.
+   * * Return array of arrays of facet indices.
+   */
+  public static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][] {
+    if (polyface instanceof Polyface) {
+      return this.partitionFacetIndicesByVertexConnectedComponent(polyface.createVisitor(0));
+    }
+    // The polyface is really a visitor !!!
+    const context = new UnionFindContext(polyface.clientPolyface().data.point.length);
+    for (polyface.reset(); polyface.moveToNextFacet();) {
+      const firstVertexIndexOnThisFacet = polyface.pointIndex[0];
+      for (const vertexIndex of polyface.pointIndex)
+        context.mergeSubsets(firstVertexIndexOnThisFacet, vertexIndex);
+    }
+    const roots = context.collectRootIndices();
+    const facetsInComponent: number[][] = [];
+    const numRoots = roots.length;
+    for (let i = 0; i < numRoots; i++) {
+      facetsInComponent.push([]);
+    }
+    for (polyface.reset(); polyface.moveToNextFacet();) {
+      const firstVertexIndexOnThisFacet = polyface.pointIndex[0];
+      const rootVertexForThisFacet = context.findRoot(firstVertexIndexOnThisFacet);
+      for (let rootIndex = 0; rootIndex < numRoots; rootIndex++) {
+        if (roots[rootIndex] === rootVertexForThisFacet) {
+          facetsInComponent[rootIndex].push(polyface.currentReadIndex());
+          break;
+        }
+      }
+    }
+    return facetsInComponent;
+  }
+  /** Clone the facets in each partition to a separate polyface.
+   *
+   */
+  public static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[] {
+    if (polyface instanceof Polyface) {
+      return this.clonePartitions(polyface.createVisitor(0), partitions);
+    }
+    polyface.setNumWrap(0);
+    const polyfaces: Polyface[] = [];
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = polyface.normal !== undefined;
+    options.needParams = polyface.param !== undefined;
+    options.needColors = polyface.color !== undefined;
+    options.needTwoSided = polyface.twoSided;
+    for (const partition of partitions) {
+      const builder = PolyfaceBuilder.create(options);
+      polyface.reset();
+      for (const facetIndex of partition) {
+        polyface.moveToReadIndex(facetIndex);
+        builder.addFacetFromVisitor(polyface);
+      }
+      polyfaces.push(builder.claimPolyface(true));
+    }
+    return polyfaces;
+  }
+
+  /** Search the facets for facet subsets that are connected with at least edge contact.
+   * * Return array of arrays of facet indices.
+   */
+  public static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][] {
+    if (polyface instanceof Polyface) {
+      return this.partitionFacetIndicesByEdgeConnectedComponent(polyface.createVisitor(0));
+    }
+    polyface.setNumWrap(1);
+    const matcher = new IndexedEdgeMatcher();
+    polyface.reset();
+    let numFacets = 0;
+    while (polyface.moveToNextFacet()) {
+      const numEdges = polyface.pointCount - 1;
+      numFacets++;
+      for (let i = 0; i < numEdges; i++) {
+        matcher.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
+      }
+    }
+    const allEdges: SortableEdgeCluster[] = [];
+    matcher.sortAndCollectClusters(allEdges, allEdges, allEdges, allEdges);
+    const context = new UnionFindContext(numFacets);
+    for (const cluster of allEdges) {
+      if (cluster instanceof SortableEdge) {
+        // this edge does not connect anywhere.  Ignore it!!
+      } else {
+        const edge0 = cluster[0];
+        for (let i = 1; i < cluster.length; i++)
+          context.mergeSubsets(edge0.facetIndex, cluster[i].facetIndex);
+      }
+    }
+
+    const roots = context.collectRootIndices();
+    const facetsInComponent: number[][] = [];
+    const numRoots = roots.length;
+    for (let i = 0; i < numRoots; i++) {
+      facetsInComponent.push([]);
+    }
+
+    for (let facetIndex = 0; facetIndex < numFacets; facetIndex++) {
+      const rootOfFacet = context.findRoot(facetIndex);
+      for (let rootIndex = 0; rootIndex < numRoots; rootIndex++) {
+        if (roots[rootIndex] === rootOfFacet) {
+          facetsInComponent[rootIndex].push(facetIndex);
+          break;
+        }
+      }
+    }
+    return facetsInComponent;
+  }
   /** Find segments (within the linestring) which project to facets.
    * * Assemble each segment pair as a facet in a new polyface
    * * Facets are ASSUMED to be convex and planar.
@@ -296,6 +495,220 @@ export class PolyfaceQuery {
       });
     chainContext.clusterAndMergeVerticesXYZ();
     return chainContext.collectMaximalChains();
+  }
+
+  /**
+   * * Examine ranges of facets.
+   * * Return statistical summary of x,y,z ranges.
+   */
+  public static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData {
+    if (polyface instanceof Polyface) {
+      return this.collectRangeLengthData(polyface.createVisitor(0));
+    }
+    const rangeData = new RangeLengthData();
+    // polyface is a visitor ...
+    for (polyface.reset(); polyface.moveToNextFacet();)
+      rangeData.accumulateGrowableXYZArrayRange(polyface.point);
+    return rangeData;
+  }
+
+  /** Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices impinge within edges.
+   *
+   */
+  public static cloneWithTVertexFixup(polyface: Polyface): Polyface {
+    const oldFacetVisitor = polyface.createVisitor(1);  // This is to visit the existing facets.
+    const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const builder = PolyfaceBuilder.create();
+    const edgeRange = Range3d.createNull();
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
+    const spacePoint = Point3d.create();
+    const segment = LineSegment3d.create(point0, point1);
+
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      newFacetVisitor.clearArrays();
+      for (let i = 0; i + 1 < oldFacetVisitor.point.length; i++) {
+        // each base vertex is part of the result ...
+        oldFacetVisitor.point.getPoint3dAtUncheckedPointIndex(i, point0);
+        oldFacetVisitor.point.getPoint3dAtUncheckedPointIndex(i + 1, point1);
+        newFacetVisitor.pushDataFrom(oldFacetVisitor, i);
+        edgeRange.setNull();
+        LineSegment3d.create(point0, point1, segment);
+        let detailArray: CurveLocationDetail[] | undefined;
+        edgeRange.extend(point0);
+        edgeRange.extend(point1);
+        rangeSearcher.announcePointsInRange(edgeRange, (index: number, _x: number, _y: number, _z: number) => {
+          // x,y,z has x,y within the range of the search ... test for exact on (in full 3d!)
+          polyface.data.point.getPoint3dAtUncheckedPointIndex(index, spacePoint);
+          const detail = segment.closestPoint(spacePoint, false);
+          if (undefined !== detail) {
+            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)) {
+              if (detailArray === undefined)
+                detailArray = [];
+              detail.a = index;
+              detailArray.push(detail);
+            }
+          }
+          return true;
+        });
+        if (detailArray !== undefined) {
+          detailArray.sort((a: CurveLocationDetail, b: CurveLocationDetail) => (a.fraction - b.fraction));
+          for (const d of detailArray) {
+            newFacetVisitor.pushInterpolatedDataFrom(oldFacetVisitor, i, d.fraction, i + 1);
+          }
+        }
+      }
+      builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+    }
+
+    return builder.claimPolyface();
+  }
+
+  /** Clone the facets, inserting removing points that are simply within colinear edges.
+   *
+   */
+  public static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface {
+    const oldFacetVisitor = polyface.createVisitor(2);  // This is to visit the existing facets.
+    const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
+    const builder = PolyfaceBuilder.create();
+    const vector01 = Vector3d.create();
+    const vector12 = Vector3d.create();
+    const numPoint = polyface.data.point.length;
+    const pointState = new Int32Array(numPoint);
+    // FIRST PASS -- in each sector of each facet, determine if the sector has colinear incoming and outgoing vectors.
+    //   Mark each point as
+    //  0 unvisited
+    // -1 incident to a non-colinear sector
+    //  n incident to n colinear sectors
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      for (let i = 0; i + 2 < oldFacetVisitor.point.length; i++) {
+        // each base vertex is part of the result ...
+        oldFacetVisitor.point.vectorIndexIndex(i, i + 1, vector01);
+        oldFacetVisitor.point.vectorIndexIndex(i + 1, i + 2, vector12);
+        const pointIndex = oldFacetVisitor.clientPointIndex(i + 1);
+        if (pointState[pointIndex] >= 0) {
+          const theta = vector01.angleTo(vector12);
+          if (theta.isAlmostZero) {
+            pointState[pointIndex]++;
+          } else {
+            pointState[pointIndex] = -1;
+          }
+        }
+      }
+    }
+    // SECOND PASS -- make copies, omitting references to points at colinear sectors
+    for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
+      newFacetVisitor.clearArrays();
+      for (let i = 0; i + 2 < oldFacetVisitor.point.length; i++) {
+        const pointIndex = oldFacetVisitor.clientPointIndex(i);
+        if (pointState[pointIndex] < 0) {
+          newFacetVisitor.pushDataFrom(oldFacetVisitor, i);
+        }
+      }
+      if (newFacetVisitor.point.length > 2)
+        builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+    }
+    return builder.claimPolyface();
+  }
+
+  /**
+   * Set the edge visibility for specified edges in the polyface.
+   * @param polyface mesh to be edited
+   * @param clusters array of edge references
+   * @param value visibility value (true or false)
+   */
+  private static setEdgeVisibility(polyface: IndexedPolyface, clusters: SortableEdgeCluster[], value: boolean) {
+    for (const cluster of clusters) {
+      if (cluster instanceof SortableEdge) {
+        this.setSingleEdgeVisibility(polyface, cluster.facetIndex, cluster.vertexIndexA, value);
+      } else if (Array.isArray(cluster)) {
+        for (const e1 of cluster)
+          this.setSingleEdgeVisibility(polyface, e1.facetIndex, e1.vertexIndexA, value);
+      }
+    }
+  }
+  /**
+   * Set the visibility of a particular edge of a particular facet.
+   * @param polyface containing polyface
+   * @param facetIndex facet index
+   * @param vertexIndex vertex index (in vertex array)
+   * @param value visibility value.
+   */
+  public static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean) {
+    const data = polyface.data;
+    const index0 = polyface.facetIndex0(facetIndex);
+    const index1 = polyface.facetIndex1(facetIndex);
+    for (let i = index0; i < index1; i++)
+      if (data.pointIndex[i] === vertexIndex)
+        data.edgeVisible[i] = value;
+  }
+
+  /**
+  * * Find mated pairs among facet edges.
+  * * Mated pairs have the same vertex indices appearing in opposite order.
+  * * Mark all non-mated pairs invisible.
+  * * At mated pairs
+  *    * if angle across the edge is larger than `sharpEdgeAngle`, mark visible
+  *    * otherwise mark invisible.
+  * @param mesh mesh to be marked
+  */
+  public static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle) {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = mesh.createVisitor(1) as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    const pairedEdges: SortableEdgeCluster[] = [];
+    const boundaryEdges: SortableEdgeCluster[] = [];
+    edges.sortAndCollectClusters(pairedEdges, boundaryEdges, boundaryEdges, boundaryEdges);
+    this.markAllEdgeVisibility(mesh, false);
+    this.setEdgeVisibility(mesh, boundaryEdges, true);
+    if (sharpEdgeAngle !== undefined) {
+      const normal0 = Vector3d.create();
+      const normal1 = Vector3d.create();
+      for (const pair of pairedEdges) {
+        if (Array.isArray(pair) && pair.length === 2) {
+          const e0 = pair[0];
+          const e1 = pair[1];
+          if (undefined !== PolyfaceQuery.computeFacetUnitNormal(visitor, e0.facetIndex, normal0)
+            && undefined !== PolyfaceQuery.computeFacetUnitNormal(visitor, e1.facetIndex, normal1)) {
+            const edgeAngle = normal0.smallerUnorientedAngleTo(normal1);
+            if (edgeAngle.radians > sharpEdgeAngle.radians) {
+              this.setSingleEdgeVisibility(mesh, e0.facetIndex, e0.vertexIndexA, true);
+              this.setSingleEdgeVisibility(mesh, e1.facetIndex, e1.vertexIndexA, true);
+            }
+          }
+        }
+      }
+    }
+  }
+  /** Try to compute a unit normal for a facet accessible through a visitor.
+   * * Unit normal is computed by `PolygonOps.unitNormal` with the points around the facet.
+   */
+  public static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined {
+    if (!result)
+      result = Vector3d.create();
+    if (visitor.moveToReadIndex(facetIndex)) {
+      if (PolygonOps.unitNormal(visitor.point, result))
+        return result;
+    }
+    return undefined;
+  }
+  /**
+  * * Mark all edge visibilities in the IndexedPolyface
+  * @param mesh mesh to be marked
+  * @param value true for visible, false for hidden
+  */
+
+  public static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean) {
+    const data = mesh.data;
+    for (let i = 0; i < data.edgeVisible.length; i++)
+      data.edgeVisible[i] = value;
   }
 
 }

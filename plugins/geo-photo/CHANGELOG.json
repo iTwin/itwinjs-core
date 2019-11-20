@@ -1,0 +1,44 @@
+{
+  "name": "@bentley/geo-photo-plugin",
+  "entries": [
+    {
+      "version": "1.7.0",
+      "tag": "@bentley/geo-photo-plugin_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixes and improvements to reading image tags. "
+          },
+          {
+            "comment": "Fix for tooltip and z position"
+          },
+          {
+            "comment": "Optimize conversion of photo geoLocations to spatial coordinates"
+          },
+          {
+            "comment": "Use internal pannellum viewer on ctrl-click. Change color of visited panos."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/geo-photo-plugin_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added licensing notice. "
+          },
+          {
+            "comment": "Initial publish of the Geo-Photo Plugin"
+          },
+          {
+            "comment": "Refactored geoPhoto plugins to allow for tests in chrome and node.js"
+          }
+        ]
+      }
+    }
+  ]
+}

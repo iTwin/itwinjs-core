@@ -3,15 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "_variables";
+@import "variables";
 
 .nz-footer-dialog-dialog {
-  border: {
-    color: $buic-background-dialog-stroke;
-    style: solid;
-    width: $nz-dialog-border-width;
-    radius: 3px;
-  };
+  border-radius: 3px;
   background-color: $buic-background-dialog;
   overflow: hidden;
   display: grid;

@@ -14,6 +14,7 @@ import { GeometryQuery } from "./GeometryQuery";
  * @public
  */
 export class CoordinateXYZ extends GeometryQuery {
+  /** String name for interface properties */
   public readonly geometryCategory = "point";
 
   private _xyz: Point3d;

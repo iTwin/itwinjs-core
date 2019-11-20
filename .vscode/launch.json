@@ -63,6 +63,23 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run SchemaDesignPerf tests (Offline)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/backend/lib/perftest",
+        "--debug",
+        "--offline",
+        "--grep",
+        "SchemaDesignPerf"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "CrashCollectionServer",
       "program": "${workspaceFolder}/core/backend/lib/test/standalone/CrashCollectionServer.js",
       "cwd": "${workspaceFolder}/core/backend",
@@ -93,20 +110,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Clients Tests (Integration)",
-      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/clients",
-      "args": [
-        "--testDir=${workspaceFolder}/core/clients/lib/test",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Clients-Backend Tests (Offline)",
       "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients-backend",
@@ -129,6 +132,22 @@
       "args": [
         "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
         "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Clients-Backend Tests (iModelBank)",
+      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients-backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--debug",
+        "--grep",
+        "#iModelBank"
       ],
       "port": 9229,
       "protocol": "inspector",
@@ -237,6 +256,29 @@
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ],
       "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "ui-test-app Electron (Main Process)",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/test-apps/ui-test-app/",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron.cmd"
+      },
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
+      "args": [
+        "--remote-debugging-port=9223",
+        "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/ui-test-app/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
     },
     {
       "type": "node",
@@ -428,7 +470,7 @@
         "webpack:///./*": "${webRoot}/*",
         "webpack:///*": "*",
         "webpack:///packages/*": "${webRoot}/*",
-      }
+      },
     },
     {
       "type": "node",
@@ -569,6 +611,80 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "⚠️Clients Tests (Integration - Certa/Backend)",
+      "cwd": "${workspaceRoot}/core/clients/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000"
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "⚠️Clients Tests (Integration - Frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+      "cwd": "${workspaceRoot}/plugins/geo-photo/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000"
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "⚠️GeoPhoto Plugin Tests (Integration - Frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "⚠️Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
@@ -601,42 +717,6 @@
       "smartStep": true,
       "showAsyncStacks": true,
       "breakOnLoadStrategy": "instrument",
-      "webRoot": "${workspaceFolder}"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "⚠️perf-test-app tests (backend)",
-      "cwd": "${workspaceRoot}/test-apps/perf-test-app/",
-      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
-      "args": [
-        "--debug",
-        "-r",
-        "${input:integrationTestEnvironment}",
-        "--grep",
-        "\"#integration\"",
-      ],
-      "smartStep": true,
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/perf-test-app/lib/**/*.js",
-        "${workspaceRoot}/core/*/lib/**/*.js",
-        "${workspaceRoot}/tools/certa/lib/**/*.js"
-      ],
-      "protocol": "inspector",
-      "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
-    },
-    {
-      "name": "⚠️perf-test-app tests (frontend)",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
-      "sourceMaps": true,
-      "timeout": 200000,
-      "smartStep": true,
-      "breakOnLoadStrategy": "instrument",
-      "showAsyncStacks": true,
       "webRoot": "${workspaceFolder}"
     },
     {
@@ -770,6 +850,20 @@
       "configurations": [
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
+      ]
+    },
+    {
+      "name": "✔️Clients Tests (Integration)",
+      "configurations": [
+        "⚠️Clients Tests (Integration - Certa/Backend)",
+        "⚠️Clients Tests (Integration - Frontend)"
+      ]
+    },
+    {
+      "name": "✔️GeoPhoto Plugin Tests (Integration)",
+      "configurations": [
+        "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+        "⚠️GeoPhoto Plugin Tests (Integration - Frontend)"
       ]
     }
   ],

@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+
+import { SelectionTool, IModelApp } from "@bentley/imodeljs-frontend";
+import { Orientation, Size } from "@bentley/ui-core";
+
 import TestUtils from "../TestUtils";
-import { SelectionTool } from "@bentley/imodeljs-frontend";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
+import { Tool1 } from "../tools/Tool1";
 import { ItemProps } from "../../ui-framework/shared/ItemProps";
-import { Orientation, Size } from "@bentley/ui-core";
 
 describe("Item", () => {
 
@@ -46,6 +49,17 @@ describe("Item", () => {
     expect(commandItem.toolbarReactNode()).to.not.be.null;
   });
 
+  it("CommandItemDef should set and get description", () => {
+    const commandItem = new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      isVisible: true,
+    });
+    commandItem.setDescription("Hello");
+    expect(commandItem.description).to.eq("Hello");
+    commandItem.setDescription(() => "World");
+    expect(commandItem.description).to.eq("World");
+  });
+
   it("CommandItemDef with getCommandArgs should call it on execute", () => {
     const spyMethod = sinon.spy();
     const commandItem = new CommandItemDef({
@@ -53,6 +67,16 @@ describe("Item", () => {
       execute: () => { },
       getCommandArgs: () => spyMethod(),
     });
+    commandItem.execute();
+    expect(spyMethod).to.be.calledOnce;
+  });
+
+  it("CommandItemDef with onItemExecuted should call it on execute", () => {
+    const spyMethod = sinon.spy();
+    const commandItem = new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      execute: () => { },
+    }, spyMethod);
     commandItem.execute();
     expect(spyMethod).to.be.calledOnce;
   });
@@ -82,6 +106,17 @@ describe("Item", () => {
     expect(toolItem.label).not.to.be.undefined;
     expect(toolItem.tooltip).not.to.be.undefined;
     expect(toolItem.execute).not.to.be.undefined;
+    expect(toolItem.description).not.to.be.undefined;
+  });
+
+  it("ToolItemDef helper function with default args", () => {
+    const toolItem = ToolItemDef.getItemDefForTool(Tool1);
+    expect(toolItem.iconSpec).to.be.eq("icon-placeholder");
+
+    const spyMethod = sinon.spy(IModelApp.tools, "run");
+    toolItem.execute();
+    spyMethod.calledOnce.should.true;
+    (IModelApp.tools.run as any).restore();
   });
 
   class TestItemDef extends ActionButtonItemDef {
@@ -114,11 +149,11 @@ describe("Item", () => {
     expect(numericKey).to.eq(100);
   });
 
-  it("ActionButtonItemDef with no size returns dimension of 0", () => {
+  it("ActionButtonItemDef with no size returns default dimension of 42", () => {
     const testItem = new TestItemDef({
       iconSpec: "icon-placeholder",
     });
-    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(0);
+    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(ActionButtonItemDef.defaultButtonSize);
   });
 
   it("ActionButtonItemDef with size returns correct dimension", () => {

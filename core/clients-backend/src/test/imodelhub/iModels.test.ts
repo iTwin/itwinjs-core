@@ -15,7 +15,6 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true) {
   if (!TestConfig.enableMocks)
@@ -242,7 +241,7 @@ describe("iModelHub iModelsHandler", () => {
     RequestGlobalOptions.timeout = backupTimeout;
   });
 
-  it("should get list of IModels", async () => {
+  it("should get list of IModels (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel");
       const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
@@ -255,7 +254,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(imodels.length).to.be.greaterThan(0);
   });
 
-  it("should get a specific IModel", async () => {
+  it("should get a specific IModel (#iModelBank)", async () => {
     mockGetIModelByName(projectId, imodelName);
     const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(iModel.name).to.be.equal(imodelName);
@@ -273,7 +272,7 @@ describe("iModelHub iModelsHandler", () => {
     }
   });
 
-  it("should retrieve an iModel by its id", async () => {
+  it("should retrieve an iModel by its id (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel", imodelId.toString());
       const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
@@ -286,7 +285,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModel.id!).to.be.equal(imodelId);
   });
 
-  it("should fail getting an invalid iModel", async () => {
+  it("should fail getting an invalid iModel (#iModelBank)", async () => {
     const mockGuid = Guid.createValue();
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel", mockGuid);
@@ -305,7 +304,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.name).to.be.equal("InstanceNotFound");
   });
 
-  it("should fail getting an iModel without projectId", async () => {
+  it("should fail getting an iModel without projectId (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await imodelClient.iModels.get(requestContext, "", new IModelQuery().byId(imodelId));
@@ -318,7 +317,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
 
-  it("should fail creating existing and initialized iModel", async () => {
+  it("should fail creating existing and initialized iModel (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel");
       const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
@@ -337,7 +336,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile", async function () {
+  it("should create iModel and upload SeedFile (#iModelBank)", async function () {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
@@ -385,7 +384,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModel.initialized).to.be.equal(true);
   });
 
-  it("should download a Seed File", async () => {
+  it("should download a Seed File (#iModelBank)", async () => {
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
     utils.mockFileResponse();
@@ -396,8 +395,8 @@ describe("iModelHub iModelsHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Seed File with Buffering", async () => {
-    imodelClient.setFileHandler(new AzureFileHandler(true));
+  it("should download a Seed File with Buffering (#iModelBank)", async () => {
+    imodelClient.setFileHandler(utils.createFileHanlder(true));
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
     utils.mockFileResponse();
@@ -407,7 +406,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    imodelClient.setFileHandler(new AzureFileHandler());
+    imodelClient.setFileHandler(utils.createFileHanlder());
   });
 
   it("should fail downloading the Seed File with no file handler", async () => {
@@ -423,12 +422,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail creating an iModel with no file handler", async function () {
-    if (!utils.getCloudEnv().isIModelHub) {
-      this.skip();
-      return;
-    }
-
+  it("should fail creating an iModel with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
@@ -441,7 +435,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail creating an iModel with no file", async () => {
+  it("should fail creating an iModel with no file (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir + "InvalidiModel.bim" });
@@ -453,7 +447,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  it("should fail creating an iModel with directory path", async () => {
+  it("should fail creating an iModel with directory path (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir });
@@ -513,7 +507,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(imodel!.iModelTemplate).to.be.equal(`${imodelId}:${changeSet.id}`);
   });
 
-  it("should update iModel name and description", async () => {
+  it("should update iModel name and description (#iModelBank)", async () => {
     mockGetIModelByName(projectId, imodelName);
     const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(imodel.name).to.be.equal(imodelName);
@@ -541,7 +535,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(updatediModel.description).to.be.equal(newDescription);
   });
 
-  it("should get oldest IModel", async () => {
+  it("should get oldest IModel (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       mockGetIModel(projectId, imodelName, Guid.createValue(), 1);
     }
@@ -550,7 +544,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.assert(imodel);
   });
 
-  it("should throw if no IModels returned", async () => {
+  it("should throw if no IModels returned (#iModelBank)", async () => {
     if (!TestConfig.enableMocks)
       return;
 
@@ -615,7 +609,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
   });
 
-  it("should throw iModelAlreadyExists if iModel already exist", async () => {
+  it("should throw iModelAlreadyExists if iModel already exist (#iModelBank)", async () => {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockGetIModel(projectId, createIModelName, Guid.createValue(), 1);
@@ -633,7 +627,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel from empty seed file", async () => {
+  it("should create iModel from empty seed file (#iModelBank)", async () => {
     await utils.deleteIModelByName(requestContext, projectId, createIModelName);
 
     const description = "Test iModel created by imodeljs-clients tests";
@@ -664,7 +658,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check(false);
   });
 
-  it("should update iModel", async () => {
+  it("should update iModel extents", async () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, imodelName, imodelId, 1);
     const newName = imodelName + "_updated";
@@ -697,7 +691,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(updatediModel.extent).to.be.eql(newExtent);
   });
 
-  it("should download a Seed File if iModel exist", async () => {
+  it("should download a Seed File if iModel exist (#iModelBank)", async () => {
     mockGetSeedFile(imodelId, true);
     mockGetIModel(projectId, imodelName, imodelId, 1);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
@@ -709,7 +703,7 @@ describe("iModelHub iModelsHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should create an iModel in the Asset", async () => {
+  it("should create an iModel in the Asset (#iModelBank)", async () => {
     const assetId = await utils.getAssetId(requestContext, undefined);
     await utils.deleteIModelByName(requestContext, assetId, createIModelName);
 

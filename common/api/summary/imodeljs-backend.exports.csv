@@ -91,6 +91,7 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsExternalSourceAspects 
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
@@ -132,7 +133,9 @@ public;class FunctionalType
 public;GenericSchema 
 public;class GeometricElement 
 public;class GeometricElement2d 
+public;GeometricElement2dHasTypeDefinition 
 public;class GeometricElement3d 
+public;GeometricElement3dHasTypeDefinition 
 public;GeometricModel 
 public;class GeometricModel2d 
 public;class GeometricModel3d 
@@ -143,6 +146,8 @@ public;GraphicalElement2dIsOfType
 public;class GraphicalElement3d 
 public;GraphicalElement3dRepresentsElement 
 public;class GraphicalModel2d 
+public;class GraphicalModel3d 
+public;GraphicalPartition3d 
 public;class GraphicalType2d 
 public;Group 
 public;class GroupInformationElement 
@@ -153,6 +158,7 @@ beta;ILinearElementProvidedBySource
 beta;ILinearLocationLocatesElement 
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
+alpha;IModelCloneContext
 public;IModelDb 
 public;IModelDb
 internal;TileContentState
@@ -162,6 +168,7 @@ public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
 alpha;IModelTransformer
+alpha;IModelTransformOptions
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
@@ -181,6 +188,11 @@ beta;class LinearLocationElement
 beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
+beta;LinearlyLocatedBase
+beta;LinearlyLocatedMultipleAt 
+beta;LinearlyLocatedMultipleFromTo 
+beta;LinearlyLocatedSingleAt 
+beta;LinearlyLocatedSingleFromTo 
 beta;LinearlyReferencedAtLocation 
 beta;LinearlyReferencedAtPositionRefersToReferent 
 beta;LinearlyReferencedFromPositionRefersToReferent 
@@ -231,6 +243,7 @@ public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingModel 
+beta;SectionLocation 
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 

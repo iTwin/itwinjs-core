@@ -3,10 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "../../typography";
 
 .nz-footer-toolAssistance-separator {
   margin-top: 18px;
   margin-bottom: 8px;
+
+  > .nz-label {
+    @include title;
+  }
 
   > .nz-separator {
     height: 1px;

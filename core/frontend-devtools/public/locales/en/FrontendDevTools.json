@@ -12,6 +12,9 @@
     "ToggleLogZ": {
       "keyin": "fdt toggle logz"
     },
+    "ToggleDrapeFrustum": {
+      "keyin": "fdt toggle drapefrustum"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
@@ -26,6 +29,9 @@
     },
     "ChangeViewFlags": {
       "keyin": "fdt change viewflags"
+    },
+    "InspectElement": {
+      "keyin": "fdt inspect element"
     },
     "ToggleSkybox": {
       "keyin": "fdt toggle skybox"
@@ -42,6 +48,9 @@
     "ToggleFrustumSnapshot": {
       "keyin": "fdt frustum snapshot"
     },
+    "ToggleSelectedViewFrustum": {
+      "keyin": "fdt frustum selected"
+    },
     "FreezeScene": {
       "keyin": "fdt freeze scene"
     },
@@ -53,6 +62,45 @@
     },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
+    },
+    "RealityTransition": {
+      "keyin": "fdt reality transition"
+    },
+    "ToggleToolTips": {
+      "keyin": "fdt tooltips"
+    },
+    "ChangeHiliteSettings": {
+      "keyin": "fdt hilite settings"
+    },
+    "ChangeEmphasisSettings": {
+      "keyin": "fdt emphasis settings"
+    },
+    "ChangeUnits": {
+      "keyin": "fdt metric"
+    },
+    "FadeOut": {
+      "keyin": "fdt fadeout"
+    },
+    "VCIntersectOn": {
+      "keyin": "fdt vcintersect on"
+    },
+    "VCIntersectOff": {
+      "keyin": "fdt vcintersect off"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
+    },
+    "ToggleShadowFrustum": {
+      "keyin": "fdt shadow frustum"
+    },
+    "CompileShaders": {
+      "keyin": "fdt compile shaders"
+    },
+    "SelectElementsById": {
+      "keyin": "fdt select elements"
     }
   }
 }

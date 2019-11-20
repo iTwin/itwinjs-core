@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { ItemProps, StringGetter } from "./ItemProps";
+import * as React from "react";
+import { BadgeType, StringGetter } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
+import { ItemProps } from "./ItemProps";
 
 /** Base state for any 'stateful' React component
  * @public
@@ -23,13 +25,17 @@ export interface BaseItemState {
 export abstract class ItemDefBase {
   private _label: string | StringGetter = "";
   private _tooltip: string | StringGetter = "";
+  private _description: string | StringGetter = "";
 
   public isVisible: boolean = true;
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   public isActive: boolean = false;
-  public betaBadge: boolean = false;
   public applicationData?: any;
+
+  /** @deprecated - use badgeType instead */
+  public betaBadge: boolean = false;
+  public badgeType?: BadgeType;
 
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   public stateSyncIds: string[] = [];
@@ -43,7 +49,9 @@ export abstract class ItemDefBase {
     me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
-    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;
+
+    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;   // tslint:disable-line: deprecation
+    me.badgeType = itemProps.badgeType;
 
     if (itemProps.applicationData !== undefined)
       me.applicationData = itemProps.applicationData;
@@ -52,6 +60,7 @@ export abstract class ItemDefBase {
 
     me._label = PropsHelper.getStringSpec(itemProps.label, itemProps.labelKey);
     me._tooltip = PropsHelper.getStringSpec(itemProps.tooltip, itemProps.tooltipKey);
+    me._description = PropsHelper.getStringSpec(itemProps.description, itemProps.descriptionKey);
 
     if (itemProps.stateFunc)
       me.stateFunc = itemProps.stateFunc;
@@ -89,5 +98,17 @@ export abstract class ItemDefBase {
    */
   public setTooltip(v: string | StringGetter) {
     this._tooltip = v;
+  }
+
+  /** Get the description string */
+  public get description(): string {
+    return PropsHelper.getStringFromSpec(this._description);
+  }
+
+  /** Set the description.
+   * @param v A string or a function to get the string.
+   */
+  public setDescription(v: string | StringGetter) {
+    this._description = v;
   }
 }

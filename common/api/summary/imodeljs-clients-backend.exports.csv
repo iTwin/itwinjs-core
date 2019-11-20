@@ -6,6 +6,8 @@ public;ClientsBackendLoggerCategory
 internal;IOSAzureFileHandler 
 beta;OidcAgentClient 
 beta;OidcAgentClientConfiguration = OidcBackendClientConfiguration
+internal;OidcAgentClientConfigurationV1 
+internal;OidcAgentClientV1 
 beta;class OidcBackendClient 
 beta;OidcBackendClientConfiguration
 beta;OidcDelegationClient 

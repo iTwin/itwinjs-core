@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { ResizeGrip, ResizeDirection, ResizeDirectionHelpers, ResizeGripResizeArgs } from "../../../ui-ninezone";
 import { PointerCaptor } from "../../../ui-ninezone/base/PointerCaptor";
-import { createRect } from "../../Utils";
+import { createRect, createPointerEvent } from "../../Utils";
 
 describe("<ResizeGrip />", () => {
   let createRefStub: sinon.SinonStub | undefined;
@@ -33,13 +33,14 @@ describe("<ResizeGrip />", () => {
     const gripElement = pointerCaptor.find("div").at(2).getDOMNode() as HTMLDivElement;
     sinon.stub(gripElement, "getBoundingClientRect").returns(createRect(20, 0, 25, 200));
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseMove = new MouseEvent("");
-    sinon.stub(mouseMove, "clientX").get(() => 20);
-    sinon.stub(mouseMove, "clientY").get(() => 35);
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent({
+      clientX: 20,
+      clientY: 35,
+    });
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     const expected: ResizeGripResizeArgs = {
       bounds: {
@@ -56,34 +57,34 @@ describe("<ResizeGrip />", () => {
     spy.calledWith(sinon.match(expected)).should.true;
   });
 
-  it("should not resize on mouse move if mouse down was not received", () => {
+  it("should not resize on pointer move if pointer down was not received", () => {
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
       direction={ResizeDirection.NorthEast_SouthWest}
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseMove = new MouseEvent("");
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
   });
 
-  it("should not resize on mouse move if mouse up was received", () => {
+  it("should not resize on pointer move if pointer up was received", () => {
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
       direction={ResizeDirection.NorthEast_SouthWest}
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
-    const mouseMove = new MouseEvent("");
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
   });
@@ -95,10 +96,10 @@ describe("<ResizeGrip />", () => {
       onResizeStart={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    sinon.stub(mouseDown, "clientX").get(() => 20);
-    sinon.stub(mouseDown, "clientY").get(() => 35);
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    sinon.stub(pointerDown, "clientX").get(() => 20);
+    sinon.stub(pointerDown, "clientY").get(() => 35);
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     const expected: ResizeGripResizeArgs = {
       bounds: {
@@ -129,8 +130,8 @@ describe("<ResizeGrip />", () => {
       onResizeStart={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     spy.notCalled.should.true;
   });
@@ -148,13 +149,13 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     sinon.stub(ref, "current").get(() => null);
 
-    const mouseMove = new MouseEvent("");
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent();
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
   });
@@ -166,13 +167,13 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseUp = new MouseEvent("");
-    sinon.stub(mouseUp, "clientX").get(() => 20);
-    sinon.stub(mouseUp, "clientY").get(() => 35);
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    sinon.stub(pointerUp, "clientX").get(() => 20);
+    sinon.stub(pointerUp, "clientY").get(() => 35);
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     const expected: ResizeGripResizeArgs = {
       bounds: {
@@ -196,8 +197,8 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
   });
@@ -215,13 +216,13 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     sinon.stub(ref, "current").get(() => null);
 
-    const mouseUp = new MouseEvent("");
-    pointerCaptor.prop("onMouseUp")!(mouseUp);
+    const pointerUp = createPointerEvent();
+    pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
   });
@@ -237,7 +238,7 @@ describe("<ResizeGrip />", () => {
     spy.calledOnceWithExactly().should.true;
   });
 
-  it("should not invoke onClick handler if mouse is moved", () => {
+  it("should not invoke onClick handler if pointer is moved", () => {
     const spy = sinon.spy();
     const sut = mount<ResizeGrip>(<ResizeGrip
       direction={ResizeDirection.NorthEast_SouthWest}
@@ -245,12 +246,12 @@ describe("<ResizeGrip />", () => {
     const pointerCaptor = sut.find(PointerCaptor);
     const grip = sut.find(".nz-grip");
 
-    const mouseDownEvent = new MouseEvent("");
-    pointerCaptor.prop("onMouseDown")!(mouseDownEvent);
+    const pointerDownEvent = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDownEvent);
 
-    const mouseUpEvent = new MouseEvent("");
-    sinon.stub(mouseUpEvent, "clientX").get(() => 1);
-    pointerCaptor.prop("onMouseUp")!(mouseUpEvent);
+    const pointerUpEvent = createPointerEvent();
+    sinon.stub(pointerUpEvent, "clientX").get(() => 1);
+    pointerCaptor.prop("onPointerUp")!(pointerUpEvent);
 
     grip.simulate("click");
     spy.notCalled.should.true;

@@ -22,8 +22,10 @@ $nz-active-tab-shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
 $nz-tab-no-shadow: drop-shadow(0 0 0 transparent);
 
 $nz-resize-grip-size: 8px;
+$nz-resize-grip-size-large: 14px;
 
 $nz-widget-background-color: $buic-background-widget;
 $nz-widget-border-color: $buic-background-widget-stroke;
 $nz-widget-border-width: 1px;
 $nz-widget-border-radius: 3px;
+$nz-widget-min-size: $nz-tab-height + 10px;

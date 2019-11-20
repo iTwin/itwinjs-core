@@ -167,7 +167,12 @@ export namespace XmlSerializationUtils {
     if (currentSchema.schemaKey.matches(typeSchema.schemaKey))
       return typeName;
 
-    return typeSchema.fullName + ":" + typeName;
+    // Alias is required in Spec. It could be undefined (technically), so
+    // throw until fixed.
+    if (typeSchema.alias === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
+
+    return typeSchema.alias + ":" + typeName;
   }
 
   async function resolveCustomAttributeNamespace(caName: string, schema: Schema): Promise<[string, string | undefined]> {

@@ -15,6 +15,7 @@ import { ViewUtilities } from "../utils/ViewUtilities";
 import { ListPicker, ListItem, ListItemType } from "./ListPicker";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { SupportsViewSelectorChange } from "../content/ContentControl";
+import { connectIModelConnection } from "../redux/connectIModel";
 
 // cSpell:ignore Spatials
 
@@ -335,3 +336,8 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     );
   }
 }
+
+/** ViewSelector that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedViewSelector = connectIModelConnection(null, null)(ViewSelector); // tslint:disable-line:variable-name

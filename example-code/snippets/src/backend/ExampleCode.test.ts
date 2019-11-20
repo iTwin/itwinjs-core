@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel, ClassRegistry } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementAspectProps, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Range3d } from "@bentley/geometry-core";
@@ -200,7 +200,7 @@ describe("Example Code", () => {
     elementAspects;
 
     // __PUBLISH_EXTRACT_START__ Elements.insertAspect
-    const aspectProps: ElementAspectProps = {
+    const aspectProps = {
       classFullName: "SomeDomain:SomeAspectClass",
       element: { id: elementId },
       stringProp: "s1",

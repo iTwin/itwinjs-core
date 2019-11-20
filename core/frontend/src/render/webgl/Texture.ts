@@ -10,6 +10,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -56,6 +57,13 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    if (params.anisotropicFilter) {
+      const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
+      if (undefined !== ext) {
+        const max = Math.min(params.anisotropicFilter, gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
+      }
+    }
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
@@ -98,6 +106,7 @@ function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCrea
 }
 
 type TextureFlag = true | undefined;
+type TextureAnisotropicFilter = number | undefined;
 type Load2DImageData = (handle: TextureHandle, params: Texture2DCreateParams) => void;
 type LoadCubeImageData = (handle: TextureHandle, params: TextureCubeCreateParams) => void;
 
@@ -106,6 +115,7 @@ interface TextureImageProperties {
   useMipMaps: TextureFlag;
   interpolate: TextureFlag;
   format: GL.Texture.Format;
+  anisotropicFilter: TextureAnisotropicFilter;
 }
 
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
@@ -144,12 +154,13 @@ class Texture2DCreateParams {
     public loadImageData: Load2DImageData,
     public useMipMaps?: TextureFlag,
     public interpolate?: TextureFlag,
+    public anisotropicFilter?: TextureAnisotropicFilter,
     public dataBytes?: Uint8Array) { }
 
   public static createForData(width: number, height: number, data: Texture2DData, preserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     const bytes = (preserveData && data instanceof Uint8Array) ? data : undefined;
     return new Texture2DCreateParams(width, height, format, getDataType(data), wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, bytes);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, undefined, bytes);
   }
 
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
@@ -211,13 +222,16 @@ class Texture2DCreateParams {
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
     const isSky = RenderTexture.Type.SkyBox === type;
     const isTile = RenderTexture.Type.TileSection === type;
+    const isFilteredTile = RenderTexture.Type.FilteredTileSection === type;
+    const maxAnisotropicFilterLevel = 16;
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
     const useMipMaps: TextureFlag = (!isSky && !isTile) ? true : undefined;
     const interpolate: TextureFlag = true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
+    const anisotropicFilter = isFilteredTile ? maxAnisotropicFilterLevel : undefined;
 
-    return { format, wrapMode, useMipMaps, interpolate };
+    return { format, wrapMode, useMipMaps, interpolate, anisotropicFilter };
   }
 
   public static readonly placeholderParams = new Texture2DCreateParams(1, 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, GL.Texture.WrapMode.ClampToEdge,
@@ -313,6 +327,27 @@ export abstract class TextureHandle implements IDisposable {
 
   protected constructor(glTexture: WebGLTexture) {
     this._glTexture = glTexture;
+  }
+
+  /** For debugging purposes, open a new window containing this texture as an image. */
+  public showDebugImage(): void {
+    const gl = System.instance.context;
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.getHandle()!, 0);
+    if (gl.FRAMEBUFFER_COMPLETE === gl.checkFramebufferStatus(gl.FRAMEBUFFER)) {
+      const w = this.width;
+      const h = this.height;
+      const pixels = new Uint8Array(w * h * 4);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w)!;
+      const url = imageBufferToPngDataUrl(buffer, false);
+      openImageDataUrlInNewWindow(url!, "Classifiers");
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fbo);
   }
 }
 
@@ -501,13 +536,18 @@ export class Texture2DDataUpdater {
       this.modified = true;
     }
   }
+
   public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
-    assert(index < this.data.length);
-    if (value !== this.data[index]) {
-      this.data[index] = value;
-      this.modified = true;
-    }
+    assert(index < this.data.length - 1);
+    assert(value < 0xffff);
+    this.setByteAtIndex(index, value & 0xff);
+    this.setByteAtIndex(index + 1, (value & 0xff00) >> 8);
   }
+
   public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
-  public getFlagsAtIndex(index: number): OvrFlags { return this.getByteAtIndex(index); }
+  public getOvrFlagsAtIndex(index: number): OvrFlags {
+    const lo = this.getByteAtIndex(index);
+    const hi = this.getByteAtIndex(index + 1);
+    return lo | (hi << 8);
+  }
 }

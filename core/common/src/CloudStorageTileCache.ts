@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CloudStorage */
+
 import { IModelToken } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
@@ -11,6 +13,7 @@ export interface TileContentIdentifier {
   iModelToken: IModelToken;
   treeId: string;
   contentId: string;
+  guid: string | undefined;
 }
 
 /** @beta */
@@ -40,7 +43,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
     return expiry;
   }
 
-  private constructor() {
+  protected constructor() {
     super();
   }
 
@@ -64,6 +67,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
   public formResourceName(id: TileContentIdentifier): string {
     const changeSetId = id.iModelToken.changeSetId || "first";
-    return `tiles/${id.treeId}/${changeSetId}/${id.contentId}`;
+    const version = id.guid ? id.guid : changeSetId; // NB: id.guid can be null (backend) OR undefined (frontend) here...
+    return `tiles/${id.treeId}/${version}/${id.contentId}`;
   }
 }

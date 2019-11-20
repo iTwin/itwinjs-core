@@ -7,10 +7,10 @@
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
+import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
-import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
@@ -51,6 +51,8 @@ export class RelatedElement implements RelatedElementProps {
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+  /** Used to *null out* an existing navigation relationship. */
+  public static readonly none = new RelatedElement({ id: Id64.invalid, relClassName: "" });
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64String {
@@ -106,6 +108,32 @@ export type PlacementProps = Placement2dProps | Placement3dProps;
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
   typeDefinition?: RelatedElementProps;
+}
+
+/** An enumeration of the different types of sections.
+ * @public
+ */
+export enum SectionType {
+  Section = 3,
+  Detail = 4,
+  Elevation = 5,
+  Plan = 6,
+}
+
+/** Properties that define a [SectionLocation]($backend)
+ * @beta
+ */
+export interface SectionLocationProps extends GeometricElement3dProps {
+  /** Section type */
+  sectionType?: SectionType;
+  /** Details on how this section was clipped. A placement local ClipVector stored as a json string. */
+  clipGeometry?: string;
+  /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
+  modelSelectorId?: Id64String;
+  /** The element Id of the [CategorySelector]($backend) for this SectionLocation */
+  categorySelectorId?: Id64String;
+  /** Optional Id of the associated [[ViewAttachmentProps]]. */
+  viewAttachment?: Id64String;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)
@@ -217,13 +245,13 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   identifier: string;
   /** The kind of object within the source repository. */
   kind: string;
-  /** An optional value that is typically a version number or a psuedo version number like last modified time.
+  /** An optional value that is typically a version number or a pseudo version number like last modified time.
    * It will be used by the synchronization process to detect that a source object is unchanged so that computing a cryptographic hash can be avoided.
    * If present, this value must be guaranteed to change when any of the source object's content changes.
    */
   version?: string;
-  /** The cryptographic hash (any algorithm) of the source object's content. It must be guaranteed to change when the source object's content changes. */
-  checksum: string;
+  /** The optional cryptographic hash (any algorithm) of the source object's content. If defined, it must be guaranteed to change when the source object's content changes. */
+  checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
 }
@@ -231,7 +259,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
 /** Properties of a [LineStyle]($backend)
  * @beta
  */
-export interface LineStyleProps extends ElementProps {
+export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
   data: string;
 }
@@ -246,7 +274,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 /** Parameters of a [Category]($backend)
  * @public
  */
-export interface CategoryProps extends ElementProps {
+export interface CategoryProps extends DefinitionElementProps {
   rank?: Rank;
   description?: string;
 }
@@ -254,7 +282,7 @@ export interface CategoryProps extends ElementProps {
 /** Parameters of a [SubCategory]($backend)
  * @public
  */
-export interface SubCategoryProps extends ElementProps {
+export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
   description?: string;
 }

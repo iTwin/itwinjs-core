@@ -164,7 +164,7 @@ function verifyTestElement(actualValue: TestElement, expectedValue: TestElement)
   verifyPrimitiveArray(actualValue, expectedValue);
 }
 
-function initElemProps(className: string, iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
+function initElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
   // add Geometry
   const geomArray: Arc3d[] = [
     Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -179,7 +179,6 @@ function initElemProps(className: string, iModelName: IModelDb, modId: Id64Strin
   // Create props
   const elementProps: GeometricElementProps = {
     classFullName: "ElementRoundTripTest:" + className,
-    iModel: iModelName,
     model: modId,
     category: catId,
     code: Code.createEmpty(),

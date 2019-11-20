@@ -2,9 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+// cSpell:ignore focustrap imagecheckbox iconinput
+
 export * from "./ui-core/UiCore";
 
+export * from "./ui-core/badge/Badge";
+export * from "./ui-core/badge/BadgeUtilities";
+export * from "./ui-core/badge/BetaBadge";
+export * from "./ui-core/badge/NewBadge";
+
 export * from "./ui-core/base/Div";
+export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/ScrollView";
@@ -30,14 +39,13 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
-// cSpell:ignore focustrap
-
 export * from "./ui-core/focustrap/FocusTrap";
 
 export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";
 
+export * from "./ui-core/icons/IconComponent";
 export * from "./ui-core/icons/SvgPath";
 export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";
@@ -49,7 +57,6 @@ export * from "./ui-core/popup/Popup";
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
-// cSpell:ignore imagecheckbox
 export * from "./ui-core/imagecheckbox/ImageCheckBox";
 
 export * from "./ui-core/searchbox/SearchBox";
@@ -63,6 +70,7 @@ export * from "./ui-core/loading/LoadingStatus";
 export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/toggle/Toggle";
+export * from "./ui-core/toggle/LabeledToggle";
 
 export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
@@ -89,13 +97,17 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
+export * from "./ui-core/utils/CustomHooks";
 
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";
 
+export * from "./ui-core/inputs/autosuggest/AutoSuggest";
 export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
+export * from "./ui-core/inputs/InputLabel";
 export * from "./ui-core/inputs/InputStatus";
+export * from "./ui-core/inputs/iconinput/IconInput";
 export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledSelect";
@@ -105,6 +117,9 @@ export * from "./ui-core/inputs/numericinput/ReactNumericInput";
 export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
+
+export * from "./ui-core/form/Field";
+export * from "./ui-core/form/Form";
 
 export * from "./ui-core/tabs/HorizontalTabs";
 export * from "./ui-core/tabs/VerticalTabs";

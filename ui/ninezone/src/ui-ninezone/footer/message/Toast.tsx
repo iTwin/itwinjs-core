@@ -15,7 +15,7 @@ import "./Toast.scss";
  */
 export interface ToastProps extends CommonProps, NoChildrenProps {
   /** Element to which the toast will animate out to. */
-  animateOutTo?: React.RefObject<HTMLElement>;
+  animateOutTo?: HTMLElement | null;
   /** Message content. */
   content?: React.ReactNode;
   /** Function called when toast finishes to animate out. */
@@ -119,10 +119,10 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
   private animateOut() {
     if (!this._toast.current)
       return;
-    if (!this.props.animateOutTo || !this.props.animateOutTo.current)
+    if (!this.props.animateOutTo || !this.props.animateOutTo)
       return;
 
-    const animateTo = Rectangle.create(this.props.animateOutTo.current.getBoundingClientRect());
+    const animateTo = Rectangle.create(this.props.animateOutTo.getBoundingClientRect());
     const toast = Rectangle.create(this._toast.current.getBoundingClientRect());
     const offset = toast.center().getOffsetTo(animateTo.center()).offsetY(-toast.getHeight() / 2);
 

@@ -25,6 +25,7 @@ public;AxisIndex
 public;AxisOrder
 public;AxisScaleSelect
 public;BagOfCurves 
+public;BarycentricTriangle
 public;BeJSONFunctions
 public;Bezier1dNd
 internal;class BezierCoffs
@@ -59,12 +60,14 @@ internal;ClusterableArray
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
 public;Cone 
+public;ConsolidateAdjacentCurvePrimitivesOptions
 alpha;Constant
 public;ConstructCurveBetweenCurves 
 public;ConvexClipPlaneSet 
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
+internal;CurveChainWireOffsetContext
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
@@ -83,11 +86,14 @@ public;class CurvePrimitive
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex"
 public;CurveSearchStatus
+internal;CutLoop
+internal;CutLoopMergeContext
 internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;FacetFaceData
+public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
 public;Geometry
@@ -107,13 +113,17 @@ internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
+public;IndexedCollectionInterval
 public;IndexedPolyface 
 public;IndexedPolyfaceVisitor 
 public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
 public;class IndexedXYZCollection
+public;IndexedXYZCollectionInterval 
+public;IndexedXYZCollectionPolygonOps
 public;InverseMatrixState
 public;IStrokeHandler
+public;JointOptions
 public;KnotVector
 public;LinearSweep 
 public;LineSegment3d 
@@ -160,6 +170,7 @@ public;Point2dArrayCarrier
 public;Point3d 
 public;Point3dArray
 public;Point3dArrayCarrier 
+public;Point3dArrayPolygonOps
 public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]
@@ -172,6 +183,7 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonOps
+internal;PolygonWireOffsetContext
 public;PolylineOps
 internal;PowerPolynomial
 internal;Quadrature
@@ -194,6 +206,7 @@ public;RotationalSweep
 public;RuledSweep 
 alpha;Sample
 public;Segment1d
+internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 

@@ -66,6 +66,8 @@ export interface PopupProps extends CommonProps {
   moveFocus?: boolean;
   /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
   focusTarget?: React.RefObject<HTMLElement> | string;
+  /** Indicates if the popup is pinned. */
+  isPinned?: boolean;
 }
 
 /** @internal */
@@ -140,9 +142,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _bindWindowEvents = () => {
-    window.addEventListener("mousedown", this._handleOutsideClick);
-    // window.addEventListener("touchstart", this._handleOutsideClick);
-    // window.addEventListener("click", this._onBodyClick);
+    window.addEventListener("pointerdown", this._handleOutsideClick);
     window.addEventListener("resize", this._hide);
     window.addEventListener("contextmenu", this._hide);
     window.addEventListener("scroll", this._hide);
@@ -151,9 +151,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _unBindWindowEvents = () => {
-    window.removeEventListener("mousedown", this._handleOutsideClick);
-    // window.removeEventListener("touchstart", this._handleOutsideClick);
-    // window.removeEventListener("click", this._handleOutsideClick);
+    window.removeEventListener("pointerdown", this._handleOutsideClick);
     window.removeEventListener("resize", this._hide);
     window.removeEventListener("contextmenu", this._hide);
     window.removeEventListener("scroll", this._hide);
@@ -203,7 +201,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _onClose() {
-    if (!this.state.isOpen) {
+    if (!this.state.isOpen || this.props.isPinned) {
       return;
     }
 

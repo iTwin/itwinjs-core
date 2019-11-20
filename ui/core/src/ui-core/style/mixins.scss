@@ -23,3 +23,11 @@
         text-decoration:    none;
     }
 }
+
+@mixin firefox-only {
+
+  @supports (-moz-appearance: none) {
+    @content;
+  }
+
+}

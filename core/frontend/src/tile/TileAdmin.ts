@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { BeDuration, Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
+import { BeDuration, Dictionary, Id64Array, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
 import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -43,6 +43,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get enableInstancing(): boolean;
   /** @internal */
+  public abstract get useProjectExtents(): boolean;
+  /** @internal */
   public abstract get disableMagnification(): boolean;
 
   /** @internal */
@@ -51,6 +53,10 @@ export abstract class TileAdmin {
   public abstract get realityTileExpirationTime(): BeDuration;
   /** @internal */
   public abstract get tileTreeExpirationTime(): BeDuration | undefined;
+  /** @internal */
+  public abstract get contextPreloadParentDepth(): number;
+  /** @internal */
+  public abstract get contextPreloadParentSkip(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -83,6 +89,12 @@ export abstract class TileAdmin {
    */
   public abstract getNumRequestsForViewport(vp: Viewport): number;
 
+  /** Returns the current set of Tiles requested by the specified Viewport.
+   * Do not modify the set or the Tiles.
+   * @internal
+   */
+  public abstract getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
+
   /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
    * Any requests which are of interest only to the specified viewport will be canceled.
    * @internal
@@ -96,7 +108,7 @@ export abstract class TileAdmin {
   public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
+  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -106,6 +118,17 @@ export abstract class TileAdmin {
   public static create(props?: TileAdmin.Props): TileAdmin {
     return new Admin(props);
   }
+
+  /** Temporary workaround for authoring applications. Usage:
+   * ```ts
+   *  async function handleModelChanged(modelId: Id64String, iModel: IModelConnection): Promise<void> {
+   *    await iModel.tiles.purgeTileTrees([modelId]);
+   *    IModelApp.viewManager.refreshForModifiedModels(modelId);
+   *  }
+   * ```
+   * @internal
+   */
+  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
 
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
@@ -183,6 +206,16 @@ export namespace TileAdmin {
      */
     maximumMajorTileFormatVersion?: number;
 
+    /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
+     * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
+     * Setting this option to `true` will instead base the range of the tree on the project extents.
+     *
+     * Default value: false
+     *
+     * @internal
+     */
+    useProjectExtents?: boolean;
+
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.
      * Otherwise, if its expiration timer has exceeded this minimum, we discard it along with all of its children. This allows us to free up memory for other tiles.
@@ -225,6 +258,25 @@ export namespace TileAdmin {
      * Default value: false
      */
     disableMagnification?: boolean;
+
+    /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
+     * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default
+     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents.  This generally preloas around 20% more tiles than are required.
+     * Default value: 2.
+     * Minimum value 0.
+     * Maximum value 8.
+     * @alpha
+     */
+    contextPreloadParentDepth?: number;
+    /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
+     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded.  The default value of 1 will skip
+     * immediate parents and significantly reduce the number of preloaded tiles without significant reducing the value of preloading.
+     * Default value: 1;
+     * Minimum value: 0.
+     * Maximum value: 5.
+     * @alpha
+     */
+    contextPreloadParentSkip?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -359,6 +411,7 @@ class Admin extends TileAdmin {
   private readonly _enableInstancing: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
+  private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -376,6 +429,8 @@ class Admin extends TileAdmin {
   private readonly _tileExpirationTime: BeDuration;
   private readonly _realityTileExpirationTime: BeDuration;
   private readonly _treeExpirationTime?: BeDuration;
+  private readonly _contextPreloadParentDepth: number;
+  private readonly _contextPreloadParentSkip: number;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -409,6 +464,7 @@ class Admin extends TileAdmin {
     this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+    this._useProjectExtents = true === options.useProjectExtents;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
       if (undefined === seconds)
@@ -429,14 +485,20 @@ class Admin extends TileAdmin {
     this._treeExpirationTime = clamp(options.tileTreeExpirationTime, 10, 3600);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
+    // If unspecified preload 2 levels of parents for context tiles.
+    this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
+    // If unspecified skip one leveo before prealoading  of parents of context tiles.
+    this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get useProjectExtents() { return this._useProjectExtents; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
-
+  public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }
+  public get contextPreloadParentSkip() { return this._contextPreloadParentSkip; }
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     // The input is from the backend, telling us precisely the maximum major+minor version it can produce.
     // Ensure front-end does not request tiles of a newer major version than backend can supply or it can read; and also limit major version
@@ -532,8 +594,12 @@ class Admin extends TileAdmin {
   }
 
   public getNumRequestsForViewport(vp: Viewport): number {
-    const requests = this._requestsPerViewport.get(vp);
+    const requests = this.getRequestsForViewport(vp);
     return undefined !== requests ? requests.size : 0;
+  }
+
+  public getRequestsForViewport(vp: Viewport): Set<Tile> | undefined {
+    return this._requestsPerViewport.get(vp);
   }
 
   public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
@@ -602,10 +668,15 @@ class Admin extends TileAdmin {
     return intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId);
   }
 
-  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array> {
+  public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
+    this.initializeRpc();
+    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.iModelToken.toJSON(), modelIds);
+  }
+
+  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId, isCanceled);
+    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId, isCanceled, guid);
   }
 
   private initializeRpc(): void {

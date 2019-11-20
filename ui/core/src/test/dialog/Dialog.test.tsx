@@ -41,6 +41,11 @@ describe("Dialog", () => {
     it("should render", () => {
       render(<Dialog opened={true} />);
     });
+    it("should render with titleStyle", () => {
+      const component = render(<Dialog opened={true} title="Test" titleStyle={{ fontWeight: "bold" }} />);
+      const container = component.getByTestId("core-dialog-title");
+      expect(container.style.fontWeight).to.equal("bold");
+    });
   });
 
   describe("buttons", () => {
@@ -251,6 +256,18 @@ describe("Dialog", () => {
     it("should render bottom right", () => {
       const component = render(<Dialog opened={true} alignment={DialogAlignment.BottomRight} />);
       expect(component.container.querySelector(".core-dialog-bottom-right")).not.to.be.null;
+    });
+  });
+
+  describe("header", () => {
+    it("should render without header", () => {
+      const component = render(<Dialog opened={true} hideHeader={true} />);
+      expect(component.container.querySelector(".core-dialog-head")).to.be.null;
+    });
+    it("should render with header", () => {
+      const component = render(<Dialog opened={true} header={<div className="header-test" />} />);
+      expect(component.container.querySelector(".header-test")).not.to.be.null;
+      expect(component.container.querySelector(".core-dialog-head")).to.be.null;
     });
   });
 

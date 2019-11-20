@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -274,7 +276,7 @@ export class ClipUtilities {
   /**
    * Return the range of various types of clippers
    * * `ConvexClipPlaneSet` -- dispatch to `rangeOfConvexClipPlaneSetIntersectionWithRange`
-   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `UnionOfConvexClipPlaneSet` -- union of ranges of member `ConvexClipPlaneSet`
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
@@ -321,7 +323,7 @@ export class ClipUtilities {
    * Test if various types of clippers have any intersection with a range.
    * * This follows the same logic as `rangeOfClipperIntersectionWithRange` but attempts to exit at earliest point of confirmed intersection
    * * `ConvexClipPlaneSet` -- dispatch to `doesConvexClipPlaneSetIntersectRange`
-   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `UnionOfConvexClipPlaneSet` -- union of ranges of member `ConvexClipPlaneSet`
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.

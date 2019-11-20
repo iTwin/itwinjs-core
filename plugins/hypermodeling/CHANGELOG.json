@@ -1,0 +1,32 @@
+{
+  "name": "@bentley/hypermodeling-plugin",
+  "entries": [
+    {
+      "version": "1.7.0",
+      "tag": "@bentley/hypermodeling-plugin_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Callout clip is now local to placement. Only show marker for active clip."
+          },
+          {
+            "comment": "Simplify fitView. Hypermodeling plugin cleanup."
+          },
+          {
+            "comment": "New wip plugin for hypermodeling support."
+          },
+          {
+            "comment": "Hypermodeling keyins to filter display by type and to ignore category (because MicroStation does)."
+          },
+          {
+            "comment": "Make hypermodeling toolIds more likely to remain unique by including plugin name."
+          },
+          {
+            "comment": "Added popup toolbar when cursor stops over marker or marker is tapped."
+          }
+        ]
+      }
+    }
+  ]
+}

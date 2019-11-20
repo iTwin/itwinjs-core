@@ -614,7 +614,7 @@ describe("RelationshipClass", () => {
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
       const context = new SchemaContext();
-      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
       const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);

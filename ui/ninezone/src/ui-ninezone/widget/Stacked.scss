@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "_variables";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "variables";
 @import "../widgetopacity";
 
 .nz-widget-stacked {
@@ -132,6 +132,12 @@
       > .nz-tabs {
         align-items: flex-end;
       }
+    }
+  }
+
+  &.nz-bottom-anchor, &.nz-middle-anchor {
+    > .nz-content-container {
+      min-height: $nz-widget-min-size;
     }
   }
 

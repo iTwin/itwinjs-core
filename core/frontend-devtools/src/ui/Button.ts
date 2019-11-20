@@ -3,16 +3,24 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-/** @alpha */
+/** @module Controls */
+
+/** Wraps an HTML button
+ * @alpha
+ */
 export interface Button {
   button: HTMLInputElement;
   div: HTMLElement;
 }
 
-/** @alpha */
+/** Callback invoked by Button when clicked.
+ * @alpha
+ */
 export type ButtonHandler = (button: HTMLInputElement) => void;
 
-/** @alpha */
+/** Describes how to create a Button.
+ * @alpha
+ */
 export interface ButtonProps {
   handler: ButtonHandler;
   id?: string;
@@ -22,7 +30,9 @@ export interface ButtonProps {
   tooltip?: string;
 }
 
-/** @alpha */
+/** Creates a Button as specified by the ButtonProps.
+ * @alpha
+ */
 export function createButton(props: ButtonProps): Button {
   const div = document.createElement(props.inline ? "span" : "div");
 

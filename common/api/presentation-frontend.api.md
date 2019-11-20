@@ -9,6 +9,7 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { Field } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64Arg } from '@bentley/bentleyjs-core';
@@ -27,8 +28,28 @@ import { PersistentKeysContainer } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
+import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+
+// @internal
+export interface FavoriteProperties {
+    baseFieldInfos: Set<string>;
+    nestedContentInfos: Set<string>;
+    propertyInfos: Set<string>;
+}
+
+// @beta
+export class FavoritePropertiesManager {
+    constructor(props?: FavoritePropertiesManagerProps);
+    add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    clear(projectId?: string, imodelId?: string): Promise<void>;
+    has(field: Field, projectId?: string, imodelId?: string): boolean;
+    // @internal
+    initializeConnection: (imodelConnection: IModelConnection) => Promise<void>;
+    onFavoritesChanged: BeEvent<() => void>;
+    remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    }
 
 // @alpha
 export interface HiliteSet {
@@ -38,6 +59,26 @@ export interface HiliteSet {
     models?: Id64String[];
     // (undocumented)
     subCategories?: Id64String[];
+}
+
+// @alpha
+export class HiliteSetProvider {
+    static create(imodel: IModelConnection): HiliteSetProvider;
+    getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
+    }
+
+// @internal
+export interface IFavoritePropertiesStorage {
+    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+}
+
+// @internal (undocumented)
+export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    // (undocumented)
+    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
 }
 
 // @public
@@ -54,6 +95,8 @@ export class PersistenceHelper {
 
 // @public
 export class Presentation {
+    // @internal (undocumented)
+    static favoriteProperties: FavoritePropertiesManager;
     // @internal (undocumented)
     static i18n: I18N;
     static initialize(props?: PresentationManagerProps): void;
@@ -88,6 +131,10 @@ export class PresentationManager implements IDisposable {
         count: number;
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
+    // @beta
+    loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
+    // @internal
+    onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
     readonly rpcRequestsHandler: RpcRequestsHandler;
     rulesets(): RulesetManager;
@@ -112,6 +159,8 @@ export interface RulesetManager {
 
 // @public
 export interface RulesetVariablesManager {
+    // @internal
+    getAllVariables(): Promise<RulesetVariable[]>;
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;
     getId64s(variableId: string): Promise<Id64String[]>;

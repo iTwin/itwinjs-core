@@ -8,6 +8,7 @@ import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -17,6 +18,7 @@ export enum NativePlatformRequestTypes {
   GetChildrenCount = "GetChildrenCount",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
+  LoadHierarchy = "LoadHierarchy",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
@@ -29,7 +31,6 @@ export interface NativePlatformDefinition extends IDisposable {
   forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void>;
   setupRulesetDirectories(directories: string[]): void;
   setupSupplementalRulesetDirectories(directories: string[]): void;
-  setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
   getRulesets(rulesetId: string): string;
   addRuleset(serializedRulesetJson: string): string;
@@ -41,14 +42,27 @@ export interface NativePlatformDefinition extends IDisposable {
 }
 
 /** @internal */
-export const createDefaultNativePlatform = (id?: string): new () => NativePlatformDefinition => {
+export interface DefaultNativePlatformProps {
+  id: string;
+  localeDirectories: string[];
+  taskAllocationsMap: { [priority: number]: number };
+  mode: PresentationManagerMode;
+}
+
+/** @internal */
+export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): new () => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
-    private _nativeAddon = new IModelHost.platform.ECPresentationManager(id);
+    private _nativeAddon: IModelJsNative.ECPresentationManager;
+    public constructor() {
+      const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode);
+    }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
         default: return PresentationStatus.Error;
       }
     }
@@ -86,9 +100,6 @@ export const createDefaultNativePlatform = (id?: string): new () => NativePlatfo
     }
     public setupSupplementalRulesetDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
-    }
-    public setupLocaleDirectories(directories: string[]): void {
-      this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
       if (!imodel.briefcase || !imodel.nativeDb)

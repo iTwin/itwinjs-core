@@ -5,7 +5,7 @@
 /** @module MarkupTools */
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
-import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -469,6 +469,7 @@ export class MarkupSelected {
  */
 export class SelectTool extends MarkupTool {
   public static toolId = "Markup.Select";
+  public static iconSpec = "icon-cursor";
   private _flashedElement?: MarkupElement;
   private readonly _dragging: MarkupElement[] = [];
   private _anchorPt!: Point3d;
@@ -496,9 +497,33 @@ export class SelectTool extends MarkupTool {
     this.markup.selected.emptyAll();
   }
   public onCleanup(): void { this.clearSelect(); }
-  protected showPrompt(): void { this.outputMarkupPrompt("Select.Prompts.IdentifyMarkup"); }
   public onPostInstall() { this.initSelect(); super.onPostInstall(); }
   public onRestartTool(): void { this.initSelect(); }
+
+  protected showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(MarkupTool.toolKey + "Select.Prompts.IdentifyMarkup"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = IModelApp.i18n.translate(MarkupTool.toolKey + "Select.Prompts.AcceptMarkup");
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
+
+    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, CoreTools.translate("ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   /** When we start a drag operation, we add a new set of elements to the DOM and start modifying them.
    * If we cancel the operation, we need remove them from the DOM.

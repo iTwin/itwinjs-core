@@ -7,40 +7,47 @@ import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@be
 import { IModelConnection } from "./IModelConnection";
 import { SceneContext } from "./ViewContext";
 import { BatchType, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { IModelApp } from "./IModelApp";
 import { IModelTile } from "./tile/IModelTile";
 import { TileTree, TileTreeSet } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { GeometricModelState } from "./ModelState";
 
 interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
   modelId: Id64String;
 }
 
-// ###TODO A 3d model can supply EITHER a planar classifier tile tree OR a volumetric one - yet the planarity is encoded into the ID of the request for the tile tree.
-// We should instead request the ONE-AND-ONLY classifier tile tree and determine planarity from result.
-// For now assume all classifiers are planar.
+function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
+  let cmp = compareStrings(lhs.modelId, rhs.modelId);
+  if (0 === cmp)
+    cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
+
+  return 0 === cmp ? IModelTile.compareTreeIds(lhs, rhs) : cmp;
+}
+
 class ClassifierTreeSupplier implements TileTree.Supplier {
   private readonly _nonexistentTreeOwner: TileTree.Owner = {
     tileTree: undefined,
     loadStatus: TileTree.LoadStatus.NotFound,
     load: () => undefined,
     dispose: () => undefined,
+    loadTree: async () => Promise.resolve(undefined),
   };
 
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
-    let cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
-
-    return 0 === cmp ? IModelTile.compareTreeIds(lhs, rhs) : cmp;
+    return compareIds(lhs, rhs);
   }
 
   public async createTileTree(id: ClassifierTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    await iModel.models.load(id.modelId);
+    const model = iModel.models.getLoaded(id.modelId);
+    if (undefined === model || !(model instanceof GeometricModelState))
+      return undefined;
+
     const idStr = IModelTile.treeIdToString(id.modelId, id);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.PlanarClassifier, false, false);
+    const loader = new IModelTile.Loader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
     props.rootTile.contentId = loader.rootContentId;
     const params = TileTree.paramsFromJSON(props, iModel, true, loader, id.modelId);
     return new TileTree(params);
@@ -81,7 +88,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
   public get treeOwner(): TileTree.Owner {
     const newId = this.createId(this._classifiers, this._source);
-    if (newId.modelId !== this._id.modelId || newId.expansion !== this._id.expansion || 0 !== compareStringsOrUndefined(newId.animationId, this._id.animationId)) {
+    if (0 !== compareIds(this._id, newId)) {
       this._id = newId;
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
     }
@@ -110,24 +117,26 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       return;
 
     context.modelClassifiers.set(classifiedTree.modelId, classifier.modelId);
-    if (BatchType.PlanarClassifier === this._id.type) {
-      if (!context.getPlanarClassifier(classifier.modelId)) {
-        const pc = IModelApp.renderSystem.createPlanarClassifier(classifier, classifierTree, classifiedTree, context);
-        context.setPlanarClassifier(classifier.modelId, pc!);
-      }
-    } else {
+    if (BatchType.PlanarClassifier === this._id.type)
+      context.addPlanarClassifier(classifier, classifierTree, classifiedTree);
+    else {
+      context.setActiveVolumeClassifierProps(classifier);
       classifierTree.drawScene(context);
     }
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {
     const active = classifiers.active;
+    if (undefined === active)
+      return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
+
+    const type = active.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
     const script = source.scheduleScript;
-    const animationId = (undefined !== script && undefined !== active) ? script.getModelAnimationId(active.modelId) : undefined;
+    const animationId = (undefined !== script) ? script.getModelAnimationId(active.modelId) : undefined;
     return {
-      modelId: undefined !== active ? active.modelId : Id64.invalid,
-      type: BatchType.PlanarClassifier,
-      expansion: undefined !== active ? active.expand : 0,
+      modelId: active.modelId,
+      type,
+      expansion: active.expand,
       animationId,
     };
   }

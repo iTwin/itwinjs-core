@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Tools */
+
 import {
   IModelApp,
   MessageBoxIconType,
@@ -17,7 +19,7 @@ export class ReportWebGLCompatibilityTool extends Tool {
   public static toolId = "ReportWebGLCompatibility";
   public run(_args: any[]): boolean {
     const info = IModelApp.queryRenderCompatibility();
-    const statuses = [ "OK", "Missing Optional Features", "Major Performance Caveat", "Missing Required Features", "Failed to Create Context" ];
+    const statuses = ["OK", "Missing Optional Features", "Major Performance Caveat", "Missing Required Features", "Failed to Create Context"];
     const status = info.status < statuses.length ? statuses[info.status] : "UNKNOWN";
     const json = JSON.stringify(info, null, 2); // prettify JSON output
 

@@ -34,7 +34,7 @@ export class LabeledInput extends React.PureComponent<LabeledInputProps> {
         className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)}> {label} </div>
+          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <div className={classnames("input", { "with-icon": !!status })}>
           <Input disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />

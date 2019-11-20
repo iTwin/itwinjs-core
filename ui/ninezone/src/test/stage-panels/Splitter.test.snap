@@ -31,7 +31,7 @@ exports[`<Splitter /> renders panes correctly 1`] = `
   <div
     className="nz-grip"
     key="2"
-    onMouseDown={[Function]}
+    onPointerDown={[Function]}
     style={
       Object {
         "order": 2,
@@ -72,7 +72,7 @@ exports[`<Splitter /> renders panes vertically correctly 1`] = `
   <div
     className="nz-grip"
     key="2"
-    onMouseDown={[Function]}
+    onPointerDown={[Function]}
     style={
       Object {
         "order": 2,

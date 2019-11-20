@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-tool-settings-content {
+  $padding: 5px;
+
+  &.uifw-title-bar {
+    width: fit-content;
+    height: fit-content;
+    padding: unset;
+  }
+
+  &.uifw-tab {
+    padding-top: $padding;
+    padding-bottom: $padding;
+  }
+}

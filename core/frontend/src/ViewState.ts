@@ -28,7 +28,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, SpatialModelState, GeometricModel3dState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -128,7 +128,7 @@ class ViewState3dUndo extends ViewStateUndo {
       this.origin.isAlmostEqual(view.origin) &&
       this.extents.isAlmostEqual(view.extents) &&
       this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera)); // ###TODO: should this be less precise equality?
+      (!this.cameraOn || this.camera.equals(view.camera));
   }
 }
 
@@ -370,7 +370,6 @@ export abstract class ViewState extends ElementState {
    */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
-    this.displayStyle.decorate(context);
   }
 
   /** @internal */
@@ -583,26 +582,26 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect rato skew),
+  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect ratio skew),
    * by adjusting one dimension or the other.
+   * @param origin origin of view. adjusted by this method.
+   * @param extents view aligned extents (note: aspect ratio = `x/y`). Either extents.x or extents.y is adjusted by this method.
+   * @param windowAspect the aspect ratio (width/height) to match.
    * @internal
    */
   public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
     const origExtents = extents.clone();
-    const viewAspect = extents.x / extents.y;
-    if (viewAspect > windowAspect)
+    if (extents.x > (windowAspect * extents.y))
       extents.y = extents.x / windowAspect;
     else
       extents.x = extents.y * windowAspect;
 
-    // skew always adjusts y
-    const maxSkew = 25;
-    extents.y /= Geometry.clamp(this.getAspectRatioSkew(), 1 / maxSkew, maxSkew);
+    extents.y /= this.getAspectRatioSkew(); // skew always adjusts y
 
     const rotation = this.getRotation();
-    rotation.multiplyVectorInPlace(origin);
-    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5);
-    rotation.multiplyTransposeVectorInPlace(origin);
+    rotation.multiplyVectorInPlace(origin); // get origin into view-aligned coordinates
+    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5); // adjust by half of the distance we modified extents to keep centered
+    rotation.multiplyTransposeVectorInPlace(origin); // back to world coordinates
   }
 
   /** @internal */
@@ -706,8 +705,14 @@ export abstract class ViewState extends ElementState {
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate one axis of the view. */
-  public getAspectRatioSkew(): number { return JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0); }
+  /** @internal */
+  public static maxSkew = 25;
+
+  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate the y axis of the view. */
+  public getAspectRatioSkew(): number {
+    const skew = JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0);
+    return Geometry.clamp(skew, 1 / ViewState.maxSkew, ViewState.maxSkew);
+  }
 
   /** Set the aspect ratio skew (x/y) for this view. To remove aspect ratio skew, pass 1.0 for val. */
   public setAspectRatioSkew(val: number) {
@@ -897,7 +902,8 @@ export abstract class ViewState extends ElementState {
         newDelta.z = diag;
     }
 
-    this.validateViewDelta(newDelta, true);
+    if (ViewStatus.Success !== this.validateViewDelta(newDelta, true))
+      return;
 
     this.setExtents(newDelta);
     if (aspect)
@@ -1050,7 +1056,7 @@ export abstract class ViewState3d extends ViewState {
     const eyePoint = viewOrg.plus(frustOrgToEye);
 
     const backDistance = frustOrgToEye.dotProduct(zDir);         // distance from eye to back plane of frustum
-    const focusDistance = backDistance - (viewDelta.z / 2.0);
+    const focusDistance = this.camera.isFocusValid ? this.camera.focusDist : (backDistance - (viewDelta.z / 2.0));
     const focalFraction = focusDistance / backDistance;           // ratio of focus plane distance to back plane distance
 
     viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance);    // now project that point onto back plane
@@ -1529,7 +1535,7 @@ export class SpatialModelTileTrees {
       }
 
       const model = this._iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asSpatialModel : undefined;
+      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
       if (undefined !== model3d) {
         const ref = this.createTileTreeReference(model3d);
         if (undefined !== ref)
@@ -1544,7 +1550,7 @@ export class SpatialModelTileTrees {
       func(value);
   }
 
-  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: GeometricModel3dState): TileTree.Reference | undefined {
     return model.createTileTreeReference(this._view);
   }
 
@@ -1552,7 +1558,7 @@ export class SpatialModelTileTrees {
 }
 
 /** Defines a view of one or more SpatialModels.
- * The list of viewed models is stored by the ModelSelector.
+ * The list of viewed models is stored in the ModelSelector.
  * @public
  */
 export class SpatialViewState extends ViewState3d {
@@ -1561,12 +1567,32 @@ export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
   private readonly _treeRefs: SpatialModelTileTrees;
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+  /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
+   * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
+   * callers will modify the state to suit specific needs.
+   * @param iModel The IModelConnection for the new SpatialViewState
+   * @param origin The origin for the new SpatialViewState
+   * @param extents The extents for the new SpatialViewState
+   * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
+   * @beta
+   */
+  public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
+    const blank = {} as any;
+    const cat = new CategorySelectorState(blank, iModel);
+    const modelSelectorState = new ModelSelectorState(blank, iModel);
+    const displayStyleState = new DisplayStyle3dState(blank, iModel);
+    const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
+    view.setOrigin(origin);
+    view.setExtents(extents);
+    if (undefined !== rotation)
+      view.setRotation(rotation);
+    return view;
+  }
+
+  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
     const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
-
-    // use "new this" so subclasses are correct.
     return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
   }
 
@@ -1605,7 +1631,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
@@ -1641,22 +1667,8 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public createScene(context: SceneContext): void {
     super.createScene(context);
-    this.createSolarShadowMap(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-  }
-
-  private createSolarShadowMap(context: SceneContext): void {
-    context.solarShadowMap = undefined;
-    const displayStyle = this.getDisplayStyle3d();
-    if (undefined !== displayStyle && displayStyle.wantShadows) {
-      const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
-      const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
-      const solarDirection = displayStyle.sunDirection ? displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
-      if (undefined !== viewFrustum) {
-        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this);
-        context.solarShadowMap!.collectGraphics(context);
-      }
-    }
+    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 }
 
@@ -1786,7 +1798,7 @@ export class DrawingViewState extends ViewState2d {
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
   private _modelLimits?: ExtentLimits;
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
@@ -1800,7 +1812,7 @@ export class DrawingViewState extends ViewState2d {
     const treeRef = this._tileTreeRef;
     const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
     if (undefined !== tree) {
-      this._modelLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+      this._modelLimits = { min: Constant.oneMillimeter, max: 10.0 * tree.range.maxLength() };
       return this._modelLimits;
     }
 

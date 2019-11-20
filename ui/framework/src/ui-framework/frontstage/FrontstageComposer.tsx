@@ -5,20 +5,21 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import {
-  ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType,
-  getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelType, StagePanelsManager, widgetZoneIds,
+  ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType, getDefaultZonesManagerProps,
+  getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds, StagePanelsManager,
 } from "@bentley/ui-ninezone";
-import { StagePanelLocation, getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { StagePanelLocation, getNestedStagePanelKey, stagePanelLocations } from "../stagepanels/StagePanel";
 import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { ModalFrontstage } from "./ModalFrontstage";
 import { WidgetTabs, WidgetTab } from "../widgets/WidgetStack";
+import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -111,6 +112,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
 
   private _frontstageDef: FrontstageDef | undefined;
+  private _isMounted = false;
 
   /** @internal */
   public readonly state: Readonly<FrontstageComposerState>;
@@ -145,6 +147,16 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           },
         },
       };
+      for (const location of stagePanelLocations) {
+        const stagePanel = frontstageDef && frontstageDef.getStagePanelDef(location);
+        if (!stagePanel)
+          continue;
+
+        const isCollapsed = panelStateToIsCollapsed(stagePanel.panelState);
+        const panelKey = getNestedStagePanelKey(location);
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setIsCollapsed(panelKey, isCollapsed, nineZone.nested);
+        nineZone = FrontstageManager.NineZoneManager.setNested(nested, nineZone);
+      }
     }
     return nineZone;
   }
@@ -158,8 +170,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       const visibleWidgetDefs = zoneDef.widgetDefs.filter((widgetDef: WidgetDef) => {
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
-      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef) => ({
-        betaBadge: widgetDef.betaBadge === undefined ? false : widgetDef.betaBadge,
+      const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef: WidgetDef) => ({
+        badgeType: BadgeUtilities.determineBadgeType(widgetDef.badgeType, widgetDef.betaBadge), // tslint:disable-line: deprecation
         iconSpec: widgetDef.iconSpec,
         title: widgetDef.label,
         widgetName: widgetDef.id,
@@ -179,21 +191,23 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
     this._frontstageDef = args.activatedFrontstageDef;
 
+    // Get the id and nineZoneProps for the current FrontstageDef
     const frontstageId = this._frontstageDef.id;
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
     const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
     const widgetTabs = this.determineWidgetTabs();
 
-    // Get the id and nineZoneProps for the current FrontstageDef
-    this.setState({
-      frontstageId,
-      nineZone,
-      widgetTabs,
-    }, () => {
-      if (needInitialLayout)
-        this.initializeFrontstageLayout(nineZone);
-      this.layout();
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        frontstageId,
+        nineZone,
+        widgetTabs,
+      }, () => {
+        if (needInitialLayout)
+          this.initializeFrontstageLayout(nineZone);
+        this.layout();
+      });
   }
 
   private initializeFrontstageLayout(nineZone: NineZoneManagerProps) {
@@ -219,6 +233,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         this.mergeZones(zoneId, zoneDef.mergeWithZone);
 
       const zoneProps = nineZone.zones.zones[zoneId];
+      // istanbul ignore else
       if (zoneProps.widgets.length >= 1) {
         zoneProps.widgets.forEach((widgetId) => {
           zoneDef.widgetDefs
@@ -236,11 +251,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
-    this.setState((_prevState) => {
-      return {
-        modalFrontstageCount: FrontstageManager.modalFrontstageCount,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   }
 
   private _navigationBack = () => {
@@ -299,22 +312,23 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     );
   }
 
-  // <InputFieldMessage target={inputMessageParent} children={inputMessageText}
-  //  onClose={() => { this.setState((_prevState) => ({ isInputFieldMessageVisible: false })); }} /> : null
-
   public componentDidMount(): void {
+    this._isMounted = true;
     this.layout();
     window.addEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount(): void {
+    this._isMounted = false;
     window.removeEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
-    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
   }
 
   private _handleWindowResize = () => {
@@ -322,136 +336,161 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this.setState((prevState) => {
-      const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
-    this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
-      if (nineZone === prevState.nineZone)
-        return null;
-      return {
-        nineZone,
-      };
-    },
-      () => {
-        // TODO: use NineZoneManager notifications once available
-        const manager = FrontstageManager.NineZoneManager.getZonesManager();
-        const props = this.state.nineZone.zones;
-        const zone = manager.findZoneWithWidget(widgetId, props);
-        const widgets = zone ? zone.widgets : [widgetId];
-        widgets.forEach((wId) => {
-          const zoneDef = this.getZoneDef(wId);
-          if (!zoneDef)
-            return;
-
-          const w = props.widgets[wId];
-          const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
-          for (let i = 0; i < visibleWidgets.length; i++) {
-            const widgetDef = visibleWidgets[i];
-            let state = widgetDef.state;
-            if (w.tabIndex === i)
-              state = WidgetState.Open;
-            else if (state === WidgetState.Open)
-              state = WidgetState.Closed;
-            widgetDef.setWidgetState(state);
-          }
-        });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
       },
-    );
+        () => {
+          // TODO: use NineZoneManager notifications once available
+          const manager = FrontstageManager.NineZoneManager.getZonesManager();
+          const props = this.state.nineZone.zones;
+          const zone = manager.findZoneWithWidget(widgetId, props);
+          const widgets = zone ? zone.widgets : [widgetId];
+          widgets.forEach((wId) => {
+            const zoneDef = this.getZoneDef(wId);
+            if (!zoneDef)
+              return;
+
+            const w = props.widgets[wId];
+            const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+            for (let i = 0; i < visibleWidgets.length; i++) {
+              const widgetDef = visibleWidgets[i];
+              let state = widgetDef.state;
+              if (w.tabIndex === i)
+                state = WidgetState.Open;
+              else if (state === WidgetState.Open)
+                state = WidgetState.Closed;
+              widgetDef.setWidgetState(state);
+            }
+          });
+        },
+      );
   }
 
   public handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
-    this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragStart({ widgetId, tabIndex, initialPosition, widgetBounds }, prevState.nineZone);
-      if (nineZone === prevState.nineZone)
-        return null;
-      return {
-        nineZone,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragStart({ widgetId, tabIndex, initialPosition, widgetBounds }, prevState.nineZone);
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
   }
 
   public handleTabDragEnd = () => {
-    this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone);
-      if (nineZone === prevState.nineZone)
-        return null;
-      return {
-        nineZone,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone);
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
   }
 
   public handleTabDrag = (dragged: PointProps) => {
-    this.setState((prevState) => {
-      const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetTabDrag(dragged, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetTabDrag(dragged, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void {
-    this.setState((prevState) => {
-      const zones = isTargeted ? FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged({ zoneId, type }, prevState.nineZone.zones) :
-        FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged(undefined, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = isTargeted ? FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged({ zoneId, type }, prevState.nineZone.zones) :
+          FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged(undefined, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   /** @alpha */
   public handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void {
     const panel = getNestedStagePanelKey(panelLocation);
-    this.setState((prevState) => {
-      const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setSize(panel, size, prevState.nineZone.nested);
-      if (nested === prevState.nineZone.nested)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          nested,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setSize(panel, size, prevState.nineZone.nested);
+        if (nested === prevState.nineZone.nested)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            nested,
+          },
+        };
+      });
   }
 
   /** @alpha */
   public handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void {
-    const panel = getNestedStagePanelKey(panelLocation);
-    this.setState((prevState) => {
-      const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().resize(panel, resizeBy, prevState.nineZone.nested);
-      if (nested === prevState.nineZone.nested)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          nested,
-        },
-      };
-    });
+    const nestedPanelKey = getNestedStagePanelKey(panelLocation);
+    // istanbul ignore next
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().resize(nestedPanelKey, resizeBy, prevState.nineZone.nested);
+        if (nested === prevState.nineZone.nested)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            nested,
+          },
+        };
+      }, () => {
+        const frontstage = FrontstageManager.activeFrontstageDef;
+        const stagePanel = frontstage && frontstage.getStagePanelDef(panelLocation);
+        if (stagePanel) {
+          const panels = this.state.nineZone.nested.panels[nestedPanelKey.id];
+          const panel = StagePanelsManager.getPanel(nestedPanelKey.type, panels);
+          const panelState = isCollapsedToPanelState(panel.isCollapsed);
+          stagePanel.panelState = panelState;
+        }
+      });
   }
 
   /** @alpha */
@@ -475,50 +514,49 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   /** @alpha */
   public handleTogglePanelCollapse(panelLocation: StagePanelLocation): void {
-    const panelKey = getNestedStagePanelKey(panelLocation);
-    this.setState((prevState) => {
-      const prevPanels = prevState.nineZone.nested.panels[panelKey.id];
-      const prevPanel = StagePanelsManager.getPanel(panelKey.type, prevPanels);
-      const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setIsCollapsed(panelKey, !prevPanel.isCollapsed, prevState.nineZone.nested);
-      if (nested === prevState.nineZone.nested)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          nested,
-        },
-      };
-    });
+    const frontstage = FrontstageManager.activeFrontstageDef;
+    if (!frontstage)
+      return;
+    const stagePanel = frontstage.getStagePanelDef(panelLocation);
+    if (!stagePanel)
+      return;
+    const isCollapsed = panelStateToIsCollapsed(stagePanel.panelState);
+    const panelState = isCollapsed ? StagePanelState.Open : StagePanelState.Minimized;
+    stagePanel.panelState = panelState;
   }
 
   public handleZonesBoundsChange(bounds: RectangleProps): void {
-    this.setState((prevState) => {
-      const zones = FrontstageManager.NineZoneManager.getZonesManager().setZonesBounds(bounds, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = FrontstageManager.NineZoneManager.getZonesManager().setZonesBounds(bounds, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   public handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void {
-    this.setState((prevState) => {
-      const widget = prevState.nineZone.zones.widgets[widgetId];
-      if (isOpening && widget.tabIndex === tabIndex)
-        return null;
-      if (!isOpening && widget.tabIndex !== tabIndex)
-        return null;
-      const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
-      if (nineZone === prevState.nineZone)
-        return null;
-      return {
-        nineZone,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const widget = prevState.nineZone.zones.widgets[widgetId];
+        if (isOpening && widget.tabIndex === tabIndex)
+          return null;
+        if (!isOpening && widget.tabIndex !== tabIndex)
+          return null;
+        const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
   }
 
   public getZoneDef(zoneId: number): ZoneDef | undefined {
@@ -540,31 +578,35 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void {
-    this.setState((prevState) => {
-      const zones = FrontstageManager.NineZoneManager.getZonesManager().setAllowsMerging(zoneId, allowsMerging, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = FrontstageManager.NineZoneManager.getZonesManager().setAllowsMerging(zoneId, allowsMerging, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   public mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void {
-    this.setState((prevState) => {
-      const zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(toMergeId, targetId, prevState.nineZone.zones);
-      if (zones === prevState.nineZone.zones)
-        return null;
-      return {
-        nineZone: {
-          ...prevState.nineZone,
-          zones,
-        },
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(toMergeId, targetId, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
   }
 
   private layout() {
@@ -577,8 +619,73 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   private _handleWidgetStateChangedEvent = () => {
     const widgetTabs = this.determineWidgetTabs();
-    this.setState({
-      widgetTabs,
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        widgetTabs,
+      });
+  }
+
+  private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
+    this.setPanelState(panelDef.location, panelState);
+  }
+
+  private _handleToolActivatedEvent = () => {
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+        const manager = FrontstageManager.NineZoneManager;
+        let nineZone = prevState.nineZone;
+        if (activeToolSettingsNode) {
+          nineZone = manager.showWidget(2, prevState.nineZone);
+        } else {
+          nineZone = manager.hideWidget(2, prevState.nineZone);
+        }
+        if (nineZone === prevState.nineZone)
+          return null;
+        return {
+          nineZone,
+        };
+      });
+  }
+
+  private setPanelState(location: StagePanelLocation, panelState: StagePanelState) {
+    const panelKey = getNestedStagePanelKey(location);
+    const isCollapsed = panelStateToIsCollapsed(panelState);
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setIsCollapsed(panelKey, isCollapsed, prevState.nineZone.nested);
+        if (nested === prevState.nineZone.nested)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            nested,
+          },
+        };
+      });
   }
 }
+
+/** @internal */
+export const panelStateToIsCollapsed = (panelState: StagePanelState) => {
+  switch (panelState) {
+    case StagePanelState.Minimized:
+    case StagePanelState.Off:
+      return true;
+    default:
+      return false;
+  }
+};
+
+/** @internal */
+export const isCollapsedToPanelState = (isCollapsed: boolean) => {
+  switch (isCollapsed) {
+    case true:
+      return StagePanelState.Minimized;
+    default:
+      return StagePanelState.Open;
+  }
+};

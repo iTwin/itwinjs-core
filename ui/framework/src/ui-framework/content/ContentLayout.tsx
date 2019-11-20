@@ -44,7 +44,10 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   constructor(props: ContentWrapperProps) {
     super(props);
 
-    this.state = { content: this.props.content, isActive: this.props.content === ContentViewManager.getActiveContent() };
+    this.state = {
+      content: this.props.content,
+      isActive: this.props.content === ContentViewManager.getActiveContent(),
+    };
   }
 
   public render(): React.ReactNode {
@@ -118,6 +121,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
   private _onSplitterChange = (size: number): void => {
     let percentage = 0;
 
+    // istanbul ignore else
     if (this._containerDiv && size > 0) {
       if (this.props.orientation === Orientation.Horizontal) {
         const height = this._containerDiv.getBoundingClientRect().height;
@@ -129,6 +133,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
           percentage = size / width;
       }
 
+      // istanbul ignore else
       if (this.props.onSplitterChange)
         this.props.onSplitterChange(size, percentage);
     }
@@ -168,6 +173,7 @@ interface SingleContentProps extends CommonProps {
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
+
     return (
       <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
         onMouseMove={UiShowHideManager.handleContentMouseMove}

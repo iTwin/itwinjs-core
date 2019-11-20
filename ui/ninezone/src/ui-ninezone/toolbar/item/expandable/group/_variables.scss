@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../../../../_typography";
+@import "../../../../typography";
 
 $panel-padding-left: 16px;
 $panel-padding-right: 8px;
@@ -12,3 +12,5 @@ $panel-padding-bottom: 12px;
 $title-color: $buic-text-color;
 $back-arrow-thickness: 2px;
 $back-arrow-size-val: 6;
+$title-horizontal-margin: 20px;
+$title-horizontal-back-arrow-margin: 28px;

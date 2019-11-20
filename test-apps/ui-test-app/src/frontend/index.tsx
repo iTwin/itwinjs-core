@@ -13,27 +13,28 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, FrontendRequestContext, OidcBrowserClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
-import { UiCore, getClassName } from "@bentley/ui-core";
+import { getClassName } from "@bentley/ui-abstract";
+import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
-  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
+  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
-  BackstageItemManager,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
   FrontstageDef,
+  SafeAreaContext,
+  SyncUiEventArgs,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { AppBackstageItemProvider } from "./appui/AppBackstageItemProvider";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
@@ -47,6 +48,9 @@ import { configure as mobxConfigure } from "mobx";
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
+import { AppBackstageItemProvider } from "./appui/backstage/AppBackstageItemProvider";
+import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -61,7 +65,7 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -146,11 +150,13 @@ export class SampleAppIModelApp {
   public static store: Store<RootState>;
   public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
+  public static oidcClient: IOidcFrontendClient;
 
   public static startup(opts?: IModelAppOptions): void {
     opts = opts ? opts : {};
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
+    opts.uiAdmin = new FrameworkUiAdmin();
     IModelApp.startup(opts);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
@@ -182,32 +188,9 @@ export class SampleAppIModelApp {
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
-    let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
-    if (ElectronRpcConfiguration.isElectron) {
-      // cSpell:disable
-      let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
-      // cSpell:enable
-      let redirectUri = "electron://frontend/signin-callback";
-      if (Config.App.has("imjs_electron_test_client_id"))
-        clientId = Config.App.get("imjs_electron_test_client_id");
+    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, undefined, "frameworkState");
 
-      if (Config.App.has("imjs_electron_test_redirect_uri"))
-        redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
-      oidcConfiguration = { clientId, redirectUri, scope };
-    } else {
-      let clientId = "imodeljs-spa-test-2686";
-      let redirectUri = "http://localhost:3000/signin-callback";
-
-      if (Config.App.has("imjs_browser_test_client_id"))
-        clientId = Config.App.get("imjs_browser_test_client_id");
-
-      if (Config.App.has("imjs_browser_test_redirect_uri"))
-        redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
-      oidcConfiguration = { clientId, redirectUri, scope };
-    }
-
-    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
+    await this.initializeOidc();
 
     // initialize Presentation
     Presentation.initialize({
@@ -223,12 +206,36 @@ export class SampleAppIModelApp {
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
 
-    BackstageItemManager.register(new AppBackstageItemProvider());
-
     // store name of this registered control in Redux store so it can be access by plugins
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
+  }
+
+  private static async initializeOidc() {
+    // cSpell:disable
+    let oidcConfiguration: OidcFrontendClientConfiguration;
+    const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+    if (ElectronRpcConfiguration.isElectron) {
+      const clientId = "imodeljs-electron-test";
+      const redirectUri = "electron://frontend/signin-callback";
+      const postSignoutRedirectUri = "electron://frontend/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " offline_access", responseType: "code" };
+    } else {
+      const clientId = "imodeljs-spa-test";
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const postSignoutRedirectUri = "http://localhost:3000/";
+      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    }
+    // cSpell:enable
+
+    // Create an OIDC client that helps with the sign-in / sign-out process
+    const requestContext = new FrontendRequestContext();
+    this.oidcClient = new OidcBrowserClient(oidcConfiguration);
+    await this.oidcClient.initialize(requestContext);
+
+    IModelApp.authorizationClient = this.oidcClient;
+    UiFramework.oidcClient = this.oidcClient;
   }
 
   public static loggerCategory(obj: any): string {
@@ -275,10 +282,22 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
+    const viewStates: ViewState[] = [];
+    let defaultViewState: ViewState | undefined;
 
     // store the first selected viewId as default - mostly used by frontstages defined in plugins that want to open a IModelViewport
-    if (viewIdsSelected && viewIdsSelected.length > 0)
-      UiFramework.setDefaultViewId(viewIdsSelected[0]);
+    if (viewIdsSelected && viewIdsSelected.length > 0) {
+      for (const viewId of viewIdsSelected) {
+        const viewState = await iModelConnection.views.load(viewId);
+        if (viewState) {
+          if (!defaultViewState)
+            defaultViewState = viewState;
+          viewStates.push(viewState);
+        }
+      }
+      if (defaultViewState)
+        UiFramework.setDefaultViewState(defaultViewState);
+    }
 
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
@@ -291,7 +310,7 @@ export class SampleAppIModelApp {
 
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === viewsFrontstage) {
-      const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+      const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       frontstageDef = frontstageProvider.frontstageDef;
     } else {
@@ -342,14 +361,6 @@ export class SampleAppIModelApp {
 
   // called after the user has signed in (or access token is still valid)
   public static async onSignedIn() {
-    const accessToken = await IModelApp.authorizationClient!.getAccessToken();
-
-    // NOTE: do we need to store access token since its store in OidcClient?
-    UiFramework.setAccessToken(accessToken);
-
-    if (!accessToken)
-      return;
-
     // get the default IModel (from imodejs-config)
     let defaultImodel: IModelInfo | undefined;
 
@@ -453,16 +464,30 @@ export class SampleAppIModelApp {
 }
 
 export class SampleAppViewer extends React.Component<any> {
+  private _backstageItemProvider = new AppBackstageItemProvider();
+
   constructor(props: any) {
     super(props);
 
     AppUi.initialize();
 
-    if (UiFramework.oidcClient.hasSignedIn) {
+    if (SampleAppIModelApp.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
     } else {
       SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
     }
+  }
+
+  public componentDidMount() {
+    UiFramework.backstageManager.itemsManager.add(this._backstageItemProvider.backstageItems);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
+  }
+
+  public componentWillUnmount() {
+    const backstageItems = this._backstageItemProvider.backstageItems.map((item) => item.id);
+    UiFramework.backstageManager.itemsManager.remove(backstageItems);
+
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
   }
 
   public render(): JSX.Element {
@@ -470,12 +495,35 @@ export class SampleAppViewer extends React.Component<any> {
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
           <BeDragDropContext>
-            <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+              <ConfigurableUiContent
+                appBackstage={<AppBackstageComposer />}
+              />
+            </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
       </Provider >
     );
+  }
+
+  public handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setTestProperty])) {
+      if (SampleAppIModelApp.getTestProperty() === "HIDE") {
+        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", false);
+        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", false);
+      } else {
+        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", true);
+        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", true);
+      }
+    }
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setIsIModelLocal])) {
+      if (SampleAppIModelApp.isIModelLocal) {
+        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", false);
+      } else {
+        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", true);
+      }
+    }
   }
 }
 
@@ -508,15 +556,20 @@ async function retrieveConfiguration(): Promise<void> {
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
-  await retrieveConfiguration(); // (does a fetch)
-  console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+  if (!ElectronRpcConfiguration.isElectron) {
+    await retrieveConfiguration(); // (does a fetch)
+    console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+  }
 
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("ui-test-app", LogLevel.Info);
+  Logger.setLevel(FrontendLoggerCategory.OidcBrowserClient, LogLevel.Info);
+
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
+  // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

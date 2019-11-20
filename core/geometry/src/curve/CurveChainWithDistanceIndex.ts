@@ -180,6 +180,7 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
+  /** String name for schema properties */
   public readonly curvePrimitiveType = "curveChainWithDistanceIndex";
 
   private _path: CurveChain;

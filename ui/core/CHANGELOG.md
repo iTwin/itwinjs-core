@@ -1,6 +1,55 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Provide a generic Form component to replace the one in Design Review Saftibase and Risk Manangement stages.
+- Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract.
+- Added support for English key-ins in addition to translated key-ins
+- Fix centering and sizing of dialogs in FireFox.
+- Made the Status Bar & Backstage more responsive on smaller screens
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+- Fixed SVG support in ui-core
+- Added useLifecycleLogging hook to help debugging react functional components
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Added AutoSuggest component and improved KeyinBrowser component
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
+- Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core.
+- Added hideHeader and header props and support for titleStyle prop
+- Added initial (default) value to Search Box.
+- Tool Assistance changes per UX Design
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning.
+- Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index.
+- Added support for content view minSize properties
+- Addressed some warnings introduced with React 16.9
+- Listening for onSelectedViewportChanged to set active content view for viewports
+- Fixed new lint issue in getDisplayName
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Add a `ScrollPositionMaintainer` helper to recursively save and restore scroll position
+- Added VerticalTabs component to ui-core
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

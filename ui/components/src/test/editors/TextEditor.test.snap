@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<TextEditor /> renders correctly 1`] = `
-<input
+<Input
   className="cell components-cell-editor components-text-editor"
   data-testid="components-text-editor"
   defaultValue=""

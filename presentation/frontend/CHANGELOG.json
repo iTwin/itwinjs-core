@@ -2,6 +2,60 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/presentation-frontend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added API to save favorite properties in user settings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/presentation-frontend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not favorite all nested properties inside nested content field. Instead, favorite it as a separate kind of field"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/presentation-frontend_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added API to store favorite properties"
+          },
+          {
+            "comment": "Add ability to force-load all hierarchy with the given imodel and ruleset"
+          },
+          {
+            "comment": "Add module descriptions"
+          },
+          {
+            "comment": "Added Ruleset and Ruleset variables to request options to support stateless presentation backend"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/presentation-frontend_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/presentation-frontend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

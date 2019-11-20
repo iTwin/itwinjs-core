@@ -40,6 +40,7 @@ export * from "./ModelState";
 export * from "./NotificationManager";
 export * from "./plugin/Plugin";
 export * from "./plugin/PluginUiManager";
+export * from "./RelativePosition";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";
@@ -54,18 +55,20 @@ export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
 export * from "./NoRenderApp";
-export * from "./tile/TileAdmin";
+export * from "./tile/BackgroundTerrainTileTree";
+export * from "./tile/BingElevation";
+export * from "./tile/CesiumWorldTerrainTileTree";
 export * from "./tile/Tile";
+export * from "./tile/TileAdmin";
+export * from "./tile/TileRequest";
 export * from "./tile/TileTree";
 export * from "./tile/WebMapTileTree";
-export * from "./tile/BackgroundTerrainTileTree";
-export * from "./tile/CesiumWorldTerrainTileTree";
-export * from "./tile/BingElevation";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
+export * from "./RenderCompatibility";
 export * from "./oidc/OidcBrowserClient";
 export * from "./TerrainProvider";
 export * from "./properties/Description";
@@ -74,6 +77,9 @@ export * from "./properties/Record";
 export * from "./properties/Value";
 export * from "./properties/ToolSettingsValue";
 export * from "./properties/PrimitiveTypes";
+export * from "./properties/BaseQuantityDescription";
+export * from "./properties/AngleDescription";
+export * from "./properties/LengthDescription";
 export * from "./SolarCalculate";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
@@ -87,7 +93,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 }
 
 /** @docs-package-description
- * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
+ * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
  */
 
 /**
@@ -148,4 +154,20 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description OIDC
+ * Classes for working with the OpenID Connect (OIDC) protocol
+ */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description Logging
+ * Logger categories used by this package
+ */
+/**
+ * @docs-group-description SpatialClassification
+ * Classes for spatial classification.
  */

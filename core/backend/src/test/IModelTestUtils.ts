@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
-import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
@@ -26,14 +26,18 @@ import { TestUsers } from "./TestUsers";
 /** Class for simple test timing */
 export class Timer {
   private _label: string;
+  private _start: Date;
   constructor(label: string) {
-    // tslint:disable-next-line:no-console
-    console.time(this._label = "\t" + label);
+    this._label = "\t" + label;
+    this._start = new Date();
   }
 
   public end() {
+
+    const stop = new Date();
+    const elapsed = stop.getTime() - this._start.getTime();
     // tslint:disable-next-line:no-console
-    console.timeEnd(this._label);
+    console.log(`${this._label}: ${elapsed}ms`);
   }
 }
 
@@ -114,7 +118,7 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
   public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
   public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
-export interface TestPhysicalObjectProps extends GeometricElementProps {
+export interface TestPhysicalObjectProps extends GeometricElement3dProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
@@ -198,7 +202,6 @@ export class IModelTestUtils {
   public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
-      iModel: testImodel,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
@@ -242,9 +245,8 @@ export class IModelTestUtils {
 
   // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
-    const elementProps: GeometricElementProps = {
+    const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
-      iModel: testImodel,
       model: modelId,
       category: categoryId,
       code: elemCode ? elemCode : Code.createEmpty(),

@@ -2,9 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-@import "../_variables";
-@import "_variables";
+@import "../variables";
+@import "variables";
 
 .nz-toolbar-item-item {
   border-width: 0;
@@ -12,7 +11,7 @@
   border-color: $buic-background-toolbutton-stroke;
   border-style: solid;
   cursor: pointer;
-  transition: all 500ms ease;
+  transition: background-color 500ms ease;
   position: relative;
   background: $buic-background-window linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
 

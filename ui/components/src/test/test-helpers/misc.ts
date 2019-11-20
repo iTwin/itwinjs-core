@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { wait } from "@testing-library/react";
+import { wait, act } from "@testing-library/react";
 
 let mochaTimeoutsEnabled = true;
 beforeEach(function () {
@@ -34,7 +34,7 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
   const stack = (new Error()).stack;
   const timeout = mochaTimeoutsEnabled ? undefined : Number.MAX_VALUE;
   const callCountBefore = spy.callCount;
-  action();
+  act(() => { action(); });
   await wait(() => {
     if (spy.callCount - callCountBefore !== count) {
       const err = new Error(`Calls count doesn't match. Expected ${count}, got ${spy.callCount - callCountBefore} (${spy.callCount} in total)`);
@@ -56,5 +56,10 @@ export class ResolvablePromise<T> implements PromiseLike<T> {
   public then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2> {
     return this._wrapped.then(onfulfilled, onrejected);
   }
-  public resolve(result: T) { this._resolve(result); }
+  public async resolve(result: T) {
+    this._resolve(result);
+    await new Promise((resolve: () => void) => {
+      setImmediate(resolve);
+    });
+  }
 }

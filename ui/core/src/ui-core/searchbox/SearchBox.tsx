@@ -66,6 +66,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     return (
       <div className={searchClassName} style={this.props.style}>
         <input
+          defaultValue={this.props.initialValue}
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}
           onKeyDown={this._handleKeyDown}

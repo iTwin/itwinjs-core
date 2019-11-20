@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 @import "@bentley/ui-core/lib/ui-core/index";
-
-$uifw-pointer-message-opacity: 0.80;
+@import "../variables";
 
 .uifw-pointer-message {
   border: {
-    color: $buic-foreground-disabled;
-    radius: 3px;
+    color: $uifw-popup-border-color;
+    radius: $uifw-popup-border-radius;
     style: solid;
-    width: 1px;
+    width: $uifw-popup-border-width;
   }
 
-  background-color: rgba(var(--buic-background-2-rgb), $uifw-pointer-message-opacity);
+  background-color: rgba(var(--buic-background-2-rgb), $uifw-popup-opacity);
 
   .uifw-pointer-message-content {
     display: flex;

@@ -1,0 +1,9 @@
+# start off ignoring everything, and then add back only the files we want
+*
+!lib/**/*.d.ts
+!lib/**/*.js
+!lib/module/dev/ui-core.js.map
+!lib/**/*.*css
+!lib/public/**/*
+lib/test
+!*.md

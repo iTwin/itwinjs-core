@@ -13,6 +13,8 @@ export { Presentation } from "./Presentation";
 export { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 export { RulesetManager } from "./RulesetManager";
 export { RulesetVariablesManager } from "./RulesetVariablesManager";
+export { FavoritePropertiesManager, FavoriteProperties } from "./favorite-properties/FavoritePropertiesManager";
+export { IFavoritePropertiesStorage, IModelAppFavoritePropertiesStorage } from "./favorite-properties/FavoritePropertiesStorage";
 
 /**
  * @module UnifiedSelection
@@ -25,7 +27,7 @@ export { ISelectionProvider } from "./selection/ISelectionProvider";
 export { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 export { SelectionScopesManager, SelectionScopesManagerProps } from "./selection/SelectionScopesManager";
 export { SelectionHandler } from "./selection/SelectionHandler";
-export { HiliteSet } from "./selection/HiliteSetProvider";
+export { HiliteSet, HiliteSetProvider } from "./selection/HiliteSetProvider";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

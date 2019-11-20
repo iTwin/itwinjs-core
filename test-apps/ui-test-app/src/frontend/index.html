@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="viewport" content="initial-scale=1,viewport-fit=cover,shrink-to-fit=no">
   <meta name="theme-color" content="#000000">
   <!--
       manifest.json provides metadata used when your web app is added to the
@@ -24,6 +24,10 @@
       height: 100%;
     }
   </style>
+
+  <!-- check the browser to verify it is supported. -->
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
+
   <!-- we use one webpack-generated runtime.js to get our modules to share dependencies. -->
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
   <!-- Use the IModelJs loader to load the system modules in the correct order -->

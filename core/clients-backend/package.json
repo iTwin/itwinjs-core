@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "1.5.0-dev.3",
+  "version": "1.8.0-dev.15",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -9,26 +9,27 @@
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.11.0 <11.0"
+    "node": ">=10.11.0 <13.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "clean": "rimraf lib package-deps.json",
-    "cover": "npm run copy:test-assets && nyc npm test",
+    "clean": "rimraf lib .rush package-deps.json",
+    "cover": "nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients-backend",
     "lint": "tslint --project . 1>&2",
-    "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
+    "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
-    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"#unit|iModelHub URL Whitelist Validator\" --invert",
+    "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"#unit|iModelHub URL Whitelist Validator\" --invert",
+    "test:imodel-bank": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"#iModelBank\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/clients-backend"
   },
   "keywords": [
     "Oidc Client"
@@ -38,20 +39,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.5.0-dev.3",
-    "@bentley/geometry-core": "^1.5.0-dev.3",
-    "@bentley/imodeljs-clients": "^1.5.0-dev.3"
+    "@bentley/bentleyjs-core": "^1.8.0-dev.15",
+    "@bentley/geometry-core": "^1.8.0-dev.15",
+    "@bentley/imodeljs-clients": "^1.8.0-dev.15",
+    "@bentley/imodeljs-common": "^1.8.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.3",
-    "@bentley/build-tools": "1.5.0-dev.3",
-    "@bentley/config-loader": "1.5.0-dev.3",
-    "@bentley/geometry-core": "1.5.0-dev.3",
-    "@bentley/imodeljs-clients": "1.5.0-dev.3",
+    "@bentley/bentleyjs-core": "1.8.0-dev.15",
+    "@bentley/build-tools": "1.8.0-dev.15",
+    "@bentley/config-loader": "1.8.0-dev.15",
+    "@bentley/geometry-core": "1.8.0-dev.15",
+    "@bentley/imodeljs-clients": "1.8.0-dev.15",
+    "@bentley/imodeljs-common": "1.8.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
@@ -71,12 +74,12 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.5.2"
+    "typescript": "~3.6.2"
   },
   "dependencies": {
     "openid-client": "^2.3.1",
     "@openid/appauth": "^1.1.1",
-    "https-proxy-agent": "^2.2.1",
+    "https-proxy-agent": "^3.0.0",
     "deep-assign": "^2.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",

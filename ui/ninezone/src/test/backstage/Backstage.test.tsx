@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Backstage } from "../../ui-ninezone";
+import { Backstage, SafeAreaInsets } from "../../ui-ninezone";
 
 describe("<Backstage />", () => {
   let addEventListenerSpy: sinon.SinonSpy | undefined;
@@ -25,7 +25,7 @@ describe("<Backstage />", () => {
   });
 
   it("should set is-open class", () => {
-    shallow(<Backstage isOpen={true} />).should.matchSnapshot();
+    shallow(<Backstage isOpen />).should.matchSnapshot();
   });
 
   it("should render header", () => {
@@ -34,6 +34,10 @@ describe("<Backstage />", () => {
 
   it("should render footer", () => {
     shallow(<Backstage footer={"my footer"} />).should.matchSnapshot();
+  });
+
+  it("renders safe area aware correctly", () => {
+    shallow(<Backstage safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });
 
   it("should add event listener", () => {
@@ -61,7 +65,7 @@ describe("<Backstage />", () => {
 
   it("should handle escape key down close event", () => {
     const handler = sinon.spy();
-    mount(<Backstage isOpen={true} onClose={handler} />);
+    mount(<Backstage isOpen onClose={handler} />);
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     handler.calledOnce.should.true;

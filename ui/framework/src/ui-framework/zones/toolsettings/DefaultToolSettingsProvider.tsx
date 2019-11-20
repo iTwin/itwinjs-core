@@ -5,12 +5,14 @@
 /** @module ToolSettings */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 // cSpell:Ignore configurableui
 
 import {
-  IModelApp, PropertyRecord, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue, PropertyValueFormat,
+  PropertyRecord, ToolSettingsPropertyRecord,
+  PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue,
+  IModelApp, ToolSettingsPropertySyncItem, ToolSettingsValue, PropertyValueFormat,
 } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
@@ -22,55 +24,59 @@ import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
 import { UiFramework } from "../../UiFramework";
 
+import ReactResizeDetector from "react-resize-detector";
+
 import "./DefaultToolSettingsProvider.scss";
 
-/** @internal */
-export class TsLabel {
-  constructor(public readonly label: string, public isDisabled?: boolean) { }
+/** Responsive Layout Mode */
+enum LayoutMode {
+  Wide = 0,
+  Narrow = 1,
 }
 
 /** @internal */
-export enum ColumnType {
-  Label,
-  Record,
-  RecordSpan,
-  Empty,
-}
-
-/** @internal */
-export class TsCol {
-  public type: ColumnType = ColumnType.Empty;
-  public name: string = "";
-  public columnSpan = 1;
-  constructor(readonly columnIndex: number) { }
-}
-
-/** @internal */
-export class TsRow {
+class TsRow {
   public priority = 0;
-  public cols: TsCol[] = [];
-  constructor(priority: number, numColumns: number) {
+  public records: ToolSettingsPropertyRecord[] = [];
+
+  constructor(priority: number, record: ToolSettingsPropertyRecord) {
     this.priority = priority;
-    // seed columns and mark them all as empty
-    for (let i = 0; i < numColumns; i++) {
-      this.cols.push(new TsCol(i));
+    this.records.push(record);
+  }
+
+  public static editorWantsLabel(record: ToolSettingsPropertyRecord): boolean {
+    if (record.property.editor && record.property.editor.params) {
+      const params = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
+      // istanbul ignore else
+      if (params)
+        return false;
     }
+    return true;
+  }
+
+  public static hasAssociatedLockProperty(record: ToolSettingsPropertyRecord): boolean {
+    return !!record.lockProperty;
+  }
+
+  public get onlyContainButtonGroupEditors() {
+    for (const record of this.records) {
+      // istanbul ignore else
+      if (TsRow.hasAssociatedLockProperty(record) || undefined === record.property.editor || "enum-buttongroup" !== record.property.editor.name || TsRow.editorWantsLabel(record))
+        return false;
+    }
+    return true;
   }
 }
 
 interface TsProps {
+  dataProvider: DefaultToolSettingsProvider;
   toolId: string;
-  rows: TsRow[];
-  numCols: number;
-  valueMap: Map<string, ToolSettingsPropertyRecord>;
-  labelMap: Map<string, TsLabel>;
 }
 
 interface TsState {
   toolId: string;
-  numCols: number;
+  layoutMode: LayoutMode;
   valueMap: Map<string, ToolSettingsPropertyRecord>;
-  labelMap: Map<string, TsLabel>;
 }
 
 /** Component to populate ToolSetting for ToolSettings properties
@@ -87,29 +93,21 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
   /** Process Tool code's request to update one or more properties */
   private _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
-    let needToForceUpdate = false;
-    args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
-      // (`[_handleSyncToolSettingsPropertiesEvent] Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
-      const colValue = this.state.valueMap.get(syncItem.propertyName);
-      /* istanbul ignore else */
-      if (colValue) {
-        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, syncItem.value as ToolSettingsValue);
-        updatedPropertyRecord.isDisabled = syncItem.isDisabled;
-        this.state.valueMap.set(syncItem.propertyName, updatedPropertyRecord);
+    const newValueMap = new Map<string, ToolSettingsPropertyRecord>(this.state.valueMap);
 
-        // keep label enable state in sync with property editor
-        const labelCol = this.state.labelMap.get(syncItem.propertyName);
-        /* istanbul ignore else */
-        if (labelCol)
-          labelCol.isDisabled = syncItem.isDisabled;
-        needToForceUpdate = true;
+    args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
+      Logger.logInfo(UiFramework.loggerCategory(this),
+        `handleSyncToolSettingsPropertiesEvent - Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
+
+      const propertyRecord = newValueMap.get(syncItem.propertyName);
+      /* istanbul ignore else */
+      if (propertyRecord) {
+        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(propertyRecord, syncItem.value as ToolSettingsValue);
+        updatedPropertyRecord.isDisabled = syncItem.isDisabled;
+        newValueMap.set(syncItem.propertyName, updatedPropertyRecord);
       }
     });
-
-    // istanbul ignore else
-    if (needToForceUpdate) {
-      this.forceUpdate();
-    }
+    this.setState({ valueMap: newValueMap });
   }
 
   public componentDidMount() {
@@ -120,35 +118,29 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     ToolUiManager.onSyncToolSettingsProperties.removeListener(this._handleSyncToolSettingsPropertiesEvent);
   }
 
+  // istanbul ignore next
   private _handleCommit = (commit: PropertyUpdatedArgs): void => {
     const activeTool = IModelApp.toolAdmin.activeTool;
-    if (activeTool) {
-      const propertyName = commit.propertyRecord.property.name;
+    if (!activeTool)
+      return;
 
-      // ToolSettings supports only primitive property types
-      if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-        const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
-        if (newPrimitiveValue === (commit.propertyRecord.value as PrimitiveValue).value) {
-          // tslint:disable-next-line:no-console
-          // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
-          return;  // don't sync if no change occurred
-        }
+    const propertyName = commit.propertyRecord.property.name;
 
-        // update the propertyRecord's value since this value is cached by ToolUiManager and is used if the ToolSettings widget is redrawn.
-        (commit.propertyRecord.value as PrimitiveValue).value = newPrimitiveValue;
+    // ToolSettings supports only primitive property types
+    if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
+      const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
+      if (newPrimitiveValue === (commit.propertyRecord.value as PrimitiveValue).value) {
+        // tslint:disable-next-line:no-console
+        // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
+        return;  // don't sync if no change occurred
+      }
 
-        // create a new property record and put it in valueMap - a new property record ensure a re-render with the updated value
-        const colValue = this.state.valueMap.get(propertyName);
-        if (colValue) {
-          const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, commit.newValue as ToolSettingsValue);
-          this.state.valueMap.set(propertyName, updatedPropertyRecord);
-          // tslint:disable-next-line:no-console
-          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property = '${propertyName}'`);
-        }
-
-        // if we updated state then force child components to update
-        this.forceUpdate(() => {
-          // send change to active tool
+      const propertyRecord = this.state.valueMap.get(propertyName);
+      if (propertyRecord) {
+        const newValueMap = new Map<string, ToolSettingsPropertyRecord>(this.state.valueMap);
+        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(propertyRecord, commit.newValue as ToolSettingsValue);
+        newValueMap.set(propertyName, updatedPropertyRecord);
+        this.setState({ valueMap: newValueMap }, () => {
           const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName };
           // tslint:disable-next-line:no-console
           // console.log(`Sending new value of ${ (commit.newValue as PrimitiveValue).value } for '${propertyName}' to tool`);
@@ -158,119 +150,147 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     }
   }
 
-  /** @internal */
-  public componentDidUpdate(prevProps: TsProps, _prevState: TsState) {
-    // if the props have changed then we need to update the state
-    const prevRecord = prevProps.rows;
-    const currentRecord = this.props.rows;
-    let refreshRequired = false;
-    /* istanbul ignore next */
-    if (prevRecord !== currentRecord)
-      refreshRequired = true;
-
-    if (refreshRequired) {
-      const state = DefaultToolSettings.getStateFromProps(this.props);
-      if (state) {
-        this.setState(state);
-        return;
-      }
-    }
+  private static getStateFromProps(props: TsProps, layoutMode = LayoutMode.Wide): TsState {
+    const valueMap = new Map<string, ToolSettingsPropertyRecord>(props.dataProvider.valueMap);
+    const { toolId } = props;
+    return { toolId, layoutMode, valueMap };
   }
 
-  private static getStateFromProps(props: TsProps): TsState {
-    const { toolId, valueMap, labelMap, numCols } = props;
-    return { toolId, numCols, valueMap, labelMap };
+  private getEditor(rowRecord: PropertyRecord, isLock = false, setFocus = false): React.ReactNode {
+    const record = this.state.valueMap.get(rowRecord.property.name);
+    // istanbul ignore next
+    if (!record)
+      throw (new Error ("No record found in value map for tool setting."));
+
+    const className = isLock ? "uifw-default-toolsettings-property-lock" : "uifw-default-toolsettings-editor";
+    return (
+      <div key={record.property.name} className={className} >
+        <EditorContainer key={record.property.name} propertyRecord={record} setFocus={setFocus} onCommit={this._handleCommit} onCancel={() => { }} />
+      </div>);
   }
 
-  private getEditor(record: PropertyRecord, setFocus = false): React.ReactNode {
-    return <EditorContainer propertyRecord={record} setFocus={setFocus} onCommit={this._handleCommit} onCancel={() => { }} />;
-  }
-
-  private getCol(col: TsCol, rowIndex: number, colIndex: number) {
-    if (col.type === ColumnType.Empty) {
-      return ( // return a <span> as a placeholder elements
-        <React.Fragment key={`${rowIndex.toString()} -${colIndex.toString()}`}>
-          <span key={`${rowIndex.toString()} -${colIndex.toString()}`}></span>
-        </React.Fragment>
+  private generateRowWithButtonGroupEditors(row: TsRow, rowIndex: number): React.ReactNode {
+    // istanbul ignore else
+    if (1 === row.records.length) {
+      return (
+        <div key={row.records[0].property.name} className="uifw-default-toolsettings-inline-editor-group uifw-default-toolsettings-center-across-width">
+          {this.getEditor(row.records[0])}
+        </div>
       );
     }
 
-    const labelStyle: React.CSSProperties = {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-end",
-    };
-
-    if (col.type === ColumnType.Label) {
-      const labelData = this.state.labelMap.get(col.name);
-      // istanbul ignore else
-      if (labelData) {
-        const className = labelData.isDisabled ? "uifw-toolSettings-label-disabled" : undefined;
-        return ( // return a <span> containing a label
-          <span style={labelStyle} className={className} key={`${rowIndex.toString()}-${colIndex.toString()}`}>
-            {labelData.label}:
-          </span>
-        );
-      }
-    }
-
-    // istanbul ignore if
-    if (col.type === ColumnType.RecordSpan)
-      return null;
-
-    /* istanbul ignore else */
-    if (col.type === ColumnType.Record) {
-      const record = this.state.valueMap.get(col.name);
-      /* istanbul ignore else */
-      if (record) {
-        const editor = this.getEditor(record);
-        let spanStyle: React.CSSProperties | undefined;
-        if (record.editorPosition.columnSpan && record.editorPosition.columnSpan > 1) {
-          spanStyle = {
-            gridColumn: `span ${record.editorPosition.columnSpan}`,
-          } as React.CSSProperties;
-        }
-
-        return (
-          <div key={col.name} style={spanStyle}>
-            {editor}
-          </div>
-        );
-      }
-    }
-
-    return null;
+    return (
+      <div key={rowIndex} className="uifw-default-toolsettings-inline-editor-group uifw-default-toolsettings-center-across-width">
+        <div className="uifw-default-toolsettings-inline-editor-group">
+          {row.records.map((record) => this.getEditor(record))}
+        </div>
+      </div>
+    );
   }
 
-  private getRow(row: TsRow, rowIndex: number) {
-    if (!row.cols) {
-      return null;
+  private getPropertyId(record: ToolSettingsPropertyRecord): string {
+    return `toolSettingsProperty-${record.property.name}`;
+  }
+
+  private getPropertyLabelClass(record: ToolSettingsPropertyRecord, isLeftmostRecord: boolean): string {
+    const lockProperty = record.lockProperty ? this.state.valueMap.get(record.lockProperty.property.name) : null;
+
+    return classnames(
+      "uifw-default-toolsettings-label",
+      (lockProperty && !(lockProperty.value as PrimitiveValue).value) && "uifw-toolSettings-label-disabled",
+      isLeftmostRecord && "uifw-default-toolsettings-narrow-only-display",
+      !isLeftmostRecord && "uifw-default-toolsettings-inline-label",
+    );
+  }
+
+  private getPropertyLabel(rowRecord: ToolSettingsPropertyRecord): string {
+    return rowRecord.property.displayLabel ? rowRecord.property.displayLabel : rowRecord.property.name;
+  }
+
+  private getEditorLabel(rowRecord: ToolSettingsPropertyRecord, isLeftmostRecord = false): React.ReactNode {
+    const record = this.state.valueMap.get(rowRecord.property.name);
+    // istanbul ignore next
+    if (!record)
+      throw (new Error ("No record found in value map for tool setting."));
+
+    return <label className={this.getPropertyLabelClass(record, isLeftmostRecord)} htmlFor={this.getPropertyId(rowRecord)}>{this.getPropertyLabel(rowRecord)}:</label>;
+  }
+
+  private getLeftLockAndLabel(rowRecord: ToolSettingsPropertyRecord, multiplePropertiesOnRow: boolean): React.ReactNode {
+    const record = this.state.valueMap.get(rowRecord.property.name);
+    // istanbul ignore next
+    if (!record)
+      throw (new Error ("No record found in value map for tool setting."));
+
+    const lockEditor = (TsRow.hasAssociatedLockProperty(record)) ? this.getEditor(record.lockProperty!, true) : null;
+    const label = (TsRow.editorWantsLabel(record)) ? this.getEditorLabel(record) : null;
+    const classNames = multiplePropertiesOnRow ? "uifw-default-toolsettings-lock-and-label uifw-default-toolsettings-wide-only-display" : "uifw-default-toolsettings-lock-and-label";
+    return (
+      <div key={"lock-" + record.property.name} className={classNames}>
+        {lockEditor}
+        {label}
+      </div>
+    );
+  }
+
+  private getInlineLabelAndEditor(record: ToolSettingsPropertyRecord, isLeftmostRecord: boolean): React.ReactNode {
+    const label = (TsRow.editorWantsLabel(record)) ? this.getEditorLabel(record, isLeftmostRecord) : null;
+    return (
+      <div key={record.property.name} className="uifw-default-toolsettings-inline-label-and-editor">
+        {label}
+        {this.getEditor(record)}
+      </div>
+    );
+  }
+
+  private getRowWithMultipleEditors(row: TsRow): React.ReactNode {
+    return <div className="uifw-default-toolsettings-inline-editor-group">
+      {row.records.map((record: ToolSettingsPropertyRecord, index: number) => this.getInlineLabelAndEditor(record, 0 === index))}
+    </div>;
+  }
+
+  private getDivForRow(row: TsRow): React.ReactNode {
+    if (1 === row.records.length)
+      return this.getEditor(row.records[0]);
+    return this.getRowWithMultipleEditors(row);
+  }
+
+  private getRow(row: TsRow, rowIndex: number): React.ReactNode {
+    if (row.onlyContainButtonGroupEditors) {
+      return this.generateRowWithButtonGroupEditors(row, rowIndex);
     } else {
       return (
         <React.Fragment key={rowIndex}>
-          {row.cols.map((col, colIndex: number) => this.getCol(col, rowIndex, colIndex))}
+          {this.getLeftLockAndLabel(row.records[0], row.records.length > 1)}
+          {this.getDivForRow(row)}
         </React.Fragment>
       );
     }
   }
 
+  // istanbul ignore next - currently unable to replicate resizing in unit test
+  private _onResize = (width: number) => {
+    const layoutMode = (width < 250) ? LayoutMode.Narrow : LayoutMode.Wide;
+    Logger.logInfo(UiFramework.loggerCategory(this), `Toolsetting Resize detector width=${width}`);
+    if (layoutMode !== this.state.layoutMode)
+      this.setState({ layoutMode });
+  }
+
   public render(): React.ReactNode {
-    const { rows } = this.props;
+    const { rows } = this.props.dataProvider;
+    // istanbul ignore next
     if (!rows) {
       return null;
     } else {
-      const autoColArray = new Array<string>(this.state.numCols);
-      autoColArray.fill("auto");
-      const gridStyle: React.CSSProperties = {
-        display: "grid",
-        gridTemplateColumns: autoColArray.join(" "),
-        gridRowGap: "4px",
-        gridColumnGap: "6px",
-      };
+      const { layoutMode } = this.state;
+      const toolSettingsClass = (LayoutMode.Narrow === layoutMode) ? "uifw-default-toolsettings-container uifw-default-toolsettings-narrow" : "uifw-default-toolsettings-container";
 
       return (
-        <div style={gridStyle} className="uifw-toolSettingsContainer" >
-          {rows.map((row, index) => this.getRow(row, index))}
+        <div className="uifw-default-toolsettings-resizer-parent">
+          <ReactResizeDetector handleWidth onResize={this._onResize} />
+          <div className={toolSettingsClass} >
+            {rows.map((row, index) => this.getRow(row, index))}
+          </div>
         </div>
       );
     }
@@ -282,108 +302,38 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
  */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public rows: TsRow[] = [];
-  public valueMap = new Map<string, ToolSettingsPropertyRecord>();
-  public labelMap = new Map<string, TsLabel>();
-  private _numCols = 0;
+  public valueMap = new Map<string, ToolSettingsPropertyRecord>();  // allows easy lookup of record given the property name
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     // istanbul ignore else
-    if (this.getGridSpecsFromToolSettingProperties())
-      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} numCols={this._numCols} valueMap={this.valueMap} labelMap={this.labelMap} toolId={FrontstageManager.activeToolId} />;
+    if (this.layoutToolSettingRows())
+      this.toolSettingsNode = <DefaultToolSettings dataProvider={this} key={Date.now()} toolId={FrontstageManager.activeToolId} />;
     else
       this.toolSettingsNode = null;
   }
 
-  // assumes columns are sorted by index.
-  private getRequiredNumberOfColumns(records: ToolSettingsPropertyRecord[]): number {
-    // istanbul ignore next
-    if (!records || records.length < 1)
-      return 0;
-
-    let maxIndex = 0;
-    records.forEach((record) => {
-      const colIndex = record.editorPosition.columnIndex + (record.editorPosition.columnSpan ? record.editorPosition.columnSpan : 1) - 1;
-      if (maxIndex < colIndex)
-        maxIndex = colIndex;
-    });
-    return maxIndex + 1;
-  }
-
-  private hasSuppressEditorLabelParam(record: ToolSettingsPropertyRecord): SuppressLabelEditorParams | undefined {
-    /* istanbul ignore else */
-    if (record.property.editor && record.property.editor.params)
-      return record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
-    return undefined;
-  }
-
-  private setEditorLabel(row: TsRow, record: ToolSettingsPropertyRecord, propertyName: string): void {
-
-    const suppressLabelEditorParams = this.hasSuppressEditorLabelParam(record);
-    // istanbul ignore if
-    if (suppressLabelEditorParams && suppressLabelEditorParams.suppressLabelPlaceholder)
-      return;
-
-    const labelCol = record.editorPosition.columnIndex - 1;
-    const label = (undefined === suppressLabelEditorParams) ? record.property.displayLabel : "";
-    if (labelCol < 0) {
-      Logger.logError(UiFramework.loggerCategory(this), `Invalid label column for ${propertyName}`);
-      return;
-    }
-
-    if (row.cols[labelCol].type !== ColumnType.Empty) {
-      Logger.logError(UiFramework.loggerCategory(this), `Label column for ${propertyName} is already in use`);
-      return;
-    }
-
-    row.cols[labelCol].name = propertyName;
-    this.labelMap.set(propertyName, new TsLabel(label, record.isDisabled));
-    row.cols[labelCol].type = ColumnType.Label;
-  }
-
-  private setPropertyRecord(row: TsRow, record: ToolSettingsPropertyRecord): void {
-    const editCol = record.editorPosition.columnIndex;
-
-    // istanbul ignore if
-    if (row.cols[editCol].type !== ColumnType.Empty) {
-      Logger.logError(UiFramework.loggerCategory(this), `Label column for ${record.property.name} is already in use`);
-      return;
-    }
-
-    const recordName = record.property.name;
-    row.cols[editCol].type = ColumnType.Record;
-    row.cols[editCol].name = recordName;
-    this.valueMap.set(recordName, record);
-
-    let columnSpan = 1;
-    // istanbul ignore if
-    if (record.editorPosition.columnSpan)
-      columnSpan = record.editorPosition.columnSpan;
-
-    for (let i = 1; i < columnSpan; i++)
-      row.cols[editCol + i].type = ColumnType.RecordSpan;
-
-    this.setEditorLabel(row, record, recordName);
-  }
-
-  private getGridSpecsFromToolSettingProperties(): boolean {
+  private layoutToolSettingRows(): boolean {
     const toolSettingsProperties = ToolUiManager.toolSettingsProperties;
 
-    this._numCols = this.getRequiredNumberOfColumns(toolSettingsProperties);
-    if (this._numCols < 1)
-      return false;
-
     toolSettingsProperties.forEach((record) => {
-      let row = this.rows.find((value) => value.priority === record.editorPosition.rowPriority);
-      if (!row) {
-        row = new TsRow(record.editorPosition.rowPriority, this._numCols);
-        this.rows.push(row);
-      }
+      this.valueMap.set(record.property.name, record);
+      if (record.lockProperty)
+        this.valueMap.set(record.lockProperty.property.name, record.lockProperty as ToolSettingsPropertyRecord);
 
-      this.setPropertyRecord(row, record);
+      const row = this.rows.find((value) => value.priority === record.editorPosition.rowPriority);
+      if (row) {
+        row.records.push(record);
+      } else {
+        this.rows.push(new TsRow(record.editorPosition.rowPriority, record));
+      }
     });
 
+    // sort rows
+    this.rows.sort((a: TsRow, b: TsRow) => a.priority - b.priority);
+    // sort records
+    this.rows.forEach((row: TsRow) => row.records.sort((a: ToolSettingsPropertyRecord, b: ToolSettingsPropertyRecord) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
     return this.rows.length > 0;
   }
 
@@ -394,8 +344,10 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   public onInitialize(): void {
     // reload the data so it matches current values from tool and use it to refresh the toolSettingNode object reference.
     this.rows.length = 0;
-    if (this.getGridSpecsFromToolSettingProperties())
-      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} numCols={this._numCols} valueMap={this.valueMap} labelMap={this.labelMap} toolId={FrontstageManager.activeToolId} />;
+    // istanbul ignore else
+    if (this.layoutToolSettingRows())
+      // the date is used as a key to ensure that React sees the node as "new" and in need of rendering every time it's updated
+      this.toolSettingsNode = <DefaultToolSettings key={Date.now()} dataProvider={this} toolId={FrontstageManager.activeToolId} />;
     else
       this.toolSettingsNode = null;
   }

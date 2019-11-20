@@ -119,6 +119,7 @@ public;GeometricElement2dProps
 public;GeometricElement3dProps 
 public;GeometricElementProps 
 public;GeometricModel2dProps 
+public;GeometricModel3dProps 
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
@@ -127,9 +128,15 @@ public;GeometryPartInstanceProps
 public;GeometryPartProps 
 public;GeometryStreamBuilder
 public;GeometryStreamEntryProps 
+public;GeometryStreamFlags
+public;GeometryStreamHeaderProps
 public;GeometryStreamIterator 
 public;GeometryStreamIteratorEntry
+public;GeometryStreamIteratorEntry
 public;GeometryStreamProps = GeometryStreamEntryProps[]
+alpha;GeometrySummaryOptions
+alpha;GeometrySummaryRequestProps
+alpha;GeometrySummaryVerbosity
 beta;Gradient
 internal;ThematicColorScheme
 beta;GraphicParams
@@ -266,6 +273,7 @@ beta;class RenderTexture
 beta;RenderTexture
 public;ResponseLike 
 public;RgbColor
+public;RgbColorProps =
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
@@ -316,6 +324,8 @@ public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheC
 public;RpcSerializedValue
 public;RpcSerializedValue
 alpha;SceneLightsProps
+beta;SectionLocationProps 
+public;SectionType
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
 public;ServerError 

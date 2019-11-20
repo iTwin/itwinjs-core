@@ -3,14 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "_variables";
+@import "variables";
+@import "../../typography";
 
 .nz-footer-dialog-titleBar {
   $horizontal-padding: $nz-dialog-padding;
   $vertical-padding: 12px;
 
   background-color: $buic-background-titlebar;
-  min-height: 36px;
+  min-height: $nz-footer-title-bar-height;
   box-sizing: border-box;
   display: grid;
   grid-auto-flow: column;
@@ -21,7 +22,10 @@
   padding-right: $horizontal-padding;
 
   > .nz-title {
+    @include title;
     color: $buic-text-color;
     filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+    white-space: nowrap;
+    overflow: hidden;
   }
 }

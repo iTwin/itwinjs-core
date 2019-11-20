@@ -129,6 +129,15 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options, keys, 1)), moq.Times.once());
     });
 
+    it("forwards loadHierarchy call", async () => {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.loadHierarchy(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
     it("forwards getContentDescriptor call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,

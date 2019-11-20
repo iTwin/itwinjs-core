@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHub */
+/** @module iModelHubClient */
 
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
@@ -13,7 +13,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";
-import { Query } from "./Query";
+import { WsgQuery } from "../WsgQuery";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -200,7 +200,7 @@ export class MultiLock extends LockBase {
  * Query object for getting [[Lock]]s. You can use this to modify the [[LockHandler.get]] results.
  * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
-export class LockQuery extends Query {
+export class LockQuery extends WsgQuery {
   private _isMultiLockQuery = true;
 
   /**

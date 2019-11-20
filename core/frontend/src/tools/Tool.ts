@@ -7,7 +7,7 @@
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
@@ -40,6 +40,8 @@ export class ToolSettings {
   public static touchMoveDistanceInches = 0.15;
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
+  /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
+  public static touchZoomChangeThresholdInches = 0.20;
   /** Radius in screen inches to search for elements that anchor viewing operations. */
   public static viewToolPickRadiusInches = 0.20;
   /** Camera angle enforced for walk tool. */
@@ -54,6 +56,10 @@ export class ToolSettings {
   public static wheelPageFactor = 120;
   /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
   public static wheelZoomBumpDistance = Constant.oneCentimeter;
+  /** the speed to scroll for the "scroll view" tool (distance per second). */
+  public static scrollSpeed = .75;
+  /** the speed to zoom for the "zoom view" tool (ratio per second). */
+  public static zoomSpeed = 2;
   /** Scale factor for zooming with mouse wheel. */
   public static wheelZoomRatio = 1.75;
   /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
@@ -368,6 +374,9 @@ export class Tool {
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
 
+  /** The internationalization services instance used to translate strings from the namespace. */
+  public static i18n: I18N;
+
   public constructor(..._args: any[]) { }
 
   /** The minimum number of arguments allowed by [[parseAndRun]]. If subclasses override [[parseAndRun]], they should also
@@ -387,12 +396,13 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
+   * @param i18n optional internationalization services object (required only for externally hosted plugins). If undefined, use IModelApp.i18n.
    */
-  public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
+  public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = "tools." + this.toolId + "." + name;
-    const val = IModelApp.i18n.translateWithNamespace(this.namespace.name, key);
+    const val = this.i18n.translateWithNamespace(this.namespace.name, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -403,6 +413,16 @@ export class Tool {
   public static get keyin(): string {
     const keyin = this.getLocalizedKey("keyin");
     return (undefined !== keyin) ? keyin : ""; // default to empty string
+  }
+
+  /**
+   * Get the English keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from
+   * its registered Namespace (e.g. "en/MyApp.json").
+   */
+  public static get englishKeyin(): string {
+    const key = "tools." + this.toolId + ".keyin";
+    const val = this.i18n.getEnglishTranslation(this.namespace.name, key);
+    return val !== key ? val : ""; // default to empty string
   }
 
   /**
@@ -763,9 +783,11 @@ export class ToolRegistry {
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: ToolType, namespace?: I18NNamespace) {
+  public register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
+
+    toolClass.i18n = (i18n) ? i18n : IModelApp.i18n;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it
@@ -781,14 +803,14 @@ export class ToolRegistry {
    * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, namespace?: I18NNamespace) {
+  public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
 
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, namespace);
+        this.register(thisTool, namespace, i18n);
       }
     }
   }
@@ -850,4 +872,12 @@ export class ToolRegistry {
     keyin = keyin.toLowerCase();
     return this.getToolList().find((thisTool) => thisTool.keyin.toLowerCase() === keyin);
   }
+}
+
+/** @internal */
+export class CoreTools {
+  public static namespace = "CoreTools";
+  public static tools = "CoreTools:tools.";
+  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
 }

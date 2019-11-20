@@ -8,12 +8,15 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps } from "@bentley/ui-ninezone";
+import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelsManager } from "@bentley/ui-ninezone";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup } from "../../ui-framework";
+import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup, StagePanelDef } from "../../ui-framework";
 import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
+import { StagePanelLocation, getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
+import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
+import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -32,14 +35,18 @@ class TestModalFrontstage implements ModalFrontstageInfo {
 }
 
 describe("FrontstageComposer", () => {
-  let handleTabClickStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
   beforeEach(() => {
-    handleTabClickStub && handleTabClickStub.restore();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("FrontstageComposer support of ModalFrontstage", () => {
@@ -76,7 +83,7 @@ describe("FrontstageComposer", () => {
         },
       },
     };
-    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
+    const handleTabClickStub = sandbox.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     wrapper.instance().handleTabClick(6, 0);
 
@@ -186,5 +193,60 @@ describe("FrontstageComposer", () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
     wrapper.unmount();
     (Logger.logError as any).restore();
+  });
+
+  it("should handle panel collapse", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const frontstage = FrontstageManager.activeFrontstageDef!;
+    const stagePanel = new StagePanelDef();
+    const getStagePanelDef = sinon.stub(frontstage, "getStagePanelDef").returns(stagePanel);
+
+    const spy = sinon.spy();
+    sinon.stub(stagePanel, "panelState").set(spy);
+    wrapper.instance().handleTogglePanelCollapse(StagePanelLocation.Left);
+    expect(spy.calledOnce).to.be.true;
+
+    getStagePanelDef.reset();
+    wrapper.unmount();
+  });
+
+  it("should update state when panel state changes", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const panelDef = new StagePanelDef();
+    FrontstageManager.onPanelStateChangedEvent.emit({ panelDef, panelState: StagePanelState.Minimized });
+    const panelKey = getNestedStagePanelKey(panelDef.location);
+    const panels = wrapper.state().nineZone.nested.panels[panelKey.id];
+    const panel = StagePanelsManager.getPanel(panelKey.type, panels);
+    expect(panel.isCollapsed).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  it("should hide tool settings widget", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    const hideWidgetSpy = sandbox.spy(FrontstageManager.NineZoneManager, "hideWidget");
+
+    FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
+
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  describe("isCollapsedToPanelState", () => {
+    it("should return Minimized if is collapsed", () => {
+      expect(isCollapsedToPanelState(true)).to.eq(StagePanelState.Minimized);
+    });
+
+    it("should return Open if not collapsed", () => {
+      expect(isCollapsedToPanelState(false)).to.eq(StagePanelState.Open);
+    });
   });
 });

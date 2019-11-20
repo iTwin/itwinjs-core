@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   QuantityType, PropertyDescription, PrimitiveValue, ToolSettingsValue, PropertyEditorParamTypes,
-  ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord,
+  ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord, ButtonGroupEditorParams,
 } from "@bentley/imodeljs-frontend";
 
 // tslint:disable: completed-docs
@@ -25,19 +25,17 @@ const selectionOptionDescription: PropertyDescription = {
   typename: "enum",
   editor: {
     name: "enum-buttongroup",
-    params: [
-      {
-        type: PropertyEditorParamTypes.ButtonGroupData,
-        buttons: [
-          { iconClass: "select-single" },
-          { iconClass: "select-line" },
-          { iconClass: "select-box" },
-          { iconClass: "view-layouts" },
-          { iconClass: "select-plus" },
-          { iconClass: "select-minus" },
-        ],
-      },
-    ],
+    params: [{
+      type: PropertyEditorParamTypes.ButtonGroupData,
+      buttons: [
+        { iconSpec: "select-single" },
+        { iconSpec: "select-line" },
+        { iconSpec: "select-box" },
+        { iconSpec: "view-layouts" },
+        { iconSpec: "select-plus" },
+        { iconSpec: "select-minus" },
+      ],
+    } as ButtonGroupEditorParams],
   },
   enum: {
     choices: [

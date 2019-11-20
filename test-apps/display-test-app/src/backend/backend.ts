@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
@@ -13,6 +13,7 @@ import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
+import { FakeTileCacheService } from "./FakeTileCacheService";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
@@ -21,62 +22,92 @@ export function getRpcInterfaces() {
   return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
 }
 
-function setupStandaloneConfiguration() {
+function setupStandaloneConfiguration(): SVTConfiguration {
+  const configuration: SVTConfiguration = {};
   if (MobileRpcConfiguration.isMobileBackend)
-    return;
+    return configuration;
 
-  const filename = process.env.SVT_STANDALONE_FILENAME;
-  if (filename !== undefined) {
-    const configuration: SVTConfiguration = {};
-    configuration.standalone = true;
-    configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
-    configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-    configuration.iModelName = filename;
-    configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
-    if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
-      configuration.signInForStandalone = true;
+  // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
+  // At some point we will reinstate ability to open from hub.
+  configuration.standalone = true;
+  configuration.iModelName = process.env.SVT_STANDALONE_FILENAME;
+  configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
+  configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
 
-    configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
-    configuration.disableMagnification = undefined !== process.env.SVT_DISABLE_MAGNIFICATION;
-    const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
-    if (undefined !== treeExpiration)
-      try {
-        configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
-      } catch (_) {
-        //
-      }
+  if (undefined !== process.env.SVT_DISABLE_DIAGNOSTICS)
+    configuration.enableDiagnostics = false;
 
-    configuration.displaySolarShadows = true;
-    configuration.logarithmicZBuffer = undefined === process.env.SVT_DISABLE_LOG_Z || "false" === process.env.SVT_DISABLE_LOG_Z;
+  if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
+    configuration.signInForStandalone = true;
 
-    configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
+  if (undefined !== process.env.SVT_DISABLE_INSTANCING)
+    configuration.disableInstancing = true;
 
-    const extensions = process.env.SVT_DISABLED_EXTENSIONS;
-    if (undefined !== extensions)
-      configuration.disabledExtensions = extensions.split(";");
+  if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
+    configuration.disableMagnification = true;
 
-    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-    fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
-  }
+  configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+  const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
+  if (undefined !== treeExpiration)
+    try {
+      configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
+    } catch (_) {
+      //
+    }
+
+  if (undefined !== process.env.SVT_DISABLE_LOG_Z)
+    configuration.logarithmicZBuffer = false;
+
+  if (undefined !== process.env.SVT_ENABLE_MAP_TEXTURE_FILTER)
+    configuration.filterMapTextures = true;
+
+  if (undefined !== process.env.SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER)
+    configuration.filterMapDrapeTextures = false;
+
+  if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
+    configuration.preserveShaderSourceCode = true;
+
+  const extensions = process.env.SVT_DISABLED_EXTENSIONS;
+  if (undefined !== extensions)
+    configuration.disabledExtensions = extensions.split(";");
+
+  configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
+
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
+
+  return configuration;
 }
 
 export function initializeBackend() {
-  setupStandaloneConfiguration();
+  const svtConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
   hostConfig.logTileLoadTimeThreshold = 3;
   hostConfig.logTileSizeThreshold = 500000;
+
+  let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem SVTConfiguraiton is used anymore.
   } else {
-    // tslint:disable-next-line:no-var-requires
-    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-    const svtConfig: SVTConfiguration = require(configPathname);
     if (svtConfig.customOrchestratorUri)
       hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+
+    if (svtConfig.useFakeCloudStorageTileCache)
+      hostConfig.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+
+    const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
+    if (undefined !== logLevelEnv)
+      logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
   IModelHost.startup(hostConfig);
 
-  Logger.initializeToConsole(); // configure logging for imodeljs-core
+  // Set up logging (by default, no logging is enabled)
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(logLevel);
+  Logger.setLevel("SVT", LogLevel.Trace);
+
+  if (svtConfig.useFakeCloudStorageTileCache)
+    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../webresources", "tiles/")));
 }

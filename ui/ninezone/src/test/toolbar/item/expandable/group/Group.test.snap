@@ -3,8 +3,20 @@
 exports[`<Group /> renders correctly 1`] = `
 <Panel
   className="nz-toolbar-item-expandable-group-group"
+/>
+`;
+
+exports[`<Group /> renders with title and columns correctly 1`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
 >
-  <Title />
-  <Columns />
+  <Title>
+    Test
+  </Title>
+  <Columns>
+    <div>
+      columns
+    </div>
+  </Columns>
 </Panel>
 `;

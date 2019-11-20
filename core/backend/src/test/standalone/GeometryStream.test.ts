@@ -2,14 +2,38 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry, Box, Range3d } from "@bentley/geometry-core";
-import { Id64String, Id64, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity, GeometryStreamProps, MassPropertiesRequestProps, MassPropertiesOperation,
+  AreaPattern,
+  BackgroundFill,
+  BRepEntity,
+  Code,
+  ColorByName,
+  ColorDef,
+  FillDisplay,
+  FontProps,
+  FontType,
+  GeometricElement3dProps,
+  GeometricElementProps,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamFlags,
+  GeometryStreamIterator,
+  GeometryStreamProps,
+  Gradient,
+  IModel,
+  LinePixels,
+  LineStyle,
+  MassPropertiesOperation,
+  MassPropertiesRequestProps,
+  TextString,
+  TextStringProps,
 } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometryPart, IModelDb, LineStyleDefinition, Platform, BackendRequestContext } from "../../imodeljs-backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -21,12 +45,12 @@ describe("GeometryStream", () => {
   });
 
   after(() => {
-    imodel.closeStandalone();
+    imodel.closeSnapshot();
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -66,8 +90,7 @@ describe("GeometryStream", () => {
     });
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -98,6 +121,7 @@ describe("GeometryStream", () => {
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
+      assert.equal(entry.primitive.type, "geometryQuery");
       lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : Id64.invalid);
     }
 
@@ -110,7 +134,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using continuous style", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -157,8 +181,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -179,6 +202,7 @@ describe("GeometryStream", () => {
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
+      assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geomParams.styleInfo);
       stylesUsed.push(entry.geomParams.styleInfo!.styleId);
       widthsUsed.push(entry.geomParams.styleInfo!.styleMod !== undefined ? entry.geomParams.styleInfo!.styleMod!.startWidth! : 0.0);
@@ -194,7 +218,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -207,7 +231,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -237,8 +260,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -253,7 +275,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -273,7 +295,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -310,8 +331,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -326,7 +346,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -395,8 +415,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -409,13 +428,14 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     let iShape = 0;
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.isDefined(entry.geometryQuery);
+      assert.equal(entry.primitive.type, "geometryQuery");
       switch (iShape++) {
         case 0:
           assert.isTrue(undefined === entry.geomParams.fillDisplay || FillDisplay.Never === entry.geomParams.fillDisplay);
@@ -457,7 +477,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using shapes with patterns", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -492,7 +512,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -540,8 +559,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -554,12 +572,13 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     let iShape = 0;
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery);
       assert.isDefined(entry.geomParams.pattern);
       switch (iShape++) {
@@ -588,7 +607,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
@@ -627,8 +646,7 @@ describe("GeometryStream", () => {
     assert.isTrue(status);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -642,26 +660,36 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    for (const entry of value.geom) {
-      assert.isDefined(entry.textString);
-      const origin = new Point3d(entry.textString.origin);
-      const rotation = new YawPitchRollAngles(entry.textString.rotation);
-      assert.isTrue(origin.isAlmostZero);
-      assert.isTrue(rotation.isIdentity());
+    let gotHeader = false;
+    for (const entry of value.geom!) {
+      expect(undefined === entry.header).to.equal(gotHeader);
+      if (undefined !== entry.header) {
+        gotHeader = true;
+      } else {
+        assert.isDefined(entry.textString);
+        const origin = Point3d.fromJSON(entry.textString!.origin);
+        const rotation = YawPitchRollAngles.fromJSON(entry.textString!.rotation);
+        assert.isTrue(origin.isAlmostZero);
+        assert.isTrue(rotation.isIdentity());
+      }
     }
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    expect(gotHeader).to.be.true;
+
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "textString");
       assert.isDefined(entry.textString);
       assert.isTrue(entry.textString!.origin.isAlmostZero);
       assert.isTrue(entry.textString!.rotation.isIdentity());
     }
 
-    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value);
     for (const entry of itWorld) {
+      assert.equal(entry.primitive.type, "textString");
       assert.isDefined(entry.textString);
       assert.isTrue(entry.textString!.origin.isAlmostEqual(testOrigin));
       assert.isTrue(entry.textString!.rotation.isAlmostEqual(testAngles));
@@ -670,7 +698,7 @@ describe("GeometryStream", () => {
 
   it("create GeometryPart from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -688,7 +716,6 @@ describe("GeometryStream", () => {
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
-      iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
@@ -699,12 +726,13 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
     const itLocal = GeometryStreamIterator.fromGeometryPart(value as GeometryPartProps);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
       geomArrayOut.push(entry.geometryQuery! as Arc3d);
     }
@@ -717,7 +745,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -734,8 +762,7 @@ describe("GeometryStream", () => {
     }
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -748,12 +775,13 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
       geomArrayOut.push(entry.geometryQuery! as Arc3d);
     }
@@ -764,9 +792,9 @@ describe("GeometryStream", () => {
     }
   });
 
-  it("create GeometricElement3d wireformat appearance check", async () => {
+  it("create GeometricElement3d wire format appearance check", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -779,8 +807,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -793,17 +820,19 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geometryQuery);
       assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
     }
 
     const geometryStream: GeometryStreamProps = [];
 
+    geometryStream.push({ header: { flags: 0 } });
     geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
     geometryStream.push({ fill: { display: FillDisplay.ByView } });
     geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
@@ -823,7 +852,7 @@ describe("GeometryStream", () => {
       return;
 
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -853,8 +882,7 @@ describe("GeometryStream", () => {
     builder.appendBRepData(brepProps);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -868,18 +896,69 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true, wantBRepData: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true, wantBRepData: true }) as GeometricElementProps;
     assert.isDefined(value.geom);
 
-    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "brep");
       assert.isDefined(entry.brep);
     }
 
     const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
     for (const entry of itWorld) {
+      assert.equal(entry.primitive.type, "brep");
       assert.isDefined(entry.brep);
     }
+  });
+
+  it("should preserve header with flags", () => {
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
+
+    const roundTrip = () => {
+      const iter = new GeometryStreamIterator(builder.geometryStream);
+      expect((iter.flags === GeometryStreamFlags.ViewIndependent)).to.equal(builder.isViewIndependent);
+
+      const partProps: GeometryPartProps = {
+        classFullName: GeometryPart.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        geom: builder.geometryStream,
+      };
+
+      const part = imodel.elements.createElement(partProps);
+      const partId = imodel.elements.insertElement(part);
+      imodel.saveChanges();
+
+      const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
+      expect(json.geom).not.to.be.undefined;
+      expect(json.geom!.length).to.equal(2);
+      expect(json.geom![0].header).not.to.be.undefined;
+      const flags = json.geom![0].header!.flags;
+      expect(flags).to.equal(builder.isViewIndependent ? GeometryStreamFlags.ViewIndependent : GeometryStreamFlags.None);
+
+      if (undefined !== builder.getHeader())
+        expect(JSON.stringify(builder.geometryStream[0])).to.equal(JSON.stringify(json.geom![0]));
+    };
+
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
+    roundTrip();
+
+    builder.isViewIndependent = true;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.true;
+    roundTrip();
+
+    builder.isViewIndependent = false;
+    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.isViewIndependent).to.be.false;
   });
 });
 
@@ -893,12 +972,12 @@ describe("Mass Properties", () => {
   });
 
   after(() => {
-    imodel.closeStandalone();
+    imodel.closeSnapshot();
   });
 
   it("volume", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -909,8 +988,7 @@ describe("Mass Properties", () => {
     builder.appendGeometry(box!);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -937,7 +1015,7 @@ describe("Mass Properties", () => {
 
   it("area", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -946,8 +1024,7 @@ describe("Mass Properties", () => {
     builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
-      classFullName: "Generic:PhysicalObject",
-      iModel: imodel,
+      classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
@@ -971,5 +1048,4 @@ describe("Mass Properties", () => {
     assert.isTrue(4.0 === result.perimeter);
     assert.isTrue(Point3d.fromJSON(result.centroid).isAlmostEqual(Point3d.create(0.5, 0.5, 0.0)));
   });
-
 });

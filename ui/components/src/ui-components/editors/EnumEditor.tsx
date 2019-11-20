@@ -10,6 +10,7 @@ import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice }
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";
+import { Select } from "@bentley/ui-core";
 
 /** @internal */
 interface EnumEditorState {
@@ -21,7 +22,6 @@ interface EnumEditorState {
  * @beta
  */
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
-  private _selectElement: HTMLSelectElement | null = null;
   private _isMounted = false;
 
   /** @internal */
@@ -48,13 +48,6 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     }
 
     return propertyValue;
-  }
-
-  private setFocus(): void {
-    // istanbul ignore else
-    if (this._selectElement) {
-      this._selectElement.focus();
-    }
   }
 
   private _updateSelectValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -119,13 +112,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState(
-        { selectValue: initialValue, valueIsNumber },
-        () => {
-          if (this.props.setFocus)
-            this.setFocus();
-        },
-      );
+      this.setState({ selectValue: initialValue, valueIsNumber });
   }
 
   /** @internal */
@@ -138,26 +125,23 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     if (propertyRecord && propertyRecord.property.enum)
       choices = propertyRecord.property.enum.choices;
 
+    const options: { [key: string]: string } = {};
+    if (choices) {
+      choices.forEach((choice: EnumerationChoice) => {
+        options[choice.value.toString()] = choice.label;
+      });
+    }
+
     return (
-      <select
-        ref={(node) => this._selectElement = node}
+      <Select
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}
         value={selectValue}
         onChange={this._updateSelectValue}
-        data-testid="components-select-editor">
-
-        {choices && choices.map((choice: EnumerationChoice, index: number) => {
-          return (
-            <option key={index} value={choice.value.toString()}>
-              {choice.label}
-            </option>
-          );
-        })
-        }
-
-      </select>
+        data-testid="components-select-editor"
+        options={options}
+        setFocus={this.props.setFocus} />
     );
   }
 }

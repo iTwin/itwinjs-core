@@ -9,13 +9,16 @@ import * as cpx from "cpx";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { LoggingNamespaces } from "@bentley/presentation-common";
+import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
 import { PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { initialize as initializeTesting, terminate as terminateTesting } from "@bentley/presentation-testing";
+import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { initializeAsync as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 process.env.NODE_ENV = "development";
+
+IModelJsConfig.init(true);
 
 const copyBentleyBackendAssets = (outputDir: string) => {
   const bentleyPackagesPath = "node_modules/@bentley";
@@ -47,15 +50,15 @@ class IntegrationTestsApp extends NoRenderApp {
     return { urlTemplate };
   }
 
-  public static startup() {
-    NoRenderApp.startup({ i18n: this.supplyI18NOptions() });
+  public static startup(opts?: IModelAppOptions) {
+    NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
   }
 }
 
-export const initialize = (backendTimeout: number = 0) => {
+export const initialize = async (backendTimeout: number = 0) => {
   // init logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
@@ -67,11 +70,22 @@ export const initialize = (backendTimeout: number = 0) => {
     rulesetDirectories: ["lib/assets/rulesets"],
     localeDirectories: ["lib/assets/locales"],
     activeLocale: "en-PSEUDO",
+    taskAllocationsMap: {
+      [RequestPriority.Max]: 1,
+    },
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",
   };
-  initializeTesting(backendInitProps, frontendInitProps, IntegrationTestsApp);
+
+  const presentationTestingInitProps: PresentationTestingInitProps = {
+    backendProps: backendInitProps,
+    frontendProps: frontendInitProps,
+    frontendApp: IntegrationTestsApp,
+    useClientServices: true,
+  };
+
+  await initializeTesting(presentationTestingInitProps);
 };
 
 export const terminate = () => {

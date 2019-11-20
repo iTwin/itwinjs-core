@@ -2,6 +2,117 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/ui-core_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Provide a generic Form component to replace the one in Design Review Saftibase and Risk Manangement stages."
+          },
+          {
+            "comment": "Added badge support to context menu items. Moved some Plugin Ui definitions to ui-abstract."
+          },
+          {
+            "comment": "Added support for English key-ins in addition to translated key-ins"
+          },
+          {
+            "comment": "Fix centering and sizing of dialogs in FireFox."
+          },
+          {
+            "comment": "Made the Status Bar & Backstage more responsive on smaller screens"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Fixed SVG support in ui-core"
+          },
+          {
+            "comment": "Added useLifecycleLogging hook to help debugging react functional components"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/ui-core_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/ui-core_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements."
+          },
+          {
+            "comment": "Initial Accudraw Ui components - Buttons, ContextMenus, Calculator, Editors. IconInput in ui-core."
+          },
+          {
+            "comment": "Added hideHeader and header props and support for titleStyle prop"
+          },
+          {
+            "comment": "Added initial (default) value to Search Box."
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/ui-core_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning."
+          },
+          {
+            "comment": "Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index."
+          },
+          {
+            "comment": "Added support for content view minSize properties"
+          },
+          {
+            "comment": "Addressed some warnings introduced with React 16.9"
+          },
+          {
+            "comment": "Listening for onSelectedViewportChanged to set active content view for viewports"
+          },
+          {
+            "comment": "Fixed new lint issue in getDisplayName"
+          },
+          {
+            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+          },
+          {
+            "comment": "Add a `ScrollPositionMaintainer` helper to recursively save and restore scroll position"
+          },
+          {
+            "comment": "Added VerticalTabs component to ui-core"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/ui-core_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

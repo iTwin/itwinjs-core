@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { BeJSONFunctions, AngleProps, Geometry, TrigValues } from "../Geometry";
 /**
  * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to be clear about whether their angle is degrees or radians.
@@ -153,7 +155,7 @@ export class Angle implements BeJSONFunctions {
      * Return the tangent of this Angle object's angle.
      */
     public tan(): number { return Math.tan(this._radians); }
-    /** Test if a radians value is nearly 2PI or larger (!) */
+    /** Test if a radians (absolute) value is nearly 2PI or larger (!) */
     public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
     /** Test if the radians value  is a complete circle */
     public static isHalfCircleRadians(radians: number) { return (Math.abs(Math.abs(radians)) - Math.PI) <= Geometry.smallAngleRadians; }

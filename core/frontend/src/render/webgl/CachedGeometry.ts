@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode, Frustum, Npc } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
-import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters } from "./Handle";
+import { Point3d, Range3d, Vector2d, Point2d } from "@bentley/geometry-core";
+import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
+import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -84,6 +84,9 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
 
+  public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
+  public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
+
   public get isEdge(): boolean {
     switch (this.renderOrder) {
       case RenderOrder.Edge:
@@ -113,17 +116,17 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     return weight;
   }
 
-  // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
-  public wantMixHiliteColorForFlash(vf: ViewFlags, target: Target): boolean {
+  public getFlashMode(params: DrawParams): FlashMode {
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
-    if (this.hasBakedLighting || RenderPass.Classification === this.getRenderPass(target))
-      return true;
-    else if (!this.isLitSurface)
-      return false;
-    else if (RenderMode.SmoothShade !== vf.renderMode)
-      return false;
-    else
-      return vf.lighting;
+    // NB: If the reality model is classified, the classifiers are drawn without lighting, therefore we mix the hilite color.
+    if (this.hasBakedLighting)
+      return FlashMode.MixHiliteColor;
+
+    const vf = params.target.currentViewFlags;
+    if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode)
+      return FlashMode.MixHiliteColor;
+
+    return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -149,11 +152,14 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
  * @internal
  */
 export abstract class LUTGeometry extends CachedGeometry {
+  private readonly _viewIndependentOrigin?: Point3d;
+
   public abstract get lutBuffers(): BuffersContainer;
 
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
   public get asLUT() { return this; }
+  public get viewIndependentOrigin() { return this._viewIndependentOrigin; }
 
   protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void { this._draw(0); }
@@ -166,7 +172,10 @@ export abstract class LUTGeometry extends CachedGeometry {
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get hasAnimation() { return this.lut.hasAnimation; }
 
-  protected constructor() { super(); }
+  protected constructor(viewIndependentOrigin?: Point3d) {
+    super();
+    this._viewIndependentOrigin = viewIndependentOrigin;
+  }
 }
 
 /** Parameters used to construct an IndexedGeometry
@@ -520,7 +529,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
     this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
-    }
+  }
 
   private _setPointsFromFrustum(frustum: Frustum) {
     const wp = this.worldPos;
@@ -782,6 +791,108 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   protected constructor(params: IndexedGeometryParams, texture: WebGLTexture, techId: TechniqueId) {
     super(params, techId, [texture]);
   }
+}
+
+/** @internal */
+export enum BoundaryType {
+  Outside = 0,
+  Inside = 1,
+  Selected = 2,
+}
+
+/** @internal */
+export class VolumeClassifierGeometry extends SingleTexturedViewportQuadGeometry {
+  public boundaryType: BoundaryType = BoundaryType.Inside;
+
+  public static createVCGeometry(texture: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+    return new VolumeClassifierGeometry(params, texture);
+  }
+
+  private constructor(params: IndexedGeometryParams, texture: WebGLTexture) {
+    super(params, texture, TechniqueId.VolClassSetBlend);
+  }
+}
+
+/** A geometric primitive which renders gl points using gl.drawArrays() with one vertex buffer.
+ * @internal
+ */
+export class ScreenPointsGeometry extends CachedGeometry {
+  protected _numPoints: number;
+  protected _origin: Float32Array;
+  protected _scale: Float32Array;
+  protected _positions: QBufferHandle2d;
+  public readonly buffers: BuffersContainer;
+  public readonly zTexture: WebGLTexture;
+
+  protected constructor(vertices: QPoint2dList, zTexture: WebGLTexture) {
+    super();
+
+    this.zTexture = zTexture;
+
+    this._numPoints = vertices.length;
+
+    this._positions = QBufferHandle2d.create(vertices.params, vertices.toTypedArray())!;
+
+    this._origin = new Float32Array(3);
+    this._origin[0] = this._positions.params[0];
+    this._origin[1] = this._positions.params[1];
+    this._origin[2] = 0.0;
+    this._scale = new Float32Array(3);
+    this._scale[0] = this._positions.params[2];
+    this._scale[1] = this._positions.params[3];
+    this._scale[2] = this._positions.params[3]; // just copy the scale from y
+
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.VolClassCopyZ, false);
+    assert(attrPos !== undefined);
+    this.buffers.addBuffer(this._positions, [BufferParameters.create(attrPos!.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+  }
+
+  public static createGeometry(width: number, height: number, depth: WebGLTexture): ScreenPointsGeometry {
+    const pixWidth = 2.0 / width;
+    const pixHeight = 2.0 / height;
+
+    const startX = pixWidth * 0.5 - 1.0;
+    const startY = pixHeight * 0.5 - 1.0;
+
+    const pt = new Point2d(startX, startY);
+    const vertices = new QPoint2dList(QParams2d.fromNormalizedRange());
+
+    for (let y = 0; y < height; ++y) {
+      pt.x = startX;
+      for (let x = 0; x < width; ++x) {
+        vertices.add(pt);
+        pt.x += pixWidth;
+      }
+      pt.y += pixHeight;
+    }
+    return new ScreenPointsGeometry(vertices, depth);
+  }
+
+  public draw(): void {
+    this.buffers.bind();
+    System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._numPoints);
+    this.buffers.unbind();
+  }
+
+  public dispose() {
+    dispose(this.buffers);
+    dispose(this._positions);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addBuffer(RenderMemory.BufferType.PointStrings, this._positions.bytesUsed);
+  }
+
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  public get techniqueId(): TechniqueId { return TechniqueId.VolClassCopyZ; }
+  public getRenderPass(_target: Target) { return RenderPass.Classification; }
+  public get renderOrder() { return RenderOrder.None; }
+  public get qOrigin() { return this._origin; }
+  public get qScale() { return this._scale; }
 }
 
 /** @internal */

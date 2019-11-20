@@ -1,6 +1,33 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+*Version update only*
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+*Version update only*
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Fixed AuthStatus error numbers not to overlap with others.
+- Added ObservableSet<T>.
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Fixed AuthStatus error numbers not to overlap with others.
+- Added PriorityQueue.append function for adding new elements without applying sorting logic.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

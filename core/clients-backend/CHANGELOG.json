@@ -2,6 +2,66 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "1.7.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update https-proxy-agent to 3.x for security issues"
+          },
+          {
+            "comment": "Added Basic authentication for iModelBank"
+          },
+          {
+            "comment": "fixed ios azure downloader"
+          },
+          {
+            "comment": "Resurrected the old way of doing agent registrations"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Setup OidcAgentClient to implement IAuthorizationClient"
+          },
+          {
+            "comment": "Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. "
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow to create baseline Named Version"
+          },
+          {
+            "comment": "Setup OidcAgentClient to implement IAuthorizationClient"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/imodeljs-clients-backend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

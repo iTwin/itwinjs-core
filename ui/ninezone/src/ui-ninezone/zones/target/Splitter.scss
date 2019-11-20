@@ -2,9 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "../_variables";
-@import "_variables";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "../variables";
+@import "variables";
 
 .nz-zones-target-splitter {
   position: absolute;
@@ -18,7 +18,7 @@
 
   @include uicore-z-index(zone-target);
 
-  &:hover {
+  @include nz-internal-targeted {
     background-color: $nz-splitter-targeted-color;
   }
 }

@@ -7,11 +7,15 @@ import React from "react";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
+import { mount } from "enzyme";
+
+import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams } from "@bentley/imodeljs-frontend";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
 import TestUtils from "../TestUtils";
+
+// cSpell:ignore customnumber
 
 const numVal = 3.345689;
 const displayVal = "3.35";
@@ -88,12 +92,14 @@ describe("<CustomNumberEditor />", () => {
 
     const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal) as PropertyRecord;
     // add size and width params for testing
-    propertyRecord.property.editor!.params!.push(
-      {
+    if (propertyRecord.property.editor && propertyRecord.property.editor.params) {
+      const inputEditorSizeParams: InputEditorSizeParams = {
         type: PropertyEditorParamTypes.InputEditorSize,
         size: 8,
         maxLength: 20,
-      });
+      };
+      propertyRecord.property.editor.params.push(inputEditorSizeParams);
+    }
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     // renderedComponent.debug();
     const inputField = renderedComponent.getByTestId("components-customnumber-editor") as HTMLInputElement;
@@ -155,6 +161,24 @@ describe("<CustomNumberEditor />", () => {
     // renderedComponent.debug();
     const inputField = renderedComponent.queryByTestId("components-customnumber-editor") as HTMLInputElement;
     expect(inputField).to.be.null;
+  });
+
+  it("should support IconEditor params", async () => {
+    const iconSpec = "icon-placeholder";
+    const iconParams: IconEditorParams = {
+      type: PropertyEditorParamTypes.Icon,
+      definition: { iconSpec },
+    };
+
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal, [iconParams]);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    await TestUtils.flushAsyncOperations();
+
+    const textEditor = wrapper.find(CustomNumberEditor);
+    expect(textEditor.length).to.eq(1);
+    expect(textEditor.state("iconSpec")).to.eq(iconSpec);
+
+    wrapper.unmount();
   });
 
 });

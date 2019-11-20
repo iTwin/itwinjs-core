@@ -32,6 +32,10 @@ import { Angle } from "../../geometry3d/Angle";
 import { Cone } from "../../solid/Cone";
 import { Sphere } from "../../solid/Sphere";
 import { Box } from "../../solid/Box";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { MomentData } from "../../geometry4d/MomentData";
+import { Geometry } from "../../Geometry";
+import { TorusPipe } from "../../solid/TorusPipe";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -264,8 +268,13 @@ describe("Polyface.Box", () => {
     //    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const volume = PolyfaceQuery.sumTetrahedralVolumes(polyface);
+    const volumeXY = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, Plane3dByOriginAndUnitNormal.createXYPlane(Point3d.create(1, 1, 0)));
+    const planeQ = Plane3dByOriginAndUnitNormal.create(Point3d.create(1, 2, 3), Vector3d.create(3, -1, 2))!;
+    const volumeQ = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeQ);
     ck.testCoordinate(expectedArea, area);
-    ck.testCoordinate(expectedVolume, volume);
+    ck.testCoordinate(expectedVolume, volume, "tetrahedral volume");
+    ck.testCoordinate(expectedVolume, volumeXY.volume, "volume computed between mesh and xy plane");
+    ck.testCoordinate(expectedVolume, volumeQ.volume, "volume computed between mesh and non-principal plane");
     polyface.reverseIndices();
     const area1 = PolyfaceQuery.sumFacetAreas(polyface);
     const volume1 = PolyfaceQuery.sumTetrahedralVolumes(polyface);
@@ -283,6 +292,68 @@ describe("Polyface.Box", () => {
     polyfaceB.data.pointIndex[0] -= 1;
     ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
     // console.log(polyfaceB);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.RaggedBoxVolume", () => {
+    const ck = new Checker();
+    const builder = PolyfaceBuilder.create();
+    const a = 2; const b = 3; const c = 4;
+    const expectedVolume = a * b * c;
+    const expectedAreaZX = a * c;
+    const xzPlane = Plane3dByOriginAndUnitNormal.createZXPlane();
+    const openBox = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), false);
+    builder.addBox(openBox!);
+    const polyface = builder.claimPolyface();
+    // the box is open top and bottom !!
+    const volumeZX = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, xzPlane);
+    ck.testDefined(volumeZX.positiveProjectedFacetAreaMoments);
+    ck.testDefined(volumeZX.negativeProjectedFacetAreaMoments);
+    if (volumeZX.positiveProjectedFacetAreaMoments && volumeZX.negativeProjectedFacetAreaMoments) {
+      ck.testCoordinate(expectedAreaZX, volumeZX.positiveProjectedFacetAreaMoments.quantitySum);
+      ck.testCoordinate(expectedAreaZX, volumeZX.negativeProjectedFacetAreaMoments.quantitySum);
+      ck.testCoordinate(expectedVolume, volumeZX.volume);
+      ck.testCentroidAndRadii(volumeZX.positiveProjectedFacetAreaMoments, volumeZX.negativeProjectedFacetAreaMoments, "open box ragged moments");
+    }
+    // In other planes, the missing facets are NOT perpendicular, and we expect to detect the mismatched projections in the moments.
+    const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 0, 0, 1, 2, 3)!;
+    const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB)!;
+    ck.testFalse(MomentData.areEquivalentPrincipalAxes(volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.RaggedBoxMisMatch", () => {
+    const ck = new Checker();
+
+    const ay = 1.0;
+    const ax0 = 4.0;  // significantly bitter than ay so principal X is global x even if either or both are multiplied by a factor not to far from 1
+    const zPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const f = 0.9;
+    // exercise deep branches in axis equivalence
+    const zTop = 1;
+    const zBottom = -1;
+    // point with (x,y,q)
+    //    q = 0 means do not expect same moments.
+    //    q = 1 means expect same moments
+    for (const corner of [
+      Point3d.create(ax0, ay, 1),    // everything matches
+      Point3d.create(-ax0, -ay, 1),    // everything matches
+      Point3d.create(ax0 * f, ay / f, 0),    // area matches
+      Point3d.create(ax0 * 2, ay, 0),    // same orientation, different radii.
+      Point3d.create(ax0, ay * 0.9, 0),    // same orientation, different radii.
+      Point3d.create(ay, ax0, 0),    // rotate 90 degrees, same radii
+    ]) {
+      const builder = PolyfaceBuilder.create();
+      const bx = corner.x;
+      const by = corner.y;
+      const expectSameMoments = corner.z === 1;
+      // positive polygon
+      builder.addPolygon([Point3d.create(-ax0, -ay, zTop), Point3d.create(ax0, -ay, zTop), Point3d.create(ax0, ay, zTop), Point3d.create(-ax0, ay, zTop)]);
+      builder.addPolygon([Point3d.create(-bx, -by, zBottom), Point3d.create(-bx, by, zBottom), Point3d.create(bx, by, zBottom), Point3d.create(bx, -by, zBottom)]);
+      const polyface = builder.claimPolyface();
+      const volumeData = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, zPlane);
+      ck.testBoolean(expectSameMoments, MomentData.areEquivalentPrincipalAxes(volumeData.positiveProjectedFacetAreaMoments, volumeData.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -615,7 +686,7 @@ describe("Polyface.Faces", () => {
         ck.testCoordinate(currentParam.y, 0);
       } else if (idx % 4 === 1) {
         const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
-        ck.testCoordinate(currentParam.x, Math.hypot(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+        ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
         ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
       }
       // else if (idx % 4 === 2)
@@ -740,17 +811,29 @@ it("facets from sweep contour with holes", () => {
     Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), 5, 5)),
     Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)),
     Loop.create(arc));
-  allGeometry.push(region);
+  const step = 10;
+  const x0 = 0;
+  const y0 = 0;
+  const y1 = step;
 
-  const sweepContour = SweepContour.createForLinearSweep(region);
+  GeometryCoreTestIO.captureGeometry(allGeometry, region, x0, y0);
+
+  let x1 = x0;
+
   const options = new StrokeOptions();
   options.needParams = false;
   options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
-  sweepContour!.emitFacets(builder, false);
-  const polyface = builder.claimPolyface(true);
-  polyface.tryTranslateInPlace(0, 10, 0);
-  allGeometry.push(polyface);
+  builder.addTriangulatedRegion(region);
+  GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x1, y1);
+  for (const e of [1, 0.5]) {
+    x1 += step;
+    options.maxEdgeLength = e;
+    const builder1 = PolyfaceBuilder.create(options);
+    builder1.addTriangulatedRegion(region);
+    GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
+  }
+
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ParityRegion");
   expect(ck.getNumErrors()).equals(0);
 
@@ -829,6 +912,49 @@ class UVSinusoidalSurface implements UVSurface {
   }
 
 }
+it("SolidPrimitiveBoundary", () => {
+  const allGeometry: GeometryQuery[] = [];
+  const ck = new Checker();
+  let x0 = 0;
+  const y0 = 0;
+  const delta = 10;
+  for (const capped of [true, false]) {
+    for (const solid of
+      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!,
+      TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
+      Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
+      const builder = PolyfaceBuilder.create();
+      builder.addGeometryQuery(solid);
+      const mesh = builder.claimPolyface();
+      ck.testBoolean(capped, PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "verify closure");
+      const boundary = PolyfaceQuery.boundaryEdges(mesh);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, y0 + delta);
+
+      PolyfaceQuery.markAllEdgeVisibility (mesh, false);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 2 * delta);
+      PolyfaceQuery.markAllEdgeVisibility (mesh, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 3 * delta);
+
+      let y1 = y0 + 5 * delta;
+      for (const angle of [undefined, Angle.createDegrees(0.1),
+        Angle.createDegrees(15),
+        Angle.createDegrees(30),
+        Angle.createDegrees(50)]) {
+        PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
+        if (capped)
+          ck.testUndefined(boundary, "no boundary for capped solid");
+        else
+          ck.testDefined(boundary, "uncapped solid has boundary");
+        y1 += 2 * delta;
+      }
+      x0 += delta;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SolidPrimitiveBoundary");
+  expect(ck.getNumErrors()).equals(0);
+});
 
 it("UVGridSurface", () => {
   const ck = new Checker();
@@ -1061,7 +1187,12 @@ it("VisitorQueryFailures", () => {
     ck.testUndefined(visitor.tryGetDistanceParameter(0));
     ck.testUndefined(visitor.tryGetNormalizedParameter(0));
   }
+  // for coverage, this hits both (a) undefined result and (b) bad facetIndex.
+  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "visitor.getNormal (-1) should return undefined");
   expect(ck.getNumErrors()).equals(0);
+
+  const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
+  ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
 });
 
 it("IndexValidation", () => {

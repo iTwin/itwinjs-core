@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
 import { Angle } from "./Angle";
 import { Point4d } from "../geometry4d/Point4d";
@@ -835,11 +837,11 @@ export class Matrix3d implements BeJSONFunctions {
   public columnZMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
   /** Return the X column magnitude */
-  public columnXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[3], this.coffs[6]); }
+  public columnXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
   /** Return the Y column magnitude */
-  public columnYMagnitude(): number { return Math.hypot(this.coffs[1], this.coffs[4], this.coffs[7]); }
+  public columnYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
   /** Return the Z column magnitude */
-  public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
+  public columnZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
   /** Return magnitude of columnX cross columnY. */
   public columnXYCrossProductMagnitude(): number {
@@ -849,11 +851,11 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** Return the X row magnitude d */
-  public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
+  public rowXMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[1], this.coffs[2]); }
   /** Return the Y row magnitude  */
-  public rowYMagnitude(): number { return Math.hypot(this.coffs[3], this.coffs[4], this.coffs[5]); }
+  public rowYMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[3], this.coffs[4], this.coffs[5]); }
   /** Return the Z row magnitude  */
-  public rowZMagnitude(): number { return Math.hypot(this.coffs[6], this.coffs[7], this.coffs[8]); }
+  public rowZMagnitude(): number { return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]); }
   /** Return the dot product of column X with column Y */
   /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
@@ -1151,6 +1153,7 @@ export class Matrix3d implements BeJSONFunctions {
 
   /** Install data from xyz parts of Point4d  (w part of Point4d ignored) */
   public setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d) {
+    this.inverseState = InverseMatrixState.unknown;
     this.setRowValues(
       vectorU.x, vectorV.x, vectorW.x,
       vectorU.y, vectorV.y, vectorW.y,
@@ -1163,6 +1166,7 @@ export class Matrix3d implements BeJSONFunctions {
    */
   public setColumn(columnIndex: number, value: Vector3d | undefined) {
     const index = Geometry.cyclic3dAxis(columnIndex);
+    this.inverseState = InverseMatrixState.unknown;
     if (value) {
       this.coffs[index] = value.x;
       this.coffs[index + 3] = value.y;
@@ -1746,6 +1750,13 @@ export class Matrix3d implements BeJSONFunctions {
   public isSingular(): boolean {
     return !this.computeCachedInverse(true);
   }
+  /**
+   * Mark this matrix as singular.
+   */
+  public markSingular() {
+    this.inverseState = InverseMatrixState.singular;
+  }
+
   /** compute the inverse of this Matrix3d. The inverse is stored for later use.
    * @returns Return true if the inverse computed.  (False if the columns collapse to a point, line or plane.)
    */
@@ -1900,6 +1911,26 @@ export class Matrix3d implements BeJSONFunctions {
       this.coffs[i] += scale * other.coffs[i];
     this.inverseState = InverseMatrixState.unknown;
   }
+  /**
+   * add scaled values from other Matrix3d to this Matrix3d
+   * @param other Matrix3d with values to be added
+   * @param scale scale factor to apply to th eadded values.
+   */
+  public addScaledOuterProductInPlace(vectorU: Vector3d, vectorV: Vector3d, scale: number): void {
+    this.coffs[0] += scale * vectorU.x * vectorV.x;
+    this.coffs[1] += scale * vectorU.x * vectorV.y;
+    this.coffs[2] += scale * vectorU.x * vectorV.z;
+
+    this.coffs[3] += scale * vectorU.y * vectorV.x;
+    this.coffs[4] += scale * vectorU.y * vectorV.y;
+    this.coffs[5] += scale * vectorU.y * vectorV.z;
+
+    this.coffs[6] += scale * vectorU.z * vectorV.x;
+    this.coffs[7] += scale * vectorU.z * vectorV.y;
+    this.coffs[8] += scale * vectorU.z * vectorV.z;
+    this.inverseState = InverseMatrixState.unknown;
+  }
+
   /** create a Matrix3d whose values are uniformly scaled from this.
    * @param scale scale factor to apply.
    * @param result optional result.

@@ -13,6 +13,8 @@ import { BentleyError, LogFunction, GetMetaDataFunction } from "@bentley/bentley
 export enum PresentationStatus {
   /** Success result */
   Success = 0,
+  /** Request was canceled */
+  Canceled = 1,
   /** Error: Unknown */
   Error = 0x10000,
   /** Error: Not initialized */

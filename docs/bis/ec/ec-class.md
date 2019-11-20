@@ -21,6 +21,10 @@ All classes support inheritance within their own class type. Therefore, an ECEnt
   - Abstract – abstract class, cannot be instantiated.
   - Sealed – normal, instantiable class but cannot be used as a base class or have children
 
+## Custom Attributes
+
+An ECClass may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to their base class.  Custom attributes applied to a base class may be overriden by applying the same custom attribute applied to a derived class.
+
 ## Common Sub-Elements
 
 [ECCustomAttributes](./ec-custom-attributes.md) _(0..1)_

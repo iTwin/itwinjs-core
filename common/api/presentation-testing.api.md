@@ -6,10 +6,10 @@
 
 import { Content } from '@bentley/presentation-common';
 import { IModelApp } from '@bentley/imodeljs-frontend';
+import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
-import { NoRenderApp } from '@bentley/imodeljs-frontend';
 import { Omit } from '@bentley/presentation-common';
 import { PageOptions } from '@bentley/presentation-common';
 import { PresentationManagerProps } from '@bentley/presentation-backend';
@@ -50,8 +50,13 @@ export interface IContentBuilderDataProvider {
     keys: Readonly<KeySet>;
 }
 
+// @public @deprecated
+export const initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?: {
+    startup: (opts?: IModelAppOptions | undefined) => void;
+}) => void;
+
 // @public
-export const initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?: typeof NoRenderApp) => void;
+export const initializeAsync: (props?: PresentationTestingInitProps | undefined) => Promise<void>;
 
 // @public
 export interface MappedNode {
@@ -61,6 +66,16 @@ export interface MappedNode {
 
 // @public
 export type NodeMappingFunc = (node: TreeNodeItem) => MappedNode;
+
+// @public (undocumented)
+export interface PresentationTestingInitProps {
+    backendProps?: PresentationManagerProps;
+    frontendApp?: {
+        startup: (opts?: IModelAppOptions) => void;
+    };
+    frontendProps?: PresentationManagerProps_2;
+    useClientServices?: boolean;
+}
 
 // @public
 export const terminate: (frontendApp?: typeof IModelApp) => void;

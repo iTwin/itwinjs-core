@@ -11,6 +11,7 @@ import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { FileHandler } from '@bentley/imodeljs-clients';
 import * as https from 'https';
+import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { Issuer } from 'openid-client';
 import { OidcClient } from '@bentley/imodeljs-clients';
@@ -45,7 +46,8 @@ export class BufferedStream extends Transform {
 // @public
 export enum ClientsBackendLoggerCategory {
     IModelHub = "imodeljs-clients.imodelhub",
-    OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
+    OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
+    OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"
 }
 
 // @internal
@@ -63,14 +65,37 @@ export class IOSAzureFileHandler implements FileHandler {
 }
 
 // @beta
-export class OidcAgentClient extends OidcBackendClient {
+export class OidcAgentClient extends OidcBackendClient implements IAuthorizationClient {
     constructor(agentConfiguration: OidcAgentClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @deprecated
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    readonly hasExpired: boolean;
+    readonly hasSignedIn: boolean;
+    readonly isAuthorized: boolean;
+    // @deprecated
     refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
 export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
+
+// @internal @deprecated
+export interface OidcAgentClientConfigurationV1 extends OidcBackendClientConfiguration {
+    // (undocumented)
+    serviceUserEmail: string;
+    // (undocumented)
+    serviceUserPassword: string;
+}
+
+// @internal @deprecated
+export class OidcAgentClientV1 extends OidcBackendClient {
+    constructor(_agentConfiguration: OidcAgentClientConfigurationV1);
+    // (undocumented)
+    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    // (undocumented)
+    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+}
 
 // @beta
 export abstract class OidcBackendClient extends OidcClient {

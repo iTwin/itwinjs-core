@@ -1,6 +1,38 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+*Version update only*
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+*Version update only*
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- Add `PresentationStatus.Canceled` member
+- Add ability to force-load all hierarchy with the given imodel and ruleset
+- Added autoExpand property to RelatedPropertiesSpecification and NestedContentField
+- Add module descriptions
+- Added Ruleset and Ruleset variables to request options to support stateless presentation backend
+- Store navigation property classes separate from related property paths
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Escape double quotes when creating intance filter for 'find similar' ruleset
+- Add NodeArtifacts presentation rule
+- Add `hideExpression` attribute to node specifications
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

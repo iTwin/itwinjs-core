@@ -23,14 +23,14 @@ function createSchemaJson(koq: any) {
       ...koq,
     },
   }, {
-      references: [
-        {
-          name: "Formats",
-          version: "1.0.0",
-          alias: "f"
-        },
-      ],
-    });
+    references: [
+      {
+        name: "Formats",
+        version: "1.0.0",
+        alias: "f"
+      },
+    ],
+  });
 }
 
 describe("KindOfQuantity", () => {
@@ -46,7 +46,7 @@ describe("KindOfQuantity", () => {
     let schema: Schema;
     beforeEach(() => {
       context = new SchemaContext();
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 
@@ -140,7 +140,7 @@ describe("KindOfQuantity", () => {
     let context: SchemaContext;
     beforeEach(() => {
       context = new SchemaContext();
-      schema = new Schema(context, "TestSchema", 1, 2, 3);
+      schema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 
@@ -329,7 +329,7 @@ describe("KindOfQuantity", () => {
     let context: SchemaContext;
     beforeEach(() => {
       context = new SchemaContext();
-      schema = new Schema(context, "TestSchema", 1, 2, 3);
+      schema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 
@@ -375,7 +375,7 @@ describe("KindOfQuantity", () => {
 
     beforeEach(() => {
       context = new SchemaContext();
-      schema = new Schema(context, "TestSchema", 1, 2, 3);
+      schema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 
@@ -397,8 +397,8 @@ describe("KindOfQuantity", () => {
       expect(serialized.nodeName).to.eq("KindOfQuantity");
       expect(serialized.getAttribute("typeName")).to.eq("TestKindOfQuantity");
       expect(serialized.getAttribute("relativeError")).to.eq("1.234");
-      expect(serialized.getAttribute("persistenceUnit")).to.eq("Formats:DefaultReal");
-      expect(serialized.getAttribute("presentationUnits")).to.eq("Formats:DoubleUnitFormat;Formats:QuadUnitFormat");
+      expect(serialized.getAttribute("persistenceUnit")).to.eq("f:DefaultReal");
+      expect(serialized.getAttribute("presentationUnits")).to.eq("f:DoubleUnitFormat;f:QuadUnitFormat");
     });
   });
 });

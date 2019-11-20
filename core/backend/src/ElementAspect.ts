@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ElementAspects */
 
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { Element } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
@@ -83,6 +80,7 @@ export class ElementMultiAspect extends ElementAspect {
 }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.2
  * @public
  */
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
@@ -96,8 +94,8 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** The kind of object within the source repository. */
   public kind: string;
   /** The cryptographic hash (any algorithm) of the source object's content. It must be guaranteed to change when the source object's content changes. */
-  public checksum: string;
-  /** An optional value that is typically a version number or a psuedo version number like last modified time.
+  public checksum?: string;
+  /** An optional value that is typically a version number or a pseudo version number like last modified time.
    * It will be used by the synchronization process to detect that a source object is unchanged so that computing a cryptographic hash can be avoided.
    * If present, this value must be guaranteed to change when any of the source object's content changes.
    */
@@ -128,34 +126,6 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
-  }
-
-  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
-   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
-   * @param targetDb The target iModel where this ExternalSourceAspect will be persisted.
-   * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
-   * @param targetElementId The optional Id of the Element that will own the ExternalSourceAspect. If not provided, it will be set to Id64.invalid.
-   * @alpha
-   */
-  public static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
-    const sourceElementHash: string = sourceElement.computeHash();
-    const aspectProps: ExternalSourceAspectProps = {
-      classFullName: this.classFullName,
-      element: { id: targetElementId },
-      scope: { id: targetScopeElementId },
-      identifier: sourceElement.id,
-      kind: ExternalSourceAspect.Kind.Element,
-      checksum: sourceElementHash,
-      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
-    };
-    const sql = `SELECT ECInstanceId FROM ${this.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
-    aspectProps.id = targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetElementId);
-      statement.bindId("scopeId", targetScopeElementId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
-      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
-    });
-    return aspectProps;
   }
 }
 

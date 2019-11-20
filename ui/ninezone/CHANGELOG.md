@@ -1,6 +1,51 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Fixed mouse interaction for Navigation Aids
+- Made the Status Bar & Backstage more responsive on smaller screens
+- Added initial ui-abstract package setup
+- Added UiAdmin with support for displaying Menus and Toolbars at a location
+- Merge zone to save window resize settings and update target zone bounds.
+- Fix footer offset in widget mode.
+- Enable pointer events over toolbar instead of toolbar container.
+- Persist zones layout on window resize.
+- Fix Safari high CPU issue.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:43 GMT
+
+### Updates
+
+- Added AutoSuggest component and improved KeyinBrowser component
+- Ability to drag and resize tool settings widget.
+- Change prop type from RefObject<T> to T.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- copyright headers
+- Tool Assistance changes per UX Design
+- Tool Assistance for Ctrl+Z and other chars
+- upgrade to TypeScript 3.6.2
+- Prevent BackstageItem label overflow.
+- Make components aware of safe area insets.
+- Enable backstage scrolling.
+- Scrollable tool settings content.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

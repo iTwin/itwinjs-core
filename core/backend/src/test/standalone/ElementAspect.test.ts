@@ -35,15 +35,15 @@ describe("ElementAspect", () => {
     assert.exists(aspect1);
     assert.isTrue(aspect1 instanceof ElementUniqueAspect);
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
-    assert.equal(aspect1.testUniqueAspectProperty, "Aspect1-Updated");
-    assert.equal(aspect1.length, 1);
+    assert.equal(aspect1.asAny.testUniqueAspectProperty, "Aspect1-Updated");
+    assert.equal(aspect1.asAny.length, 1);
 
     const aspect2: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspect")[0];
     assert.exists(aspect2);
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
-    assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
-    assert.isUndefined(aspect2.length);
+    assert.equal(aspect2.asAny.testUniqueAspectProperty, "Aspect2-Updated");
+    assert.isUndefined(aspect2.asAny.length);
 
     const uniqueAspects: ElementUniqueAspect[] = iModel.elements.getAspects(element.id, ElementUniqueAspect.classFullName);
     assert.equal(uniqueAspects.length, 2);
@@ -59,7 +59,7 @@ describe("ElementAspect", () => {
       assert.isTrue(aspect instanceof ElementMultiAspect);
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspectNoHandler");
-      assert.exists(aspect.testMultiAspectProperty);
+      assert.exists(aspect.asAny.testMultiAspectProperty);
     });
 
     const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");
@@ -70,7 +70,7 @@ describe("ElementAspect", () => {
       assert.isTrue(aspect instanceof ElementMultiAspect);
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspect");
-      assert.exists(aspect.testMultiAspectProperty);
+      assert.exists(aspect.asAny.testMultiAspectProperty);
     });
 
     const multiAspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementMultiAspect.classFullName);
@@ -97,7 +97,8 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    const aspectProps: ElementAspectProps = {
+    interface Props extends ElementAspectProps { testMultiAspectProperty: string; }
+    const aspectProps: Props = {
       classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
       element: { id: element.id },
       testMultiAspectProperty: "MultiAspectInsertTest1",
@@ -111,19 +112,19 @@ describe("ElementAspect", () => {
     let foundIndex: number = -1;
     for (const aspect of aspects) {
       foundIndex++;
-      if (aspect.testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
+      if (aspect.asAny.testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
         found = true;
         break;
       }
     }
     assert.isTrue(found);
 
-    aspects[foundIndex].testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
+    aspects[foundIndex].asAny.testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
     iModel.elements.updateAspect(aspects[foundIndex]);
 
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, aspects.length);
-    assert.equal(aspectsUpdated[foundIndex].testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
+    assert.equal(aspectsUpdated[foundIndex].asAny.testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
 
     iModel.elements.deleteAspect(aspects[foundIndex].id);
     aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
@@ -135,7 +136,7 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    const aspectProps: ElementAspectProps = {
+    const aspectProps = {
       classFullName: "DgnPlatformTest:TestUniqueAspectNoHandler",
       element: { id: element.id },
       testUniqueAspectProperty: "UniqueAspectInsertTest1",
@@ -143,13 +144,13 @@ describe("ElementAspect", () => {
     iModel.elements.insertAspect(aspectProps);
     const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isTrue(aspects.length === 1);
-    assert.equal(aspects[0].testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
+    assert.equal(aspects[0].asAny.testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
 
-    aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
+    aspects[0].asAny.testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
     iModel.elements.updateAspect(aspects[0]);
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, 1);
-    assert.equal(aspectsUpdated[0].testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
+    assert.equal(aspectsUpdated[0].asAny.testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
 
     iModel.elements.deleteAspect(aspects[0].id);
     try {
@@ -186,12 +187,12 @@ describe("ElementAspect", () => {
     const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
     assert.equal(aspects[0].element.id, aspectProps.element.id);
-    assert.equal(aspects[0].scope.id, aspectProps.scope.id);
-    assert.isTrue(aspects[0].scope.relClassName.endsWith("ElementScopesExternalSourceIdentifier"));
-    assert.equal(aspects[0].identifier, aspectProps.identifier);
-    assert.equal(aspects[0].kind, aspectProps.kind);
-    assert.equal(aspects[0].checksum, aspectProps.checksum);
-    assert.equal(aspects[0].version, aspectProps.version);
+    assert.equal(aspects[0].asAny.scope.id, aspectProps.scope.id);
+    assert.isTrue(aspects[0].asAny.scope.relClassName.endsWith("ElementScopesExternalSourceIdentifier"));
+    assert.equal(aspects[0].asAny.identifier, aspectProps.identifier);
+    assert.equal(aspects[0].asAny.kind, aspectProps.kind);
+    assert.equal(aspects[0].asAny.checksum, aspectProps.checksum);
+    assert.equal(aspects[0].asAny.version, aspectProps.version);
 
     const aspectJson = aspect.toJSON();
     assert.equal(aspectJson.classFullName, aspectProps.classFullName);

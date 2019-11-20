@@ -17,4 +17,9 @@
         <BaseClass>lr:LinearlyLocatedAttribution</BaseClass>
         <ECProperty propertyName="TestProperty" typeName="int"/>
     </ECEntityClass>
+
+    <ECEntityClass typeName="TestLinearPhysicalElement" description="A test class that represents physical element inherintly linearly-located.">
+        <BaseClass>lr:LinearPhysicalElement</BaseClass>
+        <ECProperty propertyName="TestProperty" typeName="boolean"/>
+    </ECEntityClass>
 </ECSchema>

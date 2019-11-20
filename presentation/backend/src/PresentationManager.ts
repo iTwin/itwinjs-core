@@ -5,7 +5,8 @@
 /** @module Core */
 
 import * as path from "path";
-import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
+import * as hash from "object-hash";
+import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
@@ -13,11 +14,29 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority,
 } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+
+/**
+ * Presentation manager working mode.
+ * @beta
+ */
+export enum PresentationManagerMode {
+  /**
+   * Presentation manager assumes iModels are opened in read-only mode and avoids doing some work
+   * related to reacting to changes in iModels.
+   */
+  ReadOnly,
+
+  /**
+   * Presentation manager assumes iModels are opened in read-write mode and it may need to
+   * react to changes. This involves some additional work and gives slightly worse performance.
+   */
+  ReadWrite,
+}
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
@@ -51,6 +70,49 @@ export interface PresentationManagerProps {
    * for `IModelDb.onOpened` event and force pre-loads all ECSchemas.
    */
   enableSchemasPreload?: boolean;
+
+  /**
+   * A map of 'priority' to 'number of slots allocated for simultaneously running tasks'
+   * where 'priority' is the highest task priority that can allocate a slot. Example:
+   * ```ts
+   * {
+   *   100: 1,
+   *   500: 2,
+   * }
+   * ```
+   * The above means there's one slot for tasks that are at most of 100 priority and there are
+   * 2 slots for tasks that have at most of 500 priority. Higher priority tasks may allocate lower
+   * priority slots, so a task of 400 priority could take all 3 slots.
+   *
+   * Configuring this map provides ability to choose how many tasks of what priority can run simultaneously.
+   * E.g. in the above example only 1 task can run simultaneously if it's priority is less than 100 even though
+   * we have lots of them queued. This leaves 2 slots for higher priority tasks which can be handled without
+   * having to wait for the lower priority slot to free up.
+   *
+   * Defaults to
+   * ```ts
+   * {
+   *   [RequestPriority.Preload]: 1,
+   *   [RequestPriority.Max]: 1,
+   * }
+   * ```
+   *
+   * **Warning:** Tasks with priority higher than maximum priority in the slots allocation map will never
+   * be handled.
+   *
+   * @alpha
+   */
+  taskAllocationsMap?: { [priority: number]: number };
+
+  /**
+   * Presentation manager working mode. Backends that use iModels in read-write mode should
+   * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
+   *
+   * Defaults to `ReadWrite`.
+   *
+   * @beta
+   */
+  mode?: PresentationManagerMode;
 
   /**
    * An identifier which helps separate multiple presentation managers. It's
@@ -92,12 +154,20 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props || {};
     this._isDisposed = false;
-    if (props && props.addon)
+    if (props && props.addon) {
       this._nativePlatform = props.addon;
+    } else {
+      const nativePlatformImpl = createDefaultNativePlatform({
+        id: this._props.id || "",
+        localeDirectories: createLocaleDirectoryList(props),
+        taskAllocationsMap: createTaskAllocationsMap(props),
+        mode: (undefined !== this._props.mode) ? this._props.mode : PresentationManagerMode.ReadWrite,
+      });
+      this._nativePlatform = new nativePlatformImpl();
+    }
     this.setupRulesetDirectories(props);
     if (props)
       this.activeLocale = props.activeLocale;
-    this.setupLocaleDirectories(props);
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = IModelDb.onOpened.addListener(this.onIModelOpened);
@@ -143,10 +213,6 @@ export class PresentationManager {
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
-    if (!this._nativePlatform) {
-      const nativePlatformImpl = createDefaultNativePlatform(this._props.id);
-      this._nativePlatform = new nativePlatformImpl();
-    }
     return this._nativePlatform!;
   }
 
@@ -163,15 +229,36 @@ export class PresentationManager {
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
-  private setupLocaleDirectories(props?: PresentationManagerProps) {
-    const localeDirectories = [path.join(__dirname, "assets", "locales")];
-    if (props && props.localeDirectories) {
-      props.localeDirectories.forEach((dir) => {
-        if (-1 === localeDirectories.indexOf(dir))
-          localeDirectories.push(dir);
-      });
+  private ensureRulesetRegistered<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string }>(options: TOptions) {
+    const { rulesetOrId, rulesetId, ...strippedOptions } = options;
+
+    if (!rulesetOrId && !rulesetId)
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Neither ruleset nor ruleset id are supplied");
+
+    let nativeRulesetId: string;
+    if (rulesetOrId && typeof rulesetOrId === "object") {
+      const rulesetNativeId = `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
+      const rulesetWithNativeId = { ...rulesetOrId, id: rulesetNativeId };
+      nativeRulesetId = this._rulesets.add(rulesetWithNativeId).id;
+    } else {
+      nativeRulesetId = rulesetOrId || rulesetId!;
     }
-    this.getNativePlatform().setupLocaleDirectories(localeDirectories);
+
+    return { rulesetId: nativeRulesetId, ...strippedOptions };
+  }
+
+  private handleOptions<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+    const { rulesetVariables, ...strippedOptions } = options;
+    const optionsWithRulesetId = this.ensureRulesetRegistered(strippedOptions);
+
+    if (rulesetVariables) {
+      const variablesManager = this.vars(optionsWithRulesetId.rulesetId);
+      for (const variable of rulesetVariables) {
+        variablesManager.setValue(variable.id, variable.type, variable.value);
+      }
+    }
+
+    return optionsWithRulesetId;
   }
 
   /**
@@ -201,11 +288,13 @@ export class PresentationManager {
    */
   public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]> {
     requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+
     let params;
     if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, { nodeKey: parentKey });
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, options, { nodeKey: parentKey });
     else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, options);
     return this.request<Node[]>(requestContext, requestOptions.imodel, params, Node.listReviver);
   }
 
@@ -218,11 +307,13 @@ export class PresentationManager {
    */
   public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number> {
     requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+
     let params;
     if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, { nodeKey: parentKey });
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, options, { nodeKey: parentKey });
     else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, options);
     return this.request<number>(requestContext, requestOptions.imodel, params);
   }
 
@@ -236,7 +327,9 @@ export class PresentationManager {
    */
   public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, options, {
       paths,
       markedIndex,
     });
@@ -252,10 +345,30 @@ export class PresentationManager {
    */
   public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, options, {
       filterText,
     });
     return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
+  }
+
+  /**
+   * Loads the whole hierarchy with the specified parameters
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @return A promise object that resolves when the hierarchy is fully loaded
+   * @beta
+   */
+  public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void> {
+    requestContext.enter();
+    const options = this.handleOptions(requestOptions);
+    const params = this.createRequestParams(NativePlatformRequestTypes.LoadHierarchy, options);
+    const start = new Date();
+    await this.request<void>(requestContext, requestOptions.imodel, params);
+    Logger.logInfo("ECPresentation.Node", `Loading full hierarchy for `
+      + `iModel "${requestOptions.imodel.iModelToken.iModelId}" and ruleset "${options.rulesetId}" `
+      + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 
   /**
@@ -269,7 +382,9 @@ export class PresentationManager {
    */
   public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, options, {
       displayType,
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       selection,
@@ -289,7 +404,9 @@ export class PresentationManager {
    */
   public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
@@ -306,7 +423,9 @@ export class PresentationManager {
    */
   public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
@@ -348,7 +467,9 @@ export class PresentationManager {
    */
   public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
+    const options = this.handleOptions(requestOptions);
+
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, options, {
       keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       fieldName,
@@ -504,6 +625,32 @@ export class PresentationManager {
     return modelKeys;
   }
 
+  private async computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    const nonTransientIds = new Array<Id64String>();
+    ids.forEach(skipTransients((id) => {
+      nonTransientIds.push(id);
+    }));
+    const query = `
+      SELECT e.ECClassId, e.ECInstanceId elId, funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
+        FROM bis.Element e
+        LEFT JOIN func.PhysicalElementFulfillsFunction rel1 ON rel1.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.DrawingGraphicRepresentsFunctionalElement rel2 ON rel2.SourceECInstanceId = e.ECInstanceId
+        LEFT JOIN func.FunctionalElement fe ON fe.ECInstanceId IN (rel1.TargetECInstanceId, rel2.TargetECInstanceId)
+        LEFT JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
+        LEFT JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
+       WHERE e.ECInstanceId IN (${nonTransientIds.map(() => "?").join(",")})
+      `;
+    const iter = requestOptions.imodel.query(query, nonTransientIds);
+    for await (const row of iter) {
+      if (row.funcElClassName && row.funcElId)
+        keys.add({ className: row.funcElClassName.replace(".", ":"), id: row.funcElId });
+      else
+        keys.add({ className: row.className.replace(".", ":"), id: row.elId });
+    }
+    return keys;
+  }
+
   /**
    * Computes selection set based on provided selection scope.
    * @param requestContext The client request context
@@ -521,6 +668,7 @@ export class PresentationManager {
       case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
       case "category": return this.computeCategorySelection(requestOptions, ids);
       case "model": return this.computeModelSelection(requestOptions, ids);
+      case "functional": return this.computeFunctionalElementSelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
@@ -578,5 +726,27 @@ const skipTransients = (callback: (id: Id64String) => void) => {
   return (id: Id64String) => {
     if (!Id64.isTransient(id))
       callback(id);
+  };
+};
+
+const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
+  const localeDirectories = [path.join(__dirname, "assets", "locales")];
+  if (props && props.localeDirectories) {
+    props.localeDirectories.forEach((dir) => {
+      if (-1 === localeDirectories.indexOf(dir))
+        localeDirectories.push(dir);
+    });
+  }
+  return localeDirectories;
+};
+
+const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
+  if (props && props.taskAllocationsMap)
+    return props.taskAllocationsMap;
+
+  // by default we allocate one slot for preloading tasks and one for all other requests
+  return {
+    [RequestPriority.Preload]: 1,
+    [RequestPriority.Max]: 1,
   };
 };

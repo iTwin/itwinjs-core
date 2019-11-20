@@ -37,6 +37,7 @@ export * from "./domains/LinearReferencingElementAspects";
 export * from "./domains/LinearReferencingElements";
 export * from "./domains/LinearReferencingRelationships";
 export * from "@bentley/imodeljs-native/IModelJsNative";
+export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./IModelTransformer";
 export * from "./AutoPush";
@@ -112,4 +113,20 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Portability
  * Classes to help write [portable apps]($docs/learning/Portability.md) and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
+ */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description Logging
+ * Logger categories used by this package.
+ */
+/**
+ * @docs-group-description RpcInterface
+ * Classes for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
+ */
+/**
+ * @docs-group-description CloudStorageBackend
+ * Classes for working with cloud storage.
  */

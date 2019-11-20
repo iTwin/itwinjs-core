@@ -193,6 +193,16 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     result.setDirect(this.low.x, this.low.y, this.low.z, this.high.x, this.high.y, this.high.z, false);
     return result;
   }
+  /** Return a copy, translated by adding `shift` components in all directions.
+   * * The translate of a null range is also a null range.
+   */
+  public cloneTranslated(shift: XYAndZ, result?: this): this {
+    result = result ? result : new (this.constructor as any)() as this;
+    if (!this.isNull)
+      result.setDirect(this.low.x + shift.x, this.low.y + shift.y, this.low.z + shift.z, this.high.x + shift.x, this.high.y + shift.y, this.high.z + shift.z, false);
+    return result;
+  }
+
   /** Return a range initialized to have no content. */
   public static createNull<T extends Range3d>(result?: T): T {
     result = result ? result : new this() as T;
@@ -480,8 +490,23 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     return true;
   }
 
-  /** Return an array with the 8 corners on order wth "x varies fastest, then y, then z" */
-  public corners(): Point3d[] {
+  /** Return an array with the 8 corners on order wth "x varies fastest, then y, then z"
+   * * points preallocated in `result` are reused if result.length >= 8.
+   * * in reuse case, result.length is trimmed to 8
+   */
+  public corners(result?: Point3d[]): Point3d[] {
+    if (result !== undefined && result.length >= 8) {
+      result[0].set(this.low.x, this.low.y, this.low.z);
+      result[1].set(this.high.x, this.low.y, this.low.z);
+      result[2].set(this.low.x, this.high.y, this.low.z);
+      result[3].set(this.high.x, this.high.y, this.low.z);
+      result[4].set(this.low.x, this.low.y, this.high.z);
+      result[5].set(this.high.x, this.low.y, this.high.z);
+      result[6].set(this.low.x, this.high.y, this.high.z);
+      result[7].set(this.high.x, this.high.y, this.high.z);
+      result.length = 8;
+      return result;
+    }
     return [
       Point3d.create(this.low.x, this.low.y, this.low.z),
       Point3d.create(this.high.x, this.low.y, this.low.z),
@@ -616,6 +641,22 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (y < this.low.y) this.low.y = y;
     if (y > this.high.y) this.high.y = y;
 
+    if (z < this.low.z) this.low.z = z;
+    if (z > this.high.z) this.high.z = z;
+  }
+
+  /** Expand this range by distances a in only the x direction.  */
+  public extendXOnly(x: number): void {
+    if (x < this.low.x) this.low.x = x;
+    if (x > this.high.x) this.high.x = x;
+  }
+  /** Expand this range by distances a in only the x direction.  */
+  public extendYOnly(y: number): void {
+    if (y < this.low.y) this.low.y = y;
+    if (y > this.high.y) this.high.y = y;
+  }
+  /** Expand this range by distances a in only the x direction.  */
+  public extendZOnly(z: number): void {
     if (z < this.low.z) this.low.z = z;
     if (z > this.high.z) this.high.z = z;
   }
@@ -840,6 +881,18 @@ export class Range1d extends RangeBase {
   public static createNull<T extends Range1d>(result?: T): T {
     result = result ? result : new this() as T;
     result.setNull();
+    return result;
+  }
+
+  /** create a range with `delta` added to low and high
+   * * If `this` is a null range, return a null range.
+   */
+  public cloneTranslated(delta: number, result?: Range1d): Range1d {
+    result = result ? result : this.clone();
+    if (!result.isNull) {
+      result.low += delta;
+      result.high += delta;
+    }
     return result;
   }
 
@@ -1281,6 +1334,26 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public fractionToPoint(fractionX: number, fractionY: number, result?: Point2d): Point2d {
     return this.low.interpolateXY(fractionX, fractionY, this.high, result);
   }
+  /** Return an array with the 4 corners.
+   * * if asLoop is false, 4 corners are "x varies fastest, then y"
+   * * if asLoop is true, 5 corners are in CCW order WITH CLOSURE
+   */
+  public corners3d(asLoop: boolean = false, z: number = 0): Point3d[] {
+    if (asLoop)
+      return [
+        Point3d.create(this.low.x, this.low.y, z),
+        Point3d.create(this.high.x, this.low.y, z),
+        Point3d.create(this.high.x, this.high.y, z),
+        Point3d.create(this.low.x, this.high.y, z),
+        Point3d.create(this.low.x, this.low.y, z)];
+
+    return [
+      Point3d.create(this.low.x, this.low.y, z),
+      Point3d.create(this.high.x, this.low.y, z),
+      Point3d.create(this.low.x, this.high.y, z),
+      Point3d.create(this.high.x, this.high.y, z)];
+  }
+
   /** Largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
     if (this.isNull)

@@ -23,9 +23,9 @@ export interface IAuthorizationClient {
   hasSignedIn: boolean;
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user
-   * or authorized client (in the case of agent applications).
-   * The token is refreshed if necessary and possible.
-   * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
+   * or authorized client (in the case of agent applications). The token is refreshed if necessary and possible.
+   * @throws [[BentleyError]] If there was an authorization error, or in the case of frontends, if the client wasn't
+   * used to signIn.
    */
   getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
 }

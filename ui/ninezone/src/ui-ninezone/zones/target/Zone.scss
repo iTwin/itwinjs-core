@@ -2,9 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/_z-index";
-@import "../../_geometry";
-@import "../../_prefix";
+@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "../../geometry";
+@import "../../prefix";
+@import "variables";
 
 .nz-zones-target-zone {
   $size: 100px;
@@ -31,7 +32,7 @@
     @include oval($size);
     @include nz-backface-visibility(hidden);
 
-    &:hover {
+    @include nz-internal-targeted {
       background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.8), rgba(#000, 0.4), rgba(#000, 0));
 
       @include oval($size * 1.1);

@@ -26,7 +26,6 @@ const enum WMSImageryType { Temperature, Precipitation }
 /** Supplies imagery based on weather forecast. */
 class WMSImageryProvider extends ImageryProviderEPSG3857 {
   private _baseUrl: string;
-  private _copyrightMessage?: HTMLElement;
 
   constructor(imageryType: WMSImageryType, private _i18n: I18N, private _i18NNamespace: I18NNamespace, private _logoImage?: HTMLImageElement) {
     super();
@@ -64,21 +63,17 @@ class WMSImageryProvider extends ImageryProviderEPSG3857 {
     return this._baseUrl.replace("{BoundingBox}", bboxString);
   }
 
-  /** Supplies a logo to be displayed in the Viewport whenever imagery from this provider is displayed. */
-  public getCopyrightImage(_tileProvider: MapTileTreeReference): HTMLImageElement | undefined { return this._logoImage; }
-
-  /** Supplies a copyright message to be displayed in the Viewport whenever imagery from this provider is displayed. */
-  public getCopyrightMessage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLElement | undefined {
-    return this._copyrightMessage!;
+  /** Supplies attribution for the wms supplier. */
+  public getImageryLogo(_tileProvider: MapTileTreeReference) {
+    const copyrightElement = document.createElement("p");
+    if (this._logoImage)
+      copyrightElement.appendChild(this._logoImage);
+    copyrightElement.innerText = this._i18n.translate("WmsPlugin:Messages.Copyright");
+    return IModelApp.makeLogoCard(copyrightElement);
   }
 
-  /** Initialize the copyright info. */
   public async initialize(): Promise<void> {
-    const copyrightElement: HTMLSpanElement = document.createElement("span");
-    copyrightElement.className = "bgmap-copyright";
-    await this._i18NNamespace.readFinished;
-    copyrightElement.innerText = this._i18n.translate("WmsPlugin:Messages.Copyright");
-    this._copyrightMessage = copyrightElement;
+    return this._i18NNamespace.readFinished;
   }
 }
 
@@ -101,7 +96,7 @@ class WMSTreeSupplier implements TileTree.Supplier {
 
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(type: WMSImageryType, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, iModel);
+    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, false, iModel);
   }
 }
 

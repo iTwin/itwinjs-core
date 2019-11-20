@@ -34,10 +34,6 @@
     height: 100% !important;
   }
 
-  .react-grid-Viewport {
-    height: calc(100% - 25px) !important;
-  }
-
   .react-grid-Container,
   .react-grid-Canvas {
     width: 100% !important;
@@ -51,7 +47,7 @@
     border: none;
     background: transparent;
     outline: none;
-    font-size: 14px;
+    font-size: $uicore-font-size;
   }
 
   .react-grid-Row {
@@ -81,30 +77,26 @@
   }
 
   .react-grid-HeaderCell {
-    padding: 4px 0 0 8px;
+    padding: 4px 0 4px 8px;
     box-sizing: border-box;
     background: $buic-background-table-header;
-    font-size: 14px;
+    font-size: $uicore-font-size;
     border: none;
   }
 
   .react-grid-HeaderCell__draggable {
     background: $buic-background-table-header;
     width: 8px !important;
-    left: 100%;
-    z-index: 2;
   }
 
   .react-grid-HeaderCell__draggable::after {
-    content: ' ';
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E");
-    height: 10px;
-    width: 2px;
+    content: '\2807';
+    font-size: 16px;
+    font-weight: normal;
+    color: $buic-foreground-muted;
     position: relative;
     display: block;
-    position: relative;
-    background-size: contain;
-    top: calc(50% - 5px);
+    top: calc(50% - 12px);
     left: calc(50% - 1px);
     pointer-events: none;
   }
@@ -143,7 +135,7 @@
   }
 
   .components-editor-container {
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   .components-cell-editor {

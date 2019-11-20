@@ -16,20 +16,21 @@
       {{/if}}
     </div>
     <div class="middle-content-media" style="order:2;">
-      <iframe class='middle-content-youtube' src="{{this.video}}" frameborder="0"
-        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
+      {{#each this.video}}
+      <iframe class='middle-content-youtube' src="{{this.url}}" frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      {{/each}}
     {{else}}
-    <div class="middle-content-text" style="order:1;">
-      {{#if this.header}}
-      <h4> {{{this.header}}} </h4>
-      <span class="gradient"></span>
-      {{/if}}
-      {{#if this.content}}
-      <p>
-        {{{this.content}}}
-      </p>
-      {{/if}}
+    <div class=" middle-content-text" style="order:1;">
+        {{#if this.header}}
+        <h4> {{{this.header}}} </h4>
+        <span class="gradient"></span>
+        {{/if}}
+        {{#if this.content}}
+        <p>
+          {{{this.content}}}
+        </p>
+        {{/if}}
     </div>
     <iframe class='middle-content-media' src="{{this.video}}" frameborder="0"
       allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

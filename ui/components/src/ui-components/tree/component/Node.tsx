@@ -40,8 +40,11 @@ export interface TreeNodeProps extends CommonProps {
   onMouseMove?: (e: React.MouseEvent) => void;
   onMouseUp?: (e: React.MouseEvent) => void;
 
+  /** @beta */
   cellEditing?: CellEditingEngine;
+  /** @beta */
   highlightProps?: HighlightableTreeNodeProps;
+
   showDescription?: boolean;
   valueRendererManager: PropertyValueRendererManager;
 
@@ -69,7 +72,7 @@ export interface TreeNodeProps extends CommonProps {
 }
 
 /**
- * Default component for rendering a node for the [Tree]($components)
+ * Default component for rendering a node for the [Tree]($ui-components)
  * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {

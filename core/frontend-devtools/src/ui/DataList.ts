@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Controls */
+
 /** @alpha */
 export interface DataListEntry {
   value: number | string | undefined;
@@ -18,6 +20,7 @@ export interface DataListProps {
   entries: DataListEntry[];
   parent?: HTMLElement;
   handler?: DataListHandler;
+  inline?: boolean;
 }
 
 /** @alpha */
@@ -54,6 +57,9 @@ export function createDataList(props: DataListProps): DataList {
     list.onselect = () => handler(list);
 
   const div = document.createElement("div");
+  if (props.inline)
+    div.style.display = "inline";
+
   div.appendChild(list);
   if (undefined !== props.parent)
     props.parent.appendChild(div);

@@ -41,6 +41,7 @@ import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { Path } from "../../curve/Path";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -276,7 +277,7 @@ function testPolygonOffset(polygons: Point3d[][],
 
   for (const points of polygons) {
     const range = Range3d.createArray(points);
-    const yStep = 2.0 * range.yLength();
+    const yStep = 2.0 * range.yLength() + 10;
     y0 = 0.0;
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
     y0 += yStep;
@@ -371,6 +372,34 @@ describe("PolygonOffset", () => {
     const star2 = Sample.createStar(1, 1, 0, 5, 2, 5, true);
     testPolygonOffset([rectangle0, star1, star2, wPoints], "TestA", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
 
+  });
+
+  it("TestSplitLine", () => {
+    const allPoints = [];
+    for (const upperCount of [2, 1, 2, 3, 8]) {
+      const points = Sample.createInterpolatedPoints(Point3d.create(0, 1), Point3d.create(2, 3), upperCount, undefined, 0, upperCount);
+      allPoints.push(points);
+    }
+    testPolygonOffset(allPoints, "TestSplitLine", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
+
+  });
+
+  it("TestColinear", () => {
+    const allPoints = [];
+    for (const delta of [0, 0.01, 0.4]) {
+      const points: Point3d[] = [];
+      const corners = Sample.createRectangleXY(0, 0, 5, 6);
+      corners[1].x += delta;
+      corners[2].x += 0.2 * delta;
+      corners[2].y += delta;
+      corners[3].x -= delta * 2;
+      Sample.createInterpolatedPoints(corners[0], corners[1], 3, points, 0, 2);
+      Sample.createInterpolatedPoints(corners[1], corners[2], 3, points, 0, 2);
+      Sample.createInterpolatedPoints(corners[2], corners[3], 4, points, 0, 3);
+      Sample.createInterpolatedPoints(corners[3], corners[0], 3, points, 0, 3);
+      allPoints.push(points);
+    }
+    testPolygonOffset(allPoints, "TestColinear", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
   });
 
   it("TestSpikes", () => {
@@ -497,11 +526,25 @@ describe("RegionInOut", () => {
     const testBasis = Plane3dByOriginAndVectors.createXYPlane();
     let x0 = 0.0;
     const y0 = 0.0;
+    const z1 = 0.01;
     const errorVector = Vector3d.create(-1, 1, 0);
     const parityRegions = Sample.createSimpleParityRegions(true) as AnyRegion[];
     const unionRegions = Sample.createSimpleUnions() as AnyRegion[];
     for (const loop of parityRegions.concat(unionRegions)) {
+      const range = loop.range();
       const primitives = loop.collectCurvePrimitives();
+      // arbitrarily test various points on a line.
+      const bigMarkerSize = 0.1;
+      for (const fy of [0.4, 0.5, 0.6]) {
+        for (const fx of [-0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0, 1.05]) {
+          range.fractionToPoint(fx, fy, 0, testPoint);
+          const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
+          let marker = 0;
+          if (classify < 0) marker = -4;
+          if (classify > 0) marker = 4;
+          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, bigMarkerSize, x0, y0, z1);
+        }
+      }
       // We trust
       // 1) primitives have usual CCW outside, CW holes
       // 2) points close to primitives are in to left, out to right -- other primitives are not nearby
@@ -516,8 +559,10 @@ describe("RegionInOut", () => {
               basis.origin.plusScaled(perp, q * smallDistance, testPoint);
               const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
               ck.testExactNumber(q, classify, "InOut", { primitive: cp, f: fraction, point: testPoint });
-              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint,
-                q === 0 ? smallDistance * 20 : smallDistance, x0, y0);
+              let marker = 0;
+              if (q < 0) marker = -4;
+              if (q > 0) marker = 4;
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, smallDistance, x0, y0, z1);
               if (q !== classify) {
                 RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
                 GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(testPoint, testPoint.plus(errorVector)), x0, y0);
@@ -637,5 +682,58 @@ describe("CloneSplitCurves", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+});
+
+describe("RectangleRecognizer", () => {
+  it("rectangleEdgeTransform", () => {
+    const ck = new Checker();
+    const uv = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]];
+    for (const degrees of [0, 25.6]) {
+      const points = Sample.createRegularPolygon(0, 0, 0, Angle.createDegrees(degrees), 2, 4, true);
+      for (const requireClosure of [true, false]) {
+        for (const data of [points,
+          GrowableXYZArray.create(points),
+          LineString3d.create(points),
+          Path.create(LineString3d.create(points)),
+          Loop.createPolygon(points),
+          makeSticks(points)]) {
+          const transform = RegionOps.rectangleEdgeTransform(data, requireClosure);
+          ck.testDefined(transform);
+          if (transform) {
+            for (let i = 0; i < points.length; i++) {
+              ck.testPoint3d(points[i], transform.multiplyXYZ(uv[i][0], uv[i][1]), "rectangle transform point " + i);
+            }
+          }
+        }
+      }
+      ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
+      const transform4 = RegionOps.rectangleEdgeTransform(points.slice(0, 4), false);
+      const transform5 = RegionOps.rectangleEdgeTransform(points, true);
+      if (ck.testDefined(transform4) && transform4 && ck.testDefined(transform5) && transform5)
+        ck.testTransform(transform4, transform5);
+      ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
+
+      for (let i = 0; i < 4; i++) {
+        const points1 = Point3dArray.clonePoint3dArray(points);
+        points1[i].z += 0.01;
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points1), "non planar should fail " + i);
+        const points2 = Point3dArray.clonePoint3dArray(points);
+        points2[i].x += 0.01;
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points2), "skew should fail " + i);
+      }
+    }
+    ck.testUndefined(RegionOps.rectangleEdgeTransform(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 2)));
+    ck.testUndefined(RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle())));
+    ck.testUndefined(RegionOps.rectangleEdgeTransform(BagOfCurves.create()));
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
+
+function makeSticks(points: Point3d[]): Path {
+  const path = Path.create();
+  for (let i = 0; i + 1 < points.length; i++) {
+    path.tryAddChild(LineSegment3d.create(points[i], points[i + 1]));
+  }
+  return path;
+}

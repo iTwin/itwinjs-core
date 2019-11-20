@@ -2,19 +2,20 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHub */
+/** @module iModelHubClient */
 
 import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ProgressInfo } from "../Request";
+import { WsgQuery } from "../WsgQuery";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
-import { addSelectFileAccessKey, Query } from "./Query";
+import { addSelectFileAccessKey } from "./HubQuery";
 import { InitializationState } from "./iModels";
-import { URL } from "url";
+import * as urllib from "url";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -63,7 +64,7 @@ export class Checkpoint extends WsgInstance {
  * Query object for getting [[Checkpoint]]s. You can use this to modify the [[CheckpointHandler.get]] results.
  * @alpha
  */
-export class CheckpointQuery extends Query {
+export class CheckpointQuery extends WsgQuery {
   /** Query will return closest [[Checkpoint]] to target [[ChangeSet]], based on ChangeSets size.
    * This query can return a Checkpoint that is ahead of the specified ChangeSet, if reversing ChangeSets would be faster than merging forward. This resets all previously set filters.
    * @returns This query.
@@ -151,10 +152,10 @@ export class CheckpointHandler {
    * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
    */
   private static getSafeUrlForLogging(url: string): string {
-    const safeToLogDownloadUrl: URL = new URL(url);
-    if (safeToLogDownloadUrl.search.length > 0)
+    const safeToLogDownloadUrl = urllib.parse(url);
+    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
       safeToLogDownloadUrl.search = "...";
-    if (safeToLogDownloadUrl.hash.length > 0)
+    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
     return safeToLogDownloadUrl.toString();
   }

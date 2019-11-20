@@ -1,6 +1,72 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Add TypeScript wrapper class for BisCore:ElementOwnsExternalSourceAspects
+- New wip plugin for hypermodeling support.
+- Calling IModelDb.pushChanges is now a no-op if there are no changes
+- Adding accessor for LinearElementId from LinearlyLocated. Adding convenience APIs to manipulate LinearReferencing data stored in multi-aspects.
+- Add TypeScript wrappers for GeometricElement2dHasTypeDefinition and GeometricElement3dHasTypeDefinition navigation relationships
+- Tests for Mixin impact on CRUD
+- Add and fix npm script to create backend test for mobile.
+- Schema Design Perf tests for Polymorphic queries
+- Add IModelDb.querySchemaVersion
+- Schema Design Perf tests for relationships
+- Resurrected the old way of doing agent registrations
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Add isNotSpatiallyLocated and isPlanProjection to GeometricModel3d
+- Add SectionLocation
+- Add GraphicalPartition3d and GraphicalModel3d
+- Schema perf tests
+- Addressing bug while querying for linearLocations filtering on more than 1 classes.
+- Addressing rush lint issues.
+- Addressing issues while returning LinearLocationReferences.
+- Deprecating importSchema on the LinearReferencing domain in favor of its bulk-version.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- 170215: Setup a way to supply authorization through the backend for frontend requests. 
+- 174346: Error log when downloading change sets should include iModelId for context. 
+- Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. 
+- Add IModelDb.Elements.hasSubModel
+- Make ExternalSourceAspect.checksum optional
+- Clear statement cache after schema import
+- Added utility to summarize geometry
+- filter redundant hub requests
+- Removed the `[propName: string]: any` indexed from Entity. It prevented the compiler from catching many basic errors.
+- briefcase editing and undo/redo
+- api
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- 170215: Setup a way to supply authorization through the backend for frontend requests. 
+- Bug 163480: Allow attaching change cache file before change summary extraction. 
+- 162722, 162377: Added change summary test, and improved doc a little. 
+- Add minimum brep size option to IModelDb.exportGraphics
+- FunctionalSchema.importSchema is now deprecated.
+- Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions
+- Added performance logging for tile upload
+- Bug 162459: IModelConnection.close() for read-only connections should not close the Db at the backend; Bug 162373: Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase. 
+- Add method to create view with camera
+- Fixed misleading logging output in tile upload
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

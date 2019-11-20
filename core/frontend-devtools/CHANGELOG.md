@@ -1,6 +1,57 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Add debug tool for drape frustum
+- Update this.keyins when new ones are discovered. Match englishKeyin.
+- Fixes for making volume classifiers work.
+- Additional options for `emphasize selection` key-in.
+- Add ability to record GPU profiling data to Chrome Event Trace Format.
+- Key-in for visualizing shadow frustum.
+- Visualization of tile requests; key-in to measure time required to load tiles for view.
+- Added more types of memory tracking to MemoryTracker.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Added key-in to toggle between metric and imperial units formatting.
+- Add GPU timing queries for devtools.
+- Key-ins for modifying hilite settings.
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- Improved configurability of KeyinField.
+- DiagnosticsPanel can now be configured to exclude specific components.
+- Added tool to get geometry summary
+- Added ability to cycle through previously-entered key-ins in KeyinField.
+- Add tool to transition between reality and BIM models (demonstrate model animation).
+- Added key-in to toggle debugging tooltips.
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- upgrade to TypeScript 3.6.2
+- Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Added key-in documentation to README.
+- Added keyins for functionality previously exposed by DiagnosticsPanel UI.
+- Reduced vertical space consumed by DiagnosticsPanel.
+- Added keyins for saving the current view state as JSON and re-applying it later.
+- Added keyin for toggling pseudo-wiremesh surface display.
+- Prevent TextBox key events propagating to document.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

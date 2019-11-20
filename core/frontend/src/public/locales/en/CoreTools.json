@@ -6,8 +6,8 @@
         "description": "Moves origin of view",
         "flyover": "Pan View",
         "Prompts": {
-          "FirstPoint": "Define point to pan from.",
-          "NextPoint": "Define point to pan to."
+          "FirstPoint": "Define point to pan from",
+          "NextPoint": "Define point to pan to"
         }
       },
       "Rotate": {
@@ -15,8 +15,8 @@
         "description": "Rotates View about specified point",
         "flyover": "Rotate About Point",
         "Prompts": {
-          "FirstPoint": "Identify point on element to rotate view about.",
-          "NextPoint": "Define amount of rotation."
+          "FirstPoint": "Identify point on element to rotate about",
+          "NextPoint": "Define amount of rotation"
         }
       },
       "Zoom": {
@@ -24,8 +24,8 @@
         "description": "Changes view magnification",
         "flyover": "Zoom About Point",
         "Prompts": {
-          "FirstPoint": "Define point to zoom view about.",
-          "NextPoint": "Define amount of zoom."
+          "FirstPoint": "Define point to zoom view about",
+          "NextPoint": "Define amount of zoom"
         }
       },
       "Look": {
@@ -33,8 +33,8 @@
         "description": "Look around the design",
         "flyover": "Look Around",
         "Prompts": {
-          "FirstPoint": "Enter point to begin looking around.",
-          "NextPoint": "Define new view direction."
+          "FirstPoint": "Enter point to begin looking around",
+          "NextPoint": "Define new view direction"
         }
       },
       "Walk": {
@@ -42,8 +42,8 @@
         "description": "Walk around in the design",
         "flyover": "Walk Around",
         "Prompts": {
-          "FirstPoint": "Enter point to start walking.",
-          "NextPoint": "Enter point to stop walking."
+          "FirstPoint": "Enter point to start walking",
+          "NextPoint": "Enter point to stop walking"
         }
       },
       "Fly": {
@@ -51,8 +51,8 @@
         "description": "Fly around in the design",
         "flyover": "Fly Around",
         "Prompts": {
-          "FirstPoint": "Enter point to start flying.",
-          "NextPoint": "Enter point to stop flying."
+          "FirstPoint": "Enter point to start flying",
+          "NextPoint": "Enter point to stop flying"
         }
       },
       "WindowArea": {
@@ -60,8 +60,8 @@
         "description": "Select viewing area",
         "flyover": "Window Area",
         "Prompts": {
-          "FirstPoint": "Define first corner point.",
-          "NextPoint": "Define opposite corner point."
+          "FirstPoint": "Define first corner point",
+          "NextPoint": "Define opposite corner point"
         }
       },
       "Scroll": {
@@ -69,8 +69,8 @@
         "description": "Scrolls view",
         "flyover": "Scroll",
         "Prompts": {
-          "FirstPoint": "Enter point to start scrolling.",
-          "NextPoint": "Enter point to stop scrolling."
+          "FirstPoint": "Enter point to start scrolling",
+          "NextPoint": "Enter point to stop scrolling"
         }
       },
       "Fit": {
@@ -78,7 +78,7 @@
         "description": "Displays entire model",
         "flyover": "Fit View",
         "Prompts": {
-          "FirstPoint": "Select view to fit."
+          "FirstPoint": "Select view to fit"
         },
         "Model": {
           "keyin": "fit model",
@@ -90,8 +90,8 @@
         "description": "Set up view camera",
         "flyover": "Set Up Camera",
         "Prompts": {
-          "FirstPoint": "Define camera position.",
-          "NextPoint": "Define camera target point."
+          "FirstPoint": "Define camera position",
+          "NextPoint": "Define camera target point"
         },
         "Labels": {
           "CameraHeight": "Camera Height",
@@ -120,25 +120,12 @@
       }
     },
     "ViewClip": {
-      "Settings": {
-        "Orientation": {
-          "Label": "Orientation",
-          "Top": "Top",
-          "Front": "Front",
-          "Left": "Left",
-          "Bottom": "Bottom",
-          "Back": "Back",
-          "Right": "Right",
-          "View": "View",
-          "Face": "Face"
-        }
-      },
       "ByPlane": {
         "keyin": "viewclip byplane",
         "description": "Section a view with a plane",
         "flyover": "Section View",
         "Prompts": {
-          "FirstPoint": "Identify point on section plane."
+          "FirstPoint": "Identify point on section plane"
         }
       },
       "ByShape": {
@@ -148,8 +135,8 @@
         "Prompts": {
           "FirstPoint": "Identify shape start point",
           "SecondPoint": "Identify first edge endpoint",
-          "ThirdPoint": "Accept opposite corner (Ctrl to specify additional points)",
-          "NextPoint": "Accept shape (Ctrl to specify additional points)"
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
         }
       },
       "ByRange": {
@@ -157,8 +144,8 @@
         "description": "Create a clip volume by range from 2 points",
         "flyover": "Clip Volume From Range",
         "Prompts": {
-          "FirstPoint": "Identify corner of clip volume.",
-          "NextPoint": "Identify opposite corner of clip volume."
+          "FirstPoint": "Identify corner of clip volume",
+          "NextPoint": "Identify opposite corner of clip volume"
         }
       },
       "ByElement": {
@@ -166,7 +153,7 @@
         "description": "Create a clip volume from an element or selection set",
         "flyover": "Clip Volume From Element",
         "Prompts": {
-          "FirstPoint": "Identify element to use for clip volume."
+          "FirstPoint": "Identify element to use for clip volume"
         }
       },
       "Clear": {
@@ -174,7 +161,7 @@
         "description": "Remove clip volume or section planes from a view",
         "flyover": "Unclip View",
         "Prompts": {
-          "FirstPoint": "Identify view to unclip."
+          "FirstPoint": "Identify view to unclip"
         }
       }
     },
@@ -291,8 +278,8 @@
         "description": "Measure distance between points",
         "flyover": "Measure Distance",
         "Prompts": {
-          "FirstPoint": "Enter point to measure from.",
-          "NextPoint": "Enter point to measure to."
+          "FirstPoint": "Enter point to measure from",
+          "NextPoint": "Enter point to measure to"
         }
       },
       "Location": {
@@ -300,7 +287,7 @@
         "description": "Show coordintate location",
         "flyover": "Show Location",
         "Prompts": {
-          "EnterPoint": "Enter point to show location."
+          "EnterPoint": "Enter point to show location"
         }
       },
       "Length": {
@@ -317,6 +304,17 @@
         "keyin": "measure volume",
         "description": "Measure volume of elements",
         "flyover": "Measure Volume"
+      },
+      "AreaByPoints": {
+        "keyin": "measure points area",
+        "description": "Measure area defined by points",
+        "flyover": "Measure Area By Points",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
+        }
       },
       "Labels": {
         "CumulativeDistance": "Cumulative Distance",
@@ -342,22 +340,32 @@
     "ElementSet": {
       "Prompts": {
         "IdentifyElement": "Identify element",
-        "IdentifyLine": "Identify elements by crossing line",
-        "IdentifyBox": "Identify elements by box corner points",
-        "IdentifyElementAdd": "Identify element to add",
-        "IdentifyLineAdd": "Identify elements to add by crossing line",
-        "IdentifyBoxAdd": "Identify elements to add by box corner points",
-        "IdentifyElementRemove": "Identify element to remove",
-        "IdentifyLineRemove": "Identify elements to remove by crossing line",
-        "IdentifyBoxRemove": "Identify elements to remove by box corner points",
-        "DragSelectLine": "Click then drag to select elements by crossing line",
-        "DragSelectBox": "Click then drag to select elements by box corner points",
-        "InvertSelection": "Press to invert selection instead of replace selection",
-        "OverlapSelection": "Press during box selection to change inside/overlap from left/right to right/left",
-        "ClearSelection": "Click without identifying an element to clear selection",
-        "AcceptSelection": "Accept/Reject Selection",
-        "AcceptFence": "Accept/Reject Fence Contents",
-        "Mode": "Mode"
+        "IdentifyPoint": "Identify point",
+        "ConfirmSelection": "Confirm selection",
+        "InspectResult": "Inspect result",
+        "StartPoint": "Define start point",
+        "EndPoint": "Define endpoint",
+        "StartCorner": "Define corner point",
+        "OppositeCorner": "Define opposite corner"
+      },
+      "Inputs": {
+        "CrossingLine": "Define crossing line",
+        "BoxCorners": "Define box corners",
+        "InvertSelection": "Invert selection",
+        "OverlapSelection": "Reverse inside/overlap direction",
+        "ClearSelection": "Miss to clear selection",
+        "AcceptSelection": "Accept selection",
+        "RejectSelection": "Reject selection",
+        "AcceptElement": "Accept element",
+        "AcceptPoint": "Accept point",
+        "AdditionalElement": "Identify additional elements",
+        "AdditionalPoint": "Define additional points",
+        "UndoLastPoint": "Undo last point",
+        "Accept": "Accept",
+        "Complete": "Complete",
+        "Cancel": "Cancel",
+        "Restart": "Restart",
+        "Exit": "Exit"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -366,13 +374,13 @@
         "NoSSElems": "No elements selected",
         "AlreadySelected": "Element is already selected",
         "NotSelected": "Element is not selected",
-        "NotSuportedElmType": "Element type not valid for this tool",
+        "NotSupportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
       },
       "SelectionMethods": {
         "Pick": "Select single",
-        "Line": "Select all crossing line",
-        "Box": "Select by range"
+        "Line": "Select by crossing line",
+        "Box": "Select by box corners"
       },
       "SelectionModes": {
         "Replace": "Replace current selection",
@@ -380,10 +388,28 @@
         "Remove": "Remove from selection"
       }
     },
+    "Settings": {
+      "Orientation": {
+        "Label": "Orientation",
+        "Top": "Top",
+        "Front": "Front",
+        "Left": "Left",
+        "Bottom": "Bottom",
+        "Back": "Back",
+        "Right": "Right",
+        "View": "View",
+        "Face": "Face"
+      }
+    },
     "Plugin": {
       "keyin": "load plugin",
       "description": "Loads a plugin module"
     }
+  },
+  "touchCursor": {
+    "Activate": "Activate touch cursor",
+    "AcceptPoint": "Accept point",
+    "IdentifyPoint": "Identify point"
   },
   "toolAssistance": {
     "altKey": "Alt",

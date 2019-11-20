@@ -97,11 +97,6 @@ describe("iModelHub EventHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    if (TestConfig.enableIModelBank) {
-      this.skip();
-      return;
-    }
-
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);

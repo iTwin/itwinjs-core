@@ -1,6 +1,62 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+
+## 1.7.0
+Fri, 01 Nov 2019 13:28:37 GMT
+
+### Updates
+
+- Anisotropic filtering of draped map tiles.
+- Tweaks to ambient occlusion settings.
+- Callout clip is now local to placement. Only show marker for active clip.
+- Cleanup AO settings.
+- Remove @deprecated tags in GeometryStreamIteratorEntry
+- Fix comparison of classification properties ignoring the 'volume' flag.
+- Fixes for making volume classifiers work.
+- New wip plugin for hypermodeling support.
+- Add CommonLoggerCategory.Geometry
+- Add Placement2d.multiplyTransform, Placement3d.multiplyTransform
+- Add RelatedElement.none for nulling out existing navigation relationships
+- Reacting to iPadOS change in user agent of safari
+- Remove limit for binary data for mobile
+- Expose FrustumPlanes.planes
+- Convenience methods for overriding aspects of hidden line styles.
+
+## 1.6.0
+Wed, 09 Oct 2019 20:28:42 GMT
+
+### Updates
+
+- Add GeometricModel3dProps
+- Add SectionLocationProps
+- Remove no-longer-needed mobile RPC chunk size workaround for mobile backends.
+- Fixed multiple viewport shadows
+
+## 1.5.0
+Mon, 30 Sep 2019 22:28:48 GMT
+
+### Updates
+
+- added support for blank IModelConnections
+- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Add DisplayStyleSettings.subCategoryOverrides
+- Make ExternalSourceAspectProps.checksum optional
+- Added geometry primitive typing and geometry summary types
+- Support animation of models within RenderSchedule.
+- Refine planar projection frustum calculation
+- upgrade to TypeScript 3.6.2
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Add documentation for RenderSchedule
+- fix casing of displayStyle.contextRealityModels
+- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Electron IPC transport fix for large messages.
+- Added ability to clear individual overridden flags in ViewFlag.Overrides.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

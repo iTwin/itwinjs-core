@@ -2,11 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Ray3d } from "./Ray3d";
 import { XYAndZ, XAndY, HasZ, XYZProps } from "./XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
+
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
  *  * `XYZ` is not instantiable.
@@ -91,8 +94,10 @@ export class XYZ implements XYAndZ {
    * * Float64Array -- Copy from indices 0,1,2 to x,y,z
    * * XY -- copy the x, y parts and set z=0
    */
-  public setFrom(other: Float64Array | XAndY | XYAndZ) {
-    if (XYZ.isXAndY(other)) {
+  public setFrom(other: Float64Array | XAndY | XYAndZ | undefined) {
+    if (other === undefined) {
+      this.setZero();
+    } else if (XYZ.isXAndY(other)) {
       this.x = other.x;
       this.y = other.y;
       this.z = XYZ.hasZ(other) ? other.z : 0;
@@ -105,20 +110,29 @@ export class XYZ implements XYAndZ {
   /**
    * Set the x,y,z parts from a Point3d.
    * This is the same effect as `setFrom(other)` with no pretesting of variant input type
+   * * Set to zeros if `other` is undefined.
    */
-  public setFromPoint3d(other: XYAndZ) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+  public setFromPoint3d(other?: XYAndZ) {
+    if (other) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+    } else {
+      this.setZero();
+    }
   }
   /**
    * Set the x,y,z parts from a Vector3d
    * This is the same effect as `setFrom(other)` with no pretesting of variant input type
    */
   public setFromVector3d(other: Vector3d) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+    if (other) {
+      this.x = other.x;
+      this.y = other.y;
+      this.z = other.z;
+    } else {
+      this.setZero();
+    }
   }
 
   /** Returns true if this and other have equal x,y,z parts within Geometry.smallMetricDistance.
@@ -356,6 +370,12 @@ export class Point3d extends XYZ {
   public crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z, pointB.x - this.x, pointB.y - this.y, pointB.z - this.z, result);
   }
+  /** Return the magnitude of the cross product of the vectors from this to pointA and pointB
+   */
+  public crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number {
+    return Geometry.crossProductMagnitude(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z, pointB.x - this.x, pointB.y - this.y, pointB.z - this.z);
+  }
+
   /** Return the triple product of the vectors from this to pointA, pointB, pointC
    *
    * * This is a scalar (number)
@@ -1093,6 +1113,16 @@ export class Vector3d extends XYZ {
     return Angle.createAtan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));
   }
   /**
+   * Return the (Strongly typed) angle from this vector to the plane perpendicular to planeNormal.
+   * * The returned vector is signed
+   * * The returned vector is (as degrees) always less than or equal to 90 degrees.
+   * @param planeNormal a normal vector to the plane
+   */
+  public angleFromPerpendicular(vectorB: Vector3d): Angle {
+    return Angle.createAtan2(this.dotProduct(vectorB), this.crossProductMagnitude(vectorB));
+  }
+
+  /**
    * Return the (Strongly typed) angle from this vector to vectorB,using only the xy parts.
    * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180 degrees (positive PI radians), not closed on the negative side.
    * * Use `planarAngleTo`, `signedAngleTo`, `angleToXY` to take have angle measured in other planes.
@@ -1151,7 +1181,18 @@ export class Vector3d extends XYZ {
    * @param vectorB target vector of rotation.
    */
   public signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle { return Angle.createRadians(this.signedRadiansTo(vector1, vectorW)); }
-  /*  smallerUnorientedAngleTo(vectorB: Vector3d): Angle { }
+  /** Return the smallest (strongly typed) angle from the (bidirectional) line containing `this` to the (bidirectional) line containing `vectorB` */
+  public smallerUnorientedAngleTo(vectorB: Vector3d): Angle {
+    return Angle.createRadians(this.smallerUnorientedRadiansTo(vectorB));
+  }
+  /** Return the smallest angle (in radians) from the (bidirectional) line containing `this` to the (bidirectional) line containing `vectorB` */
+  public smallerUnorientedRadiansTo(vectorB: Vector3d): number {
+    const c = this.dotProduct(vectorB);
+    const s = this.crossProductMagnitude(vectorB);
+    return Math.atan2(Math.abs(s), Math.abs(c));
+  }
+
+  /*
     signedAngleTo(vectorB: Vector3d, upVector: Vector3d): Angle { }
     // sectors
     isInSmallerSector(vectorA: Vector3d, vectorB: Vector3d): boolean { }

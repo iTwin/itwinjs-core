@@ -16,28 +16,160 @@
   cursor:pointer;
 }
 
-.imodel-viewport-wrap {
+.app-surface {
   position: absolute;
-  top: 50px;
-  bottom: 50px;
+  top: 75px;
+  bottom: 20px;
   width: 100%;
+  overflow: auto;
+  z-index: 5;
+  background-color: #778899;
+  overflow: hidden;
+}
+
+.console-output {
+  width: 100%;
+  background-color: gray;
+  overflow: hidden;
+  border: none;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  font-family: monospace, monospace;
+  resize: none;
+}
+
+#notifications-window {
   overflow: auto;
 }
 
-.imodel-viewport-container {
-  display: table;
-  height: 100%;
-  width: 100%;
-}
-
-.imodel-viewport {
-  display: table-cell;
-  height: 100%;
-  width: 100%;
+.floating-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   vertical-align: middle;
-  border: 1px solid black;
   background-color: gray;
   z-index: 10;
+}
+
+.floating-window-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 100px;
+  left: 100px;
+  width: 640px;
+  height: 480px;
+  background-color: gray;
+  z-index: 100;
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.keyin-entry {
+  float: left;
+  display: inline;
+  margin-left: 5px;
+  width: 350px;
+  height: 25px;
+}
+
+.keyin-entry-textbox {
+  display: inline;
+  width: 350px;
+  font-family: monospace, monospace;
+}
+
+#fps-container {
+  font-family: monospace, monospace;
+  margin-left: 15px;
+  margin-right: 5px;
+}
+
+#fps-checkbox {
+  vertical-align: middle;
+}
+
+.floating-window-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left:2.5px;
+  padding-right:2.5px;
+  height: 25px;
+  background-color: #a0a0a0;
+  cursor: move;
+  border-bottom: 2px solid black;
+  position: relative;
+  overflow: hidden;
+}
+
+.window-focused {
+  border: 2px solid white;
+}
+
+.window-header-focused {
+  border-bottom: 2px solid white;
+  background-color: #eeeeee;
+}
+
+.window-header-selected {
+  border-bottom: 2px solid GoldenRod;
+}
+
+.viewport-header-focused {
+  background-color: #eeeeee;
+}
+
+.viewport-selected {
+  border: 2px solid GoldenRod;
+}
+
+.floating-window-header-resize {
+  width: 0;
+  height: 0;
+  border-top: 25px solid #444444;
+  border-left: 25px solid transparent;
+  position: absolute;
+  cursor: nesw-resize;
+  right: 0px;
+  background-color: #cccccc;
+}
+
+.floating-window-header-resize-pinned {
+  border-top: 25px solid #44ff44;
+}
+
+.floating-window-header-close {
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 20px;
+  height: 25px;
+  opacity: 0.5;
+  cursor: default;
+}
+.floating-window-header-close:hover {
+  opacity: 1;
+}
+.floating-window-header-close:before, .floating-window-header-close:after {
+  position: absolute;
+  left: 9px;
+  content: ' ';
+  height: 24px;
+  width: 2px;
+  background-color: #333;
+}
+.floating-window-header-close:before {
+  transform: rotate(36deg);
+}
+.floating-window-header-close:after {
+  transform: rotate(-36deg);
+}
+
+.window-pinned {
+  border-top-color: crimson;
 }
 
 .topdiv {
@@ -48,9 +180,17 @@
   height: 50px;
 }
 
+.status-bar {
+  width: 100%;
+  height: 25px;
+  /*position: fixed;
+  top: 50px;*/
+  vertical-align: middle;
+}
+
 .bottomdiv {
   width: 100%;
-  height: 30px;
+  height: 20px;
   position: fixed;
   bottom: 0;
   vertical-align: middle;
@@ -75,7 +215,7 @@
 
 .statusspan {
   margin-left: 5px;
-  display:  inline;
+  display: inline;
 }
 
 .bim-spinner-container {

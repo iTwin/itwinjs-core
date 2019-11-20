@@ -2,34 +2,57 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
-
+import { IModelError } from "../../IModelError";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public abstract protocol: MobileRpcProtocol;
-  private static getMobilePlatform(): RpcMobilePlatform {
+  private static getArgs(): any {
     if (typeof window === "undefined") {
-      return RpcMobilePlatform.Unknown;
+      return {};
     }
 
-    const win: any = window;
-    const userAgent = win.navigator.userAgent || win.navigator.vendor || win.opera;
+    const queryArgs: any = {};
+    const matches = window.location.hash.match(/([^#=&]+)(=([^&]*))?/g);
+    if (matches) {
+      for (const comp of matches) {
+        const array = comp.split("=");
+        if (array.length === 2) {
+          const key = decodeURIComponent(array[0]);
+          const val = decodeURIComponent(array[1]);
+          queryArgs[key] = val;
+        } else {
+          throw new IModelError(BentleyStatus.ERROR, "Unexpected parameters");
+        }
+      }
+    }
+    return queryArgs;
+  }
+  private static getMobilePlatform(): RpcMobilePlatform {
+    if (!MobileRpcConfiguration.args.platform)
+      return RpcMobilePlatform.Unknown;
 
-    if (/android/i.test(userAgent)) {
+    const win: any = window;
+    if (/android/i.test(MobileRpcConfiguration.args.platform)) {
       return RpcMobilePlatform.Android;
     }
 
-    if (/iPad|iPhone|iPod/.test(userAgent) && !win.MSStream) {
+    if (/iOS|iPadOS/i.test(MobileRpcConfiguration.args.platform) && !win.MSStream) {
       return RpcMobilePlatform.iOS;
     }
 
     return RpcMobilePlatform.Unknown;
   }
+  /** Read the mobile rpc args */
+  public static readonly args: any = MobileRpcConfiguration.getArgs();
 
   /** Return type of mobile platform using browser userAgent */
   public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlatform();
@@ -38,7 +61,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get isMobileBackend() { return interop !== null; }
 
   /** Check if running backend running on mobile */
-  public static get isMobileFrontend() { return MobileRpcConfiguration.platform !== RpcMobilePlatform.Unknown; }
+  public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
 
   /** Check if running backend running on wkwebview on ios */
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }

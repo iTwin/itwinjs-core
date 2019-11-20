@@ -25,12 +25,13 @@ public;Content
 public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentModifier 
+public;ContentModifiersList
 public;ContentRelatedInstancesSpecification 
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
 public;ContentRule 
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
-public;ContentSpecificationBase
+public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
@@ -65,7 +66,6 @@ public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit
-internal;IClientStateHolder
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -145,15 +145,17 @@ public;PropertyEditorParametersBase
 public;PropertyEditorParameterTypes
 public;PropertyEditorRangeParameters 
 public;PropertyEditorSliderParameters 
-public;PropertyEditorsSpecification
+public;PropertyEditorsSpecification 
 public;PropertyGroup 
 public;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 internal;fromJSON(json: PropertyInfoJSON): PropertyInfo
 internal;toJSON(info: PropertyInfo): PropertyInfoJSON
+beta;PropertyOverrides
 public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
+beta;PropertySpecification 
 public;PropertyValueFormat
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase
@@ -172,6 +174,7 @@ public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RequestOptions
 public;RequestOptionsWithRuleset
+beta;RequestPriority
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
@@ -181,6 +184,7 @@ public;Ruleset
 internal;RulesetManagerState = Ruleset[]
 internal;RulesetManagerState
 public;RulesetsFactory
+beta;RulesetVariable
 internal;RulesetVariablesState
 internal;RulesetVariablesState
 public;RuleTypes
@@ -214,6 +218,6 @@ public;ValuesDictionary
 public;ValuesMap 
 public;Variable
 public;VariablesGroup
-internal;VariableValue = boolean | string | number | number[] | Id64String[]
+beta;VariableValue = boolean | string | number | number[] | Id64String[]
 public;VariableValueType
-internal;VariableValueTypes
+beta;VariableValueTypes

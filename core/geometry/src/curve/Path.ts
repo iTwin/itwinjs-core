@@ -21,6 +21,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
  * @public
  */
 export class Path extends CurveChain {
+   /** String name for schema properties */
   public readonly curveCollectionType = "path";
 
   /** Test if `other` is an instance of `Path` */

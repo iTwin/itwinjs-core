@@ -33,7 +33,7 @@ describe("TableDataProvider", async () => {
   let provider: PresentationTableDataProvider;
 
   before(async () => {
-    initialize();
+    await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     instances = await createMeaningfulInstances(imodel);

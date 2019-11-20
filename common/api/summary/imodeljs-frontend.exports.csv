@@ -24,14 +24,15 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
+beta;AngleDescription 
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
+internal;areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 
@@ -41,9 +42,9 @@ public;AuxCoordSystemSpatialState
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundTerrainTileTreeReference 
-alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
+beta;class BaseQuantityDescription 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -57,6 +58,7 @@ public;BeWheelEventProps
 internal;BingElevationProvider
 internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
+beta;BlankConnectionProps
 beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):
@@ -67,13 +69,11 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
-internal;CesiumWorldTerrainTileLoader 
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;CheckBoxIconsEditorParams 
 alpha;ClipEventType
-alpha;ClipOrientation
 beta;enum ClippingType
 internal;ClipResult
 internal;Clips
@@ -81,16 +81,16 @@ public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
-alpha;ConditionalDisplaySpecification
-alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
+internal;class ContextTileLoader 
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
+internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -100,11 +100,14 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
+alpha;DepthPointOptions
+alpha;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 
@@ -148,17 +151,20 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
-internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise
+beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
+beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+internal;GLTimerResult
+internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-alpha;GroupItemInsertSpec 
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -191,15 +197,17 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
-alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
 alpha;ItemField
 alpha;JsonEditorParams 
 internal;KeyinStatus
+beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 beta;LinkElementsInfo
+internal;LoadSavedPluginsResult
+internal;LoadSavedPluginsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -218,6 +226,7 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+alpha;MeasureAreaByPointsTool 
 alpha;MeasureAreaTool 
 alpha;MeasureDistanceTool 
 alpha;class MeasureElementTool 
@@ -241,6 +250,7 @@ internal;OffScreenTarget
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
 internal;OnScreenTarget 
+beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 public;OrthographicViewState 
 public;OutputMessageAlert
 public;OutputMessagePriority
@@ -254,8 +264,7 @@ beta;PerModelCategoryVisibility
 public;PhysicalModelState 
 internal;PingTestResult
 beta;Pixel
-beta;PlanarClassifierMap = Map
-internal;PlanarClassifiers
+internal;PlanarClassifierMap = Map
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
@@ -267,7 +276,7 @@ beta;PrimitiveValue
 alpha;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
-beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams
+beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
@@ -281,11 +290,11 @@ beta;class RenderClipVolume
 public;RenderContext
 internal;enum RenderDiagnostics
 public;class RenderGraphic 
+public;class RenderGraphicOwner 
 internal;RenderMemory
 internal;RenderPlan
-beta;class RenderPlanarClassifier 
+internal;class RenderPlanarClassifier 
 internal;RenderScheduleState
-internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
@@ -357,7 +366,6 @@ public;TentativePoint
 internal;class TerrainProvider 
 internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
-internal;TextureDrapes
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 
@@ -367,6 +375,8 @@ alpha;TileAdmin
 internal;ViewportSet 
 internal;TiledGraphicsProvider
 internal;class TileLoader
+internal;TileRequest
+internal;TileRequest
 internal;TileTree 
 internal;TileTree
 internal;TileTreeDiscloser
@@ -380,8 +390,6 @@ beta;ToolAssistanceInstruction
 beta;ToolAssistanceInstructions
 beta;ToolAssistanceKeyboardInfo
 beta;ToolAssistanceSection
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
@@ -395,6 +403,9 @@ public;ToolTipOptions
 internal;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;TraversalChildrenDetails
+internal;TraversalDetails
+internal;TraversalSelectionContext
 alpha;TwoWayViewportSync
 alpha;UiItemNode
 alpha;UiProviderRegisteredEventArgs
@@ -435,7 +446,10 @@ public;class ViewTool
 beta;ViewUndoEvent
 public;ViewUndoTool 
 public;WalkViewTool 
-internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth"
+internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query"
+beta;WebGLFeature
+beta;WebGLRenderCompatibilityInfo
+beta;WebGLRenderCompatibilityStatus
 internal;WebMapTileLoader 
 internal;WebMapTileProps 
 internal;WebMapTileTreeProps 

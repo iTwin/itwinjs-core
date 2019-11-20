@@ -255,10 +255,12 @@ export namespace RenderTexture {
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
     Glyph,
-    /** A non-repeating image with no mip-maps, used for example for tiled map imagery. */
+    /** A non-repeating image with no mip-maps, used for example for reality models. */
     TileSection,
     /** A three-dimensional texture used for rendering a skybox. */
     SkyBox,
+    /** A non-repeating image with mip-maps and and anisotropic filtering, used for map tiles when draped on terrain. */
+    FilteredTileSection,
   }
 
   /** Parameters used to construct a [[RenderTexture]]. */
@@ -476,7 +478,11 @@ export class Camera implements CameraProps {
   public getEyePoint() { return this.eye; }
   public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
   public get isValid() { return this.isLensValid && this.isFocusValid; }
-  public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
+  public equals(other: Camera) {
+    return Math.abs(this.lens.radians - other.lens.radians) < .01 &&
+      Math.abs(this.focusDist - other.focusDist) < .1 &&
+      this.eye.isAlmostEqual(other.eye);
+  }
   public clone() { return new Camera(this); }
   public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
@@ -922,6 +928,8 @@ export class FrustumPlanes {
 
   public get isValid(): boolean { return undefined !== this._planes; }
 
+  public get planes() { return this._planes; }
+
   public init(frustum: Frustum) {
     if (undefined === this._planes) {
       this._planes = [];
@@ -1034,6 +1042,8 @@ export namespace AmbientOcclusion {
     readonly bias?: number;
     /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.0025.  The full range of linear depth is 0 to 1. */
     readonly zLengthCap?: number;
+    /** If defined, the maximum distance from the camera's near plane in meters at which ambient occlusion will be applied. If undefined, the maximum distance defaults to 100. */
+    readonly maxDistance?: number;
     /** If defined, raise the final ambient occlusion to the power of this value. Larger values make the ambient shadows darker. If undefined, the intensity defaults to 2.0. */
     readonly intensity?: number;
     /** If defined, indicates the distance to step toward the next texel sample in the current direction. If undefined, texelStepSize defaults to 1.95. */
@@ -1050,26 +1060,29 @@ export namespace AmbientOcclusion {
   export class Settings implements Props {
     private static _defaultBias: number = 0.25;
     private static _defaultZLengthCap: number = 0.0025;
-    private static _defaultIntensity: number = 2.0;
-    private static _defaultTexelStepSize: number = 1.95;
+    private static _defaultMaxDistance: number = 100.0;
+    private static _defaultIntensity: number = 1.0;
+    private static _defaultTexelStepSize: number = 1;
     private static _defaultBlurDelta: number = 1.0;
     private static _defaultBlurSigma: number = 2.0;
     private static _defaultBlurTexelStepSize: number = 1.0;
 
-    public readonly bias?: number;
-    public readonly zLengthCap?: number;
-    public readonly intensity?: number;
-    public readonly texelStepSize?: number;
-    public readonly blurDelta?: number;
-    public readonly blurSigma?: number;
-    public readonly blurTexelStepSize?: number;
+    public readonly bias: number;
+    public readonly zLengthCap: number;
+    public readonly maxDistance: number;
+    public readonly intensity: number;
+    public readonly texelStepSize: number;
+    public readonly blurDelta: number;
+    public readonly blurSigma: number;
+    public readonly blurTexelStepSize: number;
 
     private constructor(json?: Props) {
       if (undefined === json)
-        return;
+        json = {};
 
       this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
       this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
+      this.maxDistance = JsonUtils.asDouble(json.maxDistance, Settings._defaultMaxDistance);
       this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
       this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
       this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
@@ -1085,6 +1098,7 @@ export namespace AmbientOcclusion {
       return {
         bias: this.bias,
         zLengthCap: this.zLengthCap,
+        maxDistance: this.maxDistance,
         intensity: this.intensity,
         texelStepSize: this.texelStepSize,
         blurDelta: this.blurDelta,
@@ -1178,15 +1192,44 @@ export namespace HiddenLine {
     }
 
     /** Create a Style equivalent to this one but with the specified color override. */
-    public overrideColor(color: ColorDef): Style {
-      if (undefined !== this.color && this.color.equals(color))
+    public overrideColor(color: ColorDef | undefined): Style {
+      if (undefined === this.color && undefined === color)
+        return this;
+
+      if (undefined !== this.color && undefined !== color && this.color.equals(color))
         return this;
 
       return Style.fromJSON({
-        color,
-        ovrColor: true,
+        color: undefined !== color ? color.clone() : undefined,
+        ovrColor: undefined !== color,
         pattern: this.pattern,
         width: this.width,
+      });
+    }
+
+    /** Create a Style equivalent to this one but with the specified pattern overide. */
+    public overridePattern(pattern: LinePixels | undefined): Style {
+      if (pattern === this.pattern)
+        return this;
+
+      return Style.fromJSON({
+        color: this.color,
+        ovrColor: this.ovrColor,
+        pattern,
+        width: this.width,
+      });
+    }
+
+    /** Create a Style equivalent to this one but with the specified width overide. */
+    public overrideWidth(width: number | undefined): Style {
+      if (width === this.width)
+        return this;
+
+      return Style.fromJSON({
+        color: this.color,
+        ovrColor: this.ovrColor,
+        pattern: this.pattern,
+        width,
       });
     }
 
@@ -1261,6 +1304,18 @@ export namespace HiddenLine {
         hidden: this.hidden.toJSON(),
         transThreshold: this.transThreshold,
       };
+    }
+
+    /** Create a Settings equivalent to this one with the exception of those properties defined in the supplied JSON. */
+    public override(props: SettingsProps): Settings {
+      const visible = props.visible;
+      const hidden = props.hidden;
+      const transparencyThreshold = props.transThreshold;
+      return Settings.fromJSON({
+        visible: undefined !== visible ? visible : this.visible,
+        hidden: undefined !== hidden ? hidden : this.hidden,
+        transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
+      });
     }
 
     private constructor(json: SettingsProps) {
@@ -2520,20 +2575,37 @@ export namespace SolarShadows {
     private static readonly _defaultBias = .001;
     /** Shadow color */
     public color: ColorDef;
-    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects.
+     * @alpha
+     */
     public bias: number;
 
     public constructor(props?: SolarShadowProps) {
       this.bias = props ? JsonUtils.asDouble(props.bias, SolarShadows.Settings._defaultBias) : SolarShadows.Settings._defaultBias;
       this.color = (props !== undefined && props.color !== undefined) ? ColorDef.fromJSON(props.color) : new ColorDef(ColorByName.grey);
     }
-    public clone() { return new SolarShadows.Settings(this); }
+    public clone(result?: SolarShadows.Settings): SolarShadows.Settings {
+      if (undefined === result)
+        return new SolarShadows.Settings(this);
+
+      result.color.setFrom(this.color);
+      result.bias = this.bias;
+      return result;
+    }
+
     public static fromJSON(props?: Props): Settings { return new Settings(props); }
     public toJSON(): Props {
       return {
         bias: this.bias,
         color: this.color,
       };
+    }
+
+    public equals(other: SolarShadows.Settings): boolean {
+      if (this === other)
+        return true;
+
+      return this.bias === other.bias && this.color.equals(other.color);
     }
   }
 }

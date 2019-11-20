@@ -4,15 +4,14 @@
 
 ```ts
 
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
+import { BadgeType } from '@bentley/ui-abstract';
+import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { UiError as UiError_2 } from '@bentley/ui-abstract';
 
 // @internal
 export class AnnularSector {
@@ -49,6 +48,60 @@ export class Annulus {
     // (undocumented)
     outer: Circle;
 }
+
+// @alpha
+export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
+    constructor(props: AutoSuggestProps);
+    // (undocumented)
+    componentDidUpdate(prevProps: AutoSuggestProps): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface AutoSuggestData {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    // @internal (undocumented)
+    alwaysRenderSuggestions?: boolean;
+    getSuggestions?: (value: string) => AutoSuggestData[];
+    onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onSuggestionSelected: (selected: AutoSuggestData) => void;
+    options: AutoSuggestData[];
+    setFocus?: boolean;
+    value?: string;
+}
+
+// @internal
+export class Badge extends React.PureComponent<BadgeProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface BadgeProps extends CommonProps {
+    // (undocumented)
+    svg: any;
+}
+
+// @internal
+export class BadgeUtilities {
+    static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType;
+    static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode;
+    static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
+}
+
+// @internal
+export const BetaBadge: React.FunctionComponent<CommonProps>;
 
 // @public
 export const BlockText: React.FunctionComponent<TextProps>;
@@ -260,6 +313,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 
 // @public
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+    badgeType?: BadgeType;
     disabled?: boolean;
     icon?: string | React.ReactNode;
     // (undocumented)
@@ -460,7 +514,9 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
     footerStyle?: React.CSSProperties;
+    header?: React.ReactNode;
     height?: string | number;
+    hideHeader?: boolean;
     inset?: boolean;
     maxHeight?: number;
     maxWidth?: number;
@@ -492,6 +548,73 @@ export class Div extends React.PureComponent<DivProps> {
 export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
+
+// @beta
+export const DivWithOutsideClick: {
+    new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
+        handleDocumentClick: (e: MouseEvent) => any;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
+        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
+            children?: React.ReactNode;
+        }>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+    };
+    contextType?: React.Context<any> | undefined;
+};
 
 // @public
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
@@ -580,6 +703,42 @@ export enum Face {
 // @alpha (undocumented)
 export const FeaturedTile: React.FunctionComponent<TileProps>;
 
+// @alpha
+export class Field extends React.Component<IFieldProps> {
+    constructor(props: IFieldProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface FieldDef {
+    // (undocumented)
+    editor?: FieldEditor;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    options?: string[] | {
+        [key: string]: string;
+    };
+    // (undocumented)
+    value?: any;
+}
+
+// @alpha
+export interface FieldDefinitions {
+    // (undocumented)
+    [key: string]: FieldDef;
+}
+
+// @alpha
+export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
+
+// @alpha
+export interface FieldValues {
+    // (undocumented)
+    [key: string]: any;
+}
+
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
@@ -602,7 +761,23 @@ export class FocusTrap extends React.Component<Props, State> {
     render(): JSX.Element | null;
     }
 
-// @internal
+// @alpha
+export class Form extends React.Component<IFormProps, FormState> {
+    constructor(props: IFormProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export const FormContext: React.Context<FormContextState | undefined>;
+
+// @alpha
+export interface FormContextState extends FormState {
+    // (undocumented)
+    setValues: (values: FieldValues) => void;
+}
+
+// @internal @deprecated
 export const getClassName: (obj: any) => string;
 
 // @internal
@@ -664,6 +839,29 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
     render(): JSX.Element;
 }
 
+// @public
+export const Icon: React.FunctionComponent<IconProps>;
+
+// @alpha
+export class IconInput extends React.PureComponent<IconInputProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface IconInputProps extends InputProps {
+    containerClassName?: string;
+    icon: React.ReactNode;
+}
+
+// @public
+export interface IconProps {
+    iconSpec?: IconSpec;
+}
+
+// @public
+export type IconSpec = string | React.ReactNode;
+
 // @beta
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
@@ -685,11 +883,26 @@ export interface ImageCheckBoxProps extends CommonProps {
 // @public
 export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
+export class InputLabel extends React.PureComponent<InputLabelProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @public
+export interface InputLabelProps extends LabeledComponentProps, MessagedComponentProps, CommonProps {
+    // (undocumented)
+    disabled?: boolean;
+}
+
+// @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    setFocus?: boolean;
 }
 
 // @public
@@ -743,6 +956,19 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
+}
+
+// @public
+export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @public
+export interface LabeledToggleProps extends ToggleProps {
+    label?: string;
+    labelClassName?: string;
+    labelStyle?: React.CSSProperties;
 }
 
 // @public
@@ -914,6 +1140,9 @@ export const MinimalTile: React.FunctionComponent<TileProps>;
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
 
+// @internal
+export const NewBadge: React.FunctionComponent<CommonProps>;
+
 // @beta
 export interface NoChildrenProps {
     // (undocumented)
@@ -1025,6 +1254,7 @@ export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
+    isPinned?: boolean;
     left: number;
     moveFocus?: boolean;
     // (undocumented)
@@ -1306,14 +1536,17 @@ export interface SearchBoxProps extends CommonProps {
 // @public
 export class Select extends React.PureComponent<SelectProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: string[] | {
         [key: string]: string;
     };
+    setFocus?: boolean;
 }
 
 // @beta
@@ -1560,6 +1793,8 @@ export const Title2: React.FunctionComponent<TextProps>;
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     constructor(props: ToggleProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     componentDidUpdate(prevProps: ToggleProps): void;
     // (undocumented)
     static defaultProps: Partial<ToggleProps>;
@@ -1578,9 +1813,11 @@ export interface ToggleProps extends CommonProps {
     buttonType?: ToggleButtonType;
     disabled?: boolean;
     isOn?: boolean;
+    large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
     rounded?: boolean;
+    setFocus?: boolean;
     showCheckmark?: boolean;
 }
 
@@ -1632,12 +1869,12 @@ export interface TreeNodePlaceholderProps extends CommonProps {
 
 // @public
 export interface TreeNodeProps extends CommonProps {
+    // (undocumented)
+    ["data-testid"]?: string;
     // @beta
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    ["data-testid"]?: string;
     // (undocumented)
     icon?: React.ReactChild;
     // (undocumented)
@@ -1697,14 +1934,11 @@ export class UiCore {
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
-// @public
-export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
-}
+// @public @deprecated
+export const UiError: typeof UiError_2;
 
 // @public
-export class UiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
-    emit(args: TEventArgs): void;
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
 // @beta
@@ -1745,6 +1979,9 @@ export interface UnderlinedButtonProps {
     onClick?: (e: React.MouseEvent) => void;
     title?: string;
 }
+
+// @alpha
+export function useEffectSkipFirst(callback: () => void, deps?: any[]): void;
 
 // @public
 export enum VerticalAlignment {
@@ -1791,6 +2028,18 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithIsPressedProps, context?: any): {
         handleOnPointerDown: () => void;
@@ -1808,6 +2057,18 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         refs: {
             [key: string]: React.ReactInstance;
         };
+        componentDidMount?(): void;
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentWillUnmount?(): void;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
@@ -1819,13 +2080,16 @@ export interface WithIsPressedProps {
 }
 
 // @public
-export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean) => {
+export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
-        ref: HTMLDivElement | undefined;
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
-        setRef: (element: HTMLDivElement) => void;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -1837,13 +2101,26 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
-        ref: HTMLDivElement | undefined;
+        ref: React.RefObject<HTMLDivElement>;
+        isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
-        setRef: (element: HTMLDivElement) => void;
+        handleDocumentPointerDown: (e: PointerEvent) => void;
+        handleDocumentPointerUp: (e: PointerEvent) => any;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -1855,6 +2132,16 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
@@ -1883,6 +2170,15 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithTimeoutProps, context?: any): {
         timer: Timer;
@@ -1901,6 +2197,15 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         refs: {
             [key: string]: React.ReactInstance;
         };
+        shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
+        componentWillMount?(): void;
+        UNSAFE_componentWillMount?(): void;
+        componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { testViewports, comparePixelData, Color, testOnScreenViewport } from "../TestViewport";
+import { testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel, RenderSystem, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
@@ -121,6 +121,40 @@ describe("Render mirukuru with VAOs disabled", () => {
       expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
       expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
     });
+  });
+});
+
+describe("Properly create on-screen viewport with directScreenRendering enabled", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.directScreenRendering = true;
+
+    IModelApp.startup({ renderSys: renderSysOpts });
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    IModelApp.shutdown();
+  });
+
+  it("single viewport should render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      expect(vp.rendersToScreen).to.be.true;
+    });
+  });
+
+  it("neither of dual viewports should render using system canvas", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
+    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.false;
+    expect(vp1.rendersToScreen).to.be.false;
   });
 });
 

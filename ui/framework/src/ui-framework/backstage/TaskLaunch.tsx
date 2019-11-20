@@ -5,16 +5,21 @@
 /** @module Backstage */
 
 import * as React from "react";
-
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { Logger } from "@bentley/bentleyjs-core";
-
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { Backstage } from "./Backstage";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
+
+// cspell:ignore safearea
+
+// tslint:disable-next-line:variable-name
+const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public
@@ -42,7 +47,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    const state = getBackstageItemStateFromProps(props);
+    const state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
     /* istanbul ignore else */
     if (this.props.isActive === undefined)
       state.isActive = WorkflowManager.activeTaskId === this.props.taskId && WorkflowManager.activeWorkflowId === this.props.workflowId;
@@ -98,7 +103,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   public componentDidUpdate(_prevProps: TaskLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(this.props);
+    const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     updatedState.isActive = WorkflowManager.activeTaskId === this.props.taskId && WorkflowManager.activeWorkflowId === this.props.workflowId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
@@ -114,7 +119,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem
+      <BackstageItem
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
@@ -122,7 +127,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
         onClick={this.execute}
       >
         {this.state.label}
-      </NZ_BackstageItem>
+      </BackstageItem>
     );
   }
 }

@@ -33,7 +33,7 @@ describe("SchemaValidationVisitor tests", () => {
 
   beforeEach(async () => {
     visitor = new SchemaValidationVisitor();
-    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
   });
 
   afterEach(() => {
@@ -74,7 +74,7 @@ describe("SchemaValidationVisitor tests", () => {
       const ruleSetB = new TestRuleSetB();
       visitor.registerRuleSet(ruleSetA);
       visitor.registerRuleSet(ruleSetB);
-      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
 
       await visitor.visitFullSchema(testSchema);
 
@@ -84,7 +84,7 @@ describe("SchemaValidationVisitor tests", () => {
 
     it("No rules, visit does not fail", async () => {
       visitor.registerRuleSet(new EmptyRuleSet());
-      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
 
       await visitor.visitFullSchema(testSchema);
     });
@@ -95,7 +95,7 @@ describe("SchemaValidationVisitor tests", () => {
       const reporter = new TestReporter();
       const reportSpy = sinon.spy(reporter, "report");
       visitor.registerReporter(reporter);
-      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
 
       await visitor.visitFullSchema(testSchema);
 

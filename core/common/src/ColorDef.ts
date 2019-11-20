@@ -323,6 +323,8 @@ export class ColorDef {
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
   /** True if this ColorDef is fully opaque */
   public get isOpaque(): boolean { return 255 === this.getAlpha(); }
+  /** Get the transparency value for this ColorDef (inverse of alpha). Will be between 0-255 */
+  public getTransparency(): number { return 255 - this.getAlpha(); }
   /** Change the transparency value for this ColorDef
    * @param transparency the new transparency value. Must be between 0-255, where 0 means 'fully opaque' and 255 means 'fully transparent'.
    */
@@ -404,7 +406,7 @@ export class ColorDef {
 
     if (val && val.length > 0) {   // ColorRgb value
       Object.entries(ColorByName).some((v) => {
-        if (v[1].toLowerCase() !== val)
+        if (typeof v[1] !== "string" || v[1].toLowerCase() !== val)
           return false;
         this._tbgr = Number(v[0]);
         return true;
@@ -644,6 +646,15 @@ Object.freeze(ColorDef.red);
 Object.freeze(ColorDef.green);
 Object.freeze(ColorDef.blue);
 
+/** JSON representation of an [[RgbColor]]
+ * @public
+ */
+export type RgbColorProps = {
+  r: number;
+  g: number;
+  b: number;
+} | RgbColor;
+
 /** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255].
  * @public
  */
@@ -663,5 +674,25 @@ export class RgbColor {
   public static fromColorDef(colorDef: ColorDef): RgbColor {
     const colors = colorDef.colors;
     return new RgbColor(colors.r, colors.g, colors.b);
+  }
+
+  public toJSON(): RgbColorProps {
+    return { r: this.r, g: this.g, b: this.b };
+  }
+
+  public static fromJSON(json: RgbColorProps | undefined): RgbColor {
+    let r = 0xff;
+    let g = 0xff;
+    let b = 0xff;
+    if (undefined !== json) {
+      if (typeof json.r === "number")
+        r = json.r;
+      if (typeof json.g === "number")
+        g = json.g;
+      if (typeof json.b === "number")
+        b = json.b;
+    }
+
+    return new RgbColor(r, g, b);
   }
 }

@@ -21,4 +21,9 @@ export class Constant {
   public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   /** circumference of the earth in meters. */
   public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;
+  /** radius of the earth using WGS-84 ellipsoid, in meters */
+  public static readonly earthRadiusWGS84 = {
+    polar: 6356752.3,
+    equator: 6378137.0,
+  };
 }

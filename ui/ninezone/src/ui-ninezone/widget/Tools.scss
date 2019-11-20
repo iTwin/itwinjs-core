@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "./tools/button/_variables";
+@import "./tools/button/variables";
 @import "../widgetopacity";
 
 .nz-widget-tools {
@@ -62,7 +62,6 @@
   > .nz-horizontal-toolbar {
     grid-area: htools;
     width: 100%;
-    pointer-events: auto;
     @include nz-widget-opacity;
   }
 
@@ -71,7 +70,6 @@
     display: inline-flex;
     flex-direction: column;
     grid-area: vtools;
-    pointer-events: auto;
     @include nz-widget-opacity;
   }
 }

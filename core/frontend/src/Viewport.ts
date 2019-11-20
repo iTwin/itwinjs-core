@@ -6,11 +6,11 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
-  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d,
+  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ, Geometry,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
   Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -19,7 +19,7 @@ import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ToolTipOptions } from "./NotificationManager";
+import { ToolTipOptions, MessageBoxType, MessageBoxIconType } from "./NotificationManager";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget } from "./render/System";
@@ -338,6 +338,34 @@ export class ViewRect {
   }
 }
 
+/** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+export enum DepthPointSource {
+  /** Depth point from geometry within specified radius of pick point */
+  Geometry,
+  /** Depth point from reality model within specified radius of pick point */
+  Model,
+  /** Depth point from ray projection to background map plane */
+  BackgroundMap,
+  /** Depth point from ray projection to ground plane */
+  GroundPlane,
+  /** Depth point from ray projection to grid plane */
+  Grid,
+  /** Depth point from ray projection to acs plane */
+  ACS,
+  /** Depth point from plane passing through view target point */
+  TargetPoint,
+}
+
+/** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
+export interface DepthPointOptions {
+  /** If true, geometry with the "non-locatable" flag set will not be selected. */
+  excludeNonLocatable?: boolean;
+  /** If true, geometry from pickable decorations will not be selected. */
+  excludeDecorations?: boolean;
+  /** If true, geometry from an IModelConnection other than the one associated with the Viewport will not be selected. */
+  excludeExternalIModels?: boolean;
+}
+
 /** The minimum and maximum values for the z-depth of a rectangle of screen space.
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  * @public
@@ -631,8 +659,6 @@ export class ViewFrustum {
         if (worldToNpc === undefined)
           return;
 
-        const minimumEyeDistance = 10.0;
-        const horizonDistance = 10000;
         worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
 
         for (let i = 0; i < 4; i++) {
@@ -643,11 +669,16 @@ export class ViewFrustum {
           else includeHorizon = true;
         }
         if (includeHorizon) {
-          const rangeCenter = extents.fractionToPoint(.5, .5, .5);
-          const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
-          extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+          let horizonDistance = 10000;
+          const eyePoint = view.getEyePoint();
+          const eyeHeight = eyePoint.z;
+          if (eyeHeight > 0.0)          // Assume zero is ground level and increase horizon based on earth's curvature.
+            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator));
+
+          extents.extend(eyePoint.plusScaled(viewZ, -horizonDistance));
         }
         if (view.isCameraOn) {
+          const minimumEyeDistance = 10.0;
           extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
         }
 
@@ -949,6 +980,11 @@ export namespace PerModelCategoryVisibility {
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
+    /** Iterates each override.
+     * @param func Accepts the model and category Ids and a boolean indicating if the category is visible. Returns `false` to terminate iteration or `true` to continue.
+     * @returns `true` if iteration completed; `false` if the callback requested early termination.
+     */
+    forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
   }
 }
 
@@ -1094,6 +1130,14 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         }
       }
     }
+  }
+
+  public forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean {
+    for (const entry of this)
+      if (!func(entry.modelId, entry.categoryId, entry.visible))
+        return false;
+
+    return true;
   }
 }
 
@@ -1255,6 +1299,7 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
+  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
 
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -1304,7 +1349,17 @@ export abstract class Viewport implements IDisposable {
   public get hilite(): Hilite.Settings { return this._hilite; }
   public set hilite(hilite: Hilite.Settings) {
     this._hilite = hilite;
-    this._selectionSetDirty = true;
+    this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
+   * @see [FeatureSymbology.Appearance.emphasized].
+   * @beta
+   */
+  public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
+  public set emphasisSettings(settings: Hilite.Settings) {
+    this._emphasis = settings;
+    this.invalidateRenderPlan();
   }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
@@ -1589,11 +1644,6 @@ export abstract class Viewport implements IDisposable {
         this.view.markModelSelectorChanged();
     });
   }
-
-  /** @internal */
-  public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
-  /** @internal */
-  public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
    * @see [[Tile.DebugBoundingBoxes]]
@@ -2124,7 +2174,7 @@ export abstract class Viewport implements IDisposable {
   /** Scroll the view by a given number of pixels.
    * @param screenDist distance to scroll, in pixels
    */
-  public scroll(screenDist: Point2d, options?: ViewChangeOptions) {
+  public scroll(screenDist: XAndY, options?: ViewChangeOptions) {
     const view = this.view;
     if (!view)
       return;
@@ -2182,7 +2232,8 @@ export abstract class Viewport implements IDisposable {
       delta.y *= factor;
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+        return;
 
       const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 
@@ -2207,7 +2258,7 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored (e.g., those having null range of nonsensical origin). If no valid placements are supplied, this function does nothing.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
@@ -2242,7 +2293,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2254,8 +2305,9 @@ export abstract class Viewport implements IDisposable {
       return;
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
-      if (props.placement !== undefined && this.view.viewsModel(props.model))
-        placementProps.push(props.placement);
+      const placement = (props as any).placement;
+      if (placement !== undefined && this.view.viewsModel(props.model))
+        placementProps.push(placement);
     }
     this.zoomToPlacementProps(placementProps, options);
   }
@@ -2274,7 +2326,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(this.getFrustum().clone(), options);
+    this.finishViewChange(this.getFrustum(), options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
@@ -2585,7 +2637,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
-        target.changeSolarShadowMap(context.solarShadowMap);
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;
@@ -2675,10 +2727,17 @@ export abstract class Viewport implements IDisposable {
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
-   * @note By default the image is returned upside-down. Pass `true` for `flipVertically` to flip it along the x-axis.
+   * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     return this.target.readImage(rect, targetSize, flipVertically);
+  }
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+   * @internal
+   */
+  public readImageToCanvas(): HTMLCanvasElement {
+    return this.target.readImageToCanvas();
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
@@ -2769,6 +2828,7 @@ export class ScreenViewport extends Viewport {
   private readonly _forwardStack: ViewStateUndo[] = [];
   private readonly _backStack: ViewStateUndo[] = [];
   private _currentBaseline?: ViewStateUndo;
+  private _webglCanvas?: HTMLCanvasElement;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2818,9 +2878,7 @@ export class ScreenViewport extends Viewport {
   /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
   private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
-    // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(this.vpDiv).zIndex || "0", 10);
-    element.style.zIndex = (parentZ + zIndex).toString();
+    element.style.zIndex = zIndex.toString();
     parent.appendChild(element);
   }
 
@@ -2832,6 +2890,57 @@ export class ScreenViewport extends Viewport {
     div.style.overflow = overflowHidden ? "hidden" : "visible";
     this.addChildDiv(this.vpDiv, div, z);
     return div;
+  }
+
+  private makeLogoCards(): HTMLDivElement {
+    const logoDiv = document.createElement("div");
+    logoDiv.className = "logo-cards-div";
+    logoDiv.appendChild(IModelApp.makeIModelJsLogoCard());
+    if (undefined !== IModelApp.applicationLogoCard)
+      logoDiv.appendChild(IModelApp.applicationLogoCard());
+    this.displayStyle.getAttribution(logoDiv, this);
+    return logoDiv;
+  }
+
+  private _logo!: HTMLImageElement;
+  /** internal */
+  public get logo() { return this._logo; }
+
+  /** @internal */
+  protected addLogo() {
+    const logo = document.createElement("img");
+    this._logo = logo;
+    logo.src = "images/imodeljs.svg";
+    logo.className = "imodeljs-logo";
+    this.vpDiv.appendChild(logo);
+
+    let popup: HTMLDivElement | undefined;
+    const stopProp = (ev: MouseEvent, fn: () => void) => { fn(); ev.stopPropagation(); };
+    logo.onmouseenter = (ev) => stopProp(ev, () => {
+      popup = document.createElement("div"); // this div is to allow the logo cards to animate from the bottom of the view
+      popup.className = "logo-cards-container";
+      this.vpDiv.appendChild(popup);
+
+      const cards = this.makeLogoCards();
+      cards.style.top = "100%"; // set it at the bottom of the container so it is entirely clipped off
+      popup.appendChild(cards);
+
+      setTimeout(() => {
+        if (popup)
+          popup.style.height = cards.clientHeight + 10 + "px"; // wait for a delay to allow the cards to load. We need to set the height before we start the animation
+        cards.style.top = "0%"; // this causes the "up" animation
+      }, 10);
+    });
+    logo.onclick = (ev) => stopProp(ev, () => {
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, this.makeLogoCards(), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
+    });
+    logo.onmouseleave = (ev) => stopProp(ev, () => {
+      if (undefined !== popup) { // if we have a popup showing, remove it
+        this.vpDiv.removeChild(popup);
+        popup = undefined;
+      }
+    });
+    logo.onmousemove = (ev) => ev.stopPropagation();
   }
 
   /** @internal */
@@ -2853,6 +2962,7 @@ export class ScreenViewport extends Viewport {
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
     this.setCursor();
+    this.addLogo();
   }
 
   /** Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[ScreenViewport.toolTipDiv]].
@@ -2863,6 +2973,12 @@ export class ScreenViewport extends Viewport {
    */
   public openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
+  }
+
+  /** @internal */
+  public mousePosFromEvent(ev: MouseEvent): XAndY {
+    const rect = this.getClientRect();
+    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
@@ -2881,18 +2997,38 @@ export class ScreenViewport extends Viewport {
    * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
+    const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
+    if (DepthPointSource.TargetPoint === depthResult.source)
+      return undefined;
+    const result = undefined !== out ? out : new Point3d();
+    result.setFrom(depthResult.plane.getOriginRef());
+    return result;
+  }
+
+  /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
+   * If no geometry is selected, return the point projected to the most appropriate reference plane.
+   * @param pickPoint Point to search about, in world coordinates
+   * @param radius Radius, in pixels, of the circular area to search.
+   * @param options Optional settings to control what can be selected.
+   * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
+   * @note The result plane normal is valid when the source is not geometry or a reality model.
+   * @alpha
+   */
+  public pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
+    if (!this.view.is3d())
+      return { plane: Plane3dByOriginAndUnitNormal.createXYPlane(pickPoint), source: DepthPointSource.ACS };
+
     const picker = new ElementPicker();
-    const options = new LocateOptions();
-    options.allowNonLocatable = allowNonLocatable;
-    if (0 !== picker.doPick(this, pickPoint, radius, options)) {
-      const result = undefined !== out ? out : new Point3d();
-      result.setFrom(picker.getHit(0)!.getPoint());
-      return result;
+    const locateOpts = new LocateOptions();
+    locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
+    locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
+    locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+
+    if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
+      const hitDetail = picker.getHit(0)!;
+      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), this.view.getZVector())!;
+      return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
     }
-    // If no background map is displayed, use ACS xy plane as this is where unsnapped points would be projected to.
-    let plane = this.backgroundMapPlane;
-    if (undefined === plane)
-      plane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2))!;
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
     const direction = Vector3d.createFrom(eyePoint);
@@ -2902,15 +3038,30 @@ export class ScreenViewport extends Viewport {
       direction.setFrom(pickPoint.vectorTo(xyzEye));
     }
     direction.scaleToLength(-1.0, direction);
-    const rayToEye = Ray3d.create(pickPoint, direction);
+    const boresite = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
-    if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
-      return undefined;
 
-    const planeResult = undefined !== out ? out : new Point3d();
-    planeResult.setFrom(projectedPt);
-    return planeResult;
+    if (undefined !== this.backgroundMapPlane && undefined !== boresite.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.backgroundMapPlane.getNormalRef())!, source: DepthPointSource.BackgroundMap };
+
+    if (this.view.getDisplayStyle3d().environment.ground.display) {
+      const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
+      if (undefined !== groundPlane && undefined !== boresite.intersectionWithPlane(groundPlane, projectedPt))
+        return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
+    }
+
+    const acsPlane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2));
+    if (undefined !== acsPlane && undefined !== boresite.intersectionWithPlane(acsPlane, projectedPt))
+      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
+
+    const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
+    if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
+      targetPointNpc.z = 0.5;
+
+    this.worldToNpc(pickPoint, projectedPt); projectedPt.z = targetPointNpc.z; this.npcToWorld(projectedPt, projectedPt);
+    return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
+
   /** @internal */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
     if (!animationTime || 0.0 >= animationTime.milliseconds)
@@ -3129,6 +3280,35 @@ export class ScreenViewport extends Viewport {
       context.addCanvasDecoration({ position, drawDecoration }, true);
     }
   }
+
+  /** By default, a Viewport's webgl content is rendered to an off-screen canvas owned by the RenderSystem, then the resultant image is copied to the 2d rendering context
+   * belonging to the Viewport's own canvas. However, on non-chromium-based browsers this copying incurs a significant performance penalty. So, when only one Viewport
+   * needs to be drawn, we can switch to rendering the webgl content directly to the screen to improve performance in those browsers.
+   * ViewManager takes care of toggling this behavior.
+   * @internal
+   */
+  public get rendersToScreen(): boolean { return undefined !== this._webglCanvas; }
+  public set rendersToScreen(toScreen: boolean) {
+    if (toScreen === this.rendersToScreen)
+      return;
+
+    // Returns a webgl canvas if we're rendering webgl directly to the screen.
+    const webglCanvas = this.target.setRenderToScreen(toScreen);
+    if (undefined === webglCanvas) {
+      assert(undefined !== this._webglCanvas); // see getter...
+      this.vpDiv.removeChild(this._webglCanvas!);
+      this._webglCanvas = undefined;
+    } else {
+      assert(undefined === this._webglCanvas); // see getter...
+      this._webglCanvas = webglCanvas;
+
+      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
+      this.addChildDiv(this.vpDiv, webglCanvas, 5);
+    }
+
+    this.target.updateViewRect();
+    this.invalidateRenderPlan();
+  }
 }
 
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
@@ -3204,4 +3384,21 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
   }
 
   outP.setFrom(temp.plus(linePt));
+}
+
+/** Two views are considered compatible if they are from the same imodel, are both spatial views, or share a model in common.
+ * Useful for implementing tools and decorators when multiple views are open.
+ * @returns true if views are compatible.
+ * @internal
+ */
+export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean {
+  if (vp === targetVp)
+    return true;
+  if (vp.view.iModel !== targetVp.view.iModel)
+    return false;
+  if (vp.view.isSpatialView() && targetVp.view.isSpatialView())
+    return true;
+  let allowView = false;
+  vp.view.forEachModel((model) => { if (!allowView && targetVp.view.viewsModel(model.id)) allowView = true; });
+  return allowView; // Accept if this view shares a model in common with target.
 }

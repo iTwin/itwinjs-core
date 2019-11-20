@@ -33,6 +33,7 @@ interface TimelineComponentProps {
   onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
   onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
   onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
+  alwaysMinimized?: boolean; // always display in miniMode with no expand menu
 }
 
 interface TimelineComponentState {
@@ -62,11 +63,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      minimized: this.props.minimized,
+      minimized: this.props.alwaysMinimized ? true : this.props.minimized,
       currentDuration: props.initialDuration ? props.initialDuration : 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,
-    };
+     };
 
     this._expandLabel = UiComponents.translate("timeline.expand");
     this._minimizeLabel = UiComponents.translate("timeline.minimize");
@@ -76,6 +77,12 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   public componentWillUnmount() {
     window.cancelAnimationFrame(this._requestFrame);
     this._unmounted = true;
+  }
+
+  public componentDidUpdate (prevProps: TimelineComponentProps) {
+    if (this.props.initialDuration !== prevProps.initialDuration) {
+      this._setDuration(this.props.initialDuration ? this.props.initialDuration : 0 );
+    }
   }
 
   // user clicked backward button
@@ -264,12 +271,13 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _renderSettings = () => {
     const expandName = (this.state.minimized) ? this._expandLabel : this._minimizeLabel;
     const hasDates = this.props.startDate && this.props.endDate;
+    const alwaysMinimized = this.props.alwaysMinimized;
     const { totalDuration } = this.state;
     return (
       <>
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={Position.BottomRight}>
-          {hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
+          {!alwaysMinimized && hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
           <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
           <ContextMenuItem isSeparator={true} />
           <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
@@ -290,7 +298,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     const miniMode = minimized || !hasDates;
 
     return (
-      <div className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")}>
+      <div data-testid="timeline-component" className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")} >
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward} />

@@ -24,3 +24,4 @@ Web Links
   * [Triple Product of Vectors](https://en.wikipedia.org/wiki/Triple_product)
 * Transformations
   * [Rotation Matrix](https://en.wikipedia.org/wiki/Rotation_matrix)
+

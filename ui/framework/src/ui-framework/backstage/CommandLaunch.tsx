@@ -7,14 +7,20 @@
 import * as React from "react";
 
 import { Logger } from "@bentley/bentleyjs-core";
+import { CommandHandler } from "@bentley/ui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-
+import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
-import { CommandHandler } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
+import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
+
+// cspell:ignore safearea
+
+// tslint:disable-next-line:variable-name
+const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
@@ -40,7 +46,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    this.state = getBackstageItemStateFromProps(props);
+    this.state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
   }
 
   public componentDidMount() {
@@ -86,7 +92,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   }
 
   public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(this.props);
+    const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }
@@ -94,7 +100,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem
+      <BackstageItem
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
@@ -102,7 +108,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
         onClick={this.execute}
       >
         {this.state.label}
-      </NZ_BackstageItem>
+      </BackstageItem>
     );
   }
 }

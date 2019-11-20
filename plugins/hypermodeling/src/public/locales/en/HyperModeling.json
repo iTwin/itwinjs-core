@@ -1,0 +1,42 @@
+{
+  "tools": {
+    "HyperModeling": {
+      "Marker": {
+        "Display": {
+          "keyin": "hypermodeling marker display"
+        },
+        "Category": {
+          "keyin": "hypermodeling marker category"
+        },
+        "Type": {
+          "Section": {
+            "keyin": "hypermodeling marker type section"
+          },
+          "Detail": {
+            "keyin": "hypermodeling marker type detail"
+          },
+          "Elevation": {
+            "keyin": "hypermodeling marker type elevation"
+          },
+          "Plan": {
+            "keyin": "hypermodeling marker type plan"
+          }
+        }
+      }
+    }
+  },
+  "Message": {
+    "SectionCallout": "Section Callout",
+    "DetailCallout": "Detail Callout",
+    "ElevationCallout": "Elevation Callout",
+    "PlanCallout": "Plan Callout",
+    "ToggleSection": "Toggle Section Display",
+    "AlignSection": "Align View To Section",
+    "OpenSection": "Open Section View"
+  },
+  "Error": {
+    "NotFoundModels": "No section locations found for displayed models",
+    "NotFoundCategories": "No section locations found for displayed categories",
+    "NotFoundTypes": "No section locations found for displayed types"
+  }
+}

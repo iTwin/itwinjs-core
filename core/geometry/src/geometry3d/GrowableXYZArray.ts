@@ -5,13 +5,13 @@
 
 /** @module ArraysAndInterfaces */
 
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d, Range1d } from "./Range";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -182,6 +182,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       const n = p.length;
       for (let i = 0; i + 2 < n; i += 3)
         this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    } else if (p instanceof IndexedXYZCollection) {
+      for (let i = 0; i < p.length; i++)
+        this.pushXYZ(p.getXAtUncheckedPointIndex(i), p.getYAtUncheckedPointIndex(i), p.getZAtUncheckedPointIndex(i));
     }
   }
   /**
@@ -565,6 +568,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
     }
   }
+  /** get range of points. */
+  public getRange(transform?: Transform): Range3d {
+    const range = Range3d.createNull();
+    this.extendRange(range, transform);
+    return range;
+  }
 
   /** Initialize `range` with coordinates in this array. */
   public setRange(range: Range3d, transform?: Transform) {
@@ -701,6 +710,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const i = pointIndex * 3;
     const data = this._data;
     return data[i] * x + data[i + 1] * y + data[i + 2] * z;
+  }
+  /** Compute the dot product of pointIndex with [x,y,z] */
+  public evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
+    const i = pointIndex * 3;
+    const data = this._data;
+    return plane.altitudeXYZ(data[i], data[i + 1], data[i + 2]);
   }
 
   /**

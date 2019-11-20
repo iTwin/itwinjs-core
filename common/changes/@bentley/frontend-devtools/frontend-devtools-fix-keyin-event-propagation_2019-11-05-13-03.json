@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Stop the keypress and keydown events in the frontend-devtools keyin field from propagating to other elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Mark.Schlosser@bentley.com"
+}

@@ -9,6 +9,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
+
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { LocalUiSettings } from "@bentley/ui-core";
 import {
@@ -22,6 +23,9 @@ import {
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
+import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
+
 import TestUtils from "../../TestUtils";
 
 describe("Table", () => {
@@ -145,15 +149,14 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     expect(dataProvider.getColumns).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onColumnsChanged.raiseEvent();
 
-    columnsPromise.resolve([]);
+    await columnsPromise.resolve([]);
 
-    await (shallowTable.instance() as Table).update();
     expect(dataProvider.getColumns).to.be.calledTwice;
   });
 
@@ -168,17 +171,15 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onRowsChanged.raiseEvent();
 
-    rowsCountPromise.resolve(0);
+    await rowsCountPromise.resolve(0);
 
-    await (shallowTable.instance() as Table).update();
-    await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledTwice;
   });
 
@@ -193,12 +194,12 @@ describe("Table", () => {
           displayValue: "123",
           valueFormat: PropertyValueFormat.Primitive,
         };
-        const descr: PropertyDescription = {
+        const description: PropertyDescription = {
           name: "1",
           typename: "int",
           displayLabel: "column",
         };
-        return new PropertyRecord(value, descr);
+        return new PropertyRecord(value, description);
       };
 
       let rowData: RowItem[];
@@ -1176,9 +1177,8 @@ describe("Table", () => {
       inputNode.simulate("change", { target: { value: newPropertyValue } });
       inputNode.simulate("keyDown", { key: "Enter" });
 
-      setImmediate(() => {
-        expect(onPropertyUpdated.calledOnce).to.be.true;
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(onPropertyUpdated.calledOnce).to.be.true;
     });
 
   });
@@ -1251,6 +1251,161 @@ describe("Table", () => {
       const t = table.find(tableWrapper);
       t.simulate("contextmenu", { currentTarget: t, clientX: -1, clientY: -1 });
     });
+
+  });
+
+  describe("scrollToRow", async () => {
+    const onScrollToRow = sinon.spy();
+
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onScrollToRow={onScrollToRow}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+    });
+
+    it("should scroll to a specific row", async () => {
+      table.setProps({ scrollToRow: 50 });
+      table.update();
+      await TestUtils.flushAsyncOperations();
+      expect(onScrollToRow.calledOnceWith(50)).to.be.true;
+    });
+
+  });
+
+  describe("Table Filtering", () => {
+
+    const filteringColumns: ColumnDescription[] = [
+      {
+        key: "id",
+        label: "ID",
+        resizable: true,
+        sortable: true,
+        secondarySortColumn: 1,
+        filterable: true,
+        filterRenderer: FilterRenderer.Numeric,
+      },
+      {
+        key: "title",
+        label: "Title",
+        sortable: true,
+        resizable: true,
+        filterRenderer: FilterRenderer.MultiSelect,
+      },
+      {
+        key: "color",
+        label: "Color",
+        sortable: true,
+        resizable: false,
+        filterRenderer: FilterRenderer.SingleSelect,
+      },
+      {
+        key: "lorem",
+        label: "Lorem",
+        filterRenderer: FilterRenderer.Text,
+      },
+    ];
+
+    // cSpell:disable
+    const loremIpsum = [
+      "Lorem",
+      "ipsum",
+      "dolor",
+      "sit",
+      "amet,",
+      "consectetur",
+      "adipiscing",
+      "elit,",
+      "sed",
+      "do",
+    ];
+    // cSpell:enable
+
+    const createRow = (i: number) => {
+      const row: RowItem = { key: i.toString(), cells: [] };
+      const enumValue = i % 4;
+      const loremIndex = i % 10;
+      row.cells.push({
+        key: filteringColumns[0].key,
+        record: TestUtils.createPropertyRecord(i, filteringColumns[0], "int"),
+      });
+      row.cells.push({
+        key: filteringColumns[1].key,
+        record: TestUtils.createPropertyRecord("Title " + i, filteringColumns[1], "text"),
+      });
+      row.cells.push({
+        key: filteringColumns[2].key,
+        record: TestUtils.createEnumProperty(filteringColumns[2].label, enumValue, filteringColumns[2]),
+      });
+      row.cells.push({
+        key: filteringColumns[3].key,
+        record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], filteringColumns[3], "text"),
+      });
+      return row;
+    };
+
+    let rows: RowItem[];
+    let dataProvider: SimpleTableDataProvider;
+    let filterTable: enzyme.ReactWrapper<TableProps>;
+
+    const numTestRows = 10;
+    const onApplyFilter = sinon.spy();
+
+    before(async () => {
+      rows = new Array<RowItem>();
+      for (let i = 1; i <= numTestRows; i++) {
+        const row = createRow(i);
+        rows.push(row);
+      }
+    });
+
+    beforeEach(async () => {
+      dataProvider = new SimpleTableDataProvider(filteringColumns);
+      dataProvider.setItems(rows);
+
+      onRowsLoaded.resetHistory();
+
+      filterTable = enzyme.mount(<Table
+        dataProvider={dataProvider}
+        onRowsLoaded={onRowsLoaded}
+        onApplyFilter={onApplyFilter}
+      />);
+      await waitForSpy(onRowsLoaded);
+      await TestUtils.flushAsyncOperations();
+      filterTable.update();
+    });
+
+    it("should create two row headers", async () => {
+      expect(filterTable.find("div.react-grid-HeaderRow").length).to.eq(2);
+      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(8);
+      // expect(filterTable.find("input.input-sm").length).to.eq(2);
+      // expect(filterTable.find("div.Select").length).to.eq(2);
+
+      // TODO - figure out why NumericRenderer is the only filterRenderer displaying in unit test DOM
+    });
+
+    it("number in numeric filter should filter", async () => {
+      expect(await dataProvider.getRowsCount()).to.eq(10);
+      expect(filterTable.find("input.input-sm").length).to.be.greaterThan(0);
+      const inputSm = filterTable.find("input.input-sm").at(0);
+
+      onApplyFilter.resetHistory();
+      inputSm.simulate("change", { target: { value: "1" } });
+      await waitForSpy(onApplyFilter);
+      expect(await dataProvider.getRowsCount()).to.eq(1);
+
+      onApplyFilter.resetHistory();
+      inputSm.simulate("change", { target: { value: "" } });
+      await waitForSpy(onApplyFilter);
+      expect(await dataProvider.getRowsCount()).to.eq(10);
+    });
+
+    // it("debug", () => {
+    //   console.log(filterTable.debug()); // tslint:disable-line:no-console
+    // });
 
   });
 

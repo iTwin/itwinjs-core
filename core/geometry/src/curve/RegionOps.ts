@@ -18,7 +18,7 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
-import { CurveCollection, BagOfCurves } from "./CurveCollection";
+import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimitivesOptions } from "./CurveCollection";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -27,6 +27,12 @@ import { Path } from "./Path";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { ChainCollectorContext } from "./ChainCollectorContext";
+import { LineString3d } from "./LineString3d";
+import { Transform } from "../geometry3d/Transform";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -225,8 +231,9 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       graphCheckPoint("After regularize", graph, "MR");
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
     const exteriorMask = HalfEdgeMask.EXTERIOR;
-    const faceVisitedMask = HalfEdgeMask.VISITED;
-    const nodeVisitedMask = HalfEdgeMask.WORK_MASK0;
+    const faceVisitedMask = graph.grabMask();
+
+    const nodeVisitedMask = graph.grabMask();
     const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
     graph.clearMask(allMasksToClear);
     const callbacks = new RegionOpsBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
@@ -237,7 +244,8 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       callbacks);
     if (graphCheckPoint)
       graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
-
+    graph.dropMask(faceVisitedMask);
+    graph.dropMask(nodeVisitedMask);
     return PolyfaceBuilder.graphToPolyface(graph);
   }
   return undefined;
@@ -495,6 +503,83 @@ export class RegionOps {
       }
     }
     return result;
+  }
+  /** Test if `data` is one of several forms of a rectangle.
+   * * If so, return transform with
+   *   * origin at one corner
+   *   * x and y columns extend along two adjacent sides
+   *   * z column is unit normal.
+   * * The recognized data forms for simple analysis of points are:
+   *   * LineString
+   *   * Loop containing rectangle content
+   *   * Path containing rectangle content
+   *   * Array of Point3d[]
+   *   * IndexedXYZCollection
+   * * Points are considered a rectangle if
+   *   * Within the first 4 points
+   *     * vectors from 0 to 1 and 0 to 3 are perpendicular and have a non-zero cross product
+   *     * vectors from 0 to 3 and 1 to 2 are the same
+   *  * optionally require a 5th point that closes back to point0
+   *  * If there are other than the basic number of points (4 or 5) the data
+   */
+  public static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint: boolean = true): Transform | undefined {
+    if (data instanceof LineString3d) {
+      return this.rectangleEdgeTransform(data.packedPoints);
+    } else if (data instanceof IndexedXYZCollection) {
+      let dataToUse;
+      if (requireClosurePoint && data.length === 5) {
+        if (!Geometry.isSmallMetricDistance(data.distanceIndexIndex(0, 4)!))
+          return undefined;
+        dataToUse = data;
+      } else if (!requireClosurePoint && data.length === 4)
+        dataToUse = data;
+      else if (data.length < (requireClosurePoint ? 5 : 4)) {
+        return undefined;
+      } else {
+        dataToUse = GrowableXYZArray.create(data);
+        PolylineCompressionContext.compressInPlaceByShortEdgeLength(dataToUse, Geometry.smallMetricDistance);
+      }
+
+      const vector01 = dataToUse.vectorIndexIndex(0, 1)!;
+      const vector03 = dataToUse.vectorIndexIndex(0, 3)!;
+      const vector12 = dataToUse.vectorIndexIndex(1, 2)!;
+      const normalVector = vector01.crossProduct(vector03);
+      if (normalVector.normalizeInPlace()
+        && vector12.isAlmostEqual(vector03)
+        && vector01.isPerpendicularTo(vector03)) {
+        return Transform.createOriginAndMatrixColumns(dataToUse.getPoint3dAtUncheckedPointIndex(0), vector01, vector03, normalVector);
+      }
+    } else if (Array.isArray(data)) {
+      return this.rectangleEdgeTransform(new Point3dArrayCarrier(data), requireClosurePoint);
+    } else if (data instanceof Loop && data.children.length === 1 && data.children[0] instanceof LineString3d) {
+      return this.rectangleEdgeTransform((data.children[0] as LineString3d).packedPoints, true);
+    } else if (data instanceof Path && data.children.length === 1 && data.children[0] instanceof LineString3d) {
+      return this.rectangleEdgeTransform((data.children[0] as LineString3d).packedPoints, requireClosurePoint);
+    } else if (data instanceof CurveChain) {
+      if (!data.checkForNonLinearPrimitives()) {
+        // const linestring = LineString3d.create();
+        const strokes = data.getPackedStrokes();
+        if (strokes) {
+          return this.rectangleEdgeTransform(strokes);
+        }
+      }
+    }
+    return undefined;
+  }
+  /**
+   * Look for and simplify:
+   * * Contiguous `LineSegment3d` and `LineString3d` objects.
+   *   * collect all points
+   *   * eliminate duplicated points
+   *   * eliminate points colinear with surrounding points.
+   *  * Contigous concentric circular or elliptic arcs
+   *   * combine angular ranges
+   * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
+   * @param options options for tolerance and selective simplification.
+   */
+  public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions) {
+    const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
+    curves.dispatchToGeometryHandler(context);
   }
 }
 

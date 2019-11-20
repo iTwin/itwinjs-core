@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
+import { TypeConverter, LessGreaterOperatorProcessor, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
@@ -69,8 +69,8 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return parseFloat(value);
   }
 }
-TypeConverterManager.registerConverter("float", FloatTypeConverter);
-TypeConverterManager.registerConverter("double", FloatTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Float, FloatTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Double, FloatTypeConverter);
 
 /**
  * Int Type Converter.
@@ -99,5 +99,6 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     return parseInt(value, 10);
   }
 }
-TypeConverterManager.registerConverter("int", IntTypeConverter);
-TypeConverterManager.registerConverter("integer", IntTypeConverter);
+
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Int, IntTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Integer, IntTypeConverter);

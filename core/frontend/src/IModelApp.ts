@@ -27,6 +27,9 @@ import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
 import { TileAdmin } from "./tile/TileAdmin";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { PluginAdmin } from "./plugin/Plugin";
+import { UiAdmin } from "@bentley/ui-abstract";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -42,8 +45,22 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+
 declare var BUILD_SEMVER: string;
+
+// add the iModel.js frontend .css styles into DOM when we load
+(() => {
+  const style = document.createElement("style");
+  style.appendChild(document.createTextNode(`
+  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none;}
+  .logo-cards-div {position:relative;top:0%;left:0%;transition:top .3s;transition-timing-function:ease-out}
+  .logo-card p {margin:0;}
+  .logo-cards-container {position:absolute;bottom:0px;z-index:50;pointer-events:none;overflow:hidden;left:34px;height:0px}
+  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65));}
+  .imodeljs-logo:hover {opacity:1.0;}`,
+  ));
+  document.head.prepend(style);
+})();
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -89,6 +106,10 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** @internal */
   terrainProvider?: TerrainProvider;
+  /** @internal */
+  pluginAdmin?: PluginAdmin;
+  /** If present, supplies the [[UiAdmin]] for this session. */
+  uiAdmin?: UiAdmin;
 }
 
 /**
@@ -101,6 +122,7 @@ export interface IModelAppOptions {
  * @public
  */
 export class IModelApp {
+  private static _copyrightNotice = '© 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
   private static _initialized = false;
   private static _accuDraw: AccuDraw;
   private static _accuSnap: AccuSnap;
@@ -110,6 +132,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
+  private static _pluginAdmin: PluginAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -118,6 +141,7 @@ export class IModelApp {
   private static _toolAdmin: ToolAdmin;
   private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
+  private static _uiAdmin: UiAdmin;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -170,6 +194,10 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
+  /** @internal */
+  public static get pluginAdmin() { return this._pluginAdmin; }
+  /** The [[UiAdmin]] for this session. */
+  public static get uiAdmin() { return this._uiAdmin; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -268,7 +296,6 @@ export class IModelApp {
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
-    // the startup function may have already allocated any of these members, so first test whether they're present
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
     this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
@@ -278,8 +305,10 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
+    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
-    this._terrainProvider = opts.terrainProvider;       // TBD... (opts.terrainProvider !== undefined) ? opts.terrainProvider : new WorldTerrainProvider();
+    this._terrainProvider = opts.terrainProvider;
+    this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
 
     this.renderSystem.onInitialized();
     this.viewManager.onInitialized();
@@ -288,7 +317,11 @@ export class IModelApp {
     this.accuSnap.onInitialized();
     this.locateManager.onInitialized();
     this.tentativePoint.onInitialized();
-    if (this._terrainProvider) this._terrainProvider.onInitialized();
+    this.pluginAdmin.onInitialized();
+    this.quantityFormatter.onInitialized();
+    if (this._terrainProvider)
+      this._terrainProvider.onInitialized();
+    this.uiAdmin.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -333,5 +366,46 @@ export class IModelApp {
         userId,
       };
     };
+  }
+
+  /** Applications may implement this method to supply a Logo Card.
+   * @beta
+   */
+  public static applicationLogoCard?: () => HTMLDivElement;
+
+  /** Make a new Logo Card, optionally supplying its content and id.
+   * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
+   * @beta
+   */
+  public static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement {
+    const card = document.createElement("div");
+    card.className = "logo-card";
+    if (undefined !== id)
+      card.id = id;
+    if (undefined !== el)
+      card.appendChild(el);
+    return card;
+  }
+
+  /** @internal */
+  public static makeIModelJsLogoCard() {
+    const imjsP = document.createElement("p");
+    const poweredBy = document.createElement("span");
+    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy");
+    const version = document.createElement("span");
+    version.innerText = this.applicationVersion;
+    const logo = document.createElement("img");
+    logo.src = "images/imodeljs-logo.svg";
+    logo.width = 80;
+    logo.style.boxShadow = "black 1px 1px 5px";
+    logo.style.marginLeft = "5px";
+    logo.style.marginRight = "5px"; //
+    const copyright = document.createElement("p");
+    copyright.innerHTML = this._copyrightNotice;
+    imjsP.appendChild(poweredBy);
+    imjsP.appendChild(logo);
+    imjsP.appendChild(version);
+    imjsP.appendChild(copyright);
+    return this.makeLogoCard(imjsP, "imodeljs-logo-card");
   }
 }

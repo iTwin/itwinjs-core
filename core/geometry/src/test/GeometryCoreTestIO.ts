@@ -9,10 +9,14 @@ import * as fs from "fs";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { Arc3d } from "../curve/Arc3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
+import { Range3d, Range2d } from "../geometry3d/Range";
 import { LineString3d } from "../curve/LineString3d";
 import { MomentData } from "../geometry4d/MomentData";
 import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Polyface } from "../polyface/Polyface";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Loop } from "../curve/Loop";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -45,6 +49,17 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
+  public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!points || points.length === 0)
+      return;
+    if (points.length <= 2) {
+      const linestring = LineString3d.create(points);
+      this.createAndCaptureXYMarker(collection, 0, linestring.packedPoints.getPoint3dArray(), dx, dy, dz);
+      this.captureGeometry(collection, LineString3d.create(points), dx, dy, dz);
+    }
+    this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
+  }
+
   public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
@@ -80,24 +95,119 @@ export class GeometryCoreTestIO {
       collection.push(newGeometry);
     }
   }
+
+  /**
+   * Create a circle in each sector of the mesh.
+   * * centers are placed along line to centroid
+   * * Hence unexpected results for non-convex facets.
+   * @param collection growing array of geometry
+   * @param polyface mesh to annotate.
+   * @param radius radius of circles
+   * @param lines true to draw lines from circle to circle
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static createAndCaptureSectorMarkup(collection: GeometryQuery[], polyface: Polyface, radius: number, lines: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+    const visitor = polyface.createVisitor(0);
+    const xyz = Point3d.create();
+    const centers = [];
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      centers.length = 0;
+      const centroid = PolygonOps.centroidAreaNormal(visitor.point)!;
+      for (let i = 0; i < visitor.point.length; i++) {
+        visitor.point.getPoint3dAtUncheckedPointIndex(i, xyz);
+        const distanceToCentroid = xyz.distance(centroid.getOriginRef());
+        const fraction = 1.5 * radius / distanceToCentroid;
+        centers.push(xyz.interpolate(fraction, centroid.getOriginRef()));
+      }
+      this.createAndCaptureXYCircle(collection, centers, radius, dx, dy, dz);
+      if (lines) {
+        centers.push(centers[0]);
+        this.captureGeometry(collection, LineString3d.create(centers), dx, dy, dz);
+      }
+    }
+  }
+
+  /**
+   * Create a marker (or many markers) given center and size  Save in collection, shifted by [dx,dy,dz]
+   * * marker = 0 is a circle
+   * * marker = n (for n <= 10) is an n sided polygon, with an added stroke from the center to the first point.
+   * * marker = -n (negative number) is n lines from the center to the n points of the n-sided polygon
+   * @param collection growing array of geometry
+   * @param center single or multiple center point data
+   * @param a size of the marker
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static createAndCaptureXYMarker(collection: GeometryQuery[], markerId: number, center: Point3d | Point3d[], a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(center)) {
+      for (const c of center)
+        if (markerId === 0)
+          this.createAndCaptureXYCircle(collection, c, a, dx, dy, dz);
+        else
+          this.createAndCaptureXYMarker(collection, markerId, c, a, dx, dy, dz);
+      return;
+    }
+    const x = center.x + dx;
+    const y = center.y + dy;
+    const z = center.z + dz;
+    const n = Math.abs(markerId);
+    if (markerId > 0 && n <= 10) {
+      const linestring = LineString3d.create();
+      const radiansStep = Math.PI * 2 / n;
+      linestring.addPointXYZ(x, y, z);
+      linestring.addPointXYZ(x + a, y, z);
+      for (let i = 1; i < n; i++) {
+        const radians = i * radiansStep;
+        const u = a * Math.cos(radians);
+        const v = a * Math.sin(radians);
+        linestring.addPointXYZ(x + u, y + v, dz);
+      }
+      linestring.addPointXYZ(x + a, y, z);
+      collection.push(linestring);
+    } else if (markerId < 0 && -10 <= n) {
+      const linestring = LineString3d.create();
+      const radiansStep = Math.PI * 2 / n;
+      linestring.addPointXYZ(x, y, z);
+      for (let i = 0; i < n; i++) {
+        const radians = i * radiansStep;
+        const u = a * Math.cos(radians);
+        const v = a * Math.sin(radians);
+        linestring.addPointXYZ(x + u, y + v, dz);
+        linestring.addPointXYZ(x, y, z);
+      }
+      collection.push(linestring);
+    } else
+      this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+  }
+
   /**
    * Create edges of a range.
+   * * For 3d range, capture all the edges with various linestrings.
+   * * For 2d range, capture single linestring loop.
    * @param collection growing array of geometry
    * @param range Range
    * @param dx x shift
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[], range: Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureRangeEdges(collection: GeometryQuery[], range: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!range.isNull) {
-      const corners = range.corners();
-      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
-      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+      if (range instanceof Range3d) {
+        const corners = range.corners();
+        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+        }
+      } else if (range instanceof Range2d) {
+        this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
+      }
     }
-  }
-  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  } public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
       if (momentData1) {

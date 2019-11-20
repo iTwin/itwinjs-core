@@ -73,3 +73,9 @@ export const createRandomRelationshipPathJSON = (length: number = 2): ec.Relatio
     path.push(createRandomRelatedClassInfoJSON());
   return path;
 };
+
+export const createRandomPropertyInfoJSON = (): ec.PropertyInfoJSON => ({
+  classInfo: createRandomECClassInfoJSON(),
+  name: faker.random.word(),
+  type: "string",
+});

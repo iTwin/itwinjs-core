@@ -11,7 +11,7 @@ import { TileRequest } from "./TileRequest";
 import { Tile } from "./Tile";
 import { TileIO } from "./TileIO";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d } from "@bentley/geometry-core";
+import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d, Transform } from "@bentley/geometry-core";
 import { QParams3d, QPoint3d, ColorDef, OctEncodedNormal, LinePixels, FillFlags, RenderMaterial, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Triangle } from "../render/primitives/Primitives";
 import { IModelApp } from "../IModelApp";
@@ -19,8 +19,8 @@ import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
 import { GeographicTilingScheme } from "./MapTilingScheme";
-import { ScreenViewport } from "../Viewport";
 import { MapTile } from "./MapTileTree";
+import { GraphicBranch } from "../render/System";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -30,7 +30,7 @@ enum QuantizedMeshExtensionIds {
 }
 
 /** @internal */
-export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise<TerrainTileLoaderBase | undefined> {
+export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise<TerrainTileLoaderBase | undefined> {
   const _requestContext = new ClientRequestContext("");
   const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
   // TBD... this key is generated for RBB personal account - change to enterprise license from Cesium.
@@ -73,7 +73,7 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange);
+  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange, wantSkirts);
 }
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
@@ -109,8 +109,9 @@ function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, i
 }
 
 /** @internal */
-export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
+class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchRange = Range3d.createNull();
+  private static _scratchLocalRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
   private static _scratchQParams = QParams3d.fromRange(CesiumWorldTerrainTileLoader._scratchRange);
   private static _scratchQPoint = QPoint3d.create(CesiumWorldTerrainTileLoader._scratchVertex, CesiumWorldTerrainTileLoader._scratchQParams);
@@ -118,12 +119,26 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchTriangle = new Triangle();
   private static _scratchNormal = Vector3d.createZero();
-  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d) {
+
+  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d, private readonly _wantSkirts: boolean) {
     super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
-  public getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string {
-    return (IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution"));
+
+  public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLDivElement {
+    const div = document.createElement("div");
+    const image = new Image();
+    image.src = "images/cesium_ion.png";
+    image.width = 114;
+    image.height = 20;
+    div.appendChild(image);
+
+    const attr = document.createElement("p");
+    attr.style.margin = "0";
+    attr.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
+    div.appendChild(attr);
+    return IModelApp.makeLogoCard(div);
   }
+
   public get maxDepth(): number { return this._maxDepth; }
   public get geometryAttributionProvider(): MapTileGeometryAttributionProvider { return this; }
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
@@ -143,10 +158,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     const boundRadius = streamBuffer.nextFloat64;
     const horizonOcclusion = streamBuffer.nextPoint3d64;
     const mapTile = tile as MapTile;
-    if (undefined !== mapTile) {
-      await mapTile.reprojectCorners();
-      mapTile.adjustHeights(minHeight, maxHeight);
-    }
+    if (undefined !== mapTile) mapTile.adjustHeights(minHeight, maxHeight);
 
     if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
     const vertexCount = streamBuffer.nextUint32;
@@ -201,9 +213,12 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     CesiumWorldTerrainTileLoader._scratchRange.extendArray(corners);
     CesiumWorldTerrainTileLoader._scratchRange.low.z = minHeight - skirtHeight;
     CesiumWorldTerrainTileLoader._scratchRange.high.z = maxHeight;
-
     CesiumWorldTerrainTileLoader._scratchQParams.setFromRange(CesiumWorldTerrainTileLoader._scratchRange);
-    const mesh = Mesh.create({ displayParams, type: Mesh.PrimitiveType.Mesh, range: CesiumWorldTerrainTileLoader._scratchRange, isPlanar: false, is2d: false });
+    const rangeCenter = CesiumWorldTerrainTileLoader._scratchRange.fractionToPoint(.5, .5, .5);
+    CesiumWorldTerrainTileLoader._scratchRange.low.minus(rangeCenter, CesiumWorldTerrainTileLoader._scratchLocalRange.low);
+    CesiumWorldTerrainTileLoader._scratchRange.high.minus(rangeCenter, CesiumWorldTerrainTileLoader._scratchLocalRange.high);
+
+    const mesh = Mesh.create({ displayParams, type: Mesh.PrimitiveType.Mesh, range: CesiumWorldTerrainTileLoader._scratchLocalRange, isPlanar: false, is2d: false });
     for (let i = 0; i < indexCount;)
       this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
 
@@ -264,22 +279,31 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
         mesh.addVertex({ position: CesiumWorldTerrainTileLoader._scratchQPoint, fillColor });
       }
     }
-    westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-    eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-    northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-    southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-    this.generateSkirts(mesh, westIndices, skirtHeight);
-    this.generateSkirts(mesh, eastIndices, skirtHeight);
-    this.generateSkirts(mesh, southIndices, skirtHeight);
-    this.generateSkirts(mesh, northIndices, skirtHeight);
+
+    if (this._wantSkirts) {
+      westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+      eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+      northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+      southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+      this.generateSkirts(mesh, westIndices, skirtHeight);
+      this.generateSkirts(mesh, eastIndices, skirtHeight);
+      this.generateSkirts(mesh, southIndices, skirtHeight);
+      this.generateSkirts(mesh, northIndices, skirtHeight);
+    }
 
     CesiumWorldTerrainTileLoader._scratchMeshArgs.init(mesh);
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.featureID = 0;
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.type = FeatureIndexType.Uniform;
     CesiumWorldTerrainTileLoader._scratchMeshArgs.hasFixedNormals = true;
+
     let graphic = system.createMesh(MeshParams.create(CesiumWorldTerrainTileLoader._scratchMeshArgs));
-    if (graphic)
+
+    if (graphic) {
       graphic = system.createBatch(graphic, this._featureTable, Range3d.createNull());
+      const branch = new GraphicBranch();
+      branch.add(graphic);
+      graphic = system.createBranch(branch, Transform.createTranslation(rangeCenter));
+    }
 
     const content: Tile.Content = { graphic, contentRange: CesiumWorldTerrainTileLoader._scratchRange.clone() };
     return content;
@@ -291,7 +315,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private generateSkirts(mesh: Mesh, indices: Uint16Array | Uint32Array, skirtHeight: number) {
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
-      mesh.points.unquantize(index, CesiumWorldTerrainTileLoader._scratchPoint);
+      mesh.points.list[index].unquantize(CesiumWorldTerrainTileLoader._scratchQParams, CesiumWorldTerrainTileLoader._scratchPoint);
       const normal = mesh.normals.length ? mesh.normals[index] : undefined;
       CesiumWorldTerrainTileLoader._scratchPoint.z -= skirtHeight;
       CesiumWorldTerrainTileLoader._scratchQPoint.init(CesiumWorldTerrainTileLoader._scratchPoint, CesiumWorldTerrainTileLoader._scratchQParams);
