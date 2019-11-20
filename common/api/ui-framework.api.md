@@ -303,6 +303,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     componentDidUpdate(prevProps: BackstageProps): void;
     // (undocumented)
     componentWillUnmount(): void;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): CommandItemDef;
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
@@ -3558,6 +3559,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
 // @beta
 export interface ReviewToolWidgetProps {
+    iconSpec?: IconSpec_2;
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
     showCategoryAndModelsContextTools?: boolean;
