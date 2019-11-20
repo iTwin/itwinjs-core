@@ -79,7 +79,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     const organization = (this._userInfo && this._userInfo.organization) ? this._userInfo.organization.name : /* istanbul ignore next */ "";
     const color = getUserColor(email);
     return (
-      <div className="user-profile">
+      <div className="uifw-user-profile">
         <div className="profile-info">
           <span className="circle" style={{ backgroundColor: color }}>{initials}</span>
           <span>{fullName}</span>

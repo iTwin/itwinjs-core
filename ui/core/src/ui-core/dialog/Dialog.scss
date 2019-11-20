@@ -85,9 +85,9 @@
     width: 60%;
     display: flex;
     flex-direction: column;
-    height: fit-content;
 
     .core-dialog-area {
+      position: relative;
       display: flex;
       flex-grow: 1;
       flex-direction: column;
