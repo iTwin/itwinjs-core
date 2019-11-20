@@ -7571,7 +7571,6 @@ export namespace Tile {
         readonly purgeOlderThan: BeTimePoint;
         // (undocumented)
         readonly root: TileTree;
-        // (undocumented)
         readonly tileSizeModifier: number;
         // (undocumented)
         readonly viewClip?: ClipVector;
@@ -7647,6 +7646,7 @@ export abstract class TileAdmin {
     abstract readonly contextPreloadParentSkip: number;
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
+    abstract defaultTileSizeModifier: number;
     // @internal (undocumented)
     abstract readonly disableMagnification: boolean;
     // @internal (undocumented)
@@ -7702,6 +7702,7 @@ export namespace TileAdmin {
     export interface Props {
         contextPreloadParentDepth?: number;
         contextPreloadParentSkip?: number;
+        defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
@@ -9525,6 +9526,8 @@ export abstract class Viewport implements IDisposable {
     setFlashed(id: string | undefined, duration: number): void;
     setNeverDrawn(ids: Id64Set): void;
     setStandardRotation(id: StandardViewId): void;
+    // @alpha
+    setTileSizeModifier(modifier: number | undefined): void;
     setupFromView(): ViewStatus;
     setupViewFromFrustum(inFrustum: Frustum): boolean;
     // @internal (undocumented)
@@ -9536,6 +9539,8 @@ export abstract class Viewport implements IDisposable {
     synchWithView(_saveInUndo: boolean): void;
     // @internal (undocumented)
     readonly target: RenderTarget;
+    // @alpha
+    readonly tileSizeModifier: number;
     // @internal (undocumented)
     toView(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
