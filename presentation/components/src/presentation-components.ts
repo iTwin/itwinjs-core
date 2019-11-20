@@ -13,6 +13,7 @@ export { IUnifiedSelectionComponent } from "./common/IUnifiedSelectionComponent"
 export { ContentBuilder } from "./common/ContentBuilder";
 export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProvidersFactory";
+export { useRulesetRegistration } from "./hooks/UseRulesetRegistration";
 
 /**
  * @module PropertyGrid
@@ -47,7 +48,7 @@ export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionP
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
 export { controlledTreeWithModelSource, ControlledTreeWithModelSourceProps } from "./tree/controlled/WithModelSource";
-export { usePresentationNodeLoader } from "./tree/controlled/TreeHooks";
+export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./tree/controlled/TreeHooks";
 
 /**
  * @module Viewport

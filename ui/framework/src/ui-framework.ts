@@ -31,6 +31,7 @@ export * from "./ui-framework/oidc/SignOut";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
+export * from "./ui-framework/imodel-components/visibility-tree/ModelsTree";
 
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";

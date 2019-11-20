@@ -19,6 +19,7 @@ public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider
 public;IPresentationTreeDataProvider 
 public;IUnifiedSelectionComponent 
 public;LabelsProvider 
+alpha;PresentationNodeLoaderProps
 public;PresentationPropertyDataProvider 
 public;PresentationTableDataProvider 
 public;PresentationTableDataProviderProps
@@ -33,6 +34,7 @@ public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
 alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
 alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
-alpha;usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader
+alpha;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader
+alpha;useRulesetRegistration(ruleset: Ruleset): void
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

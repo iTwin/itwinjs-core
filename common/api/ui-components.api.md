@@ -1328,8 +1328,6 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     descriptionEnabled?: boolean;
     // (undocumented)
     imageLoader?: ITreeImageLoader;
-    // (undocumented)
-    nodeHighlightProps?: HighlightableTreeNodeProps;
 }
 
 // @alpha
@@ -3642,6 +3640,8 @@ export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNod
 export interface TreeNodeRendererProps extends CommonProps {
     // (undocumented)
     node: TreeModelNode;
+    // (undocumented)
+    nodeHighlightProps?: HighlightableTreeNodeProps;
     // (undocumented)
     onLabelRendered?: (node: TreeModelNode) => void;
     // (undocumented)

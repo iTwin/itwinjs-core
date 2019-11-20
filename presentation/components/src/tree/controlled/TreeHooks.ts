@@ -9,25 +9,49 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { useEffectSkipFirst } from "@bentley/ui-core";
 import { usePagedNodeLoader } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "../DataProvider";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+
+/** Properties for [[usePresentationNodeLoader]] hook.
+ * @alpha
+ */
+export interface PresentationNodeLoaderProps {
+  imodel: IModelConnection;
+  rulesetId: string;
+  pageSize: number;
+  preloadingEnabled?: boolean;
+  /** Used for testing
+   * @internal
+   */
+  dataProvider?: IPresentationTreeDataProvider;
+}
 
 /** Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
  * supplied imodel and ruleset id.
  *
  * @alpha
  */
-export function usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number) {
-  const [dataProvider, setDataProvider] = useState(createDataProvider(imodel, rulesetId, pageSize));
-  const nodeLoader = usePagedNodeLoader(dataProvider, pageSize);
+export function usePresentationNodeLoader(props: PresentationNodeLoaderProps) {
+  const [dataProvider, setDataProvider] = useState(createDataProvider(props));
+  const nodeLoader = usePagedNodeLoader(dataProvider, props.pageSize);
 
   useEffectSkipFirst(() => {
-    setDataProvider(createDataProvider(imodel, rulesetId, pageSize));
-  }, [imodel, rulesetId, pageSize]);
+    setDataProvider(createDataProvider(props));
+  }, [props.imodel, props.rulesetId, props.pageSize, props.preloadingEnabled, props.dataProvider]);
 
   return nodeLoader;
 }
 
-function createDataProvider(imodel: IModelConnection, rulesetId: string, pageSize: number) {
-  const dataProvider = new PresentationTreeDataProvider(imodel, rulesetId);
-  dataProvider.pagingSize = pageSize;
+function createDataProvider(props: PresentationNodeLoaderProps) {
+  let dataProvider: IPresentationTreeDataProvider;
+  if (props.dataProvider) {
+    dataProvider = props.dataProvider;
+  } else {
+    const provider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
+    provider.pagingSize = props.pageSize;
+    dataProvider = provider;
+  }
+  if (props.preloadingEnabled && dataProvider.loadHierarchy) {
+    dataProvider.loadHierarchy(); // tslint:disable-line: no-floating-promises
+  }
   return dataProvider;
 }

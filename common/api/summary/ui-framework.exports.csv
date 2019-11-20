@@ -55,7 +55,7 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
-alpha;CategoryTree 
+alpha;CategoryTree: React.FC
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
@@ -214,6 +214,7 @@ public;IconProps
 public;IconSpec = IconSpec_2
 beta;IModelConnectedCategoryTree: any
 beta;IModelConnectedCubeNavigationAid: any
+alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
 beta;IModelConnectedViewport: any
 beta;IModelConnectedViewSelector: any
@@ -290,6 +291,8 @@ public;ModelessDialogProps
 public;ModelessDialogRenderer 
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
+alpha;ModelsTree: React.FC
+alpha;ModelsTreeProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 
@@ -371,7 +374,7 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
-alpha;SpatialContainmentTree 
+alpha;SpatialContainmentTree: React.FC
 alpha;SpatialContainmentTreeProps
 alpha;SpatialContainmentTreeState
 public;SpecialKey

@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ControlledCategoryTree <ControlledCategoryTree /> should match snapshot 1`] = `
+<body>
+  <div>
+    <div
+      class="uifw-spatial-tree"
+    >
+      <div
+        class="filteredTree"
+      >
+        <div
+          class="core-tree components-tree"
+        >
+          <div
+            style="overflow: visible; height: 0px; width: 0px;"
+          >
+            <div
+              class="ReactWindow__VariableSizeList"
+              style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
+            >
+              <div
+                style="height: 25px; width: 100%;"
+              >
+                <div
+                  class="node-wrapper"
+                  style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
+                >
+                  <div
+                    class="core-tree-node"
+                    data-testid="tree-node"
+                  >
+                    <div
+                      class="contents"
+                      data-testid="tree-node-contents"
+                      style="margin-left: 24px;"
+                    >
+                      <label
+                        class="core-image-checkbox"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        <span
+                          class="image icon icon-visibility-hide-2"
+                        />
+                      </label>
+                      <div
+                        class="core-tree-node-icon"
+                      />
+                      <div
+                        class="components-tree-node-content"
+                      >
+                        <span>
+                          test-node
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="resize-triggers"
+          >
+            <div
+              class="expand-trigger"
+            >
+              <div
+                style="width: 201px; height: 201px;"
+              />
+            </div>
+            <div
+              class="contract-trigger"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;

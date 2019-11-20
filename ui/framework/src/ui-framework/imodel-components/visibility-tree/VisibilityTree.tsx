@@ -28,6 +28,7 @@ const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no
 
 /** Props for [[VisibilityTree]] component
  * @public
+ * @deprecated Use ModelsTree
  */
 export interface VisibilityTreeProps {
   /** An IModel to pull data from */
@@ -73,6 +74,7 @@ interface VisibilityTreeState {
  * hierarchy along with checkboxes that represent and allow changing
  * the display of those instances.
  * @public
+ * @deprecated Use ModelsTree
  */
 export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
 
@@ -225,6 +227,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
 /** VisibilityTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
+ * @deprecated Use IModelConnectedModelsTree
  */
 export const IModelConnectedVisibilityTree = connectIModelConnection(null, null)(VisibilityTree); // tslint:disable-line:variable-name
 

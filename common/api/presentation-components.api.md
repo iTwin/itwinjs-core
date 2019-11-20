@@ -182,6 +182,20 @@ export class LabelsProvider implements IPresentationLabelsProvider {
     readonly imodel: IModelConnection;
 }
 
+// @alpha
+export interface PresentationNodeLoaderProps {
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    pageSize: number;
+    // (undocumented)
+    preloadingEnabled?: boolean;
+    // (undocumented)
+    rulesetId: string;
+}
+
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
     constructor(imodel: IModelConnection, rulesetId: string);
@@ -304,7 +318,10 @@ export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvid
 export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
 
 // @alpha
-export function usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader<PresentationTreeDataProvider>;
+export function usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+
+// @alpha
+export function useRulesetRegistration(ruleset: Ruleset): void;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;
