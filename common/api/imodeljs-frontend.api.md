@@ -7653,8 +7653,6 @@ export abstract class TileAdmin {
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
     // @internal (undocumented)
     abstract readonly enableInstancing: boolean;
-    // @internal (undocumented)
-    abstract readonly enableMeshDecimation: boolean;
     // @internal
     abstract forgetViewport(vp: Viewport): void;
     // @internal
@@ -7707,7 +7705,6 @@ export namespace TileAdmin {
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
         enableInstancing?: boolean;
-        enableMeshDecimation?: boolean;
         maxActiveRequests?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;

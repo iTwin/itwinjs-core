@@ -43,9 +43,6 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
-  if (undefined !== process.env.SVT_DISABLE_DECIMATION)
-    configuration.disableMeshDecimation = true;
-
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
