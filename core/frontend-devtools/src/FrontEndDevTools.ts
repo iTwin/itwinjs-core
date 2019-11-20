@@ -39,10 +39,12 @@ import {
 import {
   ChangeEmphasisSettingsTool,
   ChangeHiliteSettingsTool,
+  DefaultTileSizeModifierTool,
   FadeOutTool,
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
+  ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
@@ -108,6 +110,8 @@ export class FrontendDevTools {
     ChangeHiliteSettingsTool.register(i18n);
     ChangeEmphasisSettingsTool.register(i18n);
     FadeOutTool.register(i18n);
+    DefaultTileSizeModifierTool.register(i18n);
+    ViewportTileSizeModifierTool.register(i18n);
 
     RealityTransitionTool.register(i18n);
     ChangeUnitsTool.register(i18n);

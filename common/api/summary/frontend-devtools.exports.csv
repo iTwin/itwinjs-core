@@ -39,6 +39,7 @@ alpha;DataList
 alpha;DataListEntry
 alpha;DataListHandler = (list: HTMLDataListElement) => void
 alpha;DataListProps
+alpha;DefaultTileSizeModifierTool 
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
@@ -102,3 +103,4 @@ beta;ToggleSkyboxTool
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker
+alpha;ViewportTileSizeModifierTool 

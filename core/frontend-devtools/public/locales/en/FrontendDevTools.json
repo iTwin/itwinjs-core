@@ -101,6 +101,12 @@
     },
     "SelectElementsById": {
       "keyin": "fdt select elements"
+    },
+    "DefaultTileSizeMod": {
+      "keyin": "fdt tilesize default"
+    },
+    "ViewportTileSizeMod": {
+      "keyin": "fdt tilesize viewport"
     }
   }
 }
