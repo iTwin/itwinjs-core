@@ -156,7 +156,7 @@ export interface TreeModel {
 }
 
 /**
- * Tree model that represent the tree and holds nodes.
+ * Mutable tree model which holds nodes and allows adding or removing them.
  * @alpha
  */
 export class MutableTreeModel implements TreeModel {
@@ -170,8 +170,8 @@ export class MutableTreeModel implements TreeModel {
   }
 
   public getNode(id: string): MutableTreeModelNode | undefined;
-  public getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
-  public getNode(nodeId: string | undefined, childIndex?: number): MutableTreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined {
+  public getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined;
+  public getNode(nodeId: string | undefined, childIndex?: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined {
     if (childIndex === undefined) {
       return this._tree.getNode(nodeId!);
     }
@@ -198,6 +198,14 @@ export class MutableTreeModel implements TreeModel {
     return this._tree.getChildren(parentId);
   }
 
+  public getChildOffset(parentId: string | undefined, childId: string): number | undefined {
+    return this._tree.getChildOffset(parentId, childId);
+  }
+
+  /**
+   * Sets children for parent node starting from the specific offset.
+   * If offset overlaps with already added nodes, the overlapping nodes are overwritten.
+   */
   public setChildren(
     parentId: string | undefined,
     nodeInputs: TreeModelNodeInput[],
@@ -213,9 +221,33 @@ export class MutableTreeModel implements TreeModel {
       children.push(child);
     }
 
-    this._tree.setChildren(parentNode && parentNode.id, children, offset);
+    this._tree.setChildren(parentNode.id, children, offset);
+    MutableTreeModel.setNumChildrenForNode(parentNode, this._tree.getChildren(parentNode.id));
   }
 
+  /**
+   * Inserts child in the specified position.
+   * If offset is higher then current length of children array, the length is increased.
+   */
+  public insertChild(
+    parentId: string | undefined,
+    childNodeInput: TreeModelNodeInput,
+    offset: number,
+  ) {
+    const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
+    if (parentNode === undefined)
+      return;
+
+    const child = MutableTreeModel.createTreeModelNode(parentNode, childNodeInput);
+
+    this._tree.insertChild(parentNode.id, child, offset);
+    MutableTreeModel.setNumChildrenForNode(parentNode, this._tree.getChildren(parentNode.id));
+  }
+
+  /**
+   * Sets number of how many child nodes the parent will have.
+   * If parent already has some nodes they are removed.
+   */
   public setNumChildren(parentId: string | undefined, numChildren: number) {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode !== undefined) {
@@ -225,12 +257,21 @@ export class MutableTreeModel implements TreeModel {
     this._tree.setNumChildren(parentId, numChildren);
   }
 
+  public removeChild(parentId: string | undefined, childId: string) {
+    const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
+    this._tree.removeChild(parentId, childId);
+
+    // istanbul ignore else
+    if (parentNode)
+      MutableTreeModel.setNumChildrenForNode(parentNode, this._tree.getChildren(parentNode.id));
+  }
+
   public clearChildren(parentId: string | undefined) {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode !== undefined) {
       (parentNode.numChildren as number | undefined) = undefined;
     }
-    this._tree.setNumChildren(parentId, 0);
+    this._tree.deleteSubtree(parentId, false);
   }
 
   public computeVisibleNodes(): VisibleTreeNodes {
@@ -268,6 +309,14 @@ export class MutableTreeModel implements TreeModel {
     }
 
     yield* iterateDescendants(parentId);
+  }
+
+  private static setNumChildrenForNode(node: TreeModelRootNode | MutableTreeModelNode, children: SparseArray<string> | undefined) {
+    const numChildren = children ? children.getLength() : undefined;
+    if (node.numChildren === numChildren)
+      return;
+
+    (node.numChildren as number | undefined) = numChildren;
   }
 
   private static createTreeModelNode(parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode {

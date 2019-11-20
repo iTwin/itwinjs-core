@@ -126,6 +126,18 @@ describe("MutableTreeModel", () => {
 
   });
 
+  describe("getChildOffset", () => {
+
+    it("calls tree for child offset", () => {
+      const parentId = faker.random.uuid();
+      const childId = faker.random.uuid();
+      treeMock.setup((x) => x.getChildOffset(parentId, childId)).verifiable(moq.Times.once());
+      treeModel.getChildOffset(parentId, childId);
+      treeMock.verifyAll();
+    });
+
+  });
+
   describe("setChildren", () => {
 
     it("sets root nodes", () => {
@@ -167,6 +179,56 @@ describe("MutableTreeModel", () => {
 
   });
 
+  describe("insertChild", () => {
+
+    it("inserts root node", () => {
+      const childCountBefore = faker.random.number(10);
+      treeModel.setNumChildren(undefined, childCountBefore);
+      treeMock.setup((x) => x.insertChild(undefined, createTreeModelNode(treeModel.getRootNode(), rootNode), 0)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.getChildren(undefined)).returns(() => sparseArrayMock.object);
+      sparseArrayMock.setup((x) => x.getLength()).returns(() => childCountBefore + 1);
+
+      treeModel.insertChild(undefined, rootNode, 0);
+      treeMock.verifyAll();
+      expect(treeModel.getRootNode().numChildren!).to.be.eq(childCountBefore + 1);
+    });
+
+    it("inserts child for root node", () => {
+      const childCountBefore = rootNode.numChildren!;
+      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.insertChild(rootNode.id, createTreeModelNode(rootNode, childNode), 0)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => sparseArrayMock.object);
+      sparseArrayMock.setup((x) => x.getLength()).returns(() => childCountBefore + 1);
+
+      treeModel.insertChild(rootNode.id, childNode, 0);
+      treeMock.verifyAll();
+      expect(rootNode.numChildren).to.be.eq(childCountBefore + 1);
+    });
+
+    it("inserts children from TreeModelNodeInput", () => {
+      const input: TreeModelNodeInput = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        label: faker.random.word(),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: faker.random.word() },
+      };
+
+      treeMock.setup((x) => x.insertChild(undefined, createTreeModelNode(treeModel.getRootNode(), input), 0)).verifiable(moq.Times.once());
+      treeModel.insertChild(undefined, input, 0);
+      treeMock.verifyAll();
+    });
+
+    it("does not insert child if parent does not exist", () => {
+      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.insertChild(rootNode.id, createTreeModelNode(rootNode, childNode), 0)).verifiable(moq.Times.never());
+      treeModel.insertChild(rootNode.id, childNode, 0);
+      treeMock.verifyAll();
+    });
+
+  });
+
   describe("setNumChildren", () => {
 
     const count = faker.random.number();
@@ -193,24 +255,52 @@ describe("MutableTreeModel", () => {
 
   });
 
+  describe("removeChild", () => {
+
+    it("removes root node", () => {
+      const childCountBefore = faker.random.number(10);
+      treeModel.setNumChildren(undefined, childCountBefore);
+      treeMock.setup((x) => x.removeChild(undefined, rootNode.id)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.getChildren(undefined)).returns(() => sparseArrayMock.object);
+      sparseArrayMock.setup((x) => x.getLength()).returns(() => childCountBefore - 1);
+
+      treeModel.removeChild(undefined, rootNode.id);
+      treeMock.verifyAll();
+      expect(treeModel.getRootNode().numChildren!).to.be.eq(childCountBefore - 1);
+    });
+
+    it("removes root node child", () => {
+      const childCountBefore = rootNode.numChildren!;
+      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.removeChild(rootNode.id, childNode.id)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => sparseArrayMock.object);
+      sparseArrayMock.setup((x) => x.getLength()).returns(() => childCountBefore - 1);
+
+      treeModel.removeChild(rootNode.id, childNode.id);
+      treeMock.verifyAll();
+      expect(rootNode.numChildren).to.be.eq(childCountBefore - 1);
+    });
+
+  });
+
   describe("clearChildren", () => {
 
     it("clears root nodes", () => {
-      treeMock.setup((x) => x.setNumChildren(undefined, 0)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.deleteSubtree(undefined, false)).verifiable(moq.Times.once());
       treeModel.clearChildren(undefined);
       treeMock.verifyAll();
     });
 
     it("clears root node children", () => {
       treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.setNumChildren(rootNode.id, 0)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.deleteSubtree(rootNode.id, false)).verifiable(moq.Times.once());
       treeModel.clearChildren(rootNode.id);
       treeMock.verifyAll();
     });
 
     it("clears children for removed root node", () => {
       treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => undefined).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.setNumChildren(rootNode.id, 0)).verifiable(moq.Times.once());
+      treeMock.setup((x) => x.deleteSubtree(rootNode.id, false)).verifiable(moq.Times.once());
       treeModel.clearChildren(rootNode.id);
       treeMock.verifyAll();
     });

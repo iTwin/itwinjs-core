@@ -24,6 +24,14 @@ export class SparseTree<T extends Node> {
     return this._idToNode[nodeId];
   }
 
+  public getChildOffset(parentId: string | undefined, childId: string): number | undefined {
+    const children = this.getChildren(parentId);
+    if (!children)
+      return undefined;
+
+    return children.getIndex(childId);
+  }
+
   public getChildren(parentId: string | undefined, createIfNotExist: boolean = false): SparseArray<string> | undefined {
     if (parentId === undefined) {
       return this._rootNodes;
@@ -37,11 +45,7 @@ export class SparseTree<T extends Node> {
   }
 
   public setChildren(parentId: string | undefined, children: T[], offset: number) {
-    const existingChildren = this.getChildren(parentId);
-    if (existingChildren === undefined) {
-      return;
-    }
-
+    const existingChildren = this.getChildren(parentId, true)!;
     children.forEach((child, index) => {
       const existingChildId = existingChildren.get(offset + index);
       if (existingChildId !== undefined) {
@@ -53,6 +57,12 @@ export class SparseTree<T extends Node> {
     });
   }
 
+  public insertChild(parentId: string | undefined, child: T, offset: number) {
+    const existingChildren = this.getChildren(parentId, true)!;
+    existingChildren.insert(offset, child.id);
+    this._idToNode[child.id] = child;
+  }
+
   public setNumChildren(parentId: string | undefined, numChildren: number) {
     const children = this.getChildren(parentId, true)!;
     for (const [childId] of children.iterateValues()) {
@@ -62,7 +72,20 @@ export class SparseTree<T extends Node> {
     children.setLength(numChildren);
   }
 
-  public deleteSubtree(parentId: string | undefined) {
+  public removeChild(parentId: string | undefined, childId: string) {
+    const children = this.getChildren(parentId);
+    if (children === undefined)
+      return;
+
+    const childIndex = children.getIndex(childId);
+    if (childIndex !== undefined) {
+      children.remove(childIndex);
+    }
+
+    this.deleteSubtree(childId);
+  }
+
+  public deleteSubtree(parentId: string | undefined, deleteParent: boolean = true) {
     const children = this.getChildren(parentId);
     if (children !== undefined) {
       for (const [childId] of children.iterateValues()) {
@@ -72,10 +95,12 @@ export class SparseTree<T extends Node> {
 
     if (parentId === undefined) {
       this._rootNodes.setLength(0);
-    } else {
-      delete this._idToNode[parentId];
-      delete this._parentToChildren[parentId];
+      return;
     }
+    if (deleteParent) {
+      delete this._idToNode[parentId];
+    }
+    delete this._parentToChildren[parentId];
   }
 }
 
@@ -102,6 +127,14 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     this._length = length;
   }
 
+  public getIndex(lookupValue: T): number | undefined {
+    for (const [value, index] of this._array) {
+      if (value === lookupValue)
+        return index;
+    }
+    return undefined;
+  }
+
   public get(index: number): T | undefined {
     const { index: i, equal } = this.lowerBound(index);
     return equal ? this._array[i][0] : undefined;
@@ -111,6 +144,27 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     const { index: i, equal } = this.lowerBound(index);
     this._array.splice(i, equal ? 1 : 0, [value, index]);
     this._length = Math.max(this._length, index + 1);
+  }
+
+  public insert(index: number, value: T) {
+    const { index: i } = this.lowerBound(index);
+    this._array.splice(i, 0, [value, index]);
+
+    for (let j = i + 1; j < this._array.length; j++) {
+      this._array[j][1]++;
+    }
+
+    this._length = Math.max(this._length + 1, index + 1);
+  }
+
+  public remove(index: number) {
+    const { index: i, equal } = this.lowerBound(index);
+    this._array.splice(i, equal ? 1 : 0);
+
+    for (let j = i; j < this._array.length; j++) {
+      this._array[j][1]--;
+    }
+    this._length = Math.max(0, this._length - 1);
   }
 
   /**

@@ -1921,18 +1921,21 @@ export class MutableTreeModel implements TreeModel {
     // (undocumented)
     computeVisibleNodes(): VisibleTreeNodes;
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): MutableTreeModelNode | undefined;
     // (undocumented)
-    getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
+    getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined;
     // (undocumented)
     getRootNode(): TreeModelRootNode;
+    insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     // (undocumented)
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     // (undocumented)
+    removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    // (undocumented)
     setNumChildren(parentId: string | undefined, numChildren: number): void;
     }
 
