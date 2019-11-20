@@ -190,24 +190,12 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._graphic)
-      this._graphic.collectStatistics(stats);
+            this._graphic.collectStatistics(stats);
 
     if (undefined !== this._children)
       for (const child of this._children)
         child.collectStatistics(stats);
   }
-
-  /* ###TODO
-  public cancelAllLoads(): void {
-    if (this.isLoading) {
-      this.loadStatus = Tile.LoadStatus.NotLoaded;
-      if (this._children !== undefined) {
-        for (const child of this._children)
-          child.cancelAllLoads();
-      }
-    }
-  }
-  */
 
   public get loadStatus(): Tile.LoadStatus {
     switch (this._state) {
@@ -868,6 +856,9 @@ export namespace Tile {
       this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     }
 
+    /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
+     * @see [[Viewport.tileSizeModifier]].
+     */
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
