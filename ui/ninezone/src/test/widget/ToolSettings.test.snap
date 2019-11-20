@@ -15,12 +15,8 @@ exports[`<ToolSettings /> renders correctly 1`] = `
       />
     </DragHandle>
     <div
-      className="nz-content-container"
-    >
-      <div
-        className="nz-content"
-      />
-    </div>
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -40,12 +36,8 @@ exports[`<ToolSettings /> renders correctly to fill zone 1`] = `
       />
     </DragHandle>
     <div
-      className="nz-content-container"
-    >
-      <div
-        className="nz-content"
-      />
-    </div>
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -66,12 +58,8 @@ exports[`<ToolSettings /> renders draggable correctly 1`] = `
       />
     </DragHandle>
     <div
-      className="nz-content-container"
-    >
-      <div
-        className="nz-content"
-      />
-    </div>
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -91,12 +79,8 @@ exports[`<ToolSettings /> renders resizable correctly 1`] = `
       />
     </DragHandle>
     <div
-      className="nz-content-container"
-    >
-      <div
-        className="nz-content"
-      />
-    </div>
+      className="nz-content"
+    />
     <ResizeGrip
       className="nz-left-grip"
       direction={0}

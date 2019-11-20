@@ -523,7 +523,9 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
-    this._content.style.display = this.props.isHidden ? "none" : null;
+    this._content.style.display = this.props.isHidden ? "none" : "flex";
+    this._content.style.flexDirection = "column";
+    this._content.style.height = "100%";
     if (!this.props.renderTo)
       return;
     this.props.renderTo.appendChild(this._content);
@@ -531,7 +533,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 
   public componentDidUpdate(prevProps: WidgetContentRendererProps) {
     if (this.props.isHidden !== prevProps.isHidden) {
-      this._content.style.display = this.props.isHidden ? "none" : null;
+      this._content.style.display = this.props.isHidden ? "none" : "flex";
     }
 
     if (!this.props.renderTo || prevProps.renderTo === this.props.renderTo)

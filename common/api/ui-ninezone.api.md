@@ -1797,6 +1797,7 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
 // @alpha
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
     anchor: HorizontalAnchor;
+    containerRef?: React.Ref<HTMLDivElement>;
     content?: React.ReactNode;
 }
 

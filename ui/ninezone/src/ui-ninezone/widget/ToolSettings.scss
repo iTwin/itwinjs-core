@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "tool-settings/variables";
-@import "../scrollbar";
 @import "../widgetopacity";
 
 .nz-widget-toolSettings {
@@ -46,20 +45,14 @@
     max-height: 100%;
     max-width: 100%;
 
+    > .nz-content {
+      min-height: 0;
+      flex-basis: 100%;
+    }
+
     > .nz-handle {
       > .nz-title {
         min-height: $nz-tool-settings-title-bar-min-height;
-      }
-    }
-
-    > .nz-content-container {
-      overflow: auto;
-
-      @include nz-scrollbar;
-
-      > .nz-content {
-        padding: $nz-tool-settings-content-padding;
-        display: inline-block;
       }
     }
 

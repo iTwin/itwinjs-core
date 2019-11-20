@@ -6,6 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import ReactResizeDetector from "react-resize-detector";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import { withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
@@ -1182,6 +1183,22 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
         >
           Toggle
         </button>
+        {/*ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
+        ToggleToggleToggleToggleToggleToggleToggleToggle<br />*/}
         <ToolSettingsPopup
           isOpen={this.state.isPopupOpen}
           onClose={this._handleCloseTogglePopup}
@@ -1406,6 +1423,8 @@ interface WidgetContentExampleProps extends Widget6Tab1ContentProps, Widget7Tab1
 class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps> {
   private _content = document.createElement("span");
   private _widgetContent = React.createRef<WidgetContent>();
+  private _container = React.createRef<HTMLDivElement>();
+  private _measurer = React.createRef<HTMLDivElement>();
 
   public componentDidMount() {
     if (!this.props.renderTo)
@@ -1430,7 +1449,14 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     switch (this.props.widgetId) {
       case 2: {
         content = (
-          <Widget2Tab1Content />
+          <>
+            <Widget2Tab1Content />
+            <div className="nzdemo-measurer" ref={this._measurer} />
+            <div className="nzdemo-zone-measurer">
+              <ReactResizeDetector handleWidth onResize={this._handleResize} />
+            </div>
+            <div className="nzdemo-expander" />
+          </>
         );
         className = classnames(
           "nzdemo-tool-settings-content",
@@ -1485,10 +1511,25 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     return ReactDOM.createPortal(<WidgetContent
       anchor={this.props.anchor}
       className={className}
+      containerRef={this._container}
       content={content}
       ref={this._widgetContent}
       style={this.props.isDisplayed ? undefined : displayNone}
     />, this._content);
+  }
+
+  private _handleResize = () => {
+    const container = this._container.current;
+    const measurer = this._measurer.current;
+    if (!container || !measurer)
+      return;
+
+    container.classList.add("nzdemo-measure");
+    const measurerBounds = measurer.getBoundingClientRect();
+    container.classList.remove("nzdemo-measure");
+
+    // tslint:disable-next-line: no-console
+    console.log("ToolSettings content width: ", measurerBounds.width);
   }
 }
 
@@ -2928,6 +2969,12 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
     });
   }
 
+  public componentDidMount() {
+    this.setState({
+      nineZone: this._nineZone.showWidget(2, this.state.nineZone),
+    });
+  }
+
   public componentDidUpdate() {
     if (!this._zonesMeasurer.current)
       return;
@@ -2995,13 +3042,13 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           zonesMeasurerRef={this._zonesMeasurer}
         />
         {tabs.map((tab) => {
-          const toolSettingsWidgetProps = tab.widget.id === 2 ? tab.widget as ToolSettingsWidgetManagerProps : undefined;
+          const toolSettingsMode = tab.widget.id === 2 ? (tab.widget as ToolSettingsWidgetManagerProps).mode : ToolSettingsWidgetMode.Tab;
           return (
             <WidgetContentExample
               anchor={tab.widget.horizontalAnchor}
               isDisplayed={tab.widget.tabIndex === tab.id}
               key={`${tab.widget.id}_${tab.id}`}
-              toolSettingsMode={toolSettingsWidgetProps ? toolSettingsWidgetProps.mode : ToolSettingsWidgetMode.Tab}
+              toolSettingsMode={toolSettingsMode}
               onChangeTheme={this._handleChangeTheme}
               onOpenActivityMessage={this._handleOpenActivityMessage}
               onOpenToastMessage={this._handleOpenToastMessage}

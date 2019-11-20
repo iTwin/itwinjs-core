@@ -24,9 +24,8 @@ import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
 import { UiFramework } from "../../UiFramework";
 
-import ReactResizeDetector from "react-resize-detector";
-
 import "./DefaultToolSettingsProvider.scss";
+import { ToolSettingsContentContext } from "../../widgets/ToolSettingsContent";
 
 /** Responsive Layout Mode */
 enum LayoutMode {
@@ -75,7 +74,6 @@ interface TsProps {
 
 interface TsState {
   toolId: string;
-  layoutMode: LayoutMode;
   valueMap: Map<string, ToolSettingsPropertyRecord>;
 }
 
@@ -150,17 +148,17 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     }
   }
 
-  private static getStateFromProps(props: TsProps, layoutMode = LayoutMode.Wide): TsState {
+  private static getStateFromProps(props: TsProps): TsState {
     const valueMap = new Map<string, ToolSettingsPropertyRecord>(props.dataProvider.valueMap);
     const { toolId } = props;
-    return { toolId, layoutMode, valueMap };
+    return { toolId, valueMap };
   }
 
   private getEditor(rowRecord: PropertyRecord, isLock = false, setFocus = false): React.ReactNode {
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
-      throw (new Error ("No record found in value map for tool setting."));
+      throw (new Error("No record found in value map for tool setting."));
 
     const className = isLock ? "uifw-default-toolsettings-property-lock" : "uifw-default-toolsettings-editor";
     return (
@@ -211,7 +209,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
-      throw (new Error ("No record found in value map for tool setting."));
+      throw (new Error("No record found in value map for tool setting."));
 
     return <label className={this.getPropertyLabelClass(record, isLeftmostRecord)} htmlFor={this.getPropertyId(rowRecord)}>{this.getPropertyLabel(rowRecord)}:</label>;
   }
@@ -220,7 +218,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
-      throw (new Error ("No record found in value map for tool setting."));
+      throw (new Error("No record found in value map for tool setting."));
 
     const lockEditor = (TsRow.hasAssociatedLockProperty(record)) ? this.getEditor(record.lockProperty!, true) : null;
     const label = (TsRow.editorWantsLabel(record)) ? this.getEditorLabel(record) : null;
@@ -268,32 +266,30 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     }
   }
 
-  // istanbul ignore next - currently unable to replicate resizing in unit test
-  private _onResize = (width: number) => {
-    const layoutMode = (width < 250) ? LayoutMode.Narrow : LayoutMode.Wide;
-    Logger.logInfo(UiFramework.loggerCategory(this), `Toolsetting Resize detector width=${width}`);
-    if (layoutMode !== this.state.layoutMode)
-      this.setState({ layoutMode });
-  }
-
   public render(): React.ReactNode {
     const { rows } = this.props.dataProvider;
     // istanbul ignore next
-    if (!rows) {
+    if (!rows)
       return null;
-    } else {
-      const { layoutMode } = this.state;
-      const toolSettingsClass = (LayoutMode.Narrow === layoutMode) ? "uifw-default-toolsettings-container uifw-default-toolsettings-narrow" : "uifw-default-toolsettings-container";
 
-      return (
-        <div className="uifw-default-toolsettings-resizer-parent">
-          <ReactResizeDetector handleWidth onResize={this._onResize} />
-          <div className={toolSettingsClass} >
-            {rows.map((row, index) => this.getRow(row, index))}
-          </div>
-        </div>
-      );
-    }
+    return (
+      <ToolSettingsContentContext.Consumer>
+        {({ availableContentWidth }) => {
+          const layoutMode = toLayoutMode(availableContentWidth);
+          const className = classnames(
+            "uifw-default-toolsettings-container",
+            LayoutMode.Narrow === layoutMode && "uifw-default-toolsettings-narrow",
+          );
+          return (
+            <div className="uifw-default-toolsettings-resizer-parent">
+              <div className={className} >
+                {rows.map((row, index) => this.getRow(row, index))}
+              </div>
+            </div>
+          );
+        }}
+      </ToolSettingsContentContext.Consumer>
+    );
   }
 }
 
@@ -352,5 +348,9 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
       this.toolSettingsNode = null;
   }
 }
+
+const toLayoutMode = (width: number) => {
+  return (width < 250) ? LayoutMode.Narrow : LayoutMode.Wide;
+};
 
 ConfigurableUiManager.registerControl("DefaultToolSettings", DefaultToolSettingsProvider);

@@ -16,6 +16,8 @@ import "./Content.scss";
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
+  /** Content container ref. */
+  containerRef?: React.Ref<HTMLDivElement>;
   /** Actual content. */
   content?: React.ReactNode;
 }
@@ -48,7 +50,10 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
         onScroll={this._handleScroll}
         style={this.props.style}
       >
-        <div className="nz-container">
+        <div
+          className="nz-container"
+          ref={this.props.containerRef}
+        >
           {this.props.content}
         </div>
       </div>
