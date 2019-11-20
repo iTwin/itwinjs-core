@@ -231,7 +231,7 @@ export class ViewClipTool extends PrimitiveTool {
       ViewClipTool.addClipPlanesLoops(builderVis, clipPlanesLoops, true);
       ViewClipTool.addClipPlanesLoops(builderHid, clipPlanesLoops, true);
       if (options && options.fillClipPlanes) {
-        const fill = (options && options.fill ? options.fill : ColorDef.from(0, 255, 255, 225).adjustForContrast(context.viewport.view.backgroundColor));
+        const fill = (options.fill ? options.fill : ColorDef.from(0, 255, 255, 225).adjustForContrast(context.viewport.view.backgroundColor));
         const builderFill = context.createGraphicBuilder(GraphicType.WorldDecoration);
         builderFill.setSymbology(fill, fill, 0);
         ViewClipTool.addClipPlanesLoops(builderFill, (options.hasPrimaryPlane ? [clipPlanesLoops[0]] : clipPlanesLoops), false);

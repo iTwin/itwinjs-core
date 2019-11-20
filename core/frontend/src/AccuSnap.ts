@@ -416,10 +416,6 @@ export class AccuSnap implements Decorator {
     if (!this.explanation)
       return;
 
-    // Get the "best" rejected hit to augment the error explanation with the hit info...
-    if (!theHit)
-      theHit = this.aSnapHits ? this.aSnapHits.hits[0] : undefined;
-
     this.showLocateMessage(viewPt, vp, this.explanation);
   }
 

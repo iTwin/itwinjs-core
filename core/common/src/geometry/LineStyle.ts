@@ -130,7 +130,7 @@ export namespace LineStyle {
         this.rotation.setFrom(newRotation);
       }
 
-      let scaleFactor = 1.0;
+      let scaleFactor;
       const scaleVector = Vector3d.create();
       const scaleMatrix = transform.matrix;
       scaleMatrix.normalizeRowsInPlace(scaleVector);
