@@ -22,7 +22,7 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { NotificationsWindow } from "./Notifications";
 import { FpsMonitor } from "./FpsMonitor";
-import { selectFileName } from "./FileOpen";
+import { selectFileName, BrowserFileSelector } from "./FileOpen";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 
@@ -34,11 +34,13 @@ export class Surface {
   private readonly _windows: Window[] = [];
   public readonly notifications: NotificationsWindow;
   private readonly _toolbar: ToolBar;
+  public readonly browserFileSelector?: BrowserFileSelector;
 
   public static get instance() { return DisplayTestApp.surface; }
 
-  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement) {
+  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined) {
     this.element = surfaceDiv;
+    this.browserFileSelector = browserFileSelector;
     this._toolbarDiv = toolbarDiv;
     this._toolbar = this.createToolBar();
     this._toolbarDiv.appendChild(this._toolbar.element);
@@ -149,9 +151,9 @@ export class Surface {
   }
 
   private async openIModel(): Promise<void> {
-    const filename = selectFileName();
+    const filename = await selectFileName(this.browserFileSelector);
     if (undefined === filename)
-      return Promise.resolve();
+      return;
 
     try {
       const iModel = await IModelConnection.openSnapshot(filename);
@@ -369,6 +371,10 @@ export class Surface {
     for (const window of this._windows)
       if (window instanceof Viewer && window !== viewer)
         this.forceClose(window);
+  }
+
+  public async selectFileName(): Promise<string | undefined> {
+    return selectFileName(this.browserFileSelector);
   }
 }
 

@@ -12,7 +12,7 @@ import {
   TileTree,
   Viewport,
 } from "@bentley/imodeljs-frontend";
-import { selectFileName } from "./FileOpen";
+import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
 class ExternalTreeRef extends TileTree.Reference {
@@ -108,7 +108,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     return;
   }
 
-  const filename = selectFileName();
+  const filename = await DisplayTestApp.surface.selectFileName();
   if (undefined === filename)
     return;
 
