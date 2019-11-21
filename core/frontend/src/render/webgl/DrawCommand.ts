@@ -81,13 +81,8 @@ export class DrawParams {
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 
-  public init(programParams: ShaderProgramParams, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass?: RenderPass) {
+  public init(programParams: ShaderProgramParams, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity) {
     this._programParams = programParams;
-    if (undefined === pass)
-      pass = programParams.renderPass;
-    else
-      assert(pass === this.programParams.renderPass);
-
     this._geometry = geometry;
     if (this.isViewCoords) {
       // Zero out Z for silly clipping tools...

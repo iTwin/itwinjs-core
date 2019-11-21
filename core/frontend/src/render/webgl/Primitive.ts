@@ -103,8 +103,8 @@ export class Primitive extends Graphic {
     if (undefined === Primitive._drawParams)
       Primitive._drawParams = new DrawParams();
 
-    const drawParams = Primitive._drawParams!;
-    drawParams.init(shader.params, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
+    const drawParams = Primitive._drawParams;
+    drawParams.init(shader.params, this.cachedGeometry, shader.target.currentTransform);
     shader.draw(drawParams);
   }
 
