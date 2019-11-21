@@ -63,6 +63,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   private _componentUnmounting = false;
   private _closeOnPanelOpened = true;
   private _ref = React.createRef<HTMLDivElement>();
+  private _isMounted = false;
 
   constructor(props: PopupButtonProps) {
     super(props);
@@ -92,9 +93,10 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   /** Minimizes the expandable component. */
   public minimize = () => {
-    this.setState({
-      isPressed: false,
-    });
+    if (this._isMounted)
+      this.setState({
+        isPressed: false,
+      });
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
@@ -115,17 +117,20 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
         newState = this.props.stateFunc(newState);
       // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
-        this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
+        if (this._isMounted)
+          this.setState({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible });
       }
     }
   }
 
   public componentDidMount() {
+    this._isMounted = true;
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public componentWillUnmount() {
+    this._isMounted = false;
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
@@ -195,20 +200,21 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   }
 
   private _handleClick = () => {
-    this.setState((prevState) => {
-      const isPressed = !prevState.isPressed;
-      return {
-        isPressed,
-      };
-    }, () => {
-      const expand = !!this.state.isPressed;
+    if (this._isMounted)
+      this.setState((prevState) => {
+        const isPressed = !prevState.isPressed;
+        return {
+          isPressed,
+        };
+      }, () => {
+        const expand = !!this.state.isPressed;
 
-      this._closeOnPanelOpened = false;
-      expand && FrontstageManager.onToolPanelOpenedEvent.emit();
-      this._closeOnPanelOpened = true;
+        this._closeOnPanelOpened = false;
+        expand && FrontstageManager.onToolPanelOpenedEvent.emit();
+        this._closeOnPanelOpened = true;
 
-      this.props.onExpanded && this.props.onExpanded(expand);
-    });
+        this.props.onExpanded && this.props.onExpanded(expand);
+      });
   }
 
   private _handleOutsideClick = (e: MouseEvent) => {

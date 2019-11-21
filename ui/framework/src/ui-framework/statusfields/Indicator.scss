@@ -23,7 +23,7 @@
   }
 
   /* Desktop */
-  @include for-desktop-up {
+  @include for-medium-desktop-up {
     &.nz-footer-mode {
       padding-left: $nz-footer-indicator-horizontal-padding;
       padding-right: $nz-footer-indicator-horizontal-padding;
@@ -36,7 +36,7 @@
   }
 
   /* Medium devices (landscape tablets) */
-  @include for-tablet-landscape-down {
+  @include for-small-desktop-down {
     padding-left: $nz-footer-indicator-horizontal-padding-medium;
     padding-right: $nz-footer-indicator-horizontal-padding-medium;
   }

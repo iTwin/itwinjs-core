@@ -775,6 +775,25 @@ export interface CommonBackstageItem {
     readonly type: BackstageItemType;
 }
 
+// @public
+export class ConditionalField extends React.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
+    constructor(props: ConditionalFieldProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: ConditionalFieldProps): void;
+    // (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: ConditionalFieldState;
+}
+
+// @public
+export interface ConditionalFieldProps extends StatusFieldProps {
+    boolFunc: (props: StatusFieldProps) => boolean;
+    defaultValue?: boolean;
+}
+
 // @beta
 export class ConditionalItemDef extends ItemDefBase {
     constructor(props: ConditionalItemProps);
@@ -1775,6 +1794,12 @@ export interface FilterInfo {
     filtering?: boolean;
     // (undocumented)
     matchesCount?: number;
+}
+
+// @public
+export class FooterModeField extends React.PureComponent<StatusFieldProps> {
+    // (undocumented)
+    render(): React.ReactNode;
 }
 
 // @beta

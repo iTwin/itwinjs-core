@@ -58,6 +58,8 @@ export class ToolSettingsContent extends React.PureComponent<ToolSettingsContent
   private _handleResize = () => {
     const container = this._container.current;
     const measurer = this._measurer.current;
+
+    // istanbul ignore next
     if (!container || !measurer)
       return;
 

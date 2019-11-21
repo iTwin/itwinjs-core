@@ -664,21 +664,26 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleToolPanelOpenedEvent = () => {
-    this.setState({
-      allowPointerUpSelection: true,
-    });
+    if (this._isMounted)
+      this.setState({
+        allowPointerUpSelection: true,
+      });
   }
 
   private _handlePointerDown = () => {
-    this.setState({
-      allowPointerUpSelection: false,
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        allowPointerUpSelection: false,
+      });
   }
 
   private _handlePointerUp = () => {
-    this.setState({
-      allowPointerUpSelection: false,
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        allowPointerUpSelection: false,
+      });
   }
 
   private setPanelState(location: StagePanelLocation, panelState: StagePanelState) {

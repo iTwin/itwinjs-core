@@ -175,16 +175,18 @@ export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
 export * from "./ui-framework/statusfields/ActivityCenter";
-export * from "./ui-framework/statusfields/MessageCenter";
-export * from "./ui-framework/statusfields/SnapMode";
-export * from "./ui-framework/statusfields/PromptField";
-export * from "./ui-framework/statusfields/SelectionInfo";
-export * from "./ui-framework/statusfields/StatusFieldProps";
-export * from "./ui-framework/statusfields/SelectionScope";
-export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
+export * from "./ui-framework/statusfields/ConditionalField";
+export * from "./ui-framework/statusfields/FooterModeField";
 export * from "./ui-framework/statusfields/Indicator";
+export * from "./ui-framework/statusfields/MessageCenter";
+export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SectionsField";
+export * from "./ui-framework/statusfields/SelectionInfo";
+export * from "./ui-framework/statusfields/SelectionScope";
+export * from "./ui-framework/statusfields/SnapMode";
+export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/ViewAttributes";
+export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
 
 export * from "./ui-framework/theme/ThemeManager";
 

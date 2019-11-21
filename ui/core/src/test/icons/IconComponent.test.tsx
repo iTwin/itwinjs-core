@@ -24,4 +24,8 @@ describe("IconComponent", () => {
     shallow(<Icon iconSpec="icon-developer" />).should.matchSnapshot();
   });
 
+  it("should render correctly with no iconSpec", () => {
+    shallow(<Icon />).should.matchSnapshot();
+  });
+
 });

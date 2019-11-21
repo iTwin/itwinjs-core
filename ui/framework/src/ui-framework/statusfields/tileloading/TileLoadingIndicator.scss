@@ -34,7 +34,7 @@
     min-width: 4em;
   }
 
-  @include for-tablet-landscape-down {
+  @include for-small-desktop-down {
     &.nz-footer-mode {
       width: 9em;
     }

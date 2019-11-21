@@ -72,6 +72,8 @@ public;CommandItemProps
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
 beta;CommonBackstageItem
+public;ConditionalField 
+public;ConditionalFieldProps 
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -168,6 +170,7 @@ beta;ExpandableSectionProps
 internal;FaceCell 
 internal;FaceCellProps 
 alpha;FilterInfo
+public;FooterModeField 
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
