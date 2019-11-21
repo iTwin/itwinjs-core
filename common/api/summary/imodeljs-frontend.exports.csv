@@ -121,6 +121,7 @@ internal;ElemMethod
 internal;ElemSource
 beta;EmphasizeElements 
 beta;EmphasizeElementsProps
+beta;EngineeringLengthDescription 
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
@@ -358,6 +359,7 @@ internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SuppressLabelEditorParams 
 alpha;SuppressUnitLabelEditorParams 
+beta;SurveyLengthDescription 
 internal;SuspendedToolState
 internal;SyncFlags
 internal;class Target 

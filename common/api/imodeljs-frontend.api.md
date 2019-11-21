@@ -2499,6 +2499,15 @@ export interface EmphasizeElementsProps {
     wantEmphasis?: boolean;
 }
 
+// @beta
+export class EngineeringLengthDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
+}
+
 // @public
 export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
@@ -5378,6 +5387,10 @@ export enum QuantityType {
     // (undocumented)
     Length = 1,
     // (undocumented)
+    LengthEngineering = 9,
+    // (undocumented)
+    LengthSurvey = 8,
+    // (undocumented)
     Stationing = 7,
     // (undocumented)
     Volume = 4
@@ -6961,6 +6974,15 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressUnitLabel;
+}
+
+// @beta
+export class SurveyLengthDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
 }
 
 // @internal (undocumented)

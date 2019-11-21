@@ -9,7 +9,7 @@ import {
   BeButtonEvent, EventHandled,
   ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
   NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams, AngleDescription, LengthDescription,
+  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams, AngleDescription, LengthDescription, SurveyLengthDescription,
 } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
@@ -30,6 +30,7 @@ export class ToolWithSettings extends PrimitiveTool {
   private _showCoordinatesOnPointerMove = false;
   private _stationFormatterSpec?: FormatterSpec;
   private _lengthDescription = new LengthDescription();
+  private _surveyLengthDescription = new SurveyLengthDescription(ToolWithSettings._surveyLengthName, "Survey");
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
@@ -308,6 +309,20 @@ export class ToolWithSettings extends PrimitiveTool {
     this._lengthValue.value = option;
   }
 
+  // ------------- Survey Length ---------------
+  private static _surveyLengthName = "surveyLength";
+
+  // if _surveyLengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
+  private _surveyLengthValue = new ToolSettingsValue(51.25);  // value in meters
+
+  public get surveyLength(): number {
+    return this._surveyLengthValue.value as number;
+  }
+
+  public set surveyLength(option: number) {
+    this._surveyLengthValue.value = option;
+  }
+
   // ------------- Angle ---------------
 
   // if _angleValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
@@ -383,13 +398,17 @@ export class ToolWithSettings extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  private syncCoordinateValue(coordinate: string, station: string): void {
+  private syncCoordinateValue(coordinate: string, station: string, distance: number): void {
     const coordinateValue = new ToolSettingsValue(coordinate);
     // clone coordinateValue if storing value within tool - in this case we are not
     const syncItem: ToolSettingsPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName };
     const stationValue = new ToolSettingsValue(station);
     const stationSyncItem: ToolSettingsPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName };
-    this.syncToolSettingsProperties([syncItem, stationSyncItem]);
+
+    const surveyLengthValue = new ToolSettingsValue(distance);
+    surveyLengthValue.displayValue = this._surveyLengthDescription.format(distance);
+    const surveySyncItem: ToolSettingsPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName };
+    this.syncToolSettingsProperties([syncItem, stationSyncItem, surveySyncItem]);
   }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -402,7 +421,7 @@ export class ToolWithSettings extends PrimitiveTool {
     if (this.points.length > 0)
       distance = point.distance(this.points[0]);
 
-    this.syncCoordinateValue(formattedString, this.formatStation(distance));
+    this.syncCoordinateValue(formattedString, this.formatStation(distance), distance);
   }
 
   public onRestartTool(): void {
@@ -424,7 +443,8 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(new ToolSettingsPropertyRecord(this._coordinateValue.clone() as PrimitiveValue, ToolWithSettings._getCoordinateDescription(), { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, readonly));
     toolSettings.push(new ToolSettingsPropertyRecord(this._stationValue.clone() as PrimitiveValue, ToolWithSettings._getStationDescription(), { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, readonly));
     const lengthLock = new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 });
-    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, new LengthDescription(), { rowPriority: 20, columnIndex: 2 }, false, lengthLock));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, this._lengthDescription, { rowPriority: 20, columnIndex: 2 }, false, lengthLock));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._surveyLengthValue.clone() as PrimitiveValue, this._surveyLengthDescription, { rowPriority: 21, columnIndex: 2 }, readonly));
     toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, new AngleDescription(), { rowPriority: 25, columnIndex: 2 }));
     return toolSettings;
   }
@@ -468,6 +488,9 @@ export class ToolWithSettings extends PrimitiveTool {
       this.syncLengthState();
     } else if (updatedValue.propertyName === ToolWithSettings._lengthName) {
       this.length = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === ToolWithSettings._surveyLengthName) {
+      this.surveyLength = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
       this.colorValue = updatedValue.value.value as number;
