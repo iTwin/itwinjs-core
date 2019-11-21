@@ -15,7 +15,7 @@ import {
 import {
   ControlledTree, useModelSource, TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeNodeRendererProps,
   TreeNodeRenderer, TreeRendererProps, TreeRenderer, TreeModelNode, TreeModelSource, CheckBoxInfo, TreeCheckboxStateChangeEvent,
-  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput,
+  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem,
 } from "@bentley/ui-components";
 import { NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, useEffectSkipFirst } from "@bentley/ui-core";
 
@@ -385,8 +385,8 @@ class EventHandler extends TreeEventHandler {
 
   public onSelectionReplaced(event: TreeSelectionReplacementEvent) {
     event.replacements.subscribe({
-      next: ({ selectedNodeIds }) => {
-        this.onNodesSelected(selectedNodeIds);
+      next: ({ selectedNodeItems }) => {
+        this.onNodesSelected(selectedNodeItems);
       },
       complete: () => this.updateCheckboxes(),
     });
@@ -397,8 +397,8 @@ class EventHandler extends TreeEventHandler {
   public onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent) {
     event.stateChanges.subscribe({
       next: (changes: CheckboxStateChange[]) => {
-        for (const { nodeId, newState } of changes) {
-          newState === CheckBoxState.On ? this.onNodesSelected([nodeId]) : this.onNodesDeselected([nodeId]);
+        for (const { nodeItem, newState } of changes) {
+          newState === CheckBoxState.On ? this.onNodesSelected([nodeItem]) : this.onNodesDeselected([nodeItem]);
         }
       },
       complete: () => this.updateCheckboxes(),
@@ -424,37 +424,28 @@ class EventHandler extends TreeEventHandler {
     this._skipModelChange = false;
   }
 
-  private onNodesSelected(nodeIds: string[]) {
-    for (const nodeId of nodeIds) {
-      const node = this._modelSource.getModel().getNode(nodeId);
-      // istanbul ignore if
-      if (!node)
-        return;
-
-      const id = this.getIdFromTreeNode(node);
+  private onNodesSelected(nodeItems: TreeNodeItem[]) {
+    for (const nodeItem of nodeItems) {
+      const id = this.getIdFromTreeNodeItem(nodeItem);
       let enable = false;
-      if (node.parentId) {
+      if (nodeItem.parentId) {
         enable = !this._visibilityHandler.isSubCategoryVisible(id, this._activeView);
       } else {
         enable = !this._visibilityHandler.isCategoryVisible(id, this._activeView);
       }
 
-      this.manageSelection(node, enable);
+      this.manageSelection(nodeItem, enable);
     }
   }
 
-  private onNodesDeselected(nodeIds: string[]) {
-    for (const nodeId of nodeIds) {
-      const node = this._modelSource.getModel().getNode(nodeId);
-      // istanbul ignore if
-      if (!node)
-        return;
-      this.manageSelection(node, false);
+  private onNodesDeselected(nodeItems: TreeNodeItem[]) {
+    for (const nodeItem of nodeItems) {
+      this.manageSelection(nodeItem, false);
     }
   }
 
-  private manageSelection(node: TreeModelNode, enable: boolean) {
-    const id = this.getIdFromTreeNode(node);
+  private manageSelection(node: TreeNodeItem, enable: boolean) {
+    const id = this.getIdFromTreeNodeItem(node);
     if (node.parentId) {
       if (enable) {
         const parent = this._visibilityHandler.getParent(id);
@@ -470,10 +461,10 @@ class EventHandler extends TreeEventHandler {
   }
 
   private getNodeCheckBoxInfo(node: TreeModelNode): CheckBoxInfo {
-    const id = this.getIdFromTreeNode(node);
+    const id = this.getIdFromTreeNodeItem(node.item);
     if (this._activeView) {
       let state = CheckBoxState.Off;
-      if (node.parentId) {
+      if (node.item.parentId) {
         if (this._visibilityHandler.isSubCategoryVisible(id, this._activeView))
           state = CheckBoxState.On;
       } else {
@@ -485,8 +476,8 @@ class EventHandler extends TreeEventHandler {
     return node.checkbox.isVisible ? node.checkbox : /* istanbul ignore next */ { ...node.checkbox, isVisible: true };
   }
 
-  private getIdFromTreeNode(node: TreeModelNode) {
-    const key = this._dataProvider!.getNodeKey(node.item);
+  private getIdFromTreeNodeItem(node: TreeNodeItem) {
+    const key = this._dataProvider!.getNodeKey(node);
     // istanbul ignore else
     if (NodeKey.isInstanceNodeKey(key) && key.instanceKey)
       return key.instanceKey.id;

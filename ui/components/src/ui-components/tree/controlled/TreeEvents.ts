@@ -6,6 +6,7 @@
 
 import { CheckBoxState } from "@bentley/ui-core";
 import { Observable, Subscription } from "./Observable";
+import { TreeNodeItem } from "../TreeDataProvider";
 
 /**
  * Tree events listener used to listen and handle tree events.
@@ -42,8 +43,8 @@ export interface TreeSelectionModificationEvent {
  * @alpha
  */
 export interface TreeSelectionChange {
-  selectedNodeIds: string[];
-  deselectedNodeIds: string[];
+  selectedNodeItems: TreeNodeItem[];
+  deselectedNodeItems: TreeNodeItem[];
 }
 
 /**
@@ -51,7 +52,7 @@ export interface TreeSelectionChange {
  * @alpha
  */
 export interface TreeSelectionReplacementEvent {
-  replacements: Observable<{ selectedNodeIds: string[] }>;
+  replacements: Observable<{ selectedNodeItems: TreeNodeItem[] }>;
 }
 
 /**
@@ -67,6 +68,6 @@ export interface TreeCheckboxStateChangeEvent {
  * @alpha
  */
 export interface CheckboxStateChange {
-  nodeId: string;
+  nodeItem: TreeNodeItem;
   newState: CheckBoxState;
 }

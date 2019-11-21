@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import * as faker from "faker";
 import { Subject } from "rxjs/internal/Subject";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeEventHandler, TreeEventHandlerParams } from "../../../ui-components/tree/controlled/TreeEventHandler";
@@ -14,7 +13,8 @@ import { TreeEvents, TreeSelectionChange, CheckboxStateChange } from "../../../u
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { TreeModelMutator } from "../../../ui-components/tree/controlled/internal/TreeModelMutator";
 import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { TreeModel } from "../../../ui-components/tree/controlled/TreeModel";
+import { TreeModel, MutableTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
+import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventHandler", () => {
 
@@ -29,14 +29,14 @@ describe("TreeEventHandler", () => {
   };
 
   let modelMutator: TreeModelMutator;
-  let testNodeId: string;
+  let testNode: MutableTreeModelNode;
 
   beforeEach(() => {
     modelSourceMock.reset();
     treeEventsMock.reset();
 
     modelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
-    testNodeId = faker.random.uuid();
+    testNode = createRandomMutableTreeModelNode();
 
     eventHandler = new TreeEventHandler(params);
     modelMutator = (eventHandler as any)._modelMutator;
@@ -57,8 +57,8 @@ describe("TreeEventHandler", () => {
 
     it("calls TreeMutator expandNode", () => {
       const spy = sinon.spy(modelMutator, "expandNode");
-      eventHandler.onNodeExpanded({ nodeId: testNodeId });
-      expect(spy).to.be.calledWith(testNodeId);
+      eventHandler.onNodeExpanded({ nodeId: testNode.id });
+      expect(spy).to.be.calledWith(testNode.id);
     });
 
   });
@@ -67,8 +67,8 @@ describe("TreeEventHandler", () => {
 
     it("calls TreeMutator collapseNode", () => {
       const spy = sinon.spy(modelMutator, "collapseNode");
-      eventHandler.onNodeCollapsed({ nodeId: testNodeId });
-      expect(spy).to.be.calledWith(testNodeId);
+      eventHandler.onNodeCollapsed({ nodeId: testNode.id });
+      expect(spy).to.be.calledWith(testNode.id);
     });
 
   });
@@ -77,12 +77,12 @@ describe("TreeEventHandler", () => {
 
     it("calls TreeMutator modifySelection", () => {
       const change: TreeSelectionChange = {
-        selectedNodeIds: [testNodeId],
-        deselectedNodeIds: [],
+        selectedNodeItems: [testNode.item],
+        deselectedNodeItems: [],
       };
       const spy = sinon.spy(modelMutator, "modifySelection");
       eventHandler.onSelectionModified({ modifications: from([change]) });
-      expect(spy).to.be.calledWith([testNodeId], []);
+      expect(spy).to.be.calledWith([testNode.item], []);
     });
 
   });
@@ -91,25 +91,26 @@ describe("TreeEventHandler", () => {
 
     it("calls TreeMutator replaceSelection on first value", () => {
       const change = {
-        selectedNodeIds: [testNodeId],
+        selectedNodeItems: [testNode.item],
       };
       const spy = sinon.spy(modelMutator, "replaceSelection");
       eventHandler.onSelectionReplaced({ replacements: from([change]) });
-      expect(spy).to.be.calledWith([testNodeId]);
+      expect(spy).to.be.calledWith([testNode.item]);
     });
 
     it("calls TreeMutator modifySelection on second value", () => {
       const change1 = {
-        selectedNodeIds: [testNodeId],
+        selectedNodeItems: [testNode.item],
       };
+      const secondNode = createRandomMutableTreeModelNode();
       const change2 = {
-        selectedNodeIds: [faker.random.uuid()],
+        selectedNodeItems: [secondNode.item],
       };
       const replaceSpy = sinon.spy(modelMutator, "replaceSelection");
       const modifySpy = sinon.spy(modelMutator, "modifySelection");
       eventHandler.onSelectionReplaced({ replacements: from([change1, change2]) });
-      expect(replaceSpy).to.be.calledWith(change1.selectedNodeIds);
-      expect(modifySpy).to.be.calledWith(change2.selectedNodeIds, []);
+      expect(replaceSpy).to.be.calledWith(change1.selectedNodeItems);
+      expect(modifySpy).to.be.calledWith(change2.selectedNodeItems, []);
     });
 
   });
@@ -118,7 +119,7 @@ describe("TreeEventHandler", () => {
 
     it("calls TreeMutator setCheckboxStates", () => {
       const changes: CheckboxStateChange[] = [{
-        nodeId: testNodeId,
+        nodeItem: testNode.item,
         newState: CheckBoxState.On,
       }];
       const spy = sinon.spy(modelMutator, "setCheckboxStates");

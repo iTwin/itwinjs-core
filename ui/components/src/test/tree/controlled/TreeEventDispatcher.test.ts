@@ -9,13 +9,14 @@ import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
 import { TreeEvents, TreeSelectionModificationEvent, TreeSelectionReplacementEvent, TreeCheckboxStateChangeEvent } from "../../../ui-components/tree/controlled/TreeEvents";
-import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
 import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, TreeModelNode, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { extractSequence } from "../ObservableTestHelpers";
 import { createRandomMutableTreeModelNodes, createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("TreeEventDispatcher", () => {
 
@@ -45,9 +46,21 @@ describe("TreeEventDispatcher", () => {
     mockVisibleNodes();
   });
 
-  const mockVisibleNodes = () => {
+  const createNodeHierarchy = (parentId: string | undefined, node: TreeNodeItem, child?: TreeNodeItem): LoadedNodeHierarchy => {
+    return {
+      parentId,
+      hierarchyItems: [{
+        item: node,
+        children: child ? [{ item: child }] : undefined,
+      }],
+      offset: 0,
+    };
+  };
+
+  const mockVisibleNodes = (addRootLevelPlaceholderNode = false, addChildPlaceholderNode = false) => {
     modelMock.reset();
     visibleNodesMock.reset();
+    treeNodeLoaderMock.reset();
 
     selectedNodes = createRandomMutableTreeModelNodes(4).map((node) => ({ ...node, isSelected: true }));
     deselectedNodes = createRandomMutableTreeModelNodes(4).map((node) => ({ ...node, isSelected: false }));
@@ -61,8 +74,11 @@ describe("TreeEventDispatcher", () => {
       for (const node of selectedNodes)
         yield node;
 
-      yield placeholderChildNode;
-      yield placeholderNode;
+      if (addChildPlaceholderNode)
+        yield placeholderChildNode;
+
+      if (addRootLevelPlaceholderNode)
+        yield placeholderNode;
 
       for (const node of deselectedNodes)
         yield node;
@@ -81,9 +97,9 @@ describe("TreeEventDispatcher", () => {
     modelMock.setup((x) => x.getNode(loadedChildNode.id)).returns(() => loadedChildNode);
     modelMock.setup((x) => x.getNode(selectedNodes[3].id)).returns(() => selectedNodes[3]);
 
-    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0)).returns(() => from([[loadedNode.id]]));
+    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0)).returns(() => from([createNodeHierarchy(undefined, loadedNode.item)]));
     treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelNode(parent) && parent.id === selectedNodes[3].id), 0))
-      .returns(() => from([[loadedChildNode.id]]));
+      .returns(() => from([createNodeHierarchy(selectedNodes[3].id, loadedChildNode.item)]));
   };
 
   describe("constructor", () => {
@@ -95,7 +111,7 @@ describe("TreeEventDispatcher", () => {
           from: deselectedNodes[0].id,
           to: deselectedNodes[deselectedNodes.length - 1].id,
         };
-        const expectedSelectedNodeIds = deselectedNodes.map((node) => node.id);
+        const expectedSelectedNodeItems = deselectedNodes.map((node) => node.item);
         const spy = sinon.spy();
         treeEventsMock.setup((x) => x.onSelectionModified).returns(() => spy);
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
@@ -105,16 +121,17 @@ describe("TreeEventDispatcher", () => {
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
-        expect(selectionChange.selectedNodeIds).to.be.deep.eq(expectedSelectedNodeIds);
-        expect(selectionChange.deselectedNodeIds).to.be.empty;
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq(expectedSelectedNodeItems);
+        expect(selectionChange.deselectedNodeItems).to.be.empty;
       });
 
       it("selects range of nodes and loads unloaded nodes", async () => {
+        mockVisibleNodes(false, true);
         const rangeSelection = {
           from: selectedNodes[3].id,
           to: deselectedNodes[0].id,
         };
-        const expectedSelectedNodeIds = [selectedNodes[3].id, deselectedNodes[0].id, loadedChildNode.id, loadedNode.id];
+        const expectedSelectedNodeIds = [selectedNodes[3].item, deselectedNodes[0].item, loadedChildNode.item];
         const spy = sinon.spy();
         treeEventsMock.setup((x) => x.onSelectionModified).returns(() => spy);
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
@@ -124,8 +141,33 @@ describe("TreeEventDispatcher", () => {
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
-        expect(selectionChange.selectedNodeIds).to.be.deep.eq(expectedSelectedNodeIds);
-        expect(selectionChange.deselectedNodeIds).to.be.empty;
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq(expectedSelectedNodeIds);
+        expect(selectionChange.deselectedNodeItems).to.be.empty;
+      });
+
+      it("selects range of nodes and loads unloaded nodes hierarchy", async () => {
+        mockVisibleNodes(true);
+        const rangeSelection = {
+          from: selectedNodes[3].id,
+          to: deselectedNodes[0].id,
+        };
+
+        treeNodeLoaderMock.reset();
+        treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0))
+          .returns(() => from([createNodeHierarchy(undefined, loadedNode.item, loadedChildNode.item)]));
+
+        const expectedSelectedNodeItems = [selectedNodes[3].item, deselectedNodes[0].item, loadedNode.item, loadedChildNode.item];
+        const spy = sinon.spy();
+        treeEventsMock.setup((x) => x.onSelectionModified).returns(() => spy);
+        selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
+        expect(spy).to.be.called;
+
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const results = await extractSequence(rxjsFrom(spyArgs.modifications));
+        expect(results).to.not.be.empty;
+        const selectionChange = results[0];
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq(expectedSelectedNodeItems);
+        expect(selectionChange.deselectedNodeItems).to.be.empty;
       });
 
       it("does not select nodes if visible nodes are not set", async () => {
@@ -143,8 +185,8 @@ describe("TreeEventDispatcher", () => {
         const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
-        expect(results[0].selectedNodeIds).to.be.empty;
-        expect(results[0].deselectedNodeIds).to.be.empty;
+        expect(results[0].selectedNodeItems).to.be.empty;
+        expect(results[0].deselectedNodeItems).to.be.empty;
       });
 
     });
@@ -160,12 +202,14 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onSelectionChanged.emit({ selectedNodes: selectedNodeIds, deselectedNodes: deselectedNodeIds });
         expect(spy).to.be.called;
 
+        const selectedNodeItems = deselectedNodes.map((node) => node.item);
+        const deselectedNodeItems = selectedNodes.map((node) => node.item);
         const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
-        expect(selectionChange.selectedNodeIds).to.be.deep.eq(selectedNodeIds);
-        expect(selectionChange.deselectedNodeIds).to.be.deep.eq(deselectedNodeIds);
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq(selectedNodeItems);
+        expect(selectionChange.deselectedNodeItems).to.be.deep.eq(deselectedNodeItems);
       });
 
     });
@@ -174,6 +218,7 @@ describe("TreeEventDispatcher", () => {
 
       it("replaces selected nodes", async () => {
         const selectedNodeIds = deselectedNodes.map((node) => node.id);
+        const selectedNodeItems = deselectedNodes.map((node) => node.item);
 
         const spy = sinon.spy();
         treeEventsMock.setup((x) => x.onSelectionReplaced).returns(() => spy);
@@ -184,7 +229,7 @@ describe("TreeEventDispatcher", () => {
         const results = await extractSequence(rxjsFrom(spyArgs.replacements));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
-        expect(selectionChange.selectedNodeIds).to.be.deep.eq(selectedNodeIds);
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq(selectedNodeItems);
       });
 
       it("replaces selected nodes using range selection from one node", async () => {
@@ -202,7 +247,7 @@ describe("TreeEventDispatcher", () => {
         const results = await extractSequence(rxjsFrom(spyArgs.replacements));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
-        expect(selectionChange.selectedNodeIds).to.be.deep.eq([deselectedNodes[0].id]);
+        expect(selectionChange.selectedNodeItems).to.be.deep.eq([deselectedNodes[0].item]);
       });
 
     });
@@ -212,7 +257,7 @@ describe("TreeEventDispatcher", () => {
   describe("onNodeCheckboxClicked", () => {
 
     it("changes state for clicked node", async () => {
-      const expectedAffectedNodeIds = [deselectedNodes[0].id];
+      const expectedAffectedNodeItems = [deselectedNodes[0].item];
 
       const spy = sinon.spy();
       treeEventsMock.setup((x) => x.onCheckboxStateChanged).returns(() => spy);
@@ -223,12 +268,12 @@ describe("TreeEventDispatcher", () => {
       const changes = spy.args[0][0] as TreeCheckboxStateChangeEvent;
       const results = await extractSequence(rxjsFrom(changes.stateChanges));
       expect(results).to.not.be.empty;
-      const affectedNodeIds = results[0].map((change) => change.nodeId);
-      expect(affectedNodeIds).to.be.deep.eq(expectedAffectedNodeIds);
+      const affectedNodeItems = results[0].map((change) => change.nodeItem);
+      expect(affectedNodeItems).to.be.deep.eq(expectedAffectedNodeItems);
     });
 
     it("changes state for all selected nodes", async () => {
-      const expectedAffectedNodeIds = [selectedNodes[0].id, ...selectedNodes.map((node) => node.id)];
+      const expectedAffectedNodeItems = [...selectedNodes.map((node) => node.item)];
 
       const spy = sinon.spy();
       treeEventsMock.setup((x) => x.onCheckboxStateChanged).returns(() => spy);
@@ -238,16 +283,16 @@ describe("TreeEventDispatcher", () => {
       const changes = spy.args[0][0] as TreeCheckboxStateChangeEvent;
       const results = await extractSequence(rxjsFrom(changes.stateChanges));
       expect(results).to.not.be.empty;
-      const affectedIds = results[0].map((change) => change.nodeId);
-      expect(affectedIds).to.be.deep.eq(expectedAffectedNodeIds);
+      const affectedItems = results[0].map((change) => change.nodeItem);
+      expect(affectedItems).to.be.deep.eq(expectedAffectedNodeItems);
     });
 
     it("changes state for all selected nodes including pending selection", async () => {
       // simulate selection event in progress
       // if selection modified event is still in progress, dispatcher saves on going event data in _activeSelections set
-      (dispatcher as any)._activeSelections.add(from([{ selectedNodeIds: [deselectedNodes[0].id], deselectedNodeIds: [] }]));
+      (dispatcher as any)._activeSelections.add(from([{ selectedNodeItems: [deselectedNodes[0].item], deselectedNodeItems: [] }]));
 
-      const expectedAffectedIds = [selectedNodes[0].id, ...selectedNodes.map((node) => node.id), deselectedNodes[0].id];
+      const expectedAffectedItems = [...selectedNodes.map((node) => node.item), deselectedNodes[0].item];
 
       const spy = sinon.spy();
       treeEventsMock.setup((x) => x.onCheckboxStateChanged).returns(() => spy);
@@ -257,24 +302,28 @@ describe("TreeEventDispatcher", () => {
       const checkboxChanges = spy.args[0][0] as TreeCheckboxStateChangeEvent;
       const results = await extractSequence(rxjsFrom(checkboxChanges.stateChanges));
       expect(results).to.not.be.empty;
-      const affectedIds = results
+      const affectedItems = results
         .reduce((acc, el) => acc.concat(el), [])
-        .map((change) => change.nodeId);
-      expect(affectedIds).to.be.deep.eq(expectedAffectedIds);
+        .map((change) => change.nodeItem);
+      expect(affectedItems).to.be.deep.eq(expectedAffectedItems);
     });
 
-    it("changes state just for clicked node if visible nodes are not set", async () => {
+    it("does not dispatch event if visibleNodes are not set", async () => {
       dispatcher.setVisibleNodes(undefined!);
       const spy = sinon.spy();
       treeEventsMock.setup((x) => x.onCheckboxStateChanged).returns(() => spy);
 
       dispatcher.onNodeCheckboxClicked(selectedNodes[0].id, CheckBoxState.On);
+      expect(spy).to.not.be.called;
+    });
 
-      const changes = spy.args[0][0] as TreeCheckboxStateChangeEvent;
-      const results = await extractSequence(rxjsFrom(changes.stateChanges));
-      expect(results).to.not.be.empty;
-      const affectedIds = results[0].map((change) => change.nodeId);
-      expect(affectedIds).to.be.deep.eq([selectedNodes[0].id]);
+    it("does not dispatch event if clicked node is not found", async () => {
+      const spy = sinon.spy();
+      treeEventsMock.setup((x) => x.onCheckboxStateChanged).returns(() => spy);
+      modelMock.setup((x) => x.getNode("NoNode")).returns(() => undefined);
+
+      dispatcher.onNodeCheckboxClicked("NoNode", CheckBoxState.On);
+      expect(spy).to.not.be.called;
     });
 
   });

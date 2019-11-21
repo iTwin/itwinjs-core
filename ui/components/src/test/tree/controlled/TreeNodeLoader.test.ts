@@ -10,10 +10,11 @@ import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
-import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, LoadedNodeHierarchyItem, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { MutableTreeModelNode, TreeNodeItemData, TreeModelRootNode } from "../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 import { extractSequence } from "../ObservableTestHelpers";
+import { Observable } from "../../../ui-components/tree/controlled/Observable";
 
 const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSize: number) => {
   const rootWithChildren = createRandomMutableTreeModelNode();
@@ -54,6 +55,22 @@ const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSi
   };
 };
 
+const collectIdsFromHierarchy = (hierarchyItems: LoadedNodeHierarchyItem[], result: string[] = []) => {
+  for (const hierarchyItem of hierarchyItems) {
+    result.push(hierarchyItem.item.id);
+    if (hierarchyItem.children)
+      collectIdsFromHierarchy(hierarchyItem.children, result);
+  }
+  return result;
+};
+
+const extractLoadedNodeIds = async (obs: Observable<LoadedNodeHierarchy>) => {
+  const loadedHierarchy = await extractSequence(rxjsFrom(obs));
+  if (loadedHierarchy.length === 0)
+    return [];
+  return collectIdsFromHierarchy(loadedHierarchy[0].hierarchyItems);
+};
+
 const itemIds = (items: TreeNodeItem[]) => items.map((item) => item.id);
 
 describe("TreeNodeLoader", () => {
@@ -88,10 +105,17 @@ describe("TreeNodeLoader", () => {
       childNodes = mockedItems.childItems;
     });
 
+    it("emits onNodeLoaded event", async () => {
+      const spy = sinon.spy();
+      treeNodeLoader.onNodeLoaded.addListener(spy);
+      await extractLoadedNodeIds(treeNodeLoader.loadNode(treeRootNode));
+      expect(spy).to.be.calledOnce;
+    });
+
     it("loads all root nodes", async () => {
       const loadResultObs = treeNodeLoader.loadNode(treeRootNode);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      expect(result[0]).to.be.deep.eq(itemIds(rootNodes));
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
     });
 
     it("loads all children for node", async () => {
@@ -100,18 +124,17 @@ describe("TreeNodeLoader", () => {
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childNodes);
 
       const loadResultObs = treeNodeLoader.loadNode(rootWithChildren);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      expect(result[0]).to.be.deep.eq(itemIds(childNodes));
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      expect(loadedIds).to.be.deep.eq(itemIds(childNodes));
     });
 
     it("makes only one request to load nodes", async () => {
       const loadResultObs = treeNodeLoader.loadNode(treeRootNode);
       const loadResultObs2 = treeNodeLoader.loadNode(treeRootNode);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      const result2 = await extractSequence(rxjsFrom(loadResultObs2));
-      expect(result.length).to.be.eq(1);
-      expect(result[0]).to.be.deep.eq(itemIds(rootNodes));
-      expect(result2).to.be.empty;
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      const loadedIds2 = await extractLoadedNodeIds(loadResultObs2);
+      expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
+      expect(loadedIds2).to.be.empty;
     });
 
   });
@@ -167,10 +190,17 @@ describe("PagedTreeNodeLoader", () => {
       childItems = mockedItems.childItems;
     });
 
+    it("emits onNodeLoaded event", async () => {
+      const spy = sinon.spy();
+      pagedTreeNodeLoader.onNodeLoaded.addListener(spy);
+      await extractLoadedNodeIds(pagedTreeNodeLoader.loadNode(treeRootNode, 0));
+      expect(spy).to.be.calledOnce;
+    });
+
     it("loads root nodes page when asking for first node", async () => {
       const loadResultObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      expect(result[0]).to.be.deep.eq(itemIds(firstRootPage));
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      expect(loadedIds).to.be.deep.eq(itemIds(firstRootPage));
     });
 
     it("loads child nodes page when asking for first child", async () => {
@@ -179,8 +209,8 @@ describe("PagedTreeNodeLoader", () => {
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childItems);
 
       const loadResultObs = pagedTreeNodeLoader.loadNode(rootWithChildren, 0);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      expect(result[0]).to.be.deep.eq(itemIds(childItems));
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      expect(loadedIds).to.be.deep.eq(itemIds(childItems));
     });
 
     it("loads children of auto expanded node", async () => {
@@ -189,28 +219,28 @@ describe("PagedTreeNodeLoader", () => {
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childItems);
 
       const loadResultObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
       const expectedNodeIds = [rootWithChildren.id, ...itemIds(childItems), ...itemIds(firstRootPage.slice(1))];
-      expect(result[0]).to.be.deep.eq(expectedNodeIds);
+      expect(loadedIds).to.be.deep.eq(expectedNodeIds);
     });
 
     it("does one request when loading 2 nodes from same page", async () => {
       const loadResultObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
       const loadResultObs2 = pagedTreeNodeLoader.loadNode(treeRootNode, 1);
-      const result = await extractSequence(rxjsFrom(loadResultObs));
-      const result2 = await extractSequence(rxjsFrom(loadResultObs2));
-      expect(result.length).to.be.eq(1);
-      expect(result[0]).to.be.deep.eq(itemIds(firstRootPage));
-      expect(result2).to.be.empty;
+      const loadedIds = await extractLoadedNodeIds(loadResultObs);
+      const loadedIds2 = await extractLoadedNodeIds(loadResultObs2);
+      expect(loadedIds).to.be.deep.eq(itemIds(firstRootPage));
+      expect(loadedIds2).to.be.empty;
     });
 
     it("loads two pages of root nodes", async () => {
       const pageOne = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
       const pageTwo = pagedTreeNodeLoader.loadNode(treeRootNode, pageSize);
-      const resultPageOne = await extractSequence(rxjsFrom(pageOne));
-      const resultPageTwo = await extractSequence(rxjsFrom(pageTwo));
-      expect(resultPageOne[0]).to.be.deep.eq(itemIds(firstRootPage));
-      expect(resultPageTwo[0]).to.be.deep.eq(itemIds(secondRootPage));
+
+      const pageOneLoadedIds = await extractLoadedNodeIds(pageOne);
+      const pageTwoLoadedIds = await extractLoadedNodeIds(pageTwo);
+      expect(pageOneLoadedIds).to.be.deep.eq(itemIds(firstRootPage));
+      expect(pageTwoLoadedIds).to.be.deep.eq(itemIds(secondRootPage));
     });
 
   });

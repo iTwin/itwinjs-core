@@ -8,7 +8,8 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { Observable } from "../Observable";
 import { CheckboxStateChange } from "../TreeEvents";
 import { TreeModelSource } from "../TreeModelSource";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
+import { ITreeNodeLoader, LoadedNodeHierarchy } from "../TreeNodeLoader";
+import { TreeNodeItem } from "../../TreeDataProvider";
 
 /** @internal */
 export class TreeModelMutator {
@@ -22,7 +23,7 @@ export class TreeModelMutator {
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
 
-  public expandNode(nodeId: string): Observable<string[]> {
+  public expandNode(nodeId: string): Observable<LoadedNodeHierarchy> {
     let needToLoadChildren = false;
     this._modelSource.modifyModel((model) => {
       const node = model.getNode(nodeId);
@@ -56,17 +57,17 @@ export class TreeModelMutator {
     });
   }
 
-  public modifySelection(nodesToSelect: string[], nodesToDeselect: string[]) {
+  public modifySelection(nodesToSelect: TreeNodeItem[], nodesToDeselect: TreeNodeItem[]) {
     this._modelSource.modifyModel((model) => {
-      for (const nodeId of nodesToSelect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToSelect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = true;
         }
       }
 
-      for (const nodeId of nodesToDeselect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToDeselect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = false;
         }
@@ -74,14 +75,14 @@ export class TreeModelMutator {
     });
   }
 
-  public replaceSelection(nodesToSelect: string[]) {
+  public replaceSelection(nodesToSelect: TreeNodeItem[]) {
     this._modelSource.modifyModel((model) => {
       for (const node of model.iterateTreeModelNodes()) {
         node.isSelected = false;
       }
 
-      for (const nodeId of nodesToSelect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToSelect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = true;
         }
@@ -99,8 +100,8 @@ export class TreeModelMutator {
 
   public setCheckboxStates(stateChanges: CheckboxStateChange[]) {
     this._modelSource.modifyModel((model) => {
-      for (const { nodeId, newState } of stateChanges) {
-        const node = model.getNode(nodeId);
+      for (const { nodeItem, newState } of stateChanges) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.checkbox.state = newState;
         }

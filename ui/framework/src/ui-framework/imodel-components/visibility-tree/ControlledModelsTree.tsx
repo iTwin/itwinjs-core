@@ -210,12 +210,8 @@ class EventHandler extends TreeEventHandler {
         if (!this._visibilityHandler)
           return;
 
-        for (const { nodeId, newState } of changes) {
-          const node = this._modelSource.getModel().getNode(nodeId);
-          // istanbul ignore if
-          if (!node)
-            continue;
-          this._visibilityHandler.changeVisibility(node.item, newState === CheckBoxState.On); // tslint:disable-line: no-floating-promises
+        for (const { nodeItem, newState } of changes) {
+          this._visibilityHandler.changeVisibility(nodeItem, newState === CheckBoxState.On); // tslint:disable-line: no-floating-promises
         }
       },
       complete: () => {

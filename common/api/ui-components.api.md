@@ -733,7 +733,7 @@ export interface CheckboxStateChange {
     // (undocumented)
     newState: CheckBoxState;
     // (undocumented)
-    nodeId: string;
+    nodeItem: TreeNodeItem;
 }
 
 // @beta
@@ -1744,7 +1744,7 @@ export interface ITreeImageLoader extends IImageLoader {
 // @alpha
 export interface ITreeNodeLoader {
     // (undocumented)
-    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
 }
@@ -2107,7 +2107,7 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> impleme
     // (undocumented)
     getPageSize(): number;
     // (undocumented)
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
     }
@@ -3600,7 +3600,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
     // (undocumented)
     getDataProvider(): TDataProvider;
     // (undocumented)
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<string[]>;
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
     }
@@ -3728,9 +3728,9 @@ export interface TreeRendererProps {
 // @alpha
 export interface TreeSelectionChange {
     // (undocumented)
-    deselectedNodeIds: string[];
+    deselectedNodeItems: TreeNodeItem[];
     // (undocumented)
-    selectedNodeIds: string[];
+    selectedNodeItems: TreeNodeItem[];
 }
 
 // @alpha
@@ -3743,7 +3743,7 @@ export interface TreeSelectionModificationEvent {
 export interface TreeSelectionReplacementEvent {
     // (undocumented)
     replacements: Observable<{
-        selectedNodeIds: string[];
+        selectedNodeItems: TreeNodeItem[];
     }>;
 }
 
