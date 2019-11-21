@@ -213,10 +213,7 @@ export class IModelApp {
    * @internal
    */
   public static registerModuleEntities(moduleObj: any) {
-    for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
+    for (const thisMember in moduleObj) { // tslint:disable-line: forin
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
         this.registerEntityState(thisEntityState.classFullName, thisEntityState);

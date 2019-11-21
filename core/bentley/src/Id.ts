@@ -76,10 +76,8 @@ export namespace Id64 {
     if (isInvalid(id))
       return 0;
 
-    let start = 2;
     const len = id.length;
-    if (len > 12)
-      start = (len - 10);
+    const start = (len > 12) ? (len - 10) : 2;
 
     return toHex(id.slice(start));
   }

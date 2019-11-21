@@ -796,10 +796,7 @@ export class ToolRegistry {
    * @param modelObj the module to search for subclasses of Tool.
    */
   public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
-    for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
+    for (const thisMember in moduleObj) {  // tslint:disable-line: forin
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
         this.register(thisTool, namespace, i18n);

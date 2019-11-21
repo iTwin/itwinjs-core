@@ -218,9 +218,9 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.baseClasses = jsonObj.baseClasses;
     this.customAttributes = jsonObj.customAttributes;
     this.properties = {};
-    for (const propName in jsonObj.properties) {
-      if (propName)
-        this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+
+    for (const propName in jsonObj.properties) { // tslint:disable-line: forin
+      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }
 }

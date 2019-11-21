@@ -1106,12 +1106,10 @@ export class IModelDb extends IModel {
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = iModel.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) {
-      if (propName) {
-        const propMeta = meta.properties[propName];
-        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
-          func(propName, propMeta);
-      }
+    for (const propName in meta.properties) {    // tslint:disable-line: forin
+      const propMeta = meta.properties[propName];
+      if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+        func(propName, propMeta);
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
