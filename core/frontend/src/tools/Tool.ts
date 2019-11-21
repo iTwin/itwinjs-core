@@ -28,8 +28,6 @@ export class ToolSettings {
   public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
-  /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */
@@ -577,12 +575,6 @@ export abstract class InteractiveTool extends Tool {
 
   /** Invoked when the cursor is moving */
   public async onMouseMotion(_ev: BeButtonEvent): Promise<void> { }
-
-  /** Invoked when the cursor is not moving */
-  public async onMouseNoMotion(_ev: BeButtonEvent): Promise<void> { }
-
-  /** Invoked when the cursor was previously moving, and has stopped moving. */
-  public async onMouseMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
   /** Invoked when the cursor begins moving while a button is depressed.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.

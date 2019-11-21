@@ -35,12 +35,12 @@ export class TouchCursor implements CanvasDecoration {
   }
 
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
-    const pt4 = vp.worldToView4d(worldLocation);
-    if (pt4.w > 1.0 || pt4.w < 0) // outside of frustum.
-      return false;
+    const pointNpc = vp.worldToNpc(worldLocation);
+    if (pointNpc.z < 0.0 || pointNpc.z > 1.0)
+      pointNpc.z = 0.5; // move inside frustum.
 
-    const viewLocation = pt4.realPoint();
-    if (undefined === viewLocation || !vp.viewRect.containsPoint(viewLocation))
+    const viewLocation = vp.npcToView(pointNpc);
+    if (!vp.viewRect.containsPoint(viewLocation))
       return false; // outside this viewport rect
 
     viewLocation.x = Math.floor(viewLocation.x) + 0.5; viewLocation.y = Math.floor(viewLocation.y) + 0.5; viewLocation.z = 0.0;
@@ -180,8 +180,6 @@ export class AccuSnap implements Decorator {
   public explanation?: string;
   /** Number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools */
   private _suppressed = 0;
-  /** Time motion stopped. */
-  private _motionStopTime = 0;
   /** Location of cursor when we last checked for motion */
   private readonly _lastCursorPos = new Point2d();
   /** @internal */
@@ -191,7 +189,7 @@ export class AccuSnap implements Decorator {
   /** @internal */
   public touchCursor?: TouchCursor;
   /** Current request for tooltip message. */
-  private _toolTipPromise?: Promise<string | HTMLElement>;
+  private _toolTipPromise?: Promise<Promise<void>>;
 
   /** @internal */
   public onInitialized() { }
@@ -342,17 +340,19 @@ export class AccuSnap implements Decorator {
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  /** @internal */
-  public showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void {
-    if (IModelApp.viewManager.doesHostHaveFocus && undefined === this._toolTipPromise) {
-      const promise = IModelApp.toolAdmin.getToolTip(hit);
-      this._toolTipPromise = promise;
-      promise.then((msg) => { // tslint:disable-line:no-floating-promises
-        // Ignore response if we're no longer interested in this tooltip.
-        if (this._toolTipPromise === promise)
+  private showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail, delay: BeDuration): void {
+    if (!IModelApp.viewManager.doesHostHaveFocus || undefined !== this._toolTipPromise)
+      return;
+
+    const promise = this._toolTipPromise = delay.executeAfter(async () => {
+      if (promise !== this._toolTipPromise)
+        return; // we abandoned this request during delay
+      try {
+        const msg = await IModelApp.toolAdmin.getToolTip(hit);
+        if (this._toolTipPromise === promise) // have we abandoned this request while awaiting getToolTip?
           this.showLocateMessage(viewPt, vp, msg);
-      }).catch((_) => undefined); // can be rejected on abort.
-    }
+      } catch (error) { } // happens if getToolTip was canceled
+    });
   }
 
   private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: HTMLElement | string) {
@@ -363,7 +363,7 @@ export class AccuSnap implements Decorator {
   /** @internal */
   public displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
-    if (0 === this._motionStopTime || !this._settings.toolTip || !IModelApp.notifications.isToolTipSupported || IModelApp.notifications.isToolTipOpen)
+    if (!this._settings.toolTip || !IModelApp.notifications.isToolTipSupported || IModelApp.notifications.isToolTipOpen)
       return;
 
     const accuSnapHit = this.currHit;
@@ -373,14 +373,6 @@ export class AccuSnap implements Decorator {
     if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
-    // when the tentative button is first pressed, we pass nullptr for uorPt so that we can know to show the tooltip more quickly.
-    const timeout = (undefined === tpHit || undefined !== uorPt ? this._settings.toolTipDelay : BeDuration.fromSeconds(.1));
-
-    // have we waited long enough to show the balloon?
-    if ((this._motionStopTime + timeout.milliseconds) > Date.now())
-      return;
-
-    this._motionStopTime = 0; // If application chooses to not display tool tip, make sure we don't ask again until we see another motion/motion stopped...
     let theHit: HitDetail | undefined;
 
     // determine which type of hit
@@ -398,7 +390,7 @@ export class AccuSnap implements Decorator {
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
-      this.showElemInfo(viewPt, vp, theHit);
+      this.showElemInfo(viewPt, vp, theHit, this._settings.toolTipDelay);
       return;
     }
 
@@ -900,6 +892,9 @@ export class AccuSnap implements Decorator {
     if (hit || this.currHit)
       this.setCurrHit(hit);
 
+    if (hit)
+      this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
+
     // indicate errors
     this.showSnapError(out, ev);
 
@@ -908,11 +903,6 @@ export class AccuSnap implements Decorator {
       IModelApp.viewManager.invalidateDecorationsAllViews();
     }
   }
-
-  /** @internal */
-  public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }
-  /** @internal */
-  public async onNoMotion(ev: BeButtonEvent) { this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint); return Promise.resolve(); }
 
   /** @internal */
   public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }

@@ -228,7 +228,7 @@ export class ViewManager {
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length)
-      IModelApp.toolAdmin.startEventLoop();
+      IModelApp.startEventLoop();
 
     this.onViewOpen.emit(newVp);
 
@@ -285,7 +285,10 @@ export class ViewManager {
   public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   /** @internal */
-  public invalidateScenes(): void { this._invalidateScenes = true; }
+  public invalidateScenes(): void {
+    this._invalidateScenes = true;
+    IModelApp.requestNextAnimation();
+  }
   /** @internal */
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
   /** @internal */
@@ -295,7 +298,8 @@ export class ViewManager {
    * @internal
    */
   public renderLoop(): void {
-    if (0 === this._viewports.length) return;
+    if (0 === this._viewports.length)
+      return;
     if (this._skipSceneCreation)
       this.validateViewportScenes();
     else if (this._invalidateScenes)
@@ -303,14 +307,10 @@ export class ViewManager {
 
     this._invalidateScenes = false;
 
-    const cursorVp = IModelApp.toolAdmin.cursorView;
-
     this.onBeginRender.raiseEvent();
 
-    if (undefined === cursorVp || cursorVp.renderFrame())
-      for (const vp of this._viewports)
-        if (vp !== cursorVp && !vp.renderFrame())
-          break;
+    for (const vp of this._viewports)
+      vp.renderFrame();
 
     this.onFinishRender.raiseEvent();
   }

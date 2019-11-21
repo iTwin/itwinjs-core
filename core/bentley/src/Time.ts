@@ -42,6 +42,23 @@ export class BeDuration {
   public static async wait(ms: number): Promise<void> {
     return new Promise<void>((resolve: any) => setTimeout(resolve, ms));
   }
+
+  /** Utility function to just wait for the specified time
+   * @return Promise that resolves after the specified wait period
+   */
+  public async wait(): Promise<void> {
+    return new Promise<void>((resolve: any) => setTimeout(resolve, this._milliseconds));
+  }
+
+  /** Execute a function after delaying by this duration.
+   * @param fn the function to execute after the delay
+   * @param scope An optional object scope to serve as the 'this' pointer when `fn` is invoked.
+   * @param args optional arguments to `fn`
+   * @return Promise resolved by `fn`
+   */
+  public async executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T> {
+    return new Promise<T>((resolve: any) => setTimeout(() => resolve(fn.apply(scope, args)), this._milliseconds));
+  }
 }
 
 /** A specific point in time relative to the current time.

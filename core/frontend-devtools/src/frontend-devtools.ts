@@ -6,6 +6,7 @@
 export * from "./ClipboardUtilities";
 export * from "./FrontEndDevTools";
 
+export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ChangeViewFlagsTool";
 export * from "./tools/EmphasizeElementsTool";

@@ -101,6 +101,7 @@ class DisplayPerfTestApp {
     opts = opts ? opts : {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
     IModelApp.startup(opts);
+    IModelApp.animationInterval = undefined;
   }
 }
 

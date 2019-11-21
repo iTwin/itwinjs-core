@@ -5,7 +5,7 @@
 /** @module Tools */
 
 import { ScreenViewport } from "../Viewport";
-import { IModelApp } from "../IModelApp";
+import { ToolAdmin } from "./ToolAdmin";
 
 /**
  * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
@@ -40,8 +40,10 @@ export class EventController {
    */
   private addDomListeners(domType: string[], element: HTMLElement) {
     const vp = this.vp;
-    const { toolAdmin } = IModelApp;
-    const listener = (ev: Event) => { ev.preventDefault(); toolAdmin.addEvent(ev, vp); };
+    const listener = (ev: Event) => {
+      ev.preventDefault();
+      ToolAdmin.addEvent(ev, vp);
+    };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
       this._removals.push(() => { element.removeEventListener(type, listener, false); });

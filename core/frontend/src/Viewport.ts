@@ -74,6 +74,7 @@ export class SyncFlags {
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void {
     this._decorations = false;
+    IModelApp.requestNextAnimation();
   }
   public invalidateScene(): void {
     this._scene = false;
@@ -1730,7 +1731,13 @@ export abstract class Viewport implements IDisposable {
    * @note An application which enables continuous rendering should disable it as soon as it is no longer needed.
    */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
-  public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
+  public set continuousRendering(contRend: boolean) {
+    if (contRend !== this._doContinuousRendering) {
+      this._doContinuousRendering = contRend;
+      if (contRend)
+        IModelApp.requestNextAnimation();
+    }
+  }
   /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
@@ -2567,7 +2574,7 @@ export abstract class Viewport implements IDisposable {
   public readonly onRender = new BeEvent<(vp: Viewport) => void>();
 
   /** @internal */
-  public renderFrame(): boolean {
+  public renderFrame(): void {
     const changeFlags = this._changeFlags;
     if (changeFlags.hasChanges)
       this._changeFlags = new ChangeFlags(ChangeFlag.None);
@@ -2701,7 +2708,8 @@ export abstract class Viewport implements IDisposable {
       }
     }
 
-    return true;
+    if (undefined !== this._animator || this.continuousRendering)
+      IModelApp.requestNextAnimation();
   }
 
   /** @internal */

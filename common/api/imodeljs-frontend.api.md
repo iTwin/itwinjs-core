@@ -805,10 +805,6 @@ export class AccuSnap implements Decorator {
     // @internal
     onMotion(ev: BeButtonEvent): Promise<void>;
     // @internal (undocumented)
-    onMotionStopped(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
-    onNoMotion(ev: BeButtonEvent): Promise<void>;
-    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
     // @internal
     onStartTool(): void;
@@ -834,8 +830,6 @@ export class AccuSnap implements Decorator {
     setCurrHit(newHit?: HitDetail): void;
     // @internal (undocumented)
     protected _settings: AccuSnap.Settings;
-    // @internal (undocumented)
-    showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
     // @internal (undocumented)
     suppress(doSuppress: boolean): number;
     // @internal (undocumented)
@@ -1869,8 +1863,6 @@ export class CurrentInputState {
     // (undocumented)
     fromPoint(vp: ScreenViewport, pt: XAndY, source: InputSource): void;
     // (undocumented)
-    readonly hasMotionStopped: boolean;
-    // (undocumented)
     inputSource: InputSource;
     // (undocumented)
     readonly isAltDown: boolean;
@@ -1890,8 +1882,6 @@ export class CurrentInputState {
     lastTouchStart?: BeTouchEvent;
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
-    // (undocumented)
-    motionTime: number;
     // (undocumented)
     onButtonDown(button: BeButton): void;
     // (undocumented)
@@ -1924,8 +1914,6 @@ export class CurrentInputState {
     viewPoint: Point3d;
     // (undocumented)
     viewport?: ScreenViewport;
-    // (undocumented)
-    readonly wasMotion: boolean;
 }
 
 // @internal (undocumented)
@@ -3401,6 +3389,8 @@ export class IModelApp {
     // @internal
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
+    // @beta
+    static animationInterval: BeDuration | undefined;
     static readonly applicationId: string;
     // @beta
     static applicationLogoCard?: () => HTMLDivElement;
@@ -3434,9 +3424,13 @@ export class IModelApp {
     // @internal
     static registerModuleEntities(moduleObj: any): void;
     static readonly renderSystem: RenderSystem;
+    // @internal (undocumented)
+    static requestNextAnimation(): void;
     static sessionId: GuidString;
     static readonly settings: SettingsAdmin;
     static shutdown(): void;
+    // @internal (undocumented)
+    static startEventLoop(): void;
     static startup(opts?: IModelAppOptions): void;
     // @internal (undocumented)
     static readonly tentativePoint: TentativePoint;
@@ -3686,8 +3680,6 @@ export abstract class InteractiveTool extends Tool {
     onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
     onMouseMotion(_ev: BeButtonEvent): Promise<void>;
-    onMouseMotionStopped(_ev: BeButtonEvent): Promise<void>;
-    onMouseNoMotion(_ev: BeButtonEvent): Promise<void>;
     onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled>;
     onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled>;
     onPostInstall(): void;
@@ -8046,7 +8038,7 @@ export class ToolAdmin {
     readonly activeTool: InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
-    addEvent(ev: Event, vp?: ScreenViewport): void;
+    static addEvent(ev: Event, vp?: ScreenViewport): void;
     // (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, projectToACS?: boolean, applyLocks?: boolean): void;
     // (undocumented)
@@ -8124,6 +8116,8 @@ export class ToolAdmin {
     onShutDown(): void;
     // (undocumented)
     readonly primitiveTool: PrimitiveTool | undefined;
+    // @internal
+    processEvent(): Promise<void>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
@@ -8147,8 +8141,6 @@ export class ToolAdmin {
     setViewTool(newTool?: ViewTool): void;
     // @internal
     startDefaultTool(): void;
-    // @internal (undocumented)
-    startEventLoop(): void;
     // @internal (undocumented)
     startInputCollector(newTool: InputCollector): void;
     // @internal (undocumented)
@@ -8282,7 +8274,6 @@ export class ToolSettings {
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
     static doubleTapTimeout: BeDuration;
-    static noMotionTimeout: BeDuration;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
     static startDragDelay: BeDuration;
@@ -9148,8 +9139,6 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
     // (undocumented)
-    noMotion(_ev: BeButtonEvent): boolean;
-    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onWheel(_ev: BeWheelEvent): void;
@@ -9312,10 +9301,6 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onMouseMotionStopped(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onMouseNoMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled>;
@@ -9346,8 +9331,6 @@ export abstract class ViewManip extends ViewTool {
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
     // @internal (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
-    // (undocumented)
-    stoppedOverHandle: boolean;
     // (undocumented)
     targetCenterLocked: boolean;
     // (undocumented)
@@ -9540,7 +9523,7 @@ export abstract class Viewport implements IDisposable {
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal (undocumented)
-    renderFrame(): boolean;
+    renderFrame(): void;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
     // @internal (undocumented)

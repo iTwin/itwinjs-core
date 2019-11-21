@@ -102,6 +102,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt compile shaders` - Compile all uncompiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
+* `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.

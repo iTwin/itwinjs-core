@@ -102,6 +102,9 @@
     "SelectElementsById": {
       "keyin": "fdt select elements"
     },
+    "AnimationInterval": {
+      "keyin": "fdt animation interval"
+    },
     "DefaultTileSizeMod": {
       "keyin": "fdt tilesize default"
     },

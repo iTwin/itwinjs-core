@@ -103,7 +103,6 @@ export abstract class ViewingToolHandle {
   constructor(public viewTool: ViewManip) { }
   public onReinitialize(): void { }
   public focusOut(): void { }
-  public noMotion(_ev: BeButtonEvent): boolean { return false; }
   public motion(_ev: BeButtonEvent): boolean { return false; }
   public checkOneShot(): boolean { return true; }
   public getHandleCursor(): string { return "default"; }
@@ -249,7 +248,6 @@ export abstract class ViewManip extends ViewTool {
   public readonly targetCenterWorld = new Point3d();
   public inHandleModify = false;
   public isDragging = false;
-  public stoppedOverHandle = false;
   public targetCenterValid = false;
   public targetCenterLocked = false;
   public nPts = 0;
@@ -455,7 +453,6 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onMouseMotion(ev: BeButtonEvent) {
-    this.stoppedOverHandle = false;
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
 
@@ -472,30 +469,6 @@ export abstract class ViewManip extends ViewTool {
         ev.viewport.setFlashed(currSourceId, 0.25);
       ev.viewport.invalidateDecorations();
     }
-  }
-
-  public async onMouseMotionStopped(ev: BeButtonEvent) {
-    if (ev.viewport !== this.viewport)
-      return;
-
-    if (0 === this.nPts) {
-      if (this.viewHandles.testHit(ev.viewPoint)) {
-        this.stoppedOverHandle = true;
-        this.viewHandles.focusHitHandle();
-      } else if (this.stoppedOverHandle) {
-        this.stoppedOverHandle = false;
-        this.viewport!.invalidateDecorations();
-      }
-    }
-  }
-
-  public async onMouseNoMotion(ev: BeButtonEvent) {
-    if (0 === this.nPts || !ev.viewport)
-      return;
-
-    const hitHandle = this.viewHandles.hitHandle;
-    if (hitHandle)
-      hitHandle.noMotion(ev);
   }
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
@@ -902,10 +875,6 @@ abstract class HandleWithInertia extends ViewingToolHandle implements Animator {
   protected _duration!: BeDuration;
   protected _end!: BeTimePoint;
   protected _inertiaVec?: Vector3d;
-  public noMotion(_ev: BeButtonEvent): boolean {
-    this._inertiaVec = undefined;
-    return false;
-  }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
     if (ToolSettings.viewingInertia.enabled && !inDynamics && undefined !== this._inertiaVec)

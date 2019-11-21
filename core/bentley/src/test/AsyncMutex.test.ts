@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { AsyncMutex } from "../AsyncMutex";
 import { assert } from "chai";
+import { BeDuration } from "../Time";
 
 describe("AsyncMutex", () => {
-  const pause = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-
   before(async () => {
   });
 
@@ -15,7 +14,7 @@ describe("AsyncMutex", () => {
   let currValue = 0;
 
   const addOneWithoutMutex = async (): Promise<void> => {
-    await pause(1000); // postpone execution a little
+    await BeDuration.wait(1000); // postpone execution a little
     currValue += 1;
   };
 
@@ -45,7 +44,7 @@ describe("AsyncMutex", () => {
       promises.push(multiplyTwoWithMutex());
       promises.push(addOneWithoutMutex());
     }
-    promises.push(pause(2000).then(() => unlock())); // Unlock the mutex after 2 seconds
+    promises.push(BeDuration.wait(2000).then(() => unlock())); // Unlock the mutex after 2 seconds
     await Promise.all(promises);
     assert.equal(currValue, 10240); // Adds should have been done first
   });

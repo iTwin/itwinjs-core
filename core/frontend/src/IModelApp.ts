@@ -6,7 +6,7 @@
 
 const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -143,6 +143,12 @@ export class IModelApp {
   private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
+  private static _wantEventLoop = false;
+  private static _animationRequested = false;
+  private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
+  private static _animationIntervalId?: number;
+  private static _tileTreePurgeTime?: BeTimePoint;
+  private static _tileTreePurgeInterval?: BeDuration;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -328,12 +334,107 @@ export class IModelApp {
   /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
     if (this._initialized) {
+      this._wantEventLoop = false;
+      window.removeEventListener("resize", IModelApp.requestNextAnimation);
+      this.clearIntervalAnimation();
+
       this.toolAdmin.onShutDown();
       this.viewManager.onShutDown();
       this.tileAdmin.onShutDown();
+
       this._renderSystem = dispose(this._renderSystem);
       this._entityClasses.clear();
+
       this._initialized = false;
+    }
+  }
+
+  /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
+   * Such changes include resizing a Viewport or changing the device pixel ratio by zooming in or out in the browser.
+   * The default interval is 1 second. It may be desirable to override the default for specific apps and/or devices.
+   *  - Increasing the interval can conserve battery life on battery-powered devices at the expense of slower response to resize events.
+   *  - An application that only displays a single Viewport whose dimensions only change when the dimensions of the application window change, and which does not support changing application zoom level, could disable the interval altogether.
+   * @param interval The interval at which to poll for changes. If undefined (or negative), the application will never poll. If zero, the application will poll as frequently as possible.
+   * @beta
+   */
+  public static get animationInterval(): BeDuration | undefined { return IModelApp._animationInterval; }
+  public static set animationInterval(interval: BeDuration | undefined) {
+    if (undefined !== interval && interval.isTowardsPast)
+      interval = undefined;
+
+    if (interval !== IModelApp._animationInterval) {
+      IModelApp._animationInterval = interval;
+      if (IModelApp._wantEventLoop)
+        IModelApp.requestIntervalAnimation();
+    }
+  }
+
+  /** @internal */
+  public static requestNextAnimation() {
+    if (!IModelApp._animationRequested) {
+      IModelApp._animationRequested = true;
+      requestAnimationFrame(IModelApp.eventLoop);
+    }
+  }
+
+  /** @internal */
+  private static clearIntervalAnimation(): void {
+    if (undefined !== IModelApp._animationIntervalId) {
+      window.clearInterval(IModelApp._animationIntervalId);
+      IModelApp._animationIntervalId = undefined;
+    }
+  }
+
+  /** @internal */
+  private static requestIntervalAnimation(): void {
+    IModelApp.clearIntervalAnimation();
+
+    if (undefined !== IModelApp.animationInterval)
+      IModelApp._animationIntervalId = window.setInterval(() => {
+        IModelApp.requestNextAnimation();
+      }, IModelApp.animationInterval.milliseconds);
+  }
+
+  /** @internal */
+  public static startEventLoop() {
+    if (!IModelApp._wantEventLoop) {
+      IModelApp._wantEventLoop = true;
+      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
+      if (undefined !== treeExpirationTime) {
+        IModelApp._tileTreePurgeInterval = treeExpirationTime;
+        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
+      }
+
+      window.addEventListener("resize", IModelApp.requestNextAnimation);
+      IModelApp.requestIntervalAnimation();
+      IModelApp.requestNextAnimation();
+    }
+  }
+
+  /** The main event processing loop for Tools and rendering. */
+  private static eventLoop() {
+    IModelApp._animationRequested = false;
+    if (!IModelApp._wantEventLoop) // flag turned on at startup
+      return;
+
+    try {
+      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.viewManager.renderLoop();
+      IModelApp.tileAdmin.process();
+
+      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
+        const now = BeTimePoint.now();
+        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
+        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
+      }
+    } catch (exception) {
+      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
+        close(); // this does nothing in a web browser, closes electron.
+      });
+
+      IModelApp._wantEventLoop = false;
+      IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
+      window.removeEventListener("resize", IModelApp.requestNextAnimation);
     }
   }
 
