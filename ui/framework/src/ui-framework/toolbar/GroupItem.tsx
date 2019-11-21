@@ -195,6 +195,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   private _childRefreshRequired = false;
   private _trayIndex = 0;
   private _closeOnPanelOpened = true;
+  private _ref = React.createRef<HTMLDivElement>();
 
   constructor(props: GroupItemComponentProps) {
     super(props);
@@ -390,19 +391,21 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             key={this.state.groupItemDef.id}
             panel={this.getGroupTray()}
           >
-            <ItemWithDragInteraction
-              direction={direction}
-              className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-              isActive={this.state.activeToolId === this.state.activeItemId}
-              isDisabled={!this.state.isEnabled}
-              title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
-              onClick={this._handleClick}
-              onOpenPanel={this._handleOpenPanel}
-              onKeyDown={this._handleKeyDown}
-              icon={icon}
-              onSizeKnown={this.props.onSizeKnown}
-              badge={badge}
-            />
+            <div ref={this._ref}>
+              <ItemWithDragInteraction
+                direction={direction}
+                className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+                isActive={groupItemDef.overflow ? false : this.state.activeToolId === this.state.activeItemId}
+                isDisabled={!this.state.isEnabled}
+                title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
+                onClick={groupItemDef.overflow ? this._handleOverflowClick : this._handleClick}
+                onOpenPanel={this._handleOpenPanel}
+                onKeyDown={this._handleKeyDown}
+                icon={icon}
+                onSizeKnown={this.props.onSizeKnown}
+                badge={badge}
+              />
+            </div>
           </ExpandableItem>
         )}
       </ToolbarDirectionContext.Consumer>
@@ -423,7 +426,24 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     activeItem && activeItem instanceof ActionButtonItemDef && activeItem.execute();
   }
 
-  private _handleOutsideClick = () => {
+  private _handleOverflowClick = () => {
+    this.setState((prevState) => {
+      const isPressed = !prevState.isPressed;
+      return {
+        isPressed,
+      };
+    }, () => {
+      this._closeOnPanelOpened = false;
+      !!this.state.isPressed && FrontstageManager.onToolPanelOpenedEvent.emit();
+      this._closeOnPanelOpened = true;
+    });
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (this.props.groupItemDef.overflow) {
+      this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
+      return;
+    }
     this.closeGroupButton();
   }
 

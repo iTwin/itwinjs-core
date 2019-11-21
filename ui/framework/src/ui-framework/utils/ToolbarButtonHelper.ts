@@ -24,7 +24,7 @@ export class ToolbarButtonHelper {
 
     // next look for expandable buttons
 
-    const expandableNodeList = document.documentElement.querySelectorAll(`div.nz-toolbar-items.nz-${horizontal ? "horizontal" : "vertical"}.nz-items > * > * > button`);
+    const expandableNodeList = document.documentElement.querySelectorAll(`div.nz-toolbar-items.nz-${horizontal ? "horizontal" : "vertical"}.nz-items > * > * > * > button`);
     if (expandableNodeList && expandableNodeList.length > 0) {
       for (const node of expandableNodeList) {
         const button = node as HTMLButtonElement;

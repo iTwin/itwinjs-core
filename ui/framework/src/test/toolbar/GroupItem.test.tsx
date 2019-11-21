@@ -424,6 +424,42 @@ describe("GroupItem", () => {
     });
   });
 
+  describe("overflow <GroupItem />", () => {
+    it("should close on outside click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1],
+      });
+      groupItemDef.overflow = true;
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      sut.setState({ isPressed: true });
+
+      const toolGroup = sut.find("WithOnOutsideClick") as ReactWrapper<WithOnOutsideClickProps>;
+
+      const event = new MouseEvent("");
+      sinon.stub(event, "target").get(() => document.createElement("div"));
+      toolGroup.prop("onOutsideClick")!(event);
+
+      expect(sut.state().isPressed).to.be.false;
+    });
+
+    it("should toggle panel on click", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [tool1],
+      });
+      groupItemDef.overflow = true;
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      const withDragInteraction = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
+
+      withDragInteraction.prop("onClick")!();
+      expect(sut.state().isPressed).to.be.true;
+
+      withDragInteraction.prop("onClick")!();
+      expect(sut.state().isPressed).to.be.false;
+    });
+  });
+
   describe("GroupItemDef", () => {
     it("Supports CommandItemDef correctly", () => {
       const groupItemDef = new GroupItemDef({
