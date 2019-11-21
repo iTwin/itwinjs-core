@@ -610,7 +610,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         detail.intervalRole = CurveIntervalRole.isolated;
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
           detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
-        else if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
+        else if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.endRadians))
           detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
         result.push(detail);
       }

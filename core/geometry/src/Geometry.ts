@@ -721,6 +721,7 @@ export class Geometry {
   public static stepCount(stepSize: number, total: number, minCount = 1, maxCount = 101): number {
     if (stepSize <= 0)
       return minCount;
+    total = Math.abs(total);
     if (stepSize >= total)
       return minCount;
     const stepCount = Math.floor((total + 0.999999 * stepSize) / stepSize);

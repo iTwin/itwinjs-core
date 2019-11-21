@@ -156,9 +156,13 @@ export class Angle implements BeJSONFunctions {
      */
     public tan(): number { return Math.tan(this._radians); }
     /** Test if a radians (absolute) value is nearly 2PI or larger (!) */
-    public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
+    public static isFullCircleRadians(radians: number): boolean {
+        return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle;
+    }
     /** Test if the radians value  is a complete circle */
-    public static isHalfCircleRadians(radians: number) { return (Math.abs(Math.abs(radians)) - Math.PI) <= Geometry.smallAngleRadians; }
+    public static isHalfCircleRadians(radians: number): boolean {
+        return Math.abs(Math.abs(radians) - Math.PI) <= Geometry.smallAngleRadians;
+    }
     /** test if the angle is aa full circle */
     public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
     /** test if the angle is a half circle (in either direction) */

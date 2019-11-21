@@ -128,7 +128,7 @@ export class AngleSweep implements BeJSONFunctions {
     readonly isCCW: boolean;
     readonly isFullCircle: boolean;
     readonly isFullLatitudeSweep: boolean;
-    static isRadiansInStartEnd(radians: number, radians0: number, radians1: number): boolean;
+    static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift?: boolean): boolean;
     isRadiansInSweep(radians: number): boolean;
     radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number): number;
@@ -3067,6 +3067,7 @@ export class NullGeometryHandler extends GeometryHandler {
 
 // @public
 export class NumberArray {
+    static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance: number): boolean;
     static isCoordinateInArray(x: number, data: number[] | undefined): boolean;
     static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean;
@@ -3252,6 +3253,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
 
 // @public
 export class Plane3dByOriginAndVectors implements BeJSONFunctions {
+    clone(): Plane3dByOriginAndVectors;
     static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createFromTransformColumnsXYAndLengths(transform: Transform, xLength: number | undefined, yLength: number | undefined, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndTargets(origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -3264,6 +3266,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     fractionToVector(u: number, v: number, result?: Vector3d): Vector3d;
     static fromJSON(json?: any): Plane3dByOriginAndVectors;
     isAlmostEqual(other: Plane3dByOriginAndVectors): boolean;
+    normalizeInPlace(): boolean;
     origin: Point3d;
     setFromJSON(json?: any): void;
     setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors;
@@ -3990,6 +3993,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean;
     extendPoint(point: Point3d): void;
     extendRange(other: LowAndHighXYZ): void;
+    extendSingleAxis(a: number, axisIndex: AxisIndex): void;
     extendTransformedPoint(transform: Transform, point: Point3d): void;
     extendTransformedXYZ(transform: Transform, x: number, y: number, z: number): void;
     extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number): void;
@@ -4085,6 +4089,7 @@ export class Ray2d {
 export class Ray3d implements BeJSONFunctions {
     a?: number;
     clone(result?: Ray3d): Ray3d;
+    cloneInverseTransformed(transform: Transform): Ray3d | undefined;
     cloneTransformed(transform: Transform): Ray3d;
     static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair;
     static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d;

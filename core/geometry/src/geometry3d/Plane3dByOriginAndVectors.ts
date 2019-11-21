@@ -37,6 +37,11 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     }
     return new Plane3dByOriginAndVectors(origin.clone(), vectorU.clone(), vectorV.clone());
   }
+  /** clone to a new plane. */
+  public clone(): Plane3dByOriginAndVectors {
+    return new Plane3dByOriginAndVectors(this.origin.clone(), this.vectorU.clone(), this.vectorV.clone());
+  }
+
   /**
    * Return a Plane3dByOriginAndVectors, with
    * * origin is the translation (aka origin) from the Transform
@@ -193,5 +198,13 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     return this.origin.isAlmostEqual(other.origin)
       && this.vectorU.isAlmostEqual(other.vectorU)
       && this.vectorV.isAlmostEqual(other.vectorV);
+  }
+  /** Normalize both `vectorU` and `vectorV` in place.
+   * * Return true if both succeeded.
+   */
+  public normalizeInPlace(): boolean {
+    const okU = this.vectorU.normalizeInPlace();
+    const okV = this.vectorV.normalizeInPlace();
+    return okU && okV;
   }
 }

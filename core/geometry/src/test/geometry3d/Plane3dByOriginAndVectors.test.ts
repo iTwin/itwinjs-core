@@ -25,6 +25,8 @@ describe("Plane3dByOriginAndVectors", () => {
       pointA.x, pointA.y, pointA.z,
       vectorU.x, vectorU.y, vectorU.z,
       vectorV.x, vectorV.y, vectorV.z);
+    const planeX1 = planeX.clone();
+    ck.testTrue(planeX1.normalizeInPlace(), "normalizeVectors");
     const planeXR = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
       pointA.x, pointA.y, pointA.z,
       vectorU.x, vectorU.y, vectorU.z,

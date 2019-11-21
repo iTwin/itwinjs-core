@@ -246,15 +246,16 @@ export class AngleSweep implements BeJSONFunctions {
         return this.radiansToPositivePeriodicFraction(radians) <= 1.0;
     }
     /** test if radians are within sweep  */
-    public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number): boolean {
+    public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift: boolean = true): boolean {
         // quick out for simple inside ...
         const delta0 = radians - radians0;
         const delta1 = radians - radians1;
         if (delta0 * delta1 <= 0.0)
             return true;
+
         if (radians0 === radians1)
-            return Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0);
-        return this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1) <= 1.0;
+            return allowPeriodShift ? Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0) : Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0);
+        return allowPeriodShift ? this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1) <= 1.0 : false;
     }
 
     /** set this AngleSweep from various sources:
