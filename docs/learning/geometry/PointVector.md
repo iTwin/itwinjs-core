@@ -27,7 +27,7 @@ Typical names in the tables are:
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
 | components  | x: number; | x: number; | x: number; | x: number; |
-|             | y: number; | y: number; | y: number;| y: number; |
+|             | y: number; | y: number; | y: number; | y: number; |
 |             | z: number; | z: number; | | |
 
 ## static "create" methods
@@ -39,7 +39,7 @@ Typical names in the tables are:
 | | | v = Vector3d.unitY (length:number = 1) | | v = Vector3d.unitY (length:number = 1)  |
 | | | v = Vector3d.unitZ (length:number = 1) | | |
 | create all zeros | p = Point3d.createZero () | v = Vector3d.createZero () | p = Point2d.createZero () | v = Vector2d.createZero () |
-| create from variant sources| `Point3d.createFrom (other: Float64Array | XAndY | XAndYAndZ)`| `Vector3d.createFrom (other: Float64Array | XAndY | XAndYAndZ)`| `Point2d.createFrom (other: XAndY)`| `Vector2d.createFrom (other: XAndY | Float64Array)`|
+| create from variant sources| `Point3d.createFrom (other: Float64Array \| XAndY \| XAndYAndZ)`| `Vector3d.createFrom (other: Float64Array \| XAndY \| XAndYAndZ)`| `Point2d.createFrom (other: XAndY)`| `Vector2d.createFrom (other: XAndY \| Float64Array)`|
 | create from index in packed xyzxyz..  | p = Point3d.createFromPacked (Float64Array, pointIndex) | | | |
 | unweight from indexed in packed xyzwxyzw.. |p = Point3d.createFromPackedXYZW (Float64Array, pointIndex) | | | |
 | create scaled copy | p = Point3d.createScale (pointA: XYAndZ, scalefactor) | | | |
@@ -66,7 +66,7 @@ Typical names in the tables are:
 | return normalized vector, packaged in an object with length property | | newVector = oldVector.normalizeWithLength (): {v: vector3d, mag: number} | | |
 | return scaled copy of instance | | newVector = oldVector.scale (scaleFactor) | | newVector = oldVector.scale (scaleFactor) |
 | return copy scaled to specific length | | newVector = oldVector.scaleToLength (newLength) | | newVector = oldVector.scaleToLength (newLength)|
-| return normalized vector | | `newVector = oldVector.normalize () : Vector3d | undefined` | |`newVector = oldVector.normalize () : Vector2d | undefined` |
+| return normalized vector | | `newVector = oldVector.normalize () : Vector3d \| undefined` | |`newVector = oldVector.normalize () : Vector2d \| undefined` |
 | attempt to normalize in place.  If near zero length, leave unchanged and return `false` | | vector.normalizeInPlace () : boolean | | |
 | clone negated | | newVector = oldVector.negate () | | newVector = oldVector.negate ()|
 | vector rotated 90 degrees COUNERCLOCKWISE in XY plane, preserving z | | newVector = oldVector.rotate99CCWXY () | | newVector = oldVector.rotate99CCWXY ()|
@@ -75,7 +75,7 @@ Typical names in the tables are:
 | unit vector rotated 90 degrees in xy plane | | newVector = oldVector.unitPerpendicularXY () | |newVector = oldVector.unitPerpendicularXY () |
 | vector rotated 90 degrees towards a target vector.  Rotation is in the plane containing both inputs. | | newVector = oldVector.rotate90Towards () | | |
 | vector rotated 90 degrees around an axis vector. | | newVector = oldVector.rotate90Around () | | |
-| vector to the intersection of offsets | | | | `vector = Vector2d.createOffsetBisector (unitPerpendicularA, unitPerpendicularB, offsetDistance) :Vector2d | undefined` |
+| vector to the intersection of offsets | | | | `vector = Vector2d.createOffsetBisector (unitPerpendicularA, unitPerpendicularB, offsetDistance) :Vector2d \| undefined` |
 
 ## create by Interpolation and addition
 
@@ -104,8 +104,8 @@ Typical names in the tables are:
 | cross product of two vectors |  | newVector = Vector3d.createCrossProduct (vectorA, vectorB) : Vector3d| | |
 |                              |  | value = vectorA.crossProduct (vectorB):number | | |
 | cross product of XY parts of two vectors |  | value = vectorA.crossProductXY (vectorB) : number | | |
-| normalized cross product (or undefined if vectorA and vectorB are parallel) | | `newVector = vectorA.unitCrossProduct (vectorB) : Vector3d | undefined` | | |
-| cross product scaled to given length (undefined if vectorA and vectorB are parallel) | | `newVector = vectorA.sizedCrossProduct (vectorB, length) : Vector3d | undefined` | | |
+| normalized cross product (or undefined if vectorA and vectorB are parallel) | | `newVector = vectorA.unitCrossProduct (vectorB) : Vector3d \| undefined` | | |
+| cross product scaled to given length (undefined if vectorA and vectorB are parallel) | | `newVector = vectorA.sizedCrossProduct (vectorB, length) : Vector3d \| undefined` | | |
 | normalized cross product (or use x,y,z for default if vectorA and vectorB are parallel) | | `newVector = vectorA.unitCrossProductWithDefault (vectorB, x, y, z) : Vector3d` | | |
 | cross product of two vectors | newVector = p.crossProductToPoints (targetA, targetB) : Vector3d | newVector = Vector3d.createCrossProductToPoints (basePoint, targetA, targetB ) |value = basePoint.crossProductToPoints (targetA, targetB) : number | |
 | cross product with vector between input points | | value = vectorA.crossProductStartEnd (startPoint, endPoint) : Vector3d | | |
@@ -144,7 +144,7 @@ Typical names in the tables are:
 | set coordinates from number args | p.set (x,y,z) | v.set(x,y,z) | p.set(x,y) | v.set (x,y) |
 | set coordinates to zero | p.setZero () | v.setZero () | p.setZero | v.setZero () |
 | set coordinates as vector between inputs | | v.setStartEnd (basePoint, targetPoint) | | | |
-| set coordinates from other objects| `p.setFrom (other: Float64Array | XAndY | XAndYAndZ)` | `v.setFrom (other: Float64Array | XAndY | XAndYAndZ)` | p.setFrom (other?: XAndY) | v.setFrom (other?: XAndY) |
+| set coordinates from other objects| `p.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | `v.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | p.setFrom (other?: XAndY) | v.setFrom (other?: XAndY) |
 | scale coordinates | p.scaleInPlace (scaleFactor) | v.scaleInPlace (scaleFactor) | | |
 
 ## unary queries (instance methods)
@@ -171,6 +171,7 @@ These are static methods on the XYZ class.  Hence they are inherited by Point3d 
 ## binary queries (instance methods)
 
 (methods that take the "other" point or vector as direct numbers in the call list are considered "binary" for this table.)
+
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
 | near equality with metric tolerance | p.isExactEqual (otherXYAndZ) | v.isExactEqual (otherXYAndZ) | p.isExactEqual (otherXAndY) | v.isExactEqual (otherXAndY) |

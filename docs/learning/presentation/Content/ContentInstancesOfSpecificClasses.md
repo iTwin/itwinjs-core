@@ -5,9 +5,9 @@ Returns content for instances of specific ECClasses.
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
--|-|-|-|-|-
+-|-|-|-|-
 *Filtering* |
-`classes` | Yes | `MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[]` | `[]` | Classes whose instances should be used.
+`classes` | Yes | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | Classes whose instances should be used.
 `arePolymorphic` | No | `boolean` | `false` | Should all `classes` be handled polymorphically.
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
 *Ordering* |
