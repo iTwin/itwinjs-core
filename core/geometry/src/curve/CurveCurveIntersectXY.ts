@@ -588,7 +588,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     */
     bezierA.fractionToPoint4d(0.0, this._xyzwA0);
     let f0 = 0.0;
-    let f1 = 1.0;
+    let f1;
     const intervalTolerance = 1.0e-5;
     const df = 1.0 / strokeCountA;
     for (let i = 1; i <= strokeCountA; i++ , f0 = f1, this._xyzwA0.setFrom(this._xyzwA1)) {

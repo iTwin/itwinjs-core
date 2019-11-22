@@ -378,12 +378,13 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     const chainDistance = fraction * this._totalLength;
-    let fragment = this.chainDistanceToFragment(chainDistance, true);
+    const fragment = this.chainDistanceToFragment(chainDistance, true);
     if (fragment) {
       const childFraction = fragment.chainDistanceToAccurateChildFraction(chainDistance);
       return fragment.childCurve.fractionToPoint(childFraction, result);
     }
-    fragment = this.chainDistanceToFragment(chainDistance, true);
+    // no fragment found.  Use _fragments[0]
+//    fragment = this.chainDistanceToFragment(chainDistance, true);
     return this._fragments[0].childCurve.fractionToPoint(0.0, result);
   }
 

@@ -34,7 +34,7 @@ class ChainMergeContextValidatedOptions {
   /**
    * Tolerance for declaring points equal.
    */
-  public tolerance: number = Geometry.smallMetricDistance;
+  public tolerance: number;
   /** UNNORMALIZED base vector for sorting.
    * * Actual vector hoisted into an instance is normalized.
    */

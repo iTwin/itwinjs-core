@@ -585,7 +585,7 @@ export class UnivariateBezier extends BezierCoffs {
       let c0 = this.coffs[0] / b0;
       let c1;
       this.coffs[0] = c0;
-      let a1 = this.coffs[1];
+      let a1;
       for (let i = 1; i < orderC; i++) {
         a1 = this.coffs[i] * pascalA[i];
         c1 = (a1 - c0 * b1) / b0;

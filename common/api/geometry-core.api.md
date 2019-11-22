@@ -907,6 +907,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     getPlane4d(): Point4d;
     readonly interior: boolean;
     intersectRange(range: Range3d, addClosurePoint?: boolean): GrowableXYZArray | undefined;
+    // @deprecated
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
     readonly invisible: boolean;
     readonly inwardNormalRef: Vector3d;

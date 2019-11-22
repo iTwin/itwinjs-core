@@ -643,8 +643,8 @@ export class HalfEdge {
     let dy0 = 0.0;
     let dy1 = 0.0;
     let x0 = this.x;
-    let x1 = x0;
-    let node1: HalfEdge = this;  // just to initialize -- reassigned in each loop pass.
+    let x1;
+    let node1;
     let node0: HalfEdge = this;
     do {
       node1 = node0.faceSuccessor;
@@ -653,7 +653,6 @@ export class HalfEdge {
       sum += (x0 - x1) * (dy0 + dy1);
       x0 = x1;
       dy0 = dy1;
-      node0 = node1;
       node0 = node1;
     } while (node0 !== this);
     return 0.5 * sum;

@@ -1843,7 +1843,6 @@ export class Sample {
       }
       return BezierCurve3d.create(points);
     }
-    return undefined;
   }
   /**
    * Create various curve chains with distance indexing.

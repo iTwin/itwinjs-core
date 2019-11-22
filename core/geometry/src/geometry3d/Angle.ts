@@ -288,7 +288,7 @@ export class Angle implements BeJSONFunctions {
             /* to allow scaled values -- e.g. the x and y components of any vector -- we normalize*/
             /* right here.  This adds an extra sqrt and 2 divides to the whole process, but improves*/
             /* both the usefulness and robustness of the computation.*/
-            let cosA = 1.0;
+            let cosA;
             let sinA = 0.0;
             const cos2A = rCos2A / r;
             const sin2A = rSin2A / r;

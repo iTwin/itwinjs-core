@@ -33,7 +33,7 @@ export class DeepCompare {
   /** test if _a and _b are within tolerance.
    * * If not, push error message to errorTracker.
    */
-public compareNumber(_a: number, _b: number) {
+  public compareNumber(_a: number, _b: number) {
     if (Math.abs(_b - _a) < this.numberRelTol * (1 + Math.abs(_a) + Math.abs(_b))) {
       return this.announce(true);
     } else {
@@ -83,9 +83,11 @@ public compareNumber(_a: number, _b: number) {
     // Keep track of result for each element of array
     let toReturn = true;
     for (let i = 0; i < a.length; i++) {
-      toReturn = toReturn && this.compareInternal(a[i], b[i]);
-      // If false, break the loop
-      if (!toReturn) { this.errorTracker.unshift("[" + i.toString() + "]"); break; }
+      if (!this.compareInternal(a[i], b[i])) {
+        toReturn = false;
+        this.errorTracker.unshift("[" + i.toString() + "]");
+        break;
+      }
     }
     return this.announce(toReturn);
   }
@@ -116,10 +118,12 @@ public compareNumber(_a: number, _b: number) {
           this.errorTracker.unshift(b);
           return this.announce(false);
         }
-
-        toReturn = toReturn && this.compareInternal(a[property], b[property]);
-        // If not true, push property and break the loop
-        if (!toReturn) { this.errorTracker.unshift(property); break; }
+        if (!this.compareInternal(a[property], b[property])) {
+          // If not true, push property and break the loop
+          this.errorTracker.unshift(property);
+          toReturn = false;
+          break;
+        }
       }
     }
     return this.announce(toReturn);
