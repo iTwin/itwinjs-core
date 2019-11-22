@@ -649,12 +649,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this.setState((prevState) => {
       const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
       const manager = FrontstageManager.NineZoneManager;
-      let nineZone = prevState.nineZone;
-      if (activeToolSettingsNode) {
-        nineZone = manager.showWidget(2, prevState.nineZone);
-      } else {
-        nineZone = manager.hideWidget(2, prevState.nineZone);
-      }
+      const nineZone = activeToolSettingsNode ? manager.showWidget(2, prevState.nineZone) : manager.hideWidget(2, prevState.nineZone);
       if (nineZone === prevState.nineZone)
         return null;
       return {
