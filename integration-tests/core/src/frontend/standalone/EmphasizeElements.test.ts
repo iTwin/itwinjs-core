@@ -5,7 +5,7 @@
 import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, EmphasizeElements, FeatureOverrideType, FeatureSymbology } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
-import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
@@ -195,6 +195,50 @@ describe("EmphasizeElements tests", () => {
     assert.isTrue(undefined === currMap);
 
     EmphasizeElements.clear(vp);
+  });
+
+  it("Applies correct overrides", () => {
+    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    EmphasizeElements.clear(vp);
+
+    const vf = vp.viewFlags.clone();
+    vf.weights = true;
+    vp.viewFlags = vf;
+
+    const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureSymbology.AppearanceProps) => {
+      const emph = EmphasizeElements.getOrCreate(vp);
+      const elemId = "0x123";
+      const elemIds = new Set<string>([elemId]);
+
+      emph.clearOverriddenElements(vp);
+      emph.overrideElements(elemIds, vp, color, type, true);
+
+      const ovrs = new FeatureSymbology.Overrides(vp);
+      emph.addFeatureOverrides(ovrs, vp);
+
+      const feature = new Feature(elemId);
+      const actualAppearance = ovrs.getFeatureAppearance(feature, "0");
+      expect(actualAppearance).not.to.be.undefined;
+      if (undefined !== actualAppearance) {
+        expect(JSON.stringify(actualAppearance)).to.equal(JSON.stringify(expectedAppearance));
+      }
+
+      EmphasizeElements.clear(vp);
+    };
+
+    const rgb = RgbColor.fromColorDef(ColorDef.red);
+    const black = new RgbColor(0, 0, 0);
+    expectAppearance(ColorDef.red, FeatureOverrideType.ColorOnly, { rgb });
+    expectAppearance(ColorDef.red, FeatureOverrideType.AlphaOnly, { rgb: black, transparency: 0 }); // EE does not permit overriding only transparency to opaque...
+    expectAppearance(ColorDef.red, FeatureOverrideType.ColorAndAlpha, { rgb, transparency: 0 });
+
+    const red = ColorDef.red.clone();
+    red.setTransparency(184);
+    const transparency = 184 / 255;
+
+    expectAppearance(red, FeatureOverrideType.ColorOnly, { rgb });
+    expectAppearance(red, FeatureOverrideType.AlphaOnly, { transparency });
+    expectAppearance(red, FeatureOverrideType.ColorAndAlpha, { rgb, transparency });
   });
 
   it("Override to/from key", async () => {

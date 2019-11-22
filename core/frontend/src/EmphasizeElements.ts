@@ -76,7 +76,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       const color = ColorDef.fromJSON(key);
       rgb = RgbColor.fromColorDef(color);
       if (0 !== color.getAlpha()) // Fully transparent signifies to use color only...
-        transparency = color.getTransparency();
+        transparency = color.getTransparency() / 255;
     }
 
     const emphasized = this.wantEmphasis ? true : undefined;
