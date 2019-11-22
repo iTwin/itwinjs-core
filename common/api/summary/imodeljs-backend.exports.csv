@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
 public;AuthorizedBackendRequestContext 
