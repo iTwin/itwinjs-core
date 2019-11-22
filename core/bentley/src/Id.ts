@@ -78,7 +78,6 @@ export namespace Id64 {
 
     const len = id.length;
     const start = (len > 12) ? (len - 10) : 2;
-
     return toHex(id.slice(start));
   }
 
@@ -87,14 +86,8 @@ export namespace Id64 {
     if (isInvalid(id))
       return 0;
 
-    const str = id.toString();
-    let start = 2;
-    const len = str.length;
-    if (len <= 12)
-      return 0;
-
-    start = (len - 10);
-    return toHex(str.slice(2, start));
+    const len = id.length;
+    return (len <= 12) ? 0 : toHex(id.slice(2, len - 10));
   }
 
   /** Create an Id64String from its JSON representation.
