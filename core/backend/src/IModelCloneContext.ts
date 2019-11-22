@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -92,6 +92,12 @@ export class IModelCloneContext {
    */
   public cloneElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id);
+    // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
+    sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
+      if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
+        (targetElementProps as any)[propertyName] = RelatedElement.none;
+      }
+    });
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;
@@ -100,7 +106,7 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName) as any; // "as any" so we can call the protected onCloned method
+    const jsClass: any = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName); // declared as "any" so we can call the protected onCloned method
     jsClass.onCloned(this, sourceElement, targetElementProps);
     return targetElementProps;
   }

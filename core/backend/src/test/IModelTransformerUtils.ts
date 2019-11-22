@@ -7,7 +7,7 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
-  Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
+  Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -24,6 +24,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 /** IModelTransformer utilities shared by both standalone and integration tests. */
 export namespace IModelTransformerUtils {
 
+  const uniqueAspectGuid: GuidString = Guid.createValue();
   const federationGuid3: GuidString = Guid.createValue();
 
   export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
@@ -156,12 +157,15 @@ export namespace IModelTransformerUtils {
       },
       sourceString: "S1",
       sourceDouble: 1.1,
+      sourceNavigation: { id: sourcePhysicalCategoryId, relClassName: "TestTransformerSource:SourcePhysicalElementUsesSourceDefinition" },
+      commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
       extraString: "Extra",
     } as GeometricElement3dProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
+    assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceUniqueAspect",
@@ -172,9 +176,18 @@ export namespace IModelTransformerUtils {
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
-      sourceGuid: Guid.createValue(),
+      sourceGuid: uniqueAspectGuid,
       extraString: "Extra",
     } as ElementAspectProps);
+    const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect")[0];
+    assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
+    assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
+    assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceDouble, 11.1);
+    assert.equal(sourceUniqueAspect.asAny.sourceString, "UniqueAspect");
+    assert.equal(sourceUniqueAspect.asAny.sourceLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceGuid, uniqueAspectGuid);
+    assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -305,6 +318,13 @@ export namespace IModelTransformerUtils {
     sourceMultiAspects[1].asAny.commonString += "-Updated";
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
     sourceDb.elements.updateAspect(sourceMultiAspects[1]);
+    // clear NavigationProperty of PhysicalElement1
+    const physicalElementId: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
+    let physicalElement: PhysicalElement = sourceDb.elements.getElement(physicalElementId);
+    physicalElement.asAny.commonNavigation = RelatedElement.none;
+    physicalElement.update();
+    physicalElement = sourceDb.elements.getElement(physicalElementId);
+    assert.isUndefined(physicalElement.asAny.commonNavigation);
     // delete PhysicalObject3
     const physicalObjectId3: Id64String = queryByUserLabel(sourceDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
@@ -417,8 +437,10 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
-    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by transformElement override");
-    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by transformElement override");
+    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetNavigation.id, targetPhysicalCategoryId, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
@@ -433,7 +455,8 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
+    assert.equal(uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
     // ElementMultiAspects
     const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
     assert.equal(targetMultiAspects.length, 2);
@@ -443,14 +466,14 @@ export namespace IModelTransformerUtils {
     assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
     assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
     assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid));
     assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
     assert.equal(targetMultiAspects[1].asAny.commonString, "Multi");
     assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
     assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
     assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
     assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid));
     // DisplayStyle
     const displayStyle3dId = targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(targetDb, definitionModelId, "DisplayStyle3d"))!;
     assertTargetElement(sourceDb, targetDb, displayStyle3dId);
@@ -532,6 +555,10 @@ export namespace IModelTransformerUtils {
     assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
     assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect-Updated");
     assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1);
+    // assert NavigationProperty of PhysicalElement1 was cleared
+    const physicalElementId: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
+    const physicalElement: PhysicalElement = targetDb.elements.getElement(physicalElementId);
+    assert.isUndefined(physicalElement.asAny.commonNavigation);
     // assert PhysicalObject3 was deleted
     assert.equal(Id64.invalid, queryByUserLabel(targetDb, "PhysicalObject3"));
   }
@@ -797,6 +824,7 @@ export class TestIModelTransformer extends IModelTransformer {
   /** Initialize some class remapping rules for testing */
   private initClassRemapping(): void {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
+    this.context.remapElementClass("TestTransformerSource:SourcePhysicalElementUsesCommonDefinition", "TestTransformerTarget:TargetPhysicalElementUsesCommonDefinition");
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */
@@ -813,6 +841,10 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetNavigation = {
+        id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
+        relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
+      };
     }
     return targetElementProps;
   }

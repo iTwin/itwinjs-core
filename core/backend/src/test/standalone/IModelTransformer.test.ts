@@ -135,7 +135,7 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.equal(targetImporter.numElementsInserted, 0);
-      assert.equal(targetImporter.numElementsUpdated, 3);
+      assert.equal(targetImporter.numElementsUpdated, 4);
       assert.equal(targetImporter.numElementsDeleted, 1);
       assert.equal(targetImporter.numElementAspectsInserted, 0);
       assert.equal(targetImporter.numElementAspectsUpdated, 2);

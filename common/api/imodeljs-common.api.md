@@ -3558,6 +3558,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     isCustomHandled?: boolean;
     // (undocumented)
     isCustomHandledOrphan?: boolean;
+    readonly isNavigation: boolean;
     // (undocumented)
     kindOfQuantity?: string;
     // (undocumented)

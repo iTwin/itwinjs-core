@@ -7,9 +7,29 @@
         <BaseClass>bis:PhysicalElement</BaseClass>
         <ECProperty propertyName="TargetString" typeName="string" description="A string property that only exists in the target schema"/>
         <ECProperty propertyName="TargetDouble" typeName="double" description="A double property that only exists in the target schema"/>
+        <ECNavigationProperty propertyName="TargetNavigation" relationshipName="TargetPhysicalElementUsesTargetDefinition" direction="Forward" description="A NavigationProperty that only exists in the target schema"/>
         <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists in both schemas"/>
         <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
+        <ECNavigationProperty propertyName="CommonNavigation" relationshipName="TargetPhysicalElementUsesCommonDefinition" direction="Forward" description="A NavigationProperty that exists in both schemas"/>
     </ECEntityClass>
+
+    <ECRelationshipClass typeName="TargetPhysicalElementUsesTargetDefinition" strength="referencing" modifier="None">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="TargetPhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="TargetPhysicalElementUsesCommonDefinition" strength="referencing" modifier="Sealed">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="TargetPhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
 
     <ECRelationshipClass typeName="TargetRelWithProps" strength="referencing" modifier="None" description="For testing relationship property remapping." >
         <BaseClass>bis:ElementRefersToElements</BaseClass>
