@@ -2667,9 +2667,11 @@ export abstract class Viewport implements IDisposable {
       isRedrawNeeded = true;
     }
 
+    let requestNextAnimation = false;
     if (this.processFlash()) {
       target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
+      requestNextAnimation = undefined !== this._flashedElem;
     }
 
     timer.stop();
@@ -2708,7 +2710,7 @@ export abstract class Viewport implements IDisposable {
       }
     }
 
-    if (undefined !== this._animator || this.continuousRendering)
+    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering)
       IModelApp.requestNextAnimation();
   }
 
