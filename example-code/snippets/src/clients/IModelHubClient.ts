@@ -10,7 +10,5 @@ import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 
 const imodelHubClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new IOSAzureFileHandler() : new AzureFileHandler());
 // __PUBLISH_EXTRACT_END__
-() => {
-  if (!imodelHubClient)
-    return;
-};
+// this is just to avoid unused variable compile error.
+export const thisImodelHubClient = imodelHubClient;

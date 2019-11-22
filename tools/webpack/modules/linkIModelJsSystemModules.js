@@ -102,7 +102,7 @@ function main() {
 
   let packageFileContents = readPackageFileContents();
 
-  for (moduleInfo of modulesList) {
+  for (const moduleInfo of modulesList) {
     let sourceFile = path.resolve(iModelJsDir, moduleInfo.relativePath, moduleInfo.fileName);
     let version = packageFileContents.dependencies[getPackageName(moduleInfo.fileName)];
     if (!version) {

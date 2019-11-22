@@ -79,7 +79,7 @@ const opts = {
     fgrep: yargs.argv.fgrep,
     invert: yargs.argv.invert,
   }
-}
+};
 
 const configFilePath = path.resolve(process.cwd(), yargs.argv.config);
 let config;

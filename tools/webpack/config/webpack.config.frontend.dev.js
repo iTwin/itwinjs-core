@@ -5,9 +5,7 @@
 "use strict";
 
 const autoprefixer = require("autoprefixer");
-const path = require("path");
 const webpack = require("webpack");
-const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
 const plugins = require("../scripts/utils/webpackPlugins");

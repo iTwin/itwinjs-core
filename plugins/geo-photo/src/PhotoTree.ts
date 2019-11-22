@@ -440,9 +440,10 @@ export abstract class PhotoFile extends FolderEntry {
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = IModelApp.quantityFormatter.formatQuantity(zAdjusted, coordFormatterSpec);
+        const formattedTrack = this.track ? this.track.toFixed(2) : "";
         const latDir = cartographic.latitude < 0 ? "S" : "N";
         const longDir = cartographic.longitude < 0 ? "W" : "E";
-        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight });
+        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight, formattedTrack });
         if (this.spatial) {
           const xAdjusted = this.spatial.x - globalOrigin.x;
           const yAdjusted = this.spatial.y - globalOrigin.y;
@@ -655,7 +656,7 @@ class DistanceSorter {
   public sortedArray: SortedArray<PhotoFile>;
 
   constructor(private _axis: number) {
-    const sortFunc = this._axis ? this.sortOnX : this.sortOnY;
+    const sortFunc = this._axis ? this.sortOnY : this.sortOnX;
     this.sortedArray = new SortedArray<PhotoFile>(sortFunc, true);
   }
 
@@ -686,14 +687,11 @@ class DistanceSorter {
     const maxIndex = this.sortedArray.length;
     let highIndex = thisIndex + 1;
     for (; highIndex < maxIndex; ++highIndex) {
-      const thisVal = (this.sortedArray.get(lowIndex)!.spatial as any)[selector];
+      const thisVal = (this.sortedArray.get(highIndex)!.spatial as any)[selector];
       if ((thisVal - photoVal) > maxDistance)
         break;
     }
-
-    // highIndex points to the first beyond the acceptable range, so decrement it.
-    if (highIndex <= lowIndex)
-      return [];
+    // don't decrement highIndex, because slice does not include highIndex.
 
     // this is not good practice, but SortedArray has no slice.
     return (this.sortedArray as any)._array.slice(lowIndex, highIndex);

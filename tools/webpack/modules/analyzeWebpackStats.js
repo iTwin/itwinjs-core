@@ -71,7 +71,7 @@ function moduleNameFromId(moduleId) {
   if (subName != -1)
     moduleReturn.subContent = moduleId.substring(subName + 1);
   else
-    moduleReturn.subContent = moduleReturn.name
+    moduleReturn.subContent = moduleReturn.name;
   return moduleReturn;
 }
 
@@ -115,7 +115,7 @@ function main() {
   const pathToJsonFile = "lib/module/dev/webpackStats0.json";
 
   const directories = ["core/bentley", "core/geometry", "core/common", "core/clients", "core/i18n", "core/quantity", "core/frontend", "ui/core",
-    "ui/components", "ui/ninezone", "ui/framework", "presentation/common", "presentation/components", "presentation/frontend"]
+    "ui/components", "ui/ninezone", "ui/framework", "presentation/common", "presentation/components", "presentation/frontend"];
 
   // create the directory of packageInfos.
   const packageInfos = [];

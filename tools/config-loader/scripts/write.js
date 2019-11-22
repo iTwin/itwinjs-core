@@ -7,7 +7,7 @@
 const fs = require("fs");
 const IModelJsConfig = require("../lib/IModelJsConfig").IModelJsConfig;
 if (process.argv.length < 2) {
-  console.error("Required argument <jsonFile> is missing.")
+  console.error("Required argument <jsonFile> is missing.");
   console.log("write.js <jsonFile> [keyFilter]");
   return;
 }

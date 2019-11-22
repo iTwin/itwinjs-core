@@ -92,7 +92,7 @@ const modulesToExcludeFromTests = [
   // If these paths don't end in "/" (or "\"), they'll also exclude *filenames* beginning with "web" or "electron":
   path.normalize(paths.appSrcBackendElectron + path.sep),
   path.normalize(paths.appSrcBackendWeb + path.sep),
-]
+];
 
 module.exports = {
   createDevToolModuleFilename,

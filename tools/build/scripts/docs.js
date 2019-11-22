@@ -48,7 +48,7 @@ const options = [
   "--excludeNotExported",
   "--ignoreCompilerErrors",
   "--hideGenerator",
-]
+];
 
 if (argv.name) options.push("--name", argv.name);
 
@@ -67,7 +67,7 @@ const args = [
   "--internal-aliases", "UNUSED",
   ...baseUrlOptions,
   ...includeOptions
-]
+];
 
 console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
 

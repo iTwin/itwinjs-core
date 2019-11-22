@@ -1987,7 +1987,7 @@ export class PannellumViewer {
       console.log("HFOV bounds do not make sense (minHfov > maxHfov).");
       return this._config.hfov;
     }
-    let newHfov = this._config.hfov;
+    let newHfov;
     if (hfov < minHfov) {
       newHfov = minHfov;
     } else if (hfov > this._config.maxHfov) {

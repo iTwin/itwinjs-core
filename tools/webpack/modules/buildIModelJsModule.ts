@@ -673,7 +673,7 @@ class DigitalSignatureOperation {
       return new Result(op, 1, undefined, undefined, 'The "sign" property must have a "publicKey" property');
     }
     // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
-    const privateKeyFileName = process.env[signProp.privateKey]
+    const privateKeyFileName = process.env[signProp.privateKey];
     if (!privateKeyFileName) {
       return new Result(op, 1, undefined, undefined, `The "sign.privateKey" property is set to "${signProp.privateKey}" but that is not an environment variable (which must point to a ".pem" file).`);
     }
@@ -688,7 +688,7 @@ class DigitalSignatureOperation {
     }
 
     // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
-    const publicKeyFileName = process.env[signProp.publicKey]
+    const publicKeyFileName = process.env[signProp.publicKey];
     if (!publicKeyFileName) {
       return new Result(op, 1, undefined, undefined, `The "sign.publicKey" property is set to "${signProp.publicKey}", but that is not an environment variable (which must point to a ".pem" file).`);
     }
@@ -725,7 +725,7 @@ class DigitalSignatureOperation {
     try {
       for (const fileName of fileList) {
         // read each file into a buffer.
-        const filePath = path.resolve(rootDir, fileName)
+        const filePath = path.resolve(rootDir, fileName);
         const contents: Buffer = fs.readFileSync(filePath);
         // accumulate its data.
         this._sign.update(contents);
@@ -1148,7 +1148,7 @@ class IModelJsModuleBuilder {
     let outputPath = path.resolve(process.cwd(), webpack.dest);
 
     if (this._moduleDescription.type === "plugin") {
-      return this.buildPlugin(webpack, outputPath, styleSheets, 0)
+      return this.buildPlugin(webpack, outputPath, styleSheets, 0);
     } else {
       if (this._moduleDescription.type === "system") {
         outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
@@ -1251,7 +1251,7 @@ class IModelJsModuleBuilder {
 
     // Make a JSON file called manifest.json with keys versionsRequired, prodVersion, devVersion. We will tar that in.
     const dependentTracker: DependentTracker = new DependentTracker(process.cwd(), true, this._detail, this._alwaysCopy);
-    manifest.versionsRequired = dependentTracker.getExternalModuleVersionsObject()
+    manifest.versionsRequired = dependentTracker.getExternalModuleVersionsObject();
 
     const signer: DigitalSignatureOperation | Result | undefined = DigitalSignatureOperation.createInstance(subModule.sign, buildDir);
     if (signer instanceof Result)
@@ -1415,7 +1415,7 @@ class IModelJsModuleBuilder {
     if (0 !== exitCode)
       return exitCode;
 
-    const compileResults = await this.compileSource()
+    const compileResults = await this.compileSource();
     exitCode = this.reportResults([compileResults]);
     if (0 !== exitCode)
       return exitCode;
