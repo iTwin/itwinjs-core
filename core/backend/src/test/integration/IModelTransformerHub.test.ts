@@ -10,10 +10,11 @@ import * as path from "path";
 import * as semver from "semver";
 import {
   AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, ConcurrencyControl,
-  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship, IModelExporter,
+  ECSqlStatement, Element, ElementAspect, ElementRefersToElements, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InstanceChange,
+  KeepBriefcase, Model, OpenParams, Relationship,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
+import { CountingIModelImporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
@@ -127,8 +128,7 @@ describe("IModelTransformerHub (#integration)", () => {
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
-      // Import #1
-      if (true) {
+      if (true) { // initial import
         IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
@@ -183,8 +183,33 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
       }
 
-      // Import #2
-      if (true) {
+      if (true) { // second import with no changes to source, should be a no-op
+        const numTargetElements: number = count(targetDb, Element.classFullName);
+        const numTargetExternalSourceAspects: number = count(targetDb, ExternalSourceAspect.classFullName);
+        const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
+        const targetImporter = new CountingIModelImporter(targetDb);
+        const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+        transformer.processAll();
+        assert.equal(targetImporter.numModelsInserted, 0);
+        assert.equal(targetImporter.numModelsUpdated, 0);
+        assert.equal(targetImporter.numElementsInserted, 0);
+        assert.equal(targetImporter.numElementsUpdated, 0);
+        assert.equal(targetImporter.numElementsDeleted, 0);
+        assert.equal(targetImporter.numElementAspectsInserted, 0);
+        assert.equal(targetImporter.numElementAspectsUpdated, 0);
+        assert.equal(targetImporter.numRelationshipsInserted, 0);
+        assert.equal(targetImporter.numRelationshipsUpdated, 0);
+        assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
+        assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
+        assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
+        transformer.dispose();
+        await targetDb.concurrencyControl.request(requestContext);
+        targetDb.saveChanges();
+        assert.isFalse(targetDb.briefcase.nativeDb.hasSavedChanges());
+        await targetDb.pushChanges(requestContext, () => "Should not actually push because there are no changes");
+      }
+
+      if (true) { // update source db, then import again
         IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
@@ -326,6 +351,12 @@ describe("IModelTransformerHub (#integration)", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }
   });
+
+  function count(iModelDb: IModelDb, classFullName: string): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
 });
 
 // cspell:words ecchange
