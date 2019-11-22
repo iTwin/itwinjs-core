@@ -31,6 +31,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
   // tslint:disable:no-floating-promises (flagged at openMessageBox)
 
   public render(): JSX.Element {
+    // cspell:disable
     return (
       <MessageBox
         opened={this.state.opened}
@@ -50,21 +51,18 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
         </div>
       </MessageBox>
     );
+    // cspell:enable
   }
 
-  public componentDidUpdate(newProps: TestMessageBoxProps) {
-    if (newProps !== this.props) {
-      this.setState((_prevState) => {
-        return {
-          opened: newProps.opened,
-        };
-      });
+  public componentDidUpdate(prevProps: TestMessageBoxProps) {
+    if (prevProps !== this.props) {
+      this.setState((_, props) => ({ opened: props.opened }));
     }
   }
 
   private _toggleOpened = () => {
-    this.setState((_prevState) => ({
-      opened: !this.state.opened,
+    this.setState((prevState) => ({
+      opened: !prevState.opened,
     }), () => {
       if (!this.state.opened)
         ModalDialogManager.closeDialog();

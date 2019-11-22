@@ -100,19 +100,21 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
     if (this.props.readonly)
       return;
 
-    this.setState((_prevState) => ({ showPopup: !this.state.showPopup }));
+    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
   }
 
   private _closePopup = () => {
-    this.setState((_prevState) => ({ showPopup: false }));
+    this.setState({ showPopup: false });
   }
 
   private _handleIconPicked = (icon: string) => {
-    this.setState((_prevState) => ({ showPopup: false, icon }), () => {
-      // istanbul ignore else
-      if (this.props.onIconChange)
-        this.props.onIconChange(icon);
-    });
+    this.setState(
+      { showPopup: false, icon },
+      () => {
+        // istanbul ignore else
+        if (this.props.onIconChange)
+          this.props.onIconChange(icon);
+      });
   }
 
   private renderPopup(title: string | undefined) {

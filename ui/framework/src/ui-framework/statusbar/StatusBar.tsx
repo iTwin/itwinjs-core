@@ -176,11 +176,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
     const visibleMessage = StatusBarMessageType.Activity;
-    this.setState({
+    this.setState((prevState) => ({
       visibleMessage,
       activityMessageInfo: args,
-      isActivityMessageVisible: args.restored ? true : this.state.isActivityMessageVisible,
-    });
+      isActivityMessageVisible: args.restored ? true : prevState.isActivityMessageVisible,
+    }));
   }
 
   /**

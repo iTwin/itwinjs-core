@@ -67,19 +67,26 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0)
       refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+
     if (refreshState) {
       if (this.props.actionItem.stateFunc)
         newState = this.props.actionItem.stateFunc(newState);
+
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         // update actionItem as it hold the 'truth' for all state
         /* istanbul ignore else */
         if (undefined !== newState.isVisible)
           this.props.actionItem.isVisible = newState.isVisible;
+
         /* istanbul ignore else */
         if (undefined !== newState.isActive)
           this.props.actionItem.isActive = newState.isActive;
 
-        this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
+        this.setState({
+          isActive: newState.isActive,
+          isEnabled: newState.isEnabled,
+          isVisible: newState.isVisible,
+        });
       }
     }
   }

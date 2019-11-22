@@ -533,7 +533,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onOpenDayPicker = () => {
-    this.setState({ isDateOpened: !this.state.isDateOpened });
+    this.setState((prevState) => ({ isDateOpened: !prevState.isDateOpened }));
   }
 
   private _onCloseSettingsPopup = () => {
@@ -541,7 +541,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onOpenSettingsPopup = () => {
-    this.setState({ isSettingsOpened: !this.state.isSettingsOpened });
+    this.setState((prevState) => ({ isSettingsOpened: !prevState.isSettingsOpened }));
   }
 
   private ensureRange(value: number, min: number, max: number): number {
@@ -583,11 +583,11 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onToggleLoop = () => {
-    this.setState({ loop: !this.state.loop });
+    this.setState((prevState) => ({ loop: !prevState.loop }));
   }
 
   private _onToggleDisplay = () => {
-    this.setState({ isExpanded: !this.state.isExpanded });
+    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
   }
 
   private _formatTick = (millisec: number) => {

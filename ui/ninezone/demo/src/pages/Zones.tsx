@@ -1086,9 +1086,9 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   }
 
   private updateTooltipPosition() {
-    this.setState((prevState) => {
+    this.setState((prevState, props) => {
       const tooltipBounds = Rectangle.createFromSize(this._tooltipSize).offset(this._mousePosition);
-      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, this.props.getContainerSize());
+      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, props.getContainerSize());
       if (tooltipPosition.equals(prevState.tooltipPosition))
         return null;
       return {
@@ -1887,7 +1887,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -2970,9 +2970,9 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   public componentDidMount() {
-    this.setState({
-      nineZone: this._nineZone.showWidget(2, this.state.nineZone),
-    });
+    this.setState((prevState) => ({
+      nineZone: this._nineZone.showWidget(2, prevState.nineZone),
+    }));
   }
 
   public componentDidUpdate() {

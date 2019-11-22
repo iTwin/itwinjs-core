@@ -89,7 +89,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     if (this.props.readonly)
       return;
 
-    this.setState((_prevState) => ({ showPopup: !this.state.showPopup }));
+    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
   }
 
   private _closePopup = () => {

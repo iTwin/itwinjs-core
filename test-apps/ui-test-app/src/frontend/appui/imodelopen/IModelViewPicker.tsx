@@ -29,7 +29,8 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
   }
 
   private _onClicked = (_event: React.MouseEvent<HTMLElement>) => {
-    this.setState({ isSelected: !this.state.isSelected },
+    this.setState(
+      (prevState) => ({ isSelected: !prevState.isSelected }),
       () => {
         if (this.props.onClick)
           this.props.onClick();

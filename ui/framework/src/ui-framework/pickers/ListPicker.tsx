@@ -121,6 +121,10 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
     this.state = { expanded: !!this.props.expanded };
   }
 
+  private _onClick = () => {
+    this.setState((prevState) => ({ expanded: !prevState.expanded }));
+  }
+
   /** Renders ExpandableSection */
   public render() {
     const className = classnames(
@@ -128,15 +132,11 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
       this.props.className,
     );
 
-    const onClick = () => {
-      this.setState(Object.assign({}, this.state, { expanded: !this.state.expanded }));
-    };
-
     const icon = this.state.expanded ? <i className="icon icon-chevron-down" /> : <i className="icon icon-chevron-right" />;
 
     return (
       <Panel className={className} style={this.props.style} key={this.props.title}>
-        <div onClick={onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
+        <div onClick={this._onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
           <div className="ListPickerInnerContainer-header-content">
             <div className="ListPickerInnerContainer-expander">{icon}</div>
             <div className="ListPickerInnerContainer-title">{this.props.title}</div>

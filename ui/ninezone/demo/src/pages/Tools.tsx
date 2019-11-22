@@ -262,7 +262,7 @@ export default class Tools extends React.PureComponent<{}, State> {
       }
       return {
         ...prevState,
-        direction: this.state.isPanelVisible ? prevState.direction : direction,
+        direction: prevState.isPanelVisible ? prevState.direction : direction,
         isPanelVisible: !prevState.isPanelVisible,
       };
     });

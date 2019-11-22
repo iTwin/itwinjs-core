@@ -41,7 +41,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
 
   private _onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
     this.closeDropdown();
-    this.setState((_prevState) => ({ showProjectsDialog: true }));
+    this.setState({ showProjectsDialog: true });
   }
 
   private _onCloseProjectDialog = () => {
@@ -59,7 +59,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
   }
 
   private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
-    this.setState((_prevState) => ({ isDropdownOpen: !this.state.isDropdownOpen }));
+    this.setState((prevState) => ({ isDropdownOpen: !prevState.isDropdownOpen }));
   }
 
   private _handleOnOutsideClick = () => {
@@ -67,11 +67,11 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
   }
 
   private closeDropdown() {
-    this.setState((_prevState) => ({ isDropdownOpen: false }));
+    this.setState({ isDropdownOpen: false });
   }
 
   private closeDialog() {
-    this.setState((_prevState) => ({ showProjectsDialog: false }));
+    this.setState({ showProjectsDialog: false });
   }
 
   private getProjects(): ProjectInfo[] {

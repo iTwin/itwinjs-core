@@ -67,7 +67,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       currentDuration: props.initialDuration ? props.initialDuration : 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,
-     };
+    };
 
     this._expandLabel = UiComponents.translate("timeline.expand");
     this._minimizeLabel = UiComponents.translate("timeline.minimize");
@@ -79,9 +79,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this._unmounted = true;
   }
 
-  public componentDidUpdate (prevProps: TimelineComponentProps) {
+  public componentDidUpdate(prevProps: TimelineComponentProps) {
     if (this.props.initialDuration !== prevProps.initialDuration) {
-      this._setDuration(this.props.initialDuration ? this.props.initialDuration : 0 );
+      this._setDuration(this.props.initialDuration ? this.props.initialDuration : 0);
     }
   }
 
@@ -225,7 +225,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _onSettingsClick = () => {
-    this.setState({ isSettingsOpen: !this.state.isSettingsOpen });
+    this.setState((prevState) => ({ isSettingsOpen: !prevState.isSettingsOpen }));
   }
 
   private _onCloseSettings = () => {
@@ -234,20 +234,24 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   // istanbul ignore next - WIP
   private _onModeChanged = () => {
-    this.setState({ minimized: !this.state.minimized, isSettingsOpen: false }, () => {
-      if (this.props.onSettingsChange) {
-        this.props.onSettingsChange({ minimized: this.state.minimized });
-      }
-    });
+    this.setState(
+      (prevState) => ({ minimized: !prevState.minimized, isSettingsOpen: false }),
+      () => {
+        if (this.props.onSettingsChange) {
+          this.props.onSettingsChange({ minimized: this.state.minimized });
+        }
+      });
   }
 
   private _onRepeatChanged = () => {
-    this.setState({ repeat: !this.state.repeat, isSettingsOpen: false }, () => {
-      // istanbul ignore else
-      if (this.props.onSettingsChange) {
-        this.props.onSettingsChange({ loop: this.state.repeat });
-      }
-    });
+    this.setState(
+      (prevState) => ({ repeat: !prevState.repeat, isSettingsOpen: false }),
+      () => {
+        // istanbul ignore else
+        if (this.props.onSettingsChange) {
+          this.props.onSettingsChange({ loop: this.state.repeat });
+        }
+      });
   }
 
   private _currentDate = (): Date => {
@@ -260,12 +264,14 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _onSetTotalDuration = (milliseconds: number) => {
-    this.setState({ totalDuration: milliseconds, isSettingsOpen: false }, () => {
-      // istanbul ignore else
-      if (this.props.onSettingsChange) {
-        this.props.onSettingsChange({ duration: milliseconds });
-      }
-    });
+    this.setState(
+      { totalDuration: milliseconds, isSettingsOpen: false },
+      () => {
+        // istanbul ignore else
+        if (this.props.onSettingsChange) {
+          this.props.onSettingsChange({ duration: milliseconds });
+        }
+      });
   }
 
   private _renderSettings = () => {
@@ -283,7 +289,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
           <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.medium")} checked={totalDuration === mediumSpeed} onClick={this._onSetTotalDuration.bind(this, mediumSpeed)} />
           <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.fast")} checked={totalDuration === fastSpeed} onClick={this._onSetTotalDuration.bind(this, fastSpeed)} />
-                  </ContextMenu>
+        </ContextMenu>
       </>
     );
   }

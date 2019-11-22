@@ -90,7 +90,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 
   public componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
     if (this.props.content !== prevProps.content) {
-      this.setState({ content: this.props.content, isActive: this.props.content === ContentViewManager.getActiveContent() });
+      this.setState((_, props) => ({ content: props.content, isActive: props.content === ContentViewManager.getActiveContent() }));
     }
   }
 

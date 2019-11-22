@@ -102,22 +102,20 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
   }
 
   private _onInputMessageClose = () => {
-    this.setState((_prevState) => ({ isVisible: false }));
+    this.setState({ isVisible: false });
   }
 
   private _handleInputFieldMessageAddedEvent = (args: InputFieldMessageEventArgs) => {
-    this.setState((_prevState) => ({
+    this.setState({
       inputFieldElement: args.target as HTMLElement,
       message: args.messageText,
       isVisible: true,
       priority: args.priority,
       detailedMessage: args.detailedMessage,
-    }));
+    });
   }
 
   private _handleInputFieldMessageRemovedEvent = () => {
-    this.setState((_prevState) => ({
-      isVisible: false,
-    }));
+    this.setState({ isVisible: false });
   }
 }

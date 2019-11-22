@@ -72,9 +72,9 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   public componentDidUpdate(prevProps: AutoSuggestProps) {
     if (this.props.value !== prevProps.value || this.props.options !== prevProps.options) {
-      this.setState({
-        inputValue: this.getLabel(this.props.value),
-      });
+      this.setState((_prevState, props) => ({
+        inputValue: this.getLabel(props.value),
+      }));
     }
   }
 

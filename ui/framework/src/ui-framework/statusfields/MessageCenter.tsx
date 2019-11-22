@@ -162,11 +162,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   }
 
   private _changeActiveTab = (tab: MessageCenterActiveTab) => {
-    this.setState((_prevState) => {
-      return {
-        activeTab: tab,
-      };
-    });
+    this.setState({ activeTab: tab });
   }
 
   private getMessages(): React.ReactChild[] {

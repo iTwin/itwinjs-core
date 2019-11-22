@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

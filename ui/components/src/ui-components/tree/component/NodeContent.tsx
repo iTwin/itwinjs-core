@@ -124,7 +124,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
 
     // tslint:disable-next-line:no-floating-promises
     this.updateLabel(this.props);
-    this.setState({ renderInfo: createRenderInfo(this.props.node) });
+    this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
   }
 
   private static doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
@@ -150,7 +150,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.updateLabel(this.props);
     }
 
-    this.setState({ renderInfo: createRenderInfo(this.props.node) });
+    this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
   }
 
   public componentWillUnmount() {

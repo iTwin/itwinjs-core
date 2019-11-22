@@ -49,22 +49,23 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   public componentDidMount() {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
-      this.setState(Object.assign({}, this.state, {
+      this.setState({
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
-        currentProject: this.props.initialIModels[0].projectInfo,
-        iModels: this.props.initialIModels,
-      }));
+        currentProject: this.props.initialIModels[0].projectInfo, // tslint:disable-line: tslint-react-set-state-usage
+        iModels: this.props.initialIModels,  // tslint:disable-line: tslint-react-set-state-usage
+      });
+
       return;
     }
 
     UiFramework.projectServices.getProjects(ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
-      this.setState(Object.assign({}, this.state, {
+      this.setState({
         isLoadingProjects: false,
         isLoadingiModels: true,
         recentProjects: projectInfos,
-      }));
+      });
       if (projectInfos.length > 0)
         this._selectProject(projectInfos[0]);
     });
@@ -72,23 +73,23 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   private async startRetrieveIModels(project: ProjectInfo) {
-    this.setState(Object.assign({}, this.state, {
+    this.setState({
       prompt: "Fetching iModel information...",
       isLoadingiModels: true,
       isLoadingProjects: false,
       currentProject: project,
-    }));
+    });
     const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 40, 0);
     // tslint:disable-next-line:no-console
     // console.log(JSON.stringify(iModelInfos));
-    this.setState(Object.assign({}, this.state, {
+    this.setState({
       isLoadingiModels: false,
       iModels: iModelInfos,
-    }));
+    });
   }
 
   private _onNavigationChanged = (expanded: boolean) => {
-    this.setState(Object.assign({}, this.state, { isNavigationExpanded: expanded }));
+    this.setState({ isNavigationExpanded: expanded });
   }
 
   private _selectProject(project: ProjectInfo) {
