@@ -65,6 +65,7 @@
     "object-literal-sort-keys": false,
     "no-bitwise": false,
     "no-unused-expression": false,
+    "no-unused-variable": true,
     "no-namespace": false,
     "one-variable-per-declaration": false,
     "no-empty": false,
