@@ -227,7 +227,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   protected createCachedVerticalItemList(toolbarId: string): void {
     const toolbarHierarchy = new UiItemNode();
     // istanbul ignore else
-    if (this, this.verticalItems)
+    if (this.verticalItems)
       this.getItemHierarchy(toolbarHierarchy, this.verticalItems.items);
 
     const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);

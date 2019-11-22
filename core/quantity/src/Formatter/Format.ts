@@ -129,42 +129,30 @@ export class Format implements FormatProps {
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatTrait. Throws exception if not valid. */
   public static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits {
-    let formatTrait = currentFormatTrait;
     switch (stringToCheck.toLowerCase()) {
       case "trailzeroes":
-        formatTrait = currentFormatTrait | FormatTraits.TrailZeroes;
-        break;
+        return currentFormatTrait | FormatTraits.TrailZeroes;
       case "keepsinglezero":
-        formatTrait = currentFormatTrait | FormatTraits.KeepSingleZero;
-        break;
+        return currentFormatTrait | FormatTraits.KeepSingleZero;
       case "zeroempty":
-        formatTrait = currentFormatTrait | FormatTraits.ZeroEmpty;
-        break;
+        return currentFormatTrait | FormatTraits.ZeroEmpty;
       case "keepdecimalpoint":
-        formatTrait = currentFormatTrait | FormatTraits.KeepDecimalPoint;
-        break;
+        return currentFormatTrait | FormatTraits.KeepDecimalPoint;
       case "applyrounding":
-        formatTrait = currentFormatTrait | FormatTraits.ApplyRounding;
-        break;
+        return currentFormatTrait | FormatTraits.ApplyRounding;
       case "fractiondash":
-        formatTrait = currentFormatTrait | FormatTraits.FractionDash;
-        break;
+        return currentFormatTrait | FormatTraits.FractionDash;
       case "showunitlabel":
-        formatTrait = currentFormatTrait | FormatTraits.ShowUnitLabel;
-        break;
+        return currentFormatTrait | FormatTraits.ShowUnitLabel;
       case "prependunitlabel":
-        formatTrait = currentFormatTrait | FormatTraits.PrependUnitLabel;
-        break;
+        return currentFormatTrait | FormatTraits.PrependUnitLabel;
       case "use1000separator":
-        formatTrait = currentFormatTrait | FormatTraits.Use1000Separator;
-        break;
+        return currentFormatTrait | FormatTraits.Use1000Separator;
       case "exponentonlynegative":
-        formatTrait = currentFormatTrait | FormatTraits.ExponentOnlyNegative;
-        break;
+        return currentFormatTrait | FormatTraits.ExponentOnlyNegative;
       default:
         throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);
     }
-    return formatTrait;
   }
 
   /** Method used when generating a JSON object that represents this Format. */

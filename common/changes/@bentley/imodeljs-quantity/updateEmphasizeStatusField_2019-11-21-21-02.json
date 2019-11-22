@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-quantity",
+      "comment": "Code cleanup based on code analysis report from lgtm.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "bill.steinbock@bentley.com"
+}

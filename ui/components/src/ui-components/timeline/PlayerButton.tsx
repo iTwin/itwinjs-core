@@ -21,7 +21,7 @@ export class PlayerButton extends React.PureComponent<any> {
     const { icon } = this.props;
     return (
       <button data-testid={this.props.className} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
-        <span className={classnames("icon", icon && icon)}></span>
+        <span className={classnames("icon", !!icon)}></span>
       </button>
     );
   }

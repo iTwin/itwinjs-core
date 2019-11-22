@@ -90,14 +90,16 @@ describe("<SolarTimeline />", () => {
     await TestUtils.tick(500);
     expect(dataProvider.timeChangeCallbackCalled).to.be.true;
     // the following sets up a MutationObserver which triggers when the DOM is updated
-    await waitForElement(() => renderedComponent.getByTestId("play-button"));
-    expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
+    const update1Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+    if (update1Button)
+      expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
 
     // hit play/pause button to pause animation
     fireEvent.click(playButton);
     // the following sets up a MutationObserver which triggers when the DOM is updated
-    await waitForElement(() => renderedComponent.getByTestId("play-button"));
-    expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
+    const update2Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+    if (update2Button)
+      expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
   });
 
 });
