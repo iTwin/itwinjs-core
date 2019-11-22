@@ -1559,7 +1559,7 @@ export class BriefcaseManager {
       }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "`Relinquishing codes or locks has failed with: ${ error } `", () => briefcase.getDebugInfo());
+      Logger.logError(loggerCategory, `Relinquishing codes or locks has failed with: ${error}`, () => briefcase.getDebugInfo());
     }
 
     // Remove ChangeSet id if it succeeded or failed with conflicts
