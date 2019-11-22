@@ -201,6 +201,34 @@ describe("Schema comparison tests", () => {
       validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaB, [refSchemaB], schemaB);
     });
 
+    it("Different reference versions, diagnostic reported for each schema", async () => {
+      const aRefJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaA",
+        version: "1.0.0",
+        alias: "rs",
+      };
+      const a2RefJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaA",
+        version: "2.0.0",
+        alias: "rs",
+      };
+      const refSchemaA = await Schema.fromJson(aRefJson, contextA);
+      const refSchemaA2 = await Schema.fromJson(a2RefJson, contextB);
+      const aJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
+      const a2Json = {...schemaAJson, references: [{ name: "RefSchemaA", version: "2.0.0" }]};
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(a2Json, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaA, [refSchemaA], schemaA);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaB, [refSchemaA2], schemaB);
+    });
+
     it("Reference missing from Schema B, diagnostic reported", async () => {
       const aRefJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
