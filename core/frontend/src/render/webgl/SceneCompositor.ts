@@ -539,6 +539,7 @@ abstract class Compositor extends SceneCompositor {
 
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
+  protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
   protected abstract clearTranslucent(): void;
   protected abstract renderTranslucent(_commands: RenderCommands): void;
@@ -716,17 +717,17 @@ abstract class Compositor extends SceneCompositor {
     glTimer.endOperation();
     this.target.recordPerformanceMetric("Enable Clipping");
 
+    // Render volume classification first so that we only classify the reality data
+    glTimer.beginOperation("Render VolumeClassification");
+    this.renderVolumeClassification(commands, compositeFlags, false);
+    glTimer.endOperation();
+    this.target.recordPerformanceMetric("Render VolumeClassification");
+
     // Render opaque geometry
     glTimer.beginOperation("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
     glTimer.endOperation();
     this.target.recordPerformanceMetric("Render Opaque");
-
-    // Render stencil volumes
-    glTimer.beginOperation("Render Stencils");
-    this.renderClassification(commands, needComposite, false);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render Stencils");
 
     if (needComposite) {
       this._geom.composite!.update(compositeFlags);
@@ -764,10 +765,10 @@ abstract class Compositor extends SceneCompositor {
     if (haveRenderCommands) {
       this.target.pushActiveVolume();
       this.target.recordPerformanceMetric("Enable Clipping");
+      this.renderVolumeClassification(commands, CompositeFlags.None, true);
+      this.target.recordPerformanceMetric("Render VolumeClassification");
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.recordPerformanceMetric("Render Opaque");
-      this.renderClassification(commands, false, true);
-      this.target.recordPerformanceMetric("Render Stencils");
       this.target.popActiveVolume();
     }
 
@@ -1026,7 +1027,7 @@ abstract class Compositor extends SceneCompositor {
     state.stencil.backOperation.zPass = op;
   }
 
-  private findFlashedClassifier(cmdsByIndex: DrawCommands): DrawCommands | undefined {
+  private findFlashedVolumeClassifier(cmdsByIndex: DrawCommands): DrawCommands | undefined {
     if (!Id64.isValid(this.target.flashedId))
       return undefined; // nothing flashed
     for (let i = 1; i < cmdsByIndex.length; i += 3) {
@@ -1043,7 +1044,7 @@ abstract class Compositor extends SceneCompositor {
     return undefined; // couldn't find it
   }
 
-  private findHilitedClassifiers(cmds: DrawCommands): DrawCommands {
+  private findHilitedVolumeClassifiers(cmds: DrawCommands): DrawCommands {
     // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
     //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
     const selectedCmds: DrawCommand[] = [];
@@ -1062,7 +1063,7 @@ abstract class Compositor extends SceneCompositor {
     return selectedCmds;
   }
 
-  private renderIndexedClassifier(cmdsByIndex: DrawCommands, needComposite: boolean) {
+  private renderIndexedVolumeClassifier(cmdsByIndex: DrawCommands, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
     System.instance.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, () => {
       this.target.pushState(this._vcBranchState!);
@@ -1074,15 +1075,20 @@ abstract class Compositor extends SceneCompositor {
     this.renderIndexedClassifierForReadPixels(cmdsByIndex, this._vcPickDataRenderState!, true, needComposite);
   }
 
-  private renderClassification(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean) {
+  private renderVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
-    if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length))
+    const cmdsForVC = commands.getCommands(RenderPass.VolumeClassifiedRealityData);
+    if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length) || 0 === cmdsForVC.length)
       return;
+
+    // Render the geometry which we are going to classify.
+    this.renderForVolumeClassification(commands, compositeFlags, renderForReadPixels);
 
     this.createVolumeClassifierStates();
 
     const fbStack = System.instance.frameBufferStack;
+    const needComposite = CompositeFlags.None !== compositeFlags;
     const fboColorAndZ = this.getBackgroundFbo(needComposite);
 
     if (this._debugStencil > 0) {
@@ -1112,7 +1118,7 @@ abstract class Compositor extends SceneCompositor {
       // We need to render the classifier stencil volumes one at a time,
       // so draw them from the cmdsByIndex list where each primitive has a branch push & pop around it.
       for (let i = 0; i < cmdsByIndex.length; i += 3)
-        this.renderIndexedClassifier(cmdsByIndex.slice(i, i + 3), needComposite);
+        this.renderIndexedVolumeClassifier(cmdsByIndex.slice(i, i + 3), needComposite);
       return;
     }
 
@@ -1296,7 +1302,7 @@ abstract class Compositor extends SceneCompositor {
     // and this stage can be skipped.  In order for this to work the list of command needs to get reduced to only the ones which draw hilited volumes.
     // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn't need to since it is only used elsewhere when Z write is turned off)
     // and we don't really want another whole set of hilite shaders just for this.
-    const cmdsSelected = this.findHilitedClassifiers(commands.getCommands(RenderPass.HiliteClassification));
+    const cmdsSelected = this.findHilitedVolumeClassifiers(commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== this.target.activeVolumeClassifierProps!.flags.selected) {
     if (!doColorByElement && cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
@@ -1340,7 +1346,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = this.findFlashedClassifier(cmdsByIndex);
+    const flashedClassifierCmds = this.findFlashedVolumeClassifier(cmdsByIndex);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
@@ -1419,8 +1425,8 @@ abstract class Compositor extends SceneCompositor {
     }
   }
 
-  protected drawPass(commands: RenderCommands, pass: RenderPass, pingPong: boolean = false) {
-    const cmds = commands.getCommands(pass);
+  protected drawPass(commands: RenderCommands, pass: RenderPass, pingPong: boolean = false, cmdPass: RenderPass = RenderPass.None) {
+    const cmds = commands.getCommands(RenderPass.None !== cmdPass ? cmdPass : pass);
     if (0 === cmds.length) {
       return;
     } else if (pingPong) {
@@ -1616,6 +1622,24 @@ class MRTCompositor extends Compositor {
     }
   }
 
+  protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
+    const fbStack = System.instance.frameBufferStack;
+
+    if (renderForReadPixels || needAO) {
+      this._readPickDataFromPingPong = true;
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.VolumeClassifiedRealityData);
+      });
+    } else {
+      this._readPickDataFromPingPong = false;
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false, RenderPass.VolumeClassifiedRealityData);
+      });
+    }
+  }
+
   protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, needComposite: boolean) {
     this._readPickDataFromPingPong = true;
     const fbo = (renderForIntersectingVolumes ? (needComposite ? this._fbos.idsAndZComposite! : this._fbos.idsAndZ!)
@@ -1796,6 +1820,24 @@ class MPCompositor extends Compositor {
     }
   }
 
+  protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
+    const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+    if (renderForReadPixels || needAO) {
+      this._readPickDataFromPingPong = true;
+      this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true, RenderPass.VolumeClassifiedRealityData);
+      if (needAO)
+        this.renderAmbientOcclusion();
+    } else {
+      this._readPickDataFromPingPong = false;
+      System.instance.frameBufferStack.execute(colorFbo, true, () => {
+        this._drawMultiPassDepth = true;  // for OpaqueGeneral
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false, RenderPass.VolumeClassifiedRealityData);
+      });
+    }
+  }
+
   protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean) {
     // Note that we only need to render to the Id textures here, no color, since the color buffer is not used in readPixels.
     this._readPickDataFromPingPong = true;
@@ -1810,21 +1852,22 @@ class MPCompositor extends Compositor {
   }
 
   // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
-  private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
+  private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean, cmdPass: RenderPass = RenderPass.None): void {
+    const commandPass = RenderPass.None === cmdPass ? pass : cmdPass;
     const stack = System.instance.frameBufferStack;
     this._drawMultiPassDepth = true;
     if (!this.target.isReadPixelsInProgress) {
-      stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+      stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong, commandPass));
       this._drawMultiPassDepth = false;
     }
     this._currentRenderTargetIndex++;
     if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.Feature)) {
-      stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+      stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth, commandPass));
       this._drawMultiPassDepth = false;
     }
     this._currentRenderTargetIndex++;
     if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.GeometryAndDistance)) {
-      stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+      stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth, commandPass));
     }
     this._currentRenderTargetIndex = 0;
   }

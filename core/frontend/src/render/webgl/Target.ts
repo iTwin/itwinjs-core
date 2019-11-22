@@ -320,6 +320,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+  public activeVolumeClassifierModelId?: Id64String;
 
   // RenderTargetDebugControl
   public useLogZ = true;
@@ -618,8 +619,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._planarClassifiers = planarClassifiers;
 
   }
-  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void {
+  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void {
     this.activeVolumeClassifierProps = props;
+    this.activeVolumeClassifierModelId = modelId;
   }
 
   public changeDynamics(dynamics?: GraphicList) {

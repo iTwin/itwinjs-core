@@ -5936,7 +5936,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void;
     // (undocumented)
     abstract changeBackgroundMap(_graphics: GraphicList): void;
     // (undocumented)
@@ -6131,6 +6131,8 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
+    getActiveVolumeClassifierModelId(): Id64String | undefined;
+    // (undocumented)
     getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined;
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
@@ -6154,6 +6156,8 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
+    // (undocumented)
+    setActiveVolumeClassifierModelId(modelId: Id64String | undefined): void;
     // (undocumented)
     setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined): void;
     // (undocumented)
@@ -7038,6 +7042,8 @@ export class SyncFlags {
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
     protected constructor(rect?: ViewRect);
     // (undocumented)
+    activeVolumeClassifierModelId?: Id64String;
+    // (undocumented)
     activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
     // (undocumented)
     activeVolumeClassifierTexture?: WebGLTexture;
@@ -7066,7 +7072,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
     // (undocumented)
     changeBackgroundMap(backgroundMap: GraphicList): void;
     // (undocumented)
