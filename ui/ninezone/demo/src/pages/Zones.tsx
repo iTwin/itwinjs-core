@@ -962,25 +962,11 @@ interface ToolSettingsWidgetProps {
   onTabClick: () => void;
 }
 
-interface ToolSettingsWidgetState {
-  isNestedPopupOpen: boolean;
-  isPopupOpen: boolean;
-  nestedToggle: HTMLElement | null;
-  toggle: HTMLElement | null;
-}
-
-class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps, ToolSettingsWidgetState> {
+class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
   private _widget = React.createRef<ToolSettings>();
 
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
-  };
-
-  public readonly state: ToolSettingsWidgetState = {
-    isNestedPopupOpen: false,
-    isPopupOpen: false,
-    nestedToggle: null,
-    toggle: null,
   };
 
   public render() {

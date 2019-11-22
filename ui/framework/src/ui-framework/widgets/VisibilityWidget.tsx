@@ -53,7 +53,6 @@ export interface VisibilityComponentProps {
 }
 
 interface VisibilityTreeState {
-  initialized: boolean;
   activeTree: VisibilityComponentHierarchy;
   showOptions: boolean;
   showSearchBox: boolean;
@@ -72,7 +71,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   constructor(props: any) {
     super(props);
     this.state = {
-      initialized: false, activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
+      activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
       viewport: this.props.activeViewport, selectAll: false, clearAll: false,
     };
   }

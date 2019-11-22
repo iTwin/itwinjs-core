@@ -102,7 +102,6 @@ export class ModelSelectorWidget extends React.Component<
   /** Initializes state to default values */
   private _initState = () => {
     this.state = {
-      expand: true,
       activeView: (this.props.activeView ||
         IModelApp.viewManager.getFirstOpenView())!,
     };

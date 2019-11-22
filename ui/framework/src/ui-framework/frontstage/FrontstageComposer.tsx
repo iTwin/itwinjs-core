@@ -89,7 +89,6 @@ export interface FrontstageRuntimeProps {
  */
 interface FrontstageComposerState {
   allowPointerUpSelection: boolean;
-  frontstageId: string;
   modalFrontstageCount: number;
   nineZone: NineZoneManagerProps;
   widgetTabs: WidgetTabs;
@@ -128,7 +127,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this.state = {
       allowPointerUpSelection: false,
       nineZone,
-      frontstageId: activeFrontstageId,
       modalFrontstageCount: FrontstageManager.modalFrontstageCount,
       widgetTabs: getDefaultWidgetTabs(),
     };
@@ -194,7 +192,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this._frontstageDef = args.activatedFrontstageDef;
 
     // Get the id and nineZoneProps for the current FrontstageDef
-    const frontstageId = this._frontstageDef.id;
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
     const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
     const widgetTabs = this.determineWidgetTabs();
@@ -202,7 +199,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     // istanbul ignore else
     if (this._isMounted)
       this.setState({
-        frontstageId,
         nineZone,
         widgetTabs,
       }, () => {
@@ -266,6 +262,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private renderModalFrontstage(): React.ReactNode {
+    if (this.state.modalFrontstageCount === 0)
+      return null;
+
     const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
     if (!activeModalFrontstage)
       return null;

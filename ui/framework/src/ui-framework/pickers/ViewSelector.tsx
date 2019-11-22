@@ -320,7 +320,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
    */
   public render() {
     if (!this.state.initialized)
-      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises
+      return null;
 
     const { imodel, ...props } = this.props;
 

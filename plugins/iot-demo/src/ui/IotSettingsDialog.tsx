@@ -25,8 +25,6 @@ interface IotSettingsDialogState {
   startTime: Date;
   endTime: Date;
   monitorTime: Date;
-  minDate: Date;
-  maxDate: Date;
 }
 
 /**
@@ -78,8 +76,6 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
       currentTab: 0, sensor: "0", startTime: this.props.dataProvider.minDate, endTime: this.props.dataProvider.maxDate,
       monitorTime: this.props.dataProvider.monitorTime,
       alarm: (this.props.dataProvider.alarmText) ? this.props.dataProvider.alarmText : "None",
-      minDate: this.props.dataProvider.minDate,
-      maxDate: this.props.dataProvider.maxDate,
     };
   }
 
@@ -107,14 +103,6 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
         }
         if (prop.propertyName === this.props.dataProvider.endTimePropertyName) {
           this.setState((_prevState, props) => ({ endTime: props.dataProvider.endTime }));
-          continue;
-        }
-        if (prop.propertyName === this.props.dataProvider.minDatePropertyName) {
-          this.setState((_prevState, props) => ({ minDate: props.dataProvider.minDate }));
-          continue;
-        }
-        if (prop.propertyName === this.props.dataProvider.maxDatePropertyName) {
-          this.setState((_prevState, props) => ({ maxDate: props.dataProvider.maxDate }));
           continue;
         }
       }

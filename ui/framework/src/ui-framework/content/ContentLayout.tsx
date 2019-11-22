@@ -12,7 +12,6 @@ import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { LayoutHorizontalSplitProps, LayoutVerticalSplitProps, ContentLayoutProps, LayoutFragmentProps, LayoutSplitPropsBase } from "./ContentLayoutProps";
 
@@ -491,9 +490,7 @@ export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedE
  */
 interface ContentLayoutState {
   contentLayoutDef: ContentLayoutDef;
-  contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
-  isUiVisible: boolean;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -524,24 +521,16 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 
     this.state = {
       contentLayoutDef: this.props.contentLayout,
-      contentGroup: this.props.contentGroup,
       contentContainer,
-      isUiVisible: UiFramework.getIsUiVisible(),
     };
   }
 
   public componentDidMount() {
     FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
-    UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
-    UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
-  }
-
-  private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState({ isUiVisible: args.visible });
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
@@ -553,7 +542,6 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 
     this.setState({
       contentLayoutDef: args.contentLayout,
-      contentGroup: args.contentGroup,
       contentContainer,
     });
   }

@@ -355,9 +355,6 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
   /** Creates a ListPicker */
   constructor(props: ListPickerPropsExtended) {
     super(props);
-    this.state = {
-      items: this.createItems(props.items),
-    };
   }
 
   // Creates an array of items containing the separator and special requests (all, none, invert)

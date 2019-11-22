@@ -48,7 +48,7 @@ export class OldSpatialContainmentTree extends React.Component<OldSpatialContain
   constructor(props: OldSpatialContainmentTreeProps) {
     super(props);
 
-    this.state = { initialized: false };
+    this.state = {};
   }
 
   /** @internal */

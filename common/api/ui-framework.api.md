@@ -656,8 +656,6 @@ export interface CategoryTreeState {
     // (undocumented)
     filterInfo?: FilterInfo;
     // (undocumented)
-    isLoading: boolean;
-    // (undocumented)
     selectedNodes: string[];
 }
 
@@ -1040,7 +1038,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ContentLayoutState>;
-    }
+}
 
 // @public
 export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> {
@@ -3970,8 +3968,6 @@ export interface SpatialContainmentTreeProps {
 export interface SpatialContainmentTreeState {
     // (undocumented)
     dataProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
-    initialized: false;
 }
 
 // @public
@@ -5041,7 +5037,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
-    render(): JSX.Element;
+    render(): JSX.Element | null;
     static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }

@@ -285,7 +285,6 @@ interface SolarTimelineComponentProps {
 interface SolarTimelineComponentState {
   isPlaying: boolean;     // timeline is currently playing or paused
   isDateOpened: boolean;  // date picker is opened
-  isTimeOpened: boolean;  // time picker is opened
   isSettingsOpened: boolean;  // settings popup is opened
   dayStartMs: number;
   sunRiseOffsetMs: number;
@@ -370,7 +369,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
     this.state = {
       isDateOpened: false,
-      isTimeOpened: false,
       isSettingsOpened: false,
       isPlaying: false,
       dayStartMs,
@@ -525,7 +523,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     this._timeLastCycle = new Date().getTime();
 
     // update the timeline
-    this.setState({ isTimeOpened: false, currentTimeOffsetMs });
+    this.setState({ currentTimeOffsetMs });
   }
 
   private _onCloseDayPicker = () => {

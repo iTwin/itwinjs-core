@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BackgroundMapType } from "@bentley/imodeljs-common";
 import { RealityDataEntry } from "./RealityData";
 import "./RealityDataItem.scss";
 
@@ -16,23 +15,15 @@ interface RealityDataItemProps {
   onVisibilityChange: () => void;
 }
 
-/** State for the [[RealityDataItem]] component */
-interface RealityDataItemState {
-  showMapTypes: boolean;
-  mapType: BackgroundMapType;
-}
-
 /**
  * A reality data list item.
  * @alpha
  */
 // istanbul ignore next
-export class RealityDataItem extends React.Component<RealityDataItemProps, RealityDataItemState> {
+export class RealityDataItem extends React.Component<RealityDataItemProps> {
 
   constructor(props: RealityDataItemProps) {
     super(props);
-
-    this.state = { showMapTypes: false, mapType: BackgroundMapType.Aerial };
   }
 
   private _onToggle = () => {
