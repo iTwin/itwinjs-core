@@ -31,6 +31,7 @@ import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
+import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -1990,6 +1991,11 @@ export abstract class Viewport implements IDisposable {
       if (!pixels)
         return;
 
+      readRect.left = cssPixelsToDevicePixels(readRect.left);
+      readRect.right = cssPixelsToDevicePixels(readRect.right);
+      readRect.bottom = cssPixelsToDevicePixels(readRect.bottom);
+      readRect.top = cssPixelsToDevicePixels(readRect.top);
+
       let maximum = 0;
       let minimum = 1;
       const frac = this._viewFrustum.frustFraction;
@@ -2718,9 +2724,9 @@ export abstract class Viewport implements IDisposable {
   public addDecorations(_decorations: Decorations): void { }
 
   /** Read selected data about each pixel within a rectangular region of this Viewport.
-   * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
+   * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
-   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
+   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    * @beta
@@ -2762,7 +2768,11 @@ export abstract class Viewport implements IDisposable {
     const vf = this._viewFrustum;
 
     const result = undefined !== out ? out : new Point3d();
-    const viewRect = this.viewRect;
+    const viewRect = this.viewRect.clone();
+    viewRect.left = cssPixelsToDevicePixels(viewRect.left);
+    viewRect.right = cssPixelsToDevicePixels(viewRect.right);
+    viewRect.bottom = cssPixelsToDevicePixels(viewRect.bottom);
+    viewRect.top = cssPixelsToDevicePixels(viewRect.top);
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
     if (vf.frustFraction < 1.0)

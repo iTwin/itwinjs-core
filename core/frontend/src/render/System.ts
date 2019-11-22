@@ -556,6 +556,7 @@ export namespace Pixel {
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
+   * The contents of the pixel buffer will be specified using device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
    * @see [[Viewport.readPixels]].
    */
   export interface Buffer {
@@ -1285,18 +1286,25 @@ export namespace RenderSystem {
      * Default value: false
      *
      * @internal
-     *
      */
-
     filterMapTextures?: boolean;
+
     /** If true anisotropic filtering is not applied to draped map tile textures.
      *
      * Default value: true
      *
      * @internal
-     *
      */
     filterMapDrapeTextures?: boolean;
+
+    /** If true viewports will respect the DPI of the display.  See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
+     *
+     * Default value: true
+     *
+     * @alpha
+     */
+    dpiAwareViewports?: boolean;
+
     /** @internal
      * @deprecated This setting no longer has any effect.
      */

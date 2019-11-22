@@ -128,6 +128,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
  * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
+ * SVT_DISABLE_DPI_AWARE_VIEWPORTS
+  * If defined, do not respect the DPI of the system when rendering viewports.
 
 ## Key-ins
 

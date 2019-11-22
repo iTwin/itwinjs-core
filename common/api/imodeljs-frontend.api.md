@@ -1846,6 +1846,9 @@ export function createClassifierTileTreeReference(classifiers: SpatialClassifier
 // @internal
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
+// @alpha
+export function cssPixelsToDevicePixels(cssPixels: number): number;
+
 // @internal (undocumented)
 export class CurrentInputState {
     // (undocumented)
@@ -5389,6 +5392,9 @@ export enum QuantityType {
 }
 
 // @alpha
+export function queryDevicePixelRatio(): number;
+
+// @alpha
 export interface RangeEditorParams extends BasePropertyEditorParams {
     maximum?: number;
     minimum?: number;
@@ -5897,6 +5903,8 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @alpha
+        dpiAwareViewports?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
         // @internal

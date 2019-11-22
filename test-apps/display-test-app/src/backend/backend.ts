@@ -67,6 +67,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;
 
+  if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
+    configuration.dpiAwareViewports = false;
+
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");

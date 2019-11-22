@@ -88,6 +88,7 @@ import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
+import { cssPixelsToDevicePixels, queryDevicePixelRatio } from "../DevicePixelRatio";
 
 // tslint:disable:no-const-enum
 
@@ -1050,6 +1051,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
     if (this.performanceMetrics) this.performanceMetrics.startNewFrame();
 
+    rect.left = cssPixelsToDevicePixels(rect.left);
+    rect.right = cssPixelsToDevicePixels(rect.right);
+    rect.bottom = cssPixelsToDevicePixels(rect.bottom);
+    rect.top = cssPixelsToDevicePixels(rect.top);
+
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
@@ -1284,7 +1290,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public copyImageToCanvas(): HTMLCanvasElement {
     const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
-    return undefined !== canvas ? canvas : document.createElement("canvas");
+    const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
+    const pixelRatio = queryDevicePixelRatio();
+    retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+    return retCanvas;
   }
 
   public drawPlanarClassifiers() {
@@ -1321,21 +1330,30 @@ class CanvasState {
   private _width = 0;
   private _height = 0;
   public needsClear = false;
+  private _isWebGLCanvas: boolean;
 
   public constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
+    this._isWebGLCanvas = this.canvas === System.instance.canvas;
   }
 
   // Returns true if the rect actually changed.
-  public updateDimensions(): boolean {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+  public updateDimensions(pixelRatio: number = 1): boolean {
+    const w = cssPixelsToDevicePixels(this.canvas.clientWidth);
+    const h = cssPixelsToDevicePixels(this.canvas.clientHeight);
     if (w === this._width && h === this._height)
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
     this.canvas.width = this._width = w;
     this.canvas.height = this._height = h;
+
+    if (!this._isWebGLCanvas) {
+      const ctx = this.canvas.getContext("2d")!;
+      ctx.scale(pixelRatio, pixelRatio); // apply the pixelRatio as a scale on the 2d context for drawing of decorations, etc.
+      ctx.save();
+    }
+
     return true;
   }
 
@@ -1406,8 +1424,9 @@ export class OnScreenTarget extends Target {
   }
 
   public updateViewRect(): boolean {
-    const changed2d = this._2dCanvas.updateDimensions();
-    const changedWebGL = this._webglCanvas.updateDimensions();
+    const pixelRatio = queryDevicePixelRatio();
+    const changed2d = this._2dCanvas.updateDimensions(pixelRatio);
+    const changedWebGL = this._webglCanvas.updateDimensions(pixelRatio);
     this.renderRect.init(0, 0, this._curCanvas.width, this._curCanvas.height);
     return this._usingWebGLCanvas ? changedWebGL : changed2d;
   }
@@ -1427,7 +1446,6 @@ export class OnScreenTarget extends Target {
       system.canvas.width = viewRect.width;
     if (system.canvas.height < viewRect.height)
       system.canvas.height = viewRect.height;
-
     assert(system.context.drawingBufferWidth >= viewRect.width, "offscreen context dimensions don't match onscreen");
     assert(system.context.drawingBufferHeight >= viewRect.height, "offscreen context dimensions don't match onscreen");
   }
@@ -1463,14 +1481,20 @@ export class OnScreenTarget extends Target {
     if (null !== onscreenContext) {
       const w = this.viewRect.width, h = this.viewRect.height;
       const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
+      onscreenContext.save();
+      onscreenContext.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for drawImage() call below.
       onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
+      onscreenContext.restore();
     }
   }
 
   protected drawOverlayDecorations(): void {
     const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
     if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
       ctx.clearRect(0, 0, this._2dCanvas.width, this._2dCanvas.height);
+      ctx.restore();
       this._2dCanvas.needsClear = false;
     }
 

@@ -13,7 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology,
+  FeatureOverrideProvider, FeatureSymbology, cssPixelsToDevicePixels, queryDevicePixelRatio,
 } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -366,9 +366,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const w = configs.view!.width * devicePixelRatio;
-  const h = configs.view!.height * devicePixelRatio;
+  const w = cssPixelsToDevicePixels(configs.view!.width);
+  const h = cssPixelsToDevicePixels(configs.view!.height);
   rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
@@ -742,11 +741,10 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
-    const devicePixelRatio = window.devicePixelRatio || 1;
-
     // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
-    viewSize.width /= devicePixelRatio;
-    viewSize.height /= devicePixelRatio;
+    const pixelRatio = queryDevicePixelRatio();
+    viewSize.width /= pixelRatio;
+    viewSize.height /= pixelRatio;
 
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";

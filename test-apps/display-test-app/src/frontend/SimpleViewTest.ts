@@ -138,6 +138,7 @@ async function main() {
     logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
+    dpiAwareViewports: false !== configuration.dpiAwareViewports,
   };
 
   if (configuration.disableInstancing)
