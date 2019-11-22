@@ -9,7 +9,7 @@ import * as zlib from "zlib";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
-  service: "azure" | "external";
+  service: "azure" | "alicloud" | "external";
   account: string;
   accessKey: string;
 }

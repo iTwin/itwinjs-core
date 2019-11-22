@@ -156,6 +156,19 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
+// @beta (undocumented)
+export class AliCloudStorageService extends CloudStorageService {
+    constructor(credentials: CloudStorageServiceCredentials);
+    // (undocumented)
+    id: CloudStorageProvider;
+    // (undocumented)
+    listContainer(name: string, marker: string, count: number): Promise<string[]>;
+    // (undocumented)
+    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
+    // (undocumented)
+    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
+
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
@@ -617,7 +630,7 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
-    service: "azure" | "external";
+    service: "azure" | "alicloud" | "external";
 }
 
 // @beta (undocumented)
