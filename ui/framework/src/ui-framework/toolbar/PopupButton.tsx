@@ -20,6 +20,7 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel
 import "./PopupButton.scss";
 import { ItemProps } from "../shared/ItemProps";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 
 // cSpell:ignore popupbutton
 
@@ -158,22 +159,28 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     const icon = <Icon iconSpec={this.props.iconSpec} />;
     const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
     return (
-      <ExpandableItem
-        {...this.props}
-        hideIndicator
-        panel={this.getExpandedContent()}
-      >
-        <div ref={this._ref}>
-          <Item
-            badge={badge}
-            icon={icon}
-            onKeyDown={this._handleKeyDown}
-            onClick={this._handleClick}
-            onSizeKnown={this.props.onSizeKnown}
-            title={this.label}
-          />
-        </div>
-      </ExpandableItem>
+      <ToolbarDragInteractionContext.Consumer>
+        {(isEnabled) => {
+          return (
+            <ExpandableItem
+              {...this.props}
+              hideIndicator={isEnabled}
+              panel={this.getExpandedContent()}
+            >
+              <div ref={this._ref}>
+                <Item
+                  badge={badge}
+                  icon={icon}
+                  onKeyDown={this._handleKeyDown}
+                  onClick={this._handleClick}
+                  onSizeKnown={this.props.onSizeKnown}
+                  title={this.label}
+                />
+              </div>
+            </ExpandableItem>
+          );
+        }}
+      </ToolbarDragInteractionContext.Consumer>
     );
   }
 

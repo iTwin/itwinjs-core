@@ -2335,6 +2335,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     // @internal (undocumented)
     static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef;
     // (undocumented)
+    defaultActiveItemId?: string;
+    // (undocumented)
     direction: Direction;
     // (undocumented)
     directionExplicit: boolean;
@@ -4594,6 +4596,9 @@ export class ToolbarButtonHelper {
     static searchToolbarsByTitle(title: string, horizontal: boolean): HTMLButtonElement | null;
     static searchVerticalToolbarsByTitle(title: string): HTMLButtonElement | null;
 }
+
+// @beta
+export const ToolbarDragInteractionContext: React.Context<boolean>;
 
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {

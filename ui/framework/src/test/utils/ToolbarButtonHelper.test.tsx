@@ -96,7 +96,7 @@ describe("Locate Toolbar items", () => {
     const foundHorizontalToolbarItem = ToolbarButtonHelper.searchHorizontalToolbarsByTitle("SampleApp:buttons.tool1");
     expect(foundHorizontalToolbarItem).not.to.be.null;
 
-    const foundGroupToolbarItem = ToolbarButtonHelper.searchVerticalToolbarsByTitle("SampleApp:group:tool1");
+    const foundGroupToolbarItem = ToolbarButtonHelper.searchVerticalToolbarsByTitle("SampleApp:group");
     expect(foundGroupToolbarItem).not.to.be.null;
 
     const foundVerticalToolbarItem = ToolbarButtonHelper.getToolbarButtonByTitle("SampleApp:buttons.tool2");

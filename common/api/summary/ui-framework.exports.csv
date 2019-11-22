@@ -452,6 +452,7 @@ internal;ToolAssistanceFieldDefaultProps = Pick
 beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
+beta;ToolbarDragInteractionContext: React.Context
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 

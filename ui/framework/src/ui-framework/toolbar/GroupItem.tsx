@@ -27,6 +27,7 @@ import { GroupItemProps } from "../shared/GroupItemProps";
 import { ItemDefFactory } from "../shared/ItemDefFactory";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -51,6 +52,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   public itemsInColumn: number;
   public items: AnyItemDef[];
   public directionExplicit: boolean;
+  public defaultActiveItemId?: string;
 
   /** @internal */
   public overflow: boolean = false;
@@ -75,6 +77,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey); // tslint:disable-line: deprecation
     this.items = groupItemProps.items;
+    this.defaultActiveItemId = groupItemProps.defaultActiveItemId;
   }
 
   /** @internal */
@@ -142,8 +145,8 @@ export class GroupItemDef extends ActionButtonItemDef {
 
     return (
       <GroupItem
-        key={key}
         groupItemDef={this}
+        key={key}
         onSizeKnown={this.handleSizeKnown}
       />
     );
@@ -170,7 +173,6 @@ interface ToolGroupTray {
 type ToolGroupTrayMap = Map<string, ToolGroupTray>;
 
 interface GroupItemComponentProps extends CommonProps {
-  defaultActiveItemId?: string;
   groupItemDef: GroupItemDef;
   onSizeKnown?: (size: SizeProps) => void;
 }
@@ -201,7 +203,12 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     super(props);
 
     this._loadChildSyncIds(props);
-    this.state = this.getGroupItemState(this.props);
+    const state = this.getGroupItemState(this.props);
+    const activeItemId = this.props.groupItemDef.defaultActiveItemId !== undefined ? this.props.groupItemDef.defaultActiveItemId : getFirstItemId(this.props.groupItemDef);
+    this.state = {
+      ...state,
+      activeItemId,
+    };
   }
 
   private _loadChildSyncIds(props: GroupItemComponentProps) {
@@ -269,7 +276,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     return false;
   }
 
-  private getGroupItemState(props: GroupItemComponentProps): GroupItemState {
+  private getGroupItemState(props: GroupItemComponentProps) {
     const groupItemDef = props.groupItemDef;
     // Separate into trays
     const trays = new Map<string, ToolGroupTray>();
@@ -277,9 +284,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
     this.processGroupItemDef(groupItemDef, trayId, trays);
 
-    const activeItemId = props.defaultActiveItemId !== undefined ? props.defaultActiveItemId : getFirstItemId(props.groupItemDef);
-    const state = {
-      activeItemId,
+    return {
       activeToolId: FrontstageManager.activeToolId,
       groupItemDef,
       isEnabled: groupItemDef.isEnabled,
@@ -289,8 +294,6 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       backTrays: [],
       trays,
     };
-
-    return state;
   }
 
   private resetTrayId(): string {
@@ -374,39 +377,59 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       return null;
 
     const { groupItemDef, className, ...props } = this.props;
-    const iconSpec: IconSpec = groupItemDef.overflow ? "nz-ellipsis" : activeItem.iconSpec;
-    const icon = <Icon iconSpec={iconSpec} />;
     const classNames = classnames(
       className,
       groupItemDef.overflow && "nz-toolbar-item-overflow",
     );
     const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
-
     return (
       <ToolbarDirectionContext.Consumer>
         {(direction) => (
-          <ExpandableItem
-            {...props}
-            className={classNames}
-            key={this.state.groupItemDef.id}
-            panel={this.getGroupTray()}
-          >
-            <div ref={this._ref}>
-              <ItemWithDragInteraction
-                direction={direction}
-                className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-                isActive={groupItemDef.overflow ? false : this.state.activeToolId === this.state.activeItemId}
-                isDisabled={!this.state.isEnabled}
-                title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
-                onClick={groupItemDef.overflow ? this._handleOverflowClick : this._handleClick}
-                onOpenPanel={this._handleOpenPanel}
-                onKeyDown={this._handleKeyDown}
-                icon={icon}
-                onSizeKnown={this.props.onSizeKnown}
-                badge={badge}
-              />
-            </div>
-          </ExpandableItem>
+          <ToolbarDragInteractionContext.Consumer>
+            {(dragInteraction) => (
+              <ExpandableItem
+                {...props}
+                className={classNames}
+                key={this.state.groupItemDef.id}
+                panel={this.getGroupTray(dragInteraction)}
+              >
+                {dragInteraction ? (
+                  <div ref={this._ref}>
+                    <ItemWithDragInteraction
+                      badge={badge}
+                      className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+                      direction={direction}
+                      icon={<Icon
+                        iconSpec={groupItemDef.overflow ? "nz-ellipsis" : activeItem.iconSpec}
+                      />}
+                      isActive={groupItemDef.overflow ? false : this.state.activeToolId === this.state.activeItemId}
+                      isDisabled={!this.state.isEnabled}
+                      onClick={groupItemDef.overflow ? this._handleOverflowClick : this._handleDragInteractionClick}
+                      onKeyDown={this._handleKeyDown}
+                      onOpenPanel={this._handleOpenPanel}
+                      onSizeKnown={this.props.onSizeKnown}
+                      title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
+                    />
+                  </div>
+                ) : (
+                    <div ref={this._ref}>
+                      <Item
+                        badge={badge}
+                        className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+                        icon={<Icon
+                          iconSpec={groupItemDef.overflow ? "nz-ellipsis" : groupItemDef.iconSpec}
+                        />}
+                        isDisabled={!this.state.isEnabled}
+                        onClick={this._handleClick}
+                        onKeyDown={this._handleKeyDown}
+                        onSizeKnown={this.props.onSizeKnown}
+                        title={this.state.groupItemDef.label}
+                      />
+                    </div>
+                  )}
+              </ExpandableItem>
+            )}
+          </ToolbarDragInteractionContext.Consumer>
         )}
       </ToolbarDirectionContext.Consumer>
     );
@@ -422,6 +445,12 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   }
 
   private _handleClick = () => {
+    this.setState((prevState) => ({
+      isPressed: !prevState.isPressed,
+    }));
+  }
+
+  private _handleDragInteractionClick = () => {
     const activeItem = this.getItemById(this.state.activeItemId);
     activeItem && activeItem instanceof ActionButtonItemDef && activeItem.execute();
   }
@@ -439,12 +468,16 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     });
   }
 
-  private _handleOutsideClick = (e: MouseEvent) => {
+  private _handleDragInteractionOutsideClick = (e: MouseEvent) => {
     if (this.props.groupItemDef.overflow) {
       this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
       return;
     }
     this.closeGroupButton();
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
   }
 
   private _handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
@@ -462,12 +495,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   private closeGroupButton() {
     const trayId = this.resetTrayId();
 
-    this.setState((prevState) => ({
-      ...prevState,
+    this.setState({
       isPressed: false,
       trayId,
       backTrays: [],
-    }));
+    });
   }
 
   private handleToolGroupItemClicked(trayKey: string, itemKey: string) {
@@ -486,7 +518,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     );
   }
 
-  private getGroupTray(): React.ReactNode {
+  private getGroupTray(dragInteraction: boolean): React.ReactNode {
     if (!this.state.isPressed)
       return undefined;
 
@@ -496,6 +528,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
           const tray = this._tray;
           const itemsInColumn = tray.groupItemDef.itemsInColumn;
           const items = [...tray.items.keys()];
+          activateOnPointerUp = activateOnPointerUp && dragInteraction;
 
           // Divide items equally between columns.
           const numberOfColumns = Math.ceil(items.length / itemsInColumn);
@@ -578,7 +611,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 columns={columns}
                 onBack={this._handleBack}
                 onBackPointerUp={activateOnPointerUp ? this._handleBack : undefined}
-                onOutsideClick={this._handleOutsideClick}
+                onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : this._handleOutsideClick}
                 title={tray.title}
               />
             );
@@ -586,7 +619,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
           return (
             <ToolGroup
               columns={columns}
-              onOutsideClick={this._handleOutsideClick}
+              onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : this._handleOutsideClick}
               title={tray.title}
             />
           );
@@ -609,7 +642,6 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : prevState.trayId;
       const backTrays = prevState.backTrays.slice(0, -1);
       return {
-        ...prevState,
         trayId,
         backTrays,
       };
@@ -628,21 +660,20 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
 /** Properties for the [[GroupButton]] React component
  * @public
- */
+ */
 export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 
 /** Group Button React component
  * @public
- */
+ */
 export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {  // tslint:disable-line:variable-name
   const groupItemDef = new GroupItemDef(props);
   groupItemDef.resolveItems();
-
   return (
     <GroupItem
       {...props}
-      key={groupItemDef.id}
       groupItemDef={groupItemDef}
+      key={groupItemDef.id}
     />
   );
 };

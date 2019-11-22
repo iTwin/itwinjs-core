@@ -12,21 +12,9 @@ export class ToolbarButtonHelper {
 
   public static searchToolbarsByTitle(title: string, horizontal: boolean): HTMLButtonElement | null {
     // first look for simple tool buttons
-    const nodeList = document.documentElement.querySelectorAll(`div.nz-toolbar-items.nz-${horizontal ? "horizontal" : "vertical"}.nz-items > button`);
+    const nodeList = document.documentElement.querySelectorAll(`div.nz-toolbar-items.nz-${horizontal ? "horizontal" : "vertical"}.nz-items .nz-toolbar-item-item`);
     if (nodeList && nodeList.length > 0) {
       for (const node of nodeList) {
-        const button = node as HTMLButtonElement;
-        if (button.title === title) {
-          return button;
-        }
-      }
-    }
-
-    // next look for expandable buttons
-
-    const expandableNodeList = document.documentElement.querySelectorAll(`div.nz-toolbar-items.nz-${horizontal ? "horizontal" : "vertical"}.nz-items > * > * > * > button`);
-    if (expandableNodeList && expandableNodeList.length > 0) {
-      for (const node of expandableNodeList) {
         const button = node as HTMLButtonElement;
         if (button.title === title) {
           return button;

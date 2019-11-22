@@ -14,6 +14,7 @@ import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -201,20 +202,26 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
 
     return (
-      <ExpandableItem
-        {...this.props}
-        hideIndicator
-        panel={this.getExpandedContent()}
-      >
-        <div ref={this._ref}>
-          <Item
-            icon={icon}
-            onClick={this._handleClick}
-            onSizeKnown={this.props.onSizeKnown}
-            title={this.props.title}
-          />
-        </div>
-      </ExpandableItem>
+      <ToolbarDragInteractionContext.Consumer>
+        {(isEnabled) => {
+          return (
+            <ExpandableItem
+              {...this.props}
+              hideIndicator={isEnabled}
+              panel={this.getExpandedContent()}
+            >
+              <div ref={this._ref}>
+                <Item
+                  icon={icon}
+                  onClick={this._handleClick}
+                  onSizeKnown={this.props.onSizeKnown}
+                  title={this.props.title}
+                />
+              </div>
+            </ExpandableItem>
+          );
+        }}
+      </ToolbarDragInteractionContext.Consumer>
     );
   }
 

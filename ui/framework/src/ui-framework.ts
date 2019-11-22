@@ -139,6 +139,7 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
 
 export * from "./ui-framework/toolbar/ActionItemButton";
+export * from "./ui-framework/toolbar/DragInteraction";
 export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";

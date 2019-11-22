@@ -25,6 +25,7 @@ import {
   GroupItemDef,
   ConditionalItemDef,
   BaseItemState,
+  ToolbarDragInteractionContext,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { PluginUiProvider, PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
@@ -384,11 +385,13 @@ describe("Test Plugin items", () => {
     const component = render(
       <div style={parentDivStyle}>
         <div style={toolWidgetDivStyle} className="nz-zones-zone">
-          <ToolWidget
-            appButton={backstageToggleCommand}
-            horizontalItems={hItemList}
-            verticalItems={vItemList}
-          />
+          <ToolbarDragInteractionContext.Provider value={true}>
+            <ToolWidget
+              appButton={backstageToggleCommand}
+              horizontalItems={hItemList}
+              verticalItems={vItemList}
+            />
+          </ToolbarDragInteractionContext.Provider>
         </div>
       </div>,
     );
