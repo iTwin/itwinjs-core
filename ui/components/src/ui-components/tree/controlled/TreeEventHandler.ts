@@ -4,28 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import {
-  TreeEvents,
-  TreeNodeEvent,
-  TreeCheckboxStateChangeEvent,
-  TreeSelectionModificationEvent,
-  TreeSelectionReplacementEvent,
-} from "./TreeEvents";
-import { TreeModelMutator } from "./internal/TreeModelMutator";
-import { TreeModelSource } from "./TreeModelSource";
-
 import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { TreeDataProvider } from "../TreeDataProvider";
+import {
+  TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent,
+  TreeSelectionModificationEvent, TreeSelectionReplacementEvent,
+} from "./TreeEvents";
+import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
+import { TreeModelSource } from "./TreeModelSource";
 
 /**
  * Data structure that describes tree event handler params.
  * @alpha
  */
 export interface TreeEventHandlerParams {
-  modelSource: TreeModelSource<TreeDataProvider>;
+  modelSource: TreeModelSource;
+  nodeLoader: ITreeNodeLoader;
   collapsedChildrenDisposalEnabled?: boolean;
 }
 
@@ -34,15 +31,13 @@ export interface TreeEventHandlerParams {
  * @alpha
  */
 export class TreeEventHandler implements TreeEvents {
-  private _modelSource: TreeModelSource<TreeDataProvider>;
   private _modelMutator: TreeModelMutator;
 
   private _disposed = new Subject();
   private _selectionReplaced = new Subject();
 
   constructor(params: TreeEventHandlerParams) {
-    this._modelSource = params.modelSource;
-    this._modelMutator = new TreeModelMutator(this._modelSource, !!params.collapsedChildrenDisposalEnabled);
+    this._modelMutator = new TreeModelMutator(params.modelSource, params.nodeLoader, !!params.collapsedChildrenDisposalEnabled);
   }
 
   public dispose() {

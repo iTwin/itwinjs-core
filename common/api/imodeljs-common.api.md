@@ -563,7 +563,7 @@ export class CartographicRange {
     }
 
 // @public
-export interface CategoryProps extends ElementProps {
+export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -1545,10 +1545,11 @@ export interface EntityMetaDataProps {
 
 // @public
 export interface EntityProps {
-    // (undocumented)
-    [propName: string]: any;
     classFullName: string;
     id?: Id64String;
+    jsonProperties?: {
+        [key: string]: any;
+    };
 }
 
 // @public
@@ -1951,6 +1952,11 @@ export class GeometryStreamBuilder {
     appendSubCategoryChange(subCategoryId: Id64String): boolean;
     appendTextString(textString: TextString): boolean;
     readonly geometryStream: GeometryStreamProps;
+    // @internal (undocumented)
+    getHeader(): GeometryStreamHeaderProps | undefined;
+    isViewIndependent: boolean;
+    // @internal (undocumented)
+    obtainHeader(): GeometryStreamHeaderProps;
     setLocalToWorld(localToWorld?: Transform): void;
     setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
     setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
@@ -1967,6 +1973,8 @@ export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     // (undocumented)
     geomPart?: GeometryPartInstanceProps;
     // (undocumented)
+    header?: GeometryStreamHeaderProps;
+    // (undocumented)
     material?: MaterialProps;
     // (undocumented)
     pattern?: AreaPattern.ParamsProps;
@@ -1979,15 +1987,29 @@ export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
 }
 
 // @public
+export enum GeometryStreamFlags {
+    None = 0,
+    ViewIndependent = 1
+}
+
+// @public
+export interface GeometryStreamHeaderProps {
+    flags: GeometryStreamFlags;
+}
+
+// @public
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry>;
     constructor(geometryStream: GeometryStreamProps, category?: Id64String);
     entry: GeometryStreamIteratorEntry;
+    readonly flags: GeometryStreamFlags;
     static fromGeometricElement2d(element: GeometricElement2dProps): GeometryStreamIterator;
     static fromGeometricElement3d(element: GeometricElement3dProps): GeometryStreamIterator;
     static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
     geometryStream: GeometryStreamProps;
+    // @internal (undocumented)
+    readonly isViewIndependent: boolean;
     next(): IteratorResult<GeometryStreamIteratorEntry>;
     partToWorld(): Transform | undefined;
     setLocalToWorld(localToWorld?: Transform): void;
@@ -2048,6 +2070,7 @@ export type GeometryStreamProps = GeometryStreamEntryProps[];
 // @alpha
 export interface GeometrySummaryOptions {
     geometryVerbosity?: GeometrySummaryVerbosity;
+    includePartReferences?: "2d" | "3d";
     includePlacement?: boolean;
     verboseSymbology?: boolean;
 }
@@ -2611,6 +2634,8 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     getTileCacheContainerUrl(_tokenProps: IModelTokenProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
+    // @internal
+    purgeTileTrees(_tokenProps: IModelTokenProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
@@ -2895,7 +2920,7 @@ export namespace LineStyle {
 }
 
 // @beta
-export interface LineStyleProps extends ElementProps {
+export interface LineStyleProps extends DefinitionElementProps {
     // (undocumented)
     data: string;
     // (undocumented)
@@ -4562,9 +4587,10 @@ export interface SceneLightsProps {
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
-    clipGeometry?: any;
+    clipGeometry?: string;
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
+    viewAttachment?: Id64String;
 }
 
 // @public
@@ -4778,6 +4804,7 @@ export namespace SolarShadows {
     }
     export class Settings implements Props {
         constructor(props?: SolarShadowProps);
+        // @alpha
         bias: number;
         // (undocumented)
         clone(result?: SolarShadows.Settings): SolarShadows.Settings;
@@ -4922,7 +4949,7 @@ export class SubCategoryOverride {
 }
 
 // @public
-export interface SubCategoryProps extends ElementProps {
+export interface SubCategoryProps extends DefinitionElementProps {
     // (undocumented)
     appearance?: SubCategoryAppearance.Props;
     // (undocumented)

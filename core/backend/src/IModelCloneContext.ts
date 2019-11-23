@@ -38,9 +38,10 @@ export class IModelCloneContext {
     this._nativeContext.dispose();
   }
 
-  /** Add a rule that remaps the specified source CodeSpec to the specified target CodeSpec.
+  /** Add a rule that remaps the specified source [CodeSpec]($common) to the specified target [CodeSpec]($common).
    * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.
    * @param targetCodeSpecName The name of the CodeSpec from the target iModel.
+   * @throws [[IModelError]] if either CodeSpec could not be found.
    */
   public remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void {
     const sourceCodeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(sourceCodeSpecName);
@@ -59,14 +60,14 @@ export class IModelCloneContext {
   }
 
   /** Look up a target CodeSpecId from the source CodeSpecId.
-   * @returns the target CodeSpecId
+   * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetCodeSpecId(sourceId: Id64String): Id64String {
     return this._nativeContext.findCodeSpecId(sourceId);
   }
 
   /** Look up a target ElementId from the source ElementId.
-   * @returns the target ElementId
+   * @returns the target ElementId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetElementId(sourceElementId: Id64String): Id64String {
     return this._nativeContext.findElementId(sourceElementId);

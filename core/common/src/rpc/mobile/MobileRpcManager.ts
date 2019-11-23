@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
@@ -59,7 +61,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get isMobileBackend() { return interop !== null; }
 
   /** Check if running backend running on mobile */
-  public static get isMobileFrontend() { return this.platform !== undefined; }
+  public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
 
   /** Check if running backend running on wkwebview on ios */
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }

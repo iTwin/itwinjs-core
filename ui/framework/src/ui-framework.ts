@@ -92,9 +92,17 @@ export * from "./ui-framework/shared/ToolItemDef";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 
+export * from "./ui-framework/statusbar/StatusBar";
+export * from "./ui-framework/statusbar/StatusBarWidgetControl";
+export * from "./ui-framework/statusbar/StatusBarComposer";
+export * from "./ui-framework/statusbar/StatusBarItem";
+export * from "./ui-framework/statusbar/StatusBarItemsManager";
+export * from "./ui-framework/statusbar/StatusBarItemUtilities";
+export * from "./ui-framework/statusbar/StatusBarManager";
+export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
+export * from "./ui-framework/statusbar/withStatusFieldProps";
+
 export * from "./ui-framework/widgets/NavigationWidget";
-export * from "./ui-framework/widgets/StatusBar";
-export * from "./ui-framework/widgets/StatusBarWidgetControl";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
 export * from "./ui-framework/widgets/Widget";
@@ -106,6 +114,7 @@ export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";
 export * from "./ui-framework/widgets/DefaultNavigationWidget";
+export * from "./ui-framework/widgets/ReviewToolWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -118,7 +127,7 @@ export * from "./ui-framework/zones/toolsettings/ToolUiManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 
-export * from "./ui-framework/tileloading/TileLoadingIndicator";
+export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";
 
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
@@ -188,6 +197,10 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
+
+export * from "./ui-framework/selection/SelectionContextItemDef";
+export * from "./ui-framework/selection/SelectionContextUtilities";
+export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";

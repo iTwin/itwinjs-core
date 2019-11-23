@@ -12,6 +12,7 @@ import { createRect } from "../Utils";
 import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
 import { VerticalAnchorHelpers, VerticalAnchor, ResizeHandle } from "../../ui-ninezone/widget/Stacked";
 import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
+import { DisabledResizeHandles } from "../../ui-ninezone/utilities/DisabledResizeHandles";
 
 describe("<Stacked />", () => {
   let createRefStub: sinon.SinonStub | undefined;
@@ -496,6 +497,15 @@ describe("<Stacked />", () => {
       bounds: new Rectangle(),
     });
     spy.notCalled.should.true;
+  });
+
+  it("should disable resize handles", () => {
+    shallow(<Stacked
+      disabledResizeHandles={DisabledResizeHandles.Left | DisabledResizeHandles.Bottom}
+      horizontalAnchor={HorizontalAnchor.Right}
+      onResize={sinon.spy()}
+      verticalAnchor={VerticalAnchor.Middle}
+    />).should.matchSnapshot();
   });
 });
 

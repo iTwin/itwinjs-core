@@ -10,7 +10,7 @@ import { BadgeType } from "@bentley/ui-abstract";
 import { CommonProps, PointProps, RectangleProps, Rectangle, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
-  WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers,
+  WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers, DisabledResizeHandles,
 } from "@bentley/ui-ninezone";
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
@@ -37,6 +37,7 @@ export type WidgetTabs = { readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTa
  */
 export interface WidgetStackProps extends CommonProps {
   activeTabIndex: number;
+  disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   fillZone: boolean;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -67,8 +68,8 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
     return (
       <NZ_WidgetStack
         className={this.props.className}
-        style={this.props.style}
         contentRef={this.props.openWidgetId ? this.props.getWidgetContentRef(this.props.openWidgetId) : undefined}
+        disabledResizeHandles={this.props.disabledResizeHandles}
         fillZone={this.props.fillZone || this.props.isInStagePanel}
         horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
@@ -79,6 +80,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
         onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         onResize={this.props.isInStagePanel ? undefined : this._handleOnWidgetResize}
         ref={this._widgetStack}
+        style={this.props.style}
         tabs={<WidgetStackTabs
           activeTabIndex={this.props.activeTabIndex}
           draggedWidget={this.props.draggedWidget}

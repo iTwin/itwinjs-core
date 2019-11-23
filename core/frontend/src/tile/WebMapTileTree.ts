@@ -34,7 +34,6 @@ import {
   Angle,
   Matrix4d,
   Plane3dByOriginAndUnitNormal,
-  Point2d,
   Point3d,
   Point4d,
   Range1d,
@@ -43,10 +42,10 @@ import {
   Range3dProps,
   Transform,
   TransformProps,
-  Vector3d,
   XYZProps,
+  Vector3d,
 } from "@bentley/geometry-core";
-import { TileLoader, TileTree } from "./TileTree";
+import { ContextTileLoader, TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
@@ -54,9 +53,8 @@ import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelConnection } from "../IModelConnection";
-import { DecorateContext, SceneContext } from "../ViewContext";
+import { SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { RenderClipVolume, RenderSystem, PackedFeatureTable } from "../render/System";
 import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
 import { MapTileTree, MapTile } from "./MapTileTree";
@@ -160,18 +158,17 @@ export class WebMapTileProps implements TileProps {
     this.range = WebMapTileProps._scratchRange.toJSON();
 
     this.contentId = thisId;
-    this.maximumSize = (0 === level) ? 0.0 : 256;
+    this.maximumSize = (0 === level) ? 0.0 : 512;
   }
 }
 
 /** @internal */
 export interface MapTileGeometryAttributionProvider {
-  getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
-  addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
+  getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
 }
 
 /** @internal */
-export abstract class MapTileLoaderBase extends TileLoader {
+export abstract class MapTileLoaderBase extends ContextTileLoader {
   protected _applyLights = false;
   protected _featureTable: PackedFeatureTable;
   public get heightRange(): Range1d | undefined { return this._heightRange; }
@@ -187,15 +184,9 @@ export abstract class MapTileLoaderBase extends TileLoader {
     this._heightRange = (heightRange === undefined) ? undefined : heightRange.clone();
   }
 
-  public get parentsAndChildrenExclusive(): boolean { return false; }
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Map; }
   public tileRequiresLoading(params: Tile.Params): boolean {
     return 0.0 !== params.maximumSize;
-  }
-  public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
-    // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
-    // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
-    return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
   }
   public abstract async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
   public abstract get maxDepth(): number;
@@ -244,6 +235,7 @@ class WebMapDrawArgs extends Tile.DrawArgs {
 /** @internal */
 export class WebMapTileLoader extends MapTileLoaderBase {
   public set geometryAttributionProvider(provider: MapTileGeometryAttributionProvider) { if (this._imageryProvider) this._imageryProvider.geometryAttributionProvider = provider; }
+  public get parentsAndChildrenExclusive(): boolean { return false; }     // Allow map tiles to draw both parent and children -- this will cause these to be displayed with parents first.
   public get imageryProvider(): ImageryProvider {
     return this._imageryProvider;
   }
@@ -263,7 +255,6 @@ export class WebMapTileLoader extends MapTileLoaderBase {
 
     assert(data instanceof ImageSource);
     assert(tile instanceof MapTile);
-    await (tile as MapTile).reprojectCorners();
     const content: Tile.Content = {};
     const system = IModelApp.renderSystem;
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
@@ -298,6 +289,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
   abstract get geometryAttributionProvider(): MapTileGeometryAttributionProvider;
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Terrain; }
+  public get clipLowResolutionTiles(): boolean { return true; }
 }
 
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
@@ -305,16 +297,14 @@ export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
  */
 export abstract class ImageryProvider {
   protected _requestContext = new ClientRequestContext("");
-  protected _geometryAttributionProvider?: MapTileGeometryAttributionProvider;
+  public geometryAttributionProvider?: MapTileGeometryAttributionProvider;
 
   public abstract get tileWidth(): number;
   public abstract get tileHeight(): number;
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-  public abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
-  public abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
-  public set geometryAttributionProvider(provider: MapTileGeometryAttributionProvider) { this._geometryAttributionProvider = provider; }
+  public abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -352,53 +342,6 @@ export abstract class ImageryProvider {
     } catch (error) {
       return undefined;
     }
-  }
-
-  public decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void {
-    const copyrightImages = this.getCopyrightImages(tileProvider, context.screenViewport);
-    if (0 < copyrightImages.length) {
-      const vpHeight = context.viewport.viewRect.height;
-      const padding = 2;
-      const x = padding;
-      let yOffset = padding;
-      for (const image of copyrightImages) {
-        if (0 === image.naturalWidth || 0 === image.naturalHeight)
-          continue;
-
-        const position = new Point2d(x, vpHeight - image.height - yOffset);
-        const drawDecoration = (ctx: CanvasRenderingContext2D) => ctx.drawImage(image, 0, 0, image.width, image.height);
-        context.addCanvasDecoration({ position, drawDecoration });
-        yOffset += image.height + padding;
-      }
-    }
-
-    const copyrightMessage = this.getCopyrightMessage(tileProvider, context.screenViewport);
-    if (copyrightMessage) {
-      const decorationDiv = context.decorationDiv;
-      decorationDiv.appendChild(copyrightMessage);
-      const boundingRect = copyrightMessage.getBoundingClientRect();
-      const style = copyrightMessage.style;
-      style.display = "block";
-      style.position = "absolute";
-      style.left = (decorationDiv.clientWidth - (boundingRect.width + 15)) + "px";
-      style.top = (decorationDiv.clientHeight - (boundingRect.height + 5)) + "px";
-      style.color = "silver";
-      style.backgroundColor = "transparent";
-      style.pointerEvents = "initial";
-      style.zIndex = "50";
-    }
-  }
-
-  public getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[] {
-    const images: HTMLImageElement[] = [];
-    const image = this.getCopyrightImage(tileProvider, viewport);
-    if (undefined !== image)
-      images.push(image);
-
-    if (undefined !== this._geometryAttributionProvider)
-      this._geometryAttributionProvider.addCopyrightImages(images, tileProvider, viewport);
-
-    return images;
   }
 }
 
@@ -491,11 +434,6 @@ function replaceHttpWithHttps(originalUrl: string) {
   return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
-interface BingCopyrightElements {
-  logoImage?: HTMLImageElement;
-  attribution: HTMLSpanElement;
-}
-
 // Our ImageryProvider for Bing Maps.
 class BingImageryProvider extends ImageryProvider {
   private _urlTemplate?: string;
@@ -507,7 +445,6 @@ class BingImageryProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  private readonly _copyrightElementByViewportId = new Map<number, BingCopyrightElements>();
   private _mapTilingScheme: MapTilingScheme;
   public readonly mapType: BackgroundMapType;
 
@@ -579,77 +516,26 @@ class BingImageryProvider extends ImageryProvider {
     return matchingAttributions;
   }
 
-  private showAttributions(tileProvider: MapTileTreeReference, viewport: ScreenViewport, event: MouseEvent) {
-    // our "this" is the BingImageryProvider for which we want to show the data provider attribution.
-    // We need to get the tiles that are used in the view.
-    event.stopPropagation();
-    const tiles: Tile[] = tileProvider.getTilesForView(viewport);
-    const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
-
-    if (0 === matchingAttributions.length) {
-      const toast = new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("iModelJs:BackgroundMap.NoBingDataAttribution"));
-      IModelApp.notifications.outputMessage(toast);
-      return;
-    }
-
+  public getImageryLogo(tileProvider: MapTileTreeReference, vp: ScreenViewport) {
     const div = document.createElement("div");
-    div.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
-    for (const match of matchingAttributions) {
-      const li = document.createElement("li");
-      li.innerText = match.copyrightMessage;
-      div.appendChild(li);
-    }
-    if (this._geometryAttributionProvider) {
-      const li = document.createElement("li");
-      li.innerText = this._geometryAttributionProvider.getAttribution(tileProvider, viewport);
-      div.appendChild(li);
-    }
-
-    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, div, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
-  }
-
-  public getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined {
-    return this.getCopyrightElements(tileProvider, viewport).logoImage;
-  }
-
-  public getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement {
-    // This used to create a brand-new element every time decorations were created (very frequently) which prevented clicking on it from doing anything
-    // until all the map tiles for the current view frustum had been loaded.
-    // It is unlikely but possible for a given BingImageryProvider to draw (and render HTML decorations) into more than one viewport at a time.
-    // If that were to happen, and we only had a single HTMLSpanElement, then:
-    //  - onclick would always bind to the first Viewport; and
-    //  - we'd get an error adding the same HTMLElement to the DOM more than once
-    // So we cache by viewport ID.
-    return this.getCopyrightElements(tileProvider, viewport).attribution;
-  }
-
-  private getCopyrightElements(tileProvider: MapTileTreeReference, viewport: ScreenViewport): BingCopyrightElements {
-    let elems = this._copyrightElementByViewportId.get(viewport.viewportId);
-    if (undefined !== elems)
-      return elems;
-
-    const attribution: HTMLSpanElement = document.createElement("span");
-    attribution.className = "bgmap-copyright";
-    attribution.onclick = this.showAttributions.bind(this, tileProvider, viewport);
-    // stop propagation of all mouse related events so they don't go through to the view.
-    attribution.onmousemove = (event: MouseEvent) => { event.stopPropagation(); };
-    attribution.onmouseenter = (event: MouseEvent) => { event.stopPropagation(); };
-    attribution.onmouseout = (event: MouseEvent) => { event.stopPropagation(); };
-    attribution.onmousedown = (event: MouseEvent) => { event.stopPropagation(); };
-    attribution.onmouseup = (event: MouseEvent) => { event.stopPropagation(); };
-    attribution.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
-    attribution.style.textDecoration = "underline";
-    attribution.style.cursor = "pointer";
-
-    let logoImage;
     if (undefined !== this._logoUrl) {
-      logoImage = new Image();
+      const logoImage = new Image();
       logoImage.src = this._logoUrl;
+      div.appendChild(logoImage);
     }
 
-    elems = { logoImage, attribution };
-    this._copyrightElementByViewportId.set(viewport.viewportId, elems);
-    return elems;
+    const copyrights = document.createElement("p");
+    copyrights.style.margin = "0";
+
+    const tiles = tileProvider.getTilesForView(vp);
+    const matchingAttributions = this.getMatchingAttributions(tiles);
+    for (const match of matchingAttributions) {
+      const p = document.createElement("p");
+      p.innerText = match.copyrightMessage;
+      copyrights.appendChild(p);
+    }
+    div.appendChild(copyrights);
+    return IModelApp.makeLogoCard(div);
   }
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
@@ -701,7 +587,7 @@ class BingImageryProvider extends ImageryProvider {
       // read the list of Bing's data suppliers and the range of data they provide. Used in calculation of copyright message.
       this.readAttributions(thisResourceProps.imageryProviders);
 
-      // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
+      // Bing sometimes provides tiles that have nothing but a camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
@@ -774,13 +660,10 @@ class MapBoxImageryProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLImageElement | undefined { return undefined; }
-
-  public getCopyrightMessage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLElement | undefined {
-    const copyrightElement: HTMLSpanElement = document.createElement("span");
-    copyrightElement.innerText = IModelApp.i18n.translate("IModelJs:BackgroundMap.MapBoxCopyright");
-    copyrightElement.className = "bgmap-copyright";
-    return copyrightElement;
+  public getImageryLogo(_tileProvider: MapTileTreeReference, _vp: ScreenViewport) {
+    const div = document.createElement("p");
+    div.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright");
+    return IModelApp.makeLogoCard(div);
   }
 
   // no initialization needed for MapBoxImageryProvider.
@@ -894,7 +777,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   const haveConverter = await getGcsConverterAvailable(iModel);
   const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme, filterTextures);
   const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
-  return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, heightRange);
+  return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, true, heightRange);
 }
 
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.
@@ -949,11 +832,22 @@ export abstract class MapTileTreeReference extends TileTree.Reference {
     return tiles;
   }
 
-  /** Add copyright info to the viewport. */
-  public decorate(context: DecorateContext): void {
+  /** Add logo cards to container div. */
+  public addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void {
     const provider = this._imageryProvider;
-    if (undefined !== provider)
-      provider.decorate(context, this);
+    if (undefined === provider)
+      return;
+
+    const imagAttr = provider.getImageryLogo(this, vp);
+    if (undefined !== imagAttr)
+      cardDiv.appendChild(imagAttr);
+
+    const geomProv = provider.geometryAttributionProvider;
+    if (undefined !== geomProv) {
+      const geomAttr = geomProv.getGeometryLogo(this, vp);
+      if (undefined !== geomAttr)
+        cardDiv.appendChild(geomAttr);
+    }
   }
 
   /** Draw the tiles into the viewport. */

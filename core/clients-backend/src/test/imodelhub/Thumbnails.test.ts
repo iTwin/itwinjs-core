@@ -43,7 +43,7 @@ async function getIModelId(requestContext: AuthorizedClientRequestContext, name:
   return utils.getIModelId(requestContext, name);
 }
 
-describe("iModelHub ThumbnailHandler", () => {
+describe("iModelHub ThumbnailHandler (#unit)", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let _projectId: string;
   let imodelId: GuidString;
@@ -54,12 +54,6 @@ describe("iModelHub ThumbnailHandler", () => {
 
   before(async function () {
     this.enableTimeouts(false);
-    if (!TestConfig.enableMocks) {
-      // utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
-      // imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-      this.skip();
-      return;
-    }
 
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);

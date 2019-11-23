@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
@@ -85,6 +85,8 @@ export function initializeBackend() {
   const hostConfig = new IModelHostConfiguration();
   hostConfig.logTileLoadTimeThreshold = 3;
   hostConfig.logTileSizeThreshold = 500000;
+
+  let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem SVTConfiguraiton is used anymore.
   } else {
@@ -93,11 +95,18 @@ export function initializeBackend() {
 
     if (svtConfig.useFakeCloudStorageTileCache)
       hostConfig.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+
+    const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
+    if (undefined !== logLevelEnv)
+      logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
   IModelHost.startup(hostConfig);
 
-  Logger.initializeToConsole(); // configure logging for imodeljs-core
+  // Set up logging (by default, no logging is enabled)
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(logLevel);
+  Logger.setLevel("SVT", LogLevel.Trace);
 
   if (svtConfig.useFakeCloudStorageTileCache)
     IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../webresources", "tiles/")));

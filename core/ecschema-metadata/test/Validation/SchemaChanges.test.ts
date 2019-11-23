@@ -13,7 +13,7 @@ import {
 describe("SchemaChanges tests", () => {
   let schema: Schema;
   beforeEach(async () => {
-    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
   });
 
   describe("SchemaChanges", () => {
@@ -32,7 +32,7 @@ describe("SchemaChanges tests", () => {
     });
 
     it("SchemaReferenceMissing, correct change created", async () => {
-      const refSchema = new Schema(new SchemaContext(), "ReferenceSchema", 1, 0, 0);
+      const refSchema = new Schema(new SchemaContext(), "ReferenceSchema", "ref", 1, 0, 0);
       const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schema, [refSchema]);
       const changes = new SchemaChanges(schema);
 

@@ -19,7 +19,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
 
   constructor(private _hierarchy: TestTreeHierarchyNode[]) { }
 
-  public resolveDelayedLoad = (nodeId: string) => {
+  public resolveDelayedLoad = async (nodeId: string) => {
     const node = this._findNode(nodeId);
 
     if (!node.delayedLoad)
@@ -28,7 +28,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
     if (!this._delayedLoads[nodeId])
       throw new Error(`Deferred load for node '${nodeId}' has not been initiated`);
 
-    this._delayedLoads[nodeId].resolve(this._makeTreeNodeItem(node));
+    await this._delayedLoads[nodeId].resolve(this._makeTreeNodeItem(node));
   }
 
   public getNodesCount = async (parent?: TreeNodeItem): Promise<number> => this._getChildren(parent).length;

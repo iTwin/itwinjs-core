@@ -149,6 +149,29 @@ describe("BackstageItemsManager", () => {
       spy.calledOnce.should.true;
       sut.items.length.should.eq(2);
     });
+
+    it("should not add multiple items with same id", () => {
+      const sut = new BackstageItemsManager();
+
+      const spy = sinon.spy();
+      sut.onChanged.addListener(spy);
+      sut.add([getActionItem(), getActionItem()]);
+
+      spy.calledOnce.should.true;
+      sut.items.length.should.eq(1);
+    });
+
+    it("should not add item that is already added", () => {
+      const sut = new BackstageItemsManager();
+
+      const spy = sinon.spy();
+      sut.onChanged.addListener(spy);
+      sut.add(getActionItem());
+      sut.add(getActionItem());
+
+      spy.calledOnce.should.true;
+      sut.items.length.should.eq(1);
+    });
   });
 
   describe("remove", () => {
@@ -199,7 +222,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     shallow(<TestHook
-      onRender={() => spy(useBackstageItems(manager))}
+      onRender={() => spy(useBackstageItems(manager))}  // tslint:disable-line: react-hooks-nesting
     />);
 
     spy.calledOnceWithExactly(sinon.match([manager.items[0]]) as any).should.true;
@@ -212,7 +235,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     mount(<TestHook
-      onRender={() => useBackstageItems(manager)}
+      onRender={() => useBackstageItems(manager)} // tslint:disable-line: react-hooks-nesting
     />);
 
     spy.calledOnce.should.true;
@@ -225,7 +248,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     mount(<TestHook
-      onRender={() => spy(useBackstageItems(manager))}
+      onRender={() => spy(useBackstageItems(manager))}  // tslint:disable-line: react-hooks-nesting
     />);
 
     manager.items = [];
@@ -240,7 +263,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     const sut = mount(<TestHook
-      onRender={() => useBackstageItems(manager)}
+      onRender={() => useBackstageItems(manager)} // tslint:disable-line: react-hooks-nesting
     />);
     sut.unmount();
 

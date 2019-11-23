@@ -22,7 +22,7 @@ import * as Diagnostics from "../../src/Validation/Diagnostic";
 import { IRuleSet } from "../../src/Validation/Rules";
 import sinon = require("sinon");
 import { SchemaItem } from "../../src/Metadata/SchemaItem";
-import { EntityClass, StructClass, Mixin, CustomAttributeClass } from "../../src/ecschema-metadata";
+import { EntityClass, StructClass, Mixin, CustomAttributeClass, IRuleSuppressionSet } from "../../src/ecschema-metadata";
 
 export class TestReporter implements IDiagnosticReporter {
   public async report(_diagnostic: Diagnostics.AnyDiagnostic) {
@@ -35,47 +35,70 @@ function getCode(code: number): string {
   return ruleSetName + "-" + code;
 }
 
+export const TestDiagnosticCodes = {
+  FailingSchemaDiagnostic: getCode(1),
+  FailingSchemaItemDiagnostic: getCode(2),
+  FailingClassDiagnostic: getCode(3),
+  FailingPropertyDiagnostic: getCode(4),
+  FailingEntityClassDiagnostic: getCode(5),
+  FailingStructClassDiagnostic: getCode(6),
+  FailingMixinDiagnostic: getCode(7),
+  FailingRelationshipDiagnostic: getCode(8),
+  FailingRelationshipConstraintDiagnostic: getCode(9),
+  FailingCustomAttributeClassDiagnostic: getCode(10),
+  FailingCustomAttributeContainerDiagnostic: getCode(11),
+  FailingEnumerationDiagnostic: getCode(12),
+  FailingKindOfQuantityDiagnostic: getCode(13),
+  FailingPropertyCategoryDiagnostic: getCode(14),
+  FailingFormatDiagnostic: getCode(15),
+  FailingUnitDiagnostic: getCode(16),
+  FailingInvertedUnitFormatDiagnostic: getCode(17),
+  FailingUnitSystemDiagnostic: getCode(18),
+  FailingPhenomenonDiagnostic: getCode(19),
+  FailingConstantDiagnostic: getCode(20),
+}
+
 // tslint:disable-next-line:variable-name
 export const TestDiagnostics = {
-  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(getCode(1),
+  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingSchemaDiagnostic,
     "Failed with param {0} {1}"),
-  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(getCode(2),
+  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(TestDiagnosticCodes.FailingSchemaItemDiagnostic,
     "Failed with param {0} {1}"),
-  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(getCode(3),
+  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingClassDiagnostic,
     "Failed with params {0} {1}"),
-  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(getCode(4),
+  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingPropertyDiagnostic,
     "Failed with param {0} {1}"),
-  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(getCode(5),
+  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(TestDiagnosticCodes.FailingEntityClassDiagnostic,
     "Failed with params {0} {1}"),
-  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(getCode(6),
+  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(TestDiagnosticCodes.FailingStructClassDiagnostic,
     "Failed with params {0} {1}"),
-  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(getCode(8),
+  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(TestDiagnosticCodes.FailingMixinDiagnostic,
     "Failed with params {0} {1}"),
-  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(getCode(8),
+  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(TestDiagnosticCodes.FailingRelationshipDiagnostic,
     "Failed with param {0} {1}"),
-  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(getCode(9),
+  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingRelationshipConstraintDiagnostic,
     "Failed with param {0} {1}"),
-  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(getCode(10),
+  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(TestDiagnosticCodes.FailingCustomAttributeClassDiagnostic,
     "Failed with param {0} {1}"),
-  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(getCode(11),
+  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic,
     "Failed with param {0} {1}"),
-  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(getCode(12),
+  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(TestDiagnosticCodes.FailingEnumerationDiagnostic,
     "Failed with param {0} {1}"),
-  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(getCode(13),
+  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(TestDiagnosticCodes.FailingKindOfQuantityDiagnostic,
     "Failed with param {0} {1}"),
-  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(getCode(14),
+  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(TestDiagnosticCodes.FailingPropertyCategoryDiagnostic,
     "Failed with param {0} {1}"),
-  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(getCode(15),
+  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(TestDiagnosticCodes.FailingFormatDiagnostic,
     "Failed with param {0} {1}"),
-  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(getCode(16),
+  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(TestDiagnosticCodes.FailingUnitDiagnostic,
     "Failed with param {0} {1}"),
-  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(getCode(17),
+  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(TestDiagnosticCodes.FailingInvertedUnitFormatDiagnostic,
     "Failed with param {0} {1}"),
-  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(getCode(18),
+  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(TestDiagnosticCodes.FailingUnitSystemDiagnostic,
     "Failed with param {0} {1}"),
-  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(getCode(19),
+  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(TestDiagnosticCodes.FailingPhenomenonDiagnostic,
     "Failed with param {0} {1}"),
-  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(getCode(20),
+  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(TestDiagnosticCodes.FailingConstantDiagnostic,
     "Failed with param {0} {1}"),
 };
 
@@ -247,12 +270,282 @@ export async function* passingConstantRule(_constant: Constant): AsyncIterable<D
   return undefined;
 }
 
+export async function failingSchemaSuppression(_schema: Schema): Promise<boolean> {
+  return false;
+}
+
+export async function passingSchemaSuppression(_schema: Schema): Promise<boolean> {
+  return true;
+}
+
+export async function failingSchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+  return false;
+}
+
+export async function passingSchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+  return true;
+}
+
+export async function failingClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+  return false;
+}
+
+export async function passingClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+  return true;
+}
+
+export async function failingPropertySuppression(_property: AnyProperty): Promise<boolean> {
+  return false;
+}
+
+export async function passingPropertySuppression(_property: AnyProperty): Promise<boolean> {
+  return true;
+}
+
+export async function failingEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+  return false;
+}
+
+export async function passingEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+  return true;
+}
+
+export async function failingStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+  return false;
+}
+
+export async function passingStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+  return true;
+}
+
+export async function failingMixinSuppression(_mixin: Mixin): Promise<boolean> {
+  return false;
+}
+
+export async function passingMixinSuppression(_mixin: Mixin): Promise<boolean> {
+  return true;
+}
+
+export async function failingRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+  return false;
+}
+
+export async function passingRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+  return true;
+}
+
+export async function failingRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+  return false;
+}
+
+export async function passingRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+  return true;
+}
+
+export async function failingCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+  return false;
+}
+
+export async function passingCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+  return true;
+}
+
+export async function failingCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+  return false;
+}
+
+export async function passingCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+  return true;
+}
+
+export async function failingCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+  return false;
+}
+
+export async function passingCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+  return true;
+}
+
+export async function failingEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+  return false;
+}
+
+export async function passingEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+  return true;
+}
+
+export async function failingKindofQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+  return false;
+}
+
+export async function passingKindOfQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+  return true;
+}
+
+export async function failingPropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+  return false;
+}
+
+export async function passingPropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+  return true;
+}
+
+export async function failingFormatSuppression(_format: Format): Promise<boolean> {
+  return false;
+}
+
+export async function passingFormatSuppression(_format: Format): Promise<boolean> {
+  return true;
+}
+
+export async function failingUnitSuppression(_unit: Unit): Promise<boolean> {
+  return false;
+}
+
+export async function passingUnitSuppression(_unit: Unit): Promise<boolean> {
+  return true;
+}
+
+export async function failingInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+  return false;
+}
+
+export async function passingInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+  return true;
+}
+
+export async function failingUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+  return false;
+}
+
+export async function passingUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+  return true;
+}
+
+export async function failingPhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+  return false;
+}
+
+export async function passingPhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+  return true;
+}
+
+export async function failingConstantSuppression(_constant: Constant): Promise<boolean> {
+  return false;
+}
+
+export async function passingConstantSuppression(_constant: Constant): Promise<boolean> {
+  return true;
+}
+
+export class TestSuppressionSet implements IRuleSuppressionSet {
+  public name = "TestSuppressionSet";
+  public schemaRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingSchemaDiagnostic, rule: sinon.spy(failingSchemaSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingSchemaDiagnostic, rule: sinon.spy(passingSchemaSuppression) },
+  ];
+  public schemaItemRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingSchemaItemDiagnostic, rule: sinon.spy(failingSchemaItemSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingSchemaItemDiagnostic, rule: sinon.spy(passingSchemaItemSuppression) },
+  ];
+  public classRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingClassDiagnostic, rule: sinon.spy(failingClassSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingClassDiagnostic, rule: sinon.spy(passingClassSuppression) },
+  ];
+  public propertyRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingPropertyDiagnostic, rule: sinon.spy(failingPropertySuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingPropertyDiagnostic, rule: sinon.spy(passingPropertySuppression) },
+  ];
+  public entityRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingEntityClassDiagnostic, rule: sinon.spy(failingEntityClassSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingEntityClassDiagnostic, rule: sinon.spy(passingEntityClassSuppression) },
+  ];
+  public structRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingStructClassDiagnostic, rule: sinon.spy(failingStructClassSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingStructClassDiagnostic, rule: sinon.spy(passingStructClassSuppression) },
+  ];
+  public mixinRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingMixinDiagnostic, rule: sinon.spy(failingMixinSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingMixinDiagnostic, rule: sinon.spy(passingMixinSuppression) },
+  ];
+  public relationshipRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingRelationshipDiagnostic, rule: sinon.spy(failingRelationshipClassSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingRelationshipDiagnostic, rule: sinon.spy(passingRelationshipClassSuppression) },
+  ];
+  public relationshipConstraintRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingRelationshipConstraintDiagnostic, rule: sinon.spy(failingRelationshipConstraintSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingRelationshipConstraintDiagnostic, rule: sinon.spy(passingRelationshipConstraintSuppression) },
+  ];
+  public customAttributeRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeClassDiagnostic, rule: sinon.spy(failingCustomAttributeClassSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeClassDiagnostic, rule: sinon.spy(passingCustomAttributeClassSuppression) },
+  ];
+  public customAttributeContainerSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic, rule: sinon.spy(failingCustomAttributeContainerSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic, rule: sinon.spy(passingCustomAttributeContainerSuppression) },
+  ];
+  public customAttributeInstanceSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic, rule: sinon.spy(failingCustomAttributeInstanceSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic, rule: sinon.spy(passingCustomAttributeInstanceSuppression) },
+  ];
+  public enumerationRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingEnumerationDiagnostic, rule: sinon.spy(failingEnumerationSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingEnumerationDiagnostic, rule: sinon.spy(passingEnumerationSuppression) },
+  ];
+  public koqRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingKindOfQuantityDiagnostic, rule: sinon.spy(failingKindofQuantitySuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingKindOfQuantityDiagnostic, rule: sinon.spy(passingKindOfQuantitySuppression) },
+  ];
+  public propertyCategoryRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingPropertyCategoryDiagnostic, rule: sinon.spy(failingPropertyCategorySuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingPropertyCategoryDiagnostic, rule: sinon.spy(passingPropertyCategorySuppression) },
+  ];
+  public formatRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingFormatDiagnostic, rule: sinon.spy(failingFormatSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingFormatDiagnostic, rule: sinon.spy(passingFormatSuppression) },
+  ];
+  public unitRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingUnitDiagnostic, rule: sinon.spy(failingUnitSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingUnitDiagnostic, rule: sinon.spy(passingUnitSuppression) },
+  ];
+  public invertedUnitRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingInvertedUnitFormatDiagnostic, rule: sinon.spy(failingInvertedUnitSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingInvertedUnitFormatDiagnostic, rule: sinon.spy(passingInvertedUnitSuppression) },
+  ];
+  public unitSystemRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingUnitSystemDiagnostic, rule: sinon.spy(failingUnitSystemSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingUnitSystemDiagnostic, rule: sinon.spy(passingUnitSystemSuppression) },
+  ];
+  public phenomenonRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingPhenomenonDiagnostic, rule: sinon.spy(failingPhenomenonSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingPhenomenonDiagnostic, rule: sinon.spy(passingPhenomenonSuppression) },
+  ];
+  public constantRuleSuppressions = [
+    { ruleCode: TestDiagnosticCodes.FailingConstantDiagnostic, rule: sinon.spy(failingConstantSuppression) },
+    { ruleCode: TestDiagnosticCodes.FailingConstantDiagnostic, rule: sinon.spy(passingConstantSuppression) },
+  ];
+}
+
 export class EmptyRuleSet implements IRuleSet {
   public name: string = "EmptyRuleSet";
 }
 
 export class TestRuleSet implements IRuleSet {
+  private _excludeTestSchema: boolean;
+
+  constructor(excludeTestSchema: boolean = false) {
+    this._excludeTestSchema = excludeTestSchema;
+  }
+
   public name = "TestRuleSet";
+
+  public get schemaExclusionSet(): string[] {
+    if (!this._excludeTestSchema)
+      return [];
+
+    return ["TestSchema"];
+  }
+
   public schemaRules = [
     sinon.spy(failingSchemaRule),
     sinon.spy(passingSchemaRule),

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geo-photo-plugin",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {
@@ -31,8 +31,16 @@
       "type": "plugin",
       "sourceResources": [
         {
+          "source": "./src/**/*.scss",
+          "dest": "./lib"
+        },
+        {
           "source": "./src/public/**/*",
           "dest": "./lib/build"
+        },
+        {
+          "source": "./src/**/*.svg",
+          "dest": "./lib"
         },
         {
           "source": "./src/public/*.svg",
@@ -57,12 +65,12 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "1.7.0",
-    "@bentley/build-tools": "1.7.0",
-    "@bentley/webpack-tools": "1.7.0",
-    "@bentley/config-loader": "1.7.0",
-    "@bentley/express-server": "1.7.0",
-    "@bentley/imodeljs-backend": "1.7.0",
+    "@bentley/certa": "1.8.0",
+    "@bentley/build-tools": "1.8.0",
+    "@bentley/webpack-tools": "1.8.0",
+    "@bentley/config-loader": "1.8.0",
+    "@bentley/express-server": "1.8.0",
+    "@bentley/imodeljs-backend": "1.8.0",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
@@ -76,20 +84,22 @@
     "typescript": "~3.6.2",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.0",
-    "source-map-loader": "^0.2.3"
+    "svg-baker-runtime": "^1.4.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.7.0",
-    "@bentley/geometry-core": "1.7.0",
-    "@bentley/imodeljs-clients": "1.7.0",
-    "@bentley/imodeljs-common": "1.7.0",
-    "@bentley/imodeljs-i18n": "1.7.0",
-    "@bentley/imodeljs-frontend": "1.7.0",
-    "@bentley/imodeljs-quantity": "1.7.0",
-    "@bentley/ui-core": "1.7.0",
-    "@bentley/ui-components": "1.7.0",
-    "@bentley/ui-ninezone": "1.7.0",
-    "@bentley/ui-framework": "1.7.0",
-    "react": "^16.8.0"
+    "@bentley/bentleyjs-core": "1.8.0",
+    "@bentley/geometry-core": "1.8.0",
+    "@bentley/imodeljs-clients": "1.8.0",
+    "@bentley/imodeljs-common": "1.8.0",
+    "@bentley/imodeljs-i18n": "1.8.0",
+    "@bentley/imodeljs-frontend": "1.8.0",
+    "@bentley/imodeljs-quantity": "1.8.0",
+    "@bentley/ui-abstract": "1.8.0",
+    "@bentley/ui-core": "1.8.0",
+    "@bentley/ui-components": "1.8.0",
+    "@bentley/ui-ninezone": "1.8.0",
+    "@bentley/ui-framework": "1.8.0",
+    "react": "^16.8.0",
+    "svg-sprite-loader": "^3.8.0"
   }
 }

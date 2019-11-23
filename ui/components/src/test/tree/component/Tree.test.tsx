@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "@testing-library/react";
-import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TestTreeDataProvider } from "../TestDataFactories";
@@ -921,7 +921,10 @@ describe("Tree", () => {
       const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: (n.id === "0-a") });
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
       const parentNode = getNode("0");
-      await waitForUpdate(() => fireEvent.click(parentNode.expansionToggle!), renderNodesSpy, 1);
+      // expect 2 updates:
+      // - after click
+      // - after children are loaded
+      await waitForUpdate(() => fireEvent.click(parentNode.expansionToggle!), renderNodesSpy, 2);
       const childNodes = { a: getNode("0-a"), b: getNode("0-b") };
       expect(childNodes.a.checkbox).to.not.be.undefined;
       expect(childNodes.b.checkbox).to.be.undefined;
@@ -1341,13 +1344,11 @@ describe("Tree", () => {
       expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
       renderSpy.resetHistory();
 
-      p1.resolve([{ id: "0", label: "0" }]);
-      await BeDuration.wait(0);
+      await p1.resolve([{ id: "0", label: "0" }]);
       expect(renderSpy).to.not.be.called;
       expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
 
-      p2.resolve([{ id: "1", label: "1" }]);
-      await BeDuration.wait(0);
+      await p2.resolve([{ id: "1", label: "1" }]);
       expect(renderSpy).to.be.calledOnce;
       expect(getNode("1")).to.not.be.undefined;
     });

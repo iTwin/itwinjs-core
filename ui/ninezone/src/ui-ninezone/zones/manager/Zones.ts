@@ -6,6 +6,7 @@
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
+import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
 import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager, ToolSettingsWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "./Widget";
 import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager, getWindowResizeSettings } from "./Zone";
 import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
@@ -451,6 +452,28 @@ export class ZonesManager {
     }
   }
 
+  public handleTargetChanged(target: ZonesManagerTargetProps | undefined, props: ZonesManagerProps): ZonesManagerProps {
+    if (props.target === target)
+      return props;
+    if (!target)
+      return {
+        ...props,
+        target: undefined,
+      };
+
+    if (props.target && target.zoneId === props.target.zoneId && target.type === props.target.type) {
+      return props;
+    }
+
+    return {
+      ...props,
+      target: {
+        zoneId: target.zoneId,
+        type: target.type,
+      },
+    };
+  }
+
   public setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps {
     const newBounds = Rectangle.create(zonesBounds);
     if (newBounds.equals(props.zonesBounds))
@@ -476,6 +499,214 @@ export class ZonesManager {
     }
 
     return props;
+  }
+
+  public restoreLayout(props: ZonesManagerProps): ZonesManagerProps {
+    for (const zId of widgetZoneIds) {
+      const bounds = this.getInitialBounds(zId, props);
+      props = this.setZoneBounds(zId, bounds, props);
+      props = this.setZoneIsLayoutChanged(zId, false, props);
+
+      const manager = this.getZoneManager(zId);
+      manager.windowResize = getWindowResizeSettings(zId);
+    }
+    return props;
+  }
+
+  public getInitialBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps {
+    const zonesBounds = Rectangle.create(props.zonesBounds);
+    const rootBounds = Rectangle.createFromSize(zonesBounds.getSize());
+    if (zoneId === 8 && props.isInFooterMode) {
+      return new Rectangle(rootBounds.left, rootBounds.bottom, rootBounds.right, rootBounds.bottom);
+    }
+
+    const rootSize = rootBounds.getSize();
+    const cell = getZoneCell(zoneId);
+    const left = rootBounds.left + rootSize.width * cell.col / 3;
+    const right = rootBounds.left + rootSize.width * (cell.col + 1) / 3;
+    const top = rootBounds.top + rootSize.height * cell.row / 3;
+    const bottom = rootBounds.top + rootSize.height * (cell.row + 1) / 3;
+    const zoneBounds = new Rectangle(left, top, right, bottom);
+
+    const zone = props.zones[zoneId];
+    if (zone.widgets.length === 1 && zone.widgets[0] === zone.id)
+      return zoneBounds;
+
+    const mergedBounds = zone.widgets.reduce<Rectangle>((acc, wId) => {
+      if (zoneId === wId)
+        return acc;
+
+      const bounds = this.getInitialBounds(wId, props);
+      return acc.outerMergeWith(bounds);
+    }, zoneBounds);
+    return mergedBounds.toProps();
+  }
+
+  public setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps {
+    if (isInFooterMode === props.isInFooterMode)
+      return props;
+
+    return {
+      ...props,
+      isInFooterMode,
+    };
+  }
+
+  public setAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean, props: ZonesManagerProps): ZonesManagerProps {
+    const zone = props.zones[zoneId];
+    const manager = this.getZoneManager(zoneId);
+    const zoneProps = manager.setAllowsMerging(allowsMerging, zone);
+    return this.setZoneProps(zoneProps, props);
+  }
+
+  public mergeZone(zoneId: WidgetZoneId, targetZoneId: WidgetZoneId, props: ZonesManagerProps): ZonesManagerProps {
+    if (!this.canBeMergedTo(zoneId, targetZoneId, props))
+      return props;
+    const managerSettings = this.getZoneManager(zoneId).windowResize;
+    const targetSettings = this.getZoneManager(targetZoneId).windowResize;
+    targetSettings.vStart = Math.min(managerSettings.vStart, targetSettings.vStart);
+    targetSettings.vEnd = Math.max(managerSettings.vEnd, targetSettings.vEnd);
+    targetSettings.hStart = Math.min(managerSettings.hStart, targetSettings.hStart);
+    targetSettings.hEnd = Math.max(managerSettings.hEnd, targetSettings.hEnd);
+
+    const zone = props.zones[zoneId];
+    const targetZone = props.zones[targetZoneId];
+    const bounds = Rectangle.create(zone.bounds).outerMergeWith(targetZone.bounds).toProps();
+    return {
+      ...props,
+      zones: {
+        ...props.zones,
+        [zoneId]: {
+          ...props.zones[zoneId],
+          widgets: [],
+        },
+        [targetZoneId]: {
+          ...props.zones[targetZoneId],
+          bounds,
+          widgets: [
+            ...props.zones[targetZoneId].widgets,
+            zoneId,
+          ],
+        },
+      },
+    };
+  }
+
+  public findZoneWithWidget(widgetId: WidgetZoneId, props: ZonesManagerProps) {
+    const zoneId = this.findZoneIdWithWidget(widgetId, props);
+    return zoneId === undefined ? undefined : props.zones[zoneId];
+  }
+
+  public getGhostOutlineBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps | undefined {
+    const target = props.target;
+    if (!target)
+      return undefined;
+
+    if (target.zoneId !== zoneId)
+      return undefined;
+
+    const draggedWidget = props.draggedWidget;
+    if (!draggedWidget)
+      return undefined;
+
+    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
+    if (!draggedZone)
+      return undefined;
+    const targetZone = props.zones[target.zoneId];
+    switch (target.type) {
+      case ZoneTargetType.Merge: {
+        const draggedZoneBounds = Rectangle.create(draggedZone.bounds);
+        const mergedBounds = draggedZoneBounds.outerMergeWith(targetZone.bounds);
+        return mergedBounds;
+      }
+      case ZoneTargetType.Back: {
+        return draggedZone.bounds;
+      }
+    }
+  }
+
+  public getDisabledResizeHandles(zoneId: WidgetZoneId, props: ZonesManagerProps): DisabledResizeHandles {
+    const zone = props.zones[zoneId];
+    if (zone.floating)
+      return DisabledResizeHandles.None;
+
+    let disabledResizeHandles = DisabledResizeHandles.None;
+    if (this.growTop.getMaxResize(zoneId, props) <= 0 && this.shrinkTop.getMaxResize(zoneId, props) <= 0)
+      disabledResizeHandles |= DisabledResizeHandles.Top;
+    if (this.growBottom.getMaxResize(zoneId, props) <= 0 && this.shrinkBottom.getMaxResize(zoneId, props) <= 0)
+      disabledResizeHandles |= DisabledResizeHandles.Bottom;
+    if (this.growLeft.getMaxResize(zoneId, props) <= 0 && this.shrinkLeft.getMaxResize(zoneId, props) <= 0)
+      disabledResizeHandles |= DisabledResizeHandles.Left;
+    if (this.growRight.getMaxResize(zoneId, props) <= 0 && this.shrinkRight.getMaxResize(zoneId, props) <= 0)
+      disabledResizeHandles |= DisabledResizeHandles.Right;
+    return disabledResizeHandles;
+  }
+
+  public getDropTarget(zoneId: WidgetZoneId, props: ZonesManagerProps): ZoneTargetType | undefined {
+    const draggedWidget = props.draggedWidget;
+    if (!draggedWidget)
+      return undefined;
+
+    const zone = props.zones[zoneId];
+    if (!zone.allowsMerging)
+      return undefined;
+
+    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
+    if (!draggedZone)
+      return undefined;
+
+    if (draggedZone.id === zoneId)
+      return ZoneTargetType.Back;
+
+    if (this.canBeMergedTo(draggedZone.id, zoneId, props))
+      return ZoneTargetType.Merge;
+
+    return undefined;
+  }
+
+  /** @internal */
+  public getZoneManager(id: WidgetZoneId): ZoneManager {
+    if (!this._zoneManagers)
+      this._zoneManagers = new Map();
+    let manager = this._zoneManagers.get(id);
+    if (!manager) {
+      manager = new ZoneManager(getWindowResizeSettings(id));
+      this._zoneManagers.set(id, manager);
+    }
+    return manager;
+  }
+
+  /** @internal */
+  public get draggedWidgetManager(): DraggedWidgetManager {
+    if (!this._draggedWidgetManager)
+      this._draggedWidgetManager = new DraggedWidgetManager();
+    return this._draggedWidgetManager;
+  }
+
+  /** @internal */
+  public getResizeStrategy(handle: ResizeHandle, resizeBy: number): ResizeStrategy {
+    switch (handle) {
+      case ResizeHandle.Top: {
+        if (resizeBy < 0)
+          return this.growTop;
+        return this.shrinkTop;
+      }
+      case ResizeHandle.Bottom: {
+        if (resizeBy > 0)
+          return this.growBottom;
+        return this.shrinkBottom;
+      }
+      case ResizeHandle.Left: {
+        if (resizeBy < 0)
+          return this.growLeft;
+        return this.shrinkLeft;
+      }
+      case ResizeHandle.Right: {
+        if (resizeBy > 0)
+          return this.growRight;
+        return this.shrinkRight;
+      }
+    }
   }
 
   /** @internal */
@@ -618,175 +849,6 @@ export class ZonesManager {
     return resizeBounds;
   }
 
-  public restoreLayout(props: ZonesManagerProps): ZonesManagerProps {
-    for (const zId of widgetZoneIds) {
-      const bounds = this.getInitialBounds(zId, props);
-      props = this.setZoneBounds(zId, bounds, props);
-      props = this.setZoneIsLayoutChanged(zId, false, props);
-
-      const manager = this.getZoneManager(zId);
-      manager.windowResize = getWindowResizeSettings(zId);
-    }
-    return props;
-  }
-
-  public getInitialBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps {
-    const zonesBounds = Rectangle.create(props.zonesBounds);
-    const rootBounds = Rectangle.createFromSize(zonesBounds.getSize());
-    if (zoneId === 8 && props.isInFooterMode) {
-      return new Rectangle(rootBounds.left, rootBounds.bottom, rootBounds.right, rootBounds.bottom);
-    }
-
-    const rootSize = rootBounds.getSize();
-    const cell = getZoneCell(zoneId);
-    const left = rootBounds.left + rootSize.width * cell.col / 3;
-    const right = rootBounds.left + rootSize.width * (cell.col + 1) / 3;
-    const top = rootBounds.top + rootSize.height * cell.row / 3;
-    const bottom = rootBounds.top + rootSize.height * (cell.row + 1) / 3;
-    const zoneBounds = new Rectangle(left, top, right, bottom);
-
-    const zone = props.zones[zoneId];
-    if (zone.widgets.length === 1 && zone.widgets[0] === zone.id)
-      return zoneBounds;
-
-    const mergedBounds = zone.widgets.reduce<Rectangle>((acc, wId) => {
-      if (zoneId === wId)
-        return acc;
-
-      const bounds = this.getInitialBounds(wId, props);
-      return acc.outerMergeWith(bounds);
-    }, zoneBounds);
-    return mergedBounds.toProps();
-  }
-
-  public setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps {
-    if (isInFooterMode === props.isInFooterMode)
-      return props;
-
-    return {
-      ...props,
-      isInFooterMode,
-    };
-  }
-
-  public setAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean, props: ZonesManagerProps): ZonesManagerProps {
-    const zone = props.zones[zoneId];
-    const manager = this.getZoneManager(zoneId);
-    const zoneProps = manager.setAllowsMerging(allowsMerging, zone);
-    return this.setZoneProps(zoneProps, props);
-  }
-
-  public mergeZone(zoneId: WidgetZoneId, targetZoneId: WidgetZoneId, props: ZonesManagerProps): ZonesManagerProps {
-    if (!this.canBeMergedTo(zoneId, targetZoneId, props))
-      return props;
-    const managerSettings = this.getZoneManager(zoneId).windowResize;
-    const targetSettings = this.getZoneManager(targetZoneId).windowResize;
-    targetSettings.vStart = Math.min(managerSettings.vStart, targetSettings.vStart);
-    targetSettings.vEnd = Math.max(managerSettings.vEnd, targetSettings.vEnd);
-    targetSettings.hStart = Math.min(managerSettings.hStart, targetSettings.hStart);
-    targetSettings.hEnd = Math.max(managerSettings.hEnd, targetSettings.hEnd);
-
-    const zone = props.zones[zoneId];
-    const targetZone = props.zones[targetZoneId];
-    const bounds = Rectangle.create(zone.bounds).outerMergeWith(targetZone.bounds).toProps();
-    return {
-      ...props,
-      zones: {
-        ...props.zones,
-        [zoneId]: {
-          ...props.zones[zoneId],
-          widgets: [],
-        },
-        [targetZoneId]: {
-          ...props.zones[targetZoneId],
-          bounds,
-          widgets: [
-            ...props.zones[targetZoneId].widgets,
-            zoneId,
-          ],
-        },
-      },
-    };
-  }
-
-  public findZoneWithWidget(widgetId: WidgetZoneId, props: ZonesManagerProps) {
-    const zoneId = this.findZoneIdWithWidget(widgetId, props);
-    return zoneId === undefined ? undefined : props.zones[zoneId];
-  }
-
-  public getGhostOutlineBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps | undefined {
-    const target = props.target;
-    if (!target)
-      return undefined;
-
-    if (target.zoneId !== zoneId)
-      return undefined;
-
-    const draggedWidget = props.draggedWidget;
-    if (!draggedWidget)
-      return undefined;
-
-    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
-    if (!draggedZone)
-      return undefined;
-    const targetZone = props.zones[target.zoneId];
-    switch (target.type) {
-      case ZoneTargetType.Merge: {
-        const draggedZoneBounds = Rectangle.create(draggedZone.bounds);
-        const mergedBounds = draggedZoneBounds.outerMergeWith(targetZone.bounds);
-        return mergedBounds;
-      }
-      case ZoneTargetType.Back: {
-        return draggedZone.bounds;
-      }
-    }
-  }
-
-  /** @internal */
-  public getZoneManager(id: WidgetZoneId): ZoneManager {
-    if (!this._zoneManagers)
-      this._zoneManagers = new Map();
-    let manager = this._zoneManagers.get(id);
-    if (!manager) {
-      manager = new ZoneManager(getWindowResizeSettings(id));
-      this._zoneManagers.set(id, manager);
-    }
-    return manager;
-  }
-
-  /** @internal */
-  public get draggedWidgetManager(): DraggedWidgetManager {
-    if (!this._draggedWidgetManager)
-      this._draggedWidgetManager = new DraggedWidgetManager();
-    return this._draggedWidgetManager;
-  }
-
-  /** @internal */
-  public getResizeStrategy(handle: ResizeHandle, resizeBy: number): ResizeStrategy {
-    switch (handle) {
-      case ResizeHandle.Top: {
-        if (resizeBy < 0)
-          return this.growTop;
-        return this.shrinkTop;
-      }
-      case ResizeHandle.Bottom: {
-        if (resizeBy > 0)
-          return this.growBottom;
-        return this.shrinkBottom;
-      }
-      case ResizeHandle.Left: {
-        if (resizeBy < 0)
-          return this.growLeft;
-        return this.shrinkLeft;
-      }
-      case ResizeHandle.Right: {
-        if (resizeBy > 0)
-          return this.growRight;
-        return this.shrinkRight;
-      }
-    }
-  }
-
   /** @internal */
   public canBeMergedTo(zoneId: WidgetZoneId, targetZoneId: WidgetZoneId, props: ZonesManagerProps): boolean {
     if (zoneId === targetZoneId)
@@ -833,29 +895,6 @@ export class ZonesManager {
   }
 
   /** @internal */
-  public getDropTarget(zoneId: WidgetZoneId, props: ZonesManagerProps): ZoneTargetType | undefined {
-    const draggedWidget = props.draggedWidget;
-    if (!draggedWidget)
-      return undefined;
-
-    const zone = props.zones[zoneId];
-    if (!zone.allowsMerging)
-      return undefined;
-
-    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
-    if (!draggedZone)
-      return undefined;
-
-    if (draggedZone.id === zoneId)
-      return ZoneTargetType.Back;
-
-    if (this.canBeMergedTo(draggedZone.id, zoneId, props))
-      return ZoneTargetType.Merge;
-
-    return undefined;
-  }
-
-  /** @internal */
   public addWidget(zoneId: WidgetZoneId, widgetId: WidgetZoneId, props: ZonesManagerProps): ZonesManagerProps {
     const widgetIndex = props.zones[zoneId].widgets.indexOf(widgetId);
     if (widgetIndex >= 0)
@@ -893,28 +932,6 @@ export class ZonesManager {
             ...props.zones[zoneId].widgets.slice(widgetIndex + 1),
           ],
         },
-      },
-    };
-  }
-
-  public handleTargetChanged(target: ZonesManagerTargetProps | undefined, props: ZonesManagerProps): ZonesManagerProps {
-    if (props.target === target)
-      return props;
-    if (!target)
-      return {
-        ...props,
-        target: undefined,
-      };
-
-    if (props.target && target.zoneId === props.target.zoneId && target.type === props.target.type) {
-      return props;
-    }
-
-    return {
-      ...props,
-      target: {
-        zoneId: target.zoneId,
-        type: target.type,
       },
     };
   }

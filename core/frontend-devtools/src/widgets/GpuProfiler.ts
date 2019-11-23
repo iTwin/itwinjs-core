@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { saveAs } from "file-saver";
@@ -77,6 +79,7 @@ function createTraceFromTimerResults(timerResults: GLTimerResult[]): ChromeTrace
   return { traceEvents };
 }
 
+/** @alpha */
 export class GpuProfiler {
   private readonly _div: HTMLDivElement;
   private readonly _resultsDiv: HTMLDivElement;

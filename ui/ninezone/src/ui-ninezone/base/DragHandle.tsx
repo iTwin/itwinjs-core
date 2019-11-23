@@ -27,7 +27,7 @@ export interface DragHandleProps extends CommonProps {
 }
 
 interface DragHandleState {
-  isMouseDown: boolean;
+  isPointerDown: boolean;
 }
 
 /** Drag handle component.
@@ -38,7 +38,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
   private _isDragged = false;
 
   public readonly state: DragHandleState = {
-    isMouseDown: false,
+    isPointerDown: false,
   };
 
   public render() {
@@ -46,25 +46,29 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
       <PointerCaptor
         children={this.props.children}
         className={this.props.className}
-        isMouseDown={this.props.lastPosition === undefined ? this.state.isMouseDown : true}
+        isPointerDown={this.props.lastPosition === undefined ? this.state.isPointerDown : true}
         onClick={this._handleClick}
-        onMouseDown={this._handleMouseDown}
-        onMouseUp={this._handleMouseUp}
-        onMouseMove={this._handleMouseMove}
+        onPointerDown={this._handlePointerDown}
+        onPointerUp={this._handlePointerUp}
+        onPointerMove={this._handlePointerMove}
         style={this.props.style}
       />
     );
   }
 
-  private _handleMouseDown = (e: MouseEvent) => {
-    this.setState({ isMouseDown: true });
+  private _handlePointerDown = (e: PointerEvent) => {
+    if (e.target instanceof Element) {
+      e.target.releasePointerCapture(e.pointerId);
+    }
+
+    this.setState({ isPointerDown: true });
 
     e.preventDefault();
     this._isDragged = false;
     this._initial = new Point(e.clientX, e.clientY);
   }
 
-  private _handleMouseMove = (e: MouseEvent) => {
+  private _handlePointerMove = (e: PointerEvent) => {
     const current = new Point(e.clientX, e.clientY);
     if (this.props.lastPosition) {
       const dragged = Point.create(this.props.lastPosition).getOffsetTo(current);
@@ -78,8 +82,8 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
     }
   }
 
-  private _handleMouseUp = () => {
-    this.setState({ isMouseDown: false });
+  private _handlePointerUp = () => {
+    this.setState({ isPointerDown: false });
     this._initial = undefined;
     if (this.props.lastPosition) {
       this.props.onDragEnd && this.props.onDragEnd();

@@ -637,7 +637,7 @@ describe("Range3d", () => {
     ck.testExactNumber(q, null2.distanceToPoint(Point2d.create(1, 2)), "null Range1d distance to X");
     ck.testExactNumber(q, null3.distanceToPoint(Point3d.create(1, 2, 3)), "null Range1d distance to X");
 
-    ck.testExactNumber (0, null3.maxAbs (), "Range3d.null maxAbs is 0");
+    ck.testExactNumber(0, null3.maxAbs(), "Range3d.null maxAbs is 0");
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
     expect(ck.getNumErrors()).equals(0);
   });
@@ -659,6 +659,24 @@ describe("Range3d", () => {
 
     r2.freeze();
     r3.freeze();
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Reuse corners", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(1, 2, 3, 7, 8, 9);
+    const cornerA = range.corners();
+    const cornerB: Point3d[] = [];
+    const cornerB0 = range.corners(cornerB);
+    ck.testTrue(cornerB !== cornerB0, "Range corners creates new array if result has wrong size");
+
+    for (let i = 0; i < 8; i++)
+      cornerB.push(Point3d.create(i, i, i));
+    const cornerB1 = range.corners(cornerB);
+    ck.testTrue(cornerB === cornerB1, "Range corners reuses result array");
+    for (let i = 0; i < 8; i++) {
+      ck.testPoint3d(cornerA[i], cornerB[i], "range.corners overwrites");
+      ck.testTrue(range.containsPoint(cornerB[i]));
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

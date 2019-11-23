@@ -32,8 +32,6 @@ body {
 
   .nzdemo-tool-settings-content {
     &.nzdemo-title-bar {
-      width: fit-content;
-      height: fit-content;
       padding: unset;
     }
 
@@ -41,10 +39,6 @@ body {
       padding-top: 10px;
       padding-bottom: 10px;
     }
-  }
-
-  .nzdemo-item {
-    position: relative;
   }
 
   .nzdemo-overflow {

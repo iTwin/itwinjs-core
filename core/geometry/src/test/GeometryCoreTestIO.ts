@@ -15,6 +15,8 @@ import { MomentData } from "../geometry4d/MomentData";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Polyface } from "../polyface/Polyface";
 import { PolygonOps } from "../geometry3d/PolygonOps";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Loop } from "../curve/Loop";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -47,6 +49,17 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
+  public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!points || points.length === 0)
+      return;
+    if (points.length <= 2) {
+      const linestring = LineString3d.create(points);
+      this.createAndCaptureXYMarker(collection, 0, linestring.packedPoints.getPoint3dArray(), dx, dy, dz);
+      this.captureGeometry(collection, LineString3d.create(points), dx, dy, dz);
+    }
+    this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
+  }
+
   public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
@@ -104,7 +117,7 @@ export class GeometryCoreTestIO {
       const centroid = PolygonOps.centroidAreaNormal(visitor.point)!;
       for (let i = 0; i < visitor.point.length; i++) {
         visitor.point.getPoint3dAtUncheckedPointIndex(i, xyz);
-        const distanceToCentroid = xyz.distance (centroid.getOriginRef ());
+        const distanceToCentroid = xyz.distance(centroid.getOriginRef());
         const fraction = 1.5 * radius / distanceToCentroid;
         centers.push(xyz.interpolate(fraction, centroid.getOriginRef()));
       }
@@ -185,9 +198,11 @@ export class GeometryCoreTestIO {
       if (range instanceof Range3d) {
         const corners = range.corners();
         this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+        }
       } else if (range instanceof Range2d) {
         this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
       }

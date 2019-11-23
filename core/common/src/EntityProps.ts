@@ -16,8 +16,8 @@ export interface EntityProps {
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
   id?: Id64String;
-
-  [propName: string]: any;
+  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this Entity. */
+  jsonProperties?: { [key: string]: any };
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.

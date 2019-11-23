@@ -159,6 +159,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@testing-library/react-hooks",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
     },
@@ -744,7 +748,7 @@
     },
     {
       "name": "svg-baker-runtime",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "plugins" ]
     },
     {
       "name": "svg-react-loader",
@@ -752,7 +756,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "sw-precache-webpack-plugin",
@@ -805,6 +809,10 @@
     {
       "name": "tslint-loader",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "tslint-react-hooks",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "tsutils",

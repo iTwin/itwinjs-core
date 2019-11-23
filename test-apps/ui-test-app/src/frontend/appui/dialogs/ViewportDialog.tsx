@@ -73,8 +73,8 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     /* Demo values */
     const width = 400;
     const height = 300;
-    const x = window.innerWidth - width - 90;
-    const y = window.innerHeight - height - 90;
+    const x = window.innerWidth - width - 50;
+    const y = window.innerHeight - height - 50;
 
     return (
       <ModelessDialog

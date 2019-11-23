@@ -50,7 +50,7 @@ export class PresentationManager implements IDisposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
-  private _connections: Set<IModelConnection>;
+  private _connections: Map<IModelConnection, Promise<void>>;
 
   /**
    * Get / set active locale used for localizing presentation data
@@ -68,7 +68,7 @@ export class PresentationManager implements IDisposable {
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
 
     this._rulesets = new RulesetManagerImpl();
-    this._connections = new Set<IModelConnection>();
+    this._connections = new Map<IModelConnection, Promise<void>>();
   }
 
   public dispose() {
@@ -76,10 +76,9 @@ export class PresentationManager implements IDisposable {
   }
 
   private async onConnection(imodelConnection: IModelConnection) {
-    if (!this._connections.has(imodelConnection)) {
-      this._connections.add(imodelConnection);
-      await this.onNewiModelConnection(imodelConnection);
-    }
+    if (!this._connections.has(imodelConnection))
+      this._connections.set(imodelConnection, this.onNewiModelConnection(imodelConnection));
+    await this._connections.get(imodelConnection);
   }
 
   /** Function that is called when a new IModelConnection is used to retrieve data.

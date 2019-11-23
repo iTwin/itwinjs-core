@@ -66,6 +66,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   /** Command that toggles the Backstage */
   public static get backstageToggleCommand() {
     return new CommandItemDef({
+      commandId: "UiFramework.openBackstage",
       iconSpec: "icon-home",
       labelKey: "UiFramework:commands.openBackstage",
       execute: () => {

@@ -23,5 +23,18 @@ In the cube below:
   * Index inspection will show that BC appears (with BC order) in both front and right facets.
   * The other three edges FC, FG, and GB will have the same issue.
 
-![>](./figs/Polyface/PolyfaceIndexPairing.png
-)
+![>](./figs/Polyface/PolyfaceIndexPairing.png)
+
+## Testing for closure, Extracting boundary edges
+
+The (static) method `PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface)
+* Examines all facets
+* tests if every facet edge has exactly one properly paired partner
+* Returns true if all partners are found
+* Returns false if any facet edges have either (a) not partner, (b) more than one partner with the same indices or (c) a partner with indices that are not reversed.
+
+|  |  | |
+---|---|---|
+| Geometry  | ![>](./figs/Polyface/CappedCone.png) |![>](./figs/Polyface/UncappedCone.png) |
+| return from `PolyfaceQuery.isPolyfaceClosedByEdgePairing` | `true` | `false` |
+| return from `PolyfaceQuery.boundaryEdges () ` | (none !!) | ![>](./figs/Polyface/UncappedConeBoundaryEdges.png)|

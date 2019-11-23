@@ -94,6 +94,14 @@ describe("FilteredTreeDataProvider", () => {
 
   });
 
+  describe("parentDataProvider", () => {
+
+    it("returns parent data provider", () => {
+      expect(provider.parentDataProvider).to.eq(parentProviderMock.object);
+    });
+
+  });
+
   describe("getNodes", () => {
 
     it("returns root nodes", async () => {

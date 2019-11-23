@@ -180,7 +180,7 @@ export class CssProperties {
     static fromPosition(props: PointProps): React_2.CSSProperties;
 }
 
-// @alpha
+// @alpha @deprecated
 export const DefaultHistoryManager: HistoryManager;
 
 // @beta
@@ -217,6 +217,32 @@ export class DirectionHelpers {
     static readonly LEFT_CLASS_NAME = "nz-direction-left";
     static readonly RIGHT_CLASS_NAME = "nz-direction-right";
     static readonly TOP_CLASS_NAME = "nz-direction-top";
+}
+
+// @beta
+export enum DisabledResizeHandles {
+    // (undocumented)
+    Bottom = 8,
+    // (undocumented)
+    Left = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 4,
+    // (undocumented)
+    Top = 2
+}
+
+// @internal (undocumented)
+export class DisabledResizeHandlesHelpers {
+    // (undocumented)
+    static isBottomDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isLeftDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isRightDisabled(flags: DisabledResizeHandles): boolean;
+    // (undocumented)
+    static isTopDisabled(flags: DisabledResizeHandles): boolean;
 }
 
 // @internal
@@ -256,9 +282,12 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 
 // @beta
 export interface ExpandableItemProps extends CommonProps {
+    hideIndicator?: boolean;
+    // @deprecated
     history?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    // @deprecated
     onIsHistoryExtendedChange?: (isExtended: boolean) => void;
     panel?: React.ReactNode;
 }
@@ -377,6 +406,9 @@ export const getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps;
 // @internal
 export const getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps;
 
+// @internal (undocumented)
+export const getDragDistance: (from: Point, to: Point, direction: Direction) => number;
+
 // @alpha (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
@@ -441,6 +473,7 @@ export interface GroupToolProps extends CommonProps {
     isFocused?: boolean;
     label?: string;
     onClick?: () => void;
+    onPointerUp?: () => void;
 }
 
 // @alpha
@@ -462,28 +495,28 @@ export class HandleModeHelpers {
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
 }
 
-// @alpha
+// @alpha @deprecated
 export type History<TItem> = Array<HistoryEntry<TItem>>;
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryEntry<TItem> {
     item: TItem;
     key: HistoryKey;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryIcon extends React.PureComponent<HistoryItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryItem extends React.PureComponent<HistoryItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryItemProps extends CommonProps {
     children?: React.ReactNode;
     isActive?: boolean;
@@ -492,10 +525,10 @@ export interface HistoryItemProps extends CommonProps {
     title?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export type HistoryKey = number | string;
 
-// @alpha
+// @alpha @deprecated
 export class HistoryManager {
     constructor(maxItemCount: number);
     addItem<TItem extends {}>(key: HistoryKey, item: TItem, history: History<TItem>): History<TItem>;
@@ -503,13 +536,13 @@ export class HistoryManager {
     readonly maxItemCount: number;
 }
 
-// @alpha
+// @alpha @deprecated
 export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
     direction?: Direction;
     isExtended?: boolean;
@@ -688,6 +721,7 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
 // @alpha
 export interface NestedGroupProps extends GroupProps {
     onBack?: () => void;
+    onBackPointerUp?: () => void;
 }
 
 // @beta
@@ -1166,6 +1200,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
 export interface StackedProps extends CommonProps, NoChildrenProps {
     content?: React.ReactNode;
     contentRef?: React.Ref<HTMLDivElement>;
+    disabledResizeHandles?: DisabledResizeHandles;
     fillZone?: boolean;
     horizontalAnchor: HorizontalAnchor;
     isCollapsed?: boolean;
@@ -1553,6 +1588,9 @@ export interface ToolbarButtonProps extends CommonProps {
     onClick?: () => void;
 }
 
+// @internal
+export const ToolbarDirectionContext: React.Context<Direction>;
+
 // @alpha
 export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
     // (undocumented)
@@ -1566,7 +1604,7 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
 
 // @alpha
 export interface ToolbarItem {
-    // (undocumented)
+    // @deprecated (undocumented)
     readonly history: HTMLElement;
     // (undocumented)
     readonly panel: HTMLElement;
@@ -1861,6 +1899,16 @@ export interface WithContainInProps {
 }
 
 // @beta
+export const withDragInteraction: <P extends {}, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => JSX.Element;
+
+// @beta
+export interface WithDragInteractionProps {
+    direction: Direction;
+    onClick?: () => void;
+    onOpenPanel?: () => void;
+}
+
+// @beta
 export class Zone extends React.PureComponent<ZoneProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1939,7 +1987,9 @@ export class ZonesManager {
     readonly draggedWidgetManager: DraggedWidgetManager;
     // (undocumented)
     findZoneWithWidget(widgetId: WidgetZoneId, props: ZonesManagerProps): ZoneManagerProps | undefined;
-    // @internal (undocumented)
+    // (undocumented)
+    getDisabledResizeHandles(zoneId: WidgetZoneId, props: ZonesManagerProps): DisabledResizeHandles;
+    // (undocumented)
     getDropTarget(zoneId: WidgetZoneId, props: ZonesManagerProps): ZoneTargetType | undefined;
     // (undocumented)
     getGhostOutlineBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps | undefined;

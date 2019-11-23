@@ -365,7 +365,10 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const w = configs.view!.width * devicePixelRatio;
+  const h = configs.view!.height * devicePixelRatio;
+  rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
@@ -463,8 +466,8 @@ function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = fal
   testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
 }
 
-async function savePng(fileName: string): Promise<void> {
-  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+async function savePng(fileName: string, canvas?: HTMLCanvasElement): Promise<void> {
+  if (!canvas) canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const img = canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
@@ -501,7 +504,7 @@ class DefaultConfigs {
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public backgroundMap?: BackgroundMapProps;
-  public renderOptions: RenderSystem.Options = { };
+  public renderOptions: RenderSystem.Options = {};
   public tileProps?: TileAdmin.Props;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
@@ -1039,15 +1042,15 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       });
       if (elemIdImgData !== undefined) {
         ctx.putImageData(elemIdImgData, 0, 0);
-        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"), canvas);
       }
       if (depthImgData !== undefined) {
         ctx.putImageData(depthImgData, 0, 0);
-        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"), canvas);
       }
       if (typeImgData !== undefined) {
         ctx.putImageData(typeImgData, 0, 0);
-        await savePng(getImageString(testConfig, "type_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "type_" + pixStr + "_"), canvas);
       }
     }
   }
@@ -1273,6 +1276,14 @@ async function main() {
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
   const testConfig = new DefaultConfigs(jsonData);
+
+  // Sign In to iModelHub if needed
+  if (jsonData.signIn) {
+    const signedIn: boolean = await signIn();
+    if (!signedIn)
+      return;
+  }
+
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];

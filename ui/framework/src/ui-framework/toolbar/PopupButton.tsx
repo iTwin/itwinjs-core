@@ -19,6 +19,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
 import { ItemProps } from "../shared/ItemProps";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 // cSpell:ignore popupbutton
 
@@ -60,6 +61,7 @@ const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): nod
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
   private _label: string | StringGetter = "";
   private _componentUnmounting = false;
+  private _closeOnPanelOpened = true;
   private _ref = React.createRef<HTMLDivElement>();
 
   constructor(props: PopupButtonProps) {
@@ -88,27 +90,10 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     return label;
   }
 
-  private _toggleIsExpanded = () => {
-    const isPressed = !this.state.isPressed;
-
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        isPressed,
-      };
-    });
-
-    if (this.props.onExpanded)
-      this.props.onExpanded(isPressed);
-  }
-
   /** Minimizes the expandable component. */
   public minimize = () => {
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        isPressed: false,
-      };
+    this.setState({
+      isPressed: false,
     });
   }
 
@@ -137,11 +122,19 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+  }
+
+  private _handleToolPanelOpenedEvent = () => {
+    if (!this._closeOnPanelOpened)
+      return;
+    this.minimize();
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -159,19 +152,20 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
     const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
-
     return (
       <ExpandableItem
         {...this.props}
-        panel={this.getExpandedContent()}>
+        hideIndicator
+        panel={this.getExpandedContent()}
+      >
         <div ref={this._ref}>
           <Item
-            title={this.label}
-            onClick={this._toggleIsExpanded}
-            onKeyDown={this._handleKeyDown}
-            icon={icon}
-            onSizeKnown={this.props.onSizeKnown}
             badge={badge}
+            icon={icon}
+            onKeyDown={this._handleKeyDown}
+            onClick={this._handleClick}
+            onSizeKnown={this.props.onSizeKnown}
+            title={this.label}
           />
         </div>
       </ExpandableItem>
@@ -200,9 +194,24 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     );
   }
 
+  private _handleClick = () => {
+    this.setState((prevState) => {
+      const isPressed = !prevState.isPressed;
+      return {
+        isPressed,
+      };
+    }, () => {
+      const expand = !!this.state.isPressed;
+
+      this._closeOnPanelOpened = false;
+      expand && FrontstageManager.onToolPanelOpenedEvent.emit();
+      this._closeOnPanelOpened = true;
+
+      this.props.onExpanded && this.props.onExpanded(expand);
+    });
+  }
+
   private _handleOutsideClick = (e: MouseEvent) => {
-    if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
-      return;
-    this.minimize();
+    this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.minimize();
   }
 }

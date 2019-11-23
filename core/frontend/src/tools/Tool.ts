@@ -56,6 +56,10 @@ export class ToolSettings {
   public static wheelPageFactor = 120;
   /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
   public static wheelZoomBumpDistance = Constant.oneCentimeter;
+  /** the speed to scroll for the "scroll view" tool (distance per second). */
+  public static scrollSpeed = .75;
+  /** the speed to zoom for the "zoom view" tool (ratio per second). */
+  public static zoomSpeed = 2;
   /** Scale factor for zooming with mouse wheel. */
   public static wheelZoomRatio = 1.75;
   /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
@@ -868,4 +872,12 @@ export class ToolRegistry {
     keyin = keyin.toLowerCase();
     return this.getToolList().find((thisTool) => thisTool.keyin.toLowerCase() === keyin);
   }
+}
+
+/** @internal */
+export class CoreTools {
+  public static namespace = "CoreTools";
+  public static tools = "CoreTools:tools.";
+  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
 }

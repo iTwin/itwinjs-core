@@ -503,9 +503,7 @@ export class ToolAdmin {
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
-    const ev = event.ev as MouseEvent;
-    const rect = event.vp!.getClientRect();
-    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+    return event.vp!.mousePosFromEvent(event.ev as MouseEvent);
   }
 
   private getMouseButton(button: number) {
@@ -574,7 +572,6 @@ export class ToolAdmin {
     if (this.filterViewport(vp))
       return;
 
-    vp.setAnimator();
     const ev = new BeTouchEvent({ touchEvent });
     const current = this.currentInputState;
     const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEvent.targetTouches.length ? touchEvent.targetTouches : touchEvent.changedTouches, vp);
@@ -582,6 +579,7 @@ export class ToolAdmin {
     switch (touchEvent.type) {
       case "touchstart":
       case "touchend":
+        vp.setAnimator();
         current.setKeyQualifiers(touchEvent);
         break;
     }
@@ -609,6 +607,9 @@ export class ToolAdmin {
 
         if (undefined === current.lastTouchStart)
           return;
+
+        if (ev.touchEvent.timeStamp - current.lastTouchStart.touchEvent.timeStamp > (2.0 * ToolSettings.doubleTapTimeout.milliseconds))
+          return; // Too much time has passed from touchstart to be considered a tap...
 
         // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
@@ -697,20 +698,8 @@ export class ToolAdmin {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
-      case "mouseover": {
-        // handle the mouseover (which is similar to mouseenter) only if the target is our canvas.
-        if (event.ev.target === event.vp!.canvas) {
-          return this.onMouseEnter(event.vp!);
-        }
-        return;
-      }
-      case "mouseout": {
-        // handle the mouseout (which is similar to mouseleave) only if the target is our canvas.
-        if (event.ev.target === event.vp!.canvas) {
-          return this.onMouseLeave(event.vp!);
-        }
-        return;
-      }
+      case "mouseover": return this.onMouseEnter(event.vp!);
+      case "mouseout": return this.onMouseLeave(event.vp!);
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
       case "keyup": return this.onKeyTransition(event, false);

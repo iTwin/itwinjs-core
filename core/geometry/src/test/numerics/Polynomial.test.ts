@@ -19,6 +19,15 @@ import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial,
 import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../../numerics/BezierPolynomials";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../../geometry4d/Point4d";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Sphere } from "../../solid/Sphere";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
@@ -53,7 +62,7 @@ describe("Bezier.HelloWorld", () => {
     const bez4 = new Order4Bezier(1, 2, 5, 6);
     ck.testFalse(bez2a.subdivide(0.1, bez2, bez3), "mismatched subdivide order");
     ck.testFalse(bez2a.subdivide(0.1, bez3, bez2), "mismatched subdivide order");
-    ck.testUndefined (BezierCoffs.maxAbsDiff (bez2, bez3), "mismatch order in maxAbsDiff");
+    ck.testUndefined(BezierCoffs.maxAbsDiff(bez2, bez3), "mismatch order in maxAbsDiff");
     testBezier(ck, bez4);
 
     const bez5 = new Order5Bezier(1, 2, 5, 6, 8);
@@ -561,4 +570,125 @@ describe("LinearSystems", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("spherePatch", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const radius = 2.0;
+    const center = Point3d.create(0.2, 0.4, -0.5);
+    const pole = Math.PI * 0.5;
+    const halfCircle = Math.PI;
+    const radiansStep = 0.3;
+    const phiRadiansArray = [-pole, -0.4 * pole, 0.0, 0.2 * pole];
+    const thetaRadiansArray = [-halfCircle, -0.6 * halfCircle, -0.2 * halfCircle, 0.0, 0.45 * halfCircle, 0.9 * halfCircle, 1.3 * halfCircle, 2.8 * halfCircle];
+    // const phiRadiansArray = [0.0, pole * 0.5];
+    // const thetaRadiansArray = [0.0, halfCircle];
+    let y0 = 0;
+    let x0 = 0;
+    const xStep = 4.0 * radius;
+    const yStep = 4.0 * radius;
+    for (const theta0Radians of thetaRadiansArray) {
+      for (const theta1Radians of thetaRadiansArray) {
+        if (Math.abs(theta1Radians - theta0Radians) > Math.PI * 2.001)
+          continue;
+        y0 = 0;
+        const thetaArray = arraySteps(theta0Radians, theta1Radians, radiansStep);
+        for (const phi0Radians of phiRadiansArray) {
+          for (const phi1Radians of phiRadiansArray) {
+            const phiArray = arraySteps(phi0Radians, phi1Radians, radiansStep);
+            const points = sphereSnakeGridPoints(center, radius, thetaArray, phiArray);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
+            const patchRange = SphereImplicit.patchRangeStartEndRadians(center, radius, theta0Radians, theta1Radians, phi0Radians, phi1Radians);
+            const expandedPatchRange = patchRange.clone();
+            expandedPatchRange.expandInPlace(1.0e-12);
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, patchRange, x0, y0);
+            const pointRange = Range3d.createArray(points);
+            const expandedPointRange = pointRange.clone();
+            expandedPointRange.expandInPlace(0.10 * radius);
+            ck.testTrue(expandedPatchRange.containsRange(pointRange), "points in patch range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
+            ck.testTrue(expandedPointRange.containsRange(patchRange), "patch in expanded point range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
+            y0 += yStep;
+          }
+        }
+        x0 += xStep;
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "PatchRange");
+  });
+  it("RayIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const radius = 5.0;
+    const rayFractions: number[] = [];
+    const xyzIntersections: Point3d[] = [];
+    const thetaPhiRadians: Point2d[] = [];
+    let x0 = 0;
+    let y0;
+    const b = 2.5 * radius; // distance for displaying the ray
+    for (const center of [Point3d.createZero(), Point3d.create(1, 2, 3)]) {
+      y0 = 0;
+      const sphere = Sphere.createCenterRadius(center, radius);
+      for (const ray0 of [Ray3d.createXAxis(),
+      Ray3d.create(center, Vector3d.create(1, 2, 3)),
+      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
+        ray0.tryNormalizeInPlaceWithAreaWeight(1);
+        const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));
+        for (const shift of [-6, -4, -2, 0, 1, 3, 5, 7]) {
+          const ray = Ray3d.create(frame.multiplyXYZ(shift, 0, 0), ray0.direction);
+          SphereImplicit.intersectSphereRay(center, radius, ray, rayFractions, xyzIntersections, thetaPhiRadians);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(ray.fractionToPoint(-b), ray.fractionToPoint(b)), x0, y0);
+          for (const xyz of xyzIntersections)
+            GeometryCoreTestIO.captureGeometry(allGeometry, Sphere.createCenterRadius(xyz, radius * 0.04), x0, y0);
+          const closestPoint = ray.projectPointToRay(center);
+          const d = center.distance(closestPoint);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(center, center.interpolate(d < radius ? 3.0 : 1.0, closestPoint)), x0, y0);
+          if (Geometry.isSameCoordinate(d, radius)) {
+            // ignore the potential tolerance problems . . .
+          } else if (d < radius) {
+            ck.testExactNumber(2, xyzIntersections.length, "Expect 2 intersections when ray passes close to center");
+          } else
+            ck.testExactNumber(0, xyzIntersections.length, "Expect no intersections when ray is far from center");
+        }
+        y0 += 6.0 * radius;
+      }
+      x0 += 6.0 * radius;
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
+  });
+
 });
+
+function arraySteps(low: number, high: number, step: number): number[] {
+  if (low === high)
+    return [low];
+  const delta = high - low;
+  const numInterval = Math.max(1, Math.floor(Math.abs(delta / step)));
+  const result = [];
+  for (let i = 0; i <= numInterval; i++) {
+    result.push(low + (i / numInterval) * delta);
+  }
+  return result;
+}
+function sphereSnakeGridPoints(center: Point3d, radius: number, thetaArray: number[], phiArray: number[]): Point3d[] {
+  const points: Point3d[] = [];
+  const sphere = new SphereImplicit(radius);
+  for (let iPhi = 0; iPhi < phiArray.length; iPhi += 2) {
+    let phiRadians = phiArray[iPhi];
+    for (const thetaRadians of thetaArray) {
+      points.push(center.plus(sphere.evaluateThetaPhi(thetaRadians, phiRadians)));
+    }
+    if (iPhi + 1 < phiArray.length) {
+      phiRadians = phiArray[iPhi + 1];
+      for (let iTheta = thetaArray.length; iTheta > 0;) {
+        iTheta--;
+        const uvw = sphere.evaluateThetaPhi(thetaArray[iTheta], phiRadians);
+        points.push(center.plus(uvw));
+      }
+    }
+  }
+  return points;
+}

@@ -12,6 +12,7 @@ import { getDisplayName, translate } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { IPresentationPropertyDataProvider } from "./DataProvider";
 import "./WithUnifiedSelection.scss";
+import { FillCentered } from "@bentley/ui-core";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 
@@ -162,7 +163,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
 
       let content;
       if (this.state.overLimit) {
-        content = (<span>{this.state.localizedStrings ? this.state.localizedStrings.tooManyElements : undefined}</span>);
+        content = (<FillCentered>{this.state.localizedStrings ? this.state.localizedStrings.tooManyElements : undefined}</FillCentered>);
       } else {
         content = (<PropertyGridComponent {...props} />);
       }

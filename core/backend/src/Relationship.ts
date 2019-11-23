@@ -239,7 +239,7 @@ export class Relationships {
         return stmt.getRow() as T;
       });
     }
-    props.classFullName = props.className.replace(".", ":");
+    props.classFullName = (props as any).className.replace(".", ":");
     return props;
   }
 

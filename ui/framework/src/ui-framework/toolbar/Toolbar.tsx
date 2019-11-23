@@ -234,6 +234,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           groupId: `overflow-group-${itemDimensions}-${actionItems.length}-${overflowItems.length}`,
           labelKey: "UiFramework:general.overflow",
           items: overflowItems,
+          direction: this.props.expandsTo,
         });
         overflowItemDef.overflow = true;
       }
@@ -271,9 +272,17 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     }
   }
 
+  private hasVisibleItems(items: ItemList) {
+    for (const item of items) {
+      if (item && item.isVisible)
+        return true;
+    }
+    return false;
+  }
+
   public render() {
     // istanbul ignore next
-    if (0 === this.props.items.length) {
+    if (0 === this.props.items.length || !this.hasVisibleItems(this.props.items)) {
       Logger.logTrace(UiFramework.loggerCategory(this), `--->  nothing to render for ${this._toolbarId} `);
       return null;
     }

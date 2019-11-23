@@ -14,7 +14,7 @@ import {
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
   ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
-  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
+  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps, SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -1639,8 +1639,8 @@ export namespace IModelDb {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
           const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
-          aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
-          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
+          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
           return aspectProps;
         }
         return undefined;
@@ -1781,8 +1781,11 @@ export namespace IModelDb {
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewStateData.viewDefinitionProps.categorySelectorId);
       viewStateData.displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
-        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(viewStateData.viewDefinitionProps.modelSelectorId);
+
+      const modelSelectorId = (viewStateData.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      if (modelSelectorId !== undefined)
+        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
+
       else if (viewDefinitionElement instanceof SheetViewDefinition) {
         viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
@@ -1790,6 +1793,7 @@ export namespace IModelDb {
           where: "Model.Id=" + viewDefinitionElement.baseModelId,
         }));
       }
+
       return viewStateData;
     }
 

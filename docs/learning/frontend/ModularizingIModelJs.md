@@ -12,15 +12,13 @@ Therefore, that deployment model does not take advantage of the careful organiza
 
 There are a number of advantages to creating a separately loadable module for each of our packages:
 
-1. We (and our users and third-party developers) will have many iModel.js applications. The system iModel.js modules can be shared by multiple such applications. They can be delivered to the browser by a simple web server or by a content delivery network (CDN). They can also be loaded directly from the browser cache if they have been previously downloaded.
+1. We (and our users and third-party developers) can develop plugins for our applications that can be loaded dynamically. Such plugins are webpacked as external modules, using the exact same method that we use to webpack our packages as modules, and then loaded into the browser or Electron environment that already has the iModel.js modules loaded. The plugins can be very small if they add only simple functionality, or quite large if necessary.
 
-2. We (and our users and third-party developers) can develop plugins for our applications that can be loaded dynamically. Such plugins are webpacked as external modules, using the exact same method that we use to webpack our packages as modules, and then loaded into the browser or Electron environment that already has the iModel.js modules loaded. The plugins can be very small if they add only simple functionality, or quite large if necessary.
+1. Faster startup time during development. Our previous development environment used the webpack development server for most of our test programs (e.g. ui-test-app). In that case, each time a browser application is started, it is webpacked into memory from the ground up, a process that can take several minutes. With the application and our packages modularized and webpacked to disk, startup is very fast.
 
-3. Faster startup time during development. Our previous development environment used the webpack development server for most of our test programs (e.g. ui-test-app). In that case, each time a browser application is started, it is webpacked into memory from the ground up, a process that can take several minutes. With the application and our packages modularized and webpacked to disk, startup is very fast.
+1. Faster build times. If you are working on only one package, only that module needs to be built and webpacked after you make a change. That is fast, and then you just reload the application. (To be fair, though, using webpack-dev-server is also quite efficient in that case, and has some advantage with hot module replacement. We are hoping to get the best of both worlds eventually).
 
-4. Faster build times. If you are working on only one package, only that module needs to be built and webpacked after you make a change. That is fast, and then you just reload the application. (To be fair, though, using webpack-dev-server is also quite efficient in that case, and has some advantage with hot module replacement. We are hoping to get the best of both worlds eventually).
-
-5. Better alignment with HTTP/2, which allows parallel HTTP requests and hence parallel loading of modules.
+1. Better alignment with HTTP/2, which allows parallel HTTP requests and hence parallel loading of modules.
 
 There are probably advantages to be gained by further optimizing our loading strategy - see the [Loading Modules at Runtime](#loading-modules-at-runtime) section below.
 
@@ -51,11 +49,11 @@ Unfortunately, the Webpack Module is not an exact match for our requirements. By
 ```javascript
 bentleyjs-core
 geometry-core
-iModel.js-i18n
-iModel.js-clients
-iModel.js-common
-iModel.js-quantity
-iModel.js-frontend
+imodeljs-i18n
+imodeljs-clients
+imodeljs-common
+imodeljs-quantity
+imodeljs-frontend
 ui-abstract
 ui-core
 ui-components
@@ -84,13 +82,13 @@ Here are some rules that our source code must follow to successfully build and u
 
 2. Import classes, functions, etc., from other packages using the barrel file exclusively. In other words, use:
 
-   `import { IModelApp } from "@bentley/iModel.js-frontend";`
+   `import { IModelApp } from "@bentley/imodeljs-frontend";`
 
     rather than the previously-possible
 
-   `import { IModelApp } from "@bentley/iModel.js-frontend/lib/IModelApp";`
+   `import { IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";`
 
-    The reason for this is that webpack detects that you are intending to import the class or function from an external module by matching up the "@bentley/iModel.js-frontend" with the list of externals in the webpack configuration. If you specify the entire file, webpack doesn't interpret that as an external reference, and thus includes that (transpiled from TypeScript) JavaScript file into the current webpack. That would be bad enough, but it also doesn't recognize the imported file's imports from its home package (all of which will have the relative file name), and thus includes those, and recursively their imports, etc., until pretty soon all the source that we are trying to keep external from that module is pulled into its webpack.
+    The reason for this is that webpack detects that you are intending to import the class or function from an external module by matching up the "@bentley/imodeljs-frontend" with the list of externals in the webpack configuration. If you specify the entire file, webpack doesn't interpret that as an external reference, and thus includes that (transpiled from TypeScript) JavaScript file into the current webpack. That would be bad enough, but it also doesn't recognize the imported file's imports from its home package (all of which will have the relative file name), and thus includes those, and recursively their imports, etc., until pretty soon all the source that we are trying to keep external from that module is pulled into its webpack.
 
 3. Refrain from default exports. They cannot be imported from barrel files, so they can only be used from within the same package. Simply don't use them and import everything using the usual syntax.
 
@@ -113,17 +111,15 @@ inspire-tree
 lodash
 ```
 
-I have written a tool that analyzes the JSON output of our webpacked modules to determine what modules to specify as external. There is no point in making a module external if it used by only one of our packages, or if it is small. The list of potential modules was smaller than I expected it to be. So far, these are the only ones that merit treatment as external.
-
-## Building the IModel.js External Modules
+## Building the iModel.js External Modules
 
 The "rush build" command now builds each system module in the iModel.js repository using the buildIModelJsModule script, which sequences the transpilation and webpacking steps. Separate system modules are built for development and production purposes. For efficiency during development, "rush build" creates only the development version. To build the the production version of the modules, add the --production argument ("rush build --production"). For a complete discussion of building modules, including the additional steps needed to build application modules, please see the [BuildingIModelJsModules](./BuildingIModelJsModules.md) documentation.
 
-## Gathering External Modules for an IModel.js Application
+## Gathering External Modules for an iModel.js Application
 
 For a browser application, the module files must be available to be delivered by a web server. When building an application module, the buildIModelJsModule script analyzes those external modules by examining the dependencies in package.json. The IModel.js modules are symlinked or copied to a subdirectory of the form `v<version>`, where version is read from the corresponding package.json. The other (non-iModel.js) external modules are symlinked or copied into the origin directory of the webserver.
 
-## Building Applications to Use External Modules>
+## Building Applications to Use External Modules
 
 An application that uses the IModel.js external module system should be built in the same way as the IModel.js external modules, so it has the correct webpack runtime. The buildIModelJsModule script ensures that.
 

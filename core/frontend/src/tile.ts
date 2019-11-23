@@ -8,7 +8,4 @@ export * from "./tile/A3xTileIO";
 export * from "./tile/GltfTileIO";
 export * from "./tile/IModelTile";
 export * from "./tile/IModelTileIO";
-export * from "./tile/Tile";
 export * from "./tile/TileIO";
-export * from "./tile/TileTree";
-export * from "./tile/TileRequest";

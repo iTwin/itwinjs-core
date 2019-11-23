@@ -128,9 +128,11 @@ export class AngleSweep implements BeJSONFunctions {
     readonly isCCW: boolean;
     readonly isFullCircle: boolean;
     readonly isFullLatitudeSweep: boolean;
+    static isRadiansInStartEnd(radians: number, radians0: number, radians1: number): boolean;
     isRadiansInSweep(radians: number): boolean;
     radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number): number;
+    static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number;
     radiansToSignedPeriodicFraction(radians: number): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
@@ -877,7 +879,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
-    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): void;
+    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
     // @deprecated
@@ -1142,6 +1144,10 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
 export class Constant {
     static readonly circumferenceOfEarth: number;
     static readonly diameterOfEarth: number;
+    static readonly earthRadiusWGS84: {
+        polar: number;
+        equator: number;
+    };
     static readonly oneCentimeter: number;
     static readonly oneKilometer: number;
     static readonly oneMeter: number;
@@ -1490,6 +1496,38 @@ export enum CurveSearchStatus {
     stoppedAtBoundary = 2,
     success = 1
 }
+
+// @internal
+export class CutLoop {
+    constructor(xyz: GrowableXYZArray);
+    absorb(other: CutLoop): void;
+    back(result?: Point3d): Point3d;
+    containsSortLimits(other: CutLoop): number;
+    static createCaptureWithReturnEdge(xyz: GrowableXYZArray): CutLoop;
+    // (undocumented)
+    edge?: Ray3d;
+    front(result?: Point3d): Point3d;
+    // (undocumented)
+    isNotch: boolean;
+    setSortCoordinates(ray: Ray3d): void;
+    // (undocumented)
+    sortCoordinate0: number;
+    // (undocumented)
+    sortCoordinate1: number;
+    // (undocumented)
+    sortDelta: number;
+    static sortFunction(loopA: CutLoop, loopB: CutLoop): number;
+    // (undocumented)
+    xyz: GrowableXYZArray;
+}
+
+// @internal
+export class CutLoopMergeContext {
+    constructor();
+    inputLoops: CutLoop[];
+    outputLoops: CutLoop[];
+    sortAndMergeLoops(): void;
+    }
 
 // @internal
 export class DeepCompare {
@@ -2389,8 +2427,12 @@ export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<Inde
 
 // @public
 export class IndexedXYZCollectionPolygonOps {
-    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): void;
+    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): number;
+    // @internal
+    static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength?: number, tolerance?: number): CutLoopMergeContext;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
+    // @internal
+    static reorderCutLoops(loops: CutLoopMergeContext): void;
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
     }
 
@@ -2627,7 +2669,7 @@ export class Loop extends CurveChain {
     cloneStroked(options?: StrokeOptions): AnyCurve;
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
-    static createPolygon(points: GrowableXYZArray | Point3d[]): Loop;
+    static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop;
     readonly curveCollectionType = "loop";
     dgnBoundaryType(): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -3680,12 +3722,16 @@ export class PolyfaceQuery {
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithTVertexFixup(polyface: Polyface): Polyface;
     static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData;
+    static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
+    static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
+    static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle): void;
     static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
+    static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
@@ -3727,7 +3773,7 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
-    static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number;
+    static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
@@ -3880,8 +3926,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     isAlmostEqual(other: Range2d): boolean;
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
-    static isNull(range: LowAndHighXY): boolean;
     readonly isNull: boolean;
+    static isNull(range: LowAndHighXY): boolean;
     readonly isSinglePoint: boolean;
     low: Point2d;
     maxAbs(): number;
@@ -3913,12 +3959,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     constructor(lowX?: number, lowY?: number, lowZ?: number, highX?: number, highY?: number, highZ?: number);
     readonly center: Point3d;
     clone(result?: this): this;
+    cloneTranslated(shift: XYAndZ, result?: this): this;
     containsPoint(point: Point3d): boolean;
     containsPointXY(point: Point3d): boolean;
     containsRange(other: Range3d): boolean;
     containsXY(x: number, y: number): boolean;
     containsXYZ(x: number, y: number, z: number): boolean;
-    corners(): Point3d[];
+    corners(result?: Point3d[]): Point3d[];
     static create(...point: Point3d[]): Range3d;
     static createArray<T extends Range3d>(points: Point3d[], result?: T): T;
     static createFrom<T extends Range3d>(other: Range3d, result?: T): T;
@@ -3947,8 +3994,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendTransformedXYZ(transform: Transform, x: number, y: number, z: number): void;
     extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number): void;
     extendTransformTransformedXYZ(transformA: Transform, transformB: Transform, x: number, y: number, z: number): void;
+    extendXOnly(x: number): void;
     extendXYZ(x: number, y: number, z: number): void;
     extendXYZW(x: number, y: number, z: number, w: number): void;
+    extendYOnly(y: number): void;
+    extendZOnly(z: number): void;
     static faceCornerIndices(index: number): number[];
     fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d;
     freeze(): void;
@@ -3965,8 +4015,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
     readonly isAlmostZeroZ: boolean;
-    static isNull(data: LowAndHighXYZ): boolean;
     readonly isNull: boolean;
+    static isNull(data: LowAndHighXYZ): boolean;
     readonly isSinglePoint: boolean;
     localToWorld(xyz: XYAndZ, result?: Point3d): Point3d | undefined;
     localToWorldArrayInPlace(points: Point3d[]): boolean;
@@ -4340,6 +4390,19 @@ export class Segment1d {
     x1: number;
 }
 
+// @internal
+export class SineCosinePolynomial {
+    constructor(a: number, cosCoff: number, sinCoff: number);
+    a: number;
+    cosineCoff: number;
+    evaluateRadians(theta: number): number;
+    range(result?: Range1d): Range1d;
+    rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d;
+    rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d;
+    set(a: number, cosCoff: number, sinCoff: number): void;
+    sineCoff: number;
+}
+
 // @public
 export class SmallSystem {
     static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;
@@ -4427,7 +4490,9 @@ export class SphereImplicit {
     evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
     evaluateImplicitFunction(x: number, y: number, z: number): number;
     evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number;
-    evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d;
+    evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
+    static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
+    static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
     radius: number;
     xyzToThetaPhiR(xyz: Point3d): {
         thetaRadians: number;
@@ -4470,8 +4535,8 @@ export class StrokeCountMap {
 // @public
 export class StrokeOptions {
     angleTol?: Angle;
-    static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number;
     applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number;
+    static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number;
     applyChordTol(minCount: number, radius: number, sweepRadians: number): number;
     applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number;
     applyMaxEdgeLength(minCount: number, totalLength: number): number;

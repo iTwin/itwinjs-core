@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Curve */
+
 import { ConsolidateAdjacentCurvePrimitivesOptions, CurveChain } from "../CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Loop } from "../Loop";
@@ -12,7 +14,6 @@ import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Arc3d } from "../Arc3d";
 import { CurveFactory } from "../CurveFactory";
-/** @module Curve */
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
  *

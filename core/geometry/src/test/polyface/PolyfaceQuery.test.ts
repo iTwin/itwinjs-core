@@ -296,3 +296,58 @@ it("cloneWithColinearEdgeFixup", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithColinearEdgeFixup");
   expect(ck.getNumErrors()).equals(0);
 });
+
+describe("MarkVisibility", () => {
+  it("SimpleBoundary", () => {
+    const ck = new Checker();
+    let dy = 0.0;
+    const dx = 0.0;
+    const yStep = 10.0;
+    const allGeometry: GeometryQuery[] = [];
+    const numX = 4;
+    const numY = 4;
+    const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.create(1.0324, 0, 0.1), Vector3d.create(0, 1.123, 0.5), numX, numY);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy, 0);
+    dy += yStep;
+    PolyfaceQuery.markPairedEdgesInvisible(mesh);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "SimpleBoundary");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("NonManifold", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const dy = 5.0;
+    const pointA0 = Point3d.create(0, 0);
+    const pointA1 = Point3d.create(0, 1);
+
+    const pointB0 = Point3d.create(1, 0);
+    const pointB1 = Point3d.create(1, 1);
+
+    const pointC0 = Point3d.create(1, 0, 1);
+    const pointC1 = Point3d.create(1, 1, 1);
+
+    const pointD0 = Point3d.create(1, 0, 2);
+    const pointD1 = Point3d.create(1, 1, 2);
+
+    const pointE0 = Point3d.create(2, 0);
+    const pointE1 = Point3d.create(2, 1);
+
+    const builder = PolyfaceBuilder.create();
+    builder.addPolygon([pointA0, pointB0, pointB1, pointA1]);
+    builder.addPolygon([pointA0, pointC0, pointC1, pointA1]);
+    builder.addPolygon([pointA0, pointD0, pointD1, pointA1]);
+    builder.addPolygon([pointB0, pointE0, pointE1, pointB1]);
+    const mesh = builder.claimPolyface(true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+    PolyfaceQuery.markPairedEdgesInvisible(mesh);
+    y0 += dy;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "NonManifold");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

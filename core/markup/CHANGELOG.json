@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-markup_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added missing topic descriptions"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-markup_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -22,7 +22,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   let opCount = 0;
   const reporter = new Reporter();
 
-  function createElemProps(imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -37,7 +37,6 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     // Create props
     const elementProps: GeometricElementProps = {
       classFullName: className,
-      iModel: imodel,
       model: modId,
       category: catId,
       code: Code.createEmpty(),
@@ -169,7 +168,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
           sourceId: idC,
           targetId: idD,
         };
-        props.propRel = "Relationship Value";
+        (props as any).propRel = "Relationship Value";
         const relId = seedIModel.relationships.insertInstance(props);
         assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
 
@@ -177,7 +176,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const idB = insertElement(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB");
         const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
         const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
-        elementProps.childB = elemRef;
+        (elementProps as any).childB = elemRef;
         const geomElement = seedIModel.elements.createElement(elementProps);
         setPropVal(geomElement, "propBase", "Test Value");
         setPropVal(geomElement, "propChildA", "A Value");
@@ -216,7 +215,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         sourceId: idC,
         targetId: idD,
       };
-      props.propRel = "Relationship Value";
+      (props as any).propRel = "Relationship Value";
       const relId = perfimodel.relationships.insertInstance(props);
       assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
       const endTime = new Date().getTime();
@@ -227,7 +226,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       const startTime1 = new Date().getTime();
       const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
       const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
-      elementProps.childB = elemRef;
+      (elementProps as any).childB = elemRef;
       const geomElement = perfimodel.elements.createElement(elementProps);
       setPropVal(geomElement, "propBase", "Test Value");
       setPropVal(geomElement, "propChildA", "A Value");

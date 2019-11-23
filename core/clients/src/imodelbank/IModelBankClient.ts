@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelBank */
+/** @module iModelHubClient */
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
 import { IModelBankHandler } from "./IModelBankHandler";

@@ -10,7 +10,7 @@ import {
   ScreenViewport, MockRender, IModelConnection, SpatialViewState, ViewState, SubCategoriesCache, DrawingViewState, SheetViewState, EmphasizeElements,
 } from "@bentley/imodeljs-frontend";
 import {
-  SpatialViewDefinitionProps, ViewStateProps, CategorySelectorProps, ModelSelectorProps, DisplayStyleProps, ViewDefinition2dProps, SheetProps,
+  SpatialViewDefinitionProps, ViewStateProps, CategorySelectorProps, ModelSelectorProps, DisplayStyleProps, SheetProps,
 } from "@bentley/imodeljs-common";
 import { Vector3d, Point3d } from "@bentley/geometry-core";
 
@@ -44,7 +44,7 @@ describe("SavedViewLayout", () => {
     model: "model", code: { spec: "spec", scope: "scope" },
   };
 
-  const viewDefinitionProps2: ViewDefinition2dProps = {
+  const viewDefinitionProps2 = {
     cameraOn: false, origin, extents,
     camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
     classFullName: "Bis:DrawingViewDefinition",
@@ -54,7 +54,7 @@ describe("SavedViewLayout", () => {
     baseModelId: "model", delta, angle: 0,
   };
 
-  const viewDefinitionProps3: ViewDefinition2dProps = {
+  const viewDefinitionProps3 = {
     cameraOn: false, origin, extents,
     camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
     classFullName: "Bis:SheetViewDefinition",

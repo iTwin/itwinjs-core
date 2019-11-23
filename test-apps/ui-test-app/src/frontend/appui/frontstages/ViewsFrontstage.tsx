@@ -22,7 +22,6 @@ import { ScrollView, Point } from "@bentley/ui-core";
 
 import {
   FrontstageProvider,
-  ToolWidget,
   ZoneState,
   ContentLayoutDef,
   ContentLayoutProps,
@@ -47,7 +46,6 @@ import {
   UiFramework,
   WIDGET_OPACITY_DEFAULT,
   ItemList,
-  ToolItemDef,
   ConditionalItemDef,
   ContentLayoutManager,
   SavedViewLayout,
@@ -66,12 +64,15 @@ import {
   StagePanelLocation,
   IModelConnectedNavigationWidget,
   StagePanelState,
+  ReviewToolWidget,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { ViewportDialog } from "../dialogs/ViewportDialog";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 
@@ -87,7 +88,6 @@ import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
-import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
@@ -98,6 +98,8 @@ import { ExampleForm } from "../forms/ExampleForm";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  private _additionalTools = new AdditionalTools();
+
   public static savedViewLayoutProps: string;
   private _leftPanel = {
     widgets: [
@@ -114,7 +116,7 @@ export class ViewsFrontstage extends FrontstageProvider {
   };
 
   private _bottomPanel = {
-    allowedZones: [2],
+    allowedZones: [2, 7],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -160,7 +162,9 @@ export class ViewsFrontstage extends FrontstageProvider {
         topLeft={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+              <Widget isFreeform={true} element={<ReviewToolWidget showCategoryAndModelsContextTools={true}
+                suffixHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
+                suffixVerticalItems={this._additionalTools.additionalVerticalToolbarItems} />} />,
             ]}
           />
         }
@@ -178,7 +182,9 @@ export class ViewsFrontstage extends FrontstageProvider {
         topRight={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />} />,
+              <Widget isFreeform={true} element={
+                <IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />
+              } />,
             ]}
           />
         }
@@ -228,7 +234,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         bottomCenter={
           <Zone
             widgets={[
-              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
@@ -260,6 +266,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             />}
             defaultState={StagePanelState.Minimized}
             size={280}
+            minSize={300}
+            maxSize={800}
             widgets={this._leftPanel.widgets}
           />
         }
@@ -280,7 +288,7 @@ export class ViewsFrontstage extends FrontstageProvider {
 
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
-class FrontstageToolWidget extends React.Component {
+class AdditionalTools {
   private _nestedGroup = new GroupItemDef({
     groupId: "nested-group",
     labelKey: "SampleApp:buttons.toolGroup",
@@ -460,6 +468,12 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _spinnerTestDialogItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+    });
+  }
+
   private _viewportDialogCnt: number = 0;
 
   private openViewportDialog(): void {
@@ -601,13 +615,6 @@ class FrontstageToolWidget extends React.Component {
     return returnState;
   }
 
-  /** example that disables the button if active content is not a 3d view */
-  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-    return returnState;
-  }
-
   private _visibleTestStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
     returnState.isVisible = SampleAppIModelApp.getTestProperty() !== "HIDE";
@@ -619,23 +626,6 @@ class FrontstageToolWidget extends React.Component {
     returnState.isEnabled = SampleAppIModelApp.getTestProperty() !== "HIDE";
     return returnState;
   }
-
-  private executeMeasureByPoints() {
-    IModelApp.tools.run("Measure.Distance");
-  }
-
-  //  /** Get the CustomItemDef for PopupButton  */
-  //  private get _popupButtonItemDef() {
-  //    return new CustomItemDef({
-  //      reactElement: (
-  //        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
-  //          <div style={{ width: "200px", height: "100px" }}>
-  //            hello world!
-  //          </div>
-  //        </PopupButton>
-  //      ),
-  //    });
-  //  }
 
   // cSpell:disable
 
@@ -668,14 +658,8 @@ class FrontstageToolWidget extends React.Component {
 
   // cSpell:enable
 
-  private _horizontalToolbarItems = new ItemList([
-    CoreTools.selectElementCommand,
+  public additionalHorizontalToolbarItems = new ItemList([
     this._openNestedAnimationStage,
-    new ToolItemDef({
-      toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
-      execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
-      betaBadge: true,
-    }),
     CoreTools.keyinBrowserButtonItemDef,
     AppTools.tool1,
     new ConditionalItemDef({
@@ -704,8 +688,7 @@ class FrontstageToolWidget extends React.Component {
     }),
   ]);
 
-  private _verticalToolbarItems = new ItemList([
-    CoreTools.measureToolGroup,
+  public additionalVerticalToolbarItems = new ItemList([
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
       panelLabel: "Open Close Properties",
@@ -723,7 +706,10 @@ class FrontstageToolWidget extends React.Component {
       labelKey: "SampleApp:buttons.dialogDemos",
       panelLabel: "Dialog Demos",
       iconSpec: "icon-placeholder",
-      items: [this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem],
+      items: [
+        this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._spinnerTestDialogItem,
+        this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem,
+      ],
       badgeType: BadgeType.New,
     }),
     new GroupItemDef({
@@ -742,13 +728,4 @@ class FrontstageToolWidget extends React.Component {
     }),
   ]);
 
-  public render() {
-    return (
-      <ToolWidget
-        appButton={AppTools.backstageToggleCommand}
-        horizontalItems={this._horizontalToolbarItems}
-        verticalItems={this._verticalToolbarItems}
-      />
-    );
-  }
 }

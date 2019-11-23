@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration, IModelJsFs } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
 import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -46,6 +45,4 @@ export function initializeBackend() {
   }
 
   IModelHost.startup(hostConfig);
-
-  Logger.initializeToConsole(); // configure logging for imodeljs-core
 }

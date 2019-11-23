@@ -114,7 +114,7 @@ function mockGetGlobalEventSASToken() {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-describe("iModelHub GlobalEventHandler", () => {
+describe("iModelHub GlobalEventHandler (#unit)", () => {
   let globalEventSubscription: GlobalEventSubscription;
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
@@ -123,12 +123,7 @@ describe("iModelHub GlobalEventHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
 
-  before(async function () {
-    if (!TestConfig.enableMocks) {
-      this.skip();
-      return;
-    }
-
+  before(async () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);

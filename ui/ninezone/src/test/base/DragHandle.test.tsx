@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { DragHandle, DragHandleProps } from "../../ui-ninezone/base/DragHandle";
-import { SinonSpy } from "../Utils";
+import { SinonSpy, createPointerEvent } from "../Utils";
 import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
 
 describe("<DragHandle />", () => {
@@ -33,17 +33,32 @@ describe("<DragHandle />", () => {
     const sut = mount<DragHandle>(<DragHandle onClick={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const mouseDown = document.createEvent("MouseEvent");
-    mouseDown.initEvent("mousedown");
-    pointerCaptor.prop("onMouseDown")!(mouseDown);
+    const pointerDown = createPointerEvent();
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const mouseMove = document.createEvent("MouseEvent");
-    mouseMove.initEvent("mousemove");
-    sinon.stub(mouseMove, "clientX").get(() => 30);
-    pointerCaptor.prop("onMouseMove")!(mouseMove);
+    const pointerMove = createPointerEvent({
+      clientX: 30,
+    });
+    pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     pointerCaptor.prop("onClick")!();
 
     spy.calledOnceWithExactly().should.false;
+  });
+
+  it("should release pointer capture", () => {
+    const sut = mount<DragHandle>(<DragHandle />);
+    const pointerCaptor = sut.find(PointerCaptor);
+
+    const spy = sinon.spy();
+    const target = document.createElement("div");
+    target.releasePointerCapture = () => spy;
+
+    const pointerDown = createPointerEvent({
+      target,
+    });
+    pointerCaptor.prop("onPointerDown")!(pointerDown);
+
+    spy.calledOnce.should.false;
   });
 });

@@ -2,6 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+/** @module Tools */
+
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import {
@@ -16,6 +19,7 @@ import {
   MessageBoxType,
   NotifyMessageDetails,
   OutputMessagePriority,
+  CoreTools,
 } from "@bentley/imodeljs-frontend";
 import {
   GeometrySummaryOptions,
@@ -24,12 +28,13 @@ import {
 } from "@bentley/imodeljs-common";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
- *  - `id=elementId` where `elementId` is a hexadecimal element Id such as "0x12cb";
+ *  - `id=elementId,elementId,elementId` comma-separated list of element Idswhere each `elementId` is a hexadecimal element Id such as "0x12cb";
  *  - `symbology=0|1` where 1 indicates detailed symbology information should be included in the output;
  *  - `placement=0|1` where 1 indicates detailed geometric element placement should be included; and
  *  - `verbosity=0|1|2` controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note verbosity=2 can produce megabytes of data for certain types of geometric primitives like large meshes.
  *  - `modal=0|1` where 1 indicates the output should appear in a modal dialog.
  *  - `copy=0|1` where 1 indicates the output should be copied to the clipboard. Defaults to true.
+ *  - `refs=0|1` where 1 indicates that for geometry parts a list of all elements referencing that part should be included in the output. This is extremely computationally expensive.
  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
  * @alpha
  */
@@ -39,17 +44,17 @@ export class InspectElementTool extends PrimitiveTool {
   public static get maxArgs() { return 6; }
 
   private _options: GeometrySummaryOptions = {};
-  private _elementId?: Id64String;
+  private _elementIds?: Id64String[];
   private _modal = false;
   private _useSelection = false;
   private _doCopy = false;
 
-  constructor(options?: GeometrySummaryOptions, elementId?: Id64String) {
+  constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]) {
     super();
     if (undefined !== options)
       this._options = { ...options };
 
-    this._elementId = elementId;
+    this._elementIds = elementIds;
   }
 
   private setupAndPromptForNextAction(): void {
@@ -61,7 +66,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.ConfirmSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement");
+    CoreTools.outputPromptByKey(this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement");
   }
 
   public autoLockTarget(): void { }
@@ -75,8 +80,8 @@ export class InspectElementTool extends PrimitiveTool {
   public onPostInstall(): void {
     super.onPostInstall();
 
-    if (undefined !== this._elementId)
-      this.process([this._elementId]).then(() => {
+    if (undefined !== this._elementIds)
+      this.process(this._elementIds).then(() => {
         this.onReinitialize();
       }).catch((err) => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
@@ -96,7 +101,7 @@ export class InspectElementTool extends PrimitiveTool {
         });
 
         if (0 === ids.length)
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.NotSuportedElmType")));
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
         else
           await this.process(ids);
 
@@ -120,7 +125,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   public onReinitialize(): void {
-    if (this._useSelection || undefined !== this._elementId) {
+    if (this._useSelection || undefined !== this._elementIds) {
       this.exitTool();
     } else {
       this.onRestartTool();
@@ -173,7 +178,7 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occured while generating summary", err.toString());
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", err.toString());
     }
 
     IModelApp.notifications.outputMessage(messageDetails);
@@ -185,10 +190,10 @@ export class InspectElementTool extends PrimitiveTool {
       if (2 !== parts.length)
         continue;
 
-      const name = parts[0].toLowerCase();
+      const name = parts[0][0].toLowerCase();
 
-      if ("id" === name) {
-        this._elementId = parts[1];
+      if ("i" === name) {
+        this._elementIds = parts[1].split(",");
         continue;
       }
 
@@ -196,7 +201,7 @@ export class InspectElementTool extends PrimitiveTool {
       if (Number.isNaN(value))
         continue;
 
-      if ("verbosity" === name) {
+      if ("v" === name) {
         switch (value) {
           case 0:
             this._options.geometryVerbosity = GeometrySummaryVerbosity.Basic;
@@ -216,16 +221,21 @@ export class InspectElementTool extends PrimitiveTool {
 
       const flag = 1 === value;
       switch (name) {
-        case "symbology":
+        case "s":
           this._options.verboseSymbology = flag;
           break;
-        case "placement":
+        case "p":
           this._options.includePlacement = flag;
           break;
-        case "modal":
+        case "r":
+          const vp = IModelApp.viewManager.selectedView;
+          if (undefined !== vp)
+            this._options.includePartReferences = vp.view.is3d() ? "3d" : "2d";
+          break;
+        case "m":
           this._modal = flag;
           break;
-        case "copy":
+        case "c":
           this._doCopy = flag;
           break;
       }

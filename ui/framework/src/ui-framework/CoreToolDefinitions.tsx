@@ -25,6 +25,7 @@ import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { BaseItemState } from "../ui-framework/shared/ItemDefBase";
 import { ContentViewManager } from "./content/ContentViewManager";
 import { UiFramework } from "./UiFramework";
+import { getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -181,21 +182,6 @@ export class CoreTools {
     });
   }
 
-  public static get clearSelectionItemDef() {
-    return new CommandItemDef({
-      commandId: "UiFramework.ClearSelection",
-      iconSpec: "icon-selection-clear",
-      labelKey: "UiFramework:buttons.clearSelection",
-      execute: () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (iModelConnection) {
-          iModelConnection.selectionSet.emptyAll();
-        }
-        IModelApp.toolAdmin.startDefaultTool();
-      },
-    });
-  }
-
   private static turnOnClipVolume() {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp || !vp.view.is3d())
@@ -314,6 +300,27 @@ export class CoreTools {
       iconSpec: "icon-measure",
       items: [this.measureDistanceToolItemDef, this.measureLocationToolItemDef],
       itemsInColumn: 2,
+    });
+  }
+
+  public static get clearSelectionItemDef() {
+    return new CommandItemDef({
+      commandId: "UiFramework.ClearSelection",
+      iconSpec: "icon-selection-clear",
+      labelKey: "UiFramework:buttons.clearSelection",
+      stateSyncIds: getSelectionContextSyncEventIds(),
+      stateFunc: selectionContextStateFunc,
+      execute: () => {
+        const iModelConnection = UiFramework.getIModelConnection();
+        if (iModelConnection) {
+          iModelConnection.selectionSet.emptyAll();
+        }
+        const tool = IModelApp.toolAdmin.primitiveTool;
+        if (tool)
+          tool.onRestartTool();
+        else
+          IModelApp.toolAdmin.startDefaultTool();
+      },
     });
   }
 

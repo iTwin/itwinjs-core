@@ -18,7 +18,7 @@ import { BackstageComposerItem } from "./BackstageComposerItem";
 export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem>>;
 
 /** @internal */
-export const useGroupedItems = (manager: BackstageItemsManager): ReadonlyArray<ReadonlyArray<BackstageItem>> => {
+export const useGroupedItems = (manager: BackstageItemsManager): GroupedItems => {
   const items = useBackstageItems(manager);
   return React.useMemo(() => {
     const grouped = items.reduce<GroupedItems>((acc, item) => {

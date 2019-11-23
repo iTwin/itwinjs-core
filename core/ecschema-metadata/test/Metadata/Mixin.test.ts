@@ -173,7 +173,7 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testEntity = await (schema as MutableSchema).createEntityClass("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
@@ -201,7 +201,7 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testEntity = (schema as MutableSchema).createEntityClassSync("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
@@ -257,7 +257,7 @@ describe("Mixin", () => {
     });
 
     it("applicableTo, appliesTo undefined, should throw", async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 1, 1);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       const mixin = new Mixin(schema, "TestMixin");
       const entity = new EntityClass(schema, "TestEntity");
 
@@ -265,7 +265,7 @@ describe("Mixin", () => {
     });
 
     it("applicableTo, appliesTo resolves undefined, should throw", async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 1, 1);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       const entity = new EntityClass(schema, "TestEntity");
       const mixin = new Mixin(schema, "TestMixin");
       const promise = new DelayedPromiseWithProps(entity.key, async () => undefined);

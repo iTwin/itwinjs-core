@@ -21,15 +21,15 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
   private _wrappedHandler: TreeEvents;
   private _selectionHandler: SelectionHandler;
   private _dataProvider: IPresentationTreeDataProvider;
-  private _modelSource: TreeModelSource<IPresentationTreeDataProvider>;
+  private _modelSource: TreeModelSource;
   private _dispose: () => void;
 
   private _selecting = false;
   private _ongoingSubscriptions = new Set<Subscription>();
 
-  constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource<IPresentationTreeDataProvider>, selectionHandler: SelectionHandler) {
+  constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource, selectionHandler: SelectionHandler, dataProvider: IPresentationTreeDataProvider) {
     this._wrappedHandler = wrappedHandler;
-    this._dataProvider = modelSource.getDataProvider();
+    this._dataProvider = dataProvider;
     this._modelSource = modelSource;
     this._selectionHandler = selectionHandler;
     this._selectionHandler.onSelect = this.onSelect.bind(this);
@@ -126,7 +126,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     this.selectNodes();
   }
 
-  private selectNodes() {
+  public selectNodes() {
     const selection = this._selectionHandler.getSelection();
 
     const shouldSelectNode = (node: TreeNodeItem) => {
@@ -199,9 +199,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
  * @alpha
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource<IPresentationTreeDataProvider>, treeEvents: TreeEvents): TreeEvents {
-  const dataProvider = modelSource.getDataProvider();
-
+export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents {
   const name = useRefLazy(() => `Tree_${counter++}`);
   const unifiedSelectionHandler = useRefLazy(() => new SelectionHandler(Presentation.selection, name, dataProvider.imodel, dataProvider.rulesetId));
 
@@ -214,8 +212,8 @@ export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource<I
   }, [dataProvider]);
 
   const eventHandler = useMemo(
-    () => new UnifiedSelectionTreeEventHandler(treeEvents, modelSource, unifiedSelectionHandler),
-    [unifiedSelectionHandler, modelSource, treeEvents],
+    () => new UnifiedSelectionTreeEventHandler(treeEvents, modelSource, unifiedSelectionHandler, dataProvider),
+    [unifiedSelectionHandler, modelSource, treeEvents, dataProvider],
   );
 
   const previousEventHandler = useRef<UnifiedSelectionTreeEventHandler>();
@@ -227,6 +225,10 @@ export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource<I
         previousEventHandler.current.dispose();
     };
   }, [eventHandler]);
+
+  useEffect(() => {
+    eventHandler.selectNodes();
+  }, [modelSource]);
 
   return eventHandler;
 }

@@ -9,9 +9,9 @@ import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
 import { TreeEvents, TreeSelectionModificationEvent, TreeSelectionReplacementEvent, TreeCheckboxStateChangeEvent } from "../../../ui-components/tree/controlled/TreeEvents";
-import { TreeNodeLoader } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, TreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
+import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, TreeModelNode, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { extractSequence } from "../ObservableTestHelpers";
@@ -21,7 +21,7 @@ describe("TreeEventDispatcher", () => {
 
   let dispatcher: TreeEventDispatcher;
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
-  const treeNodeLoaderMock = moq.Mock.ofType<TreeNodeLoader>();
+  const treeNodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
   const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
   const modelMock = moq.Mock.ofType<TreeModel>();
 
@@ -30,7 +30,9 @@ describe("TreeEventDispatcher", () => {
   let selectedNodes: MutableTreeModelNode[];
   let deselectedNodes: MutableTreeModelNode[];
   let placeholderNode: TreeModelNodePlaceholder;
+  let placeholderChildNode: TreeModelNodePlaceholder;
   let loadedNode: MutableTreeModelNode;
+  let loadedChildNode: MutableTreeModelNode;
   let testNodes: TreeModelNode[];
 
   beforeEach(() => {
@@ -50,13 +52,16 @@ describe("TreeEventDispatcher", () => {
     selectedNodes = createRandomMutableTreeModelNodes(4).map((node) => ({ ...node, isSelected: true }));
     deselectedNodes = createRandomMutableTreeModelNodes(4).map((node) => ({ ...node, isSelected: false }));
     placeholderNode = { childIndex: 0, depth: 0 };
+    placeholderChildNode = { childIndex: 0, depth: 1, parentId: selectedNodes[3].id };
     loadedNode = createRandomMutableTreeModelNode();
+    loadedChildNode = createRandomMutableTreeModelNode(selectedNodes[3].id);
     testNodes = [...selectedNodes, ...deselectedNodes];
 
     const iterator = function* () {
       for (const node of selectedNodes)
         yield node;
 
+      yield placeholderChildNode;
       yield placeholderNode;
 
       for (const node of deselectedNodes)
@@ -64,15 +69,21 @@ describe("TreeEventDispatcher", () => {
     };
 
     visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => testNodes.length + 1);
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => testNodes.length + 2);
     visibleNodesMock.setup((x) => x[Symbol.iterator]).returns(() => iterator);
 
     for (const node of testNodes) {
       modelMock.setup((x) => x.getNode(node.id)).returns(() => node);
     }
 
+    modelMock.setup((x) => x.getRootNode()).returns(() => ({ depth: -1, id: undefined, numChildren: undefined }));
     modelMock.setup((x) => x.getNode(loadedNode.id)).returns(() => loadedNode);
-    treeNodeLoaderMock.setup((x) => x.loadNode(undefined, 0)).returns(() => from([{ model: modelMock.object, loadedNodes: [loadedNode.id] }]));
+    modelMock.setup((x) => x.getNode(loadedChildNode.id)).returns(() => loadedChildNode);
+    modelMock.setup((x) => x.getNode(selectedNodes[3].id)).returns(() => selectedNodes[3]);
+
+    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0)).returns(() => from([[loadedNode.id]]));
+    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelNode(parent) && parent.id === selectedNodes[3].id), 0))
+      .returns(() => from([[loadedChildNode.id]]));
   };
 
   describe("constructor", () => {
@@ -98,12 +109,12 @@ describe("TreeEventDispatcher", () => {
         expect(selectionChange.deselectedNodeIds).to.be.empty;
       });
 
-      it("selects range of node and loads unloaded nodes", async () => {
+      it("selects range of nodes and loads unloaded nodes", async () => {
         const rangeSelection = {
           from: selectedNodes[3].id,
           to: deselectedNodes[0].id,
         };
-        const expectedSelectedNodeIds = [selectedNodes[3].id, deselectedNodes[0].id, loadedNode.id];
+        const expectedSelectedNodeIds = [selectedNodes[3].id, deselectedNodes[0].id, loadedChildNode.id, loadedNode.id];
         const spy = sinon.spy();
         treeEventsMock.setup((x) => x.onSelectionModified).returns(() => spy);
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });

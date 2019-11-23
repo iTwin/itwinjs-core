@@ -7,6 +7,7 @@
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
 import { encodeDepthRgb } from "./Decode";
 import { System } from "../System";
+import { addRenderPass } from "./RenderPass";
 
 /** @internal */
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
@@ -56,8 +57,15 @@ const reverseWhiteOnWhite = `
   return mix(baseColor, wowColor, floor(u_reverseWhiteOnWhite + 0.5));
 `;
 
-const computePickBufferOutputs = `
-  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
+const multiplyAlpha = `
+  if (u_renderPass >= kRenderPass_OpaqueLinear && u_renderPass <= kRenderPass_OpaqueGeneral)
+    baseColor.a = 1.0;
+  else
+    baseColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);
+`;
+
+const computePickBufferOutputs = multiplyAlpha + `
+  vec4 output0 = baseColor;
 
   // Fix interpolation errors despite all vertices sending exact same feature_id...
   ivec4 feature_id_i = ivec4(feature_id * 255.0 + 0.5);
@@ -66,8 +74,8 @@ const computePickBufferOutputs = `
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
-const computeAltPickBufferOutputs = `
-  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
+const computeAltPickBufferOutputs = multiplyAlpha + `
+  vec4 output0 = baseColor;
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
 `;
@@ -108,6 +116,7 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
     prelude.addline(reassignFeatureId);
   }
 
+  addRenderPass(frag);
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
@@ -128,6 +137,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
     prelude.addline("output0 = overrideColor(output0);");
   }
 
+  addRenderPass(frag);
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
@@ -139,6 +149,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
 /** @internal */
 export function addFragColorWithPreMultipliedAlpha(frag: FragmentShaderBuilder): void {
+  addRenderPass(frag);
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined === overrideColor) {
     frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
@@ -151,11 +162,12 @@ export function addFragColorWithPreMultipliedAlpha(frag: FragmentShaderBuilder):
 /** @internal */
 export const assignFragColor = "FragColor = baseColor;";
 
-/** @internal */
-export const assignFragColorWithPreMultipliedAlpha = "FragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);";
-const overrideAndAssignFragColorWithPreMultipliedAlpha = `
-  vec4 fragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);
-  fragColor = overrideColor(fragColor);
+const assignFragColorWithPreMultipliedAlpha = multiplyAlpha + `
+  FragColor = baseColor;
+`;
+
+const overrideAndAssignFragColorWithPreMultipliedAlpha = multiplyAlpha + `
+  vec4 fragColor = overrideColor(baseColor);
   FragColor = fragColor;
 `;
 

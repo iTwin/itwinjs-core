@@ -1,12 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Toolbar /> renders correctly 1`] = `
-<PanelsProvider
-  histories={null}
-  panels={null}
+<ContextProvider
+  value={3}
 >
-  <Component />
-</PanelsProvider>
+  <PanelsProvider
+    histories={null}
+    panels={null}
+  >
+    <Component />
+  </PanelsProvider>
+</ContextProvider>
 `;
 
 exports[`<Toolbar /> renders with expandsTo 1`] = `

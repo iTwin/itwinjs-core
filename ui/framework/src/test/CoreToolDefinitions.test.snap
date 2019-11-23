@@ -397,6 +397,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
 
 exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
 <ExpandableItem
+  hideIndicator={true}
   iconSpec="icon-process"
   labelKey="UiFramework:keyinbrowser.label"
   panel={

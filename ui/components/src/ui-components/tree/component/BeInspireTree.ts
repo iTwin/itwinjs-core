@@ -57,6 +57,7 @@ export interface BeInspireTreeNodeITree {
   icon?: string;
   checkboxTooltip?: string;
   dirtyTimestamp?: number;
+  dirtyCounter?: number;
   state?: {
     checkboxVisible?: boolean;
     checkboxDisabled?: boolean;
@@ -766,7 +767,13 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
     const markDirtyBase = inspireNode.markDirty;
     anyNode.markDirty = function () {
       const result = markDirtyBase.call(this);
-      this.itree.dirtyTimestamp = (new Date()).getTime();
+      const currTimestamp = (new Date()).getTime();
+      if (this.itree.dirtyTimestamp === currTimestamp) {
+        ++this.itree.dirtyCounter;
+      } else {
+        this.itree.dirtyTimestamp = currTimestamp;
+        this.itree.dirtyCounter = 0;
+      }
       return result;
     };
     anyNode._markDirtyOverriden = markDirtyBase;

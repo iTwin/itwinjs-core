@@ -18,15 +18,15 @@ describe("<ExpandableItem />", () => {
   });
 
   it("renders active correctly", () => {
-    const sut = mount(<ExpandableItem isActive />);
-    const button = sut.getDOMNode() as HTMLElement;
-    button.classList.contains("nz-active").should.true;
+    shallow(<ExpandableItem isActive />).dive().should.matchSnapshot();
   });
 
   it("renders disabled correctly", () => {
-    const sut = mount(<ExpandableItem isDisabled />);
-    const button = sut.getDOMNode() as HTMLElement;
-    button.classList.contains("nz-disabled").should.true;
+    shallow(<ExpandableItem isDisabled />).dive().should.matchSnapshot();
+  });
+
+  it("renders w/o indicator correctly", () => {
+    shallow(<ExpandableItem hideIndicator />).dive().should.matchSnapshot();
   });
 
   it("should invoke onIsHistoryExtendedChange when mouse enters", () => {

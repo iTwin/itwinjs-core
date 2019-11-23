@@ -29,11 +29,11 @@ describe("DiagnosticReporters tests", () => {
   let testDiagnostics: AnyDiagnostic[];
 
   async function createTestDiagnostic(category: DiagnosticCategory, messageArgs: any[] = ["Param1", "Param2"]): Promise<AnyDiagnostic> {
-    testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
     testProperty = await (testSchemaItem as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}", category);
-    const diagnostic = new diagnosticClass(testProperty, messageArgs);
+    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}");
+    const diagnostic = new diagnosticClass(testProperty, messageArgs, category);
     // These were added to a test collection because the generator, createAsyncIterableDiagnostic,
     // can only be consumed once, hence the need for the collection, which allows the tests access
     // to the created diagnostics.

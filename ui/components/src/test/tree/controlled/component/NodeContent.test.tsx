@@ -7,12 +7,12 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { render, waitForElement } from "@testing-library/react";
+import { CheckBoxState } from "@bentley/ui-core";
 import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
-import { PropertyValueRendererManager } from "../../../../ui-components";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { CellEditingEngine } from "../../../../ui-components/tree/controlled/component/CellEditingEngine";
-import { CheckBoxState } from "@bentley/ui-core";
 import { TestUtils } from "../../../TestUtils";
 
 describe("NodeContent", () => {
@@ -72,41 +72,30 @@ describe("NodeContent", () => {
     await waitForElement(() => renderedNode.getByText("Test label"));
   });
 
-  it("calls onFinalRenderComplete if callback provided in props", () => {
-    const spy = sinon.spy();
-
-    render(
+  it("rerenders label with asynchronous function", async () => {
+    const renderedNode = render(
       <TreeNodeContent
         node={node}
         valueRendererManager={rendererManagerMock.object}
-        onFinalRenderComplete={spy}
-        renderId={"0"}
-      />);
+      />,
+    );
 
-    expect(spy).to.be.called;
-  });
+    renderedNode.getByText("Test label");
 
-  it("calls onFinalRender even if shouldComponentUpdate return false", () => {
-    const onFinalRender = sinon.spy();
-    const { rerender } = render(
+    rendererManagerMock.reset();
+    rendererManagerMock.setup((m) => m.render(moq.It.isAny(), moq.It.isAny())).returns(async () => "Async label");
+    const newNode = { ...node };
+
+    renderedNode.rerender(
       <TreeNodeContent
-        node={node}
+        node={newNode}
         valueRendererManager={rendererManagerMock.object}
-        renderId={"0"}
-        onFinalRenderComplete={onFinalRender}
-      />);
+      />,
+    );
 
-    expect(onFinalRender.calledOnce);
+    renderedNode.getByText("Test label");
 
-    rerender(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-        renderId={"0"}
-        onFinalRenderComplete={onFinalRender}
-      />);
-
-    expect(onFinalRender.calledTwice);
+    await waitForElement(() => renderedNode.getByText("Async label"));
   });
 
   it("highlights label", () => {
@@ -199,6 +188,21 @@ describe("NodeContent", () => {
       />);
 
     getByText(node.item.description!);
+  });
+
+  it("call onLabelRendered when label is rendered", () => {
+    const spy = sinon.spy();
+    rendererManagerMock.reset();
+
+    render(
+      <TreeNodeContent
+        node={node}
+        valueRendererManager={rendererManagerMock.object}
+        onLabelRendered={spy}
+      />,
+    );
+
+    expect(spy).to.be.calledOnce;
   });
 
 });

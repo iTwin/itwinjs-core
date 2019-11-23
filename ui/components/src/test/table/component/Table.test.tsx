@@ -9,6 +9,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
+import { DragDropContext } from "react-dnd";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { LocalUiSettings } from "@bentley/ui-core";
@@ -16,17 +17,15 @@ import {
   PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
 } from "@bentley/imodeljs-frontend";
 
+import TestUtils from "../../TestUtils";
 import {
   Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
   TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyUpdatedArgs, EditorContainer,
 } from "../../../ui-components";
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
-import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-
-import TestUtils from "../../TestUtils";
 
 describe("Table", () => {
 
@@ -149,15 +148,14 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     expect(dataProvider.getColumns).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onColumnsChanged.raiseEvent();
 
-    columnsPromise.resolve([]);
+    await columnsPromise.resolve([]);
 
-    await (shallowTable.instance() as Table).update();
     expect(dataProvider.getColumns).to.be.calledTwice;
   });
 
@@ -172,17 +170,15 @@ describe("Table", () => {
       sort: async () => { },
     };
 
-    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    enzyme.shallow(<Table dataProvider={dataProvider} />);
     await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledOnce;
 
     for (let i = 0; i < 5; ++i)
       dataProvider.onRowsChanged.raiseEvent();
 
-    rowsCountPromise.resolve(0);
+    await rowsCountPromise.resolve(0);
 
-    await (shallowTable.instance() as Table).update();
-    await BeDuration.wait(0); // allow pending promises to finish
     expect(dataProvider.getRowsCount).to.be.calledTwice;
   });
 
@@ -1180,9 +1176,8 @@ describe("Table", () => {
       inputNode.simulate("change", { target: { value: newPropertyValue } });
       inputNode.simulate("keyDown", { key: "Enter" });
 
-      setImmediate(() => {
-        expect(onPropertyUpdated.calledOnce).to.be.true;
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(onPropertyUpdated.calledOnce).to.be.true;
     });
 
   });
@@ -1271,12 +1266,11 @@ describe("Table", () => {
       table.update();
     });
 
-    it("should scroll to a specific row", () => {
+    it("should scroll to a specific row", async () => {
       table.setProps({ scrollToRow: 50 });
       table.update();
-      setImmediate(() => {
-        expect(onScrollToRow.calledOnceWith(50)).to.be.true;
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(onScrollToRow.calledOnceWith(50)).to.be.true;
     });
 
   });
@@ -1408,10 +1402,29 @@ describe("Table", () => {
       expect(await dataProvider.getRowsCount()).to.eq(10);
     });
 
-    // it("debug", () => {
-    //   console.log(filterTable.debug()); // tslint:disable-line:no-console
-    // });
-
   });
 
+  describe("context menu", async () => {
+    const onCellContextMenuSpy = sinon.spy();
+
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onCellContextMenu={onCellContextMenuSpy}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+
+      onCellContextMenuSpy.resetHistory();
+    });
+
+    it("should open context menu", () => {
+      const cells = table.find(cellClassName);
+      expect(cells.length).to.be.greaterThan(0);
+      cells.at(0).simulate("contextmenu", { currentTarget: cells.at(0), clientX: 1, clientY: 1 });
+      expect(onCellContextMenuSpy.calledOnce).to.be.true;
+    });
+
+  });
 });

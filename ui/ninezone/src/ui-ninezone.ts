@@ -60,6 +60,7 @@ export * from "./ui-ninezone/stage-panels/manager/StagePanels";
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
 export * from "./ui-ninezone/toolbar/item/expandable/Expandable";
+export * from "./ui-ninezone/toolbar/item/expandable/WithDragInteraction";
 
 export * from "./ui-ninezone/toolbar/item/expandable/group/BackArrow";
 export * from "./ui-ninezone/toolbar/item/expandable/group/Column";
@@ -82,6 +83,7 @@ export * from "./ui-ninezone/toolbar/Toolbar";
 export * from "./ui-ninezone/utilities/Cell";
 export * from "./ui-ninezone/utilities/Css";
 export * from "./ui-ninezone/utilities/Direction";
+export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
 export * from "./ui-ninezone/widget/Stacked";

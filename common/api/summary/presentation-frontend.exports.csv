@@ -3,6 +3,7 @@ Release Tag;API Item
 internal;FavoriteProperties
 beta;FavoritePropertiesManager
 alpha;HiliteSet
+alpha;HiliteSetProvider
 internal;IFavoritePropertiesStorage
 internal;IModelAppFavoritePropertiesStorage 
 public;ISelectionProvider

@@ -17,7 +17,7 @@ describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
 
   describe("SchemaItemType", () => {
-    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testUnit = new InvertedUnit(schema, "Test");
     it("should return correct item type and string", () => {
       assert.strictEqual(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
@@ -27,7 +27,7 @@ describe("Inverted Unit tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -192,7 +192,7 @@ describe("Inverted Unit tests", () => {
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -327,7 +327,7 @@ describe("Inverted Unit tests", () => {
   });
   describe("toJson", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 

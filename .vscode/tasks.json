@@ -15,6 +15,16 @@
       "type": "npm",
       "script": "test",
       "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "path": "core/ecschema-metadata/",
+      "problemMatcher": [
+        "$tsc-watch"
+      ],
+      "group": "build",
+      "isBackground": true
     }
   ]
 }

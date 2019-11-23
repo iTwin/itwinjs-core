@@ -97,6 +97,7 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
+export * from "./ui-core/utils/CustomHooks";
 
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";

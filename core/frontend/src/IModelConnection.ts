@@ -5,7 +5,7 @@
 /** @module IModelConnection */
 
 import {
-  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Set,
+  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
@@ -958,6 +958,10 @@ export namespace IModelConnection {
       return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid);
     }
 
+    public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
+      return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
+    }
+
     public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {
       let trees = this._treesBySupplier.get(supplier);
       if (undefined === trees) {
@@ -1007,7 +1011,9 @@ export namespace IModelConnection {
 class TreeOwner implements TileTree.Owner {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  public readonly load: () => TileTree | undefined;
+  private readonly _supplier: TileTree.Supplier;
+  private readonly _iModel: IModelConnection;
+
   public readonly id: any;
 
   public get tileTree(): TileTree | undefined { return this._tileTree; }
@@ -1015,10 +1021,18 @@ class TreeOwner implements TileTree.Owner {
 
   public constructor(id: any, supplier: TileTree.Supplier, iModel: IModelConnection) {
     this.id = id;
-    this.load = () => {
-      this._load(supplier, iModel); // tslint:disable-line no-floating-promises
-      return this.tileTree;
-    };
+    this._supplier = supplier;
+    this._iModel = iModel;
+  }
+
+  public load(): TileTree | undefined {
+    this._load(); // tslint:disable-line no-floating-promises
+    return this.tileTree;
+  }
+
+  public async loadTree(): Promise<TileTree | undefined> {
+    await this._load();
+    return this.tileTree;
   }
 
   public dispose(): void {
@@ -1026,7 +1040,7 @@ class TreeOwner implements TileTree.Owner {
     this._loadStatus = TileTree.LoadStatus.NotLoaded;
   }
 
-  private async _load(supplier: TileTree.Supplier, iModel: IModelConnection): Promise<void> {
+  private async _load(): Promise<void> {
     if (TileTree.LoadStatus.NotLoaded !== this.loadStatus)
       return;
 
@@ -1034,7 +1048,7 @@ class TreeOwner implements TileTree.Owner {
     let tree: TileTree | undefined;
     let newStatus: TileTree.LoadStatus;
     try {
-      tree = await supplier.createTileTree(this.id, iModel);
+      tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTree.LoadStatus.Loaded : TileTree.LoadStatus.NotFound;
     } catch (err) {
       newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.NotFound;

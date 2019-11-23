@@ -41,6 +41,8 @@ import {
   Surface,
 } from "./Surface";
 
+declare var BUILD_SEMVER: string;
+
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
@@ -159,7 +161,35 @@ class RefreshTilesTool extends Tool {
   public static get maxArgs() { return undefined; }
 
   public run(changedModelIds?: string[]): boolean {
+    if (undefined !== changedModelIds && 0 === changedModelIds.length)
+      changedModelIds = undefined;
+
     IModelApp.viewManager.refreshForModifiedModels(changedModelIds);
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args);
+  }
+}
+
+class PurgeTileTreesTool extends Tool {
+  public static toolId = "PurgeTileTrees";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return undefined; }
+
+  public run(modelIds?: string[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp)
+      return true;
+
+    if (undefined !== modelIds && 0 === modelIds.length)
+      modelIds = undefined;
+
+    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // tslint:disable-line:no-floating-promises
+      IModelApp.viewManager.refreshForModifiedModels(modelIds);
+    });
+
     return true;
   }
 
@@ -196,12 +226,29 @@ export class DisplayTestApp {
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
 
+    IModelApp.applicationLogoCard = () => {
+      const div = document.createElement("div");
+      const image = new Image();
+      image.src = "DTA.png";
+      image.width = 300;
+      div.appendChild(image);
+
+      const attr = document.createElement("p");
+      attr.style.textAlign = "center";
+      attr.style.fontStyle = "italic";
+      attr.style.fontWeight = "bold";
+      attr.innerHTML = "Display Test App " + BUILD_SEMVER;
+      div.appendChild(attr);
+      return IModelApp.makeLogoCard(div, "dta-app-name");
+    };
+
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
     ResizeWindowTool.register(svtToolNamespace);
     RefreshTilesTool.register(svtToolNamespace);
+    PurgeTileTreesTool.register(svtToolNamespace);
     ShutDownTool.register(svtToolNamespace);
 
     CreateWindowTool.register(svtToolNamespace);

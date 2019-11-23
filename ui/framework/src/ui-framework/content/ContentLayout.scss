@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
+$resizer-size: 6px;
+$resizer-size-large: 14px;
+
 #uifw-contentlayout-div {
   position: absolute;
   top: 0;
@@ -20,28 +23,33 @@
     background: rgb(180, 180, 180);
     box-sizing: border-box;
     background-clip: padding-box;
+    margin: 0;
 
     &:hover {
       transition: all 2s ease;
     }
 
     &.horizontal {
-      height: 11px;
-      min-height: 11px;
-      margin: -3px 0;
-      border-top: 3px solid rgba(255, 255, 255, 0);
-      border-bottom: 3px solid rgba(255, 255, 255, 0);
+      height: $resizer-size;
+      min-height: $resizer-size;
       cursor: ns-resize;
       width: 100%;
+
+      @include for-tablet-landscape-down {
+        height: $resizer-size-large;
+        min-height: $resizer-size-large;
+      }
     }
 
     &.vertical {
-      width: 11px;
-      min-width: 11px;
-      margin: 0 -3px;
-      border-left: 3px solid rgba(255, 255, 255, 0);
-      border-right: 3px solid rgba(255, 255, 255, 0);
+      width: $resizer-size;
+      min-width: $resizer-size;
       cursor: ew-resize;
+
+      @include for-tablet-landscape-down {
+        width: $resizer-size-large;
+        min-width: $resizer-size-large;
+      }
     }
 
     &.disabled {

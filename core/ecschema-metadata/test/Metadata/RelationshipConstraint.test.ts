@@ -49,7 +49,7 @@ describe("RelationshipConstraint", () => {
     let testConstraint: RelationshipConstraint;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const relClass = new RelationshipClass(schema, "TestRelationship");
       testConstraint = new RelationshipConstraint(relClass, RelationshipEnd.Source);
     });

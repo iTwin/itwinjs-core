@@ -4,7 +4,7 @@ exports[`PropertyGrid withUnifiedSelection renders correctly when data provider 
 <div
   className="pcomponents-property-grid-with-unified-selection"
 >
-  <span />
+  <Component />
 </div>
 `;
 

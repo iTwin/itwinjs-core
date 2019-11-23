@@ -7,15 +7,13 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-
-const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 import { UiCore } from "../UiCore";
-
-import "./Dialog.scss";
 import { Omit } from "../utils/typeUtils";
 import { CommonProps } from "../utils/Props";
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
+
+import "./Dialog.scss";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public
@@ -145,6 +143,7 @@ interface DialogState {
   y?: number;
   width?: number;
   height?: number;
+  positionSet: boolean;
 }
 
 /**
@@ -175,6 +174,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       moving: false,
       grabOffsetX: 0,
       grabOffsetY: 0,
+      positionSet: props.x !== undefined || props.y !== undefined,
     };
   }
 
@@ -191,7 +191,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       left: x, top: y,
       width, height,
     };
-    if (movable && (this.state.x !== undefined || this.state.y !== undefined)) {
+
+    if (this.state.x !== undefined || this.state.y !== undefined) {
       // istanbul ignore else
       if (this.state.x !== undefined) {
         containerStyle.marginLeft = "0";
@@ -206,9 +207,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       }
     }
 
-    if (resizable && (this.state.width !== undefined || this.state.height !== undefined)) {
+    if (this.state.width !== undefined || this.state.height !== undefined) {
+      // istanbul ignore else
       if (this.state.width !== undefined)
         containerStyle.width = this.state.width;
+      // istanbul ignore else
       if (this.state.height !== undefined)
         containerStyle.height = this.state.height;
     }
@@ -303,6 +306,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private getCSSClassNameFromAlignment(alignment?: DialogAlignment): string {
     let className = "";
 
+    // Drop the alignment CSS class if the Dialog has been sized or moved.
+    if (this.state.positionSet)
+      return "";
+
     // istanbul ignore next
     if (!alignment)
       alignment = DialogAlignment.Center;
@@ -392,7 +399,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
   public componentWillUnmount(): void {
     window.removeEventListener("pointerup", this._handlePointerUp, true);
-
     window.removeEventListener("pointermove", this._handlePointerMove, true);
 
     document.removeEventListener("keyup", this._handleKeyUp, true);
@@ -462,7 +468,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         width = Math.max(width, minWidth!);
         if (maxWidth !== undefined)
           width = Math.min(width, maxWidth);
-        this.setState({ width });
       }
       if (this.state.downResizing) {
         const centerY = event.clientY;
@@ -470,15 +475,15 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         height = Math.max(height, minHeight!);
         if (maxHeight !== undefined)
           height = Math.min(height, maxHeight);
-        this.setState({ height });
       }
 
     }
     if (movable && this.state.moving) {
       x = event.clientX - this.state.grabOffsetX;
       y = event.clientY - this.state.grabOffsetY;
-      this.setState({ x, y });
     }
+
+    this.setState({ x, y, width, height, positionSet: true });
   }
 
   private _handlePointerUp = (_event: PointerEvent): void => {

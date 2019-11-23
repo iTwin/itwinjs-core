@@ -4,9 +4,7 @@ exports[`<SnapModePanel /> renders correctly 1`] = `
 <div
   className="nz-footer-snapMode-panel"
 >
-  <div
-    className="nz-title"
-  />
+  <TitleBar />
   <div
     className="nz-snaps"
   />

@@ -13,6 +13,8 @@ import {
 import {
   Arc3d,
   ClipPlaneContainment,
+  ClipShape,
+  ClipMaskXYZRangePlanes,
   ClipVector,
   Point2d,
   Point3d,
@@ -43,7 +45,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { ViewFrustum } from "../Viewport";
 import { TileRequest } from "./TileRequest";
-import { TileLoader, TileTree } from "./TileTree";
+import { TileLoader, TileTree, TraversalSelectionContext, TraversalDetails } from "./TileTree";
 
 const scratchRange2d = [new Point2d(), new Point2d(), new Point2d(), new Point2d()];
 function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
@@ -141,6 +143,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _localContentRange?: ElementAlignedBox3d;
   protected _emptySubRangeMask?: number;
   private _state: TileState;
+  private static _loadedRealityChildren = new Array<Tile>();
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -313,7 +316,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public isRegionCulled(args: Tile.DrawArgs): boolean { return Tile._scratchRootSphere.init(this.center, this.radius), this.isCulled(this.range, args, Tile._scratchRootSphere); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
 
-  private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
+  public getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     const type = context.viewport.debugBoundingBoxes;
     if (type === this._rangeGraphicType)
       return this._rangeGraphic;
@@ -401,6 +404,96 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return Tile.Visibility.OutsideFrustum;
     else
       return Tile.Visibility.Visible;
+  }
+
+  public getContentClip(): ClipVector | undefined {
+    return ClipVector.createCapture([ClipShape.createBlock(this.contentRange, ClipMaskXYZRangePlanes.All)]);
+  }
+
+  protected get _anyChildNotFound() {
+    if (this._children !== undefined)
+      for (const child of this._children)
+        if (child.isNotFound)
+          return true;
+
+    return this._childrenLoadStatus === TileTree.LoadStatus.NotFound;
+  }
+
+  protected selectRealityChildren(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails) {
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+    if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
+      args.markChildrenLoading();
+      this._childrenLastUsed = args.now;
+    }
+
+    if (undefined !== this.children) {
+      const traversalChildren = this.root.getTraversalChildren(this.depth);
+      traversalChildren.initialize();
+      for (let i = 0; i < this.children!.length; i++)
+        this.children[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
+
+      traversalChildren.combine(traversalDetails);
+    }
+  }
+  public addBoundingRectangle(builder: GraphicBuilder, color: ColorDef) {
+    builder.setSymbology(color, color, 3);
+    builder.addRangeBox(this.range);
+  }
+
+  public allChildrenIncluded(tiles: Tile[]) {
+    if (this.children === undefined || tiles.length !== this.children.length)
+      return false;
+    for (const tile of tiles)
+      if (tile.parent !== this)
+        return false;
+    return true;
+  }
+  protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean {
+    if (this._childrenLoadStatus !== TileTree.LoadStatus.Loaded || this._children === undefined)
+      return false;
+
+    for (const child of this._children) {
+      if (child.isReady && Tile.Visibility.Visible === child.computeVisibility(args)) {
+        this._childrenLastUsed = args.now;
+        Tile._loadedRealityChildren.push(child);
+      } else if (!child.getLoadedRealityChildren(args))
+        return false;
+    }
+    return true;
+  }
+
+  public selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails) {
+    const vis = this.computeVisibility(args);
+    if (Tile.Visibility.OutsideFrustum === vis) {
+      this.unloadChildren(args.purgeOlderThan);
+      return;
+    }
+
+    if (this.isDisplayable && (vis === Tile.Visibility.Visible || this.isLeaf || this._anyChildNotFound)) {
+      context.selectOrQueue(this, traversalDetails);
+      const preloadSkip = this.root.loader.preloadRealityParentSkip;
+      let preloadCount = this.root.loader.preloadRealityParentDepth + preloadSkip;
+      let parentDepth = 0;
+      for (let parent = this.parent; preloadCount > 0 && parent !== undefined; parent = parent.parent) {
+        if (parent.children!.length > 1 && ++parentDepth > preloadSkip) {
+          context.preload(parent);
+          preloadCount--;
+        }
+
+        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
+          if (this.getLoadedRealityChildren(args))
+            context.select(Tile._loadedRealityChildren);
+          Tile._loadedRealityChildren.length = 0;
+        }
+      }
+    } else {
+      this.selectRealityChildren(context, args, traversalDetails);
+      if (this.isDisplayable) {
+        if (0 !== traversalDetails.queuedChildren.length && this.isReady) {
+          context.selectOrQueue(this, traversalDetails);
+        }
+      }
+    }
   }
 
   public selectTiles(selected: Tile[], args: Tile.DrawArgs, numSkipped: number = 0): Tile.SelectParent {
@@ -568,7 +661,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     return false;
   }
 
-  private loadChildren(): TileTree.LoadStatus {
+  protected loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
       this.root.loader.getChildrenProps(this).then((props: TileProps[]) => {
@@ -579,10 +672,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
             const child = new Tile(Tile.paramsFromJSON(prop, this.root, this));
-
-            // stick the corners on the Tile (used only by WebMercator Tiles)
-            if ((prop as any).corners)
-              (child as any).corners = (prop as any).corners;
 
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
@@ -627,6 +716,17 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public set request(request: TileRequest | undefined) {
     assert(undefined === request || undefined === this.request);
     this._request = request;
+  }
+
+  public countDescendants(): number {
+    let count = 0;
+    if (undefined !== this._children) {
+      count = this._children.length;
+      for (const child of this._children)
+        count += child.countDescendants();
+    }
+
+    return count;
   }
 }
 

@@ -49,6 +49,29 @@ Unit Test
   * test name: "cloneWithColinearEdgeFixup"
   * output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithColinearEdgeFixup.imjs
 
+## Mark Edge Visibility
+
+Each edge of each facet in a polyface has a visibility indicator.  This tells display engines whether that edge should be highlighted with a drawn line as the facet it displayed.
+(Some display engines may choose to ignore this an always display just the shaded facet body.)
+
+During default construction by a `PolyfaceBuilder` all edges are marked visible by default.
+
+|  |  |
+---|---|
+| A (partial, capped) TorusPope with all edges visible | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeAllEdgesVisible.png) |
+| Apply `PolyfaceQuery.markAllEdgeVisibility (mesh, false);` <br> this hides all edges.  <br> (The display engine has added some linework by silhouette rules) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeAllEdgesNotVisible.png) |
+| Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (0.1)));` <br> this hides edges with adjacent facet angle less than 0.1 degrees.  <br> (Hence only the edges within the flat caps are hidden) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHideInPlane.png) |
+| Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (15)));` <br> this hides edges with adjacent facet angle less than 15 degrees.  <br> (Edges within the flat caps are hidden.   Visibility in the torus body varies.) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHide15.png) |
+| Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (30)));` <br> this hides edges with adjacent facet angle less than 30 degrees.  <br> (Edges within the flat caps are hidden.   Visibility in the torus body varies.) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHide30.png) |
+| Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (50)));` <br> this hides edges with adjacent facet angle less than 50 degrees.  <br> (Edges within the flat caps are hidden.   The only visible edges are at the 90 degree angles around the caps) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHide50.png) |
+
+
+Unit Test
+  * source: imodeljs/core/geometry/src/test/clipping/Polyface.test.ts
+  * test name: "SolidPrimitiveBoundary"
+  * output: imodeljs/core/geometry/src/test/output/Polyface\SolidPrimitiveBoundary.imjs
+
+
 
 
 

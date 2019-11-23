@@ -25,6 +25,7 @@ import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
+import { StatusBarManager } from "./statusbar/StatusBarManager";
 
 // cSpell:ignore Mobi
 
@@ -52,6 +53,7 @@ export class UiFramework {
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
+  private static _statusBarManager?: StatusBarManager;
 
   /** Get Show Ui event.
    * @beta
@@ -92,12 +94,13 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
+    UiFramework._statusBarManager = new StatusBarManager();
 
     // istanbul ignore next
     if (oidcConfig) {
-      UiFramework.oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = UiFramework.oidcClient.initialize(new ClientRequestContext())
-        .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
+      const oidcClient = new OidcBrowserClient(oidcConfig);
+      const initOidcPromise = oidcClient.initialize(new ClientRequestContext())
+        .then(() => (UiFramework.oidcClient = oidcClient, IModelApp.authorizationClient = UiFramework._oidcClient));
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
@@ -114,6 +117,7 @@ export class UiFramework {
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
+    UiFramework._statusBarManager = undefined;
   }
 
   private static _oidcClient: IOidcFrontendClient | undefined;
@@ -133,8 +137,10 @@ export class UiFramework {
 
     if (oidcClient) {
       oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
-        .then((accessToken: AccessToken | undefined) => {
+        .then((accessToken: AccessToken) => {
           UiFramework.setAccessTokenInternal(accessToken);
+        }).catch(() => {
+          UiFramework.setAccessTokenInternal(undefined);
         });
       UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
     }
@@ -178,6 +184,14 @@ export class UiFramework {
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._backstageManager;
+  }
+
+  /** @beta */
+  public static get statusBarManager(): StatusBarManager {
+    // istanbul ignore next
+    if (!UiFramework._statusBarManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._statusBarManager;
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.

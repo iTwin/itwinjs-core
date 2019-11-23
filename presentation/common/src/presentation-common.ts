@@ -148,7 +148,8 @@ export { ContentInstancesOfSpecificClassesSpecification } from "./rules/content/
 export { ContentRelatedInstancesSpecification } from "./rules/content/ContentRelatedInstancesSpecification";
 export { SelectedNodeInstancesSpecification } from "./rules/content/SelectedNodeInstancesSpecification";
 
-export { ContentModifier } from "./rules/content/modifiers/ContentModifier";
+export { ContentModifier, ContentModifiersList } from "./rules/content/modifiers/ContentModifier";
+export { PropertyOverrides, PropertySpecification } from "./rules/content/PropertySpecification";
 export {
   RelatedPropertiesSpecification, RelationshipMeaning,
   RelatedPropertiesSpecialValues,

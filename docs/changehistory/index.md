@@ -1,58 +1,80 @@
-# 1.7.0 Change Notes
+# 1.8.0 Change Notes
 
-## Improvements to solar shadows
+## Node 12 Support
 
-Several enhancements were made to the display of [SolarShadows]($common):
-* The shadow map now continuously refines as new geometry is loaded.
-* The position of the solar light is now synchronized with sun direction. See [DisplayStyle3dState.sunDirection]($frontend).
-* World decorations no longer receive shadows.
-* A display style can now configure whether or not transparent surfaces cast shadows. Any surface whose transparency is greater than the transparency threshold defined by the [DisplayStyle3dState]($frontend) will not cast shadows. See [HiddenLine.Settings.transparencyThreshold]($common).
+iModel.js now officially supports Node 12 starting with LTS version of 12.13.0.  Node 12 support is in addition to Node 10, not a replacement.
 
-![shadows transparency](./assets/shadows_transparency.png "Using transparency threshold to control how solar shadows interact with transparent surfaces.")
-<p align="center">Solar shadows interacting with transparent surfaces</p>
+## Logo Cards
 
-## Reusable decoration graphics
+iModel.js now displays an icon in the lower left corner of viewports to provide credit attribution for software or data authors.
 
-All [RenderGraphic]($frontend)s created as decorations are automatically disposed to ensure any WebGL resources are freed. This has the unfortunate side effect of preventing such graphics from being reused from one frame to another. If your decorations are expensive to create and/or change infrequently, you can now prevent automatic disposal by wrapping them in a [RenderGraphicOwner]($frontend). By doing so you assume responsibility for properly disposing of them when they are no longer needed. See [RenderSystem.createGraphicOwner]($frontend).
+![iModel.js icon]($docs/learning/frontend/imodeljs_icon.png "Example showing iModel.js icon")
 
-## Spatial classification improvements
+When the cursor moves over the icon, a set of *Logo Cards* with notices and logos for the content of the view appears. Applications may also add their own Logo Card to display information about their authors, versions, status, etc.
 
-* Volume classification is now fully supported.
-* Flash and hilite effects are now applied correctly.
-* Planar classifiers now support transparency; the classified geometry will use the transparency specified by the classifier geometry.
-* Classification of point clouds now works properly.
-* Classification now works correctly in perspective views.
+![logo cards]($docs/learning/frontend/logo-cards.png "Example logo cards")
 
-## Display system startup options
+If the user clicks or taps on the iModel.js icon, a modal dialog opens showing the logo cards.
 
-The following changes have been made to the [RenderSystem.Options]($frontend) used to initialize the [RenderSystem]($frontend) when invoking [IModelApp.startup]($frontend):
+See [Logo Cards]($docs/learning/frontend/LogoCards.md) for more information.
 
-* `displaySolarShadows` now defaults to `true` if not defined, instead of false.
-* `directScreenRendering` has been deprecated; it no longer has any effect.
+## View-independent Geometry
 
-## Improvements to ambient occlusion
+Spatial elements now support "view-independent" geometry - that is, geometry that is always displayed facing toward the viewer, regardless of the orientation of the view. Such geometry is considered by the display system to exist at a single point. As the view orientation changes, the geometry rotates about that point. If the point falls outside of the view frustum, the geometry stops drawing as well.
 
-The default settings for ambient occlusion have been changed to make the effect more subtle, and an option has been added to limit the distance at which the effect will be applied.
+Use [GeometryStreamBuilder.isViewIndependent]($common) to configure this behavior for an element. The element's placement origin will be used as the rotation point.
+
+![view independent geometry](./assets/view_independent.png "The same marker viewed from two different angles")
+<p align="center">The same marker viewed from two different angles.</p>
+
+## Viewing Tool Improvements
+
+Added new view cursors for rotate, look, walk, and zoom view tools.
+
+Viewing tools that require identification of an object to define the point the tool will operate about now provide better feedback for the current cursor location.
+
+* The 3d rotate view tool now shows a preview of the point it will rotate about.
+* Pan, zoom, and scroll view tools now show a preview of the depth point used when the camera is on.
+
+![depth point preview](./assets/depth_point_preview.png "Rotate point preview: 1) Cursor over sky 2) Cursor over element 3) Cursor over terrain")
+<p align="center">Rotate view tool showing rotate point used for various cursor locations</p>
+
+1) Current cursor location doesn't identify anything. Uses default rotate point, which may not be meaningful.
+2) Current cursor location identifies a valid depth point on an element.
+3) Current cursor location identifies a valid depth point on terrain or background map.
+
+## Removal of `EntityProps` String Indexer
+
+In prior releases, the `EntityProps` interface implemented by most types that represent data inside an iModel exposed an [indexer](https://basarat.gitbooks.io/typescript/docs/types/index-signatures.html) declared as follows:
+```ts
+export interface EntityProps {
+  [propName: string]: any;
+}
+```
+
+The dubious motivation was to enable access to arbitrary properties known to exist on some sub-type of `EntityProps` without requiring a cast. This was problematic for a number of reasons:
+* If the object was *not* in fact of the expected sub-type, the property might not exist.
+* Even if the expected property did in fact exist, the compiler could not catch typos in the property name.
+* It disabled *all* type-checking on *all* properties of *all* sub-types of `EntityProps` - even those explicitly defined.
+
+That final problem defeats the entire purpose of using TypeScript instead of JavaScript - it essentially forces the compiler to accept any expression `myEntity.anythingAtAll` and to consider it to have any type at all.
+
+To prevent bugs resulting from this complete lack of type-safety, the indexer has been removed (and as a result, several existing bugs were exposed). The onus is now on the user of `EntityProps` to accomodate the type checker. Required changes may involve, in order of preference:
+* Using explicit types such that no casts are required; or
+* Casting to a known type that defines the properties of interest (e.g., `myEntity as ElementProps`); or
+* Casting to `any` to bypass the type system entirely.
 
 ## Geometry
 
-* [PolyfaceBuilder.addGreedyTriangulationBetweenLineStrings]($geometry) method to build triangles "between" loosely related linestrings.
-* [RegionOps.consolidateAdjacentPrimitives]($geometry) method to consolidate adjacent lines and linestrings, and adjacent arcs of the same underlying circle or ellipse.
-* [RegionOps.rectangleEdgeTransform]($geometry) method to decide if a Loop object or point array is a simple rectangle.
-* [Range2d.corners3d]($geometry) method to get a `Point3d[]` containing the range corners.
-* [GrowableXYArray.length]($geometry) property is writable (e.g. to trim the array)
-* [IndexedXYZCollection.getRange]($geometry) -- return the range of data in the collection.
-* Support methods for using `PolyfaceVisitor` as staging area for new facets to be given to a `PolyfaceBuilder`
-  * [PolyfaceVisitor.clearArrays]($geometry) -- empty all arrays
-  * [PolyfaceVisitor.pushDataFrom]($geometry) -- add new point, param, normal, color from indexed position in another `PolyfaceVisitor`
-* [PolyfaceVisitor.pushInterpolatedDataFrom]($geometry) -- add new point, param, normal, color interpolated between two indexed positions in another `PolyfaceVisitor`
-* `[PolyfaceQuery.cloneWithTVertexFixup]($geometry) -- clone a polyface, inserting vertices within edges that are incident to points on other facets.
-* `[PolyfaceQuery.cloneWithColinearEdgeFixup]($geometry) -- clone a polyface, removing mid-edge vertices that are interior to adjacent colinear edges and are _not_ used as non-colinear vertex on any other facet.
+PolyfaceQuery methods to support edge visibility markup.
 
-## Presentation
-
-### Read-only mode
-
-Added a flag [PresentationManagerProps.mode]($presentation-backend) to indicate that the backend always opens iModels in read-only mode and presentation manager
-can make some optimizations related to reacting to changes in iModels. This is an optional property that defaults to previous behavior (read-write), but it's
-strongly encouraged to set it to [PresentationManagerMode.ReadOnly]($presentation-backend) on read-only backends.
+* PolyfaceQuery.setSingleEdgeVisibility (polyface, facetIndex, vertexIndex, value)
+  * within indicated facet, mark visibility of edge that starts with indicated vertexIndex
+* PolyfaceQuery.markPairedEdgesInvisible (polyface, sharpEdgeAngle?)
+  * Mark all unpaired edges visible
+  * Also marked paired edges with large angle across the edge visible.
+  * mark all other paired edges invisible
+* PolyfaceQuery.computeFacetUnitNormal (visitor, facetIndex, result?): Vector3d | undefined
+  * move the visitor to the indicated facet and compute a unit normal with `PolygonOps.unitNormal`
+* PolyfaceQuery.markAllEdgeVisibility (mesh, value : boolean)
+  * mark all edges of all facets visible (true) or invisible (false)

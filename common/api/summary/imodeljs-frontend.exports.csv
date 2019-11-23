@@ -74,7 +74,6 @@ beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;CheckBoxIconsEditorParams 
 alpha;ClipEventType
-alpha;ClipOrientation
 beta;enum ClippingType
 internal;ClipResult
 internal;Clips
@@ -84,10 +83,12 @@ internal;CompassMode
 internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
 internal;ContextMode
 internal;ContextRealityModelState
+internal;class ContextTileLoader 
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
+internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
@@ -99,6 +100,8 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
+alpha;DepthPointOptions
+alpha;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 
@@ -223,6 +226,7 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+alpha;MeasureAreaByPointsTool 
 alpha;MeasureAreaTool 
 alpha;MeasureDistanceTool 
 alpha;class MeasureElementTool 
@@ -371,6 +375,8 @@ alpha;TileAdmin
 internal;ViewportSet 
 internal;TiledGraphicsProvider
 internal;class TileLoader
+internal;TileRequest
+internal;TileRequest
 internal;TileTree 
 internal;TileTree
 internal;TileTreeDiscloser
@@ -397,6 +403,9 @@ public;ToolTipOptions
 internal;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;TraversalChildrenDetails
+internal;TraversalDetails
+internal;TraversalSelectionContext
 alpha;TwoWayViewportSync
 alpha;UiItemNode
 alpha;UiProviderRegisteredEventArgs

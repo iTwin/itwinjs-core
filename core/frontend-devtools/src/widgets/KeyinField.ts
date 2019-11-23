@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
 import { createTextBox, TextBox } from "../ui/TextBox";
@@ -93,6 +95,7 @@ export interface KeyinFieldProps {
  * @beta
  */
 export class KeyinField {
+  /** @alpha */
   public readonly autoCompleteList: DataList;
   public readonly textBox: TextBox;
   public readonly keyins: string[];
@@ -147,11 +150,15 @@ export class KeyinField {
   }
 
   private async handleKeyPress(ev: KeyboardEvent): Promise<void> {
+    ev.stopPropagation();
+
     if ("Enter" === ev.key)
       await this.submitKeyin();
   }
 
   private async handleKeyDown(ev: KeyboardEvent): Promise<void> {
+    ev.stopPropagation();
+
     if (undefined === this._history || 0 === this._history.length)
       return Promise.resolve();
 

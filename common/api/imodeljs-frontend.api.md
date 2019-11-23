@@ -1301,10 +1301,10 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 // @internal
 export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
+    addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
-    decorate(context: DecorateContext): void;
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
@@ -1688,26 +1688,6 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @alpha
-export enum ClipOrientation {
-    // (undocumented)
-    Back = 4,
-    // (undocumented)
-    Bottom = 3,
-    // (undocumented)
-    Face = 7,
-    // (undocumented)
-    Front = 1,
-    // (undocumented)
-    Left = 2,
-    // (undocumented)
-    Right = 5,
-    // (undocumented)
-    Top = 0,
-    // (undocumented)
-    View = 6
-}
-
 // @beta
 export const enum ClippingType {
     Mask = 1,
@@ -1806,6 +1786,19 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
+// @internal
+export abstract class ContextTileLoader extends TileLoader {
+    constructor();
+    // (undocumented)
+    computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    // (undocumented)
+    readonly drawAsRealityTiles: boolean;
+    // (undocumented)
+    readonly preloadRealityParentDepth: number;
+    // (undocumented)
+    readonly preloadRealityParentSkip: number;
+    }
+
 // @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
@@ -1839,6 +1832,18 @@ export enum CoordSystem {
     Npc = 1,
     View = 0,
     World = 2
+}
+
+// @internal (undocumented)
+export class CoreTools {
+    // (undocumented)
+    static namespace: string;
+    // (undocumented)
+    static outputPromptByKey(key: string): void;
+    // (undocumented)
+    static tools: string;
+    // (undocumented)
+    static translate(prompt: string): any;
 }
 
 // @internal (undocumented)
@@ -2041,6 +2046,24 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     static toolId: string;
 }
 
+// @alpha
+export interface DepthPointOptions {
+    excludeDecorations?: boolean;
+    excludeExternalIModels?: boolean;
+    excludeNonLocatable?: boolean;
+}
+
+// @alpha
+export enum DepthPointSource {
+    ACS = 5,
+    BackgroundMap = 2,
+    Geometry = 0,
+    Grid = 4,
+    GroundPlane = 3,
+    Model = 1,
+    TargetPoint = 6
+}
+
 // @public
 export interface DepthRangeNpc {
     maximum: number;
@@ -2104,8 +2127,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
     detachRealityModelByIndex(index: number): void;
     // @internal (undocumented)
     detachRealityModelByNameAndUrl(name: string, url: string): void;
@@ -2119,6 +2140,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void;
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
+    // @internal (undocumented)
+    getAttribution(div: HTMLDivElement, vp: ScreenViewport): void;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
@@ -2257,11 +2280,32 @@ export namespace EditManipulator {
         // (undocumented)
         static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
         // (undocumented)
+        static getRotation(rotation: RotationType, viewport: Viewport): Matrix3d | undefined;
+        // (undocumented)
         static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor?: number): boolean;
         // (undocumented)
         static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
         // (undocumented)
         static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
+    }
+    // (undocumented)
+    export enum RotationType {
+        // (undocumented)
+        Back = 4,
+        // (undocumented)
+        Bottom = 3,
+        // (undocumented)
+        Face = 7,
+        // (undocumented)
+        Front = 1,
+        // (undocumented)
+        Left = 2,
+        // (undocumented)
+        Right = 5,
+        // (undocumented)
+        Top = 0,
+        // (undocumented)
+        View = 6
     }
 }
 
@@ -2460,8 +2504,8 @@ export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
     readonly classFullName: string;
     static readonly classFullName: string;
-    readonly className: string;
     static readonly className: string;
+    readonly className: string;
     clone(iModel?: IModelConnection): this;
     equals(other: this): boolean;
     readonly id: Id64String;
@@ -3307,17 +3351,9 @@ export abstract class ImageryProvider {
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): string;
     // (undocumented)
-    decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void;
+    geometryAttributionProvider?: MapTileGeometryAttributionProvider;
     // (undocumented)
-    geometryAttributionProvider: MapTileGeometryAttributionProvider;
-    // (undocumented)
-    protected _geometryAttributionProvider?: MapTileGeometryAttributionProvider;
-    // (undocumented)
-    abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
-    // (undocumented)
-    getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[];
-    // (undocumented)
-    abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
+    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
     // (undocumented)
@@ -3357,6 +3393,8 @@ export class IModelApp {
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
     static readonly applicationId: string;
+    // @beta
+    static applicationLogoCard?: () => HTMLDivElement;
     static readonly applicationVersion: string;
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
@@ -3371,6 +3409,10 @@ export class IModelApp {
     static readonly locateManager: ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
+    // @internal
+    static makeIModelJsLogoCard(): HTMLDivElement;
+    // @beta
+    static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
     static readonly notifications: NotificationManager;
     // @internal (undocumented)
     static readonly pluginAdmin: PluginAdmin;
@@ -3548,6 +3590,8 @@ export namespace IModelConnection {
         // (undocumented)
         readonly isDisposed: boolean;
         purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
+        // (undocumented)
+        purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
         reset(): void;
         }
     export class Views {
@@ -3866,13 +3910,11 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
     // (undocumented)
-    addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
-    // (undocumented)
-    getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
+    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
 }
 
 // @internal (undocumented)
-export abstract class MapTileLoaderBase extends TileLoader {
+export abstract class MapTileLoaderBase extends ContextTileLoader {
     constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
     // (undocumented)
     protected _applyLights: boolean;
@@ -3899,11 +3941,7 @@ export abstract class MapTileLoaderBase extends TileLoader {
     // (undocumented)
     protected _modelId: Id64String;
     // (undocumented)
-    readonly parentsAndChildrenExclusive: boolean;
-    // (undocumented)
     readonly priority: Tile.LoadPriority;
-    // (undocumented)
-    processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[];
     // (undocumented)
     abstract requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
@@ -3912,10 +3950,10 @@ export abstract class MapTileLoaderBase extends TileLoader {
 
 // @internal
 export abstract class MapTileTreeReference extends TileTree.Reference {
+    addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
-    decorate(context: DecorateContext): void;
     getTilesForView(viewport: Viewport): Tile[];
     // (undocumented)
     protected abstract readonly _graphicType: TileTree.GraphicType;
@@ -4019,6 +4057,84 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
+
+// @alpha (undocumented)
+export class MeasureAreaByPointsTool extends PrimitiveTool {
+    // (undocumented)
+    protected _acceptedMeasurement?: MeasureMarker;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    // (undocumented)
+    protected _area: number;
+    // (undocumented)
+    protected _centroid: Point3d;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected static enumAsOrientationMessage(str: string): any;
+    // (undocumented)
+    protected static _getEnumAsOrientationDescription: () => PropertyDescription;
+    // (undocumented)
+    protected getMarkerToolTip(): Promise<HTMLElement>;
+    // (undocumented)
+    protected getShapePoints(ev: BeButtonEvent): Point3d[];
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected _isComplete: boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _marker?: MeasureLabel;
+    // (undocumented)
+    protected _matrix?: Matrix3d;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    orientation: EditManipulator.RotationType;
+    // (undocumented)
+    protected static _orientationName: string;
+    // (undocumented)
+    protected _perimeter: number;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected reportMeasurements(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateTotals(): Promise<void>;
+}
 
 // @alpha (undocumented)
 export class MeasureAreaTool extends MeasureElementTool {
@@ -4508,7 +4624,7 @@ export class NotificationManager {
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
     openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
+    openToolTip(htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number): boolean;
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
@@ -4950,6 +5066,7 @@ export abstract class Plugin {
     name: string;
     abstract onExecute(_args: string[]): void;
     onLoad(_args: string[]): void;
+    reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
@@ -4957,7 +5074,7 @@ export abstract class Plugin {
 // @beta
 export class PluginAdmin {
     constructor();
-    // (undocumented)
+    // @internal (undocumented)
     addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
     addSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
     // @internal (undocumented)
@@ -4965,13 +5082,13 @@ export class PluginAdmin {
         detailHTML: HTMLElement | undefined;
         detailStrings: string[] | undefined;
     };
-    // (undocumented)
+    // @internal (undocumented)
     getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getTarFileName(pluginRootName: string): string;
+    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
     // @deprecated
     static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
-    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
     // @internal
     loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
     // @internal (undocumented)
@@ -5710,18 +5827,18 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
-    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
-    createMesh(_params: MeshParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList;
     // @internal (undocumented)
@@ -5737,7 +5854,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
-    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @beta
     readonly debugControl: RenderSystemDebugControl | undefined;
     // @internal (undocumented)
@@ -5787,6 +5904,8 @@ export namespace RenderSystem {
 
 // @beta
 export interface RenderSystemDebugControl {
+    // @internal
+    compileAllShaders(): boolean;
     drawSurfacesAsWiremesh: boolean;
     // @internal
     readonly isGLTimerSupported: boolean;
@@ -6041,6 +6160,8 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
+    protected addLogo(): void;
+    // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
@@ -6060,11 +6181,21 @@ export class ScreenViewport extends Viewport {
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
+    // @beta
+    readonly logo: HTMLImageElement;
     maxUndoSteps: number;
+    // @internal (undocumented)
+    mousePosFromEvent(ev: MouseEvent): XAndY;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
     pickCanvasDecoration(pt: XAndY): import("./render/System").CanvasDecoration | undefined;
+    // @alpha
+    pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): {
+        plane: Plane3dByOriginAndUnitNormal;
+        source: DepthPointSource;
+        sourceId?: string;
+    };
     pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
@@ -7047,6 +7178,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly is3d: boolean;
     // (undocumented)
+    readonly isDrawingShadowMap: boolean;
+    // (undocumented)
     readonly isEdgeColorOverridden: boolean;
     // (undocumented)
     readonly isEdgeWeightOverridden: boolean;
@@ -7203,6 +7336,8 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
 // @internal
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
     // (undocumented)
+    readonly clipLowResolutionTiles: boolean;
+    // (undocumented)
     abstract readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
     readonly priority: Tile.LoadPriority;
@@ -7243,6 +7378,12 @@ export class ThreeAxes {
 export class Tile implements IDisposable, RenderMemory.Consumer {
     constructor(props: Tile.Params);
     // (undocumented)
+    addBoundingRectangle(builder: GraphicBuilder, color: ColorDef): void;
+    // (undocumented)
+    allChildrenIncluded(tiles: Tile[]): boolean;
+    // (undocumented)
+    protected readonly _anyChildNotFound: boolean;
+    // (undocumented)
     readonly center: Point3d;
     // (undocumented)
     readonly children: Tile[] | undefined;
@@ -7264,6 +7405,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     protected _contentRange?: ElementAlignedBox3d;
     // (undocumented)
+    countDescendants(): number;
+    // (undocumented)
     debugDump(): string;
     // (undocumented)
     readonly depth: number;
@@ -7275,6 +7418,12 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     readonly emptySubRangeMask: number;
     // (undocumented)
     protected _emptySubRangeMask?: number;
+    // (undocumented)
+    getContentClip(): ClipVector | undefined;
+    // (undocumented)
+    protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean;
+    // (undocumented)
+    getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
     // (undocumented)
     protected _graphic?: RenderGraphic;
     // (undocumented)
@@ -7314,6 +7463,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly isUndisplayableRootTile: boolean;
     // (undocumented)
+    protected loadChildren(): TileTree.LoadStatus;
+    // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)
     readonly loadStatus: Tile.LoadStatus;
@@ -7341,6 +7492,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     protected _request?: TileRequest;
     // (undocumented)
     readonly root: TileTree;
+    // (undocumented)
+    protected selectRealityChildren(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails): void;
+    // (undocumented)
+    selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails): void;
     // (undocumented)
     selectTiles(selected: Tile[], args: Tile.DrawArgs, numSkipped?: number): Tile.SelectParent;
     // (undocumented)
@@ -7490,6 +7645,10 @@ export namespace Tile {
 
 // @alpha
 export abstract class TileAdmin {
+    // @internal (undocumented)
+    abstract readonly contextPreloadParentDepth: number;
+    // @internal (undocumented)
+    abstract readonly contextPreloadParentSkip: number;
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
     // @internal (undocumented)
@@ -7522,6 +7681,8 @@ export abstract class TileAdmin {
     abstract onTileTimedOut(tile: Tile): void;
     // @internal
     abstract process(): void;
+    // @internal
+    abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     abstract readonly realityTileExpirationTime: BeDuration;
     // @internal (undocumented)
@@ -7543,6 +7704,8 @@ export abstract class TileAdmin {
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
+        contextPreloadParentDepth?: number;
+        contextPreloadParentSkip?: number;
         disableMagnification?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
@@ -7589,9 +7752,13 @@ export abstract class TileLoader {
     // (undocumented)
     protected readonly _batchType: BatchType;
     // (undocumented)
+    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    // (undocumented)
     computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)
     readonly containsPointClouds: boolean;
+    // (undocumented)
+    readonly drawAsRealityTiles: boolean;
     // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
@@ -7609,6 +7776,10 @@ export abstract class TileLoader {
     // (undocumented)
     readonly parentsAndChildrenExclusive: boolean;
     // (undocumented)
+    readonly preloadRealityParentDepth: number;
+    // (undocumented)
+    readonly preloadRealityParentSkip: number;
+    // (undocumented)
     abstract readonly priority: Tile.LoadPriority;
     // (undocumented)
     processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[];
@@ -7618,6 +7789,42 @@ export abstract class TileLoader {
     abstract tileRequiresLoading(params: Tile.Params): boolean;
     // (undocumented)
     readonly viewFlagOverrides: ViewFlag.Overrides;
+}
+
+// @internal
+export class TileRequest {
+    constructor(tile: Tile, vp: Viewport);
+    // (undocumented)
+    addViewport(vp: Viewport): void;
+    cancel(): void;
+    dispatch(onHttpResponse: () => void): Promise<void>;
+    // (undocumented)
+    readonly isCanceled: boolean;
+    // (undocumented)
+    readonly isQueued: boolean;
+    // (undocumented)
+    readonly loader: TileLoader;
+    // (undocumented)
+    priority: number;
+    // (undocumented)
+    readonly state: TileRequest.State;
+    readonly tile: Tile;
+    // (undocumented)
+    readonly tree: TileTree;
+    viewports: TileAdmin.ViewportSet;
+}
+
+// @internal (undocumented)
+export namespace TileRequest {
+    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+    export type ResponseData = Uint8Array | ImageSource;
+    export const enum State {
+        Completed = 3,
+        Dispatched = 1,
+        Failed = 4,
+        Loading = 2,
+        Queued = 0
+    }
 }
 
 // @internal
@@ -7636,17 +7843,29 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
     // (undocumented)
+    countTiles(): number;
+    // (undocumented)
     createDrawArgs(context: SceneContext): Tile.DrawArgs;
     // (undocumented)
     debugForcedDepth?: number;
+    // (undocumented)
+    static debugMissingTiles: boolean;
+    // (undocumented)
+    static debugSelectedRanges: boolean;
+    // (undocumented)
+    static debugSelectedTiles: boolean;
     // (undocumented)
     dispose(): void;
     // (undocumented)
     draw(args: Tile.DrawArgs): void;
     // (undocumented)
+    drawRealityTiles(args: Tile.DrawArgs): void;
+    // (undocumented)
     drawScene(context: SceneContext): void;
     // (undocumented)
     expirationTime: BeDuration;
+    // (undocumented)
+    getTraversalChildren(depth: number): TraversalChildrenDetails;
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -7671,9 +7890,13 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     protected _rootTile: Tile;
     // (undocumented)
+    selectRealityTiles(args: Tile.DrawArgs, displayedDescendants: Tile[][]): Tile[];
+    // (undocumented)
     selectTiles(args: Tile.DrawArgs): Tile[];
     // (undocumented)
     selectTilesForScene(context: SceneContext): Tile[];
+    // (undocumented)
+    traversalChildrenByDepth: TraversalChildrenDetails[];
     // (undocumented)
     readonly viewFlagOverrides: ViewFlag.Overrides;
     // (undocumented)
@@ -7702,6 +7925,7 @@ export namespace TileTree {
         dispose(): void;
         load(): TileTree | undefined;
         readonly loadStatus: TileTree.LoadStatus;
+        loadTree(): Promise<TileTree | undefined>;
         readonly tileTree: TileTree | undefined;
     }
     export interface Params {
@@ -7768,8 +7992,8 @@ export class TileTreeSet {
 // @public
 export class Tool {
     constructor(..._args: any[]);
-    readonly description: string;
     static readonly description: string;
+    readonly description: string;
     static readonly englishKeyin: string;
     static readonly flyover: string;
     readonly flyover: string;
@@ -8037,6 +8261,7 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     static noMotionTimeout: BeDuration;
     static preserveWorldUp: boolean;
+    static scrollSpeed: number;
     static startDragDelay: BeDuration;
     static startDragDistanceInches: number;
     static touchMoveDelay: BeDuration;
@@ -8055,6 +8280,7 @@ export class ToolSettings {
     static wheelPageFactor: number;
     static wheelZoomBumpDistance: number;
     static wheelZoomRatio: number;
+    static zoomSpeed: number;
 }
 
 // @beta
@@ -8179,6 +8405,43 @@ export class TouchCursor implements CanvasDecoration {
     protected _yOffset: number;
 }
 
+// @internal (undocumented)
+export class TraversalChildrenDetails {
+    // (undocumented)
+    combine(parentDetails: TraversalDetails): void;
+    // (undocumented)
+    getChildDetail(index: number): TraversalDetails;
+    // (undocumented)
+    initialize(): void;
+}
+
+// @internal (undocumented)
+export class TraversalDetails {
+    // (undocumented)
+    initialize(): void;
+    // (undocumented)
+    queuedChildren: Tile[];
+}
+
+// @internal (undocumented)
+export class TraversalSelectionContext {
+    constructor(selected: Tile[], displayedDescendants: Tile[][]);
+    // (undocumented)
+    displayedDescendants: Tile[][];
+    // (undocumented)
+    missing: Tile[];
+    // (undocumented)
+    preload(tile: Tile): void;
+    // (undocumented)
+    preloaded: Set<Tile>;
+    // (undocumented)
+    select(tiles: Tile[]): void;
+    // (undocumented)
+    selected: Tile[];
+    // (undocumented)
+    selectOrQueue(tile: Tile, traversalDetails: TraversalDetails): void;
+}
+
 // @alpha
 export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
@@ -8262,7 +8525,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    orientation: ClipOrientation;
+    orientation: EditManipulator.RotationType;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
@@ -8320,7 +8583,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
-    orientation: ClipOrientation;
+    orientation: EditManipulator.RotationType;
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
@@ -8677,8 +8940,6 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     protected static enumAsOrientationMessage(str: string): any;
     // (undocumented)
-    static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
-    // (undocumented)
     static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d;
     // (undocumented)
     static getClipShapeExtents(shape: ClipShape, viewRange: Range3d): Range1d;
@@ -8689,7 +8950,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static getOffsetValueTransformed(offset: number, transform?: Transform): number;
     // (undocumented)
-    static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
+    static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
     static hasClip(viewport: Viewport): boolean;
     // (undocumented)
@@ -8805,19 +9066,17 @@ export class ViewHandleArray {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
+    onWheel(ev: BeWheelEvent): void;
+    // (undocumented)
     setFocus(index: number): void;
     // (undocumented)
     testHit(ptScreen: Point3d, forced?: ViewHandleType): boolean;
-    // (undocumented)
-    viewport?: Viewport;
     // (undocumented)
     viewTool: ViewManip;
 }
 
 // @internal (undocumented)
 export const enum ViewHandleType {
-    // (undocumented)
-    EXTERIOR = 1,
     // (undocumented)
     Fly = 64,
     // (undocumented)
@@ -8842,6 +9101,8 @@ export const enum ViewHandleType {
 export abstract class ViewingToolHandle {
     constructor(viewTool: ViewManip);
     // (undocumented)
+    adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean;
+    // (undocumented)
     checkOneShot(): boolean;
     // (undocumented)
     abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
@@ -8862,9 +9123,13 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     motion(_ev: BeButtonEvent): boolean;
     // (undocumented)
+    needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
+    // (undocumented)
     noMotion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     onReinitialize(): void;
+    // (undocumented)
+    onWheel(_ev: BeWheelEvent): void;
     // (undocumented)
     abstract testHandleForHit(ptScreen: Point3d, out: {
         distance: number;
@@ -8918,6 +9183,8 @@ export class ViewManager {
     invalidateScenes(): void;
     // @internal (undocumented)
     invalidateViewportScenes(): void;
+    // (undocumented)
+    readonly lookCursor: string;
     // @internal (undocumented)
     notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
     readonly onBeginRender: BeEvent<() => void>;
@@ -8943,6 +9210,8 @@ export class ViewManager {
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal
     renderLoop(): void;
+    // (undocumented)
+    readonly rotateCursor: string;
     // @internal (undocumented)
     readonly sceneInvalidated: boolean;
     readonly selectedView: ScreenViewport | undefined;
@@ -8952,15 +9221,30 @@ export class ViewManager {
     readonly toolTipProviders: ToolTipProvider[];
     // @internal (undocumented)
     validateViewportScenes(): void;
-    }
+    // (undocumented)
+    readonly walkCursor: string;
+    // (undocumented)
+    readonly zoomCursor: string;
+}
 
 // @public
 export abstract class ViewManip extends ViewTool {
     constructor(viewport: ScreenViewport | undefined, handleMask: number, oneShot: boolean, isDraggingRequired?: boolean);
     // (undocumented)
     changeViewport(vp?: ScreenViewport): void;
+    // @internal (undocumented)
+    clearDepthPoint(): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // @internal (undocumented)
+    protected _depthPreview?: {
+        testPoint: Point3d;
+        pickRadius: number;
+        plane: Plane3dByOriginAndUnitNormal;
+        source: DepthPointSource;
+        isDefaultDepth: boolean;
+        sourceId?: string;
+    };
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
@@ -8969,6 +9253,12 @@ export abstract class ViewManip extends ViewTool {
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
+    // (undocumented)
+    static getDefaultTargetPointWorld(vp: Viewport): Point3d;
+    // @internal (undocumented)
+    getDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
+    // @internal (undocumented)
+    getDepthPointGeometryId(): string | undefined;
     // (undocumented)
     static getFocusPlaneNpc(vp: Viewport): number;
     // (undocumented)
@@ -9020,6 +9310,8 @@ export abstract class ViewManip extends ViewTool {
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
+    // @internal (undocumented)
+    previewDepthPoint(context: DecorateContext): void;
     // (undocumented)
     processFirstPoint(ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -9230,7 +9522,7 @@ export abstract class Viewport implements IDisposable {
     readonly rotation: Matrix3d;
     // @internal (undocumented)
     readonly scheduleTime: number;
-    scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
+    scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     // @beta
     setAnimator(animator?: Animator): void;
@@ -9665,6 +9957,8 @@ export abstract class ViewTool extends InteractiveTool {
     // (undocumented)
     static showPrompt(prompt: string): void;
     // (undocumented)
+    static translate(val: string): any;
+    // (undocumented)
     viewport?: ScreenViewport | undefined;
 }
 
@@ -9746,6 +10040,8 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     readonly maxDepth: number;
+    // (undocumented)
+    readonly parentsAndChildrenExclusive: boolean;
     // (undocumented)
     requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
 }

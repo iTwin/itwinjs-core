@@ -428,36 +428,59 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   /** Section type */
   public sectionType: SectionType;
   /** Details on how this section was clipped. */
-  public clipGeometry?: ClipVector;
+  public clipGeometry?: string;
   /** The element Id of the [[ModelSelector]] for this SectionLocation */
   public modelSelectorId: Id64String;
   /** The element Id of the [[CategorySelector]] for this SectionLocation */
   public categorySelectorId: Id64String;
+  /** clipGeometry represented as a ClipVector. */
+  private _clipVector?: ClipVector;
 
   /** @internal */
   public static get className(): string { return "SectionLocation"; }
+
   /** @internal */
   public constructor(props: SectionLocationProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-    this.clipGeometry = props.clipGeometry ? ClipVector.fromJSON(JSON.parse(props.clipGeometry)) : undefined;
+    this.clipGeometry = props.clipGeometry;
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
   }
+
   /** @internal */
   public toJSON(): SectionLocationProps {
     const val = super.toJSON() as SectionLocationProps;
     val.sectionType = this.sectionType;
-    val.clipGeometry = this.clipGeometry ? this.clipGeometry.toJSON().toString() : undefined;
+    val.clipGeometry = this.clipGeometry;
     val.modelSelectorId = this.modelSelectorId;
     val.categorySelectorId = this.categorySelectorId;
     return val;
   }
+
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
     predecessorIds.add(this.categorySelectorId);
+  }
+
+  /** Set the clip for this section location.
+   * @param clip the new clipping volume. If undefined, clipping is removed.
+   * @note The SectionLocation takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
+   */
+  public setClip(clip?: ClipVector) {
+    this._clipVector = clip;
+    this.clipGeometry = (clip && clip.isValid) ? clip.toJSON().toString() : undefined;
+  }
+
+  /** Get the clipping for this section location.
+   * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setClip]].
+   */
+  public getClip(): ClipVector | undefined {
+    if (undefined === this._clipVector)
+      this._clipVector = this.clipGeometry ? ClipVector.fromJSON(JSON.parse(this.clipGeometry)) : ClipVector.createEmpty();
+    return this._clipVector.isValid ? this._clipVector : undefined;
   }
 }
 
@@ -506,8 +529,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
-   * @param parentSubjectId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
-   * @param codeValue The Drawing name
+   * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
+   * @param codeValue The child Subject name
    */
   public static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
@@ -718,7 +741,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
+  constructor(props: DefinitionElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = true === props.isPrivate; }
   /** @internal */
   public toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
@@ -847,10 +870,14 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Create a code that can be used for any kind of InformationPartitionElement. */
-  public static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code {
+  /** Create a code that can be used for any subclass of InformationPartitionElement.
+   * @param iModelDb The IModelDb
+   * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
+   * @param codeValue The InformationPartitionElement name
+   */
+  public static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
-    return new Code({ spec: codeSpec.id, scope: scopeElementId, value: codeValue });
+    return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
   }
 }
 

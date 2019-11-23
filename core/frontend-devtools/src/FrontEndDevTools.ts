@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Utilities */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
@@ -14,6 +15,7 @@ import {
   ToggleDrapeFrustumTool,
 } from "./tools/RenderTargetTools";
 import {
+  CompileShadersTool,
   LoseWebGLContextTool,
   ToggleWiremeshTool,
 } from "./tools/RenderSystemTools";
@@ -47,6 +49,7 @@ import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
+import { SelectElementsByIdTool } from "./tools/SelectionTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -75,6 +78,7 @@ export class FrontendDevTools {
 
     LoseWebGLContextTool.register(i18n);
     ToggleWiremeshTool.register(i18n);
+    CompileShadersTool.register(i18n);
 
     ToggleReadPixelsTool.register(i18n);
     ToggleLogZTool.register(i18n);
@@ -109,6 +113,7 @@ export class FrontendDevTools {
     ChangeUnitsTool.register(i18n);
     ToggleTileRequestDecorationTool.register(i18n);
     MeasureTileLoadTimeTool.register(i18n);
+    SelectElementsByIdTool.register(i18n);
 
     SetVolClassIntersectOn.register(i18n);
     SetVolClassIntersectOff.register(i18n);

@@ -194,7 +194,7 @@ describe("Format", () => {
 
   describe("deserialize formatted ECJSON", () => {
     beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testFormat = (schema as MutableSchema).createFormatSync("TestFormat");
     });
 

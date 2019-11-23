@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Tools */
+
 import {
   Environment,
   IModelApp,
@@ -32,7 +34,7 @@ const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCas
  * Where 'flag' is one of the BooleanFlagName values, or "renderMode"; and value is an integer.
  * For boolean flags, value is 0 for false or 1 for true. For renderMode, value is one of the RenderMode enum values.
  * Flag names are case-insensitive.
- * @alpha
+ * @beta
  */
 export class ChangeViewFlagsTool extends Tool {
   public static toolId = "ChangeViewFlags";
@@ -93,7 +95,7 @@ export class ChangeViewFlagsTool extends Tool {
 
 /** Toggles the skybox.
  * ###TODO Generalize this to modify any aspect of display style.
- * @alpha
+ * @beta
  */
 export class ToggleSkyboxTool extends Tool {
   public static toolId = "ToggleSkybox";

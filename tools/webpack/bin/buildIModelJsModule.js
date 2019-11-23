@@ -958,6 +958,9 @@ class IModelJsModuleBuilder {
             args.push("--env.plugin");
         else if (buildType === "webworker")
             args.push("--env.webworker");
+        // if the buildType is application, or there's a version, then the output is going into a subdirectory. That changes urls needed for resources loaded by file-loader.
+        if (buildType === "application" || (version !== undefined))
+            args.push("--env.subFolder");
         if (!isDevelopment)
             args.push("--env.prod");
         if (htmlTemplate)

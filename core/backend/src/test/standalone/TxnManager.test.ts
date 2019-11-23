@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
 import { assert, expect } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
@@ -37,7 +37,7 @@ describe("TxnManager", () => {
       intProperty: 100,
       placement: {
         origin: new Point3d(1, 2, 0),
-        angle: Angle.createDegrees(0),
+        angles: new YawPitchRollAngles(),
       },
       geom: builder.geometryStream,
     };

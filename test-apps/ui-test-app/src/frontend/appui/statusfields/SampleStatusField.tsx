@@ -1,0 +1,95 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+/** @module StatusBar */
+
+import * as React from "react";
+
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { StatusFieldProps, Indicator, StatusBarFieldId } from "@bentley/ui-framework";
+import { TitleBar, Dialog, FooterPopup } from "@bentley/ui-ninezone";
+import { ButtonType, Button, FillCentered } from "@bentley/ui-core";
+
+interface SampleStatusFieldState {
+  target: HTMLElement | null;
+}
+
+export class SampleStatusField extends React.Component<StatusFieldProps, SampleStatusFieldState> {
+  private _className: string;
+  private _title = IModelApp.i18n.translate("SampleApp:statusFields.sampleField");
+
+  constructor(props: any) {
+    super(props);
+
+    this.state = {
+      target: null,
+    };
+
+    this._className = this.constructor.name;
+  }
+
+  public render() {
+    const isOpen = this.props.openWidget === this._className;
+
+    return (
+      <>
+        <div ref={this._handleTargetRef} title={this._title}>
+          <Indicator
+            iconName="icon-placeholder"
+            onClick={this._handleIndicatorClick}
+            opened={isOpen}
+            isInFooterMode={this.props.isInFooterMode}
+          />
+        </div>
+        <FooterPopup
+          target={this.state.target}
+          onClose={this._handleClose}
+          isOpen={isOpen}>
+          <Dialog titleBar={<TitleBar title={this._title} />}>
+            {this.renderContents()}
+          </Dialog>
+        </FooterPopup>
+      </>
+    );
+  }
+
+  /** Render buttons for clear and show/hide manipulators */
+  private renderContents() {
+    return (
+      <div style={{ height: "60px" }}>
+        <FillCentered>
+          <Button buttonType={ButtonType.Blue}>{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
+        </FillCentered>
+      </div>
+    );
+  }
+
+  /** Handle opening/closing the dialog */
+  private _handleIndicatorClick = () => {
+    /** dialog setup */
+    /* . . . */
+
+    const isOpen = this.props.openWidget === this._className;
+    if (isOpen)
+      this.setOpenWidget(null);
+    else
+      this.setOpenWidget(this._className);
+  }
+
+  private _handleTargetRef = (target: HTMLElement | null) => {
+    this.setState({ target });
+  }
+
+  private _handleClose = () => {
+    this.setOpenWidget(null);
+  }
+
+  /** Opens the pop-up window. */
+  private setOpenWidget(openWidget: StatusBarFieldId) {
+    // istanbul ignore else
+    if (this.props.onOpenWidget)
+      this.props.onOpenWidget(openWidget);
+  }
+
+}

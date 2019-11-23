@@ -31,7 +31,7 @@ describe("useIsBackstageOpen", () => {
     const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
     const manager = new BackstageManager();
     shallow(<TestHook
-      onRender={() => spy(useIsBackstageOpen(manager))}
+      onRender={() => spy(useIsBackstageOpen(manager))} // tslint:disable-line: react-hooks-nesting
     />);
 
     spy.calledOnceWithExactly(false).should.true;
@@ -41,7 +41,7 @@ describe("useIsBackstageOpen", () => {
     const manager = new BackstageManager();
     const spy = sinon.spy(manager.onToggled, "addListener");
     mount(<TestHook
-      onRender={() => useIsBackstageOpen(manager)}
+      onRender={() => useIsBackstageOpen(manager)}  // tslint:disable-line: react-hooks-nesting
     />);
 
     spy.calledOnce.should.true;
@@ -51,7 +51,7 @@ describe("useIsBackstageOpen", () => {
     const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
     const manager = new BackstageManager();
     mount(<TestHook
-      onRender={() => spy(useIsBackstageOpen(manager))}
+      onRender={() => spy(useIsBackstageOpen(manager))} // tslint:disable-line: react-hooks-nesting
     />);
 
     manager.open();
@@ -62,7 +62,7 @@ describe("useIsBackstageOpen", () => {
     const manager = new BackstageManager();
     const spy = sinon.spy(manager.onToggled, "removeListener");
     const sut = mount(<TestHook
-      onRender={() => useIsBackstageOpen(manager)}
+      onRender={() => useIsBackstageOpen(manager)}  // tslint:disable-line: react-hooks-nesting
     />);
     sut.unmount();
 

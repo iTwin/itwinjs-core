@@ -19,6 +19,7 @@ describe("Locate Toolbar items", () => {
   const tool1 = new CommandItemDef({
     commandId: "tool1",
     iconSpec: "icon-placeholder",
+    label: "SampleApp:group:tool1",
   });
 
   const tool2 = new CommandItemDef({
@@ -95,7 +96,7 @@ describe("Locate Toolbar items", () => {
     const foundHorizontalToolbarItem = ToolbarButtonHelper.searchHorizontalToolbarsByTitle("SampleApp:buttons.tool1");
     expect(foundHorizontalToolbarItem).not.to.be.null;
 
-    const foundGroupToolbarItem = ToolbarButtonHelper.searchVerticalToolbarsByTitle("SampleApp:group");
+    const foundGroupToolbarItem = ToolbarButtonHelper.searchVerticalToolbarsByTitle("SampleApp:group:tool1");
     expect(foundGroupToolbarItem).not.to.be.null;
 
     const foundVerticalToolbarItem = ToolbarButtonHelper.getToolbarButtonByTitle("SampleApp:buttons.tool2");

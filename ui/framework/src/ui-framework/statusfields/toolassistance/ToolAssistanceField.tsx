@@ -316,10 +316,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
     // istanbul ignore next
     if (IModelApp.toolAdmin.activeTool)
-      tooltip = IModelApp.toolAdmin.activeTool.flyover + " > " + tooltip;
+      tooltip = `${IModelApp.toolAdmin.activeTool.flyover} > ${tooltip}  `;
 
     if (tooltip) {
-      const lineBreak = "\u000d";
+      const lineBreak = "\u000d\u000a";
       tooltip = tooltip + lineBreak;
     }
 
@@ -419,7 +419,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.onOpenWidget(openWidget);
+    // istanbul ignore else
+    if (this.props.onOpenWidget)
+      this.props.onOpenWidget(openWidget);
   }
 
   /** @internal */

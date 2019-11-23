@@ -39,6 +39,8 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
 
   public get filter(): string { return this._filter; }
 
+  public get parentDataProvider(): IPresentationTreeDataProvider { return this._parentDataProvider; }
+
   private createHierarchy(paths: ReadonlyArray<Readonly<NodePathElement>>, hierarchy: SimpleTreeDataProviderHierarchy, parentId?: string) {
     const treeNodes: DelayLoadedTreeNodeItem[] = [];
     for (let i = 0; i < paths.length; i++) {

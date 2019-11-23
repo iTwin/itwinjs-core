@@ -44,6 +44,7 @@ interface ScheduleAnimationViewportProps {
 interface ScheduleAnimationViewportState {
   viewId?: Id64String;
   dataProvider?: TimelineDataProvider;
+  rangeValue: number;
 }
 
 /** iModel Viewport React component */
@@ -51,7 +52,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   constructor(props: any) {
     super(props);
 
-    this.state = ({ viewId: undefined, dataProvider: undefined });
+    this.state = ({ viewId: undefined, dataProvider: undefined, rangeValue: 0 });
   }
 
   public async componentDidMount() {
@@ -137,6 +138,11 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     return false;
   }
 
+  private _handleRangeChange = ((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    this.setState({rangeValue: value});
+  });
+
   public render(): React.ReactNode {
     const divStyle: React.CSSProperties = {
       backgroundColor: "white",
@@ -172,9 +178,11 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
         </div>
         {this.state.dataProvider &&
           <div>
+            <input type="range" min="0" max={this.state.dataProvider.duration} step="1" value={this.state.rangeValue} onChange={this._handleRangeChange}/>
             <TimelineComponent
               startDate={this.state.dataProvider.start}
               endDate={this.state.dataProvider.end}
+              initialDuration={this.state.rangeValue}
               totalDuration={this.state.dataProvider.duration}
               milestones={this.state.dataProvider.getMilestones()}
               minimized={this.state.dataProvider.getMilestones().length === 0}

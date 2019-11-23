@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import { ToolSettingsTracker } from "./ToolSettingsTracker";
 import { FpsTracker } from "./FpsTracker";
 import { MemoryTracker } from "./MemoryTracker";

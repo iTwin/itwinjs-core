@@ -464,7 +464,7 @@ export class SampleAppIModelApp {
 }
 
 export class SampleAppViewer extends React.Component<any> {
-  private _provider = new AppBackstageItemProvider();
+  private _backstageItemProvider = new AppBackstageItemProvider();
 
   constructor(props: any) {
     super(props);
@@ -479,13 +479,14 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    UiFramework.backstageManager.itemsManager.add(this._provider.backstageItems);
+    UiFramework.backstageManager.itemsManager.add(this._backstageItemProvider.backstageItems);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
   public componentWillUnmount() {
-    const items = this._provider.backstageItems.map((item) => item.id);
-    UiFramework.backstageManager.itemsManager.remove(items);
+    const backstageItems = this._backstageItemProvider.backstageItems.map((item) => item.id);
+    UiFramework.backstageManager.itemsManager.remove(backstageItems);
+
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
   }
 

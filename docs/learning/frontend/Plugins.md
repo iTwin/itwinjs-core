@@ -1,8 +1,8 @@
 # iModel.js Plugins
 
-A [Plugin]($frontend) is a separately webpacked JavaScript module that is loaded on demand into a browser (or Electron) running the the frontend iModel.js environment. It is compiled and webpacked using the [buildIModelJsModule](./BuildingIModelJsModules.md) script. The build process creates a tar file that includes a manifest, the webpacked plugin, and the associated resources.
+A [Plugin]($frontend) is a separate JavaScript module that is loaded on demand into an iModel.js frontend.  It is compiled and webpacked using the [buildIModelJsModule](./BuildingIModelJsModules.md) script. The build process creates a tar file that includes a manifest, the webpacked plugin, and the associated resources.
 
-A [Plugin]($frontend) is written in Typescript. It has access to all exported classes in the iModel.js host environment. In all iModel.js hosts, that will include the exports of bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface classes, it will also include the exports of ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common, presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
+A Plugin has access to all exported classes in the iModel.js host environment. In all iModel.js hosts, that will include the exports of bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface classes, it will also include the exports of ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common, presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
 
 ## Loading Plugins
 

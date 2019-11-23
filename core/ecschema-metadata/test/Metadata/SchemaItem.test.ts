@@ -16,7 +16,7 @@ describe("SchemaItem", () => {
     let schema;
 
     before(() => {
-      schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
 
@@ -27,6 +27,7 @@ describe("SchemaItem", () => {
         version: "1.0.0",
         schemaItemType: "EntityClass",
         name: "ExampleEntity",
+        alias: "example",
         label: "ExampleEntity",
         description: "An example entity class.",
       };
@@ -72,7 +73,7 @@ describe("SchemaItem", () => {
     let newDom: Document;
 
     before(() => {
-      schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
 

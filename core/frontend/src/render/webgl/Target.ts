@@ -8,6 +8,7 @@ import {
   ClipPlaneContainment,
   ClipUtilities,
   ClipVector,
+  InverseMatrixState,
   Matrix4d,
   Point2d,
   Point3d,
@@ -378,6 +379,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
+  public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
@@ -721,6 +723,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
       this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.useLogZ);
     }
+
+    this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
   }
 
   public changeRenderPlan(plan: RenderPlan): void {

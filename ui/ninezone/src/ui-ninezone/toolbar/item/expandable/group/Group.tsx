@@ -32,12 +32,16 @@ export class Group extends React.PureComponent<GroupProps> {
 
     return (
       <Panel className={className} style={this.props.style}>
-        <Title>
-          {this.props.title}
-        </Title>
-        <Columns>
-          {this.props.columns}
-        </Columns>
+        {this.props.title &&
+          <Title>
+            {this.props.title}
+          </Title>
+        }
+        {this.props.columns &&
+          <Columns>
+            {this.props.columns}
+          </Columns>
+        }
       </Panel>
     );
   }

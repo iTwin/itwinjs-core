@@ -478,7 +478,11 @@ export class Camera implements CameraProps {
   public getEyePoint() { return this.eye; }
   public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
   public get isValid() { return this.isLensValid && this.isFocusValid; }
-  public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
+  public equals(other: Camera) {
+    return Math.abs(this.lens.radians - other.lens.radians) < .01 &&
+      Math.abs(this.focusDist - other.focusDist) < .1 &&
+      this.eye.isAlmostEqual(other.eye);
+  }
   public clone() { return new Camera(this); }
   public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
@@ -2571,7 +2575,9 @@ export namespace SolarShadows {
     private static readonly _defaultBias = .001;
     /** Shadow color */
     public color: ColorDef;
-    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects.
+     * @alpha
+     */
     public bias: number;
 
     public constructor(props?: SolarShadowProps) {

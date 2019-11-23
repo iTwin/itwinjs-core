@@ -14,7 +14,8 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea
 
@@ -45,7 +46,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    this.state = getBackstageItemStateFromProps(props);
+    this.state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
   }
 
   public componentDidMount() {
@@ -91,7 +92,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   }
 
   public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(this.props);
+    const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }

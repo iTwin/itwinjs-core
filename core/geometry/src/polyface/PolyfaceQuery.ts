@@ -9,7 +9,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Polyface, PolyfaceVisitor } from "./Polyface";
+import { Polyface, PolyfaceVisitor, IndexedPolyface } from "./Polyface";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { Loop } from "../curve/Loop";
@@ -31,6 +31,7 @@ import { RangeLengthData } from "./RangeLengthData";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Range3d } from "../geometry3d/Range";
+import { Angle } from "../geometry3d/Angle";
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -496,8 +497,9 @@ export class PolyfaceQuery {
     return chainContext.collectMaximalChains();
   }
 
-  /** Find segments (within the linestring) which project to facets.
-   * * Return chains.
+  /**
+   * * Examine ranges of facets.
+   * * Return statistical summary of x,y,z ranges.
    */
   public static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData {
     if (polyface instanceof Polyface) {
@@ -609,6 +611,106 @@ export class PolyfaceQuery {
     }
     return builder.claimPolyface();
   }
+
+  /**
+   * Set the edge visibility for specified edges in the polyface.
+   * @param polyface mesh to be edited
+   * @param clusters array of edge references
+   * @param value visibility value (true or false)
+   */
+  private static setEdgeVisibility(polyface: IndexedPolyface, clusters: SortableEdgeCluster[], value: boolean) {
+    for (const cluster of clusters) {
+      if (cluster instanceof SortableEdge) {
+        this.setSingleEdgeVisibility(polyface, cluster.facetIndex, cluster.vertexIndexA, value);
+      } else if (Array.isArray(cluster)) {
+        for (const e1 of cluster)
+          this.setSingleEdgeVisibility(polyface, e1.facetIndex, e1.vertexIndexA, value);
+      }
+    }
+  }
+  /**
+   * Set the visibility of a particular edge of a particular facet.
+   * @param polyface containing polyface
+   * @param facetIndex facet index
+   * @param vertexIndex vertex index (in vertex array)
+   * @param value visibility value.
+   */
+  public static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean) {
+    const data = polyface.data;
+    const index0 = polyface.facetIndex0(facetIndex);
+    const index1 = polyface.facetIndex1(facetIndex);
+    for (let i = index0; i < index1; i++)
+      if (data.pointIndex[i] === vertexIndex)
+        data.edgeVisible[i] = value;
+  }
+
+  /**
+  * * Find mated pairs among facet edges.
+  * * Mated pairs have the same vertex indices appearing in opposite order.
+  * * Mark all non-mated pairs invisible.
+  * * At mated pairs
+  *    * if angle across the edge is larger than `sharpEdgeAngle`, mark visible
+  *    * otherwise mark invisible.
+  * @param mesh mesh to be marked
+  */
+  public static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle) {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = mesh.createVisitor(1) as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    const pairedEdges: SortableEdgeCluster[] = [];
+    const boundaryEdges: SortableEdgeCluster[] = [];
+    edges.sortAndCollectClusters(pairedEdges, boundaryEdges, boundaryEdges, boundaryEdges);
+    this.markAllEdgeVisibility(mesh, false);
+    this.setEdgeVisibility(mesh, boundaryEdges, true);
+    if (sharpEdgeAngle !== undefined) {
+      const normal0 = Vector3d.create();
+      const normal1 = Vector3d.create();
+      for (const pair of pairedEdges) {
+        if (Array.isArray(pair) && pair.length === 2) {
+          const e0 = pair[0];
+          const e1 = pair[1];
+          if (undefined !== PolyfaceQuery.computeFacetUnitNormal(visitor, e0.facetIndex, normal0)
+            && undefined !== PolyfaceQuery.computeFacetUnitNormal(visitor, e1.facetIndex, normal1)) {
+            const edgeAngle = normal0.smallerUnorientedAngleTo(normal1);
+            if (edgeAngle.radians > sharpEdgeAngle.radians) {
+              this.setSingleEdgeVisibility(mesh, e0.facetIndex, e0.vertexIndexA, true);
+              this.setSingleEdgeVisibility(mesh, e1.facetIndex, e1.vertexIndexA, true);
+            }
+          }
+        }
+      }
+    }
+  }
+  /** Try to compute a unit normal for a facet accessible through a visitor.
+   * * Unit normal is computed by `PolygonOps.unitNormal` with the points around the facet.
+   */
+  public static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined {
+    if (!result)
+      result = Vector3d.create();
+    if (visitor.moveToReadIndex(facetIndex)) {
+      if (PolygonOps.unitNormal(visitor.point, result))
+        return result;
+    }
+    return undefined;
+  }
+  /**
+  * * Mark all edge visibilities in the IndexedPolyface
+  * @param mesh mesh to be marked
+  * @param value true for visible, false for hidden
+  */
+
+  public static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean) {
+    const data = mesh.data;
+    for (let i = 0; i < data.edgeVisible.length; i++)
+      data.edgeVisible[i] = value;
+  }
+
 }
 
 /** Announce the points on a drape panel.

@@ -10,8 +10,8 @@ import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-f
 
 import { UiFramework } from "../UiFramework";
 
-import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
-import { MessageManager } from "../messages/MessageManager";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { MessageManager, MessageAddedEventArgs } from "../messages/MessageManager";
 import {
   MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
 } from "@bentley/ui-ninezone";
@@ -32,6 +32,7 @@ enum MessageCenterActiveTab {
 interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
   target: HTMLDivElement | null;
+  messageCount: number;
 }
 
 /** Properties of [[MessageCenterField]] component.
@@ -48,10 +49,12 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
+  private _title = UiFramework.translate("messageCenter.messages");
 
   public readonly state: Readonly<MessageCenterState> = {
     activeTab: MessageCenterActiveTab.AllMessages,
     target: null,
+    messageCount: MessageManager.messages.length,
   };
 
   constructor(p: MessageCenterFieldProps) {
@@ -61,21 +64,39 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     this._className = instance.name;
   }
 
+  /** @internal */
+  public componentDidMount() {
+    MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
+  }
+
+  /** @internal */
+  public componentWillUnmount() {
+    MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
+  }
+
+  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
+    this.setState({ messageCount: MessageManager.messages.length });
+  }
+
   public render(): React.ReactNode {
-    const messageCount = MessageManager.messages.length;
+    const tooltip = `${this.state.messageCount} ${this._title}`;
     const footerMessages = (
       <>
-        <MessageCenter
+        <div
           className={this.props.className}
           style={this.props.style}
-          indicatorRef={this._indicator}
-          isInFooterMode={this.props.isInFooterMode}
-          label={this.props.isInFooterMode ? UiFramework.translate("messageCenter.messages") : undefined}
-          onClick={this._handleMessageIndicatorClick}
-          targetRef={this._handleTargetRef}
+          title={tooltip}
         >
-          {messageCount.toString()}
-        </MessageCenter>
+          <MessageCenter
+            indicatorRef={this._indicator}
+            isInFooterMode={this.props.isInFooterMode}
+            label={this.props.isInFooterMode ? this._title : undefined}
+            onClick={this._handleMessageIndicatorClick}
+            targetRef={this._handleTargetRef}
+          >
+            {this.state.messageCount.toString()}
+          </MessageCenter>
+        </div>
         <FooterPopup
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
@@ -100,7 +121,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
                 </MessageCenterTab>
               </>
             }
-            title={UiFramework.translate("messageCenter.messages")}
+            title={this._title}
           >
             {this.getMessages()}
           </MessageCenterDialog>
@@ -189,6 +210,8 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.onOpenWidget(openWidget);
+    // istanbul ignore else
+    if (this.props.onOpenWidget)
+      this.props.onOpenWidget(openWidget);
   }
 }

@@ -78,39 +78,19 @@ describe("<PopupButton />", async () => {
     expect(popupButton).to.be.null;
   });
 
-  // Note we can't retrieve info about panel in portal when testing button - I think this is because the portal is managed by the parent toolbar
-  let expectedValue = true;
-
-  it("Fire click event to open popup", async () => {
-    const spyOnPick = sinon.spy();
-    function handleOnExpanded(expand: boolean): void {
-      expect(expand).to.equal(expectedValue);
-      spyOnPick();
-    }
-
-    const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" label="Popup-Test" onExpanded={handleOnExpanded}>
+  it("should open popup", async () => {
+    const spy = sinon.spy();
+    const sut = mount<PopupButton>(<PopupButton iconSpec="icon-arrow-down" label="Popup-Test" onExpanded={spy}>
       <div style={{ width: "200px", height: "100px" }}>
         hello world!
       </div>
     </PopupButton>);
 
-    expect(renderedComponent).not.to.be.undefined;
-    const popupButton = renderedComponent.getByTitle("Popup-Test");
-    expect(popupButton).not.to.be.undefined;
+    const item = sut.find(Item);
+    item.prop("onClick")!();
 
-    expect(popupButton.tagName).to.be.equal("BUTTON");
-    fireEvent.click(popupButton);
-
-    await TestUtils.flushAsyncOperations();
-    expect(spyOnPick.calledOnce).to.be.true;
-    spyOnPick.resetHistory();
-
-    expectedValue = false;
-    fireEvent.click(popupButton);
-
-    await TestUtils.flushAsyncOperations();
-    expect(spyOnPick.calledOnce).to.be.true;
-    spyOnPick.resetHistory();
+    expect(spy.calledOnce).to.be.true;
+    expect(sut.state().isPressed).to.be.true;
   });
 
   it("sync event should trigger stateFunc", () => {
@@ -153,7 +133,7 @@ describe("<PopupButton />", async () => {
   });
 
   it("should render with no padding", () => {
-    const sut = shallow<PopupButton>(<PopupButton noPadding={true}>
+    const sut = shallow<PopupButton>(<PopupButton noPadding>
       <div />
     </PopupButton>);
     sut.setState({ isPressed: true });
@@ -161,11 +141,10 @@ describe("<PopupButton />", async () => {
   });
 
   it("should minimize on outside click", () => {
-    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+    const sut = mount<PopupButton>(<PopupButton noPadding>
       <div />
     </PopupButton>);
     sut.setState({ isPressed: true });
-    const spy = sinon.spy(sut.instance(), "minimize");
     const divWithOnOutsideClick = sut.findWhere((w) => {
       return w.name() === "WithOnOutsideClick";
     }) as ReactWrapper<WithOnOutsideClickProps>;
@@ -174,11 +153,11 @@ describe("<PopupButton />", async () => {
     sinon.stub(event, "target").get(() => document.createElement("div"));
     divWithOnOutsideClick.prop("onOutsideClick")!(event);
 
-    expect(spy.calledOnceWithExactly()).to.be.true;
+    expect(sut.state().isPressed).to.be.false;
   });
 
   it("should not minimize on outside click", () => {
-    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+    const sut = mount<PopupButton>(<PopupButton noPadding>
       <div />
     </PopupButton>);
     sut.setState({ isPressed: true });
@@ -194,7 +173,7 @@ describe("<PopupButton />", async () => {
   });
 
   it("should minimize on Escape down", () => {
-    const sut = mount<PopupButton>(<PopupButton noPadding={true}>
+    const sut = mount<PopupButton>(<PopupButton noPadding>
       <div />
     </PopupButton>);
     sut.setState({ isPressed: true });

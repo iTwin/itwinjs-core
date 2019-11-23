@@ -17,11 +17,13 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($common)
 - ($backend)
 - ($clients)
+- ($clients-backend)
 - ($markup)
-- ($quantity)
 - ($i18n)
 - ($bentley)
 - ($geometry)
+- ($frontend-devtools)
+- ($logger-config)
 
 ## iModel.js UI Packages
 

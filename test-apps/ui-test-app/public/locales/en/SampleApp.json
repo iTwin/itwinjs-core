@@ -137,6 +137,7 @@
     "messageDemos": "Message Demos",
     "dialogDemos": "Dialog Demos",
     "viewportDialog": "Viewport Dialog",
+    "spinnerTestDialog": "Spinner Test",
     "openNestedAnimationStage": "Open Stage to Play Animations",
     "reduceWidgetOpacity": "Reduce Widget Opacity",
     "defaultWidgetOpacity": "Default Widget Opacity",
@@ -266,6 +267,8 @@
   },
   "statusFields": {
     "displayStyle": "Display Style",
+    "sampleField": "Sample StatusBar Field",
+    "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"
   },
   "properties": {
@@ -277,6 +280,14 @@
       "remove-favorite": {
         "label": "Remove from Favorite",
         "description": "Remove this property from Favorite category"
+      }
+    }
+  },
+  "table": {
+    "context-menu": {
+      "sample-item": {
+        "label": "Sample menu item",
+        "description": "A sample of a context menu item"
       }
     }
   }

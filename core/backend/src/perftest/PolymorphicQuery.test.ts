@@ -24,7 +24,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   let flatHierarchyCounts: never[] = [];
   const reporter = new Reporter();
 
-  function createElemProps(imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -39,7 +39,6 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     // Create props
     const elementProps: GeometricElementProps = {
       classFullName: className,
-      iModel: imodel,
       model: modId,
       category: catId,
       code: Code.createEmpty(),

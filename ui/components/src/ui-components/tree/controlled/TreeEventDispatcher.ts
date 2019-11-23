@@ -4,20 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { TreeActions } from "./TreeActions";
-import { TreeEvents } from "./TreeEvents";
-import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
-import { TreeNodeLoader } from "./TreeModelSource";
-import {
-  TreeSelectionManager,
-  IndividualSelection,
-  RangeSelection,
-  isRangeSelection,
-} from "./internal/TreeSelectionManager";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-
-import { CheckBoxState } from "@bentley/ui-core";
-
 import { Observable } from "rxjs/internal/Observable";
 import { concat } from "rxjs/internal/observable/concat";
 import { defer } from "rxjs/internal/observable/defer";
@@ -36,6 +22,13 @@ import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { toArray } from "rxjs/internal/operators/toArray";
 import { publishReplay } from "rxjs/internal/operators/publishReplay";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
+import { CheckBoxState } from "@bentley/ui-core";
+import { TreeActions } from "./TreeActions";
+import { TreeEvents } from "./TreeEvents";
+import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
+import { TreeSelectionManager, IndividualSelection, RangeSelection, isRangeSelection } from "./internal/TreeSelectionManager";
+import { SelectionMode } from "../../common/selection/SelectionModes";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.
@@ -43,7 +36,7 @@ import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
  */
 export class TreeEventDispatcher implements TreeActions {
   private _treeEvents: TreeEvents;
-  private _nodeLoader: TreeNodeLoader;
+  private _nodeLoader: ITreeNodeLoader;
   private _getVisibleNodes: (() => VisibleTreeNodes) | undefined;
 
   private _selectionManager: TreeSelectionManager;
@@ -52,7 +45,7 @@ export class TreeEventDispatcher implements TreeActions {
 
   constructor(
     treeEvents: TreeEvents,
-    nodeLoader: TreeNodeLoader,
+    nodeLoader: ITreeNodeLoader,
     selectionMode: SelectionMode,
     getVisibleNodes?: () => VisibleTreeNodes,
   ) {
@@ -215,7 +208,10 @@ export class TreeEventDispatcher implements TreeActions {
     );
 
     const loadedSelectedNodes = from(
-      nodesToLoad.map((node) => this._nodeLoader.loadNode(node.parentId, node.childIndex)),
+      nodesToLoad.map((node) => {
+        const parentNode = node.parentId ? this._getVisibleNodes!().getModel().getNode(node.parentId) : this._getVisibleNodes!().getModel().getRootNode();
+        return parentNode ? this._nodeLoader.loadNode(parentNode, node.childIndex) : /* istanbul ignore next */ EMPTY;
+      }),
     )
       .pipe(
         // We have requested multiple nodes that may belong to the same page.
@@ -224,7 +220,6 @@ export class TreeEventDispatcher implements TreeActions {
         // Maybe we could simplify this to `this._nodeLoader.loadNodes(nodesToLoad)`?
         mergeAll(),
         distinctUntilChanged(),
-        map(({ loadedNodes }) => loadedNodes),
       );
 
     return concat(of(readyNodes), loadedSelectedNodes)

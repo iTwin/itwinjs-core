@@ -1,0 +1,80 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.gp-load-dialog {
+
+  height: 100%;
+
+  .gp-load-div-phase0 {
+    display: grid;
+    grid-gap: 2px;
+    padding: 8px 12px;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    align-items: center;
+
+    .gp-spinner {
+      margin: 10px 10px 10px 10px;
+      grid-column-start: 1;
+      grid-column-end: 2;
+      grid-row-start: 2;
+      grid-row-end: 5;
+    }
+    .gp-banner {
+      margin: 4px 10px 12px 10px;
+      grid-column-start: 1;
+      grid-column-end: 3;
+      grid-row-start: 1;
+      grid-row-end: 2;
+      font-weight: bold;
+    }
+    .gp-current-folder {
+      margin: 4px 10px 4px 10px;
+      grid-column-start: 2;
+      grid-column-end: 3;
+      grid-row-start: 2;
+      grid-row-end: 3;
+    }
+    .gp-folder-count {
+      margin: 4px 10px 4px 10px;
+      grid-column-start: 2;
+      grid-column-end: 3;
+      grid-row-start: 3;
+      grid-row-end: 4;
+    }
+    .gp-file-count {
+      margin: 4px 10px 4px 10px;
+      grid-column-start: 2;
+      grid-column-end: 3;
+      grid-row-start: 4;
+      grid-row-end: 5;
+    }
+  }
+
+  .gp-load-div-phase1 {
+    display: grid;
+    grid-gap: 2px;
+    grid-template-columns: 1fr;
+    padding: 8px 12px;
+    align-items: center;
+    .gp-phase1-message-top {
+      margin-bottom: $uicore-m;
+      font-weight: bold;
+    }
+    .gp-phase1-fraction{
+      margin-bottom: $uicore-s;
+      margin-top: $uicore-m;
+    }
+    .gp-phase1-count{
+      margin-top: $uicore-s;
+      margin-bottom: $uicore-xs;
+    }
+  }
+
+  .gp-load-div-phase2 {
+    height: 100%;
+  }
+}

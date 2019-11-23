@@ -45,8 +45,8 @@ describe("<Splitter />", () => {
     addEventListenerSpy = sinon.spy(document, "addEventListener");
 
     mount(<Splitter />);
-    addEventListenerSpy.calledWith("mouseup").should.true;
-    addEventListenerSpy.calledWith("mousemove").should.true;
+    addEventListenerSpy.calledWith("pointerup").should.true;
+    addEventListenerSpy.calledWith("pointermove").should.true;
     addEventListenerSpy.calledTwice.should.true;
   });
 
@@ -55,8 +55,8 @@ describe("<Splitter />", () => {
     const sut = mount(<Splitter />);
     sut.unmount();
 
-    removeEventListenerSpy.calledWith("mouseup").should.true;
-    removeEventListenerSpy.calledWith("mousemove").should.true;
+    removeEventListenerSpy.calledWith("pointerup").should.true;
+    removeEventListenerSpy.calledWith("pointermove").should.true;
     removeEventListenerSpy.calledTwice.should.true;
   });
 
@@ -139,12 +139,12 @@ describe("<Splitter />", () => {
     const gripNode = grip.getDOMNode() as HTMLElement;
     sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(40, 0, 60, 0));
 
-    grip.simulate("mouseDown");
+    grip.simulate("pointerDown");
 
-    const mouseMove = document.createEvent("MouseEvent");
-    mouseMove.initEvent("mousemove");
-    sinon.stub(mouseMove, "clientX").get(() => 30);
-    document.dispatchEvent(mouseMove);
+    const pointerMove = document.createEvent("MouseEvent");
+    pointerMove.initEvent("pointermove");
+    sinon.stub(pointerMove, "clientX").get(() => 30);
+    document.dispatchEvent(pointerMove);
 
     sut.state().sizeByPaneId[0].should.eq(30, "pane1");
     sut.state().sizeByPaneId[1].should.eq(70, "pane2");
@@ -164,18 +164,18 @@ describe("<Splitter />", () => {
     const gripNode = grip.getDOMNode() as HTMLElement;
     sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(0, 40, 0, 60));
 
-    grip.simulate("mouseDown");
+    grip.simulate("pointerDown");
 
-    const mouseMove = document.createEvent("MouseEvent");
-    mouseMove.initEvent("mousemove");
-    sinon.stub(mouseMove, "clientY").get(() => 70);
-    document.dispatchEvent(mouseMove);
+    const pointerMove = document.createEvent("MouseEvent");
+    pointerMove.initEvent("pointermove");
+    sinon.stub(pointerMove, "clientY").get(() => 70);
+    document.dispatchEvent(pointerMove);
 
     sut.state().sizeByPaneId[0].should.eq(70, "pane1");
     sut.state().sizeByPaneId[1].should.eq(30, "pane2");
   });
 
-  it("should not handle mouse move if grip ref is not set", () => {
+  it("should not handle pointer move if grip ref is not set", () => {
     const gripRef = {
       current: null,
     };
@@ -199,20 +199,20 @@ describe("<Splitter />", () => {
     const gripNode = grip.getDOMNode() as HTMLElement;
     sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
 
-    grip.simulate("mouseDown");
+    grip.simulate("pointerDown");
 
     sinon.stub(gripRef, "current").get(() => null);
 
-    const mouseMove = document.createEvent("MouseEvent");
-    mouseMove.initEvent("mousemove");
-    sinon.stub(mouseMove, "clientX").get(() => 30);
-    document.dispatchEvent(mouseMove);
+    const pointerMove = document.createEvent("MouseEvent");
+    pointerMove.initEvent("pointermove");
+    sinon.stub(pointerMove, "clientX").get(() => 30);
+    document.dispatchEvent(pointerMove);
 
     sut.state().sizeByPaneId[0].should.eq(40, "pane1");
     sut.state().sizeByPaneId[1].should.eq(60, "pane2");
   });
 
-  it("should not handle mouse move if mouse up is received", () => {
+  it("should not handle pointer move if pointer up is received", () => {
     const sut = mount<Splitter>(
       <Splitter>
         <div />
@@ -230,16 +230,16 @@ describe("<Splitter />", () => {
     const gripNode = grip.getDOMNode() as HTMLElement;
     sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
 
-    grip.simulate("mouseDown");
+    grip.simulate("pointerDown");
 
-    const mouseUp = document.createEvent("MouseEvent");
-    mouseUp.initEvent("mouseup");
-    document.dispatchEvent(mouseUp);
+    const pointerUp = document.createEvent("MouseEvent");
+    pointerUp.initEvent("pointerup");
+    document.dispatchEvent(pointerUp);
 
-    const mouseMove = document.createEvent("MouseEvent");
-    mouseMove.initEvent("mousemove");
-    sinon.stub(mouseMove, "clientX").get(() => 30);
-    document.dispatchEvent(mouseMove);
+    const pointerMove = document.createEvent("MouseEvent");
+    pointerMove.initEvent("pointermove");
+    sinon.stub(pointerMove, "clientX").get(() => 30);
+    document.dispatchEvent(pointerMove);
 
     sut.state().sizeByPaneId[0].should.eq(40, "pane1");
     sut.state().sizeByPaneId[1].should.eq(60, "pane2");

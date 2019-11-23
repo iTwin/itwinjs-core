@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
+import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
@@ -88,7 +88,7 @@ export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
   public static insertRobot(iModelDb: IModelDb, modelId: Id64String, name: string, location: Point3d, radius: number = 0.1): Id64String {
-    const props: GeometricElement3dProps = {
+    const props = {
       model: modelId,
       code: Code.createEmpty(),
       classFullName: RobotWorld.Class.Robot,      // In this example, I know what class and category to use.
@@ -103,7 +103,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_END__
 
   public static insertBarrier(iModelDb: IModelDb, modelId: Id64String, location: Point3d, angle: Angle, length: number): Id64String {
-    const props: GeometricElement3dProps = {      // I know what class and category to use.
+    const props = {      // I know what class and category to use.
       model: modelId,
       code: Code.createEmpty(),
       classFullName: RobotWorld.Class.Barrier,

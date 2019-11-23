@@ -14,6 +14,8 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 import "./ShadowField.scss";
 
+// cspell:ignore statusfield
+
 interface ShadowFieldState {
   viewId: string;            // The id used to save the current state of the splitter
   viewport?: ScreenViewport;

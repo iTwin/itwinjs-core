@@ -9,7 +9,6 @@ import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import { IModelJsFs } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -51,7 +50,7 @@ function startWebServer() {
   });
   // Run the server...
   appExp.set("port", 3000);
-  const announceWebServer = () => { }; // console.log(`***** WebServer listening on http:localHost:${appExp.get("port")}, resource root is ${resourceRoot}`);
+  const announceWebServer = () => { };
   DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
@@ -60,11 +59,6 @@ startWebServer();
 
 // Initialize the backend
 initializeBackend();
-
-Logger.setLevelDefault(LogLevel.Error);
-Logger.setLevel("imodeljs-clients", LogLevel.Trace);
-Logger.setLevel("imodeljs-backend", LogLevel.Trace);
-Logger.setLevel("SVT", LogLevel.Trace);
 
 let serverConfig: any;
 let browser = "";
@@ -83,8 +77,6 @@ if (serverConfig === undefined) {
 } else {
 
 }
-
-Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());

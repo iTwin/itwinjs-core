@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CartesianGeometry */
+
 import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
 import { Angle } from "./Angle";
 import { Point4d } from "../geometry4d/Point4d";
@@ -9,7 +11,6 @@ import { Point2d } from "./Point2dVector2d";
 import { XYAndZ, XAndY, Matrix3dProps, WritableXYAndZ } from "./XYZProps";
 import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-/** @module CartesianGeometry */
 /* tslint:disable:prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.

@@ -8,28 +8,39 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { MergeTargetProps } from "./Merge";
 
+interface WidgetTargetState {
+  readonly isTargeted: boolean;
+}
+
 /** Basic component used by widget targets. I.e. [[ZoneTarget]], [[StagePanelTarget]]
  * @internal
  */
-export class WidgetTarget extends React.PureComponent<MergeTargetProps> {
-  private _isTargeted = false;
+export class WidgetTarget extends React.PureComponent<MergeTargetProps, WidgetTargetState> {
+  public readonly state: WidgetTargetState = {
+    isTargeted: false,
+  };
+
   private _target = React.createRef<HTMLDivElement>();
 
+  public componentDidMount() {
+    // iOS workaround: element.releasePointerCapture() is only partially implemented (no boundary events i.e. pointerenter)
+    document.addEventListener("pointermove", this._handleDocumentPointerMove);
+  }
+
   public componentWillUnmount() {
-    this._isTargeted && this.props.onTargetChanged && this.props.onTargetChanged(false);
+    document.removeEventListener("pointermove", this._handleDocumentPointerMove);
+    this.state.isTargeted && this.props.onTargetChanged && this.props.onTargetChanged(false);
   }
 
   public render() {
     const className = classnames(
       "nz-zones-target-target",
+      this.state.isTargeted && "nz-targeted",
       this.props.className);
 
     return (
       <div
         className={className}
-        onMouseEnter={this._handleMouseEnter}
-        onMouseMove={this._handleMouseMove}
-        onMouseLeave={this._handleMouseLeave}
         ref={this._target}
         style={this.props.style}
       >
@@ -38,21 +49,20 @@ export class WidgetTarget extends React.PureComponent<MergeTargetProps> {
     );
   }
 
-  private _handleMouseEnter = () => {
-    this._isTargeted = true;
-    this.props.onTargetChanged && this.props.onTargetChanged(true);
-  }
-
-  private _handleMouseMove = (e: React.MouseEvent) => {
-    if (this._isTargeted || e.target !== this._target.current)
+  private _handleDocumentPointerMove = (e: PointerEvent) => {
+    if (!this._target.current || !e.target || !(e.target instanceof Node))
       return;
+    if (this._target.current.contains(e.target)) {
+      if (this.state.isTargeted)
+        return;
+      this.setState({ isTargeted: true });
+      this.props.onTargetChanged && this.props.onTargetChanged(true);
+      return;
+    }
 
-    this._isTargeted = true;
-    this.props.onTargetChanged && this.props.onTargetChanged(true);
-  }
-
-  private _handleMouseLeave = () => {
-    this._isTargeted = false;
+    if (!this.state.isTargeted)
+      return;
+    this.setState({ isTargeted: false });
     this.props.onTargetChanged && this.props.onTargetChanged(false);
   }
 }

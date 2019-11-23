@@ -38,7 +38,7 @@ export interface HiliteSet {
  * what `HiliteSet` should be hilited in the graphics viewport based on the
  * supplied `KeySet`.
  *
- * @internal
+ * @alpha
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
@@ -48,6 +48,9 @@ export class HiliteSetProvider {
     this._imodel = imodel;
   }
 
+  /**
+   * Create a hilite set provider for the specified iModel.
+   */
   public static create(imodel: IModelConnection) { return new HiliteSetProvider(imodel); }
 
   private async getRecords(keys: KeySet): Promise<Item[]> {
@@ -89,6 +92,13 @@ export class HiliteSetProvider {
     };
   }
 
+  /**
+   * Get hilite set for instances and/or nodes whose keys are specified in the
+   * given KeySet.
+   *
+   * Note: The provider caches result of the last request, so subsequent requests
+   * for the same input doesn't cost.
+   */
   public async getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet> {
     await registerRuleset();
     if (!this._cached || this._cached.keysGuid !== selection.guid) {

@@ -4,20 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
+import { Subject } from "rxjs/internal/Subject";
+import { take } from "rxjs/internal/operators/take";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { Observable } from "../Observable";
 import { TreeActions } from "../TreeActions";
 import { TreeModelNode, VisibleTreeNodes } from "../TreeModel";
-import {
-  SelectionHandler,
-  SingleSelectionHandler,
-  MultiSelectionHandler,
-} from "../../../common/selection/SelectionHandler";
+import { SelectionHandler, SingleSelectionHandler, MultiSelectionHandler } from "../../../common/selection/SelectionHandler";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
-
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-
-import { Subject } from "rxjs/internal/Subject";
-import { take } from "rxjs/internal/operators/take";
 
 /** @internal */
 export interface SelectionReplacementEvent {

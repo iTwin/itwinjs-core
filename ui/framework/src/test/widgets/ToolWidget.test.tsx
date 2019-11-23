@@ -410,10 +410,8 @@ describe("Test Plugin items", () => {
 
     toggleButton = component.queryByTitle(toggleToolTitle) as HTMLButtonElement;
 
-    let insertedItem = component.queryByTitle("test group (insertspec)") as HTMLButtonElement;
-    expect(insertedItem).not.to.be.null;
-    insertedItem = component.queryByTitle("test group 2 (insertspec)") as HTMLButtonElement;
-    expect(insertedItem).not.to.be.null;
+    const insertedItem = component.queryAllByTitle("v2-group-child-tool-2");
+    expect(insertedItem.length).to.eq(2);
     PluginUiManager.unregister(testUiProvider.id);
   });
 });

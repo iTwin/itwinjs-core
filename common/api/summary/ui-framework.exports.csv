@@ -59,6 +59,8 @@ alpha;CategoryTree
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
+beta;ClearEmphasisStatusField 
+beta;ClearEmphasisStatusFieldProps 
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
 public;CombinedReducerState
@@ -191,9 +193,12 @@ public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
+internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
+internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
+beta;getSelectionContextSyncEventIds(): string[]
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React.FunctionComponent
 public;GroupButtonProps 
@@ -331,6 +336,8 @@ alpha;RealityDataPickerControl
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
+beta;ReviewToolWidget 
+beta;ReviewToolWidgetProps
 internal;RotationData
 alpha;SafeAreaContext: React.Context
 beta;SavedView
@@ -339,6 +346,9 @@ beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField 
+beta;selectionContextStateFunc(state: Readonly
+beta;SelectionContextToolDefinitions
+alpha;SelectionContextUtilities
 public;SelectionInfoField: any
 public;SelectionScopeField: any
 public;SeparatorBackstageItem 
@@ -385,10 +395,20 @@ alpha;StandardRotationNavigationAidControl
 public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection: React.FunctionComponent
+beta;StatusBarComposer 
+beta;StatusBarComposerProps
+internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
+beta;StatusBarItem
+beta;StatusBarItemId = StatusBarItem["id"]
+beta;StatusBarItemsChangedEvent 
+beta;StatusBarItemsManager
+beta;StatusBarItemUtilities
 beta;StatusBarLeftSection: React.FunctionComponent
+beta;StatusBarManager
 public;StatusBarProps 
 beta;StatusBarRightSection: React.FunctionComponent
+beta;StatusBarSection
 beta;StatusBarSpaceBetween: React.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
@@ -431,6 +451,7 @@ public;ToolbarWidgetDefBase
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
+internal;ToolGroupPanelContext: React.Context
 public;ToolIconChangedEvent 
 public;ToolIconChangedEventArgs
 public;ToolInformation
@@ -499,7 +520,9 @@ public;WidgetStateChangedEventArgs
 internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
+beta;withMessageCenterFieldProps: 
 alpha;withSafeArea: 
+beta;withStatusFieldProps: 
 public;Workflow 
 public;WorkflowActivatedEvent 
 public;WorkflowActivatedEventArgs

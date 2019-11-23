@@ -5,18 +5,19 @@
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelProps, ModelSelectorProps, Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, SubCategoryOverride,
+  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
+  Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
-  GeometricElement3d, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition,
-  PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement,
+  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect, ExternalSourceAspect,
+  FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
+  InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -158,7 +159,7 @@ export namespace IModelTransformerUtils {
       commonString: "Common",
       commonDouble: 7.3,
       extraString: "Extra",
-    };
+    } as GeometricElement3dProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     // Insert ElementAspects
@@ -173,7 +174,7 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -185,7 +186,7 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -197,17 +198,17 @@ export namespace IModelTransformerUtils {
       sourceLong: physicalObjectId1,
       sourceGuid: Guid.createValue(),
       extraString: "Extra",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceUniqueAspectToExclude",
       element: new ElementOwnsUniqueAspect(physicalObjectId1),
       description: "SourceUniqueAspect1",
-    });
+    } as ElementAspectProps);
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspectToExclude",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
       description: "SourceMultiAspect1",
-    });
+    } as ElementAspectProps);
     // Insert DrawingGraphics
     const drawingGraphicProps: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
@@ -258,7 +259,7 @@ export namespace IModelTransformerUtils {
       sourceDouble: 1.1,
       sourceLong: spatialCategoryId,
       sourceGuid: Guid.createValue(),
-    });
+    } as any);
     const relationshipId2: Id64String = sourceDb.relationships.insertInstance(relationship2);
     assert.isTrue(Id64.isValidId64(relationshipId2));
   }
@@ -283,7 +284,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: RelationshipProps = sourceDb.relationships.getInstanceProps(
+    const relWithProps: any = sourceDb.relationships.getInstanceProps(
       "TestTransformerSource:SourceRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -473,7 +474,7 @@ export namespace IModelTransformerUtils {
     // DrawingGraphicRepresentsElement
     assert.exists(targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId, targetId: physicalObjectId1 }));
     // TargetRelWithProps
-    const relWithProps: RelationshipProps = targetDb.relationships.getInstanceProps(
+    const relWithProps: any = targetDb.relationships.getInstanceProps(
       "TestTransformerTarget:TargetRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -501,7 +502,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: RelationshipProps = targetDb.relationships.getInstanceProps(
+    const relWithProps: any = targetDb.relationships.getInstanceProps(
       "TestTransformerTarget:TargetRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
@@ -734,21 +735,6 @@ export namespace IModelTransformerUtils {
   }
 }
 
-/** Debugging aid that asserts valid Ids before native code is called */
-export class IModelTransformerWithAsserts extends IModelTransformer {
-  /** Override of insertElement that asserts valid Ids */
-  protected insertElement(targetElementProps: ElementProps): Id64String {
-    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.model));
-    assert.doesNotThrow(() => this.targetDb.models.getModel(targetElementProps.model));
-    assert.doesNotThrow(() => this.targetDb.codeSpecs.getById(targetElementProps.code.spec));
-    assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.code.scope));
-    if (targetElementProps.parent) {
-      assert.doesNotThrow(() => this.targetDb.elements.getElement(targetElementProps.parent!.id));
-    }
-    return super.insertElement(targetElementProps);
-  }
-}
-
 /** Test IModelTransformer that applies a 3d transform to all GeometricElement3d instances. */
 export class IModelTransformer3d extends IModelTransformer {
   /** The Transform to apply to all GeometricElement3d instances. */
@@ -759,13 +745,13 @@ export class IModelTransformer3d extends IModelTransformer {
     this._transform3d = transform3d;
   }
   /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
-  protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
       if (placement.isValid) {
         placement.multiplyTransform(this._transform3d);
-        targetElementProps.placement = placement;
+        (targetElementProps as GeometricElement3dProps).placement = placement;
       }
     }
     return targetElementProps;
@@ -774,25 +760,8 @@ export class IModelTransformer3d extends IModelTransformer {
 
 /** Specialization of IModelTransformer for testing */
 export class TestIModelTransformer extends IModelTransformer {
-  public numInsertElementCalls = 0;
-  public numInsertElementProvenanceCalls = 0;
-  public numUpdateElementCalls = 0;
-  public numUpdateElementProvenanceCalls = 0;
-  public numExcludedElementCalls = 0;
-
-  public numModelsInserted = 0;
-  public numModelsUpdated = 0;
-  public numElementsInserted = 0;
-  public numElementsUpdated = 0;
-  public numElementsDeleted = 0;
-  public numElementsExcluded = 0;
-
-  public numRelationshipsExcluded = 0;
-  public numCodeSpecsExcluded = 0;
-  public numElementAspectsExcluded = 0;
-
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
-    super(sourceDb, targetDb);
+  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter) {
+    super(source, target);
     this.initExclusions();
     this.initCodeSpecRemapping();
     this.initCategoryRemapping();
@@ -801,12 +770,12 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Initialize some sample exclusion rules for testing */
   private initExclusions(): void {
-    super.excludeCodeSpec("ExtraCodeSpec");
-    super.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
-    super.excludeSubject("/Only in Source");
-    super.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
-    super.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
-    super.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
+    this.exporter.excludeCodeSpec("ExtraCodeSpec");
+    this.exporter.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
+    this.exporter.excludeElement(this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Only in Source"))!);
+    this.exporter.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
+    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
+    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
   }
 
   /** Initialize some CodeSpec remapping rules for testing */
@@ -822,7 +791,7 @@ export class TestIModelTransformer extends IModelTransformer {
     const targetCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
     assert.isTrue(Id64.isValidId64(subjectId) && Id64.isValidId64(definitionModelId) && Id64.isValidId64(sourceCategoryId) && Id64.isValidId64(targetCategoryId));
     this.context.remapElement(sourceCategoryId, targetCategoryId);
-    super.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
+    this.exporter.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
   /** Initialize some class remapping rules for testing */
@@ -830,100 +799,14 @@ export class TestIModelTransformer extends IModelTransformer {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
   }
 
-  /** Override insertElement to count calls */
-  protected insertElement(targetElementProps: ElementProps): Id64String {
-    this.numInsertElementCalls++;
-    return super.insertElement(targetElementProps);
-  }
-
-  /** Override insertElementProvenance to count calls */
-  protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this.numInsertElementProvenanceCalls++;
-    return super.insertElementProvenance(sourceElement, targetElementId);
-  }
-
-  /** Override updateElement to count calls */
-  protected updateElement(targetElementProps: ElementProps): void {
-    this.numUpdateElementCalls++;
-    super.updateElement(targetElementProps);
-  }
-
-  /** Override insertElementProvenance to count calls */
-  protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this.numUpdateElementProvenanceCalls++;
-    return super.updateElementProvenance(sourceElement, targetElementId);
-  }
-
-  /** Override shouldExcludeElement to count calls and exclude all Element from the Functional schema */
-  protected shouldExcludeElement(sourceElement: Element): boolean {
-    const excluded: boolean =
-      super.shouldExcludeElement(sourceElement) ||
-      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
-
-    if (excluded) { this.numExcludedElementCalls++; }
-    return excluded;
-  }
-
-  /** Count the number of CodeSpecs excluded in this callback */
-  protected onCodeSpecExcluded(codeSpecName: string): void {
-    this.numCodeSpecsExcluded++;
-    super.onCodeSpecExcluded(codeSpecName);
-  }
-
-  /** Count the number of Relationships excluded in this callback */
-  protected onRelationshipExcluded(sourceRelationship: Relationship): void {
-    this.numRelationshipsExcluded++;
-    super.onRelationshipExcluded(sourceRelationship);
-  }
-
-  /** Count the number of ElementAspects excluded in this callback */
-  protected onElementAspectExcluded(sourceElementAspect: ElementAspect): void {
-    this.numElementAspectsExcluded++;
-    super.onElementAspectExcluded(sourceElementAspect);
-  }
-
-  /** Count the number of Elements inserted in this callback */
-  protected onElementInserted(sourceElement: Element, targetElementProps: ElementProps): void {
-    this.numElementsInserted++;
-    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
-    super.onElementInserted(sourceElement, targetElementProps);
-  }
-
-  /** Count the number of Elements updated in this callback */
-  protected onElementUpdated(sourceElement: Element, targetElementProps: ElementProps): void {
-    this.numElementsUpdated++;
-    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
-    super.onElementUpdated(sourceElement, targetElementProps);
-  }
-
-  /** Count the number of Elements deleted in this callback */
-  protected onElementDeleted(targetElement: Element): void {
-    this.numElementsDeleted++;
-    assert.isTrue(Id64.isValidId64(targetElement.id));
-    super.onElementDeleted(targetElement);
-  }
-
-  /** Count the number of Elements excluded in this callback */
-  protected onElementExcluded(sourceElement: Element): void {
-    this.numElementsExcluded++;
-    super.onElementExcluded(sourceElement);
-  }
-
-  /** Count the number of Models inserted in this callback */
-  protected onModelInserted(sourceModel: Model, targetModelProps: ModelProps): void {
-    this.numModelsInserted++;
-    super.onModelInserted(sourceModel, targetModelProps);
-  }
-
-  /** Count the number of Models updated in this callback */
-  protected onModelUpdated(sourceModel: Model, targetModelProps: ModelProps): void {
-    this.numModelsUpdated++;
-    super.onModelUpdated(sourceModel, targetModelProps);
+  /** Override shouldExportElement to exclude all elements from the Functional schema. */
+  public shouldExportElement(sourceElement: Element): boolean {
+    return sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ? false : super.shouldExportElement(sourceElement);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: any = super.onTransformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
     }
@@ -935,8 +818,8 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
-  protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
-    const targetElementAspectProps: ElementAspectProps = super.transformElementAspect(sourceElementAspect, targetElementId);
+  protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+    const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
     if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
       targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
@@ -962,8 +845,8 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
-  protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
-    const targetRelationshipProps: RelationshipProps = super.transformRelationship(sourceRelationship);
+  protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
+    const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
     if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
       targetRelationshipProps.targetString = targetRelationshipProps.sourceString;
@@ -976,5 +859,204 @@ export class TestIModelTransformer extends IModelTransformer {
       targetRelationshipProps.sourceGuid = undefined;
     }
     return targetRelationshipProps;
+  }
+}
+
+/** Specialization of IModelImporter that counts the number of times each callback is called. */
+export class CountingIModelImporter extends IModelImporter {
+  public numModelsInserted: number = 0;
+  public numModelsUpdated: number = 0;
+  public numElementsInserted: number = 0;
+  public numElementsUpdated: number = 0;
+  public numElementsDeleted: number = 0;
+  public numElementAspectsInserted: number = 0;
+  public numElementAspectsUpdated: number = 0;
+  public numRelationshipsInserted: number = 0;
+  public numRelationshipsUpdated: number = 0;
+  public constructor(targetDb: IModelDb) {
+    super(targetDb);
+  }
+  protected onInsertModel(modelProps: ModelProps): void {
+    this.numModelsInserted++;
+    super.onInsertModel(modelProps);
+  }
+  protected onUpdateModel(modelProps: ModelProps): void {
+    this.numModelsUpdated++;
+    super.onUpdateModel(modelProps);
+  }
+  protected onInsertElement(elementProps: ElementProps): Id64String {
+    this.numElementsInserted++;
+    return super.onInsertElement(elementProps);
+  }
+  protected onUpdateElement(elementProps: ElementProps): void {
+    this.numElementsUpdated++;
+    super.onUpdateElement(elementProps);
+  }
+  protected onDeleteElement(elementId: Id64String): void {
+    this.numElementsDeleted++;
+    super.onDeleteElement(elementId);
+  }
+  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+    this.numElementAspectsInserted++;
+    super.onInsertElementAspect(aspectProps);
+  }
+  protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
+    this.numElementAspectsUpdated++;
+    super.onUpdateElementAspect(aspectProps);
+  }
+  protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
+    this.numRelationshipsInserted++;
+    return super.onInsertRelationship(relationshipProps);
+  }
+  protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
+    this.numRelationshipsUpdated++;
+    super.onUpdateRelationship(relationshipProps);
+  }
+}
+
+/** Specialization of IModelExport that exports to an output text file. */
+export class IModelToTextFileExporter extends IModelExportHandler {
+  public outputFileName: string;
+  public exporter: IModelExporter;
+  public constructor(sourceDb: IModelDb, outputFileName: string) {
+    super();
+    this.outputFileName = outputFileName;
+    this.exporter = new IModelExporter(sourceDb);
+    this.exporter.registerHandler(this);
+  }
+  public export(): void {
+    this.exporter.exportAll();
+  }
+  private writeLine(line: string, indentLevel: number = 0): void {
+    for (let i = 0; i < indentLevel; i++) {
+      IModelJsFs.appendFileSync(this.outputFileName, "  ");
+    }
+    IModelJsFs.appendFileSync(this.outputFileName, line);
+    IModelJsFs.appendFileSync(this.outputFileName, "\n");
+  }
+  private getIndentLevelForModel(model: Model): number {
+    if (IModel.repositoryModelId === model.id) {
+      return 0;
+    }
+    const parentModel: Model = this.exporter.sourceDb.models.getModel(model.parentModel);
+    return 1 + this.getIndentLevelForModel(parentModel);
+  }
+  private getIndentLevelForElement(element: Element): number {
+    if ((undefined !== element.parent) && (Id64.isValidId64(element.parent.id))) {
+      const parentElement: Element = this.exporter.sourceDb.elements.getElement(element.parent.id);
+      return 1 + this.getIndentLevelForElement(parentElement);
+    }
+    const model: Model = this.exporter.sourceDb.models.getModel(element.model);
+    return 1 + this.getIndentLevelForModel(model);
+  }
+  private getIndentLevelForElementAspect(aspect: ElementAspect): number {
+    const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
+    return 1 + this.getIndentLevelForElement(element);
+  }
+  protected onExportCodeSpec(codeSpec: CodeSpec): void {
+    this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}`);
+    super.onExportCodeSpec(codeSpec);
+  }
+  protected onExportFont(font: FontProps): void {
+    this.writeLine(`[Font] ${font.id}, ${font.name}`);
+    super.onExportFont(font);
+  }
+  protected onExportModel(model: Model): void {
+    const indentLevel: number = this.getIndentLevelForModel(model);
+    this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}`, indentLevel);
+    super.onExportModel(model);
+  }
+  protected onExportElement(element: Element): void {
+    const indentLevel: number = this.getIndentLevelForElement(element);
+    this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}`, indentLevel);
+    super.onExportElement(element);
+  }
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+    const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
+    this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
+    super.onExportElementUniqueAspect(aspect);
+  }
+  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+    const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
+    for (const aspect of aspects) {
+      this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
+    }
+    super.onExportElementMultiAspects(aspects);
+  }
+  protected onExportRelationship(relationship: Relationship): void {
+    this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}`);
+    super.onExportRelationship(relationship);
+  }
+}
+
+/** Specialization of IModelExport that counts occurrences of classes. */
+export class ClassCounter extends IModelExportHandler {
+  public outputFileName: string;
+  public exporter: IModelExporter;
+  private _modelClassCounts: Map<string, number> = new Map<string, number>();
+  private _elementClassCounts: Map<string, number> = new Map<string, number>();
+  private _aspectClassCounts: Map<string, number> = new Map<string, number>();
+  private _relationshipClassCounts: Map<string, number> = new Map<string, number>();
+  public constructor(sourceDb: IModelDb, outputFileName: string) {
+    super();
+    this.outputFileName = outputFileName;
+    this.exporter = new IModelExporter(sourceDb);
+    this.exporter.registerHandler(this);
+  }
+  public count(): void {
+    this.exporter.exportAll();
+    this.outputAllClassCounts();
+  }
+  private incrementClassCount(map: Map<string, number>, classFullName: string): void {
+    const count: number | undefined = map.get(classFullName);
+    if (undefined === count) {
+      map.set(classFullName, 1);
+    } else {
+      map.set(classFullName, 1 + count);
+    }
+  }
+  private sortClassCounts(map: Map<string, number>): any[] {
+    return Array.from(map).sort((a: [string, number], b: [string, number]): number => {
+      if (a[1] === b[1]) {
+        return a[0] > b[0] ? 1 : -1;
+      } else {
+        return a[1] > b[1] ? -1 : 1;
+      }
+    });
+  }
+  private outputAllClassCounts(): void {
+    this.outputClassCounts("Model", this.sortClassCounts(this._modelClassCounts));
+    this.outputClassCounts("Element", this.sortClassCounts(this._elementClassCounts));
+    this.outputClassCounts("ElementAspect", this.sortClassCounts(this._aspectClassCounts));
+    this.outputClassCounts("Relationship", this.sortClassCounts(this._relationshipClassCounts));
+  }
+  private outputClassCounts(title: string, classCounts: Array<[string, number]>): void {
+    IModelJsFs.appendFileSync(this.outputFileName, `=== ${title} Class Counts ===\n`);
+    classCounts.forEach((value: [string, number]) => {
+      IModelJsFs.appendFileSync(this.outputFileName, `${value[1]}, ${value[0]}\n`);
+    });
+    IModelJsFs.appendFileSync(this.outputFileName, `\n`);
+  }
+  protected onExportModel(model: Model): void {
+    this.incrementClassCount(this._modelClassCounts, model.classFullName);
+    super.onExportModel(model);
+  }
+  protected onExportElement(element: Element): void {
+    this.incrementClassCount(this._elementClassCounts, element.classFullName);
+    super.onExportElement(element);
+  }
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+    this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
+    super.onExportElementUniqueAspect(aspect);
+  }
+  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+    for (const aspect of aspects) {
+      this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
+    }
+    super.onExportElementMultiAspects(aspects);
+  }
+  protected onExportRelationship(relationship: Relationship): void {
+    this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
+    super.onExportRelationship(relationship);
   }
 }

@@ -20,7 +20,7 @@ beta;DescriptionProps
 internal;getClassName: (obj: any) => string
 beta;GroupButtonDirection
 alpha;GroupItemInsertSpec 
-alpha;IconSpecUtilities
+beta;IconSpecUtilities
 alpha;InsertSpec
 beta;LabelProps
 beta;OnCancelFunc = () => void

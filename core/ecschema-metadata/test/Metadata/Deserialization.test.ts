@@ -110,7 +110,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should succeed when referenced schema is already in the schema context", async () => {
       const context = new SchemaContext();
-      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
       await context.addSchema(refSchema);
 
       const schema = await Schema.fromJson(validSchemaJson, context);

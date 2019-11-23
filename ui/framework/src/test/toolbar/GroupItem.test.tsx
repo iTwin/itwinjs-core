@@ -6,12 +6,12 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { mount, shallow, ReactWrapper } from "enzyme";
-
-import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem } from "../../ui-framework";
-import { Direction } from "@bentley/ui-ninezone";
-import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { BadgeType } from "@bentley/ui-abstract";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { Direction, WithDragInteractionProps, GroupTool, GroupToolExpander, NestedGroup } from "@bentley/ui-ninezone";
+import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem, getFirstItem, getFirstItemId, ToolGroupPanelContext } from "../../ui-framework";
+import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem";
+import TestUtils from "../TestUtils";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
@@ -48,6 +48,7 @@ const group1 = new GroupItemDef({
 });
 
 describe("GroupItem", () => {
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -57,8 +58,11 @@ describe("GroupItem", () => {
     TestUtils.terminateUiFramework();
   });
 
-  describe("<GroupButton />", () => {
+  afterEach(() => {
+    sandbox.restore();
+  });
 
+  describe("<GroupButton />", () => {
     it("should render", () => {
       const wrapper = mount(
         <GroupButton
@@ -171,89 +175,13 @@ describe("GroupItem", () => {
         />,
       );
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      const buttonDiv = wrapper.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
       expect(buttonDiv.length).to.eq(1);
 
-      buttonDiv.simulate("click");
+      buttonDiv.prop("onOpenPanel")!();
       wrapper.update();
 
       expect(wrapper.find("div.nz-toolbar-item-expandable-group-panel").length).to.eq(1);
-
-      wrapper.unmount();
-    });
-
-    it("GroupButton opens & support history", () => {
-      const executeSpy = sinon.spy();
-
-      const testSpyTool = new CommandItemDef({
-        commandId: "spyTool",
-        iconSpec: "icon-placeholder",
-        labelKey: "SampleApp:buttons.spyTool",
-        execute: executeSpy,
-        stateSyncIds: [toolItemEventId],
-        stateFunc: toolItemStateFunc,
-      });
-
-      const wrapper = mount(
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconSpec="icon-placeholder"
-          items={[testSpyTool, tool1, tool2]}
-          direction={Direction.Bottom}
-          itemsInColumn={7}
-        />,
-      );
-
-      const expandableItem = wrapper.find("div.nz-toolbar-item-expandable-expandable");
-      expect(expandableItem.length).to.eq(1);
-      expandableItem.simulate("mouseenter");
-      expandableItem.simulate("mouseleave");
-
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
-      expect(buttonDiv.length).to.eq(1);
-
-      buttonDiv.simulate("click");
-      wrapper.update();
-
-      const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
-      expect(toolItems.length).to.eq(3);
-      toolItems.at(0).simulate("click");
-      expect(executeSpy.calledOnce).to.be.true;
-      wrapper.update();
-
-      const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
-      expect(historyItem.length).to.eq(1);
-      historyItem.simulate("click");
-      expect(executeSpy.calledTwice).to.be.true;
-
-      wrapper.unmount();
-    });
-
-    it("GroupButton supports history item with no sync", () => {
-      const wrapper = mount(
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconSpec="icon-placeholder"
-          items={[tool1]}
-          direction={Direction.Bottom}
-          itemsInColumn={7}
-        />,
-      );
-
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
-      expect(buttonDiv.length).to.eq(1);
-
-      buttonDiv.simulate("click");
-      wrapper.update();
-
-      const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
-      expect(toolItems.length).to.eq(1);
-      toolItems.at(0).simulate("click");
-      wrapper.update();
-
-      const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
-      expect(historyItem.length).to.eq(1);
-      historyItem.simulate("click");
 
       wrapper.unmount();
     });
@@ -270,10 +198,10 @@ describe("GroupItem", () => {
     it("should include a GroupToolExpander when a GroupItemDef is included", () => {
       const wrapper = mount(<GroupButton items={[tool1, tool2, group1]} />);
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      const buttonDiv = wrapper.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
       expect(buttonDiv.length).to.eq(1);
 
-      buttonDiv.simulate("click");
+      buttonDiv.prop("onOpenPanel")!();
       wrapper.update();
 
       const expanderDiv = wrapper.find("div.nz-toolbar-item-expandable-group-tool-expander");
@@ -290,7 +218,9 @@ describe("GroupItem", () => {
 
       wrapper.unmount();
     });
+  });
 
+  describe("<GroupItem />", () => {
     it("should minimize on outside click", () => {
       const groupItemDef = new GroupItemDef({
         items: [tool1, tool2, group1],
@@ -309,21 +239,188 @@ describe("GroupItem", () => {
       expect(sut.state().isPressed).to.be.false;
     });
 
-    it("should not minimize on outside click", () => {
+    it("should initialize activeItemId from defaultActiveItemId prop", () => {
       const groupItemDef = new GroupItemDef({
-        items: [tool1, tool2, group1],
+        items: [],
       });
       groupItemDef.resolveItems();
-      const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
+      const sut = mount<GroupItem>(<GroupItem
+        defaultActiveItemId={"item1"}
+        groupItemDef={groupItemDef}
+      />);
+      expect(sut.state().activeItemId).to.eq("item1");
+    });
+
+    it("should fallback to first item id when defaultActiveItemId is not specified", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [],
+      });
+      groupItemDef.resolveItems();
+      sandbox.stub(GroupItemModule, "getFirstItemId").returns("asd");
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
+      expect(sut.state().activeItemId).to.eq("asd");
+    });
+
+    it("should execute active item on click", () => {
+      const execute = sinon.spy();
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({
+            execute,
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
       sut.setState({ isPressed: true });
-      const toolGroup = sut.findWhere((w) => {
-        return w.name() === "WithOnOutsideClick";
-      }) as ReactWrapper<WithOnOutsideClickProps>;
+      const withDragInteraction = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
+      withDragInteraction.prop("onClick")!();
 
-      const event = new MouseEvent("");
-      toolGroup.prop("onOutsideClick")!(event);
+      expect(execute.calledOnce).to.true;
+    });
 
-      expect(sut.state().isPressed).to.be.true;
+    it("should execute group tool on click", () => {
+      const execute = sinon.spy();
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({
+            commandId: "id1",
+            execute,
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
+      sut.setState({ isPressed: true });
+      const groupTool = sut.find(GroupTool);
+      groupTool.prop("onClick")!();
+
+      expect(execute.calledOnce).to.true;
+      expect(sut.state().activeItemId).to.eq("id1");
+    });
+
+    it("should use panelLabel as panel title", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({}),
+        ],
+        panelLabel: "Panel 1",
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
+      sut.setState({ isPressed: true });
+
+      const tray = sut.state().trays.get("tray-1");
+      expect(tray).to.exist;
+      expect(tray!.title).to.eq("Panel 1");
+    });
+
+    it("should expand group on pointerup", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({}),
+          new GroupItemDef({
+            groupId: "group-1",
+            items: [],
+          })],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount(<ToolGroupPanelContext.Provider value={true}>
+        <GroupItem
+          groupItemDef={groupItemDef}
+        />
+      </ToolGroupPanelContext.Provider>);
+      const groupItem = sut.find(GroupItem) as ReactWrapper<GroupItem["props"], GroupItem["state"], GroupItem>;
+      groupItem.setState({ isPressed: true });
+      const groupToolExpander = sut.find(GroupToolExpander);
+      groupToolExpander.prop("onPointerUp")!();
+
+      expect(groupItem.state().trayId).to.eq("tray-2");
+    });
+
+    it("should activate group tool on pointerup", () => {
+      const execute = sinon.spy();
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new CommandItemDef({
+            execute,
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount(<ToolGroupPanelContext.Provider value={true}>
+        <GroupItem
+          groupItemDef={groupItemDef}
+        />
+      </ToolGroupPanelContext.Provider>);
+      const groupItem = sut.find(GroupItem) as ReactWrapper<GroupItem["props"], GroupItem["state"], GroupItem>;
+      groupItem.setState({ isPressed: true });
+      const groupTool = sut.find(GroupTool);
+      groupTool.prop("onPointerUp")!();
+
+      expect(execute.calledOnce).to.true;
+    });
+
+    it("should activate nested tool group back arrow on pointerup", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new GroupItemDef({
+            items: [
+              new CommandItemDef({}),
+            ],
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount(<ToolGroupPanelContext.Provider value={true}>
+        <GroupItem
+          groupItemDef={groupItemDef}
+        />
+      </ToolGroupPanelContext.Provider>);
+      const groupItem = sut.find(GroupItem) as ReactWrapper<GroupItem["props"], GroupItem["state"], GroupItem>;
+      groupItem.setState({
+        isPressed: true,
+        trayId: "tray-2",
+        backTrays: ["tray-1"],
+      });
+      const nestedGroup = sut.find(NestedGroup);
+      nestedGroup.prop("onBackPointerUp")!();
+
+      expect(groupItem.state().trayId).to.eq("tray-1");
+    });
+
+    it("should maintain trayId if backTrays is empty", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [
+          new GroupItemDef({
+            items: [
+              new CommandItemDef({}),
+            ],
+          }),
+        ],
+      });
+      groupItemDef.resolveItems();
+      const sut = mount<GroupItem>(<GroupItem
+        groupItemDef={groupItemDef}
+      />);
+      sut.setState({
+        isPressed: true,
+        trayId: "tray-2",
+        backTrays: ["tray-1"],
+      });
+      const nestedGroup = sut.find(NestedGroup);
+      nestedGroup.prop("onBack")!();
+      nestedGroup.prop("onBack")!();
+
+      expect(sut.state().trayId).to.eq("tray-1");
     });
   });
 
@@ -380,4 +477,33 @@ describe("GroupItem", () => {
 
   });
 
+  describe("getFirstItem", () => {
+    it("should return undefined if no items in group item", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [],
+      });
+      const item = getFirstItem(groupItemDef);
+      expect(item).to.eq(undefined);
+    });
+
+    it("should return undefined if no items in nested group items", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [new GroupItemDef({
+          items: [],
+        })],
+      });
+      const item = getFirstItem(groupItemDef);
+      expect(item).to.eq(undefined);
+    });
+  });
+
+  describe("getFirstItemId ", () => {
+    it("should fallback to empty string when no item found", () => {
+      const groupItemDef = new GroupItemDef({
+        items: [],
+      });
+      const item = getFirstItemId(groupItemDef);
+      expect(item).to.eq("");
+    });
+  });
 });

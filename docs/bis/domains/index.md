@@ -4,8 +4,6 @@ The following domains exist in [BIS](../index.md)
 
 ## Core
 
-### [Analytical](./Analytical.ecschema.md)
-
 ### [BisCore](./BisCore.ecschema.md)
 
 ### [Functional](./Functional.ecschema.md)
@@ -21,8 +19,6 @@ The following domains exist in [BIS](../index.md)
 ### [SpatialComposition](./SpatialComposition.ecschema.md)
 
 ### [ClassificationSystems](./ClassificationSystems.ecschema.md)
-
-### [Grids](./Grids.ecschema.md)
 
 ## Building discipline
 

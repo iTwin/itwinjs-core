@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Tools */
+
 import {
   StopWatch,
 } from "@bentley/bentleyjs-core";
@@ -60,6 +62,7 @@ class TileLoadTimer {
 
 /** Unloads all tile trees, then starts a timer that stops when all tile trees and tiles required for the view are ready.
  * Outputs the elapsed time to notifications manager.
+ * @alpha
  */
 export class MeasureTileLoadTimeTool extends Tool {
   public static toolId = "MeasureTileLoadTime";

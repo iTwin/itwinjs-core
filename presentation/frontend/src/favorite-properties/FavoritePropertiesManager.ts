@@ -88,20 +88,6 @@ export class FavoritePropertiesManager {
    * @param imodelId iModel Id, if the favorite property is specific to a iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    */
   public async add(field: Field, projectId?: string, imodelId?: string): Promise<void> {
-    await this.editFavoriteProperties(add, field, projectId, imodelId);
-  }
-
-  /**
-   * Removes favorite properties from a certain scope.
-   * @param field Field that contains properties. If field contains multiple properties, all of them will be un-favorited.
-   * @param projectId Project Id, if the favorite property is specific to a project, otherwise undefined.
-   * @param imodelId iModel Id, if the favorite property is specific to a iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
-   */
-  public async remove(field: Field, projectId?: string, imodelId?: string): Promise<void> {
-    await this.editFavoriteProperties(remove, field, projectId, imodelId);
-  }
-
-  private async editFavoriteProperties(action: (container: FavoriteProperties, subject: FavoriteProperties) => void, field: Field, projectId?: string, imodelId?: string): Promise<void> {
     this.validateInitializedScope(projectId, imodelId);
 
     const fieldInfos = this.getFieldInfos(field);
@@ -111,11 +97,55 @@ export class FavoritePropertiesManager {
           this._globalProperties!;
 
     const countBefore = count(favoriteProperties);
-    action(favoriteProperties, fieldInfos);
+    add(favoriteProperties, fieldInfos);
     if (count(favoriteProperties) !== countBefore) {
       await this._storage.saveProperties(favoriteProperties, projectId, imodelId);
       this.onFavoritesChanged.raiseEvent();
     }
+  }
+
+  /**
+   * Removes favorite properties from scopes that there is info about.
+   * @param field Field that contains properties. If field contains multiple properties, all of them will be un-favorited.
+   * @param projectId Project Id to additionaly remove favorite properties from project scope, otherwise undefined.
+   * @param imodelId iModel Id to additionaly remove favorite properties from iModel scope, otherwise undefined. The projectId must be specified if iModelId is specified.
+   */
+  public async remove(field: Field, projectId?: string, imodelId?: string): Promise<void> {
+    this.validateInitializedScope(projectId, imodelId);
+
+    const fieldInfos = this.getFieldInfos(field);
+    const scopes: Array<{ properties: FavoriteProperties, save: (properties: FavoriteProperties) => Promise<void> }> = [];
+    scopes.push({
+      properties: this._globalProperties!,
+      save: (properties) => this._storage.saveProperties(properties),
+    });
+    if (projectId !== undefined) {
+      scopes.push({
+        properties: this._projectProperties.get(projectId)!,
+        save: (properties) => this._storage.saveProperties(properties, projectId),
+      });
+    }
+    if (imodelId !== undefined) {
+      scopes.push({
+        properties: this._imodelProperties.get(getiModelInfo(projectId!, imodelId))!,
+        save: (properties) => this._storage.saveProperties(properties, projectId, imodelId),
+      });
+    }
+
+    const saves: Array<Promise<void>> = [];
+    let favoritesChanged = false;
+    for (const scope of scopes) {
+      const { properties, save } = scope;
+      const countBefore = count(properties);
+      remove(properties, fieldInfos);
+      if (count(properties) !== countBefore) {
+        saves.push(save(properties));
+        favoritesChanged = true;
+      }
+    }
+    await Promise.all(saves);
+    if (favoritesChanged)
+      this.onFavoritesChanged.raiseEvent();
   }
 
   /**

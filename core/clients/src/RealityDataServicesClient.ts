@@ -74,6 +74,9 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
   public type?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ReferenceElevation")
+  public referenceElevation?: number;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Footprint")
   public footprint?: string;
 
@@ -97,6 +100,12 @@ export class RealityData extends WsgInstance {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ResolutionInMeters")
   public resolutionInMeters?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquisitionDate")
+  public dataAcquisitionDate?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquirer")
+  public dataAcquirer?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Visibility")
   public visibility?: string;

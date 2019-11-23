@@ -113,7 +113,10 @@
  * The Topology classes provide adjacency structures used in triangulations.
  */
 // doc:export class TopologyDoc { }
-
+/**
+ * @docs-group-description RangeSearch
+ * Support classes for searching collections of ranges.
+ */
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
 export * from "./geometry3d/BarycentricTriangle";

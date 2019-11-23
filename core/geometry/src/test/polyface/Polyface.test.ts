@@ -35,6 +35,7 @@ import { Box } from "../../solid/Box";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { MomentData } from "../../geometry4d/MomentData";
 import { Geometry } from "../../Geometry";
+import { TorusPipe } from "../../solid/TorusPipe";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -911,6 +912,49 @@ class UVSinusoidalSurface implements UVSurface {
   }
 
 }
+it("SolidPrimitiveBoundary", () => {
+  const allGeometry: GeometryQuery[] = [];
+  const ck = new Checker();
+  let x0 = 0;
+  const y0 = 0;
+  const delta = 10;
+  for (const capped of [true, false]) {
+    for (const solid of
+      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!,
+      TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
+      Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
+      const builder = PolyfaceBuilder.create();
+      builder.addGeometryQuery(solid);
+      const mesh = builder.claimPolyface();
+      ck.testBoolean(capped, PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "verify closure");
+      const boundary = PolyfaceQuery.boundaryEdges(mesh);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, y0 + delta);
+
+      PolyfaceQuery.markAllEdgeVisibility (mesh, false);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 2 * delta);
+      PolyfaceQuery.markAllEdgeVisibility (mesh, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 3 * delta);
+
+      let y1 = y0 + 5 * delta;
+      for (const angle of [undefined, Angle.createDegrees(0.1),
+        Angle.createDegrees(15),
+        Angle.createDegrees(30),
+        Angle.createDegrees(50)]) {
+        PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
+        if (capped)
+          ck.testUndefined(boundary, "no boundary for capped solid");
+        else
+          ck.testDefined(boundary, "uncapped solid has boundary");
+        y1 += 2 * delta;
+      }
+      x0 += delta;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SolidPrimitiveBoundary");
+  expect(ck.getNumErrors()).equals(0);
+});
 
 it("UVGridSurface", () => {
   const ck = new Checker();
@@ -1143,7 +1187,12 @@ it("VisitorQueryFailures", () => {
     ck.testUndefined(visitor.tryGetDistanceParameter(0));
     ck.testUndefined(visitor.tryGetNormalizedParameter(0));
   }
+  // for coverage, this hits both (a) undefined result and (b) bad facetIndex.
+  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "visitor.getNormal (-1) should return undefined");
   expect(ck.getNumErrors()).equals(0);
+
+  const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
+  ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
 });
 
 it("IndexValidation", () => {

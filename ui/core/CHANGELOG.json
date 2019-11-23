@@ -2,6 +2,42 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-core_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version"
+          },
+          {
+            "comment": "Fixed Dialog position after moving or resizing. Fixed sizing on Firefox for different alignments."
+          },
+          {
+            "comment": "Implemented more efficient CSS animation for Spinner component"
+          },
+          {
+            "comment": "Added slight delay before spinner animation. LoadingSpinnner tests in SpinnerTestDialog."
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Add useEffectSkipFirst custom hook"
+          },
+          {
+            "comment": "Update Statusbar index scss file."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-core_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

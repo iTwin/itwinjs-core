@@ -61,6 +61,12 @@ export interface HiliteSet {
     subCategories?: Id64String[];
 }
 
+// @alpha
+export class HiliteSetProvider {
+    static create(imodel: IModelConnection): HiliteSetProvider;
+    getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
+    }
+
 // @internal
 export interface IFavoritePropertiesStorage {
     loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;

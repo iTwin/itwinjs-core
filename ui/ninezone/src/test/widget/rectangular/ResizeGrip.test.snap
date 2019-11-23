@@ -3,10 +3,10 @@
 exports[`<ResizeGrip /> renders correctly 1`] = `
 <PointerCaptor
   className="nz-widget-rectangular-resizeGrip nz-direction-ew"
-  isMouseDown={false}
-  onMouseDown={[Function]}
-  onMouseMove={[Function]}
-  onMouseUp={[Function]}
+  isPointerDown={false}
+  onPointerDown={[Function]}
+  onPointerMove={[Function]}
+  onPointerUp={[Function]}
 >
   <div
     className="nz-grip"

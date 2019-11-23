@@ -5,8 +5,9 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { HistoryTray, DefaultHistoryManager } from "../../../../../ui-ninezone";
+
+// tslint:disable: deprecation
 
 describe("<HistoryTray />", () => {
   it("should render", () => {

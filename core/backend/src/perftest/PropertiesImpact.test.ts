@@ -16,7 +16,7 @@ import { Arc3d, Point3d } from "@bentley/geometry-core";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
-function createElemProps(imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
   // add Geometry
   const geomArray: Arc3d[] = [
     Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -31,7 +31,6 @@ function createElemProps(imodel: IModelDb, modId: Id64String, catId: Id64String,
   // Create props
   const elementProps: GeometricElementProps = {
     classFullName: className,
-    iModel: imodel,
     model: modId,
     category: catId,
     code: Code.createEmpty(),

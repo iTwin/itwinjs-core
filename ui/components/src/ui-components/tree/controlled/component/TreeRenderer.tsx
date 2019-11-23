@@ -4,32 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { CellEditingEngine } from "./CellEditingEngine";
-import { TreeActions } from "../TreeActions";
-import { TreeNodeLoader } from "../TreeModelSource";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import {
-  TreeModelNode,
-  TreeModelNodePlaceholder,
-  VisibleTreeNodes,
-  isTreeModelNode,
-  isTreeModelNodePlaceholder,
-} from "../TreeModel";
-import { UiComponents } from "../../../UiComponents";
-
-import { UiError, getClassName } from "@bentley/ui-abstract";
-import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-
-import classnames from "classnames";
-import AutoSizer, { Size } from "react-virtualized-auto-sizer";
-import { ListChildComponentProps, VariableSizeList, areEqual } from "react-window";
-
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
-
+import { ListChildComponentProps, VariableSizeList, areEqual } from "react-window";
+import classnames from "classnames";
+import AutoSizer, { Size } from "react-virtualized-auto-sizer";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
+import { EMPTY } from "rxjs/internal/observable/empty";
+import { UiError, getClassName } from "@bentley/ui-abstract";
+import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
+import { CellEditingEngine } from "./CellEditingEngine";
+import { TreeActions } from "../TreeActions";
+import { ITreeNodeLoader } from "../TreeNodeLoader";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+import {
+  TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode,
+} from "../TreeModel";
+import { UiComponents } from "../../../UiComponents";
+import { HighlightingEngine, HighlightableTreeProps } from "../../HighlightingEngine";
 
 const NODE_LOAD_DELAY = 500;
 
@@ -40,10 +35,11 @@ const NODE_LOAD_DELAY = 500;
 export interface TreeRendererProps {
   cellEditing?: CellEditingEngine;
   treeActions: TreeActions;
-  nodeLoader: TreeNodeLoader;
+  nodeLoader: ITreeNodeLoader;
   nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
   visibleNodes: VisibleTreeNodes;
   nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+  nodeHighlightingProps?: HighlightableTreeProps;
 }
 
 function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
@@ -57,8 +53,9 @@ function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
 interface TreeRendererContext {
   nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
   treeActions: TreeActions;
-  nodeLoader: TreeNodeLoader;
+  nodeLoader: ITreeNodeLoader;
   visibleNodes: VisibleTreeNodes;
+  onLabelRendered?: (node: TreeModelNode) => void;
 }
 
 export const [
@@ -80,6 +77,7 @@ export const [
  */
 // tslint:disable-next-line: variable-name
 export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
+  const coreTreeRef = useRef<CoreTree>(null);
   const previousVisibleNodes = usePrevious(props.visibleNodes);
   const variableSizeListRef = useRef<VariableSizeList>(null);
   if (previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes) {
@@ -89,12 +87,15 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
     }
   }
 
+  const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
+
   const rendererContext = useMemo<TreeRendererContext>(() => ({
     nodeRenderer: props.nodeRenderer ? props.nodeRenderer : (nodeProps) => (<TreeNodeRenderer {...nodeProps} />),
     treeActions: props.treeActions,
     nodeLoader: props.nodeLoader,
     visibleNodes: props.visibleNodes,
-  }), [props.nodeRenderer, props.treeActions, props.visibleNodes]);
+    onLabelRendered,
+  }), [props.nodeRenderer, props.treeActions, props.visibleNodes, onLabelRendered]);
 
   const itemKey = useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
@@ -106,9 +107,24 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
     [props.nodeHeight, props.visibleNodes],
   );
 
+  useEffect(() => {
+    const highlightedNodeId = getHighlightedNodeId(props.nodeHighlightingProps);
+    if (!highlightedNodeId || !variableSizeListRef.current)
+      return;
+
+    let index = 0;
+    for (const node of props.visibleNodes) {
+      if (isTreeModelNode(node) && node.id === highlightedNodeId)
+        break;
+
+      index++;
+    }
+    variableSizeListRef.current!.scrollToItem(index);
+  }, [props.nodeHighlightingProps]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
-      <CoreTree className="components-tree">
+      <CoreTree ref={coreTreeRef} className="components-tree">
         <AutoSizer>
           {({ width, height }: Size) => (
             <VariableSizeList
@@ -137,17 +153,25 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
     const { index, style } = props;
 
     const context = useTreeRendererContext(Node);
-    const { nodeRenderer, visibleNodes, treeActions, nodeLoader } = context;
+    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered } = context;
     const node = visibleNodes!.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
 
     useEffect(() => {
+      const loadNode = (parentId: string | undefined, nodeIndex: number) => {
+        const parentNode = parentId ? visibleNodes.getModel().getNode(parentId) : visibleNodes.getModel().getRootNode();
+        if (!isTreeModelNode(parentNode) && !isTreeModelRootNode(parentNode))
+          return EMPTY;
+
+        return nodeLoader.loadNode(parentNode, nodeIndex);
+      };
+
       if (isTreeModelNodePlaceholder(node)) {
         const subscription = concat(
           timer(NODE_LOAD_DELAY),
-          nodeLoader.loadNode(node.parentId, node.childIndex),
+          loadNode(node.parentId, node.childIndex),
         ).subscribe();
         return () => subscription.unsubscribe();
       }
@@ -159,11 +183,11 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
       <div className={className} style={style}>
         {useMemo(() => {
           if (isTreeModelNode(node)) {
-            return nodeRenderer({ node, treeActions });
+            return nodeRenderer({ node, treeActions, onLabelRendered });
           }
 
           return <TreeNodePlaceholder level={node.depth} />;
-        }, [node, className, style])}
+        }, [node, treeActions, nodeRenderer, onLabelRendered])}
       </div>
     );
   },
@@ -178,6 +202,33 @@ function usePrevious<T>(value: T): T | undefined {
   }, [value]);
 
   return ref.current;
+}
+
+function getHighlightedNodeId(highlightableTreeProps?: HighlightableTreeProps) {
+  return (highlightableTreeProps && highlightableTreeProps.activeMatch)
+    ? highlightableTreeProps.activeMatch.nodeId
+    : undefined;
+}
+
+function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightableTreeProps?: HighlightableTreeProps) {
+  const scrollToActive = useRef(false);
+  useEffect(() => {
+    scrollToActive.current = true;
+  }, [highlightableTreeProps]);
+
+  const onLabelRendered = useCallback(
+    (node: TreeModelNode) => {
+      const highlightedNodeId = getHighlightedNodeId(highlightableTreeProps);
+      if (!treeRef.current || !scrollToActive.current || !highlightedNodeId || highlightedNodeId !== node.id)
+        return;
+
+      scrollToActive.current = false;
+      const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
+      if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
+        scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
+    }, [highlightableTreeProps]);
+
+  return onLabelRendered;
 }
 
 function createContextWithMandatoryProvider<T>(

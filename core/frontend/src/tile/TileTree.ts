@@ -35,6 +35,7 @@ import {
   TileTreeProps,
   ViewFlag,
   ViewFlags,
+  ColorDef,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -112,6 +113,68 @@ function computeSubRangeContainingPoints(parentRange: Range3d, points: Point3d[]
   return parentRange;
 }
 
+/** @internal */
+export class TraversalDetails {
+  public queuedChildren = new Array<Tile>();
+
+  public initialize() {
+    this.queuedChildren.length = 0;
+  }
+}
+
+/** @internal */
+export class TraversalChildrenDetails {
+  private _childDetails: TraversalDetails[] = [];
+
+  public initialize() {
+    for (const child of this._childDetails)
+      child.initialize();
+  }
+  public getChildDetail(index: number) {
+    while (this._childDetails.length <= index)
+      this._childDetails.push(new TraversalDetails());
+
+    return this._childDetails[index];
+  }
+
+  public combine(parentDetails: TraversalDetails) {
+    parentDetails.queuedChildren.length = 0;
+    for (const child of this._childDetails) {
+      for (const queuedChild of child.queuedChildren)
+        parentDetails.queuedChildren.push(queuedChild);
+    }
+  }
+}
+
+/** @internal */
+export class TraversalSelectionContext {
+  public preloaded = new Set<Tile>();
+  public missing = new Array<Tile>();
+  constructor(public selected: Tile[], public displayedDescendants: Tile[][]) { }
+
+  public selectOrQueue(tile: Tile, traversalDetails: TraversalDetails) {
+    if (tile.isReady) {
+      this.selected.push(tile);
+      this.displayedDescendants.push(traversalDetails.queuedChildren.slice());
+      traversalDetails.queuedChildren.length = 0;
+    } else if (!tile.isNotFound) {
+      traversalDetails.queuedChildren.push(tile);
+      this.missing.push(tile);
+    }
+  }
+  public preload(tile: Tile): void {
+    this.preloaded.add(tile);
+    if (!tile.isReady)
+      this.missing.push(tile);
+  }
+  public select(tiles: Tile[]): void {
+    for (const tile of tiles) {
+      this.selected.push(tile);
+      this.displayedDescendants.push([]);
+    }
+  }
+}
+
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
  * these properties may be present in batched tile sets.
@@ -169,6 +232,11 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
+  public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
+  public static debugSelectedTiles = false;           // tslint:disable-line: prefer-const
+  public static debugMissingTiles = false;            // tslint:disable-line: prefer-const
+  public static debugSelectedRanges = false;         // tslint:disable-line: prefer-const
+
   // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -218,7 +286,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   /** The most recent time when tiles were selected for drawing. Used for purging least-recently-used tile trees to free up memory. */
   public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
 
-  public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
+  public selectTilesForScene(context: SceneContext): Tile[] { return this.loader.drawAsRealityTiles ? this.selectRealityTiles(this.createDrawArgs(context), new Array<Tile[]>()) : this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: Tile[] = [];
@@ -226,6 +294,96 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
       this._rootTile.selectTiles(selected, args);
 
     return this.loader.processSelectedTiles(selected, args);
+  }
+
+  public drawRealityTiles(args: Tile.DrawArgs): void {
+    const displayedTileDescendants = new Array<Tile[]>();
+    const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants);
+    if (!this.loader.parentsAndChildrenExclusive)
+      selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
+    assert(selectedTiles.length === displayedTileDescendants.length);
+    for (let i = 0; i < selectedTiles.length; i++) {
+      const selectedTile = selectedTiles[i];
+      if (undefined !== selectedTile.graphics) {
+        const builder = TileTree.debugSelectedRanges ? args.context.createSceneGraphicBuilder() : undefined;
+        const displayedDescendants = displayedTileDescendants[i];
+        const graphics = selectedTile.graphics;
+        if (0 === displayedDescendants.length || !this.loader.parentsAndChildrenExclusive || selectedTile.allChildrenIncluded(displayedDescendants)) {
+          args.graphics.add(graphics);
+          if (builder) selectedTile.addBoundingRectangle(builder, ColorDef.green);
+        } else {
+          if (builder) selectedTile.addBoundingRectangle(builder, ColorDef.red);
+          for (const displayedDescendant of displayedDescendants) {
+            const clipVector = displayedDescendant.getContentClip();
+            if (undefined === clipVector) {
+              args.graphics.add(graphics);
+            } else {
+              clipVector.transformInPlace(this.location);
+              if (builder) displayedDescendant.addBoundingRectangle(builder, ColorDef.blue);
+              const branch = new GraphicBranch();
+              const doClipOverride = new ViewFlag.Overrides();
+              doClipOverride.setShowClipVolume(true);
+              branch.add(graphics);
+              branch.setViewFlagOverrides(doClipOverride);
+              const clipVolume = args.context.target.renderSystem.createClipVolume(clipVector);
+
+              args.graphics.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
+            }
+          }
+        }
+        if (builder) args.graphics.add(builder.finish());
+        const rangeGraphic = selectedTile.getRangeGraphic(args.context);
+        if (undefined !== rangeGraphic)
+          args.graphics.add(rangeGraphic);
+      }
+    }
+    args.drawGraphics();
+    args.context.viewport.numSelectedTiles += selectedTiles.length;
+  }
+  public getTraversalChildren(depth: number) {
+    while (this.traversalChildrenByDepth.length <= depth)
+      this.traversalChildrenByDepth.push(new TraversalChildrenDetails());
+
+    return this.traversalChildrenByDepth[depth];
+  }
+
+  public selectRealityTiles(args: Tile.DrawArgs, displayedDescendants: Tile[][]): Tile[] {
+    this._lastSelected = BeTimePoint.now();
+    const selected: Tile[] = [];
+    const context = new TraversalSelectionContext(selected, displayedDescendants);
+
+    this._rootTile.selectRealityTiles(context, args, new TraversalDetails());
+
+    for (const tile of context.missing)
+      args.insertMissing(tile);
+
+    if (TileTree.debugSelectedTiles) {
+      this.logTiles("Selected: ", selected);
+      const preloaded = [];
+      for (const tile of context.preloaded)
+        preloaded.push(tile);
+      this.logTiles("Preloaded: ", preloaded);
+    }
+
+    if (TileTree.debugMissingTiles && context.missing.length)
+      this.logTiles("Missing: ", context.missing);
+
+    return selected;
+  }
+  private logTiles(label: string, tiles: Tile[]) {
+    let depthString = "";
+    let min = 10000, max = -10000;
+    const depthMap = new Map<number, number>();
+    for (const tile of tiles) {
+      const depth = tile.depth;
+      min = Math.min(min, tile.depth);
+      max = Math.max(max, tile.depth);
+      const found = depthMap.get(depth);
+      depthMap.set(depth, found === undefined ? 1 : found + 1);
+    }
+
+    depthMap.forEach((key, value) => depthString += key + "-" + value + ", ");
+    console.log(label + ": " + tiles.length + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // tslint:disable-line
   }
 
   public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
@@ -250,8 +408,14 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     return useTileRange ? computeTileRangeContainingPoints(range, points, this.is2d) : computeSubRangeContainingPoints(range, points, this.is2d);
   }
 
-  public drawScene(context: SceneContext): void { this.draw(this.createDrawArgs(context)); }
+  public drawScene(context: SceneContext): void {
+    this.draw(this.createDrawArgs(context));
+  }
+
   public draw(args: Tile.DrawArgs): void {
+    if (this.loader.drawAsRealityTiles)
+      return this.drawRealityTiles(args);
+
     const selectedTiles = this.selectTiles(args);
     for (const selectedTile of selectedTiles)
       selectedTile.drawGraphics(args);
@@ -294,6 +458,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
     this.extendRangeForTileContent(range, this.rootTile, matrix, this.location, frustumPlanes);
   }
+
+  public countTiles(): number {
+    return 1 + this.rootTile.countDescendants();
+  }
 }
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
@@ -303,6 +471,8 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   noSolarLight: true,
 }));
 
+const scratchTileCenterWorld = new Point3d();
+const scratchTileCenterView = new Point3d();
 /** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
  * @internal
  */
@@ -319,12 +489,14 @@ export abstract class TileLoader {
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
   public get isContentUnbounded(): boolean { return false; }
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
+  public get preloadRealityParentDepth(): number { return 0; }
+  public get preloadRealityParentSkip(): number { return 0; }
+  public get drawAsRealityTiles(): boolean { return false; }
+  public get parentsAndChildrenExclusive(): boolean { return true; }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;
   }
-
-  public get parentsAndChildrenExclusive(): boolean { return true; }
 
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] { return selected; }
 
@@ -395,6 +567,41 @@ export abstract class TileLoader {
 
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
   public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
+
+  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    // Prioritize tiles closer to eye.
+    // NB: In NPC coords, 0 = far plane, 1 = near plane.
+    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+    let minDistance = 1.0;
+    for (const viewport of viewports) {
+      const npc = viewport.worldToNpc(center, scratchTileCenterView);
+      const distance = 1.0 - npc.z;
+      minDistance = Math.min(distance, minDistance);
+    }
+
+    return minDistance;
+  }
+}
+
+/** Specialization of loader used for context tiles (reality models and maps).
+ * Turn son optimized realitytile traversal.
+ * @internal
+ */
+export abstract class ContextTileLoader extends TileLoader {
+  private _preloadRealityParentDepth: number;
+  private _preloadRealityParentSkip: number;
+  public get preloadRealityParentDepth(): number { return this._preloadRealityParentDepth; }
+  public get preloadRealityParentSkip(): number { return this._preloadRealityParentSkip; }
+  public get drawAsRealityTiles(): boolean { return true; }
+
+  constructor() {
+    super();
+    this._preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
+    this._preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
+  }
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    return TileLoader.computeTileClosestToEyePriority(tile, viewports);
+  }
 }
 
 /** @internal */
@@ -495,6 +702,9 @@ export namespace TileTree {
      * @internal
      */
     dispose(): void;
+
+    /** It is generally not a good idea to await the TileTree - use load() instead. */
+    loadTree(): Promise<TileTree | undefined>;
   }
 
   /** Interface adopted by an object which can supply a [[TileTree]] for rendering.

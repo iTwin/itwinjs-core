@@ -50,6 +50,11 @@ div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-lab
 
 div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-editor {
   margin-right: 6px;
+  margin-bottom: 3px;
+
+  &:last-child {
+    margin-right: 0px;
+  }
 }
 
 div.uifw-default-toolsettings-lock-and-label {
@@ -83,20 +88,26 @@ div.uifw-default-toolsettings-lock-and-label {
 
 .uifw-default-toolsettings-editor {
   margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 3px;
+  }
 }
 
 div.uifw-default-toolsettings-container {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-row-gap: 0px;
+  row-gap: 0px;
   grid-column-gap: 8px;
+  column-gap: 8px;
   font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   align-items: baseline;
-  margin: 6px 4px 0px 6px;
+  margin: 4px 4px 0px 4px;
 }
 
 .uifw-default-toolsettings-label {

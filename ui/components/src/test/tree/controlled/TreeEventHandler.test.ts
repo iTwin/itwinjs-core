@@ -13,15 +13,19 @@ import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeMode
 import { TreeEvents, TreeSelectionChange, CheckboxStateChange } from "../../../ui-components/tree/controlled/TreeEvents";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { TreeModelMutator } from "../../../ui-components/tree/controlled/internal/TreeModelMutator";
-import { TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import { TreeModel } from "../../../ui-components/tree/controlled/TreeModel";
 
 describe("TreeEventHandler", () => {
 
   let eventHandler: TreeEventHandler;
-  const modelSourceMock = moq.Mock.ofType<TreeModelSource<TreeDataProvider>>();
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
+  const treeNodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
+  const treeModelMock = moq.Mock.ofType<TreeModel>();
   const params: TreeEventHandlerParams = {
     modelSource: modelSourceMock.object,
+    nodeLoader: treeNodeLoaderMock.object,
   };
 
   let modelMutator: TreeModelMutator;
@@ -31,6 +35,7 @@ describe("TreeEventHandler", () => {
     modelSourceMock.reset();
     treeEventsMock.reset();
 
+    modelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
     testNodeId = faker.random.uuid();
 
     eventHandler = new TreeEventHandler(params);

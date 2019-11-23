@@ -636,7 +636,10 @@ export class AccuSnap implements Decorator {
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
-        if (out) out.snapStatus = SnapStatus.NotSnappable;
+        if (out) {
+          out.snapStatus = SnapStatus.NotSnappable;
+          out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+        }
         return undefined;
       }
     }

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -9,7 +9,7 @@
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.11.0 <11.0"
+    "node": ">=10.11.0 <13.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
@@ -39,22 +39,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.7.0",
-    "@bentley/geometry-core": "^1.7.0",
-    "@bentley/imodeljs-clients": "^1.7.0",
-    "@bentley/imodeljs-common": "^1.7.0"
+    "@bentley/bentleyjs-core": "^1.8.0",
+    "@bentley/geometry-core": "^1.8.0",
+    "@bentley/imodeljs-clients": "^1.8.0",
+    "@bentley/imodeljs-common": "^1.8.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.7.0",
-    "@bentley/build-tools": "1.7.0",
-    "@bentley/config-loader": "1.7.0",
-    "@bentley/geometry-core": "1.7.0",
-    "@bentley/imodeljs-clients": "1.7.0",
-    "@bentley/imodeljs-common": "1.7.0",
+    "@bentley/bentleyjs-core": "1.8.0",
+    "@bentley/build-tools": "1.8.0",
+    "@bentley/config-loader": "1.8.0",
+    "@bentley/geometry-core": "1.8.0",
+    "@bentley/imodeljs-clients": "1.8.0",
+    "@bentley/imodeljs-common": "1.8.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

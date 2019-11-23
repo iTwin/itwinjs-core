@@ -9,7 +9,7 @@ import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
 import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 
@@ -33,11 +33,6 @@ function setupStandaloneConfiguration() {
 
 // Initialize the backend
 initializeBackend();
-
-Logger.setLevelDefault(LogLevel.Error);
-Logger.setLevel("imodeljs-clients", LogLevel.Trace);
-Logger.setLevel("imodeljs-backend", LogLevel.Trace);
-Logger.setLevel("SVT", LogLevel.Trace);
 
 let serverConfig: any;
 let serverOptions: any;

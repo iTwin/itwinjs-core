@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Bspline */
 
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -11,7 +12,6 @@ import { Geometry } from "../Geometry";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
-/** @module Bspline */
 /**
  * Shared implementation details for derived bezier curve classes
  * * BezierCurve3d implements with blockSize 3.

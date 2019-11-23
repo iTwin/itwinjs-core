@@ -17,17 +17,26 @@ export interface IPrioritized {
 }
 
 /**
- * A sorting algorithm for `Array.sort` that sorts items by priority.
- * Higher priority items appear first in the list.
+ * An interface of something that has a name.
+ * @internal
+ */
+export interface INamed {
+  name: string;
+}
+
+/**
+ * A sorting algorithm for `Array.sort` that sorts items by priority and name.
+ * Higher priority items appear first in the list. If priorities are equal, then
+ * name property is used (in ascending order).
  *
  * @internal
  */
-export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number => {
+export const priorityAndNameSortFunction = (a: IPrioritized & INamed, b: IPrioritized & INamed): number => {
   if (a.priority > b.priority)
     return -1;
   if (a.priority < b.priority)
     return 1;
-  return 0;
+  return a.name.localeCompare(b.name);
 };
 
 let localizationNamespace: I18NNamespace | undefined;

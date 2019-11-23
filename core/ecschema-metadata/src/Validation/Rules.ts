@@ -41,6 +41,9 @@ export interface IRuleSet {
   /** The name of the rule set. */
   name: string;
 
+  /** A collection of schema names that should be excluded from adhering to the rules defined in this rule set. */
+  schemaExclusionSet?: string[];
+
   /** The rules that apply to [[Schema]] objects. */
   schemaRules?: Array<IRule<Schema>>;
   /** The rules that apply to [[SchemaItem]] objects. */

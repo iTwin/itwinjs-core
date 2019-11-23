@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @module Widgets */
+
 import {
   IModelApp,
   TileAdmin,
@@ -19,11 +21,11 @@ interface StatEntry {
 }
 
 function computeProgress(vp: Viewport): number {
-    const ready = vp.numReadyTiles;
-    const requested = vp.numRequestedTiles;
-    const total = ready + requested;
-    const ratio = (total > 0) ? (ready / total) : 1.0;
-    return Math.round(ratio * 100);
+  const ready = vp.numReadyTiles;
+  const requested = vp.numRequestedTiles;
+  const total = ready + requested;
+  const ratio = (total > 0) ? (ready / total) : 1.0;
+  return Math.round(ratio * 100);
 }
 
 const statEntries: StatEntry[] = [

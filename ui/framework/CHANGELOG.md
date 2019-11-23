@@ -1,6 +1,28 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Add support for Hide, Isolate, emphasize tools and status bar item to UiFramework.
+- Fix bug where ToolSettings title was not reset after view undo/redo tool usage.
+- Initializing OidcBrowserClient before setting it in UiFramework
+- Responsive logic in Property Grid to switch to Vertical orientation when too narrow
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added StatusBarItemsManager.setIsVisible & StatusBarItem.isVisible
+- Support multiple status bars in the StatusBarManager
+- Added tslint-react-hooks to UI packages
+- Ensure item uniqueness in BackstageItemsManager and StatusBarItemsManager.
+- Remove unsupported fit-content CSS value.
+- Expose stage panel minSize and maxSize props.
+- Do not show widget resize indicator when widget can not be resized.
+- Remove history trays.
+- Open tool panel via drag interaction.
+- Update TileRendering StatusField width.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

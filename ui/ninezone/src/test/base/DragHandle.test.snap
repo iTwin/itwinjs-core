@@ -2,10 +2,10 @@
 
 exports[`<DragHandle /> renders correctly 1`] = `
 <PointerCaptor
-  isMouseDown={false}
+  isPointerDown={false}
   onClick={[Function]}
-  onMouseDown={[Function]}
-  onMouseMove={[Function]}
-  onMouseUp={[Function]}
+  onPointerDown={[Function]}
+  onPointerMove={[Function]}
+  onPointerUp={[Function]}
 />
 `;

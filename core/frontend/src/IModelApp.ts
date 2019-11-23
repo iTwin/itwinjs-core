@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
+const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+
 import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
@@ -29,6 +31,7 @@ import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
+import { UiAdmin } from "@bentley/ui-abstract";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -44,8 +47,22 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
-import { UiAdmin } from "@bentley/ui-abstract";
+
 declare var BUILD_SEMVER: string;
+
+// add the iModel.js frontend .css styles into DOM when we load
+(() => {
+  const style = document.createElement("style");
+  style.appendChild(document.createTextNode(`
+  .logo-cards-div {position:relative;top:0%;left:0%;transition:top .3s;transition-timing-function:ease-out}
+  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none}
+  .logo-card p {margin:0}
+  .logo-cards-container {position:absolute;bottom:0px;z-index:50;pointer-events:none;overflow:hidden;left:34px;height:0px}
+  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65))}
+  .imodeljs-logo:hover {opacity:1.0}`,
+  ));
+  document.head.prepend(style); // put our styles at the beginning so any application-supplied styles will override them
+})();
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -352,4 +369,48 @@ export class IModelApp {
     };
   }
 
+  /** Applications may implement this method to supply a Logo Card.
+   * @beta
+   */
+  public static applicationLogoCard?: () => HTMLDivElement;
+
+  /** Make a new Logo Card, optionally supplying its content and id.
+   * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
+   * @param el content of the logo card (optional)
+   * @param id id of the logo card (optional)
+   * @beta
+   */
+  public static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement {
+    const card = document.createElement("div");
+    card.className = "logo-card";
+    if (undefined !== id)
+      card.id = id;
+    if (undefined !== el)
+      card.appendChild(el);
+    return card;
+  }
+
+  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+   *  @internal
+   */
+  public static makeIModelJsLogoCard() {
+    const imjsP = document.createElement("p");
+    const poweredBy = document.createElement("span");
+    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy"); // this is localized
+    const version = document.createElement("span");
+    version.innerText = this.applicationVersion;
+    const logo = document.createElement("img");
+    logo.src = "images/imodeljs-logo.svg";
+    logo.width = 80;
+    logo.style.boxShadow = "black 1px 1px 5px";
+    logo.style.marginLeft = "5px";
+    logo.style.marginRight = "5px"; //
+    const copyright = document.createElement("p");
+    copyright.innerHTML = copyrightNotice; // copyright notice is not localized
+    imjsP.appendChild(poweredBy);
+    imjsP.appendChild(logo);
+    imjsP.appendChild(version);
+    imjsP.appendChild(copyright);
+    return this.makeLogoCard(imjsP, "imodeljs-logo-card");
+  }
 }

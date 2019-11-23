@@ -262,6 +262,30 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(propertyField1, projectId, imodelId)).to.be.false;
     });
 
+    it("removes from all scopes", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      await manager.add(propertyField1);
+      await manager.add(propertyField1, projectId);
+      await manager.add(propertyField1, projectId, imodelId);
+
+      await manager.remove(propertyField1, projectId, imodelId);
+      expect(manager.has(propertyField1)).to.be.false;
+      expect(manager.has(propertyField1, projectId)).to.be.false;
+      expect(manager.has(propertyField1, projectId, imodelId)).to.be.false;
+    });
+
+    it("removes only from global and project scopes", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      await manager.add(propertyField1);
+      await manager.add(propertyField1, projectId);
+      await manager.add(propertyField1, projectId, imodelId);
+
+      await manager.remove(propertyField1, projectId);
+      expect(manager.has(propertyField1)).to.be.false;
+      expect(manager.has(propertyField1, projectId)).to.be.false;
+      expect(manager.has(propertyField1, projectId, imodelId)).to.be.true;
+    });
+
     it("does not raise onFavoritesChanged event if property is not favorite", async () => {
       await manager.initializeConnection(imodelMock.object);
 
@@ -301,7 +325,6 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(primitiveField)).to.be.false;
       expect(manager.has(propertyField1)).to.be.false;
     });
-
 
     it("clears project", async () => {
       await manager.initializeConnection(imodelMock.object);
