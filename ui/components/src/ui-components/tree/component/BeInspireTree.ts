@@ -885,8 +885,6 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
   public constructor(props: WrappedInterfaceProviderProps<TPayload>) {
     super("inspireLoad");
-    this.inspireLoad;
-
     this._tree = props.tree;
     this._provider = props.provider;
     this._nodesRemapper = props.nodesRemapper;
@@ -1005,7 +1003,8 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     return resolvedNodes;
   }
 
-  /** Called by inspire-tree */
+  /** Called by inspire-tree through CallableInstance */
+  // tslint:disable-next-line:no-unused-variable
   private inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
     if (!this._paginationHelper) {
       // pagination is disabled - just load all nodes for the parent

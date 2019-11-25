@@ -83,7 +83,7 @@ describe("RulesetsFactory", () => {
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
         "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
-        { MyProperty: `test value with double quote (")` }, { MyProperty: "test display value" }, []);
+        { MyProperty: `test value with double "quotes"` }, { MyProperty: "test display value" }, []);
       const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
@@ -92,7 +92,7 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
-          instanceFilter: `this.MyProperty = "test value with double quote ("")"`,
+          instanceFilter: `this.MyProperty = "test value with double ""quotes"""`,
         }],
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
