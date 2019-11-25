@@ -58,6 +58,7 @@ export class Angle implements BeJSONFunctions {
     isAlmostEqualNoPeriodShift(other: Angle): boolean;
     static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number): boolean;
     static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean;
+    readonly isAlmostNorthOrSouthPole: boolean;
     readonly isAlmostZero: boolean;
     readonly isExactZero: boolean;
     readonly isFullCircle: boolean;
@@ -129,7 +130,7 @@ export class AngleSweep implements BeJSONFunctions {
     readonly isFullCircle: boolean;
     readonly isFullLatitudeSweep: boolean;
     static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift?: boolean): boolean;
-    isRadiansInSweep(radians: number): boolean;
+    isRadiansInSweep(radians: number, allowPeriodShift?: boolean): boolean;
     radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number): number;
     static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number;
@@ -1590,6 +1591,47 @@ export class Degree4PowerPolynomial {
     static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4?: number): Degree4PowerPolynomial;
 }
 
+// @internal
+export class Ellipsoid {
+    clone(): Ellipsoid;
+    cloneTransformed(transform: Transform): Ellipsoid | undefined;
+    constantLatitudeArc(longitudeSweep: AngleSweep, latitude: Angle, result?: Arc3d): Arc3d | undefined;
+    constantLongitudeArc(longitude: Angle, latitudeSweep: AngleSweep, result?: Arc3d): Arc3d | undefined;
+    static create(transform: Transform): Ellipsoid;
+    static createCenterMatrixRadii(center: Point3d, axes: Matrix3d, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid;
+    intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
+    isAlmostEqual(other: Ellipsoid): boolean;
+    patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
+    radiansToFrenetFrame(thetaRadians: number, phiRadians: number, result?: Transform): Transform | undefined;
+    radiansToPoint(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
+    radiansToPointAnd2Derivatives(thetaRadians: number, phiRadians: number, point: Point3d, d1Theta: Vector3d, d1Phi: Vector3d, d2ThetaTheta: Vector3d, d2PhiPhi: Vector3d, d2ThetaPhi: Vector3d): void;
+    radiansToPointAndDerivatives(thetaRadians: number, phiRadians: number, applyCosPhiFactor?: boolean, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+    radiansToUnitNormalRay(thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined;
+    surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d;
+    // (undocumented)
+    readonly transformRef: Transform;
+    tryTransformInPlace(transform: Transform): boolean;
+    }
+
+// @internal
+export class EllipsoidPatch implements UVSurface {
+    anglesToUnitNormalRay(position: LongitudeLatitudeNumber, result?: Ray3d): Ray3d | undefined;
+    containsAngles(position: LongitudeLatitudeNumber, allowPeriodicLongitude?: boolean): boolean;
+    static createCapture(ellipsoid: Ellipsoid, longitudeSweep: AngleSweep, latitudeSweep: AngleSweep): EllipsoidPatch;
+    // (undocumented)
+    ellipsoid: Ellipsoid;
+    intersectRay(ray: Ray3d, restrictToPatch: boolean, convertIntersectionRadiansToFractions?: boolean): CurveAndSurfaceLocationDetail[];
+    // (undocumented)
+    latitudeSweep: AngleSweep;
+    // (undocumented)
+    longitudeSweep: AngleSweep;
+    projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined;
+    range(result?: Range3d): Range3d;
+    uvFractionToAngles(longitudeFraction: number, phiFraction: number, h?: number, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
+    uvFractionToPoint(longitudeFraction: number, latitudeFraction: number): Point3d;
+    uvFractionToPointAndTangents(longitudeFraction: number, latitudeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+}
+
 // @public
 export class FacetFaceData {
     clone(result?: FacetFaceData): FacetFaceData;
@@ -2663,6 +2705,27 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
 
 // @public
+export class LongitudeLatitudeNumber implements BeJSONFunctions {
+    altitude: number;
+    clone(): LongitudeLatitudeNumber;
+    static create(longitude: Angle, latitude: Angle, h?: number, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
+    static createDegrees(longitudeDegrees: number, latitudeDegrees: number, h?: number, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
+    static createRadians(longitudeRadians: number, latitudeRadians: number, h?: number, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
+    static createZero(): LongitudeLatitudeNumber;
+    isAlmostEqual(other: LongitudeLatitudeNumber): boolean;
+    readonly latitude: Angle;
+    readonly latitudeDegrees: number;
+    readonly latitudeRadians: number;
+    readonly latitudeRef: Angle;
+    readonly longitude: Angle;
+    readonly longitudeDegrees: number;
+    readonly longitudeRadians: number;
+    readonly longitudeRef: Angle;
+    setFromJSON(json: any): void;
+    toJSON(): any;
+}
+
+// @public
 export class Loop extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -2837,7 +2900,7 @@ export class Matrix3d implements BeJSONFunctions {
     setColumn(columnIndex: number, value: Vector3d | undefined): void;
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
-    setFrom(other: Matrix3d): void;
+    setFrom(other: Matrix3d | undefined): void;
     setFromJSON(json?: Matrix3dProps): void;
     setIdentity(): void;
     setRow(rowIndex: number, value: Vector3d): void;
@@ -3273,9 +3336,12 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors;
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
     toJSON(): any;
+    toRigidFrame(result?: Transform): Transform | undefined;
+    unitNormal(result?: Vector3d): Vector3d | undefined;
+    unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
     vectorV: Vector3d;
-}
+    }
 
 // @public
 export interface PlaneAltitudeEvaluator {
@@ -4106,7 +4172,7 @@ export class Ray3d implements BeJSONFunctions {
     direction: Vector3d;
     distance(spacePoint: Point3d): number;
     dotProductToPoint(spacePoint: Point3d): number;
-    fractionToPoint(fraction: number): Point3d;
+    fractionToPoint(fraction: number, result?: Point3d): Point3d;
     static fromJSON(json?: any): Ray3d;
     getDirectionRef(): Vector3d;
     getOriginRef(): Point3d;
@@ -4645,7 +4711,8 @@ export class Transform implements BeJSONFunctions {
     static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
     static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
-    static createRefs(origin: XYZ, matrix: Matrix3d, result?: Transform): Transform;
+    static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
+    static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined;
     static createRowValues(qxx: number, qxy: number, qxz: number, ax: number, qyx: number, qyy: number, qyz: number, ay: number, qzx: number, qzy: number, qzz: number, az: number, result?: Transform): Transform;
     static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform;
     static createTranslation(translation: XYZ, result?: Transform): Transform;

@@ -165,6 +165,7 @@ export class Angle implements BeJSONFunctions {
     }
     /** test if the angle is aa full circle */
     public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
+
     /** test if the angle is a half circle (in either direction) */
     public get isHalfCircle(): boolean { return Angle.isHalfCircleRadians(this._radians); }
     /** Adjust a radians value so it is positive in 0..360 */
@@ -223,6 +224,9 @@ export class Angle implements BeJSONFunctions {
     public get isExactZero() { return this.radians === 0; }
     /** Test if the angle is almost zero (within tolerance `Geometry.smallAngleRadians`) */
     public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
+    /** Test if the angle is almost a north or south pole (within tolerance `Geometry.smallAngleRadians`) */
+    public get isAlmostNorthOrSouthPole() { return Angle.isHalfCircleRadians(this.radians * 2.0); }
+
     /** Create an angle object with degrees adjusted into 0..360. */
     public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
     /** Create an angle object with degrees adjusted into -180..180. */

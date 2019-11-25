@@ -235,15 +235,8 @@ export class AngleSweep implements BeJSONFunctions {
     /** test if an angle is within the sweep */
     public isAngleInSweep(angle: Angle): boolean { return this.isRadiansInSweep(angle.radians); }
     /** test if radians are within sweep  */
-    public isRadiansInSweep(radians: number): boolean {
-        // quick out for simple inside ...
-        const delta0 = radians - this._radians0;
-        const delta1 = radians - this._radians1;
-        if (delta0 * delta1 <= 0.0)
-            return true;
-        if (this._radians0 === this._radians1)
-            return Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0);
-        return this.radiansToPositivePeriodicFraction(radians) <= 1.0;
+    public isRadiansInSweep(radians: number, allowPeriodShift: boolean = true): boolean {
+        return AngleSweep.isRadiansInStartEnd (radians, this.startRadians, this.endRadians, allowPeriodShift);
     }
     /** test if radians are within sweep  */
     public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift: boolean = true): boolean {

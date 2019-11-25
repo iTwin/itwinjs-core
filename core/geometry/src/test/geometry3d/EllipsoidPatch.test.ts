@@ -7,7 +7,7 @@ import { Checker } from "../Checker";
 import { expect } from "chai";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Ellipsoid, EllipsoidPatch } from "../../geometry3d/Ellipsoid";
@@ -268,6 +268,22 @@ describe("Ellipsoid", () => {
     const range0 = Range3d.createNull();
     const range = ellipsoid.patchRangeStartEndRadians(0, 1, 0, 1, range0);
     ck.testFalse(range.isNull);
+
+    const ellipsoidB = Ellipsoid.create(Transform.createIdentity());
+    const emptyInterval = AngleSweep.createStartEndDegrees(10, 10);
+    const realInterval = AngleSweep.createStartEndDegrees(10, 40);
+    const northPole = Angle.createDegrees(90);
+    const southPole = Angle.createDegrees(-90);
+    const notPole = Angle.createDegrees(10);
+    ck.testTrue(northPole.isAlmostNorthOrSouthPole, "north pole test");
+    ck.testTrue(southPole.isAlmostNorthOrSouthPole, "south pole test");
+    ck.testFalse(notPole.isAlmostNorthOrSouthPole, "+=90 degree angle test");
+
+    ck.testUndefined(ellipsoidB.constantLatitudeArc(emptyInterval, notPole), "null arc A");
+    ck.testUndefined(ellipsoidB.constantLongitudeArc(northPole, emptyInterval), "null arc B");
+    ck.testUndefined(ellipsoidB.constantLongitudeArc(southPole, emptyInterval), "null arc C");
+    ck.testUndefined(ellipsoidB.constantLatitudeArc(realInterval, northPole), "null arc D");
+
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -306,4 +322,144 @@ describe("Ellipsoid", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("NormalInversion", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+
+    const center = Point3d.create(1, 2, 3);
+    const degrees = [0, 10, 45, 80, -85, -60]; // use one set of angle samples -- double it for theta to go all the way around
+
+    for (const matrix of [Matrix3d.createIdentity(),
+    Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+      for (const e of [1.0, 2.0, 0.5]) {
+        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
+          matrix,
+          e, e, 1);
+        for (const phiDegrees of degrees) {
+          for (const thetaDegreesA of degrees) {
+            const thetaDegrees = 2.0 * thetaDegreesA;
+            const thetaRadians = Angle.degreesToRadians(thetaDegrees);
+            const phiRadians = Angle.degreesToRadians(phiDegrees);
+            const tangentPlane = ellipsoid.radiansToPointAndDerivatives(thetaRadians, phiRadians);
+            const normal = tangentPlane.vectorU.unitCrossProduct(tangentPlane.vectorV);
+            const inverseAngles = ellipsoid.surfaceNormalToRadians(normal!);
+            ck.testCoordinate(thetaRadians, inverseAngles.x);
+            ck.testCoordinate(phiRadians, inverseAngles.y);
+            ellipsoid.surfaceNormalToRadians(normal!);
+          }
+        }
+      }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("FrenetFrame", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+
+    const center = Point3d.create(1, 2, 3);
+    const degrees = [0, 10, 45, 80, -85, -60]; // use one set of angle samples -- double it for theta to go all the way around
+    const fractions = [-0.3, 0.2, 0.8, 1.1];
+    const frame0 = Transform.createIdentity();
+    for (const matrix of [Matrix3d.createIdentity(),
+    Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+      for (const e of [1.0, 2.0, 0.5]) {
+        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
+          matrix,
+          e, e * e, 1);
+        for (const phiDegrees of degrees) {
+          for (const thetaDegreesA of degrees) {
+            const thetaDegrees = 2.0 * thetaDegreesA;
+            const thetaRadians = Angle.degreesToRadians(thetaDegrees);
+            const phiRadians = Angle.degreesToRadians(phiDegrees);
+            const tangentPlane = ellipsoid.radiansToPointAndDerivatives(thetaRadians, phiRadians);
+            const normal = tangentPlane.vectorU.unitCrossProduct(tangentPlane.vectorV)!;
+            const frame = ellipsoid.radiansToFrenetFrame(thetaRadians, phiRadians)!;
+            const frame0A = ellipsoid.radiansToFrenetFrame(thetaRadians, phiRadians, frame0)!;
+            ellipsoid.radiansToFrenetFrame(thetaRadians, phiRadians)!;
+            ck.testTransform(frame, frame0A);
+            ck.testVector3d(normal, frame.matrix.columnZ());
+          }
+        }
+        const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(-20, 50), AngleSweep.createStartEndDegrees(-45, 45));
+        for (const phiFraction of fractions) {
+          for (const thetaFraction of fractions) {
+            const angles = patch.uvFractionToAngles(thetaFraction, phiFraction);
+            ck.testBoolean(patch.containsAngles(angles), Geometry.isIn01(phiFraction) && Geometry.isIn01(thetaFraction));
+            const uvFrame = patch.uvFractionToPointAndTangents(thetaFraction, phiFraction);
+            const angleRay = patch.anglesToUnitNormalRay(angles)!;
+            ck.testPoint3d(uvFrame.origin, angleRay.origin, "frame and ray share point");
+            ck.testPerpendicular(uvFrame.vectorU, angleRay.direction, "frame and ray share point");
+            ck.testPerpendicular(uvFrame.vectorV, angleRay.direction, "frame and ray share point");
+          }
+        }
+      }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ProjectSpacePoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const y1 = 10.0;
+    const center = Point3d.create(0, 0, 0);
+    const fractions = [-0.1, 0, 0.5, 0.9, 1.0, 1.1];
+    for (const distanceFromSurface of [0.1, 0.2, -0.05]) {
+      for (const matrix of [
+        Matrix3d.createIdentity(),
+        Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+        for (const e of [1.0, 2.0, 0.5]) {
+          const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
+            matrix,
+            e, e, 1);
+          x0 += 8.0;
+          const builder = PolyfaceBuilder.create();
+          const patch = EllipsoidPatch.createCapture(ellipsoid,
+            AngleSweep.createStartEndDegrees(0, 50),
+            AngleSweep.createStartEndDegrees(0, 90));
+          builder.addUVGridBody(patch, 5, 9);
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0);
+          GeometryCoreTestIO.captureGeometry(allGeometry,
+            ellipsoid.constantLatitudeArc(
+              patch.longitudeSweep,
+              patch.latitudeSweep.startAngle),
+            x0, y1);
+          GeometryCoreTestIO.captureGeometry(allGeometry,
+            ellipsoid.constantLatitudeArc(
+              patch.longitudeSweep,
+              patch.latitudeSweep.endAngle),
+            x0, y1);
+          GeometryCoreTestIO.captureGeometry(allGeometry,
+            ellipsoid.constantLongitudeArc(
+              patch.longitudeSweep.startAngle,
+              patch.latitudeSweep),
+            x0, y1);
+          GeometryCoreTestIO.captureGeometry(allGeometry,
+            ellipsoid.constantLongitudeArc(
+              patch.longitudeSweep.endAngle,
+              patch.latitudeSweep),
+            x0, y1);
+          // console.log({ eccentricity: e });
+          for (const thetaFraction of fractions) {
+            for (const phiFraction of fractions) {
+              // console.log("(thetaFraction " + thetaFraction + ") (phiFraction " + phiFraction + ") (distance " + distanceFromSurface + ")");
+              const anglesA = patch.uvFractionToAngles(thetaFraction, phiFraction, distanceFromSurface);
+              const rayA = patch.anglesToUnitNormalRay(anglesA)!;
+              const anglesB = patch.projectPointToSurface(rayA.origin);
+              if (ck.testDefined(anglesB) && anglesB) {
+                const planeB = patch.ellipsoid.radiansToPointAndDerivatives(anglesB.longitudeRadians, anglesB.latitudeRadians, false);
+                GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(rayA.origin, planeB.origin), x0);
+                const vectorAB = Vector3d.createStartEnd(planeB.origin, rayA.origin);
+                if (!Geometry.isSameCoordinate(0, Math.abs(distanceFromSurface))) {
+                  ck.testPerpendicular(vectorAB, planeB.vectorU, rayA.origin, anglesA.toJSON(),
+                    planeB.origin, anglesB.toJSON());
+                  ck.testPerpendicular(vectorAB, planeB.vectorV, rayA.origin, anglesA.toJSON(),
+                    planeB.origin, anglesB.toJSON(), planeB.origin, anglesB.toJSON());
+                }
+                ck.testCoordinate(Math.abs(distanceFromSurface), planeB.origin.distance(rayA.origin));
+              }
+            }
+          }
+        }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "ProjectSpacePoint");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

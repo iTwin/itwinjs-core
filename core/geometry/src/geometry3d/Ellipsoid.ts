@@ -5,7 +5,7 @@
 
 /** @module CartesianGeometry */
 
-import { Point3d } from "./Point3dVector3d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 
 import { Transform } from "./Transform";
 
@@ -21,6 +21,9 @@ import { UVSurface } from "./GeometryHandler";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
+import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
+import { Arc3d } from "../curve/Arc3d";
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -158,7 +161,7 @@ export class Ellipsoid {
     const scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
     return new Ellipsoid(Transform.createOriginAndMatrix(center, scaledAxes));
   }
-
+  public get transformRef(): Transform { return this._transform; }
   /** return a clone with same coordinates */
   public clone(): Ellipsoid {
     return new Ellipsoid(this._transform.clone());
@@ -259,29 +262,141 @@ export class Ellipsoid {
     return this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
   }
   /**
+   * Return an arc (circular or elliptical) at constant longitude
+   * @param longitude (strongly typed) longitude
+   * @param latitude latitude sweep angles
+   * @param result
+   */
+  public constantLongitudeArc(longitude: Angle, latitudeSweep: AngleSweep, result?: Arc3d): Arc3d | undefined {
+    if (Angle.isAlmostEqualRadiansNoPeriodShift(0, latitudeSweep.sweepRadians))
+      return undefined;
+    const cosTheta = longitude.cos();
+    const sinTheta = longitude.sin();
+    const vector0 = this._transform.matrix.multiplyXY(cosTheta, sinTheta);
+    const vector90 = this._transform.matrix.columnZ();
+    const center = this._transform.getOrigin();
+    return Arc3d.create(center, vector0, vector90, latitudeSweep, result);
+  }
+  /**
+   * Return an arc (circular or elliptical) at constant longitude
+   * @param latitude sweep angles
+   * @param latitude (strongly typed) latitude
+   * @param result
+   */
+  public constantLatitudeArc(longitudeSweep: AngleSweep, latitude: Angle, result?: Arc3d): Arc3d | undefined {
+    if (Angle.isAlmostEqualRadiansNoPeriodShift(0, longitudeSweep.sweepRadians))
+      return undefined;
+    if (latitude.isAlmostNorthOrSouthPole)
+      return undefined;
+    const cosPhi = latitude.cos();
+    const sinPhi = latitude.sin();
+    const vector0 = this._transform.matrix.columnX(); vector0.scaleInPlace(cosPhi);
+    const vector90 = this._transform.matrix.columnY(); vector90.scaleInPlace(cosPhi);
+    const center = this._transform.multiplyXYZ(0, 0, sinPhi);
+    return Arc3d.create(center, vector0, vector90, longitudeSweep, result);
+  }
+  /**
    * Evaluate a point and derivatives with respect to angle on the ellipsoid at angles give in radians.
    * * "u direction" vector of the returned plane is derivative with respect to longitude.
    * * "v direction" vector fo the returned plane is derivative with respect ot latitude.
    * @param thetaRadians longitude, in radians
    * @param phiRadians latitude, in radians
+   * @param applyCosPhiFactor selector for handling of theta (around equator derivative)
+   *   * if true, compute the properly scaled derivative, which goes to zero at the poles.
+   *    * If false, omit he cos(phi) factor on the derivative wrt theta.  This ensures it is always nonzero and can be safely used in cross product for surface normal.
    * @param result optional plane result
    */
-  public radiansToPointAndTangents(thetaRadians: number, phiRadians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public radiansToPointAndDerivatives(thetaRadians: number, phiRadians: number, applyCosPhiFactor = true, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
+    const cosPhiA = applyCosPhiFactor ? cosPhi : 1.0;
     const sinPhi = Math.sin(phiRadians);
     const matrix = this._transform.matrix;
     if (!result)
       return Plane3dByOriginAndVectors.createCapture(
         this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
-        matrix.multiplyXYZ(-sinTheta * cosPhi, cosTheta * cosPhi, 0),
+        matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0),
         matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi));
     // inplace modification requires direct reference to members of the result ...
     this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result.origin);
-    matrix.multiplyXYZ(-sinTheta * cosPhi, cosTheta * cosPhi, 0, result.vectorU);
+    matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0, result.vectorU);
     matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi, result.vectorV);
     return result;
+  }
+  /**
+   * Evaluate a point and derivatives wrt to theta, phi, thetaTheta, phiPhi, and thetaPhi.
+   * All outputs are to caller-allocated points and vectors.
+   * @param thetaRadians longitude, in radians
+   * @param phiRadians latitude, in radians
+   * @param point (returned) surface point
+   * @param d1Theta (returned) derivative wrt theta
+   * @param d1Phi (returned) derivative wrt phi
+   * @param d2ThetaTheta (returned) second derivative wrt theta twice
+   * @param d2PhiPhi (returned) second derivative wrt phi twice
+   * @param d2ThetaPhi (returned) second derivative wrt theta and phi
+   * @param result optional plane result
+   */
+  public radiansToPointAnd2Derivatives(thetaRadians: number, phiRadians: number,
+    point: Point3d,
+    d1Theta: Vector3d,
+    d1Phi: Vector3d,
+    d2ThetaTheta: Vector3d,
+    d2PhiPhi: Vector3d,
+    d2ThetaPhi: Vector3d) {
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const cosPhi = Math.cos(phiRadians);
+    const sinPhi = Math.sin(phiRadians);
+    const matrix = this._transform.matrix;
+    this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, point);
+    // theta derivatives
+    matrix.multiplyXYZ(-sinTheta * cosPhi, cosTheta * cosPhi, 0, d1Theta);
+    matrix.multiplyXYZ(-cosTheta * cosPhi, -sinTheta * cosPhi, 0, d2ThetaTheta);
+
+    // phi derivatives
+    matrix.multiplyXYZ(-cosTheta * sinPhi, -sinTheta * sinPhi, cosPhi, d1Phi);
+    matrix.multiplyXYZ(-cosTheta * cosPhi, -sinTheta * cosPhi, -sinPhi, d2PhiPhi);
+
+    // mixed derivative
+    matrix.multiplyXYZ(sinTheta * sinPhi, -cosTheta * sinPhi, 0, d2ThetaPhi);
+  }
+
+  /**
+   * Evaluate a point and rigid local coordinate frame the ellipsoid at angles give in radians.
+   * * The undefined return is only possible if the placement transform is singular (and even then only at critical angles)
+   * @param thetaRadians longitude, in radians
+   * @param phiRadians latitude, in radians
+   * @param result optional transform result
+   *
+   */
+  public radiansToFrenetFrame(thetaRadians: number, phiRadians: number, result?: Transform): Transform | undefined {
+    const plane = this.radiansToPointAndDerivatives(thetaRadians, phiRadians, false);
+    return plane.toRigidFrame(result);
+  }
+  /**
+   * Evaluate a point and unit normal at given angles.
+   * @param thetaRadians longitude, in radians
+   * @param phiRadians latitude, in radians
+   * @param result optional transform result
+   *
+   */
+  public radiansToUnitNormalRay(thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined {
+    const plane = this.radiansToPointAndDerivatives(thetaRadians, phiRadians, false);
+    return plane.unitNormalRay(result);
+  }
+  /**
+   * Find the (unique) extreme point for a given true surface perpendicular vector (outward)
+   */
+  public surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d {
+    const matrix = this._transform.matrix;
+    const conjugateVector = matrix.multiplyTransposeVector(normal);
+    const thetaRadians = Math.atan2(conjugateVector.y, conjugateVector.x);
+    // For that phi arc,
+    const axy = -(conjugateVector.x * Math.cos(thetaRadians) + conjugateVector.y * Math.sin(thetaRadians));
+    const az = conjugateVector.z;
+    const phiRadians = Math.atan2(az, -axy);
+    return Point2d.create(thetaRadians, phiRadians, result);
   }
 }
 /**
@@ -324,9 +439,10 @@ export class EllipsoidPatch implements UVSurface {
    * * Derivatives are with respect to fractional position.
    */
   public uvFractionToPointAndTangents(longitudeFraction: number, latitudeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    result = this.ellipsoid.radiansToPointAndTangents(
+    result = this.ellipsoid.radiansToPointAndDerivatives(
       this.longitudeSweep.fractionToRadians(longitudeFraction),
       this.latitudeSweep.fractionToRadians(latitudeFraction),
+      true,
       result);
     result.vectorU.scale(this.longitudeSweep.sweepRadians);
     result.vectorV.scale(this.latitudeSweep.sweepRadians);
@@ -359,5 +475,106 @@ export class EllipsoidPatch implements UVSurface {
       }
     }
     return result;
+  }
+  /**
+   * test if the angles of the `LongitudeLatitudeNumber` are within the sweep ranges.
+   * @param position longitude and latitude to test.
+   * @param `allowPeriodicLongitude` true to allow the longitude to be in when shifted by a multiple of 2 PI
+   *    (latitude is never periodic for patches)
+   */
+  public containsAngles(position: LongitudeLatitudeNumber, allowPeriodicLongitude: boolean = true): boolean {
+    return this.latitudeSweep.isRadiansInSweep(position.latitudeRadians, false)
+      && this.longitudeSweep.isRadiansInSweep(position.longitudeRadians, allowPeriodicLongitude);
+  }
+
+  /**
+   * Compute point (with altitude) at given angles and altitude.
+   * * Never fails for non-singular ellipsoid.
+   * * In the returned ray,
+   *    * ray.origin is the point at requested altitude.
+   *    * ray.direction is an outward-directed unit vector
+   * @param position longitude, latitude, and height
+   *
+   */
+  public anglesToUnitNormalRay(position: LongitudeLatitudeNumber, result?: Ray3d): Ray3d | undefined {
+    const ray = this.ellipsoid.radiansToUnitNormalRay(position.longitudeRadians, position.latitudeRadians, result);
+    if (!ray)
+      return undefined;
+    ray.origin = ray.fractionToPoint(position.altitude, ray.origin);
+    return ray;
+  }
+  /**
+   * Return simple angles of a fractional position in the patch.
+   * @param thetaFraction fractional position in longitude (theta) interval
+   * @param phiFraction fractional position in latitude (phi) interval
+   * @param h optional altitude
+   * @param result optional preallocated result.
+   */
+  public uvFractionToAngles(longitudeFraction: number, phiFraction: number, h: number = 0, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber {
+    return LongitudeLatitudeNumber.createRadians(this.longitudeSweep.fractionToRadians(longitudeFraction), this.latitudeSweep.fractionToRadians(phiFraction), h, result);
+  }
+  /** Find the closest point of the (patch of the) ellipsoid. */
+  public projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined {
+    const searcher = new EllipsoidClosestPoint(this.ellipsoid);
+    return searcher.searchClosestPoint(spacePoint);
+  }
+}
+/**
+ * Internal class for searching for the closest point (projection of spacePoint) on an ellipsoid.
+ */
+class EllipsoidClosestPoint extends NewtonEvaluatorRRtoRRD {
+  private _ellipsoid: Ellipsoid;
+  private _spacePoint!: Point3d;
+  private _surfacePoint: Point3d;
+  private _d1Theta: Vector3d;
+  private _d2Theta: Vector3d;
+  private _d1Phi: Vector3d;
+  private _d2Phi: Vector3d;
+  private _d2ThetaPhi: Vector3d;
+  private _delta: Vector3d;
+  public constructor(ellipsoid: Ellipsoid) {
+    super();
+    this._ellipsoid = ellipsoid;
+    this._surfacePoint = Point3d.create();
+    this._d1Theta = Vector3d.create();
+    this._d1Phi = Vector3d.create();
+    this._d2Theta = Vector3d.create();
+    this._d2Phi = Vector3d.create();
+    this._d2ThetaPhi = Vector3d.create();
+
+    this._delta = Vector3d.create();
+  }
+  public searchClosestPoint(spacePoint: Point3d): LongitudeLatitudeNumber | undefined {
+    this._spacePoint = spacePoint;
+    const localPoint = this._ellipsoid.transformRef.multiplyInversePoint3d(spacePoint);
+    if (!localPoint)
+      return undefined;
+    const sphere = new SphereImplicit(1.0);
+    const uv = sphere.xyzToThetaPhiR(localPoint);
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(this);
+    newtonSearcher.setUV(uv.thetaRadians, uv.phiRadians);
+    if (newtonSearcher.runIterations()) {
+      uv.thetaRadians = newtonSearcher.getU();
+      uv.phiRadians = newtonSearcher.getV();
+    }
+    return LongitudeLatitudeNumber.createRadians(uv.thetaRadians, uv.phiRadians, 0.0);
+  }
+  public evaluate(thetaRadians: number, phiRadians: number): boolean {
+    this._ellipsoid.radiansToPointAnd2Derivatives(thetaRadians, phiRadians,
+      this._surfacePoint,
+      this._d1Theta, this._d1Phi,
+      this._d2Theta, this._d2Phi,
+      this._d2ThetaPhi);
+    Vector3d.createStartEnd(this._spacePoint, this._surfacePoint, this._delta);
+    const q = this._d1Theta.dotProduct(this._d1Phi) + this._delta.dotProduct(this._d2ThetaPhi);
+    this.currentF.setOriginAndVectorsXYZ(
+      // f,g,0
+      this._delta.dotProduct(this._d1Theta), this._delta.dotProduct(this._d1Phi), 0,
+      // df/dTheta, dg/dTheta, 0
+      this._d1Theta.dotProduct(this._d1Theta) + this._delta.dotProduct(this._d2Theta), q, 0,
+      // df/dPhi, dg/dPhi, 0
+      q, this._d1Phi.dotProduct(this._d1Phi) + this._delta.dotProduct(this._d2Phi), 0);
+
+    return true;
   }
 }

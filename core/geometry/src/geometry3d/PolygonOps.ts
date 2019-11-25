@@ -351,22 +351,6 @@ export class PolygonOps {
     if (Array.isArray(points)) {
       const carrier = new Point3dArrayCarrier(points);
       return this.centroidAreaNormal(carrier);
-    } else if (points instanceof IndexedXYZCollection) {
-      return this.centroidAreaNormalGo(points);
-    }
-    return undefined;
-  }
-  /**
-   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
-   * * origin at the centroid of the (3D) polygon
-   * * normal is a unit vector perpendicular to the plane
-   * * 'a' member is the area.
-   * @param points
-   */
-  private static centroidAreaNormalGo(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
-    if (Array.isArray(points)) {
-      const carrier = new Point3dArrayCarrier(points);
-      return this.centroidAreaNormal(carrier);
     }
     const n = points.length;
     if (n === 3) {
@@ -586,7 +570,7 @@ export class PolygonOps {
     let i1;
     let iLast = -1;
     // walk to an acceptable start index ...
-    for (i0 = 0; i0 < n; i0 = i1) {
+    for (i0 = 0; i0 < n; i0++) {
       i1 = i0 + 1;
       if (i1 >= n)
         i1 = 0;
@@ -620,7 +604,7 @@ export class PolygonOps {
     let i1;
     let iLast = -1;
     // walk to an acceptable start index ...
-    for (i0 = 0; i0 < n; i0 = i1) {
+    for (i0 = 0; i0 < n; i0++) {
       i1 = i0 + 1;
       if (i1 >= n)
         i1 = 0;

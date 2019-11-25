@@ -40,14 +40,32 @@ function isElementDrawnInRect(vp: Viewport, rect: ViewRect, elementId: Id64Strin
 
 ## Geometry
 
+### `Ellipsoid` and `EllipsoidPatch` classes
+* Range, ray intersection, and project-point-to-surface for Ellipsoid with patch limits
+* `LongitudeLatitudeNumber` class to carry position and altitude
+
 ### Miscellaneous
 
-* static `AngleSweep.isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift?: boolean): boolean;`
-  * new parameter (default false) to request considering period shifts.
+* `AngleSweep` class options for considering period shifts, added as optional args in
+  * static `AngleSweep.isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift?: boolean): boolean;`
+  * instance method `mySweep.isRadiansInSweep` optional arg for periodic shift.
+* `Angle` instance property `isNorthOrSouthPole`
 * static `NumberArray.createArrayWithMaxStepSize(low: number, high: number, step: number): number[];`
   * new method, returns array of numbers with (max) step size between low and high
-* New `Plane3dByOriginAndVectors` instance method `myPlane.normalizeInPlace (): boolean` to normalize the vectors.
+* `Plane3dByOriginAndVectors` instance methods for extracting normalized directions
+   * instance method `myPlane.normalizeInPlace (): boolean` to normalize the vectors.
+   * instance method `myPlane.toRigidFrame` to extract local normalized frame
+   * instance method `myPlane.unitNormal` to extract unit normal
+   * instance method `myPlane.unitNormalRay` to extract perpendicular ray
   * apply `Vector3d` instance method `normalizeInPlace()` to both `vectorU` and `vectorV` of the plane
-* New `Range3d` instance method `myRange.extendSingleAxis(a: number, axisIndex: AxisIndex): void;`
-  * branch to one of `extendXOnly`, `extendYOnly`, `extendZOnly`
-* New `Ray3d` instance method to multiply by inverse of a transform and return the modified ray: `myRay.cloneInverseTransformed(transform: Transform): Ray3d | undefined;`
+* `Range3d` class methods
+  * instance method `myRange.extendSingleAxis(a: number, axisIndex: AxisIndex): void;`
+    * branch to one of `extendXOnly`, `extendYOnly`, `extendZOnly`
+* `Ray3d` class methods
+  * instance method `myRay.cloneInverseTransformed(transform: Transform): Ray3d | undefined;`
+      * multiply by inverse of a transform and return the modified ray
+* `Transform` class methods
+  * static `createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined;
+    * Careful logic to avoid object allocation when reusing result.
+
+

@@ -5,8 +5,9 @@
 
 /** @module CartesianGeometry */
 import { Point3d, Vector3d } from "./Point3dVector3d";
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, AxisOrder } from "../Geometry";
 import { Transform } from "./Transform";
+import { Ray3d } from "./Ray3d";
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
  * This defines a plane with a (possibly skewed) uv coordinate grid
@@ -206,5 +207,35 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     const okU = this.vectorU.normalizeInPlace();
     const okV = this.vectorV.normalizeInPlace();
     return okU && okV;
+  }
+  /**
+   * Return (if possible) a unit normal to the plane.
+   */
+  public unitNormal(result?: Vector3d): Vector3d | undefined {
+    return this.vectorU.unitCrossProduct(this.vectorV, result);
+  }
+  private static _workVector: Vector3d;
+  /**
+   * Return (if possible) a ray with origin at plane origin, direction as unit normal to the plane.
+   */
+  public unitNormalRay(result?: Ray3d): Ray3d | undefined {
+    if (!Plane3dByOriginAndVectors._workVector)
+      Plane3dByOriginAndVectors._workVector = Vector3d.create();
+    const unitNormal = this.vectorU.unitCrossProduct(this.vectorV, Plane3dByOriginAndVectors._workVector);
+    if (unitNormal === undefined)
+      return undefined;
+    return Ray3d.create(this.origin, unitNormal, result);
+  }
+
+  /**
+   * Create a rigid frame (i.e. frenet frame) with
+   * * origin at the plane origin
+   * * x axis along the (normalized) vectorU
+   * * y axis normalized vectorU to vectorV plane, and perpendicular to x axis
+   * * z axis perpendicular to both.
+   * @param result optional result
+   */
+  public toRigidFrame(result?: Transform): Transform | undefined {
+    return Transform.createRigidFromOriginAndColumns(this.origin, this.vectorU, this.vectorV, AxisOrder.XYZ, result);
   }
 }

@@ -186,6 +186,7 @@
         "Obscurable",
         "oldcolor",
         "origin",
+        "orthogonalize",
         "overclamped",
         "overriden",
         "overspecified",
