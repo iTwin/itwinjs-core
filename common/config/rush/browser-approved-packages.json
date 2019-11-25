@@ -327,6 +327,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "event-stream",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "eventemitter2",
       "allowedCategories": [ "frontend" ]
     },

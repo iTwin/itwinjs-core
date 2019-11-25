@@ -6,9 +6,25 @@
 const path = require("path");
 const webpack = require("webpack");
 const fs = require("fs");
-const config = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig;
-config.init();
-const outputDir = path.resolve(__dirname, "../../../lib/test/ios/webpack");
+// 'is_ci_job' variable is set in ci job env. CI job already set all the envirnoment variable required to run integeration test
+if (!process.env.TF_BUILD) {
+  const config = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig;
+  config.init();
+}
+
+/** Find package root folder where package.json exist */
+function findPackageRootDir(dir = __dirname) {
+  if (!fs.existsSync(dir))
+    return undefined;
+
+  for (const entry of fs.readdirSync(dir)) {
+    if (entry === "package.json") {
+      return dir;
+    }
+  }
+  return findPackageRootDir(path.join(dir, ".."));
+}
+const outputDir = path.resolve(findPackageRootDir(), "lib/test/ios/webpack");
 const configFile = path.join(outputDir, "config.json");
 const filteredEnv = Object.keys(process.env)
   .filter(key => key.match(/^imjs_|^hybrid_test_|^saml_delegation_test_/i))

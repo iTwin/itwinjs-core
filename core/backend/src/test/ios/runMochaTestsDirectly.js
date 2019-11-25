@@ -12,29 +12,51 @@ const config = require("@bentley/imodeljs-clients").Config;
 config.App.merge(
     eval('require("./config.json");')
 );
-function mobileReporter(runner) {
+const xunit = require("mocha/lib/reporters/xunit");
+function MobileReporter(runner) {
     Mocha.reporters.Base.call(this, runner);
     var stats = { suites: 0, tests: 0, passes: 0, pending: 0, failures: 0 };
     var indents = 1;
+    var failedTest = [];
     runner.stats = stats;
     function indent() {
         return Array(indents).join('  ');
+    }
+    function log(type, msg) {
+        // Following send a event to UI and write the log message in a text view
+        process.mocha_log("MOCHA", msg);
+        // replace special char and replaced it with string for logging and filtering purpose
+        let plainMsg = msg
+            .replace("λ", "[*]")
+            .replace("✔", "[PASSED]")
+            .replace("✘", "[FAILED]");
+
+        // remove \n from the front of the string
+        let i = 0;
+        while (plainMsg[i] === '\n') {
+            i++;
+        }
+        plainMsg = plainMsg.substr(i);
+        if (type === "info") {
+            process.log("MOCHA INFO", plainMsg);
+        } else {
+            process.log("MOCHA ERROR", plainMsg);
+        }
     }
     runner.on('suite', function (suite) {
         stats.suites = stats.suites || 0;
         if (suite.root) return;
         stats.suites++;
-        process.mocha_log("MOCHA", `\n${indent()} λ ${suite.title}`);
+        log("info", `\n${indent()} λ ${suite.title}`);
         indents++;
     });
     runner.on('suite end', function (suite) {
         indents--;
     });
-    runner.on('pending', function () {
+    runner.on('pending', function (test) {
         stats.pending++;
     });
     runner.on('test', function (test) {
-        console.log('Running test:', test.title);
     });
     runner.on('pass', function (test) {
         stats.passes = stats.passes || 0;
@@ -44,18 +66,20 @@ function mobileReporter(runner) {
                 ? 'slow'
                 : test.duration > medium ? 'medium' : 'fast';
         stats.passes++;
-        process.mocha_log("MOCHA", `${indent()} ✔ ${test.title}  (${test.speed}) ${test.duration} ms`);
+        log("info", `${indent()} ✔ ${test.title}  (${test.speed}) ${test.duration} ms`);
     });
     runner.on('fail', function (test, err) {
         stats.failures++;
-        process.mocha_log("MOCHA", `${indent()} ✘ ${test.title}`);
+        log("error", `${indent()} ✘ ${test.title}`);
         test.err = err;
-        if (err.expected && err.actual) {
-            process.mocha_log("MOCHA", `${indent()} Expected: ${err.expected}, Actual: ${err.actual}`);
+        if (err.message && err.message.length > 0) {
+            log("error", `${indent()}    ${err.message}`);
+        } else {
+            if (err.expected && err.actual) {
+                log("error", `${indent()} Expected: ${err.expected}, Actual: ${err.actual} ${err.message}`);
+            }
         }
-        if (err.stack) {
-            process.mocha_log("MOCHA", `${indent()} Trace: ${err.stack}`);
-        }
+        failedTest.push(test);
     });
     runner.on('start', function () {
         stats.start = new Date()
@@ -63,55 +87,41 @@ function mobileReporter(runner) {
     runner.on('end', function () {
         stats.end = new Date();
         stats.duration = (stats.end.getTime() - stats.start.getTime()) / 1000;
-        process.mocha_log("MOCHA", `\n${stats.passes} Passes`);
-        process.mocha_log("MOCHA", `\n${stats.failures} Failures`);
-        process.mocha_log("MOCHA", `\n${stats.pending} Pending`);
-        process.mocha_log("MOCHA", `\nDone ${stats.passes} / ${stats.passes + stats.failures} (${stats.duration} seconds)`);
+        log("info", `\n${stats.passes} Passes`);
+        log("info", `\n${stats.failures} Failures`);
+        log("info", `\n${stats.pending} Pending`);
+        log("info", `\nDone ${stats.passes} / ${stats.passes + stats.failures} (${stats.duration} seconds)`);
         process.mocha_complete();
+
+        if (failedTest.length > 0) {
+            log("error", `\n=========================[errors]=========================`);
+            for (const test of failedTest) {
+                log("error", `\n${indent()} ✘ ${test.title}`);
+                if (test.err.expected && test.err.actual) {
+                    log("error", `${indent()} Expected: ${test.err.expected}, Actual: ${test.err.actual}`);
+                }
+                if (test.err.stack) {
+                    log("error", `${indent()} Trace: ${test.err.stack}`);
+                }
+            }
+            log("error", `\n=========================[errors]=========================`);
+        }
     });
 }
+
+
 mocha.setup({
     ui: 'bdd',
-    reporter: mobileReporter,
-    timeout: 9999999
+    reporter: MobileReporter,
+    // WIP we need these arg to come from ios launchArguments
+    timeout: 9999999,
+    grep: require("./ignoreTest.js").join("|"),
+    invert: true
 }); // puts 'describe', 'it', etc. into global
-debugger;
+
 require("./IModelTestUtils.js");
-// Passing tests:
-if (true) {
-    require("./standalone/Category.test.js");
-    require("./standalone/ECDb.test.js");
-    require("./standalone/ExcludedElements.test.js");
-    require("./standalone/LinearReferencingDomain.test.js");
-    require("./standalone/ChangeMerging.test.js");
-    require("./standalone/ECSchemaXmlContext.test.js");
-    require("./standalone/FunctionalDomain.test.js");
-    require("./standalone/PromiseMemoizer.test.js");
-    require("./standalone/ClassRegistry.test.js");
-    require("./standalone/ECSqlQuery.test.js");
-    require("./standalone/GenericDomain.test.js");
-    require("./standalone/SqliteStatement.test.js");
-    require("./standalone/ColorDef.test.js");
-    require("./standalone/ECSqlStatement.test.js");
-    require("./standalone/GeometryStream.test.js");
-    require("./standalone/TxnManager.test.js");
-    require("./standalone/DevTools.test.js");
-    require("./standalone/ElementAspect.test.js");
-    require("./standalone/IModel.test.js");
-    require("./standalone/DisableNativeAssertions.test.js");
-    require("./standalone/ElementRoundTrip.test.js");
-    require("./standalone/IModelTransformer.test.js");
-} else {
-    // integeration
-    require("./integration//Agent.test.js");
-    require("./integration//BriefcaseManager.test.js");
-    require("./integration//IModelOpen.test.js");
-    require("./integration//IModelWrite.test.js");
-    require("./integration//ChangeSummary.test.js");
-    require("./integration//ApplyChangeSets.test.js");
-    require("./integration//ChangedElements.test.js");
-    require("./integration//PushRetry.test.js");
-    require("./integration//DebugHubIssues.test.js");
-    require("./integration//IModelTransformerHub.test.js");
-}
+
+// following file is generated by npm script
+require("./ios-test-barrel.js");
+
 mocha.run();
