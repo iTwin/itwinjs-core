@@ -89,7 +89,7 @@
     "null-loader": "^0.1.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "1.9.2",
+    "@bentley/imodeljs-native": "1.9.3",
     "@azure/storage-blob": "^10.4.0",
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
