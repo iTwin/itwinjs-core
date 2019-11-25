@@ -2,8 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "variables";
+@import "../../../../../target";
 @import "../../../../../typography";
+@import "variables";
 
 .nz-toolbar-item-expandable-group-tool-item {
   $label-color: $buic-text-color;
@@ -28,6 +29,17 @@
   align-items: center;
 
   @include body1;
+
+  @mixin nz-active-tool {
+    &:not(.nz-disabled) {
+      background: $buic-row-selection;
+      color: $pressed-label-color;
+
+      > .nz-icon, .nz-label {
+        filter: $no-shadow;
+      }
+    }
+  }
 
   > .nz-icon {
     width: $icon-size;
@@ -63,24 +75,25 @@
     }
   }
 
-  &:hover:not(.nz-disabled) {
-    color: $hovered-label-color;
+  @include nz-internal-targeted {
+    &:not(.nz-disabled) {
+      color: $hovered-label-color;
 
-    @include body1;
+      @include body1;
 
-    > .nz-icon, .nz-label {
-      filter: $shadow;
+      > .nz-icon, .nz-label {
+        filter: $shadow;
+      }
     }
   }
 
-  &:active, &.nz-pointer-up:hover {
-    &:not(.nz-disabled) {
-      background: $buic-row-selection;
-      color: $pressed-label-color;
+  &:active {
+    @include nz-active-tool;
+  }
 
-      > .nz-icon, .nz-label {
-        filter: $no-shadow;
-      }
+  &.nz-pointer-up {
+    @include nz-internal-targeted {
+      @include nz-active-tool;
     }
   }
 

@@ -35,6 +35,8 @@ export class BackArrow extends React.PureComponent<BackArrowProps> {
 
 // @alpha
 export interface BackArrowProps extends CommonProps, NoChildrenProps {
+    onClick?: () => void;
+    onPointerUp?: () => void;
 }
 
 // @alpha
@@ -967,6 +969,7 @@ export interface OverflowProps extends ExpandableItemProps {
 
 // @alpha
 export class Panel extends React.PureComponent<PanelProps> {
+    // @deprecated
     static readonly isPanelOpen: boolean;
     // (undocumented)
     render(): JSX.Element;

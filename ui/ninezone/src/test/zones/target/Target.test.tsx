@@ -6,6 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { WidgetTarget } from "../../../ui-ninezone/zones/target/Target";
+import * as useTargetedModule from "../../../ui-ninezone/base/useTargeted";
 
 describe("<WidgetTarget />", () => {
   const sandbox = sinon.createSandbox();
@@ -22,7 +23,12 @@ describe("<WidgetTarget />", () => {
     shallow(<WidgetTarget />).should.matchSnapshot();
   });
 
-  it("should invoke onTargetChanged handler when pointer enters", () => {
+  it("renders targeted correctly", () => {
+    sandbox.stub(useTargetedModule, "useTargeted").returns(true);
+    shallow(<WidgetTarget />).should.matchSnapshot();
+  });
+
+  it("should invoke onTargetChanged handler when targeted changes", () => {
     const spy = sinon.spy();
     const sut = mount(<WidgetTarget onTargetChanged={spy} />);
 
@@ -32,46 +38,8 @@ describe("<WidgetTarget />", () => {
     const pointerMove = document.createEvent("HTMLEvents");
     pointerMove.initEvent("pointermove");
     document.dispatchEvent(pointerMove);
+    sut.setProps({});
 
     spy.calledOnceWithExactly(true).should.true;
-  });
-
-  it("should invoke onTargetChanged handler when pointer leaves", () => {
-    const spy = sinon.spy();
-    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
-    sut.setState({ isTargeted: true });
-
-    const target = sut.find(".nz-zones-target-target");
-    sinon.stub(target.getDOMNode(), "contains").returns(false);
-
-    const pointerMove = document.createEvent("HTMLEvents");
-    pointerMove.initEvent("pointermove");
-    document.dispatchEvent(pointerMove);
-
-    spy.calledOnceWithExactly(false).should.true;
-  });
-
-  it("should invoke onTargetChanged handler when component unmounts", () => {
-    const spy = sinon.spy();
-    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
-    sut.setState({ isTargeted: true });
-
-    sut.unmount();
-    spy.calledOnceWithExactly(false).should.true;
-  });
-
-  it("should add event listeners", () => {
-    const spy = sandbox.spy(document, "addEventListener");
-    mount<WidgetTarget>(<WidgetTarget />);
-
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
-  });
-
-  it("should remove event listeners", () => {
-    const spy = sandbox.spy(document, "removeEventListener");
-    const sut = mount<WidgetTarget>(<WidgetTarget />);
-    sut.unmount();
-
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
   });
 });
