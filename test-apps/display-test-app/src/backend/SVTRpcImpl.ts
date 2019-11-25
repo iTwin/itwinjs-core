@@ -3,13 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import SVTRpcInterface from "../common/SVTRpcInterface";
-import { RpcManager } from "@bentley/imodeljs-common";
+import { RpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
+import * as path from "path";
 
 /** The backend implementation of SVTRpcImpl. */
 export default class SVTRpcImpl extends SVTRpcInterface {
 
   public async readExternalSavedViews(bimfileName: string): Promise<string> {
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimfileName = path.join(docPath, bimfileName);
+    }
     const esvFileName = this.createEsvFilename(bimfileName);
     if (!fs.existsSync(esvFileName)) {
       return "";
@@ -21,6 +26,10 @@ export default class SVTRpcImpl extends SVTRpcInterface {
   }
 
   public async writeExternalSavedViews(bimfileName: string, namedViews: string): Promise<void> {
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimfileName = path.join(docPath, bimfileName);
+    }
     const esvFileName = this.createEsvFilename(bimfileName);
     const filePath = this.getFilePath(bimfileName);
     if (!fs.existsSync(filePath)) this.createFilePath(filePath);
@@ -53,7 +62,6 @@ export default class SVTRpcImpl extends SVTRpcInterface {
       return fileName.substring(0, dotIndex) + "_ESV.json";
     return fileName + ".sv";
   }
-
 }
 
 /** Auto-register the impl when this file is included. */
