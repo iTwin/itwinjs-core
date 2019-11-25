@@ -25,7 +25,7 @@ import { System, RenderType, DepthType } from "./System";
 import { PackedFeatureTable, Pixel, GraphicList, RenderMemory } from "../System";
 import { ViewRect } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawCommands, BatchPrimitiveCommand, DrawCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
@@ -36,6 +36,7 @@ import { Debug } from "./Diagnostics";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { SceneContext } from "../../ViewContext";
+import { WebGlDisposable } from "./Disposable";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -43,7 +44,7 @@ function collectTextureStatistics(texture: TextureHandle | undefined, stats: Ren
 }
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
-class Textures implements IDisposable, RenderMemory.Consumer {
+class Textures implements WebGlDisposable, RenderMemory.Consumer {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
@@ -53,6 +54,19 @@ class Textures implements IDisposable, RenderMemory.Consumer {
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
   public volClassBlend?: TextureHandle;
+
+  public get isDisposed(): boolean {
+    return undefined === this.accumulation
+      && undefined === this.revealage
+      && undefined === this.color
+      && undefined === this.featureId
+      && undefined === this.depthAndOrder
+      && undefined === this.hilite
+      && undefined === this.occlusion
+      && undefined === this.occlusionBlur
+      // volume classifier
+      && undefined === this.volClassBlend;
+  }
 
   public dispose() {
     this.accumulation = dispose(this.accumulation);
@@ -146,7 +160,7 @@ class Textures implements IDisposable, RenderMemory.Consumer {
 }
 
 // Maintains the framebuffers used by a SceneCompositor. The color attachments are supplied by a Textures object.
-class FrameBuffers implements IDisposable {
+class FrameBuffers implements WebGlDisposable {
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeColor?: FrameBuffer;
   public depthAndOrder?: FrameBuffer;
@@ -207,6 +221,21 @@ class FrameBuffers implements IDisposable {
     }
   }
 
+  public get isDisposed(): boolean {
+    return undefined === this.opaqueColor
+      && undefined === this.opaqueAndCompositeColor
+      && undefined === this.depthAndOrder
+      && undefined === this.hilite
+      && undefined === this.hiliteUsingStencil
+      && undefined === this.occlusion
+      && undefined === this.occlusionBlur
+      // volume classifier
+      && undefined === this.stencilSet
+      && undefined === this.altZOnly
+      && undefined === this.volClassCreateBlend
+      && undefined === this.volClassCreateBlendAltZ;
+  }
+
   public dispose() {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
@@ -225,7 +254,7 @@ function collectGeometryStatistics(geom: CachedGeometry | undefined, stats: Rend
 }
 
 // Maintains the geometry used to execute screenspace operations for a SceneCompositor.
-class Geometry implements IDisposable, RenderMemory.Consumer {
+class Geometry implements WebGlDisposable, RenderMemory.Consumer {
   public composite?: CompositeGeometry;
   public volClassColorStencil?: ViewportQuadGeometry;
   public volClassCopyZ?: SingleTexturedViewportQuadGeometry;
@@ -294,6 +323,19 @@ class Geometry implements IDisposable, RenderMemory.Consumer {
       if (!System.instance.capabilities.supportsFragDepth)
         this.volClassCopyZWithPoints = dispose(this.volClassCopyZWithPoints);
     }
+  }
+
+  public get isDisposed(): boolean {
+    return undefined === this.composite
+      && undefined === this.occlusion
+      && undefined === this.occlusionXBlur
+      && undefined === this.occlusionYBlur
+      // volume classifier
+      && undefined === this.volClassColorStencil
+      && undefined === this.volClassCopyZ
+      && undefined === this.volClassSetBlend
+      && undefined === this.volClassBlend
+      && undefined === this.volClassCopyZWithPoints;
   }
 
   public dispose() {
@@ -482,12 +524,13 @@ class PixelBuffer implements Pixel.Buffer {
  * This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
  * @internal
  */
-export abstract class SceneCompositor implements IDisposable, RenderMemory.Consumer {
+export abstract class SceneCompositor implements WebGlDisposable, RenderMemory.Consumer {
   public readonly target: Target;
   public readonly solarShadowMap = new SolarShadowMap();
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
+  public abstract get isDisposed(): boolean;
   public abstract dispose(): void;
   public abstract preDraw(): void;
   public abstract draw(_commands: RenderCommands): void;
@@ -841,6 +884,17 @@ abstract class Compositor extends SceneCompositor {
     });
 
     return result;
+  }
+
+  public get isDisposed(): boolean {
+    return undefined === this._depth
+      && undefined === this._vcAltDepthStencil
+      && !this._includeOcclusion
+      && this._textures.isDisposed
+      && this._frameBuffers.isDisposed
+      && this._geom.isDisposed
+      && !this._haveVolumeClassifier
+      && this.solarShadowMap.isDisposed;
   }
 
   public dispose() {
@@ -1505,9 +1559,22 @@ class MRTFrameBuffers extends FrameBuffers {
     }
   }
 
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && undefined === this.opaqueAll
+      && undefined === this.opaqueAndCompositeAll
+      && undefined === this.pingPong
+      && undefined === this.translucent
+      && undefined === this.clearTranslucent
+      // Volume Classifiers are disabled
+      && undefined === this.idsAndZ
+      && undefined === this.idsAndAltZ
+      && undefined === this.idsAndZComposite
+      && undefined === this.idsAndAltZComposite;
+  }
+
   public dispose(): void {
     super.dispose();
-
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
     this.pingPong = dispose(this.pingPong);
@@ -1542,9 +1609,15 @@ class MRTGeometry extends Geometry {
     return undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
 
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && undefined === this.copyPickBuffers
+      && undefined === this.clearTranslucent
+      && undefined === this.clearPickAndColor;
+  }
+
   public dispose() {
     super.dispose();
-
     this.copyPickBuffers = dispose(this.copyPickBuffers);
     this.clearTranslucent = dispose(this.clearTranslucent);
     this.clearPickAndColor = dispose(this.clearPickAndColor);
@@ -1715,6 +1788,15 @@ class MPFrameBuffers extends FrameBuffers {
     }
   }
 
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && undefined === this.accumulation
+      && undefined === this.revealage
+      && undefined === this.featureId
+      && undefined === this.featureIdWithDepth
+      && undefined === this.featureIdWithDepthAltZ;
+  }
+
   public dispose(): void {
     super.dispose();
 
@@ -1741,6 +1823,8 @@ class MPGeometry extends Geometry {
     this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.featureId!.getHandle()!, TechniqueId.CopyColor);
     return undefined !== this.copyColor;
   }
+
+  public get isDisposed(): boolean { return super.isDisposed && undefined === this.copyColor; }
 
   public dispose(): void {
     super.dispose();

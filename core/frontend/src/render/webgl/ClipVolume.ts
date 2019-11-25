@@ -18,6 +18,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
 interface ClipPlaneSets {
@@ -35,7 +36,7 @@ interface ClipPlaneTexture {
 /** Maintains a texture representing clipping planes. Updated when view matrix changes.
  * @internal
  */
-abstract class ClippingPlanes {
+abstract class ClippingPlanes implements WebGlDisposable {
   /** Most recently-applied view matrix. */
   private readonly _transform = Transform.createZero();
   private readonly _texture: ClipPlaneTexture;
@@ -48,6 +49,8 @@ abstract class ClippingPlanes {
   public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
     return System.instance.capabilities.supportsTextureFloat ? FloatPlanes.create(planes) : PackedPlanes.create(planes);
   }
+
+  public get isDisposed(): boolean { return this._texture.handle.isDisposed; }
 
   public dispose(): void {
     dispose(this._texture.handle);
@@ -186,7 +189,7 @@ class PackedPlanes extends ClippingPlanes {
 /** A 3D clip volume defined as a texture derived from a set of planes.
  * @internal
  */
-export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer {
+export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGlDisposable {
   private _planes?: ClippingPlanes; // not read-only because dispose()...
 
   private constructor(clip: ClipVector, planes?: ClippingPlanes) {
@@ -232,6 +235,8 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
     return new ClipPlanesVolume(clip, planes);
   }
 
+  public get isDisposed(): boolean { return undefined === this._planes; }
+
   public dispose() {
     this._planes = dispose(this._planes);
   }
@@ -263,7 +268,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
 /** A 2D clip volume defined as a texture derived from a masked set of planes.
  * @internal
  */
-export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer {
+export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGlDisposable {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;
   public readonly rect: ViewRect;
@@ -344,6 +349,8 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
 
   public get texture(): TextureHandle | undefined { return this._texture; }
   public get fbo(): FrameBuffer | undefined { return this._fbo; }
+
+  public get isDisposed(): boolean { return undefined === this._texture && undefined === this._fbo; }
 
   public dispose() {
     this._texture = dispose(this._texture);

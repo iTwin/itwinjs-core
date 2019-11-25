@@ -35,7 +35,7 @@ import { PointStringParams, MeshParams, PolylineParams } from "../primitives/Ver
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect, Viewport } from "../../Viewport";
@@ -62,6 +62,7 @@ import { TileTree } from "../../tile/TileTree";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
+import { WebGlDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -393,7 +394,7 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
-export class IdMap implements IDisposable {
+export class IdMap implements WebGlDisposable {
   /** Mapping of materials by their key values. */
   public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -407,9 +408,12 @@ export class IdMap implements IDisposable {
     this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   }
 
+  public get isDisposed(): boolean { return 0 === this.textures.size && 0 === this.gradients.size; }
+
   public dispose() {
     const textureArr = Array.from(this.textures.values());
     const gradientArr = this.gradients.extractArrays().values;
+
     for (const texture of textureArr)
       dispose(texture);
 
@@ -418,6 +422,7 @@ export class IdMap implements IDisposable {
 
     this.textures.clear();
     this.gradients.clear();
+    this.materials.clear();
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -544,7 +549,7 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 }
 
 /** @internal */
-export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer {
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGlDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -664,6 +669,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       options.filterMapDrapeTextures = false;
     }
     return new System(canvas, context, capabilities, options);
+  }
+
+  public get isDisposed(): boolean {
+    return undefined === this._techniques
+      && undefined === this._lineCodeTexture
+      && undefined === this._noiseTexture;
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Id64, BeTimePoint, IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
+import { Id64, BeTimePoint, dispose, assert } from "@bentley/bentleyjs-core";
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -21,6 +21,7 @@ import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
 import { DisplayParams } from "../primitives/DisplayParams";
+import { WebGlDisposable } from "./Disposable";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
@@ -31,7 +32,7 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): bool
 }
 
 /** @internal */
-export class FeatureOverrides implements IDisposable {
+export class FeatureOverrides implements WebGlDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
   private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
@@ -242,9 +243,10 @@ export class FeatureOverrides implements IDisposable {
     return new FeatureOverrides(target);
   }
 
+  public get isDisposed(): boolean { return undefined === this.lut; }
+
   public dispose() {
-    dispose(this.lut);
-    this.lut = undefined;
+    this.lut = dispose(this.lut);
   }
 
   public initFromMap(map: PackedFeatureTable) {
@@ -283,8 +285,9 @@ export class FeatureOverrides implements IDisposable {
 }
 
 /** @internal */
-export abstract class Graphic extends RenderGraphic {
+export abstract class Graphic extends RenderGraphic implements WebGlDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
+  public abstract get isDisposed(): boolean;
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
@@ -300,7 +303,9 @@ export class GraphicOwner extends Graphic {
 
   public get graphic(): RenderGraphic { return this._graphic; }
 
-  public dispose(): void { }
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+  public dispose(): void { this._isDisposed = true; }
   public disposeGraphic(): void {
     this.graphic.dispose();
   }
@@ -357,6 +362,10 @@ export class Batch extends Graphic {
     this.range = range;
     this.tileId = tileId;
   }
+  private _isDisposed = false;
+  public get isDisposed(): boolean {
+    return this._isDisposed && 0 === this._overrides.length;
+  }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
   public dispose() {
@@ -365,6 +374,7 @@ export class Batch extends Graphic {
       over.target.onBatchDisposed(this);
       dispose(over);
     }
+    this._isDisposed = true;
     this._overrides.length = 0;
   }
 
@@ -452,6 +462,7 @@ export class Branch extends Graphic {
     }
   }
 
+  public get isDisposed(): boolean { return 0 === this.branch.entries.length; }
   public dispose() { this.branch.dispose(); }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
@@ -483,6 +494,8 @@ export class WorldDecorations extends Branch {
 export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[]) { super(); }
+
+  public get isDisposed(): boolean { return 0 === this.graphics.length; }
 
   public dispose() {
     for (const graphic of this.graphics)

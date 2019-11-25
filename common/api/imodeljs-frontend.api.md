@@ -4805,6 +4805,8 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     protected _endPaint(): void;
     // (undocumented)
+    readonly isDisposed: boolean;
+    // (undocumented)
     onResized(): void;
     // (undocumented)
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
@@ -7039,7 +7041,7 @@ export class SyncFlags {
 }
 
 // @internal (undocumented)
-export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGlDisposable {
     protected constructor(rect?: ViewRect);
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
@@ -7205,6 +7207,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly is2d: boolean;
     // (undocumented)
     readonly is3d: boolean;
+    // (undocumented)
+    readonly isDisposed: boolean;
     // (undocumented)
     readonly isDrawingShadowMap: boolean;
     // (undocumented)

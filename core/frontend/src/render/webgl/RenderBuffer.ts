@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
-export class RenderBuffer implements IDisposable {
+export class RenderBuffer implements WebGlDisposable {
   private _glBuffer?: WebGLRenderbuffer;
 
   public getHandle() { return this._glBuffer; }

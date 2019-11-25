@@ -76,6 +76,12 @@ export class PointStringGeometry extends LUTGeometry {
     return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
   }
 
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.lut.isDisposed
+      && this.indices.isDisposed;
+  }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this.lut);

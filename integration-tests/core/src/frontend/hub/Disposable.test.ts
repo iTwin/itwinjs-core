@@ -118,10 +118,10 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
       if (!disposedCheck(elem))
         return false;
 
-  } else if (disposable.isDisposed !== undefined) { // Low-level WebGL resource disposable
-    itemsChecked.push(disposable);
+  } else if (disposable.dispose !== undefined) { // Low-level WebGL resource disposable
+    expect(typeof(disposable.dispose)).to.equal("function");
+    expect(typeof(disposable.isDisposed)).to.equal("boolean");
     return disposable.isDisposed;
-
   } else if (typeof disposable === "object") {  // High-level rendering object disposable
     for (const prop in disposable) {
       if (disposable.hasOwnProperty(prop) && typeof disposable[prop] === "object") {

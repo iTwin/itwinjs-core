@@ -25,6 +25,7 @@ import { DrawCommands, RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
+import { WebGlDisposable } from "./Disposable";
 
 export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;
@@ -48,12 +49,19 @@ export class GraphicsCollectorDrawArgs extends Tile.DrawArgs {
   }
 }
 
-class Textures {
+class Textures implements WebGlDisposable {
   private constructor(
     public readonly color: Texture,
     public readonly feature: Texture,
     public readonly hilite: Texture,
     public readonly combined: Texture) { }
+
+  public get isDisposed(): boolean {
+    return this.color.isDisposed
+      && this.feature.isDisposed
+      && this.hilite.isDisposed
+      && this.combined.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this.color);
@@ -90,12 +98,19 @@ class Textures {
   }
 }
 
-abstract class FrameBuffers {
+abstract class FrameBuffers implements WebGlDisposable {
   protected constructor(
     public readonly textures: Textures,
     private readonly _hilite: FrameBuffer,
     private readonly _combine: FrameBuffer,
     private readonly _combineGeom: CombineTexturesGeometry) { }
+
+  public get isDisposed(): boolean {
+    return this.textures.isDisposed
+      && this._hilite.isDisposed
+      && this._combine.isDisposed
+      && this._combineGeom.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this.textures);
@@ -160,6 +175,12 @@ class MRTFrameBuffers extends FrameBuffers {
     this._clearGeom = geom;
   }
 
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && this._fbo.isDisposed
+      && this._clearGeom.isDisposed;
+  }
+
   public dispose(): void {
     dispose(this._fbo);
     dispose(this._clearGeom);
@@ -191,6 +212,12 @@ class MPFrameBuffers extends FrameBuffers {
     super(textures, hilite, combine, combineGeom);
     this._color = color;
     this._feature = feature;
+  }
+
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && this._color.isDisposed
+      && this._feature.isDisposed;
   }
 
   public dispose(): void {
@@ -227,7 +254,7 @@ const scratchPrevRenderState = new RenderState();
 const scratchViewFlags = new ViewFlags();
 
 /** @internal */
-export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer {
+export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGlDisposable {
   private _buffers?: FrameBuffers;
   private _projectionMatrix = Matrix4d.createIdentity();
   private readonly _graphics: RenderGraphic[] = [];
@@ -294,6 +321,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined !== this._buffers)
       this._buffers.textures.collectStatistics(stats);
   }
+
+  public get isDisposed(): boolean { return undefined === this._buffers; }
 
   public dispose() {
     this._buffers = dispose(this._buffers);
