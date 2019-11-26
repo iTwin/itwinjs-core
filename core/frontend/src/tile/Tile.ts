@@ -859,7 +859,8 @@ export namespace Tile {
     /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
      * @see [[Viewport.tileSizeModifier]].
      */
-    public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
+    public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
+
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
     private static _scratchRange = new Range3d();
