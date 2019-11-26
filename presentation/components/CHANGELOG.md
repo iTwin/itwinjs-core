@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Fix property data provider failing to create data when content includes empty nested content values
+- Tablet responsive UI
+- Add usePresentationNodeLoader custom hook
+- Added custom hook and HOC that adds filtering support to ControlledTree
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

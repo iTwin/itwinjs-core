@@ -2,6 +2,51 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-components_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version"
+          },
+          {
+            "comment": "Responsive logic in Property Grid to switch to Vertical orientation when too narrow"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added Table cell context menu support"
+          },
+          {
+            "comment": "Added Tree Node.tsx export to ui-components package"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Change componentDidUpdate to call _setDuration instead of setState directly. This will make sure the onChange handler is called."
+          },
+          {
+            "comment": "Refactor ControlledTree custom hooks to use useEffectSkipFirst"
+          },
+          {
+            "comment": "Separated TreeModelSource and TreeNodeLoader. Added highlighting support to ControlledTree."
+          },
+          {
+            "comment": "Added node icon rendering to ControlledTree"
+          },
+          {
+            "comment": "Fix node content sometimes not being re-rendered when editor state changed very quickly"
+          },
+          {
+            "comment": "Add componentDidUpdate() to the TimelineComponent, updating currentDuration after the app changes the state of initialDuration."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-components_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

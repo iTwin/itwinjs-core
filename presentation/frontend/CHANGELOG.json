@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/presentation-frontend_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed a bug when initializing favorite properties for an iModel."
+          },
+          {
+            "comment": "Change `HiliteSetProvider` from @internal to @alpha"
+          },
+          {
+            "comment": "Removing favorite properties removes them from higher scopes as well."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/presentation-frontend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

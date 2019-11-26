@@ -1,6 +1,15 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Fixed a bug when initializing favorite properties for an iModel.
+- Change `HiliteSetProvider` from @internal to @alpha
+- Removing favorite properties removes them from higher scopes as well.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

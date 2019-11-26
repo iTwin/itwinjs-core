@@ -2,6 +2,24 @@
   "name": "@bentley/hypermodeling-plugin",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/hypermodeling-plugin_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Activating a section callout now displays the drawing view aligned with the spatial model."
+          },
+          {
+            "comment": "Toolbar button to open section location view attachment now works."
+          },
+          {
+            "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/hypermodeling-plugin_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

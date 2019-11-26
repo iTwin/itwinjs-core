@@ -2,6 +2,7 @@
 ignore: true
 ---
 # NextVersion
+<<<<<<< HEAD
 
 ## High-DPI display support
 
@@ -69,3 +70,6 @@ function isElementDrawnInRect(vp: Viewport, rect: ViewRect, elementId: Id64Strin
     * Careful logic to avoid object allocation when reusing result.
 
 
+=======
+
+>>>>>>> 592256034... 1.8.0
