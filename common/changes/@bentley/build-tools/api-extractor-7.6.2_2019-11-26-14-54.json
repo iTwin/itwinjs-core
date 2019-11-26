@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "Upgrade to @microsoft/api-extractor 7.6.2",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Shaun.Sewall@bentley.com"
+}
