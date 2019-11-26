@@ -536,7 +536,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "plugins", "tools" ]
     },
     {
       "name": "nyc",
