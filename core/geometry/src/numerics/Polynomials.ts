@@ -1604,7 +1604,7 @@ export class SmallSystem {
     const detXYZ = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, axz, ayz, azz);
     const detCYZ = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, axz, ayz, azz);
     const detXCZ = Geometry.tripleProduct(axx, ayx, azx, cx, cy, cz, axz, ayz, azz);
-    const detXYC = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, cx, cy, cz);
+    const detXYC = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, cx, cy, cz);
     const s = Geometry.conditionalDivideFraction(detCYZ, detXYZ);
     const t = Geometry.conditionalDivideFraction(detXCZ, detXYZ);
     const u = Geometry.conditionalDivideFraction(detXYC, detXYZ);

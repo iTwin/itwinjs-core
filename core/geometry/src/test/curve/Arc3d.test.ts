@@ -295,5 +295,28 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "FilletArc");
     expect(ck.getNumErrors()).equals(0);
   });
+  // cspell:word Arnoldas
+  it("ArnoldasFailureLinearSys3d", () => {
+    const ck = new Checker();
 
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const point0 = Point3d.create(0, 0, 0);
+    const point1 = Point3d.create(0, 0, 1);
+    const point2 = Point3d.create(1, 0, 1);
+    GeometryCoreTestIO.captureGeometry(allGeometry,
+      LineString3d.create(point0, point1, point2),
+      x0, y0);
+    const arc = Arc3d.createCircularStartMiddleEnd(point0, point1, point2) as Arc3d;
+    GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ArnoldasFailureLinearSys3d");
+    const r = arc.circularRadius();
+    if (ck.testDefined(r) && r !== undefined) {
+      ck.testCoordinate(r, point0.distance(arc.center));
+      ck.testCoordinate(r, point1.distance(arc.center));
+      ck.testCoordinate(r, point2.distance(arc.center));
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
