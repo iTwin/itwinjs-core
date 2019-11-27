@@ -228,8 +228,8 @@ export class Capabilities {
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);
 
-    // check if full float rendering is available based on maximum discovered renderable target
-    if (RenderType.TextureFloat === this._maxRenderType)
+    // check if at least half-float rendering is available based on maximum discovered renderable target
+    if (RenderType.TextureUnsignedByte !== this._maxRenderType)
       features.push(WebGLFeature.FloatRendering);
 
     return features;
