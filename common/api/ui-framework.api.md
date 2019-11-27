@@ -678,21 +678,7 @@ export interface ChangeSetInfo {
 }
 
 // @beta
-export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatusFieldProps, any> {
-    constructor(props: ClearEmphasisStatusFieldProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta
-export interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
-    // (undocumented)
-    hideWhenUnused?: boolean;
-}
+export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps>;
 
 // @beta
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -3660,13 +3646,13 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export class SectionsStatusField extends React.Component<StatusFieldProps, SectionsStatusFieldState> {
-    constructor(props: StatusFieldProps);
-    componentDidMount(): void;
-    componentWillUnmount(): void;
+export const SectionsStatusField: React.FC<SectionsStatusFieldProps>;
+
+// @beta
+export interface SectionsStatusFieldProps extends StatusFieldProps {
     // (undocumented)
-    render(): JSX.Element;
-    }
+    hideWhenUnused?: boolean;
+}
 
 // @beta
 export function selectionContextStateFunc(state: Readonly<BaseItemState_2>): BaseItemState_2;
@@ -3696,7 +3682,7 @@ export class SelectionContextToolDefinitions {
 // @alpha
 export class SelectionContextUtilities {
     static areFeatureOverridesActive(vp: Viewport): boolean;
-    static clearEmphasize(vp: Viewport): void;
+    static clearEmphasize(vp: Viewport | undefined): void;
     // (undocumented)
     static emphasizeElementsChanged: BeEvent<() => void>;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;

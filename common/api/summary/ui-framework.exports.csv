@@ -59,8 +59,7 @@ alpha;CategoryTree: React.FC
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
-beta;ClearEmphasisStatusField 
-beta;ClearEmphasisStatusFieldProps 
+beta;ClearEmphasisStatusField: React.FC
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
 public;CombinedReducerState
@@ -351,7 +350,8 @@ beta;SavedViewLayout
 beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
-beta;SectionsStatusField 
+beta;SectionsStatusField: React.FC
+beta;SectionsStatusFieldProps 
 beta;selectionContextStateFunc(state: Readonly
 beta;SelectionContextToolDefinitions
 alpha;SelectionContextUtilities

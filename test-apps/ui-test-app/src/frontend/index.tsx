@@ -87,7 +87,7 @@ export interface SampleAppState {
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  dragInteraction: false,
+  dragInteraction: true,
   isIModelLocal: false,
 };
 
