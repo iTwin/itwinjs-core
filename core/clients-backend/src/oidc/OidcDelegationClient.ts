@@ -5,7 +5,7 @@
 /** @module Authentication */
 
 import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
-import { GrantParams, TokenSet } from "openid-client";
+import { GrantBody, TokenSet } from "openid-client";
 import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
@@ -25,7 +25,7 @@ export class OidcDelegationClient extends OidcBackendClient {
   private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
     requestContext.enter();
 
-    const grantParams: GrantParams = {
+    const grantParams: GrantBody = {
       grant_type: grantType,
       scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
@@ -53,7 +53,7 @@ export class OidcDelegationClient extends OidcBackendClient {
     requestContext.enter();
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
-    const params: GrantParams = {
+    const params: GrantBody = {
       grant_type: grantType,
       scope: this._configuration.scope,
       assertion: jwt.toTokenString(IncludePrefix.No),
@@ -62,7 +62,7 @@ export class OidcDelegationClient extends OidcBackendClient {
     const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(params);
 
-    const samlToken = AccessToken.fromSamlTokenString(tokenSet.access_token, IncludePrefix.No);
+    const samlToken = AccessToken.fromSamlTokenString(tokenSet.access_token!, IncludePrefix.No);
     if (!samlToken)
       throw new BentleyError(BentleyStatus.ERROR, `Could not convert jwt to accessToken`);
     return samlToken;
