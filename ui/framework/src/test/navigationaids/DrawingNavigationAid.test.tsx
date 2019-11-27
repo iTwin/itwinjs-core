@@ -15,7 +15,6 @@ import {
   MapMode,
   DrawingNavigationAidControl,
   AnyWidgetProps,
-  WidgetDefFactory,
   NavigationWidgetDef,
   ContentControl,
 } from "../../ui-framework";
@@ -619,7 +618,7 @@ describe("DrawingNavigationAid", () => {
 
     it("DrawingNavigationAidControl creates DrawingNavigationAid", () => {
 
-      const widgetDef = WidgetDefFactory.create(widgetProps);
+      const widgetDef = new NavigationWidgetDef(widgetProps);
       expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
 
       const navigationWidgetDef = widgetDef as NavigationWidgetDef;

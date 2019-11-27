@@ -1,18 +1,14 @@
 # Backstage
 
-The **Backstage** is a menu used to open frontstages and launch tasks and commands.
+The [Backstage]($ui-framework:Backstage) is a menu used to open frontstages and launch tasks and commands.
 It can also open full-screen overlays presenting application settings and data management to the user.
 These overlays are an implementation of a modal frontstage.
 The backstage is opened by clicking or pressing the App button and displays along the left edge of the window.
 
-## Defining a Backstage
-
 ## Specifying a Backstage to ConfigurableUiContent
 
-```TSX
+```tsx
 import AppBackstage from "../app-ui/AppBackstage";
-
-// . . .
 
 /** Renders a viewport, a tree, a property grid and a table */
 class IModelComponents extends React.PureComponent {
@@ -26,7 +22,3 @@ class IModelComponents extends React.PureComponent {
   }
 }
 ```
-
-## API Reference
-
-* [Backstage]($ui-framework:Backstage)

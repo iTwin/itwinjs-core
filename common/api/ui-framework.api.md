@@ -5302,11 +5302,6 @@ export class WidgetDef {
     widgetType: WidgetType;
 }
 
-// @internal
-export class WidgetDefFactory {
-    static create(widgetProps: WidgetProps): WidgetDef;
-}
-
 // @public
 export class WidgetHost {
     constructor();

@@ -12,7 +12,6 @@ import TestUtils from "../TestUtils";
 import {
   AnyWidgetProps,
   WidgetState,
-  WidgetDefFactory,
   ToolWidgetDef,
   ToolButton,
   GroupButton,
@@ -227,7 +226,7 @@ describe("ToolWidget", () => {
 
   it("ToolWidgetDef from WidgetProps", () => {
 
-    const widgetDef = WidgetDefFactory.create(widgetProps);
+    const widgetDef = new ToolWidgetDef(widgetProps);
     expect(widgetDef).to.be.instanceof(ToolWidgetDef);
 
     const toolWidgetDef = widgetDef as ToolWidgetDef;

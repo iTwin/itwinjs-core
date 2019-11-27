@@ -110,7 +110,6 @@ export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
-export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";

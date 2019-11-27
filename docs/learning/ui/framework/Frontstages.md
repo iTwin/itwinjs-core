@@ -10,8 +10,8 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 
 ## Configuring a Frontstage
 
-A frontstage is configured in a class subclassing the **FrontstageProvider** abstract class.
-The FrontstageProvider contains an abstract `frontstage` field containing a **Frontstage** React component.
+A frontstage is configured in a class subclassing the [FrontstageProvider]($ui-framework) abstract class.
+The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-framework) field containing a [Frontstage]($ui-framework) React component.
 The Frontstage React component has props for the default tool, Content Layout, Content Group, a Footer mode flag and application data.
 It also has props for the Zones that are specified by their position in the 9-zone grid.
 
@@ -34,7 +34,7 @@ The following zone props are used in the Frontstage React component.
 
 The following is a sample of a very basic FrontstageProvider definition with zones containing a Tool Widget, Tool Settings, Navigation Widget, Status Bar and Property Grid.
 
-```TSX
+```tsx
 export class SampleFrontstage extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -89,7 +89,7 @@ export class SampleFrontstage extends FrontstageProvider {
 
 ```
 
-The `defaultTool` prop specifies a tool or command. See [Tools and Commands](./ToolsCommands.md) for more details.
+The `defaultTool` prop specifies a tool or command.
 `defaultLayout` specifies a registered Content Layout and `contentGroup` specifies a registered Content Group.
 Note that these two props can reference a ContentLayoutDef and ContentGroup directly instead of specifying an Id.
 See [Content Views and Layouts](./ContentViews.md) for more details.
@@ -106,30 +106,26 @@ The `applicationData` prop specifies JSON data attached to the Zone and ZoneDef.
 
 ## Setting a Frontstage active
 
-```TSX
-    // Create a Frontstage.
-    const frontstageProvider = new SampleFrontstage();
-    // Add the provider to FrontstageManager
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
+```tsx
+// Create a Frontstage.
+const frontstageProvider = new SampleFrontstage();
+// Add the provider to FrontstageManager
+FrontstageManager.addFrontstageProvider(frontstageProvider);
 
-    // Set the Frontstage active
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
-      // Frontstage is ready
-    });
+// Set the Frontstage active
+FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+  // Frontstage is ready
+});
 ```
 
 ## Related Learning Topics
 
 * [Content Views and Layouts](./ContentViews.md)
 * [Widgets](./Widgets.md)
-* [Toolbars](./Toolbars.md)
-* [Tools and Commands](./ToolsCommands.md)
 * [Status Bar and Fields](./StatusBar.md)
-* [Navigation Aids](./NavigationAids.md)
 * [Tool Settings](./ToolSettings.md)
 * [Stage Panels](./StagePanels.md)
 
 ## API Reference
 
-* [Frontstage]($ui-framework:Frontstage)
 * [Zone]($ui-framework:Zone)

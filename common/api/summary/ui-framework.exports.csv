@@ -510,7 +510,6 @@ beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler
 public;WidgetControl 
 public;WidgetDef
-internal;WidgetDefFactory
 public;WidgetHost
 public;WidgetProps 
 internal;WidgetStack 
