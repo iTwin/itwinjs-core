@@ -147,10 +147,7 @@ export namespace IModelTile {
 
     public constructor(majorVersion: number, allowInstancing: boolean) {
       super();
-      let flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
-      if (IModelApp.tileAdmin.enableImprovedElision)
-        flags = flags | ContentFlags.ImprovedElision;
-
+      const flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
       this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
     }
 
@@ -169,7 +166,10 @@ export namespace IModelTile {
 
     public constructor(allowInstancing: boolean) {
       super();
-      const flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      let flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      if (IModelApp.tileAdmin.enableImprovedElision)
+        flags = flags | ContentFlags.ImprovedElision;
+
       this._prefix = this._separator + flags.toString(16) + this._separator;
     }
 
