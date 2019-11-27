@@ -908,9 +908,9 @@ export class CountingIModelImporter extends IModelImporter {
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): void {
+  protected onInsertModel(modelProps: ModelProps): Id64String {
     this.numModelsInserted++;
-    super.onInsertModel(modelProps);
+    return super.onInsertModel(modelProps);
   }
   protected onUpdateModel(modelProps: ModelProps): void {
     this.numModelsUpdated++;
@@ -943,6 +943,79 @@ export class CountingIModelImporter extends IModelImporter {
   protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsUpdated++;
     super.onUpdateRelationship(relationshipProps);
+  }
+}
+
+/** Specialization of IModelImporter that creates an InformationRecordElement for each PhysicalElement that it imports. */
+export class RecordingIModelImporter extends CountingIModelImporter {
+  public constructor(targetDb: IModelDb) {
+    super(targetDb);
+  }
+  protected onInsertModel(modelProps: ModelProps): Id64String {
+    const modelId: Id64String = super.onInsertModel(modelProps);
+    const model: Model = this.targetDb.models.getModel(modelId);
+    if (model instanceof PhysicalModel) {
+      const modeledElement: Element = this.targetDb.elements.getElement(model.modeledElement.id);
+      if (modeledElement instanceof PhysicalPartition) {
+        const parentSubjectId: Id64String = modeledElement.parent!.id; // InformationPartitionElements are always parented to Subjects
+        const recordPartitionId: Id64String = InformationRecordModel.insert(this.targetDb, parentSubjectId, `Records for ${model.name}`);
+        this.targetDb.relationships.insertInstance({
+          classFullName: "TestTransformerTarget:PhysicalPartitionIsTrackedByRecords",
+          sourceId: modeledElement.id,
+          targetId: recordPartitionId,
+        });
+      }
+    }
+    return modelId;
+  }
+  protected onInsertElement(elementProps: ElementProps): Id64String {
+    const elementId: Id64String = super.onInsertElement(elementProps);
+    const element: Element = this.targetDb.elements.getElement(elementId);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Insert", recordPartitionId, element);
+      }
+    }
+    return elementId;
+  }
+  protected onUpdateElement(elementProps: ElementProps): void {
+    super.onUpdateElement(elementProps);
+    const element: Element = this.targetDb.elements.getElement(elementProps.id!);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Update", recordPartitionId, element);
+      }
+    }
+  }
+  protected onDeleteElement(elementId: Id64String): void {
+    const element: Element = this.targetDb.elements.getElement(elementId);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Delete", recordPartitionId, element);
+      }
+    }
+    super.onDeleteElement(elementId); // delete element after AuditRecord is inserted
+  }
+  private getRecordPartitionId(physicalPartitionId: Id64String): Id64String {
+    const sql = "SELECT TargetECInstanceId FROM TestTransformerTarget:PhysicalPartitionIsTrackedByRecords WHERE SourceECInstanceId=:physicalPartitionId";
+    return this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String => {
+      statement.bindId("physicalPartitionId", physicalPartitionId);
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
+  }
+  private insertAuditRecord(operation: string, recordPartitionId: Id64String, physicalElement: PhysicalElement): Id64String {
+    const auditRecord: any = {
+      classFullName: "TestTransformerTarget:AuditRecord",
+      model: recordPartitionId,
+      code: Code.createEmpty(),
+      userLabel: `${operation} of ${physicalElement.getDisplayLabel()} at ${new Date()}`,
+      operation,
+      physicalElement: { id: physicalElement.id },
+    };
+    return this.targetDb.elements.insertElement(auditRecord);
   }
 }
 

@@ -2255,7 +2255,7 @@ export class IModelImporter {
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
-    protected onInsertModel(modelProps: ModelProps): void;
+    protected onInsertModel(modelProps: ModelProps): Id64String;
     protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onUpdateElement(elementProps: ElementProps): void;
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
