@@ -43,6 +43,7 @@ export namespace IModelTile {
   const enum ContentFlags {
     None = 0,
     AllowInstancing = 1 << 0,
+    ImprovedElision = 1 << 1,
   }
 
   /** Describes the components of a tile's content Id.
@@ -146,7 +147,10 @@ export namespace IModelTile {
 
     public constructor(majorVersion: number, allowInstancing: boolean) {
       super();
-      const flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      let flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+      if (IModelApp.tileAdmin.enableImprovedElision)
+        flags = flags | ContentFlags.ImprovedElision;
+
       this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
     }
 
