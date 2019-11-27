@@ -11,6 +11,8 @@ alpha;controlledTreeWithUnifiedSelection
 alpha;ControlledTreeWithUnifiedSelectionProps
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
+beta;FavoritePropertiesDataProvider 
+beta;FavoritePropertiesDataProviderProps
 public;IContentDataProvider 
 public;IPresentationDataProvider
 public;IPresentationLabelsProvider

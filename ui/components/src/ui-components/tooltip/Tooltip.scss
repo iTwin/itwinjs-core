@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.components-element-tooltip {
+  max-width:600px;
+}
+
+.components-element-tooltip > .components-property-list--horizontal > .components-property-record--horizontal > .components-property-record-label {
+  font-weight:bold;
+  text-align:right;
+}

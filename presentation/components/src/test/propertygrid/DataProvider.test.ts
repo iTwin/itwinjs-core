@@ -5,9 +5,8 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { expect } from "chai";
 import * as path from "path";
-import * as chai from "chai";
-import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -15,7 +14,7 @@ import {
   createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection, PropertyRecord, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import {
@@ -24,14 +23,12 @@ import {
   NestedContentValue, NestedContentField, Property,
   ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
   PresentationError,
+  RegisteredRuleset,
 } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, FavoritePropertiesManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager } from "@bentley/presentation-frontend";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 const favoritesCategoryName = "Favorite";
 /**
@@ -64,6 +61,7 @@ describe("PropertyDataProvider", () => {
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
@@ -78,6 +76,7 @@ describe("PropertyDataProvider", () => {
 
   beforeEach(() => {
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     favoritePropertiesManagerMock.reset();
     favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
     provider = new Provider(imodelMock.object, rulesetId);
@@ -94,6 +93,10 @@ describe("PropertyDataProvider", () => {
 
     it("sets `includeFieldsWithNoValues` to true", () => {
       expect(provider.includeFieldsWithNoValues).to.be.true;
+    });
+
+    it("sets `includeFieldsWithCompositeValues` to true", () => {
+      expect(provider.includeFieldsWithCompositeValues).to.be.true;
     });
 
     it("subscribes to `Presentation.favoriteProperties.onFavoritesChanged` to invalidate cache", () => {
@@ -167,6 +170,24 @@ describe("PropertyDataProvider", () => {
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
       provider.includeFieldsWithNoValues = provider.includeFieldsWithNoValues;
+      invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.never());
+    });
+
+  });
+
+  describe("includeFieldsWithCompositeValues", () => {
+
+    it("invalidates cache when setting to different value", () => {
+      const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
+      provider.invalidateCache = invalidateCacheMock.object;
+      provider.includeFieldsWithCompositeValues = !provider.includeFieldsWithCompositeValues;
+      invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.once());
+    });
+
+    it("doesn't invalidate cache when setting to same value", () => {
+      const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
+      provider.invalidateCache = invalidateCacheMock.object;
+      provider.includeFieldsWithCompositeValues = provider.includeFieldsWithCompositeValues;
       invalidateCacheMock.verify((x) => x({ content: true }), moq.Times.never());
     });
 
@@ -273,6 +294,24 @@ describe("PropertyDataProvider", () => {
         faker.random.words(), typeDescription, faker.random.boolean(),
         faker.random.number(), [property]);
     };
+
+    it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
+      provider = new Provider(imodelMock.object, undefined);
+      rulesetsManagerMock.setup((x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
+
+      // verify ruleset is registered on first call
+      await provider.getData();
+      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+
+      // verify ruleset is not registered on subsequent calls on the same provider
+      await provider.getData();
+      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+
+      // verify ruleset is not registered on subsequent calls on different providers
+      const provider2 = new Provider(imodelMock.object, undefined);
+      await provider2.getData();
+      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+    });
 
     it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
@@ -750,6 +789,41 @@ describe("PropertyDataProvider", () => {
         expect(data.categories.length).to.eq(1);
         expect(data.records[data.categories[0].name].length).to.eq(1);
         expect(data.records[data.categories[0].name][0].property.name).to.eq(descriptor.fields[0].name);
+      });
+
+    });
+
+    describe("includeFieldsWithCompositeValues handling", () => {
+
+      beforeEach(() => {
+        provider.includeFieldsWithCompositeValues = false;
+      });
+
+      it("doesn't include composite fields when set", async () => {
+        const primitiveField = createPrimitiveField();
+        const arrayField = createArrayField();
+        const structField = createStructField();
+
+        const descriptor = createRandomDescriptor();
+        descriptor.fields = [primitiveField, arrayField, structField];
+        const values = {
+          [primitiveField.name]: faker.random.word(),
+          [arrayField.name]: ["some value 1", "some value 2"],
+          [(structField.type as StructTypeDescription).members[0].name]: "some value",
+        };
+        const displayValues = {
+          [primitiveField.name]: faker.random.word(),
+          [arrayField.name]: ["some display value 1", "some display value 2"],
+          [(structField.type as StructTypeDescription).members[0].name]: "some display value",
+        };
+        const record = new Item([createRandomECInstanceKey()],
+          faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+        const data = await provider.getData();
+        expect(data.categories.length).to.eq(1);
+        expect(data.records[data.categories[0].name].length).to.eq(1);
+        expect(data.records[data.categories[0].name][0].property.name).to.eq(primitiveField.name);
       });
 
     });

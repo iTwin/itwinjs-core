@@ -51,6 +51,9 @@ export class FavoritePropertiesManager {
     remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
     }
 
+// @public
+export function getScopeId(scope: SelectionScope | string | undefined): string;
+
 // @alpha
 export interface HiliteSet {
     // (undocumented)

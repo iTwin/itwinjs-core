@@ -16,6 +16,7 @@ import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IElementPropertyDataProvider } from '@bentley/ui-components';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
@@ -128,6 +129,21 @@ export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
 }
 
+// @beta
+export class FavoritePropertiesDataProvider implements IElementPropertyDataProvider {
+    constructor(props?: FavoritePropertiesDataProviderProps);
+    customRulesetId: string | undefined;
+    getData(imodel: IModelConnection, elementId: string): Promise<PropertyData>;
+    includeFieldsWithCompositeValues: boolean;
+    includeFieldsWithNoValues: boolean;
+    }
+
+// @beta (undocumented)
+export interface FavoritePropertiesDataProviderProps {
+    // @internal (undocumented)
+    propertyDataProviderFactory?: (imodel: IModelConnection, rulesetId?: string) => PresentationPropertyDataProvider;
+}
+
 // @public
 export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
     readonly displayType: string;
@@ -198,11 +214,12 @@ export interface PresentationNodeLoaderProps {
 
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
-    constructor(imodel: IModelConnection, rulesetId: string);
+    constructor(imodel: IModelConnection, rulesetId?: string);
     dispose(): void;
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
+    includeFieldsWithCompositeValues: boolean;
     includeFieldsWithNoValues: boolean;
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldFavorite: (field: Field) => boolean;
@@ -212,7 +229,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
     protected sortFields(_category: CategoryDescription, fields: Field[]): void;
-}
+    }
 
 // @public
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {

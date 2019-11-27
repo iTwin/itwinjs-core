@@ -25,6 +25,14 @@ export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } f
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
 
 /**
+ * @module FavoriteProperties
+ *
+ * @docs-group-description FavoriteProperties
+ * Types related to `FavoriteProperties` component in `@bentley/ui-components` package.
+ */
+export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./favorite-properties/DataProvider";
+
+/**
  * @module Table
  *
  * @docs-group-description Table

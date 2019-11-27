@@ -1593,6 +1593,11 @@ export class IconPropertyEditor extends PropertyEditorBase {
     readonly reactElement: React.ReactNode;
 }
 
+// @beta
+export interface IElementPropertyDataProvider {
+    getData: (imodel: IModelConnection, elementId: Id64String) => Promise<PropertyData>;
+}
+
 // @public
 export interface IImageLoader {
     load: (item: any) => Image | undefined;
@@ -3698,12 +3703,12 @@ export interface TreeProps extends CommonProps {
 export const TreeRenderer: React.FC<TreeRendererProps>;
 
 // @alpha (undocumented)
-export const 
+export const
 /** @alpha */
 TreeRendererContextConsumer: React.ExoticComponent<React.ConsumerProps<TreeRendererContext>>;
 
 // @alpha (undocumented)
-export const 
+export const
 /** @alpha */
 TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<TreeRendererContext>>;
 
@@ -3820,6 +3825,13 @@ export class UiComponents {
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
+// @alpha
+export class UITooltipRenderer {
+    constructor(provider: IElementPropertyDataProvider);
+    // (undocumented)
+    renderTooltip(imodel: IModelConnection, elementId: string): Promise<HTMLElement | string>;
+}
+
 // @alpha (undocumented)
 export interface Unsubscribable {
     // (undocumented)
@@ -3836,7 +3848,7 @@ export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvid
 export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number): PagedTreeNodeLoader<TDataProvider>;
 
 // @alpha (undocumented)
-export const 
+export const
 /** @alpha */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
 

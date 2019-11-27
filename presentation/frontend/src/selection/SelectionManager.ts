@@ -9,7 +9,7 @@ import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@ben
 import { KeySet, Keys, SelectionScope, AsyncTasksTracker } from "@bentley/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
-import { SelectionScopesManager } from "./SelectionScopesManager";
+import { SelectionScopesManager, getScopeId } from "./SelectionScopesManager";
 import { HiliteSetProvider, HiliteSet } from "./HiliteSetProvider";
 
 /**
@@ -370,7 +370,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
         break;
     }
 
-    // determine the scope id
     const scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
 
     // we're always using scoped selection changer even if the scope is set to "element" - that
@@ -401,14 +400,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     });
   }
 }
-
-const getScopeId = (scope: SelectionScope | string | undefined): string => {
-  if (!scope)
-    return "element";
-  if (typeof scope === "string")
-    return scope;
-  return scope.id;
-};
 
 const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
   let allPersistent = true;

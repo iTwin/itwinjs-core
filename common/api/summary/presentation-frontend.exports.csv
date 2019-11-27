@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;FavoriteProperties
 beta;FavoritePropertiesManager
+public;getScopeId(scope: SelectionScope | string | undefined): string
 alpha;HiliteSet
 alpha;HiliteSetProvider
 internal;IFavoritePropertiesStorage
