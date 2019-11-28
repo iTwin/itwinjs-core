@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Update sinon version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "gerardas.butkevicius@bentley.com"
+}

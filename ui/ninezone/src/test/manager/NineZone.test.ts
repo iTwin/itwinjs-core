@@ -103,7 +103,7 @@ describe("NineZoneManager", () => {
       const setWidgetTabIndexSpy = sinon.spy(zonesManager, "setWidgetTabIndex");
       const newProps = sut.handleWidgetTabDragEnd(props);
 
-      setWidgetTabIndexSpy.calledOnceWithExactly(6, -1, sinon.match.any as any).should.true;
+      setWidgetTabIndexSpy.calledOnceWithExactly(6, -1, sinon.match.any).should.true;
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "zones");
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "zones.widgets");
@@ -126,7 +126,7 @@ describe("NineZoneManager", () => {
       const setWidgetHorizontalAnchorSpy = sinon.spy(sut.getZonesManager(), "setWidgetHorizontalAnchor");
       const newProps = sut.handleWidgetTabDragEnd(props);
 
-      setWidgetHorizontalAnchorSpy.calledOnceWithExactly(4, HorizontalAnchor.Right, sinon.match.any as any).should.true;
+      setWidgetHorizontalAnchorSpy.calledOnceWithExactly(4, HorizontalAnchor.Right, sinon.match.any).should.true;
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "zones");
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "zones.widgets");
@@ -141,7 +141,7 @@ describe("NineZoneManager", () => {
       const setToolSettingsWidgetModeSpy = sinon.spy(sut.getZonesManager(), "setToolSettingsWidgetMode");
       sut.handleWidgetTabDragEnd(props);
 
-      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.Tab, sinon.match.any as any).should.true;
+      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.Tab, sinon.match.any).should.true;
     });
   });
 
@@ -267,7 +267,7 @@ describe("NineZoneManager", () => {
         widgetId: 9,
       }, props);
 
-      setWidgetTabIndexSpy.calledWithExactly(9, 5, sinon.match.any as any).should.true;
+      setWidgetTabIndexSpy.calledWithExactly(9, 5, sinon.match.any).should.true;
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "props.zones");
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "props.zones.widgets");

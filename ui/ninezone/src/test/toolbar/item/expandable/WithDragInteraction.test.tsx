@@ -114,8 +114,8 @@ describe("<WithDragInteraction />", () => {
     sut.unmount();
 
     spy.calledTwice.should.true;
-    spy.firstCall.calledWithExactly("pointermove", sinon.match.any as any).should.true;
-    spy.secondCall.calledWithExactly("pointerup", sinon.match.any as any).should.true;
+    spy.firstCall.calledWithExactly("pointermove", sinon.match.any).should.true;
+    spy.secondCall.calledWithExactly("pointerup", sinon.match.any).should.true;
   });
 
   it("should invoke onClick handler", () => {

@@ -125,10 +125,10 @@ describe("ZonesManager", () => {
 
       newProps.should.not.eq(props);
 
-      const bounds = sinon.match({ bottom: 100, left: 20, right: 50, top: 40 } as RectangleProps) as unknown as RectangleProps;
+      const bounds = sinon.match({ bottom: 100, left: 20, right: 50, top: 40 } as RectangleProps);
       setZoneFloatingBounds.calledOnceWithExactly(6, bounds, props).should.eq(true, "setZoneFloatingBounds");
-      const lasPosition = sinon.match({ x: 20, y: 40 } as PointProps) as unknown as PointProps;
-      setDraggedWidgetLastPosition.calledOnceWithExactly(lasPosition, setZoneFloatingBounds.firstCall.returnValue).should.eq(true, "setDraggedWidgetLastPosition");
+      const lastPosition = sinon.match({ x: 20, y: 40 } as PointProps);
+      setDraggedWidgetLastPosition.calledOnceWithExactly(lastPosition, setZoneFloatingBounds.firstCall.returnValue).should.eq(true, "setDraggedWidgetLastPosition");
     });
   });
 
@@ -375,7 +375,7 @@ describe("ZonesManager", () => {
       const setToolSettingsWidgetModeSpy = sinon.spy(sut, "setToolSettingsWidgetMode");
       sut.handleWidgetTabDragEnd(props);
 
-      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.TitleBar, sinon.match.any as any).should.true;
+      setToolSettingsWidgetModeSpy.calledOnceWithExactly(ToolSettingsWidgetMode.TitleBar, sinon.match.any).should.true;
     });
 
     it("should save window settings on merge", () => {
@@ -387,7 +387,7 @@ describe("ZonesManager", () => {
       const spy = sinon.spy(sut, "saveWindowSettings");
       sut.handleWidgetTabDragEnd(props);
 
-      spy.calledOnceWithExactly(9, sinon.match.any as any).should.true;
+      spy.calledOnceWithExactly(9, sinon.match.any).should.true;
     });
   });
 
@@ -695,8 +695,8 @@ describe("ZonesManager", () => {
       sut.handleWidgetTabDragStart(7, 1, { x: 0, y: 0 }, new Rectangle(), TestProps.merged7To4);
 
       spy.callCount.should.eq(2);
-      spy.firstCall.calledWithExactly(4, sinon.match.any as any).should.true;
-      spy.secondCall.calledWithExactly(7, sinon.match.any as any).should.true;
+      spy.firstCall.calledWithExactly(4, sinon.match.any).should.true;
+      spy.secondCall.calledWithExactly(7, sinon.match.any).should.true;
     });
   });
 
@@ -1252,9 +1252,9 @@ describe("ZonesManager", () => {
       getInitialBounds.callCount.should.eq(widgetZoneIds.length);
       setZoneBounds.callCount.should.eq(widgetZoneIds.length);
       widgetZoneIds.forEach((zId) => {
-        getInitialBounds.calledWithExactly(zId, sinon.match.any as any).should.eq(true, `getInitialBounds(${zId})`);
-        setZoneBounds.calledWithExactly(zId, sinon.match.any as any, sinon.match.any as any).should.eq(true, `setZoneBounds(${zId})`);
-        setZoneIsLayoutChanged.calledWithExactly(zId, sinon.match.any as any, sinon.match.any as any).should.eq(true, `setZoneIsLayoutChanged(${zId})`);
+        getInitialBounds.calledWithExactly(zId, sinon.match.any).should.eq(true, `getInitialBounds(${zId})`);
+        setZoneBounds.calledWithExactly(zId, sinon.match.any, sinon.match.any).should.eq(true, `setZoneBounds(${zId})`);
+        setZoneIsLayoutChanged.calledWithExactly(zId, sinon.match.any, sinon.match.any).should.eq(true, `setZoneIsLayoutChanged(${zId})`);
       });
     });
 

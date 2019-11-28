@@ -75,8 +75,8 @@ describe("GrowStrategy", () => {
       const getDistanceToZoneToShrink = sinon.stub(sut, "getDistanceToZoneToShrink");
       sinon.stub(sut, "getZonesToShrink").returns([4, 6]);
       sinon.stub(sut, "getShrinkStrategy").returns(shrinkStrategy.object);
-      getDistanceToZoneToShrink.withArgs(7, 4, sinon.match.any as any).returns(40);
-      getDistanceToZoneToShrink.withArgs(7, 6, sinon.match.any as any).returns(50);
+      getDistanceToZoneToShrink.withArgs(7, 4, sinon.match.any).returns(40);
+      getDistanceToZoneToShrink.withArgs(7, 6, sinon.match.any).returns(50);
 
       const maxResize = sut.getMaxResize(7, zonesManagerPropsMock.object);
       maxResize.should.eq(55);
@@ -128,8 +128,8 @@ describe("GrowStrategy", () => {
       const sut = new GrowStrategyMock(zonesManagerMock.object);
       const getDistanceToZoneToShrinkStub = sinon.stub(sut, "getDistanceToZoneToShrink");
       const resizeStub = sinon.stub(sut, "resize");
-      getDistanceToZoneToShrinkStub.withArgs(7, 4, sinon.match.any as any).returns(20);
-      getDistanceToZoneToShrinkStub.withArgs(7, 6, sinon.match.any as any).returns(130);
+      getDistanceToZoneToShrinkStub.withArgs(7, 4, sinon.match.any).returns(20);
+      getDistanceToZoneToShrinkStub.withArgs(7, 6, sinon.match.any).returns(130);
       sinon.stub(sut, "getMaxResize").returns(100);
       sinon.stub(sut, "getZonesToShrink").returns([4, 6]);
       sinon.stub(sut, "getShrinkStrategy").returns(shrinkStrategy.object);
@@ -137,7 +137,7 @@ describe("GrowStrategy", () => {
 
       shrinkStrategy.verify((x) => x.tryResize(4, 80, Moq.It.isAny()), Moq.Times.once());
       shrinkStrategy.verify((x) => x.tryResize(6, 0, Moq.It.isAny()), Moq.Times.once());
-      resizeStub.calledOnceWithExactly(sinon.match.any as any, 100).should.true;
+      resizeStub.calledOnceWithExactly(sinon.match.any, 100).should.true;
       (newProps !== zonesManagerPropsMock.object).should.eq(true, "props");
     });
   });
@@ -470,8 +470,8 @@ describe("ShrinkStrategy", () => {
       sinon.stub(sut, "getMaxShrinkSelfBy").returns(100);
       sinon.stub(sut, "getZonesToShrink").returns([4, 6]);
       sinon.stub(sut, "getShrinkStrategy").returns(shrinkStrategy.object);
-      getDistanceToZoneToShrink.withArgs(7, 4, sinon.match.any as any).returns(40);
-      getDistanceToZoneToShrink.withArgs(7, 6, sinon.match.any as any).returns(50);
+      getDistanceToZoneToShrink.withArgs(7, 4, sinon.match.any).returns(40);
+      getDistanceToZoneToShrink.withArgs(7, 6, sinon.match.any).returns(50);
 
       const maxResize = sut.getMaxResize(7, zonesManagerPropsMock.object);
       maxResize.should.eq(155);
@@ -524,8 +524,8 @@ describe("ShrinkStrategy", () => {
       const sut = new ShrinkStrategyMock(zonesManagerMock.object);
       const getDistanceToZoneToShrinkStub = sinon.stub(sut, "getDistanceToZoneToShrink");
       const resizeStub = sinon.stub(sut, "resize");
-      getDistanceToZoneToShrinkStub.withArgs(7, 4, sinon.match.any as any).returns(20);
-      getDistanceToZoneToShrinkStub.withArgs(7, 6, sinon.match.any as any).returns(130);
+      getDistanceToZoneToShrinkStub.withArgs(7, 4, sinon.match.any).returns(20);
+      getDistanceToZoneToShrinkStub.withArgs(7, 6, sinon.match.any).returns(130);
       sinon.stub(sut, "getMaxResize").returns(150);
       sinon.stub(sut, "getMaxShrinkSelfBy").returns(100);
       sinon.stub(sut, "getZonesToShrink").returns([4, 6]);
@@ -534,7 +534,7 @@ describe("ShrinkStrategy", () => {
 
       shrinkStrategy.verify((x) => x.tryResize(4, 30, Moq.It.isAny()), Moq.Times.once());
       shrinkStrategy.verify((x) => x.tryResize(6, 0, Moq.It.isAny()), Moq.Times.once());
-      resizeStub.calledOnceWithExactly(sinon.match.any as any, 100, 50).should.true;
+      resizeStub.calledOnceWithExactly(sinon.match.any, 100, 50).should.true;
       (newProps !== zonesManagerPropsMock.object).should.eq(true, "props");
     });
   });

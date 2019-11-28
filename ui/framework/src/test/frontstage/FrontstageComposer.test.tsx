@@ -235,7 +235,7 @@ describe("FrontstageComposer", () => {
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
 
-    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any)).to.be.true;
 
     wrapper.unmount();
   });
