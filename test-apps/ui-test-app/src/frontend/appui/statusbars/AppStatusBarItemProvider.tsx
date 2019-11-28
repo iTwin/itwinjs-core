@@ -5,12 +5,13 @@
 import * as React from "react";
 
 import { FooterSeparator } from "@bentley/ui-ninezone";
+import { ViewsStatusField } from "@bentley/saved-views";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, ViewAttributesStatusField, SectionsStatusField,
-  SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
+  SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField, StatusFieldProps,
   StatusBarItem, StatusBarSection, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
-  BooleanSyncUiListener, TileLoadingIndicator, FooterModeField,
+  BooleanSyncUiListener, TileLoadingIndicator, FooterModeField, useActiveIModelConnection,
 } from "@bentley/ui-framework";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
@@ -39,6 +40,18 @@ const ClearEmphasis = withStatusFieldProps(ClearEmphasisStatusField);
 const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
 // tslint:disable-next-line: variable-name
 const FooterMode = withStatusFieldProps(FooterModeField);
+
+// tslint:disable-next-line: variable-name
+const ConnectedViewsStatusField: React.FC<StatusFieldProps> = (_props) => {
+  const activeIModelConnection = useActiveIModelConnection();
+  return (
+    <ViewsStatusField showThumbnails={true} showSavedViews={true} displaySuccess={true} displayErrors={true} allowShareViewOnCreate={true}
+      iModelConnection={activeIModelConnection} />
+  );
+};
+
+// tslint:disable-next-line: variable-name
+const SavedViewsStatusField = withStatusFieldProps(ConnectedViewsStatusField);
 
 export class AppStatusBarItemProvider {
   public static readonly id = "ui-test-app.AppStatusBarItemProvider";
@@ -69,6 +82,7 @@ export class AppStatusBarItemProvider {
           </BooleanSyncUiListener>
         )),
 
+        StatusBarItemUtilities.createStatusBarItem("SavedViews", StatusBarSection.Center, 35, <SavedViewsStatusField />),
         StatusBarItemUtilities.createStatusBarItem("TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadIndicator />),
         StatusBarItemUtilities.createStatusBarItem("SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />),
         StatusBarItemUtilities.createStatusBarItem("SelectionScope", StatusBarSection.Right, 20, <SelectionScope />),

@@ -4928,6 +4928,12 @@ export interface UiVisibilityEventArgs {
 export const useActiveFrontstageId: () => string;
 
 // @beta
+export function useActiveIModelConnection(): IModelConnection | undefined;
+
+// @beta
+export function useActiveViewport(): ScreenViewport | undefined;
+
+// @beta
 export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
