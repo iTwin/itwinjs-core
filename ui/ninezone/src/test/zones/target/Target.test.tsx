@@ -42,4 +42,21 @@ describe("<WidgetTarget />", () => {
 
     spy.calledOnceWithExactly(true).should.true;
   });
+
+  it("should invoke onTargetChanged handler when component unmounts", () => {
+    const spy = sinon.spy();
+    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
+
+    const target = sut.find(".nz-zones-target-target");
+    sinon.stub(target.getDOMNode(), "contains").returns(true);
+
+    const pointerMove = document.createEvent("HTMLEvents");
+    pointerMove.initEvent("pointermove");
+    document.dispatchEvent(pointerMove);
+    sut.setProps({});
+
+    spy.resetHistory();
+    sut.unmount();
+    spy.calledOnceWithExactly(false).should.true;
+  });
 });

@@ -21,14 +21,22 @@ export interface WidgetTargetProps extends MergeTargetProps {
  */
 export function WidgetTarget(props: WidgetTargetProps) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const isInitialMount = React.useRef(true);
   const targeted = useTargeted(ref);
+  const isInitialMount = React.useRef(true);
+  const isTargeted = React.useRef(targeted);
   React.useEffect(() => {
     if (isInitialMount.current)
       isInitialMount.current = false;
-    else
+    else {
+      isTargeted.current = targeted;
       props.onTargetChanged && props.onTargetChanged(targeted);
+    }
   }, [targeted]);
+  React.useEffect(() => {
+    return () => {
+      isTargeted.current && props.onTargetChanged && props.onTargetChanged(false);
+    };
+  }, []);
   const className = classnames(
     "nz-zones-target-target",
     targeted && "nz-targeted",
