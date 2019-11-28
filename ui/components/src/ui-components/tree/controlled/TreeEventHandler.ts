@@ -15,6 +15,15 @@ import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
 import { ITreeNodeLoader } from "./TreeNodeLoader";
 import { TreeModelSource } from "./TreeModelSource";
+import { TreeModelNode } from "./TreeModel";
+
+/**
+ * Params used for tree node editing.
+ * @alpha
+ */
+export interface TreeEditingParams {
+  onNodeUpdated: (node: TreeModelNode, newValue: string) => void;
+}
 
 /**
  * Data structure that describes tree event handler params.
@@ -24,6 +33,7 @@ export interface TreeEventHandlerParams {
   modelSource: TreeModelSource;
   nodeLoader: ITreeNodeLoader;
   collapsedChildrenDisposalEnabled?: boolean;
+  editingParams?: TreeEditingParams;
 }
 
 /**
@@ -32,12 +42,14 @@ export interface TreeEventHandlerParams {
  */
 export class TreeEventHandler implements TreeEvents {
   private _modelMutator: TreeModelMutator;
+  private _editingParams?: TreeEditingParams;
 
   private _disposed = new Subject();
   private _selectionReplaced = new Subject();
 
   constructor(params: TreeEventHandlerParams) {
     this._modelMutator = new TreeModelMutator(params.modelSource, params.nodeLoader, !!params.collapsedChildrenDisposalEnabled);
+    this._editingParams = params.editingParams;
   }
 
   public dispose() {
@@ -88,5 +100,12 @@ export class TreeEventHandler implements TreeEvents {
 
   public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined {
     return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
+  }
+
+  public onDelayedNodeClick({ nodeId }: TreeNodeEvent) {
+    if (this._editingParams === undefined)
+      return;
+
+    this._modelMutator.activateEditing(nodeId, this._editingParams.onNodeUpdated);
   }
 }

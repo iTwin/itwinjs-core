@@ -6,17 +6,17 @@
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import classnames from "classnames";
 import { TreeNodePlaceholder, isPromiseLike, CommonProps, useEffectSkipFirst } from "@bentley/ui-core";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { TreeModelNode } from "../TreeModel";
 import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { CellEditingEngine } from "./CellEditingEngine";
 import { UiComponents } from "../../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
 import "../../component/NodeContent.scss";
+import { TreeNodeEditorRenderer, TreeNodeEditor } from "./TreeNodeEditor";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal
@@ -26,9 +26,9 @@ export interface TreeNodeContentProps extends CommonProps {
   showDescription?: boolean;
   highlightProps?: HighlightableTreeNodeProps;
   valueRendererManager: PropertyValueRendererManager;
-  cellEditing?: CellEditingEngine;
 
   onLabelRendered?: (node: TreeModelNode) => void;
+  nodeEditorRenderer?: TreeNodeEditorRenderer;
 }
 
 /** React component for displaying [[TreeNode]] label
@@ -36,8 +36,6 @@ export interface TreeNodeContentProps extends CommonProps {
  */
 // tslint:disable-next-line: variable-name
 export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeContentProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const label = useLabel(props.node, props.valueRendererManager, props.highlightProps);
   useEffect(() => {
     if (props.onLabelRendered) {
@@ -46,11 +44,17 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
   }, [label, props.node]);
 
   // handle cell editing
-  let editor: JSX.Element | undefined;
-  if (props.cellEditing && props.cellEditing.isEditingEnabled(props.node)) {
+  let editor: React.ReactNode;
+  if (props.node.editingInfo) {
     // if cell editing is enabled, return editor instead of the label
     const style = getStyle(props.node.item.style, props.node.isSelected);
-    editor = props.cellEditing.renderEditor(props.node, style);
+    const editorProps = {
+      node: props.node,
+      onCancel: props.node.editingInfo.onCancel,
+      onCommit: props.node.editingInfo.onCommit,
+      style,
+    };
+    editor = props.nodeEditorRenderer ? props.nodeEditorRenderer(editorProps) : <TreeNodeEditor {...editorProps} />;
   }
 
   const isDescriptionEnabled = props.node.item.description && props.showDescription;
@@ -67,7 +71,7 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
   );
 
   return (
-    <div ref={containerRef} className={containerClassName} style={props.style}>
+    <div className={containerClassName} style={props.style}>
       {editor ? editor : label}
       {isDescriptionEnabled ?
         <div className={descriptionClassName}>

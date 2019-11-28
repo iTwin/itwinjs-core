@@ -52,6 +52,11 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     if (this._wrappedHandler.onNodeCollapsed)
       this._wrappedHandler.onNodeCollapsed(event);
   }
+  public onDelayedNodeClick(event: TreeNodeEvent) {
+    // istanbul ignore else
+    if (this._wrappedHandler.onDelayedNodeClick)
+      this._wrappedHandler.onDelayedNodeClick(event);
+  }
 
   public onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent) {
     return this._wrappedHandler.onCheckboxStateChanged ? this._wrappedHandler.onCheckboxStateChanged(event) : /* istanbul ignore next */ undefined;

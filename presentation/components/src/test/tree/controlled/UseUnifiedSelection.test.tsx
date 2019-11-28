@@ -176,6 +176,17 @@ describe("UnifiedSelectionEventHandler", () => {
 
   });
 
+  describe("onDelayedNodeClick", () => {
+
+    it("passes event to wrapped handler", () => {
+      const event = { nodeId: "TestId" };
+      treeEventsMock.setup((x) => x.onDelayedNodeClick!(event)).verifiable(moq.Times.once());
+      unifiedEventHandler.onDelayedNodeClick(event);
+      treeEventsMock.verifyAll();
+    });
+
+  });
+
   describe("onSelectionModified", () => {
 
     it("passes event to wrapped handler", () => {

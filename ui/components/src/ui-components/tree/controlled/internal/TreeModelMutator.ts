@@ -10,6 +10,7 @@ import { CheckboxStateChange } from "../TreeEvents";
 import { TreeModelSource } from "../TreeModelSource";
 import { ITreeNodeLoader, LoadedNodeHierarchy } from "../TreeNodeLoader";
 import { TreeNodeItem } from "../../TreeDataProvider";
+import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 
 /** @internal */
 export class TreeModelMutator {
@@ -107,5 +108,36 @@ export class TreeModelMutator {
         }
       }
     });
+  }
+
+  public activateEditing(nodeId: string, onCommit: (node: TreeModelNode, newValue: string) => void) {
+    this._modelSource.modifyModel((model) => {
+      const node = model.getNode(nodeId);
+      if (!node)
+        return;
+
+      if (node.item.isEditable) {
+        node.editingInfo = this.createNodeEditingInfo(nodeId, onCommit);
+      }
+    });
+  }
+
+  private createNodeEditingInfo(nodeId: string, onCommit: (node: TreeModelNode, newValue: string) => void): TreeModelNodeEditingInfo {
+    const closeEditing = () => {
+      this._modelSource.modifyModel((model) => {
+        const node = model.getNode(nodeId);
+        // istanbul ignore if
+        if (!node)
+          return;
+        node.editingInfo = undefined;
+      });
+    };
+
+    const onEditCommitted = (node: TreeModelNode, newValue: string) => {
+      onCommit(node, newValue);
+      closeEditing();
+    };
+
+    return { onCommit: onEditCommitted, onCancel: closeEditing };
   }
 }

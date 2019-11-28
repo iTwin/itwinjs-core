@@ -1328,6 +1328,8 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     descriptionEnabled?: boolean;
     // (undocumented)
     imageLoader?: ITreeImageLoader;
+    // (undocumented)
+    nodeEditorRenderer?: TreeNodeEditorRenderer;
 }
 
 // @alpha
@@ -1950,6 +1952,8 @@ export interface MutableTreeModelNode extends TreeModelNode {
     checkbox: MutableCheckBoxInfo;
     // (undocumented)
     description: string;
+    // (undocumented)
+    editingInfo?: TreeModelNodeEditingInfo;
     // (undocumented)
     isExpanded: boolean;
     // (undocumented)
@@ -3378,6 +3382,12 @@ export interface TreeDragDropProps<DragDropObject = any> {
 // @beta
 export type TreeDragDropType = {} | TreeNodeItem | TreeDataProvider;
 
+// @alpha
+export interface TreeEditingParams {
+    // (undocumented)
+    onNodeUpdated: (node: TreeModelNode, newValue: string) => void;
+}
+
 // @internal
 export class TreeEventDispatcher implements TreeActions {
     constructor(treeEvents: TreeEvents, nodeLoader: ITreeNodeLoader, selectionMode: SelectionMode, getVisibleNodes?: () => VisibleTreeNodes);
@@ -3405,6 +3415,8 @@ export class TreeEventHandler implements TreeEvents {
     // (undocumented)
     onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined;
     // (undocumented)
+    onDelayedNodeClick({ nodeId }: TreeNodeEvent): void;
+    // (undocumented)
     onNodeCollapsed({ nodeId }: TreeNodeEvent): void;
     // (undocumented)
     onNodeExpanded({ nodeId }: TreeNodeEvent): void;
@@ -3419,6 +3431,8 @@ export interface TreeEventHandlerParams {
     // (undocumented)
     collapsedChildrenDisposalEnabled?: boolean;
     // (undocumented)
+    editingParams?: TreeEditingParams;
+    // (undocumented)
     modelSource: TreeModelSource;
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
@@ -3428,6 +3442,8 @@ export interface TreeEventHandlerParams {
 export interface TreeEvents {
     // (undocumented)
     onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    // (undocumented)
+    onDelayedNodeClick?(event: TreeNodeEvent): void;
     // (undocumented)
     onNodeCollapsed?(event: TreeNodeEvent): void;
     // (undocumented)
@@ -3468,6 +3484,8 @@ export interface TreeModelNode {
     // (undocumented)
     readonly description: string | undefined;
     // (undocumented)
+    readonly editingInfo?: TreeModelNodeEditingInfo;
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly isExpanded: boolean;
@@ -3483,6 +3501,14 @@ export interface TreeModelNode {
     readonly numChildren: number | undefined;
     // (undocumented)
     readonly parentId: string | undefined;
+}
+
+// @alpha
+export interface TreeModelNodeEditingInfo {
+    // (undocumented)
+    onCancel: () => void;
+    // (undocumented)
+    onCommit: (node: TreeModelNode, newValue: string) => void;
 }
 
 // @alpha
@@ -3714,8 +3740,6 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @alpha
 export interface TreeRendererProps {
-    // (undocumented)
-    cellEditing?: CellEditingEngine_2;
     // (undocumented)
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     // (undocumented)

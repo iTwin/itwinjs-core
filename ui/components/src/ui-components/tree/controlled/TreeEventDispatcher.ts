@@ -173,7 +173,14 @@ export class TreeEventDispatcher implements TreeActions {
   }
 
   public onNodeClicked(nodeId: string, event: React.MouseEvent<Element, MouseEvent>) {
+    const node = this._getVisibleNodes ? this._getVisibleNodes().getModel().getNode(nodeId) : undefined;
+    const isNodeSelected = node ? node.isSelected : false;
     this._selectionManager.onNodeClicked(nodeId, event);
+
+    // if clicked node was already selected fire delayed click event
+    if (isNodeSelected && this._treeEvents.onDelayedNodeClick !== undefined) {
+      this._treeEvents.onDelayedNodeClick({ nodeId });
+    }
   }
 
   public onNodeMouseDown(nodeId: string) {

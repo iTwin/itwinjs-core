@@ -26,6 +26,8 @@ export interface TreeModelNode {
   readonly label: string;
   readonly isSelected: boolean;
 
+  readonly editingInfo?: TreeModelNodeEditingInfo;
+
   readonly checkbox: CheckBoxInfo;
 
   readonly item: TreeNodeItem;
@@ -55,9 +57,20 @@ export interface MutableTreeModelNode extends TreeModelNode {
   label: string;
   isSelected: boolean;
 
+  editingInfo?: TreeModelNodeEditingInfo;
+
   checkbox: MutableCheckBoxInfo;
 
   item: TreeNodeItem;
+}
+
+/**
+ * Data structure that holds callbacks used for tree node editing.
+ * @alpha
+ */
+export interface TreeModelNodeEditingInfo {
+  onCommit: (node: TreeModelNode, newValue: string) => void;
+  onCancel: () => void;
 }
 
 /**

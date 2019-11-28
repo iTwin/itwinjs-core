@@ -329,6 +329,7 @@ public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
 internal;TreeDataSource
 beta;TreeDragDropProps
 beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
+alpha;TreeEditingParams
 internal;TreeEventDispatcher 
 alpha;TreeEventHandler 
 alpha;TreeEventHandlerParams
@@ -336,6 +337,7 @@ alpha;TreeEvents
 public;TreeImageLoader 
 alpha;TreeModel
 alpha;TreeModelNode
+alpha;TreeModelNodeEditingInfo
 alpha;TreeModelNodeInput
 alpha;TreeModelNodePlaceholder
 alpha;TreeModelRootNode

@@ -15,7 +15,6 @@ import { timer } from "rxjs/internal/observable/timer";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { CellEditingEngine } from "./CellEditingEngine";
 import { TreeActions } from "../TreeActions";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
@@ -33,7 +32,6 @@ const NODE_LOAD_DELAY = 500;
  * @alpha
  */
 export interface TreeRendererProps {
-  cellEditing?: CellEditingEngine;
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
   nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;

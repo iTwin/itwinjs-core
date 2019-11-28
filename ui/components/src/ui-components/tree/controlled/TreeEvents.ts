@@ -16,6 +16,8 @@ export interface TreeEvents {
   onNodeExpanded?(event: TreeNodeEvent): void;
   onNodeCollapsed?(event: TreeNodeEvent): void;
 
+  onDelayedNodeClick?(event: TreeNodeEvent): void;
+
   onSelectionModified?(event: TreeSelectionModificationEvent): Subscription | undefined;
   onSelectionReplaced?(event: TreeSelectionReplacementEvent): Subscription | undefined;
 
