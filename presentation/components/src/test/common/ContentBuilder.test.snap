@@ -278,7 +278,7 @@ PropertyRecord {
         "value": Object {
           "members": Object {
             "Movies": PropertyRecord {
-              "description": "some display value 1 with link testLink.com",
+              "description": "some display value 1 with link www.testLink.com",
               "isReadonly": true,
               "links": Object {
                 "matcher": [Function],
@@ -289,7 +289,7 @@ PropertyRecord {
                 "typename": "float",
               },
               "value": Object {
-                "displayValue": "some display value 1 with link testLink.com",
+                "displayValue": "some display value 1 with link www.testLink.com",
                 "value": "some value 1",
                 "valueFormat": 0,
               },
@@ -309,7 +309,7 @@ PropertyRecord {
         "value": Object {
           "members": Object {
             "Movies": PropertyRecord {
-              "description": "some display value 2 with link testLinkTwo.com",
+              "description": "some display value 2 with link http://www.testLinkTwo.com",
               "isReadonly": true,
               "links": Object {
                 "matcher": [Function],
@@ -320,7 +320,7 @@ PropertyRecord {
                 "typename": "float",
               },
               "value": Object {
-                "displayValue": "some display value 2 with link testLinkTwo.com",
+                "displayValue": "some display value 2 with link http://www.testLinkTwo.com",
                 "value": "some value 2",
                 "valueFormat": 0,
               },
