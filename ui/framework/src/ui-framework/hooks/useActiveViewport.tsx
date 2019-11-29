@@ -10,9 +10,7 @@ import { IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley
 /** React hook that maintains the active viewport.
  * @beta
  */
-// istanbul ignore next
 export function useActiveViewport(): ScreenViewport | undefined {
-  // active viewport changed
   const [activeViewport, setActiveViewport] = useState(IModelApp.viewManager.selectedView);
   useEffect(() => {
     const onSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
@@ -23,6 +21,6 @@ export function useActiveViewport(): ScreenViewport | undefined {
     return () => {
       IModelApp.viewManager.onSelectedViewportChanged.removeListener(onSelectedViewportChanged);
     };
-  });
+  }, []);
   return activeViewport;
 }
