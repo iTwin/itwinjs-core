@@ -41,7 +41,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
 
     // set day to be start of day
     const thisDay = new Date(this.timeOfDay);
-    thisDay.setHours(0, 0, 0, 0);
+    thisDay.setUTCHours(0, 0, 0, 0);
     this._day = thisDay;
 
     this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
@@ -65,7 +65,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
 
   public set day(dayVal: Date) {
     const thisDay = new Date(dayVal);
-    thisDay.setHours(0, 0, 0, 0);
+    thisDay.setUTCHours(0, 0, 0, 0);
     this._day = thisDay;
   }
 
@@ -103,8 +103,8 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // return date to nearest minute
     const utcSunrise = calculateSunriseOrSunset(this.day, this._cartographicCenter, true);
     const zone = this.getZone(this._cartographicCenter);
-    utcSunrise.setHours(utcSunrise.getUTCHours() + zone);
-    utcSunrise.setSeconds(0, 0);
+    utcSunrise.setUTCHours(utcSunrise.getUTCHours() + zone);
+    utcSunrise.setUTCSeconds(0, 0);
     return new Date(utcSunrise);
   }
 
@@ -113,8 +113,8 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // return new Date(calculateSunriseOrSunset(this.day, this._cartographicCenter, false).setSeconds(0, 0));
     const utcSunset = calculateSunriseOrSunset(this.day, this._cartographicCenter, false);
     const zone = this.getZone(this._cartographicCenter);
-    utcSunset.setHours(utcSunset.getUTCHours() + zone);
-    utcSunset.setSeconds(0, 0);
+    utcSunset.setUTCHours(utcSunset.getUTCHours() + zone);
+    utcSunset.setUTCSeconds(0, 0);
     return new Date(utcSunset);
   }
 

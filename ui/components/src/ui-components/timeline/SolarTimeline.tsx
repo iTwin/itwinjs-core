@@ -508,7 +508,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     const date = new Date(dayStartMs + this.state.currentTimeOffsetMs);
 
     // update the date (time)
-    date.setHours(hours, minutes);
+    date.setUTCHours(hours, minutes);
 
     // notify the provider
     if (this.props.dataProvider.onTimeChanged) {
