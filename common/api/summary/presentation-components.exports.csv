@@ -34,6 +34,7 @@ public;treeWithFilteringSupport
 public;TreeWithFilteringSupportProps
 public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
+alpha;UnifiedSelectionTreeEventHandler 
 alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
 alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
 alpha;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader

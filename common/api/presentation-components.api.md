@@ -23,6 +23,7 @@ import { IPropertyDataProvider } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
 import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
+import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -38,16 +39,22 @@ import * as React from 'react';
 import { RowItem } from '@bentley/ui-components';
 import { Ruleset } from '@bentley/presentation-common';
 import { RulesetsFactory } from '@bentley/presentation-common';
+import { SelectionChangeType } from '@bentley/presentation-frontend';
 import { SelectionHandler } from '@bentley/presentation-frontend';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SortDirection } from '@bentley/ui-core';
+import { Subscription } from '@bentley/ui-components';
 import { TableDataChangeEvent } from '@bentley/ui-components';
 import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
+import { TreeCheckboxStateChangeEvent } from '@bentley/ui-components';
 import { TreeEvents } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
+import { TreeNodeEvent } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeProps } from '@bentley/ui-components';
+import { TreeSelectionModificationEvent } from '@bentley/ui-components';
+import { TreeSelectionReplacementEvent } from '@bentley/ui-components';
 import { ViewportProps } from '@bentley/ui-components';
 
 // @public
@@ -321,6 +328,35 @@ export interface TreeWithUnifiedSelectionProps {
     // @internal (undocumented)
     selectionHandler?: SelectionHandler;
 }
+
+// @alpha
+export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
+    constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource, selectionHandler: SelectionHandler, dataProvider: IPresentationTreeDataProvider);
+    protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    protected getKeys(nodes: TreeNodeItem[]): Keys;
+    // (undocumented)
+    protected getModel(): import("@bentley/ui-components").TreeModel;
+    // (undocumented)
+    protected getNodeKey(node: TreeNodeItem): NodeKey;
+    // (undocumented)
+    onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    // (undocumented)
+    onDelayedNodeClick(event: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeCollapsed(event: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeExpanded(event: TreeNodeEvent): void;
+    // (undocumented)
+    onSelectionModified(event: TreeSelectionModificationEvent): Subscription;
+    // (undocumented)
+    onSelectionReplaced(event: TreeSelectionReplacementEvent): Subscription;
+    // (undocumented)
+    selectNodes(): void;
+    protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>): boolean;
+    }
 
 // @alpha
 export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {

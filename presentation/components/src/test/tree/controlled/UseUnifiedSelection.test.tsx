@@ -10,7 +10,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
-  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent,
+  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent, MutableTreeModel,
 } from "@bentley/ui-components";
 import {
   SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler,
@@ -183,6 +183,17 @@ describe("UnifiedSelectionEventHandler", () => {
       treeEventsMock.setup((x) => x.onDelayedNodeClick!(event)).verifiable(moq.Times.once());
       unifiedEventHandler.onDelayedNodeClick(event);
       treeEventsMock.verifyAll();
+    });
+
+  });
+
+  describe("getModel", () => {
+
+    it("returns tree model", () => {
+      const treeModel = new MutableTreeModel();
+      treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModel);
+      const returnedModel = (unifiedEventHandler as any).getModel();
+      expect(returnedModel).to.be.deep.eq(treeModel);
     });
 
   });

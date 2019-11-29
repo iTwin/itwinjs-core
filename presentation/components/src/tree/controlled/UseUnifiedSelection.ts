@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useMemo } from "react";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { Keys, StandardNodeTypes, ECInstanceNodeKey, NodeKey } from "@bentley/presentation-common";
+import { Keys, StandardNodeTypes, ECInstanceNodeKey, NodeKey, KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, SelectionChangeType } from "@bentley/presentation-frontend";
 import {
   TreeNodeItem, TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent, TreeModelSource, MutableTreeModel,
@@ -15,7 +15,14 @@ import {
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
- * @internal
+ * Tree event handler that handles unified selection.
+ * Extends wrapped tree event handler's functionality by adding, removing or replacing nodes in
+ * unified selection. It also reacts to unified selection changes and selects/deselects tree nodes
+ * according changes.
+ *
+ * **Note:** conditions used to determine if node is selected and nodes that should be added to
+ * unified selection can be controlled by overriding 'shouldSelectNode' and 'createKeysForSelection' methods.
+ * @alpha
  */
 export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
   private _wrappedHandler: TreeEvents;
@@ -71,8 +78,8 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
 
     const subscription = event.modifications.subscribe({
       next: ({ selectedNodeItems, deselectedNodeItems }) => {
-        this._selectionHandler.addToSelection(this.getKeys(selectedNodeItems));
-        this._selectionHandler.removeFromSelection(this.getKeys(deselectedNodeItems));
+        this._selectionHandler.addToSelection(this.createKeysForSelection(selectedNodeItems, SelectionChangeType.Add));
+        this._selectionHandler.removeFromSelection(this.createKeysForSelection(deselectedNodeItems, SelectionChangeType.Remove));
       },
       complete: () => {
         this._selecting = false;
@@ -97,10 +104,10 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
       next: ({ selectedNodeItems }) => {
         if (firstEmission) {
           firstEmission = false;
-          this._selectionHandler.replaceSelection(this.getKeys(selectedNodeItems));
+          this._selectionHandler.replaceSelection(this.createKeysForSelection(selectedNodeItems, SelectionChangeType.Replace));
           return;
         }
-        this._selectionHandler.addToSelection(this.getKeys(selectedNodeItems));
+        this._selectionHandler.addToSelection(this.createKeysForSelection(selectedNodeItems, SelectionChangeType.Add));
       },
       complete: () => {
         this._selecting = false;
@@ -109,6 +116,72 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
 
     this.saveOngoingSubscription(subscription, innerSubscription);
     return subscription;
+  }
+
+  public selectNodes() {
+    const selection = this._selectionHandler.getSelection();
+
+    this._skipModelChange = true;
+    this._modelSource.modifyModel((model: MutableTreeModel) => {
+      for (const node of model.iterateTreeModelNodes()) {
+        const shouldBeSelected = this.shouldSelectNode(node.item, selection);
+        if (!node.isSelected && shouldBeSelected) {
+          node.isSelected = true;
+        } else if (node.isSelected && !shouldBeSelected) {
+          node.isSelected = false;
+        }
+      }
+    });
+    this._skipModelChange = false;
+  }
+
+  protected getModel() {
+    return this._modelSource.getModel();
+  }
+
+  protected getNodeKey(node: TreeNodeItem) {
+    return this._dataProvider.getNodeKey(node);
+  }
+
+  /**
+   * Determines if node should be selected.
+   * Default implementation returns true if node key is in selection
+   * or node is ECInstance node and instance key is in selection.
+   */
+  protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>) {
+    const nodeKey = this.getNodeKey(node);
+    if (nodeKey === undefined)
+      return false;
+
+    // consider node selected if it's key is in selection
+    if (selection.has(nodeKey))
+      return true;
+
+    // ... or if it's an ECInstance node and instance key is in selection
+    if (nodeKey.type === StandardNodeTypes.ECInstanceNode) {
+      const instanceKey = (nodeKey as ECInstanceNodeKey).instanceKey;
+      if (selection.has(instanceKey))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns node keys that should be added, removed or used to replace unified selection.
+   * Default implementation returns keys of supplied nodes.
+   */
+  protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType) {
+    return this.getKeys(nodes);
+  }
+
+  protected getKeys(nodes: TreeNodeItem[]): Keys {
+    const nodeKeys: NodeKey[] = nodes.map((node) => this.getNodeKey(node));
+    return nodeKeys.map((key) => {
+      if (key.type === StandardNodeTypes.ECInstanceNode)
+        return (key as ECInstanceNodeKey).instanceKey;
+      return key;
+    });
   }
 
   private onModelChanged() {
@@ -128,41 +201,6 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     this.selectNodes();
   }
 
-  public selectNodes() {
-    const selection = this._selectionHandler.getSelection();
-
-    const shouldSelectNode = (node: TreeNodeItem) => {
-      // consider node selected if it's key is in selection
-      const nodeKey = this._dataProvider.getNodeKey(node);
-      if (nodeKey === undefined)
-        return false;
-      if (selection.has(nodeKey))
-        return true;
-
-      // ... or if it's an ECInstance node and instance key is in selection
-      if (nodeKey.type === StandardNodeTypes.ECInstanceNode) {
-        const instanceKey = (nodeKey as ECInstanceNodeKey).instanceKey;
-        if (selection.has(instanceKey))
-          return true;
-      }
-
-      return false;
-    };
-
-    this._skipModelChange = true;
-    this._modelSource.modifyModel((model: MutableTreeModel) => {
-      for (const node of model.iterateTreeModelNodes()) {
-        const shouldBeSelected = shouldSelectNode(node.item);
-        if (!node.isSelected && shouldBeSelected) {
-          node.isSelected = true;
-        } else if (node.isSelected && !shouldBeSelected) {
-          node.isSelected = false;
-        }
-      }
-    });
-    this._skipModelChange = false;
-  }
-
   private saveOngoingSubscription(subscription: Subscription, innerSubscription?: Subscription) {
     this._ongoingSubscriptions.add(subscription);
     if (innerSubscription)
@@ -173,15 +211,6 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
   private cancelOngoingSubscriptions() {
     this._ongoingSubscriptions.forEach((subscription) => subscription.unsubscribe());
     this._ongoingSubscriptions.clear();
-  }
-
-  private getKeys(nodes: TreeNodeItem[]): Keys {
-    const nodeKeys: NodeKey[] = nodes.map((node) => this._dataProvider.getNodeKey(node));
-    return nodeKeys.map((key) => {
-      if (key.type === StandardNodeTypes.ECInstanceNode)
-        return (key as ECInstanceNodeKey).instanceKey;
-      return key;
-    });
   }
 }
 

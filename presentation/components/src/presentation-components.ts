@@ -51,7 +51,7 @@ export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
 export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
-export { useControlledTreeUnifiedSelection } from "./tree/controlled/UseUnifiedSelection";
+export { useControlledTreeUnifiedSelection, UnifiedSelectionTreeEventHandler } from "./tree/controlled/UseUnifiedSelection";
 export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
