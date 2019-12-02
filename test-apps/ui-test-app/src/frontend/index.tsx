@@ -16,7 +16,6 @@ import {
   IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, FrontendRequestContext, OidcBrowserClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { SavedViews } from "@bentley/saved-views";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -197,8 +196,6 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, undefined, "frameworkState");
-
-    await SavedViews.initialize(IModelApp.i18n);
 
     await this.initializeOidc();
 

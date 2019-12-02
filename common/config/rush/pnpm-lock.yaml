@@ -3,7 +3,6 @@ dependencies:
   '@bentley/icons-generic': 0.0.43
   '@bentley/icons-generic-webfont': 0.0.43
   '@bentley/imodeljs-native': 1.9.3
-  '@bentley/saved-views': 1.8.5
   '@microsoft/api-extractor': 7.6.2
   '@openid/appauth': 1.2.6
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -103,7 +102,7 @@ dependencies:
   '@types/object-hash': 1.3.0
   '@types/puppeteer': 1.20.2
   '@types/qs': 6.9.0
-  '@types/react': 16.9.13
+  '@types/react': 16.9.14
   '@types/react-autosuggest': 9.3.13
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': 16.9.4
@@ -442,60 +441,6 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha1-/xjOYWfrt/0dcSHPuRbrty9EzG8=
-  /@bentley/presentation-components/1.8.0:
-    dependencies:
-      lodash: 4.17.15
-      react: 16.12.0
-      react-dom: 16.12.0_react@16.12.0
-    dev: false
-    peerDependencies:
-      '@bentley/bentleyjs-core': ^1.8.0
-      '@bentley/imodeljs-common': ^1.8.0
-      '@bentley/imodeljs-frontend': ^1.8.0
-      '@bentley/imodeljs-i18n': ^1.8.0
-      '@bentley/presentation-common': ^1.8.0
-      '@bentley/presentation-frontend': ^1.8.0
-      '@bentley/ui-components': ^1.8.0
-      '@bentley/ui-core': ^1.8.0
-    resolution:
-      integrity: sha1-Nod9QDqaXm00+lX0usfoxMnLLD0=
-  /@bentley/saved-views/1.8.5:
-    dependencies:
-      '@bentley/icons-generic': 0.0.43
-      '@bentley/icons-generic-webfont': 0.0.43
-      '@bentley/presentation-components': 1.8.0
-      classnames: 2.2.6
-      immutable: 3.8.2
-      lodash: 4.17.15
-      oidc-client: 1.9.1
-      react: 16.12.0
-      react-dnd: 5.0.0_react@16.12.0
-      react-dnd-html5-backend: 5.0.1
-      react-dom: 16.12.0_react@16.12.0
-      react-redux: 5.1.2_react@16.12.0+redux@4.0.4
-      react-resize-detector: 3.4.0_react@16.12.0
-      react-split-pane: 0.1.77
-      react-virtualized-auto-sizer: 1.0.2_react-dom@16.12.0+react@16.12.0
-      react-window: 1.8.5_react-dom@16.12.0+react@16.12.0
-      redux: 4.0.4
-      svg-sprite-loader: 3.9.2
-    dev: false
-    peerDependencies:
-      '@bentley/bentleyjs-core': ^1.8.0
-      '@bentley/geometry-core': ^1.8.0
-      '@bentley/imodeljs-clients': ^1.8.0
-      '@bentley/imodeljs-common': ^1.8.0
-      '@bentley/imodeljs-frontend': ^1.8.0
-      '@bentley/imodeljs-i18n': ^1.8.0
-      '@bentley/presentation-common': ^1.8.0
-      '@bentley/presentation-frontend': ^1.8.0
-      '@bentley/ui-abstract': ^1.8.0
-      '@bentley/ui-components': ^1.8.0
-      '@bentley/ui-core': ^1.8.0
-      '@bentley/ui-framework': ^1.8.0
-      '@bentley/ui-ninezone': ^1.8.0
-    resolution:
-      integrity: sha1-TsMZY2yzvVne9GiHlTUBaIkuQ04=
   /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@3.6.4:
     dependencies:
       '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@3.6.4
@@ -811,7 +756,7 @@ packages:
   /@types/enzyme/3.9.3:
     dependencies:
       '@types/cheerio': 0.22.14
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==
@@ -894,7 +839,7 @@ packages:
       integrity: sha512-cS5owqtwzLN5kY+l+KgKdRJ/Cee8tlmQoGQuIE9tWnSmS3JMKzmxo2HIAk2wODMifGwO20d62xZQLYz+RLfXmw==
   /@types/hoist-non-react-statics/3.3.1:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       hoist-non-react-statics: 3.3.1
     dev: false
     resolution:
@@ -1054,32 +999,32 @@ packages:
       integrity: sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
   /@types/react-autosuggest/9.3.13:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-J1RB5KAIk6vOJ+TkIE+EqjCWBjXxjobzeA6D9KrS64kzrt6ixC6uSoKMFnG6ByeWoC+1g0756NILCpIpTV62dw==
   /@types/react-data-grid/4.0.2:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==
   /@types/react-dom/16.9.4:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-fya9xteU/n90tda0s+FtN5Ym4tbgxpq/hb/Af24dvs6uYnYn+fspaxw5USlw0R8apDNwxsqumdRoCoKitckQqw==
   /@types/react-highlight-words/0.11.1:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-zBrtCb0qhn6XqmkIPZhDzLjZ41k4ppeGoC5iaZotAwBEThGO0BrcpRTLWX69oWplnuBsbiNFvHj0IcT6gl9mdg==
   /@types/react-redux/7.1.5:
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       hoist-non-react-statics: 3.3.1
       redux: 4.0.4
     dev: false
@@ -1087,14 +1032,14 @@ packages:
       integrity: sha512-ZoNGQMDxh5ENY7PzU7MVonxDzS1l/EWiy8nUhDqxFqUZn4ovboCyvk4Djf68x6COb7vhGTKjyjxHxtFdAA5sUA==
   /@types/react-resize-detector/3.1.1:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-3FVExywb3kC0p+dKRd2IC6wmUlfurx/9J0b1mtHd0rigwZWNJC79fnbTJaMmLNM8PhhgqDwaNOhFdv0u9YGAzA==
   /@types/react-router-dom/4.3.5:
     dependencies:
       '@types/history': 4.7.3
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-router': 5.1.3
     dev: false
     resolution:
@@ -1102,42 +1047,42 @@ packages:
   /@types/react-router/5.1.3:
     dependencies:
       '@types/history': 4.7.3
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-0gGhmerBqN8CzlnDmSgGNun3tuZFXerUclWkqEhozdLaJtfcJRUTGkKaEKk+/MpHd1KDS1+o2zb/3PkBUiv2qQ==
   /@types/react-test-renderer/16.9.1:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-nCXQokZN1jp+QkoDNmDZwoWpKY8HDczqevIDO4Uv9/s9rbGPbSpy8Uaxa5ixHKkcm/Wt0Y9C3wCxZivh4Al+rQ==
   /@types/react-virtualized-auto-sizer/1.0.0:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-NMErdIdSnm2j/7IqMteRiRvRulpjoELnXWUwdbucYCz84xG9PHcoOrr7QfXwB/ku7wd6egiKFrzt/+QK4Imeeg==
   /@types/react-virtualized/9.21.5:
     dependencies:
       '@types/prop-types': 15.7.3
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-oCoGJzkW90YQkvXwvtkCBDN0TTYvaQs217TJDOh+VipzJ9iiHD/NpD0ILvB844+ewf3/4xYOI5Oj5kj5m6J/4w==
   /@types/react-window/1.8.1:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
     dev: false
     resolution:
       integrity: sha512-V3k1O5cbfZIRa0VVbQ81Ekq/7w42CK1SuiB9U1oPMTxv270D9qUn7rHb3sZoqMkIJFfB1NZxaH7NRDlk+ToDsg==
-  /@types/react/16.9.13:
+  /@types/react/16.9.14:
     dependencies:
       '@types/prop-types': 15.7.3
       csstype: 2.6.7
     dev: false
     resolution:
-      integrity: sha512-LikzRslbiufJYHyzbHSW0GrAiff8QYLMBFeZmSxzCYGXKxi8m/1PHX+rsVOwhr7mJNq+VIu2Dhf7U6mjFERK6w==
+      integrity: sha512-Q4tW4RGmR+u/CgzR8VqZcsUWjP4Pz/LcHfs9AzSG+aBnwq8As3Bid3vG1eGGsXg/xuR2k2tqNlI8pzyV8kxe0g==
   /@types/request-promise-native/1.0.17:
     dependencies:
       '@types/request': 2.48.3
@@ -1223,7 +1168,7 @@ packages:
       integrity: sha512-Z7AVMMlkI8NTWF0qGhC4QIX0zkV/+y0J8x7b/RsHrN0310+YNjoJd8UrApCiGBCWtKjxS9QhNqLi2UJNToh5hA==
   /@types/testing-library__react-hooks/3.1.0:
     dependencies:
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-test-renderer': 16.9.1
     dev: false
     resolution:
@@ -12385,7 +12330,7 @@ packages:
       schema-utils: 1.0.0
       serialize-javascript: 1.9.1
       source-map: 0.6.1
-      terser: 4.4.1
+      terser: 4.4.2
       webpack: 4.41.2_webpack@4.41.2
       webpack-sources: 1.4.3
       worker-farm: 1.7.0
@@ -12396,7 +12341,7 @@ packages:
       webpack: ^4.0.0
     resolution:
       integrity: sha512-ZXmmfiwtCLfz8WKZyYUuuHf3dMYEjg8NrjHMb0JqHVHVOSkzp3cW2/XG1fP3tRhqEqSzMwzzRQGtAPbs4Cncxg==
-  /terser/4.4.1:
+  /terser/4.4.2:
     dependencies:
       commander: 2.20.3
       source-map: 0.6.1
@@ -12406,7 +12351,7 @@ packages:
       node: '>=6.0.0'
     hasBin: true
     resolution:
-      integrity: sha512-e05giplw+8sIYh50qXYHZmr0b76O5dOSm9JwSDebGFLri4ItYzxsnumiAK+yuI56R+H7uIjT9KbVEKNkrprzHw==
+      integrity: sha512-Uufrsvhj9O1ikwgITGsZ5EZS6qPokUOkCegS7fYOdGTv+OA90vndUbU6PEjr5ePqHfNUbGyMO7xyIZv2MhsALQ==
   /test-exclude/5.2.3:
     dependencies:
       glob: 7.1.6
@@ -14438,7 +14383,7 @@ packages:
       '@types/chai': 4.2.5
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       chai: 4.2.0
       mocha: 5.2.0
       null-loader: 0.1.1
@@ -14801,7 +14746,7 @@ packages:
     dependencies:
       '@types/classnames': 2.2.9
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/react-redux': 7.1.5
       classnames: 2.2.6
@@ -14960,7 +14905,7 @@ packages:
       '@types/faker': 4.1.8
       '@types/lodash': 4.14.149
       '@types/mocha': 5.2.7
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/sinon': 7.5.1
       '@types/sinon-chai': 3.2.3
@@ -15083,7 +15028,7 @@ packages:
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.43
       '@types/bunyan': 1.8.6
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       autoprefixer: 8.6.5
       electron: 4.2.12
@@ -15278,7 +15223,7 @@ packages:
       '@types/linkify-it': 2.1.0
       '@types/lodash': 4.14.149
       '@types/mocha': 5.2.7
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': 16.9.4
       '@types/react-highlight-words': 0.11.1
@@ -15362,7 +15307,7 @@ packages:
       '@types/enzyme': 3.9.3
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-autosuggest': 9.3.13
       '@types/react-dom': 16.9.4
       '@types/sinon': 7.5.1
@@ -15425,7 +15370,7 @@ packages:
       '@types/lodash': 4.14.149
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/react-redux': 7.1.5
       '@types/react-resize-detector': 3.1.1
@@ -15489,7 +15434,7 @@ packages:
       '@types/highlight.js': 9.12.3
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/react-resize-detector': 3.1.1
       '@types/react-router-dom': 4.3.5
@@ -15551,11 +15496,10 @@ packages:
   'file:projects/ui-test-app.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': 0.0.43
-      '@bentley/saved-views': 1.8.5
       '@types/classnames': 2.2.9
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/react-redux': 7.1.5
       '@types/semver': 5.5.0
@@ -15582,7 +15526,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-test-app'
     resolution:
-      integrity: sha512-GxV9wvH4P+86qj7KZiPH8mZcLLVfQRWARKHlLMFUZtarwulfwWcNs70JuwgiVEA2g4A29BC0z+5EaV7yVZ28aA==
+      integrity: sha512-IBbcauEOZorZQDz1Cgn7DH6qewh0Qiea65jzwWJTFZt/BRi3N6bY8vmCuabmTxwGVCXcLWLZKdnWjHLTirkgmQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webpack-tools.tgz':
@@ -15592,7 +15536,7 @@ packages:
       '@types/glob': 5.0.36
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.9.13
+      '@types/react': 16.9.14
       '@types/react-dom': 16.9.4
       '@types/sinon': 7.5.1
       '@types/tar': 4.0.3
@@ -15706,7 +15650,6 @@ specifiers:
   '@bentley/icons-generic': ^0.0.43
   '@bentley/icons-generic-webfont': ^0.0.43
   '@bentley/imodeljs-native': 1.9.3
-  '@bentley/saved-views': 1.8.5
   '@microsoft/api-extractor': 7.6.2
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
