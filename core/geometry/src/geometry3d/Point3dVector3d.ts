@@ -591,6 +591,7 @@ export class Vector3d extends XYZ {
   public static createPolar(r: number, theta: Angle, z?: number): Vector3d {
     return Vector3d.create(r * theta.cos(), r * theta.sin(), z);
   }
+
   /**
    * Return a vector defined in spherical coordinates.
    * @param r sphere radius

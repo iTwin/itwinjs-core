@@ -15,7 +15,7 @@ import { Matrix3d } from "./Matrix3d";
 import { Point2d } from "./Point2dVector2d";
 import { Range3d, Range1d } from "./Range";
 import { AngleSweep } from "./AngleSweep";
-import { AxisIndex } from "../Geometry";
+import { AxisIndex, Geometry, AxisOrder } from "../Geometry";
 import { Angle } from "./Angle";
 import { UVSurface } from "./GeometryHandler";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
@@ -191,6 +191,7 @@ export class Ellipsoid {
    *    * xyz = xyz intersection coordinates points in space
    *    * thetaPhiRadians = sphere longitude and latitude in radians.
    * * For each optional array, caller must of course initialize an array (usually empty)
+   * * return 0 if ray length is too small.
    */
   public intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number {
     if (xyz)
@@ -199,9 +200,22 @@ export class Ellipsoid {
       thetaPhiRadians.length = 0;
     if (rayFractions)
       rayFractions.length = 0;
-    const localRay = ray.cloneInverseTransformed(this._transform);
+    // if ray comes in unit vector in large ellipsoid, localRay direction is minuscule.
+    // use a ray scaled up so its direction vector magnitude is comparable to the ellipsoid radiusX
+    const ray1 = ray.clone();
+    const a0 = ray.direction.magnitude();
+    const aX = this._transform.matrix.columnXMagnitude();
+    const scale = Geometry.conditionalDivideCoordinate(aX, a0);
+    if (scale === undefined)
+      return 0;
+    ray1.direction.scaleInPlace(scale);
+    const localRay = ray1.cloneInverseTransformed(this._transform);
     if (localRay !== undefined) {
       const n = SphereImplicit.intersectSphereRay(Point3d.create(0, 0, 0), 1.0, localRay, rayFractions, xyz, thetaPhiRadians);
+      if (rayFractions !== undefined) {
+        for (let i = 0; i < rayFractions.length; i++)
+          rayFractions[i] *= scale;
+      }
       if (xyz !== undefined) {
         this._transform.multiplyPoint3dArrayInPlace(xyz);
       }
@@ -260,6 +274,73 @@ export class Ellipsoid {
     const cosPhi = Math.cos(phiRadians);
     const sinPhi = Math.sin(phiRadians);
     return this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
+  }
+  private _unitVectorA?: Vector3d;
+  private _unitVectorB?: Vector3d;
+  /**
+   * * For a given pair of points on an ellipsoid, construct an arc (possibly elliptical) which
+   *   * passes through both points
+   *   * is completely within the ellipsoid surface
+   *   * has its centerEvaluate a point on the ellipsoid at angles give in radians.
+   * * If the ellipsoid is a sphere, this is the shortest great-circle arc between the two points.
+   * * If the ellipsoid is not a sphere, this is close to but not precisely the shortest path.
+   * @param thetaARadians longitude, in radians, for pointA
+   * @param phiARadians latitude, in radians, for pointA
+   * @param thetaBRadians longitude, in radians, for pointB
+   * @param phiBRadians latitude, in radians, for pointB
+   * @param result optional preallocated result
+   */
+  public radiansPairToGreatArc(
+    thetaARadians: number, phiARadians: number,
+    thetaBRadians: number, phiBRadians: number,
+    result?: Arc3d): Arc3d | undefined {
+    if (!this._unitVectorA)
+      this._unitVectorA = Vector3d.create();
+    if (!this._unitVectorB)
+      this._unitVectorB = Vector3d.create();
+    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
+    const sweepAngle = this._unitVectorA.angleTo(this._unitVectorB);
+    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ);
+    if (matrix) {
+      const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
+      return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
+        AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    }
+    return undefined;
+  }
+
+  /**
+   * * For a given pair of points on an ellipsoid, construct another ellipsoid
+   *   * touches the same xyz points in space
+   *   * has transformation modified so that the original two points are on the equator.
+   * * Note that except for true sphere inputs, the result axes can be both non-perpendicular axes and of different lengths.
+   * @param thetaARadians longitude, in radians, for pointA
+   * @param phiARadians latitude, in radians, for pointA
+   * @param thetaBRadians longitude, in radians, for pointB
+   * @param phiBRadians latitude, in radians, for pointB
+   * @param result optional preallocated result
+   */
+  public radiansPairToEquatorialEllipsoid(
+    thetaARadians: number, phiARadians: number,
+    thetaBRadians: number, phiBRadians: number,
+    result?: Ellipsoid): Ellipsoid | undefined {
+    if (!this._unitVectorA)
+      this._unitVectorA = Vector3d.create();
+    if (!this._unitVectorB)
+      this._unitVectorB = Vector3d.create();
+    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
+
+    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ);
+    if (matrix) {
+      if (result) {
+        this._transform.multiplyTransformMatrix3d(matrix, result._transform);
+        return result;
+      }
+      return Ellipsoid.create(this._transform.multiplyTransformMatrix3d(matrix));
+    }
+    return undefined;
   }
   /**
    * Return an arc (circular or elliptical) at constant longitude

@@ -110,6 +110,16 @@ export class AngleSweep implements BeJSONFunctions {
     public static createFullLatitude() { return AngleSweep.createStartEndRadians(-0.5 * Math.PI, 0.5 * Math.PI); }
     /** Reverse the start and end angle in place. */
     public reverseInPlace() { const a = this._radians0; this._radians0 = this._radians1; this._radians1 = a; }
+    /**  return a sweep for the "other" part of the circe.
+     * @param reverse true to retain the start and move backwards, false to more forwards.
+     */
+    public cloneComplement(reverseDirection: boolean = false, result?: AngleSweep): AngleSweep {
+        const s = this.sweepRadians >= 0 ? 2.0 : -2.0;
+        if (reverseDirection)
+            return AngleSweep.createStartEndRadians(this.startRadians, this.endRadians - s * Math.PI, result);
+        else
+            return AngleSweep.createStartEndRadians(this.endRadians, this.startRadians + s * Math.PI, result);
+    }
     /** Restrict start and end angles into the range (-90,+90) in degrees. */
     public capLatitudeInPlace() {
         const limit = 0.5 * Math.PI;
@@ -236,7 +246,7 @@ export class AngleSweep implements BeJSONFunctions {
     public isAngleInSweep(angle: Angle): boolean { return this.isRadiansInSweep(angle.radians); }
     /** test if radians are within sweep  */
     public isRadiansInSweep(radians: number, allowPeriodShift: boolean = true): boolean {
-        return AngleSweep.isRadiansInStartEnd (radians, this.startRadians, this.endRadians, allowPeriodShift);
+        return AngleSweep.isRadiansInStartEnd(radians, this.startRadians, this.endRadians, allowPeriodShift);
     }
     /** test if radians are within sweep  */
     public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift: boolean = true): boolean {

@@ -20,6 +20,8 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Angle } from "../../geometry3d/Angle";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Sphere } from "../../solid/Sphere";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
 
 describe("Ellipsoid", () => {
   it("patchRange", () => {
@@ -112,6 +114,7 @@ describe("Ellipsoid", () => {
     const phiFractionB = 0.45;
     const xStep = 4.0 * maxRadius;
     const distantRay = Ray3d.createXYZUVW(12, 0, 1, 0.1, 0.1, 5.0);
+    const nullRay = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0);
     const transform2 = Transform.createRowValues(
       1.2, 0, 2, 3,
       0.2, 4, 2, 1,
@@ -125,7 +128,7 @@ describe("Ellipsoid", () => {
 
       // confirm no intersections for distant ray . . .
       ck.testExactNumber(0, ellipsoid.intersectRay(distantRay, undefined, undefined, undefined), "confirm zero-intersection case");
-
+      ck.testExactNumber(0, ellipsoid.intersectRay(nullRay, undefined, undefined, undefined));
       // confirm transform effects . ..
       const ellipsoid1 = ellipsoid.clone();
       const ellipsoid2 = ellipsoid.cloneTransformed(transform2)!;
@@ -195,6 +198,60 @@ describe("Ellipsoid", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRay");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("NoIntersections", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const center = Point3d.create(19476.688224632293, 9394.94304587366, -6369311.983587892);
+    const matrix = Matrix3d.createRowValues(2230956.046389774, 4218075.517914913, 4217984.8981983,
+      -5853439.760676313, 635312.655431714, 2444174.054179583,
+      1200294.0430858273, -4741818.686714196, 4079572.590348847);
+    const referenceSize = matrix.columnXMagnitude();
+    const markerSizeA = 0.1 * referenceSize;
+    const markerSizeB = 0.2 * referenceSize;
+    /*
+        const ray = Ray3d.createXYZUVW(-199314280.53012377, -146422125.0993345, -35134968.98020558,
+          7946521.137480825, 8906977.42125833, -677213.3181646094,
+        );
+      */
+    for (const ray of
+      [Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
+        0.09684505394456912, 0.9848250824825425, 0.1440159450884755),
+      Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
+        0.09684505394456912, 0.9848250824825425, 0.1440159450884755)]) {
+      const builder = PolyfaceBuilder.create();
+      const patch = EllipsoidPatch.createCapture(Ellipsoid.createCenterMatrixRadii(center, matrix, 1.0, 1.0, 1.0), AngleSweep.create360(), AngleSweep.createFullLatitude());
+      builder.addUVGridBody(patch, 32, 32);
+      const mesh = builder.claimPolyface();
+      for (const rayScale of [1.0, Math.sqrt(referenceSize), referenceSize]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+
+        for (const placementFraction of [0, 0.8, 0.9, 1.0, 1.05, 1.10, 2.0]) {
+          const ray1 = Ray3d.create(ray.origin.interpolate(placementFraction, center), ray.direction);
+          ray1.direction.scaleInPlace(rayScale);
+          const displayScale = referenceSize / ray1.direction.magnitude();
+          GeometryCoreTestIO.captureGeometry(allGeometry,
+            LineSegment3d.create(ray1.fractionToPoint(-3.0 * displayScale), ray1.fractionToPoint(3.0 * displayScale)), x0, y0);
+          const hits = patch.intersectRay(ray1, true, true);
+          if (hits.length === 0) {
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, ray1.origin, markerSizeB, x0, y0);
+          } else {
+            for (const hit of hits) {
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, -4, hit.curveDetail.point, markerSizeA, x0, y0);
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 5, hit.surfaceDetail.point, 1.5 * markerSizeA, x0, y0);
+            }
+          }
+        }
+        x0 += 50.0 * referenceSize;
+      }
+      x0 = 0;
+      y0 += 50.0 * referenceSize;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "NoIntersections");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("IntersectRayOutsidePatch", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -259,16 +316,21 @@ describe("Ellipsoid", () => {
 
   it("Singular", () => {
     const ck = new Checker();
+    // flatten to the equator.
+    // normal is bad at phi = 0
     const flatten = Transform.createRowValues(
       1, 0, 0, 1,
       0, 1, 0, 2,
       0, 0, 0, 3);
     const ellipsoid = Ellipsoid.create(flatten);
+    const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(0, 180), AngleSweep.createStartEndDegrees(0, 90));
+    ck.testUndefined(patch.anglesToUnitNormalRay(LongitudeLatitudeNumber.createDegrees(0, 0, 0)));
+    const equatorPoint = ellipsoid.radiansToPoint(0.1, 0.0);
+    ck.testUndefined (patch.projectPointToSurface (equatorPoint), " Project to ellipsoid fails on fold line");
     ck.testExactNumber(0, ellipsoid.intersectRay(Ray3d.createZAxis(), undefined, undefined, undefined));
     const range0 = Range3d.createNull();
     const range = ellipsoid.patchRangeStartEndRadians(0, 1, 0, 1, range0);
     ck.testFalse(range.isNull);
-
     const ellipsoidB = Ellipsoid.create(Transform.createIdentity());
     const emptyInterval = AngleSweep.createStartEndDegrees(10, 10);
     const realInterval = AngleSweep.createStartEndDegrees(10, 40);
@@ -462,4 +524,69 @@ describe("Ellipsoid", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "ProjectSpacePoint");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("GreatArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const dy = 20.0;
+    const center = Point3d.create(0, 0, 0);
+    const anglePoints = [LongitudeLatitudeNumber.createDegrees(10, 20),
+    LongitudeLatitudeNumber.createDegrees(90, -30),
+    LongitudeLatitudeNumber.createDegrees(45, 85)];
+    const optionalResultEllipsoid = Ellipsoid.create(Transform.createIdentity());
+
+    const fullCircle = AngleSweep.createStartEndDegrees(-180, 180);
+    const tropic = AngleSweep.createStartEndDegrees(2, 30);
+    for (const matrix of [
+      Matrix3d.createIdentity(),
+      Matrix3d.createRowValues(
+        2, 0.1, 0.2,
+        -0.1, 4, 0.3,
+        0.1, 0.2, 3.0)]) {
+      const y0 = 0.0;
+      let y1 = y0 + dy;
+      const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(center, matrix));
+      const builder = PolyfaceBuilder.create();
+      const patch = EllipsoidPatch.createCapture(ellipsoid,
+        AngleSweep.createStartEndDegrees(-180, 180),
+        AngleSweep.createStartEndDegrees(0, 90));
+      ck.testUndefined(ellipsoid.radiansPairToEquatorialEllipsoid(1, 1, 1, 1));
+      builder.addUVGridBody(patch, 32, 16);
+      GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
+      for (let i = 0; i < anglePoints.length; i++) {
+        const angleA = anglePoints[i];
+        for (let j = 0; j < anglePoints.length; j++) {
+          const angleB = anglePoints[j];
+          const startPoint = patch.ellipsoid.radiansToPoint(angleA.longitudeRadians, angleA.latitudeRadians);
+          const endPoint = patch.ellipsoid.radiansToPoint(angleB.longitudeRadians, angleB.latitudeRadians);
+          const arc = ellipsoid.radiansPairToGreatArc(angleA.longitudeRadians, angleA.latitudeRadians,
+            angleB.longitudeRadians, angleB.latitudeRadians);
+          if (i === j) {
+            ck.testUndefined(arc);
+          } else {
+            GeometryCoreTestIO.captureGeometry(allGeometry,
+              LineString3d.create(center, center.interpolate(1.2, startPoint), center.interpolate(1.2, endPoint), center), x0, y0);
+            if (ck.testDefined(arc) && arc) {
+              const arc1 = arc.clone();
+              arc1.sweep.cloneComplement(false, arc1.sweep);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0, y0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
+              const ellipsoid1 = ellipsoid.radiansPairToEquatorialEllipsoid(angleA.longitudeRadians, angleA.latitudeRadians,
+                angleB.longitudeRadians, angleB.latitudeRadians)!;
+              ellipsoid.radiansPairToEquatorialEllipsoid(angleA.longitudeRadians, angleA.latitudeRadians,
+                angleB.longitudeRadians, angleB.latitudeRadians, optionalResultEllipsoid);
+              ck.testTrue(ellipsoid1.isAlmostEqual(optionalResultEllipsoid), "optional ellipsoid");
+              GeometryCoreTestIO.captureMesh(allGeometry, EllipsoidPatch.createCapture(ellipsoid1, fullCircle, tropic), 32, 4, x0, y1);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y1);
+              y1 += dy;
+            }
+          }
+        }
+      }
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "GreatArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

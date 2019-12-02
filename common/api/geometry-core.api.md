@@ -105,6 +105,7 @@ export class AngleSweep implements BeJSONFunctions {
     angleToUnboundedFraction(theta: Angle): number;
     capLatitudeInPlace(): void;
     clone(): AngleSweep;
+    cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
     static create360(startRadians?: number): AngleSweep;
     static createFullLatitude(): AngleSweep;
@@ -1602,6 +1603,8 @@ export class Ellipsoid {
     intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
     isAlmostEqual(other: Ellipsoid): boolean;
     patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
+    radiansPairToEquatorialEllipsoid(thetaARadians: number, phiARadians: number, thetaBRadians: number, phiBRadians: number, result?: Ellipsoid): Ellipsoid | undefined;
+    radiansPairToGreatArc(thetaARadians: number, phiARadians: number, thetaBRadians: number, phiBRadians: number, result?: Arc3d): Arc3d | undefined;
     radiansToFrenetFrame(thetaRadians: number, phiRadians: number, result?: Transform): Transform | undefined;
     radiansToPoint(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
     radiansToPointAnd2Derivatives(thetaRadians: number, phiRadians: number, point: Point3d, d1Theta: Vector3d, d1Phi: Vector3d, d2ThetaTheta: Vector3d, d2PhiPhi: Vector3d, d2ThetaPhi: Vector3d): void;
@@ -4565,6 +4568,7 @@ export class SphereImplicit {
     evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
     static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
     static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
+    static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ): void;
     radius: number;
     xyzToThetaPhiR(xyz: Point3d): {
         thetaRadians: number;

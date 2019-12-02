@@ -6,7 +6,7 @@
 /** @module Numerics */
 
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -544,7 +544,20 @@ export class SphereImplicit {
     const sinPhi = Math.sin(phiRadians);
     return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi, result);
   }
-
+  /**
+   * * convert radians to xyz on unit sphere
+   * * Note that there is no radius used -- implicitly radius is 1
+   * * Evaluation is always to a preallocated xyz.
+   */
+  public static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ) {
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const cosPhi = Math.cos(phiRadians);
+    const sinPhi = Math.sin(phiRadians);
+    xyz.x = cosTheta * cosPhi;
+    xyz.y = sinTheta * cosPhi;
+    xyz.z = sinPhi;
+  }
   /** Compute the derivatives with respect to spherical angles.
    * @param thetaRadians latitude angle
    * @param phiRadians longitude angle
