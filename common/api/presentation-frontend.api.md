@@ -17,6 +17,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
+import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelRequestOptions } from '@bentley/presentation-common';
@@ -218,6 +219,11 @@ export class SelectionHandler implements IDisposable {
     replaceSelection(keys: Keys, level?: number): void;
     rulesetId?: string;
     protected shouldHandle(evt: SelectionChangeEventArgs): boolean;
+}
+
+// @internal (undocumented)
+export class SelectionHelper {
+    static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }
 
 // @public

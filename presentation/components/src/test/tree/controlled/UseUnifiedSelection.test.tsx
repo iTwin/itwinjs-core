@@ -2,21 +2,23 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
 import * as moq from "typemoq";
 import sinon from "sinon";
 import { expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";
+import { createRandomGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
   TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent,
 } from "@bentley/ui-components";
+import { KeySet, NodeKey } from "@bentley/presentation-common";
 import {
   SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler,
-  SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
+  SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider, SelectionHelper,
 } from "@bentley/presentation-frontend";
-import { ECInstanceNodeKey, KeySet, NodeKey, StandardNodeTypes } from "@bentley/presentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UnifiedSelectionTreeEventHandler } from "../../../tree/controlled/UseUnifiedSelection";
 import { useControlledTreeUnifiedSelection, IPresentationTreeDataProvider } from "../../../presentation-components";
@@ -116,8 +118,8 @@ describe("UnifiedSelectionEventHandler", () => {
     unifiedEventHandler = new UnifiedSelectionTreeEventHandler(treeEventsMock.object, treeModelSourceMock.object, selectionHandlerMock.object, dataProviderMock.object);
   });
 
-  const createNode = (nodeKey?: NodeKey) => {
-    const nodeItem = createRandomTreeNodeItem(nodeKey);
+  const createNode = (nodeKeyGenerator: () => NodeKey = createRandomECInstancesNodeKey) => {
+    const nodeItem = createRandomTreeNodeItem(nodeKeyGenerator());
     const node: MutableTreeModelNode = {
       id: nodeItem.id,
       label: nodeItem.label,
@@ -189,9 +191,11 @@ describe("UnifiedSelectionEventHandler", () => {
 
     it("collects affected node items", () => {
       const node1: MutableTreeModelNode = createNode();
-      const node2: MutableTreeModelNode = createNode({ type: StandardNodeTypes.ECClassGroupingNode, className: "test", groupedInstancesCount: 0, pathFromRoot: [] });
-
-      const nodeKeys = [(dataProviderMock.target.getNodeKey(node1.item) as ECInstanceNodeKey).instanceKey, dataProviderMock.target.getNodeKey(node2.item)];
+      const node2: MutableTreeModelNode = createNode(createRandomGroupingNodeKey);
+      const selectionKeys = SelectionHelper.getKeysForSelection([
+        dataProviderMock.target.getNodeKey(node1.item),
+        dataProviderMock.target.getNodeKey(node2.item),
+      ]);
 
       treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
       treeModelMock.setup((x) => x.getNode(node1.item.id)).returns(() => node1);
@@ -204,7 +208,7 @@ describe("UnifiedSelectionEventHandler", () => {
       unifiedEventHandler.onSelectionModified(event);
 
       selectionHandlerMock
-        .verify((x) => x.addToSelection(nodeKeys), moq.Times.once());
+        .verify((x) => x.addToSelection(selectionKeys), moq.Times.once());
     });
 
   });
@@ -222,9 +226,11 @@ describe("UnifiedSelectionEventHandler", () => {
 
     it("collects affected node items", () => {
       const node1: MutableTreeModelNode = createNode();
-      const node2: MutableTreeModelNode = createNode({ type: StandardNodeTypes.ECClassGroupingNode, className: "test", groupedInstancesCount: 0, pathFromRoot: [] });
-
-      const nodeKeys = [(dataProviderMock.target.getNodeKey(node1.item) as ECInstanceNodeKey).instanceKey, dataProviderMock.target.getNodeKey(node2.item)];
+      const node2: MutableTreeModelNode = createNode(createRandomGroupingNodeKey);
+      const selectionKeys = SelectionHelper.getKeysForSelection([
+        dataProviderMock.target.getNodeKey(node1.item),
+        dataProviderMock.target.getNodeKey(node2.item),
+      ]);
 
       treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
       treeModelMock.setup((x) => x.getNode(node1.item.id)).returns(() => node1);
@@ -236,7 +242,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeEventsMock.setup((x) => x.onSelectionReplaced).returns(() => undefined);
       unifiedEventHandler.onSelectionReplaced(event);
 
-      selectionHandlerMock.verify((x) => x.replaceSelection(nodeKeys), moq.Times.once());
+      selectionHandlerMock.verify((x) => x.replaceSelection(selectionKeys), moq.Times.once());
     });
 
     it("adds to selection loaded nodes", () => {
@@ -253,8 +259,8 @@ describe("UnifiedSelectionEventHandler", () => {
       treeEventsMock.setup((x) => x.onSelectionReplaced).returns(() => undefined);
       unifiedEventHandler.onSelectionReplaced(event);
 
-      selectionHandlerMock.verify((x) => x.replaceSelection([(dataProviderMock.target.getNodeKey(node1.item) as ECInstanceNodeKey).instanceKey]), moq.Times.once());
-      selectionHandlerMock.verify((x) => x.addToSelection([(dataProviderMock.target.getNodeKey(node2.item) as ECInstanceNodeKey).instanceKey]), moq.Times.once());
+      selectionHandlerMock.verify((x) => x.replaceSelection(SelectionHelper.getKeysForSelection([dataProviderMock.target.getNodeKey(node1.item)])), moq.Times.once());
+      selectionHandlerMock.verify((x) => x.addToSelection(SelectionHelper.getKeysForSelection([dataProviderMock.target.getNodeKey(node2.item)])), moq.Times.once());
     });
 
     it("adds wrapped handler's subscription to its subscription so it could be canceled", () => {
@@ -346,21 +352,25 @@ describe("UnifiedSelectionEventHandler", () => {
     });
 
     it("selects nodes according unified selection", () => {
-      const nodes: MutableTreeModelNode[] = [createNode(), createNode()];
+      const nodes: MutableTreeModelNode[] = [
+        createNode(createRandomECInstanceNodeKey),
+        createNode(createRandomECInstancesNodeKey),
+        createNode(createRandomGroupingNodeKey),
+      ];
       nodes[1].isSelected = true;
+      const selectionKeys = SelectionHelper.getKeysForSelection(nodes.map((n) => dataProviderMock.target.getNodeKey(n.item)));
 
-      const keys = [dataProviderMock.target.getNodeKey(nodes[0].item), (dataProviderMock.target.getNodeKey(nodes[1].item) as ECInstanceNodeKey).instanceKey];
-
-      selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet(keys));
+      selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet(selectionKeys));
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]());
 
       selectionHandlerMock.target.onSelect!(selectionEvent, selectionProviderMock.object);
       expect(nodes[0].isSelected).to.be.true;
       expect(nodes[1].isSelected).to.be.true;
+      expect(nodes[2].isSelected).to.be.true;
     });
 
     it("deselects nodes according unified selection", () => {
-      const nodes: MutableTreeModelNode[] = [createNode(), createNode({ type: StandardNodeTypes.ECClassGroupingNode, className: "test", groupedInstancesCount: 0, pathFromRoot: [] })];
+      const nodes: MutableTreeModelNode[] = [createNode(), createNode(createRandomGroupingNodeKey)];
       nodes[0].isSelected = true;
       nodes[1].isSelected = false;
 

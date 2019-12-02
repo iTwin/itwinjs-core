@@ -35,6 +35,30 @@ Object {
 }
 `;
 
+exports[`NodeKey fromJSON creates ECInstancesNodeKey 1`] = `
+Object {
+  "instanceKey": Object {
+    "className": "challenge",
+    "id": "0x279b0000018393",
+  },
+  "instanceKeys": Array [
+    Object {
+      "className": "challenge",
+      "id": "0x279b0000018393",
+    },
+    Object {
+      "className": "Licensed",
+      "id": "0x8a8c00000016f2",
+    },
+  ],
+  "pathFromRoot": Array [
+    "8efb19d6-5612-49c3-acc4-9e211fa0dd9c",
+    "06215be1-0c42-457f-8e21-dca1b4638454",
+  ],
+  "type": "ECInstancesNode",
+}
+`;
+
 exports[`NodeKey fromJSON creates ECPropertyGroupingNodeKey 1`] = `
 Object {
   "className": "Division",
@@ -91,6 +115,30 @@ Object {
     "2d1e20e7-bd06-4db3-993f-498713b28b45",
   ],
   "type": "ECInstanceNode",
+}
+`;
+
+exports[`NodeKey toJSON serializes ECInstancesNodeKey 1`] = `
+Object {
+  "instanceKey": Object {
+    "className": "Delaware",
+    "id": "0xc509000000f76f",
+  },
+  "instanceKeys": Array [
+    Object {
+      "className": "Delaware",
+      "id": "0xc509000000f76f",
+    },
+    Object {
+      "className": "overriding",
+      "id": "0x7a40000000b730",
+    },
+  ],
+  "pathFromRoot": Array [
+    "ea472b5c-f31d-432e-b9dc-a64ec2c09222",
+    "5460ba3b-3162-4839-95bc-19da5727a1c1",
+  ],
+  "type": "ECInstancesNode",
 }
 `;
 

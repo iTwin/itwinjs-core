@@ -316,16 +316,18 @@ export class VisibilityHandler implements IDisposable {
 
   public getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus> {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (!NodeKey.isInstanceNodeKey(key))
+    if (!NodeKey.isInstancesNodeKey(key))
       return { isDisplayed: false, isDisabled: true };
 
-    if (isSubjectNode(node))
-      return this.getSubjectDisplayStatus(key.instanceKey.id);
+    if (isSubjectNode(node)) {
+      // note: subject nodes may be merged to represent multiple subject instances
+      return this.getSubjectDisplayStatus(key.instanceKeys.map((k) => k.id));
+    }
     if (isModelNode(node))
-      return this.getModelDisplayStatus(key.instanceKey.id);
+      return this.getModelDisplayStatus(key.instanceKeys[0].id);
     if (isCategoryNode(node))
-      return this.getCategoryDisplayStatus(key.instanceKey.id, this.getCategoryParentModelId(node));
-    return this.getElementDisplayStatus(key.instanceKey.id, this.getElementModelId(node), this.getElementCategoryId(node));
+      return this.getCategoryDisplayStatus(key.instanceKeys[0].id, this.getCategoryParentModelId(node));
+    return this.getElementDisplayStatus(key.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node));
   }
 
   private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
@@ -340,10 +342,10 @@ export class VisibilityHandler implements IDisposable {
     return elementNode.extendedData ? elementNode.extendedData.categoryId : undefined;
   }
 
-  private async getSubjectDisplayStatus(id: Id64String): Promise<VisibilityStatus> {
+  private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
     if (!this._props.viewport.view.isSpatialView())
       return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "subject.nonSpatialView") };
-    const modelIds = await this.getSubjectModelIds(id);
+    const modelIds = await this.getSubjectModelIds(ids);
     const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed);
     if (isDisplayed)
       return { isDisplayed, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
@@ -397,25 +399,25 @@ export class VisibilityHandler implements IDisposable {
 
   public async changeVisibility(node: TreeNodeItem, on: boolean) {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (!NodeKey.isInstanceNodeKey(key))
+    if (!NodeKey.isInstancesNodeKey(key))
       return;
 
     if (isSubjectNode(node)) {
-      await this.changeSubjectState(key.instanceKey.id, on);
+      await this.changeSubjectState(key.instanceKeys.map((k) => k.id), on);
     } else if (isModelNode(node)) {
-      await this.changeModelState(key.instanceKey.id, on);
+      await this.changeModelState(key.instanceKeys[0].id, on);
     } else if (isCategoryNode(node)) {
-      this.changeCategoryState(key.instanceKey.id, this.getCategoryParentModelId(node), on);
+      this.changeCategoryState(key.instanceKeys[0].id, this.getCategoryParentModelId(node), on);
     } else {
-      await this.changeElementState(key.instanceKey.id, this.getElementModelId(node), this.getElementCategoryId(node), on);
+      await this.changeElementState(key.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node), on);
     }
   }
 
-  private async changeSubjectState(id: Id64String, on: boolean) {
+  private async changeSubjectState(ids: Id64String[], on: boolean) {
     if (!this._props.viewport.view.isSpatialView())
       return;
 
-    const modelIds = await this.getSubjectModelIds(id);
+    const modelIds = await this.getSubjectModelIds(ids);
     return this.changeModelsVisibility(modelIds, on);
   }
 
@@ -496,8 +498,9 @@ export class VisibilityHandler implements IDisposable {
     this.onVisibilityChangeInternal();
   }
 
-  private async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
-    return this._subjectModelIdsCache.getSubjectModelIds(subjectId);
+  private async getSubjectModelIds(subjectIds: Id64String[]): Promise<Id64String[]> {
+    return (await Promise.all(subjectIds.map((id) => this._subjectModelIdsCache.getSubjectModelIds(id))))
+      .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {

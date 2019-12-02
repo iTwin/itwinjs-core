@@ -5,8 +5,8 @@
 /** @module Tree */
 
 import * as React from "react";
-import { Keys, StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
-import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
+import { Keys, NodeKey } from "@bentley/presentation-common";
+import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider, SelectionHelper } from "@bentley/presentation-frontend";
 import { TreeProps, TreeNodeItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
@@ -114,22 +114,20 @@ export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: Rea
       if (selection.has(nodeKey))
         return true;
 
+      // ... or if it's an ECInstances node and any of instance keys is in selection
+      if (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.some((instanceKey) => selection.has(instanceKey)))
+        return true;
+
       // ... or if it's an ECInstance node and instance key is in selection
-      if (nodeKey.type === StandardNodeTypes.ECInstanceNode) {
-        const instanceKey = (nodeKey as ECInstanceNodeKey).instanceKey;
-        return selection.has(instanceKey);
-      }
+      if (NodeKey.isInstanceNodeKey(nodeKey) && selection.has(nodeKey.instanceKey))
+        return true;
 
       return false;
     }
 
     private getKeys(nodes: TreeNodeItem[]): Keys {
-      const nodeKeys = nodes.map((node) => this.props.dataProvider.getNodeKey(node));
-      return nodeKeys.map((key) => {
-        if (key.type === StandardNodeTypes.ECInstanceNode)
-          return (key as ECInstanceNodeKey).instanceKey;
-        return key;
-      });
+      const nodeKeys: NodeKey[] = nodes.map((node) => this.props.dataProvider.getNodeKey(node));
+      return SelectionHelper.getKeysForSelection(nodeKeys);
     }
 
     // tslint:disable-next-line:naming-convention

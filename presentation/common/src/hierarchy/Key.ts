@@ -11,7 +11,9 @@ import { InstanceKey, InstanceKeyJSON } from "../EC";
  * @public
  */
 export enum StandardNodeTypes {
+  /** @deprecated Use `ECInstancesNode` */
   ECInstanceNode = "ECInstanceNode",
+  ECInstancesNode = "ECInstancesNode",
   ECClassGroupingNode = "ECClassGroupingNode",
   ECPropertyGroupingNode = "ECPropertyGroupingNode",
   DisplayLabelGroupingNode = "DisplayLabelGroupingNode",
@@ -21,7 +23,7 @@ export enum StandardNodeTypes {
  * One of the node key types
  * @public
  */
-export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /** @public */
 export namespace NodeKey {
   /**
@@ -29,6 +31,8 @@ export namespace NodeKey {
    * @internal
    */
   export function toJSON(key: NodeKey): NodeKeyJSON {
+    if (isInstancesNodeKey(key))
+      return { ...key, instanceKeys: key.instanceKeys.map(InstanceKey.toJSON) };
     if (isInstanceNodeKey(key))
       return { ...key, instanceKey: InstanceKey.toJSON(key.instanceKey) };
     return { ...key };
@@ -42,6 +46,8 @@ export namespace NodeKey {
    * @internal
    */
   export function fromJSON(json: NodeKeyJSON): NodeKey {
+    if (isInstancesNodeKey(json))
+      return { ...json, instanceKeys: json.instanceKeys.map(InstanceKey.fromJSON), instanceKey: InstanceKey.fromJSON(json.instanceKeys[0]) };
     if (isInstanceNodeKey(json))
       return { ...json, instanceKey: InstanceKey.fromJSON(json.instanceKey) };
     return { ...json };
@@ -50,9 +56,18 @@ export namespace NodeKey {
   /**
    * Checks if the supplied key is an [[ECInstanceNodeKey]]
    * @public
+   * @deprecated Will be removed with `StandardNodeTypes.ECInstanceNode`. Consider using `StandardNodeTypes.ECInstancesNode` and related APIs.
    */
   export function isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey {
-    return key.type === StandardNodeTypes.ECInstanceNode;
+    return key.type === StandardNodeTypes.ECInstanceNode || isInstancesNodeKey(key);
+  }
+
+  /**
+   * Checks if the supplied key is an [[ECInstancesNodeKey]]
+   * @public
+   */
+  export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey {
+    return key.type === StandardNodeTypes.ECInstancesNode;
   }
 
   /**
@@ -108,6 +123,7 @@ export interface BaseNodeKey {
 /**
  * Data structure that describes an ECInstance node key
  * @public
+ * @deprecated Use `ECInstancesNodeKey`
  */
 export interface ECInstanceNodeKey extends BaseNodeKey {
   type: StandardNodeTypes.ECInstanceNode;
@@ -118,10 +134,37 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
 /**
  * Serialized [[ECInstanceNodeKey]] JSON representation.
  * @internal
+ * @deprecated Use `ECInstancesNodeKeyJSON`
  */
 export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
   type: StandardNodeTypes.ECInstanceNode;
   instanceKey: InstanceKeyJSON;
+}
+
+/**
+ * Data structure that describes a node ECInstance node key
+ * @public
+ */
+export interface ECInstancesNodeKey extends BaseNodeKey {
+  type: StandardNodeTypes.ECInstancesNode;
+  /** List of [[InstanceKey]] objects of ECInstances represented by the node */
+  instanceKeys: InstanceKey[];
+  /**
+   * One of the instance keys from [[instanceKeys]] array. Here only to avoid breaking
+   * consumers' code after switching from [[ECInstanceNodeKey]].
+   *
+   * @alpha Added temporarily until [[ECInstanceNodeKey]] is completely removed. Use [[instanceKeys]] instead.
+   */
+  instanceKey: InstanceKey;
+}
+
+/**
+ * Serialized [[ECInstanceNodeKey]] JSON representation.
+ * @internal
+ */
+export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
+  type: StandardNodeTypes.ECInstancesNode;
+  instanceKeys: InstanceKeyJSON[];
 }
 
 /**
@@ -177,4 +220,4 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
  * One of the serialized node key types
  * @internal
  */
-export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
