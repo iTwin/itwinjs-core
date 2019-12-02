@@ -1,0 +1,54 @@
+{
+  "name": "@bentley/oidc-signin-tool",
+  "version": "1.9.0-dev.9",
+  "description": "OIDC Signin Helper",
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/oidc-signin-tool"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib .rush",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "docs": "",
+    "cover": ""
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "OIDC"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/imodeljs-clients": "1.9.0-dev.12",
+    "@bentley/bentleyjs-core": "1.9.0-dev.12",
+    "@bentley/geometry-core": "1.9.0-dev.12",
+    "openid-client": "^3.7.2",
+    "puppeteer": "chrome-stable"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "1.9.0-dev.12",
+    "@bentley/config-loader": "1.9.0-dev.12",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/puppeteer": "1.20.2",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.6.2"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  }
+}
