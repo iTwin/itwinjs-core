@@ -12,7 +12,12 @@ import { ITreeNodeLoader, LoadedNodeHierarchy } from "../TreeNodeLoader";
 import { TreeNodeItem } from "../../TreeDataProvider";
 import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 
-/** @internal */
+/**
+ * Provides basic tree manipulation implementation for various cases like
+ * expand/collapse node, modify/replace/clear selection. It is used by default
+ * tree event handler to modify model when events occur.
+ * @internal
+ */
 export class TreeModelMutator {
   private _modelSource: TreeModelSource;
   private _nodeLoader: ITreeNodeLoader;

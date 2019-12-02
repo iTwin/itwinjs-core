@@ -52,7 +52,7 @@ const FILTERED_DATA_PAGE_SIZE = 20;
  *
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]].
  *
- * @alpha
+ * @beta
  */
 export function useControlledTreeFiltering(
   nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,

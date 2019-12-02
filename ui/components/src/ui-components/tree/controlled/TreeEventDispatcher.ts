@@ -33,6 +33,7 @@ import { TreeNodeItem } from "../TreeDataProvider";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.
+ * It converts low level tree events into TreeEvents.
  * @internal
  */
 export class TreeEventDispatcher implements TreeActions {

@@ -94,10 +94,10 @@ export class ContentDataProvider implements IContentDataProvider {
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithFilteringSupportProps {
     activeMatchIndex?: number;
     filter?: string;
@@ -107,18 +107,18 @@ export interface ControlledTreeWithFilteringSupportProps {
     onNodeLoaderChanged?: (nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
     modelSource: TreeModelSource;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithUnifiedSelectionProps {
     nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
@@ -205,7 +205,7 @@ export class LabelsProvider implements IPresentationLabelsProvider {
     readonly imodel: IModelConnection;
 }
 
-// @alpha
+// @beta
 export interface PresentationNodeLoaderProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
@@ -329,7 +329,7 @@ export interface TreeWithUnifiedSelectionProps {
     selectionHandler?: SelectionHandler;
 }
 
-// @alpha
+// @beta
 export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
     constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource, selectionHandler: SelectionHandler, dataProvider: IPresentationTreeDataProvider);
     protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;
@@ -358,7 +358,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>): boolean;
     }
 
-// @alpha
+// @beta
 export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
     filteredNodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
@@ -367,10 +367,10 @@ export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvid
     matchesCount: number | undefined;
 };
 
-// @alpha
+// @beta
 export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
 
-// @alpha
+// @beta
 export function usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader<IPresentationTreeDataProvider>;
 
 // @alpha

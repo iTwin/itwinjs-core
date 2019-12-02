@@ -9,24 +9,29 @@ import { PrimitiveValue, PropertyValueFormat, PropertyDescription, PropertyRecor
 import { EditorContainer, PropertyUpdatedArgs, TreeModelNode } from "../../../../ui-components";
 
 /** Properties for [[TreeNodeEditor]] component
- * @alpha
+ * @beta
  */
 export interface TreeNodeEditorProps {
+  /** Tree node which is in editing mode. */
   node: TreeModelNode;
+  /** Callback that is called when changes are committed. */
   onCommit: (node: TreeModelNode, newValue: string) => void;
+  /** Callback that is called when editing is canceled. */
   onCancel: () => void;
 
+  /** Editor style. */
   style?: React.CSSProperties;
+  /** @internal */
   ignoreEditorBlur?: boolean;
 }
 
 /** Type for tree node editor renderer
- * @alpha
+ * @beta
  */
 export type TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode;
 
 /** React component for displaying tree node editor
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEditorProps) => {

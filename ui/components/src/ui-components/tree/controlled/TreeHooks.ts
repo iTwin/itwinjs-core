@@ -12,7 +12,7 @@ import { PagedTreeNodeLoader, ITreeNodeLoader, TreeNodeLoader } from "./TreeNode
 import { useEffectSkipFirst } from "@bentley/ui-core";
 
 /** Custom hook which returns visible nodes from model source and subscribes to onModelChanged event.
- * @alpha
+ * @beta
  */
 export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes {
   const [visibleNodes, setVisibleNodes] = useState(modelSource.getVisibleNodes());
@@ -31,7 +31,7 @@ export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNo
 }
 
 /** Custom hook which creates TreeNodeLoader for supplied dataProvider.
- * @alpha
+ * @beta
  */
 export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider) {
   const [nodeLoader, setNodeLoader] = useState(() => new TreeNodeLoader(dataProvider));
@@ -44,7 +44,7 @@ export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvid
 }
 
 /** Custom hook which creates PagedTreeNodeLoader for supplied dataProvider.
- * @alpha
+ * @beta
  */
 export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number) {
   const [nodeLoader, setNodeLoader] = useState(() => new PagedTreeNodeLoader(dataProvider, pageSize));
@@ -57,7 +57,7 @@ export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataP
 }
 
 /** Custom hook which creates TreeModelSource and modifies model when onNodeLoaded event is emitted.
- * @alpha
+ * @beta
  */
 export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
   const [modelSource, setModelSource] = useState(() => nodeLoader ? new TreeModelSource() : undefined);

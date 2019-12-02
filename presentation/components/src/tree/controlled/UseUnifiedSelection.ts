@@ -22,7 +22,7 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
  *
  * **Note:** conditions used to determine if node is selected and nodes that should be added to
  * unified selection can be controlled by overriding 'shouldSelectNode' and 'createKeysForSelection' methods.
- * @alpha
+ * @beta
  */
 export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
   private _wrappedHandler: TreeEvents;
@@ -219,7 +219,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
  *
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  *
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents {

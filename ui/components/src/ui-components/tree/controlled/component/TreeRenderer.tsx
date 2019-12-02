@@ -29,14 +29,18 @@ const NODE_LOAD_DELAY = 500;
 
 /**
  * Properties for [[TreeRenderer]] component.
- * @alpha
+ * @beta
  */
 export interface TreeRendererProps {
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+  /** Callback that is used to determine node height. */
   nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
+  /** Callback to render custom node.  */
   nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+  /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
 }
 
@@ -48,31 +52,50 @@ function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
   return `${node.parentId || ""}-${node.childIndex}`;
 }
 
-interface TreeRendererContext {
+/**
+ * Context of [[TreeRenderer]] component.
+ * @beta
+ */
+export interface TreeRendererContext {
+  /** Callback to render custom node. */
   nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
-  onLabelRendered?: (node: TreeModelNode) => void;
+  /** Engine used to created node highlighting properties. */
   highlightingEngine?: HighlightingEngine;
+  /** Callback used detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+   * @internal
+   */
+  onLabelRendered?: (node: TreeModelNode) => void;
 }
 
+/** [[TreeRenderer]] context provider, consumer and custom hook.
+ * @beta
+ */
 export const [
-  /** @alpha */
+  /** Context of [[TreeRenderer]] provider.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextProvider,
 
-  /** @alpha */
+  /** Context of [[TreeRenderer]] consumer.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextConsumer,
 
-  /** @alpha */
+  /** Custom hook to use [[TreeRenderer]] context.
+   * @beta
+   */
   useTreeRendererContext,
 ] = createContextWithMandatoryProvider<TreeRendererContext>("TreeRendererContext");
 
 /**
  * Default component for rendering tree.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {

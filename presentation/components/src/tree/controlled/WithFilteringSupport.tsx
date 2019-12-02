@@ -13,7 +13,7 @@ import "../WithFilteringSupport.scss";
 
 /**
  * Props that are injected to the ControlledTreeWithFilteringSupport HOC component.
- * @alpha
+ * @beta
  */
 export interface ControlledTreeWithFilteringSupportProps {
   /** Node loader used to load nodes for tree. */
@@ -37,7 +37,7 @@ export interface ControlledTreeWithFilteringSupportProps {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
  * wrap supplied tree component in [[controlledTreeWithModelSource]] HOC
  *
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>) {
