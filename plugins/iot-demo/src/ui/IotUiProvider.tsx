@@ -55,7 +55,6 @@ export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
     if (toolBarId.includes("ToolWidget-horizontal")) {
       const lastActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: false,
         itemId: "iotPlugin:openDialog",
         execute: this.showIotDialog,
         icon: `svg:${iotButtonSvg}`,

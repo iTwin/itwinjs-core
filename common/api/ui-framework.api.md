@@ -4603,7 +4603,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     protected createCachedHorizontalItemList(toolbarId: string): void;
     // (undocumented)
     protected createCachedVerticalItemList(toolbarId: string): void;
-    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]): ItemList;
+    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart?: boolean): ItemList;
     // (undocumented)
     generateMergedItemLists(): void;
     protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;

@@ -208,7 +208,6 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
     if (toolBarId.includes("ToolWidget-horizontal")) {
       const lastActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: false,
         itemId: "geoPhotoPlugin:openDialog",
         execute: this.showGeoPhotoDialog,
         icon: `svg:${geoPhotoButtonSvg}`,
