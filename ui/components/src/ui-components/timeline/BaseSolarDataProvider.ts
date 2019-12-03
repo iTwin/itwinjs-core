@@ -20,7 +20,7 @@ import {
 export class BaseSolarDataProvider implements SolarDataProvider {
   private _day: Date;
   public viewId = ""; // View Id used to determine sunrise and sunset
-  public timeOfDay: Date = new Date(Date.now());
+  public timeOfDay: Date;
   public longitude: number = -75.17035;  // long/lat of Philadelphia
   public latitude: number = 39.954927;
   public supportsTimelineAnimation = false; // set to true when provider determines animation data is available.
@@ -39,8 +39,12 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     if (viewport)
       this.viewId = viewport.view.id;
 
+    const now = new Date(Date.now());
+    this.timeOfDay = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+      now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
+
     // set day to be start of day
-    const thisDay = new Date(this.timeOfDay);
+    const thisDay = new Date(this.timeOfDay.getTime());
     thisDay.setUTCHours(0, 0, 0, 0);
     this._day = thisDay;
 
@@ -64,8 +68,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
   }
 
   public set day(dayVal: Date) {
-    const thisDay = new Date(dayVal);
-    thisDay.setUTCHours(0, 0, 0, 0);
+    const thisDay = new Date(Date.UTC(dayVal.getFullYear(), dayVal.getMonth(), dayVal.getDate(), 0, 0, 0, 0));
     this._day = thisDay;
   }
 

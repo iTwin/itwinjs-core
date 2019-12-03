@@ -597,15 +597,15 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
-    let hours = date.getHours();
-    const minutes = addZero(date.getMinutes());
+    let hours = date.getUTCHours();
+    const minutes = addZero(date.getUTCMinutes());
     const abbrev = (hours < 12) ? this._amLabel : (hours === 24) ? this._amLabel : this._pmLabel;
     hours = (hours > 12) ? hours - 12 : hours;
     return `${hours}:${minutes} ${abbrev}`;
   }
 
   private _formatDate = (date: Date) => {
-    return this._months[date.getMonth()] + ", " + date.getDate();
+    return this._months[date.getUTCMonth()] + ", " + date.getUTCDate();
   }
 
   private _onPresetColorPick = (shadowColor: ColorDef) => {
@@ -652,7 +652,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span className="icon icon-calendar" />
           </button>
           <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={Position.Top}>
-            <DayPicker active={this.props.dataProvider.day} hours={currentDate.getHours()} minutes={currentDate.getMinutes()}
+            <DayPicker active={this.props.dataProvider.day} hours={currentDate.getUTCHours()} minutes={currentDate.getUTCMinutes()}
               onTimeChange={this._onTimeChanged} onDayChange={this._onDayClick} />
           </Popup>
           <Timeline className="solar-timeline"
