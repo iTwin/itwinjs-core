@@ -42,6 +42,6 @@ describe("Sign in", () => {
       clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
     };
-    await expect(getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, 102)).to.be.rejectedWith(Error, `Error: Failed OIDC signin for ${userCredentials.email}.\nUser name not found or incorrect password.`);
+    await expect(getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, 102)).to.be.rejectedWith(Error, `Failed OIDC signin for ${userCredentials.email}.\nUser name not found or incorrect password.`);
   });
 });
