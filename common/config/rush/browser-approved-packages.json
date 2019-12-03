@@ -576,6 +576,12 @@
       ]
     },
     {
+      "name": "electron-rebuild",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "enzyme",
       "allowedCategories": [
         "frontend",
@@ -833,6 +839,13 @@
       ]
     },
     {
+      "name": "keytar",
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
+    },
+    {
       "name": "linkify-it",
       "allowedCategories": [
         "frontend"
@@ -917,6 +930,12 @@
       ]
     },
     {
+      "name": "nan",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "nock",
       "allowedCategories": [
         "backend",
@@ -983,6 +1002,12 @@
       "allowedCategories": [
         "common",
         "frontend"
+      ]
+    },
+    {
+      "name": "opener",
+      "allowedCategories": [
+        "common"
       ]
     },
     {
@@ -1514,6 +1539,13 @@
       "allowedCategories": [
         "frontend",
         "tools"
+      ]
+    },
+    {
+      "name": "username",
+      "allowedCategories": [
+        "backend",
+        "common"
       ]
     },
     {

@@ -253,6 +253,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
+internal;OidcBrowserSamlClient 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 public;OrthographicViewState 

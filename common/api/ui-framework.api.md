@@ -3907,7 +3907,7 @@ export interface SignInProps extends CommonProps {
     oidcClient?: IOidcFrontendClient;
     onOffline?: () => void;
     onRegister?: () => void;
-    onSignedIn: () => void;
+    onSignedIn?: () => void;
     // @internal (undocumented)
     onStartSignIn?: () => void;
 }

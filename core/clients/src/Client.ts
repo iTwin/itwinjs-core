@@ -55,7 +55,7 @@ export abstract class Client {
   /**
    * Augments request options with defaults returned by the DefaultRequestOptionsProvider.
    * @note The options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {

@@ -18,7 +18,7 @@ export interface SignInProps extends CommonProps {
   /** Oidc Frontend Client object */
   oidcClient?: IOidcFrontendClient;
   /** Handler called after sign-in has completed */
-  onSignedIn: () => void;
+  onSignedIn?: () => void;
   /** Handler for the Register link */
   onRegister?: () => void;
   /** Handler for the Offline link */
@@ -41,8 +41,9 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     // istanbul ignore next
-    if (this.props.oidcClient)
-      this.props.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    const isAuthorized = this.props.oidcClient && this.props.oidcClient.isAuthorized;
+    if (isAuthorized)
+      this.props.oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   private _onUserStateChanged() {

@@ -90,4 +90,18 @@ export interface OidcFrontendClientConfiguration {
    * @internal
    */
   clockSkew?: number;
+  /**
+   * After sucessfully signing in with desktop applications, the browser is redirected to this URI.
+   * Typically includes a message to close the browser window, and use the desktop application.
+   * @note Only relevant for electron/desktop applications
+   * @internal
+   */
+  postSigninSuccessUri?: string;
+
+  /**
+   * If there's an error signing in with desktop applications, the browser is redirected to thsi URI.
+   * @note Only relevant for electron/desktop applications
+   * @internal
+   */
+  postSigninErrorUri?: string;
 }

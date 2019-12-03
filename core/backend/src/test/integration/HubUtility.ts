@@ -273,26 +273,26 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string): Promise<GuidString> {
+  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string): Promise<GuidString> {
     // Delete any existing iModels with the same name as the required iModel
-    const iModelName = path.basename(pathname, ".bim");
-    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const locIModelName = iModelName || path.basename(pathname, ".bim");
+    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
     if (iModel) {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModel.id!);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { path: pathname });
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, locIModelName, { path: pathname });
     return iModel.id!;
   }
 
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
-  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string): Promise<GuidString> {
+  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string): Promise<GuidString> {
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
-    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname);
+    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName);
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {

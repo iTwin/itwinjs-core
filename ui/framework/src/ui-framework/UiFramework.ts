@@ -8,7 +8,7 @@ import { Store } from "redux";
 
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, isElectronRenderer, requireInElectronRenderer } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
@@ -26,6 +26,9 @@ import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManage
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { StatusBarManager } from "./statusbar/StatusBarManager";
+
+const clientsBackend = requireInElectronRenderer("@bentley/imodeljs-clients-backend");
+const OidcDesktopClient = clientsBackend && clientsBackend.OidcDesktopClient; // tslint:disable-line:variable-name
 
 // cSpell:ignore Mobi
 
@@ -98,9 +101,9 @@ export class UiFramework {
 
     // istanbul ignore next
     if (oidcConfig) {
-      const oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = oidcClient.initialize(new ClientRequestContext())
-        .then(() => (UiFramework.oidcClient = oidcClient, IModelApp.authorizationClient = UiFramework._oidcClient));
+      const oidcClient = isElectronRenderer ? new OidcDesktopClient(oidcConfig) : new OidcBrowserClient(oidcConfig);
+      UiFramework.oidcClient = oidcClient;
+      const initOidcPromise = oidcClient.initialize(new ClientRequestContext());
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
@@ -132,9 +135,8 @@ export class UiFramework {
   public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
     if (UiFramework._removeUserStateListener)
       UiFramework._removeUserStateListener();
-
     UiFramework._oidcClient = oidcClient;
-
+    IModelApp.authorizationClient = oidcClient;
     if (oidcClient) {
       UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
       if (oidcClient.isAuthorized) {

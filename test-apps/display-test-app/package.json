@@ -79,7 +79,7 @@
     "@types/node": "10.14.1",
     "child_process": "^1.0.2",
     "cpx": "^1.5.0",
-    "electron": "^4.1.0",
+    "electron": "^7.1.2",
     "express": "^4.16.3",
     "fs-extra": "^6.0.1",
     "@types/fs-extra": "^4.0.7",

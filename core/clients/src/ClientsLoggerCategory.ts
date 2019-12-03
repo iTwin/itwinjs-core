@@ -14,7 +14,7 @@ export enum ClientsLoggerCategory {
   Clients = "imodeljs-clients.Clients",
 
   /** The logger category used when converting to/from ECJson. */
-  ECJson = "ECJson",
+  ECJson = "imodeljs-clients.ECJson",
 
   /** @internal */
   IModelBank = "imodeljs-clients.iModelBank",
@@ -28,5 +28,5 @@ export enum ClientsLoggerCategory {
   Request = "imodeljs-clients.Request",
 
   /** @internal */
-  UlasClient = "ulasclient",
+  UlasClient = "imodeljs-clients.ulasclient",
 }

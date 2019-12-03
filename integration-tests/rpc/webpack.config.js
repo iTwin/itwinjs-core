@@ -56,8 +56,8 @@ module.exports = {
           env[key] = JSON.stringify(raw[key]);
           return env;
         }, {
-            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
-          }),
+          IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
+        }),
     })
   ]
 };

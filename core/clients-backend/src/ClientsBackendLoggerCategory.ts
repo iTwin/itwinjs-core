@@ -20,4 +20,7 @@ export enum ClientsBackendLoggerCategory {
 
   /** The logger category used by OidcAgentClient */
   OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
+
+  /** The logger category used by OidcDesktopClient */
+  OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
 }

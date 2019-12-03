@@ -58,4 +58,18 @@ export class TestUsers {
       password: Config.App.getString("imjs_test_super_manager_user_password"),
     };
   }
+
+  public static get qaUser(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_qa_user_name"),
+      password: Config.App.getString("imjs_test_qa_user_password"),
+    };
+  }
+
+  public static get prodUser(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_prod_user_name"),
+      password: Config.App.getString("imjs_test_prod_user_password"),
+    };
+  }
 }

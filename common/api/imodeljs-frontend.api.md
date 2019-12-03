@@ -184,6 +184,7 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { User } from 'oidc-client';
 import { UserManagerSettings } from 'oidc-client';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -4805,6 +4806,8 @@ export class OffScreenViewport extends Viewport {
 // @beta
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
+    // (undocumented)
+    protected _accessToken?: AccessToken;
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal
@@ -4815,8 +4818,14 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     readonly isAuthorized: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
+
+// @internal
+export class OidcBrowserSamlClient extends OidcBrowserClient {
+    getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+}
 
 // @internal
 export class OnScreenTarget extends Target {

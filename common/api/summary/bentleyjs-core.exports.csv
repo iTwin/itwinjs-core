@@ -36,6 +36,7 @@ public;DisposableList
 public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
+internal;electronRenderer: any
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
@@ -54,6 +55,7 @@ beta;IModelHubStatus
 public;IModelStatus
 public;IndexedValue
 public;IndexMap
+internal;isElectronRenderer: boolean
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
 public;LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void
@@ -72,6 +74,7 @@ public;OrderedComparator
 public;PerfLogger 
 public;PriorityQueue
 beta;RepositoryStatus
+internal;requireInElectronRenderer(moduleName: string): any
 beta;RpcInterfaceStatus
 public;SerializedClientRequestContext
 public;shallowClone
