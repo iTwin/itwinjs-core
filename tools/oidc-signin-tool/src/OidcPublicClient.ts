@@ -85,9 +85,16 @@ class OidcPublicClient {
     const page = await browser.newPage();
     await page.setRequestInterception(true);
     const onRedirectRequest = this.interceptRedirectUri(page);
-
     await page.goto(authorizationUrl, { waitUntil: "networkidle2" });
-    await this.handleLoginPage(page, username, password);
+    const errMsg = await this.handleLoginPage(page, username, password);
+
+    // Check to see if there was an error while logging in.  If so, throw the error
+    if (undefined !== errMsg) {
+      await page.close();
+      await browser.close();
+      throw new Error(`Failed OIDC signin for ${username}.\n${errMsg}`);
+    }
+
     await this.handleConsentPage(page);
 
     const tokenSet = await client.callback(this._redirectUri, client.callbackParams(await onRedirectRequest), callbackChecks);
@@ -136,7 +143,7 @@ class OidcPublicClient {
     });
   }
 
-  private async handleLoginPage(page: puppeteer.Page, userName: string, password: string): Promise<void> {
+  private async handleLoginPage(page: puppeteer.Page, userName: string, password: string): Promise<string | undefined> {
     const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
     if (page.url().startsWith(loginUrl)) {
       await page.type("#EmailAddress", userName);
@@ -149,6 +156,19 @@ class OidcPublicClient {
         page.$eval("#submitLogon", (button: any) => button.click()),
       ]);
     }
+
+    // Check if there were any errors when performing sign-in
+    const errMsgText = await page.evaluate(() => {
+      const errMsgElement = document.querySelector("#errormessage");
+      if (null === errMsgElement)
+        return undefined;
+      return errMsgElement.textContent;
+    });
+
+    if (undefined === errMsgText || null === errMsgText)
+      return undefined;
+
+    return errMsgText;
   }
 
   private async handleConsentPage(page: puppeteer.Page): Promise<void> {
