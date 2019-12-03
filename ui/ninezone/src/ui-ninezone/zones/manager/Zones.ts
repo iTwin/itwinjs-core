@@ -664,6 +664,25 @@ export class ZonesManager {
     return undefined;
   }
 
+  public setZoneWidth(zoneId: WidgetZoneId, width: number, props: ZonesManagerProps) {
+    const manager = this.getZoneManager(zoneId);
+    const minWidth = manager.windowResize.minWidth;
+    const initialBounds = Rectangle.create(this.getInitialBounds(zoneId, props));
+    const maxWidth = initialBounds.getWidth();
+    width = Math.min(Math.max(width, minWidth), maxWidth);
+
+    const zone = props.zones[zoneId];
+    let bounds = Rectangle.create(zone.bounds);
+    bounds = bounds.setWidth(width);
+    if ((zoneId === 3) || (zoneId === 6) || (zoneId === 9)) {
+      const offset = zone.bounds.right - bounds.right;
+      bounds = bounds.offsetX(offset);
+    }
+    props = this.setZoneBounds(zoneId, bounds, props);
+    this.saveWindowSettings(zoneId, props);
+    return props;
+  }
+
   /** @internal */
   public getZoneManager(id: WidgetZoneId): ZoneManager {
     if (!this._zoneManagers)

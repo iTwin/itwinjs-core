@@ -1761,6 +1761,80 @@ describe("ZonesManager", () => {
       zoneManager1.windowResize.vEnd.should.eq(0.3, "vEnd");
     });
   });
+
+  describe("setZoneWidth", () => {
+    const defaultProps = {
+      ...TestProps.defaultProps,
+      zones: {
+        ...TestProps.defaultProps.zones,
+        4: {
+          ...TestProps.defaultProps.zones[4],
+          bounds: new Rectangle(0, 0, 333, 0),
+        },
+        6: {
+          ...TestProps.defaultProps.zones[6],
+          bounds: new Rectangle(666, 0, 999, 0),
+        },
+      },
+      zonesBounds: new Rectangle(0, 0, 999, 999),
+    };
+
+    it("should set width of left zone", () => {
+      const sut = new ZonesManager();
+      const newProps = sut.setZoneWidth(4, 300, defaultProps);
+
+      newProps.should.not.eq(defaultProps);
+      newProps.zones.should.not.eq(defaultProps.zones, "zones");
+      newProps.zones[4].should.not.eq(defaultProps.zones[4], "zone");
+      newProps.zones[4].bounds.should.not.eq(defaultProps.zones[4].bounds, "bounds");
+      newProps.zones[4].bounds.should.deep.eq(new Rectangle(0, 0, 300, 0));
+    });
+
+    it("should set width and offset right zone", () => {
+      const sut = new ZonesManager();
+      const newProps = sut.setZoneWidth(6, 300, defaultProps);
+
+      newProps.should.not.eq(defaultProps);
+      newProps.zones.should.not.eq(defaultProps.zones, "zones");
+      newProps.zones[6].should.not.eq(defaultProps.zones[6], "zone");
+      newProps.zones[6].bounds.should.not.eq(defaultProps.zones[6].bounds, "bounds");
+      newProps.zones[6].bounds.should.deep.eq(new Rectangle(699, 0, 999, 0));
+    });
+
+    it("should save window resize settings", () => {
+      const sut = new ZonesManager();
+      const spy = sinon.spy(sut, "saveWindowSettings");
+      sut.setZoneWidth(6, 300, defaultProps);
+
+      spy.calledOnceWithExactly(6, sinon.match.any).should.true;
+    });
+
+    it("should respect min width", () => {
+      const sut = new ZonesManager();
+      const manager = sut.getZoneManager(4);
+      sinon.stub(manager.windowResize, "minWidth").get(() => 123);
+      const newProps = sut.setZoneWidth(4, 100, defaultProps);
+
+      newProps.zones[4].bounds.should.deep.eq(new Rectangle(0, 0, 123, 0));
+    });
+
+    it("should respect max width (determined from initial bounds)", () => {
+      const props = {
+        ...defaultProps,
+        zones: {
+          ...defaultProps.zones,
+          4: {
+            ...defaultProps.zones[4],
+            bounds: new Rectangle(0, 0, 200, 0),
+          },
+        },
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setZoneWidth(4, 500, props);
+
+      newProps.zones[4].bounds.should.deep.eq(new Rectangle(0, 0, 333, 0));
+    });
+  });
 });
 
 describe("getZoneCell", () => {

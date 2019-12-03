@@ -2078,6 +2078,8 @@ export class ZonesManager {
     setZoneProps(zoneProps: ZoneManagerProps, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
     setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    setZoneWidth(zoneId: WidgetZoneId, width: number, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     readonly shrinkBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)

@@ -48,6 +48,8 @@ export interface ZoneProps extends CommonProps {
   applicationData?: any;
   /** Indicates with which other zone to merge. */
   mergeWithZone?: ZoneLocation;
+  /** Describes preferred initial width of the zone. */
+  initialWidth?: number;
 
   /** Properties for the Widgets in this Zone. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
@@ -96,6 +98,7 @@ export class Zone extends React.Component<ZoneProps> {
       zoneDef.applicationData = props.applicationData;
     if (props.mergeWithZone !== undefined)
       zoneDef.mergeWithZone = props.mergeWithZone;
+    zoneDef.setInitialWidth(props.initialWidth);
 
     // istanbul ignore else
     if (props.widgets) {

@@ -5683,9 +5683,12 @@ export class ZoneDef extends WidgetHost {
     constructor();
     allowsMerging: boolean;
     applicationData?: any;
+    readonly initialWidth: number | undefined;
     readonly isStatusBar: boolean;
     readonly isToolSettings: boolean;
     mergeWithZone?: ZoneLocation;
+    // @internal (undocumented)
+    setInitialWidth(width: number | undefined): void;
     readonly shouldFillZone: boolean;
     zoneState: ZoneState;
 }
@@ -5721,6 +5724,7 @@ export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
     defaultState?: ZoneState;
+    initialWidth?: number;
     mergeWithZone?: ZoneLocation;
     // @internal (undocumented)
     runtimeProps?: ZoneRuntimeProps;

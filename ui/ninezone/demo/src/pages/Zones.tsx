@@ -1169,22 +1169,6 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
         >
           Toggle
         </button>
-        {/*ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />*/}
         <ToolSettingsPopup
           isOpen={this.state.isPopupOpen}
           onClose={this._handleCloseTogglePopup}
@@ -2959,6 +2943,17 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
     this.setState((prevState) => ({
       nineZone: this._nineZone.showWidget(2, prevState.nineZone),
     }));
+    this.setState((prevState) => {
+      const manager = this._nineZone.getZonesManager();
+      let zones = manager.setZoneWidth(4, 100, prevState.nineZone.zones);
+      zones = manager.setZoneWidth(6, 100, zones);
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
   }
 
   public componentDidUpdate() {
