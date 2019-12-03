@@ -600,7 +600,7 @@ export class Vector3d extends XYZ {
    */
   public static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d {
     const cosPhi = phi.cos();
-    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), phi.sin());
+    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), r * phi.sin());
   }
   /**
    * Convert json to Vector3d.  Accepted forms are:

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}
