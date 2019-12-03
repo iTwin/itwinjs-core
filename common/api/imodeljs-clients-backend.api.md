@@ -104,7 +104,7 @@ export abstract class OidcBackendClient extends OidcClient {
     protected _configuration: OidcBackendClientConfiguration;
     // (undocumented)
     protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<Client>>;
+    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
     // (undocumented)
     protected getClient(requestContext: ClientRequestContext): Promise<Client>;
     // (undocumented)

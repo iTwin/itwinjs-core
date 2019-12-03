@@ -6,7 +6,7 @@
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { Issuer, Client as OpenIdClient, TokenSet, ClientMetadata } from "openid-client";
+import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 
 /**
@@ -37,8 +37,8 @@ export abstract class OidcBackendClient extends OidcClient {
     this._configuration = configuration;
   }
 
-  private _issuer: Issuer<OpenIdClient>;
-  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
+  private _issuer: Issuer;
+  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer> {
     requestContext.enter();
 
     if (this._issuer)
@@ -52,7 +52,7 @@ export abstract class OidcBackendClient extends OidcClient {
   /**
    * Discover the endpoints of the service
    */
-  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
+  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer> {
     requestContext.enter();
     return this.getIssuer(requestContext);
   }
@@ -64,7 +64,7 @@ export abstract class OidcBackendClient extends OidcClient {
     if (this._client)
       return this._client;
 
-    const clientConfiguration: ClientMetadata = {
+    const clientConfiguration: ClientConfiguration = {
       client_id: this._configuration.clientId,
       client_secret: this._configuration.clientSecret,
     };
@@ -74,9 +74,9 @@ export abstract class OidcBackendClient extends OidcClient {
   }
 
   protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken {
-    const startsAt: Date = new Date((tokenSet.expires_at! - tokenSet.expires_in!) * 1000);
-    const expiresAt: Date = new Date(tokenSet.expires_at! * 1000);
-    return AccessToken.fromJsonWebTokenString(tokenSet.access_token!, startsAt, expiresAt, userInfo);
+    const startsAt: Date = new Date((tokenSet.expires_at - tokenSet.expires_in) * 1000);
+    const expiresAt: Date = new Date(tokenSet.expires_at * 1000);
+    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 
   public static parseUserInfo(jwt: string): UserInfo | undefined {

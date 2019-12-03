@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
 
-import { GrantBody, TokenSet } from "openid-client";
+import { GrantParams, TokenSet } from "openid-client";
 import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
@@ -42,7 +42,7 @@ export class OidcAgentClient extends OidcBackendClient implements IAuthorization
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
 
-    const grantParams: GrantBody = {
+    const grantParams: GrantParams = {
       grant_type: "client_credentials",
       scope,
     };
@@ -54,7 +54,7 @@ export class OidcAgentClient extends OidcBackendClient implements IAuthorization
     } catch (error) {
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
-    const userInfo = OidcBackendClient.parseUserInfo(tokenSet.access_token!);
+    const userInfo = OidcBackendClient.parseUserInfo(tokenSet.access_token);
     this._accessToken = this.createToken(tokenSet, userInfo);
     return this._accessToken;
   }

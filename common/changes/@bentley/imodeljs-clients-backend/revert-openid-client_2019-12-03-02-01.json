@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-clients-backend",
-      "comment": "Update to openid-client 3.7.2",
+      "comment": "",
       "type": "none"
     }
   ],
