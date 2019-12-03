@@ -6,7 +6,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
+import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, IModelJsFs, KeepBriefcase, ConcurrencyControl,
   DictionaryModel, SpatialCategory, BriefcaseManager, Element,
@@ -294,11 +294,10 @@ describe("ImodelChangesetPerformance", async () => {
     Config.App.merge(myAppConfig);
     client = new IModelHubClient();
 
-    const userCredentials: ImsUserCredentials = {
+    requestContext = await IModelTestUtils.getTestUserRequestContext({
       email: Config.App.getString("imjs_test_regular_user_name"),
       password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-    requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
+    });
   });
 
   after(() => {

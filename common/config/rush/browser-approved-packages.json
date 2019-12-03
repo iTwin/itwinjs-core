@@ -184,6 +184,10 @@
       ]
     },
     {
+      "name": "@bentley/oidc-signin-tool",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/perf-tools",
       "allowedCategories": [
         "backend",
