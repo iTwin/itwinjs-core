@@ -29,6 +29,7 @@ import {
   ElementAlignedBox3d,
   Frustum,
   FrustumPlanes,
+  LinePixels,
   TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -324,7 +325,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         const ranges = computeChildRanges(this);
         for (const range of ranges) {
           const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
-          builder.setSymbology(color, color, 1);
+          const pixels = !range.isEmpty ? LinePixels.HiddenLine : LinePixels.Solid;
+          const width = !range.isEmpty ? 2 : 1;
+          builder.setSymbology(color, color, width, pixels);
           addRangeGraphic(builder, range.range, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.Sphere === type) {
