@@ -239,6 +239,8 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;MockRender
+internal;ModalOptions
+internal;ModalReturn
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource

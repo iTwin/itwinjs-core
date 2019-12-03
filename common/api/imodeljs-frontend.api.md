@@ -1295,7 +1295,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 // @internal
 export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
-    addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void;
+    addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
@@ -2132,7 +2132,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
     // @internal (undocumented)
-    getAttribution(div: HTMLDivElement, vp: ScreenViewport): void;
+    getAttribution(div: HTMLTableElement, vp: ScreenViewport): void;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
@@ -3353,7 +3353,7 @@ export abstract class ImageryProvider {
     // (undocumented)
     geometryAttributionProvider?: MapTileGeometryAttributionProvider;
     // (undocumented)
-    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
     // (undocumented)
@@ -3396,7 +3396,7 @@ export class IModelApp {
     static animationInterval: BeDuration | undefined;
     static readonly applicationId: string;
     // @beta
-    static applicationLogoCard?: () => HTMLDivElement;
+    static applicationLogoCard?: () => HTMLTableRowElement;
     static readonly applicationVersion: string;
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
@@ -3412,9 +3412,24 @@ export class IModelApp {
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     // @internal
-    static makeIModelJsLogoCard(): HTMLDivElement;
+    static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
+        parent?: HTMLElement;
+        className?: string;
+        id?: string;
+        innerHTML?: string;
+        innerText?: string;
+    }): HTMLElementTagNameMap[K];
+    // @internal
+    static makeIModelJsLogoCard(): HTMLTableRowElement;
     // @beta
-    static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
+    static makeLogoCard(opts: {
+        heading: string | HTMLElement;
+        iconSrc?: string | HTMLImageElement;
+        iconWidth?: number;
+        notice?: string | HTMLElement;
+    }): HTMLTableRowElement;
+    // @internal
+    static makeModalDiv(options: ModalOptions): ModalReturn;
     static readonly notifications: NotificationManager;
     // @internal (undocumented)
     static readonly pluginAdmin: PluginAdmin;
@@ -3914,7 +3929,7 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
     // (undocumented)
-    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
 }
 
 // @internal (undocumented)
@@ -3954,7 +3969,7 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
 
 // @internal
 export abstract class MapTileTreeReference extends TileTree.Reference {
-    addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void;
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
@@ -4551,6 +4566,20 @@ export namespace MockRender {
         // (undocumented)
         readonly wantInvertBlackBackground: boolean;
     }
+}
+
+// @internal
+export interface ModalOptions {
+    autoClose?: boolean;
+    closeBox?: boolean;
+    rootDiv?: HTMLElement;
+    width?: number;
+}
+
+// @internal
+export interface ModalReturn {
+    modal: HTMLDivElement;
+    stop: (_ev: Event) => void;
 }
 
 // @public

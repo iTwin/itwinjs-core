@@ -71,15 +71,15 @@ export class AnimationPanel extends ToolBarDropDown {
         const controls = document.createElement("div");
         controls.style.display = "flex";
         controls.appendChild(createToolButton({
-            className: "bim-icon-play",
+            iconUnicode: "\uea32",
             click: () => this.startAnimation(),
         }));
         controls.appendChild(createToolButton({
-            className: "bim-icon-pause",
+            iconUnicode: "\uea33",
             click: () => this.pauseAnimation(),
         }));
         controls.appendChild(createToolButton({
-            className: "bim-icon-stop",
+            iconUnicode: "\uea34",
             click: () => this.stopAnimation(),
         }));
 

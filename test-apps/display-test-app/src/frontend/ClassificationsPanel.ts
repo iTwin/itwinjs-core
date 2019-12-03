@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, DisplayStyle3dState, ContextRealityModelState, SpatialViewState, SpatialModelState, SpatialClassifiers, findAvailableRealityModels } from "@bentley/imodeljs-frontend";
+import { Viewport, DisplayStyle3dState, ContextRealityModelState, SpatialViewState, SpatialModelState, SpatialClassifiers, findAvailableRealityModels, IModelApp } from "@bentley/imodeljs-frontend";
 import { createComboBox, createNumericInput, ComboBoxEntry, ComboBox, createNestedMenu, createCheckBox, NestedMenu } from "@bentley/frontend-devtools";
 import { SpatialClassificationProps, ModelProps, ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
 import { ToolBarDropDown } from "./ToolBar";
@@ -26,7 +26,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private _selectedSpatialClassifiers: SpatialClassifiers | undefined;
   private _selectedSpatialClassifiersIndex: number = 0;
   private _modelComboBox?: ComboBox;
-  private _models: {[modelId: string]: ModelProps} = {};
+  private _models: { [modelId: string]: ModelProps } = {};
 
   private get _selectedClassifier(): SpatialClassificationProps.Classifier | undefined {
     if (undefined === this._selectedSpatialClassifiers)
@@ -72,25 +72,20 @@ export class ClassificationsPanel extends ToolBarDropDown {
     super();
     this._vp = vp;
 
-    this._element = document.createElement("div");
-    this._realityModelListDiv = document.createElement("div");
-    this._modelListDiv = document.createElement("div");
-    this._propertiesDiv = document.createElement("div");
+    this._element = IModelApp.makeHTMLElement("div", { parent, className: "toolMenu" });
+    this._realityModelListDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
+    this._modelListDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
+    this._propertiesDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
     this._realityModelPickerMenu = createNestedMenu({
       label: "Reality Model Picker",
     });
 
-    this._element.className = "toolMenu";
     this._element.style.display = "block";
     this._element.style.cssFloat = "left";
     this._element.style.width = "max-content";
     this._element.style.minWidth = "350px";
 
-    parent.appendChild(this._element);
     this._element.appendChild(this._realityModelPickerMenu.div);
-    this._element.appendChild(this._realityModelListDiv);
-    this._element.appendChild(this._modelListDiv);
-    this._element.appendChild(this._propertiesDiv);
   }
 
   private async populateRealityModelsPicker(): Promise<void> {
@@ -115,18 +110,18 @@ export class ClassificationsPanel extends ToolBarDropDown {
         handler: (checkbox) => this.toggle(entry, checkbox.checked),
       });
     }
-    this._realityModelPickerMenu.body.appendChild(document.createElement("hr"));
+    IModelApp.makeHTMLElement("hr", { parent: this._realityModelPickerMenu.body });
     if (available.length > 0)
       this._realityModelPickerMenu.div.style.display = "block";
   }
 
   private populateRealityModelList(): void {
     // assemble list of Spatial Classifiers for context reality models (should usually be at most one)
-    const realityModels: Array<{spatialClassifiers: SpatialClassifiers, modelName: string}> = [];
+    const realityModels: Array<{ spatialClassifiers: SpatialClassifiers, modelName: string }> = [];
     (this._vp.view.displayStyle as DisplayStyle3dState).forEachRealityModel((contextModel: ContextRealityModelState) => {
       const classifiers = contextModel.classifiers;
       if (undefined !== classifiers)
-        realityModels.push({spatialClassifiers: classifiers, modelName: contextModel.name});
+        realityModels.push({ spatialClassifiers: classifiers, modelName: contextModel.name });
     });
 
     // include any attached reality models (may be any number; must be loaded already)
@@ -136,7 +131,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     // create list of entries for Classifier in the spatial Classifiers
     const entries = realityModels.map((spatialClassifier, i) => {
-      return({ name: spatialClassifier.modelName , value: i } as ComboBoxEntry);
+      return ({ name: spatialClassifier.modelName, value: i } as ComboBoxEntry);
     });
 
     clearElement(this._realityModelListDiv);
@@ -296,9 +291,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
       value: classifier.flags.outside,
     });
 
-    const label = document.createElement("label");
+    const label = IModelApp.makeHTMLElement("label", { parent });
     label.textContent = "Expansion: ";
-    parent.appendChild(label);
 
     createNumericInput({
       parent,

@@ -19,7 +19,7 @@ import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ToolTipOptions, MessageBoxType, MessageBoxIconType } from "./NotificationManager";
+import { ToolTipOptions } from "./NotificationManager";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget } from "./render/System";
@@ -2919,6 +2919,7 @@ export class ScreenViewport extends Viewport {
     style.top = style.left = "0";
     style.height = style.width = "100%";
   }
+
   /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
   private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
@@ -2936,16 +2937,6 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  private makeLogoCards(): HTMLDivElement {
-    const logoDiv = document.createElement("div");
-    logoDiv.className = "logo-cards-div";
-    logoDiv.appendChild(IModelApp.makeIModelJsLogoCard());
-    if (undefined !== IModelApp.applicationLogoCard)
-      logoDiv.appendChild(IModelApp.applicationLogoCard());
-    this.displayStyle.getAttribution(logoDiv, this);
-    return logoDiv;
-  }
-
   /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
    * @beta
    */
@@ -2953,41 +2944,21 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   protected addLogo() {
-    const logo = this._logo = document.createElement("img");
-    logo.src = "images/imodeljs.svg";
-    logo.className = "imodeljs-logo";
-    this.vpDiv.appendChild(logo);
+    const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
+    logo.src = "images/imodeljs-icon.svg";
 
-    let popup: HTMLDivElement | undefined;
-    const stopProp = (ev: Event, fn: () => void) => { fn(); ev.stopPropagation(); };
-    logo.onmouseenter = (ev) => stopProp(ev, () => {
-      popup = document.createElement("div"); // this div is to allow the logo cards to animate from the bottom of the view
-      popup.className = "logo-cards-container";
-      this.vpDiv.appendChild(popup);
-
-      const cards = this.makeLogoCards();
-      cards.style.top = "100%"; // set it at the bottom of the container so it is entirely clipped off
-      popup.appendChild(cards);
-
-      setTimeout(() => {
-        if (undefined !== popup) {
-          popup.style.height = cards.clientHeight + 10 + "px"; // wait for a delay to allow the cards to load. We need to set the height before we start the animation
-          cards.style.top = "0%"; // this causes the "up" animation
-        }
-      }, 10);
-    });
-    const showLogos = (ev: Event) => stopProp(ev, () => {
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, this.makeLogoCards(), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
-    });
+    const showLogos = (ev: Event) => {
+      const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
+      if (undefined !== IModelApp.applicationLogoCard)
+        logos.appendChild(IModelApp.applicationLogoCard());
+      logos.appendChild(IModelApp.makeIModelJsLogoCard());
+      this.displayStyle.getAttribution(logos, this);
+      ev.stopPropagation();
+    };
     logo.onclick = showLogos;
     logo.addEventListener("touchstart", showLogos);
-    logo.onmouseleave = (ev) => stopProp(ev, () => {
-      if (undefined !== popup) { // if we have a popup showing, remove it
-        this.vpDiv.removeChild(popup);
-        popup = undefined;
-      }
-    });
-    logo.onmousemove = (ev) => ev.stopPropagation();
+    logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
   }
 
   /** @internal */
@@ -2999,8 +2970,7 @@ export class ScreenViewport extends Viewport {
     // first remove all children of the parent Div
     ScreenViewport.removeAllChildren(parentDiv);
 
-    const div = this.vpDiv = document.createElement("div");
-    div.className = "imodeljs-vp";
+    const div = this.vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
     this.addChildDiv(this.parentDiv, div, 0);
 
     this.addChildDiv(this.vpDiv, canvas, 10);
@@ -3157,7 +3127,9 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: string = "default"): void { this.canvas.style.cursor = cursor; }
+  public setCursor(cursor: string = "default"): void {
+    this.canvas.style.cursor = cursor;
+  }
 
   /** @internal */
   public synchWithView(saveInUndo: boolean): void {
@@ -3194,9 +3166,6 @@ export class ScreenViewport extends Viewport {
 
   /** Saves the current state of this viewport's [[ViewState]] in the undo stack, such that it can be restored by a call to [[ScreenViewport.doUndo]]. */
   public saveViewUndo(): void {
-    if (!this.view)
-      return;
-
     // the first time we're called we need to establish the baseline
     if (!this._currentBaseline)
       this._currentBaseline = this.view.saveForUndo();

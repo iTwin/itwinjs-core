@@ -74,23 +74,18 @@ class Notifications extends NotificationManager {
       return MessageBoxValue.Cancel;
 
     // create a dialog element.
-    const dialog = document.createElement("dialog") as HTMLDialogElement;
-    dialog.className = "notification-messagebox";
+    const dialog = IModelApp.makeHTMLElement("dialog", { parent: rootDiv, className: "notification-messagebox" });
 
     // set up the message
-    const span = document.createElement("span");
+    const span = IModelApp.makeHTMLElement("span", { parent: dialog, className: "notification-messageboxtext" });
     if (typeof message === "string")
       span.innerHTML = message;
     else
       span.appendChild(message);
-    span.className = "notification-messageboxtext";
-    dialog.appendChild(span);
 
     // make the ok button
-    const button = document.createElement("button");
-    button.className = "notification-messageboxbutton";
+    const button = IModelApp.makeHTMLElement("button", { parent: dialog, className: "notification-messageboxbutton" });
     button.innerHTML = "Ok";
-    dialog.appendChild(button);
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
       button.addEventListener("click", () => {
@@ -101,7 +96,6 @@ class Notifications extends NotificationManager {
     });
 
     // add the dialog to the root div element and show it.
-    rootDiv.appendChild(dialog);
     dialog.showModal();
     return promise;
   }
@@ -128,7 +122,7 @@ class Notifications extends NotificationManager {
       pt = { x: rect.width / 2, y: rect.height / 2 };
     }
 
-    const location = document.createElement("div");
+    const location = IModelApp.makeHTMLElement("div", { parent: el });
     const height = 20;
     const width = 20;
     location.style.position = "absolute";
@@ -136,8 +130,6 @@ class Notifications extends NotificationManager {
     location.style.left = (pt.x - width / 2) + "px";
     location.style.width = width + "px";
     location.style.height = height + "px";
-
-    el.appendChild(location);
 
     this._el = el;
     this._tooltipDiv = location;
@@ -226,49 +218,35 @@ export class DisplayTestApp {
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
 
-    IModelApp.applicationLogoCard = () => {
-      const div = document.createElement("div");
-      const image = new Image();
-      image.src = "DTA.png";
-      image.width = 300;
-      div.appendChild(image);
-
-      const attr = document.createElement("p");
-      attr.style.textAlign = "center";
-      attr.style.fontStyle = "italic";
-      attr.style.fontWeight = "bold";
-      attr.innerHTML = "Display Test App " + BUILD_SEMVER;
-      div.appendChild(attr);
-      return IModelApp.makeLogoCard(div, "dta-app-name");
-    };
+    IModelApp.applicationLogoCard =
+      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing<br>" + BUILD_SEMVER });
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
-    DrawingAidTestTool.register(svtToolNamespace);
-    MarkupSelectTestTool.register(svtToolNamespace);
-    SVTSelectionTool.register(svtToolNamespace);
-    ResizeWindowTool.register(svtToolNamespace);
-    RefreshTilesTool.register(svtToolNamespace);
-    PurgeTileTreesTool.register(svtToolNamespace);
-    ShutDownTool.register(svtToolNamespace);
-
-    CreateWindowTool.register(svtToolNamespace);
-    FocusWindowTool.register(svtToolNamespace);
-    MaximizeWindowTool.register(svtToolNamespace);
-    CloneViewportTool.register(svtToolNamespace);
-    CloseWindowTool.register(svtToolNamespace);
-    RestoreWindowTool.register(svtToolNamespace);
-    DockWindowTool.register(svtToolNamespace);
-
-    VersionComparisonTool.register(svtToolNamespace);
-    SaveImageTool.register(svtToolNamespace);
-    MarkupTool.register(svtToolNamespace);
-    ZoomToSelectedElementsTool.register(svtToolNamespace);
-    IncidentMarkerDemoTool.register(svtToolNamespace);
-    ToggleFrustumIntersectionTool.register(svtToolNamespace);
-    ToggleShadowMapTilesTool.register(svtToolNamespace);
+    [
+      CloneViewportTool,
+      CloseWindowTool,
+      CreateWindowTool,
+      DockWindowTool,
+      DrawingAidTestTool,
+      FocusWindowTool,
+      IncidentMarkerDemoTool,
+      MarkupSelectTestTool,
+      MarkupTool,
+      MaximizeWindowTool,
+      PurgeTileTreesTool,
+      RefreshTilesTool,
+      ResizeWindowTool,
+      RestoreWindowTool,
+      SaveImageTool,
+      ShutDownTool,
+      SVTSelectionTool,
+      ToggleFrustumIntersectionTool,
+      ToggleShadowMapTilesTool,
+      VersionComparisonTool,
+      ZoomToSelectedElementsTool,
+    ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
-
     return FrontendDevTools.initialize();
   }
 

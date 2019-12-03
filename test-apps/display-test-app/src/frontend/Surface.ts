@@ -115,12 +115,11 @@ export class Surface {
   }
 
   private createToolBar(): ToolBar {
-    const div = document.createElement("div");
-    div.className = "topdiv";
+    const div = IModelApp.makeHTMLElement("div", { className: "topdiv" });
     const tb = new ToolBar(div);
 
     tb.addItem(createToolButton({
-      className: "bim-icon-briefcases",
+      iconUnicode: "\ue9cc", // "briefcases"
       tooltip: "Open iModel from disk",
       click: () => {
         this.openIModel(); // tslint:disable-line:no-floating-promises
@@ -128,7 +127,7 @@ export class Surface {
     }));
 
     tb.addItem(createToolButton({
-      className: "bim-icon-property-data",
+      iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: () => {
         this.openBlankConnection(); // tslint:disable-line:no-floating-promises

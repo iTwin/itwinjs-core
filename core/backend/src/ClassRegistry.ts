@@ -88,7 +88,7 @@ export class ClassRegistry {
       throw this.makeMetaDataNotFoundError(classFullName);
 
     // Make sure we have all base classes registered.
-    if (metadata!.baseClasses && (0 !== metadata.baseClasses.length))
+    if (metadata.baseClasses && (0 !== metadata.baseClasses.length))
       this.getClass(metadata.baseClasses[0], iModel);
 
     // Now we can generate the class from the classDef.
