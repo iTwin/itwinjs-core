@@ -155,7 +155,7 @@ export class IModelTestUtils {
     if (IModelTestUtils._testUsers.has(userCredentials.email))
       accessToken = IModelTestUtils._testUsers.get(userCredentials.email)!;
     else {
-      accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.scopes, TestUsers.oidcConfig);
+      accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.scopes, TestUsers.oidcConfig, Config.App.getNumber("imjs_buddi_resolve_url_using_region", 0));
       IModelTestUtils._testUsers.set(userCredentials.email, accessToken);
     }
 
