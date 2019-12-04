@@ -346,6 +346,17 @@ export class IModelImporter {
     Logger.logInfo(loggerCategory, `Updated ${this.formatRelationshipForLogger(relationshipProps)}`);
   }
 
+  /** Delete the specified Relationship from the target iModel. */
+  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+    this.targetDb.relationships.deleteInstance(relationshipProps);
+    Logger.logInfo(loggerCategory, `Deleted relationship ${this.formatRelationshipForLogger(relationshipProps)}`);
+  }
+
+  /** Delete the specified Relationship from the target iModel. */
+  public deleteRelationship(relationshipProps: RelationshipProps): void {
+    this.onDeleteRelationship(relationshipProps);
+  }
+
   /** Format a Relationship for the Logger. */
   private formatRelationshipForLogger(relProps: RelationshipProps): string {
     return `${relProps.classFullName} sourceId=[${relProps.sourceId}] targetId=[${relProps.targetId}]`;

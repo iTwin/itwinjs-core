@@ -7,9 +7,11 @@ import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3dProps, IModel, Placement3d } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { InformationRecordPartition } from "../../Element";
-import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
-import { InformationRecordModel } from "../../Model";
+import {
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
+  IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -122,6 +124,7 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numElementAspectsUpdated, 0);
       assert.equal(targetImporter.numRelationshipsInserted, 0);
       assert.equal(targetImporter.numRelationshipsUpdated, 0);
+      assert.equal(targetImporter.numRelationshipsDeleted, 0);
       assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
       assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
@@ -147,9 +150,10 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numElementAspectsUpdated, 2);
       assert.equal(targetImporter.numRelationshipsInserted, 0);
       assert.equal(targetImporter.numRelationshipsUpdated, 1);
+      assert.equal(targetImporter.numRelationshipsDeleted, 1);
       targetDb.saveChanges();
       IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
-      assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Third import should not add relationships");
+      assert.equal(numTargetRelationships - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
       transformer.dispose();
     }
 
