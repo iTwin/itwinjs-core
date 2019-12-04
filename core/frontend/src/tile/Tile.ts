@@ -190,7 +190,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._graphic)
-            this._graphic.collectStatistics(stats);
+      this._graphic.collectStatistics(stats);
 
     if (undefined !== this._children)
       for (const child of this._children)
@@ -412,6 +412,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
       this._childrenLastUsed = args.now;
+      return;
     }
 
     if (undefined !== this.children) {
