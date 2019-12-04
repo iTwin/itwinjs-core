@@ -46,7 +46,7 @@ describe("Composite Formats tests:", () => {
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
     } catch (err) {
-      assert.isTrue(err.message === "The Format test has a invalid unit specification..");
+      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
       // tslint:disable-next-line:no-console
       //console.log(err.message);
     }
@@ -91,7 +91,7 @@ describe("Composite Formats tests:", () => {
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
     } catch (err) {
-      assert.isTrue(err.message === "The Format test has a invalid unit specification..");
+      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
       // tslint:disable-next-line:no-console
       // console.log(err.message);
     }
@@ -135,7 +135,7 @@ describe("Composite Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
@@ -175,6 +175,7 @@ describe("Composite Formats tests:", () => {
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1'-0 5/8\"" },
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12345789'-0\"" },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0'-0\"" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12'-0\"" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -183,7 +184,7 @@ describe("Composite Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
@@ -223,6 +224,7 @@ describe("Composite Formats tests:", () => {
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1:0 5/8" },
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12345789:0" },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0:0" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:0" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -231,7 +233,7 @@ describe("Composite Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
@@ -267,6 +269,7 @@ describe("Composite Formats tests:", () => {
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12 5/8\"" },
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "148149468\"" },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0\"" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "144\"" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -275,7 +278,7 @@ describe("Composite Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
@@ -310,6 +313,7 @@ describe("Composite Formats tests:", () => {
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12 5/8 in" },
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "148149468 in" },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0 in" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "144 in" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -317,7 +321,7 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
@@ -353,13 +357,14 @@ describe("Composite Formats tests:", () => {
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.6\"" },
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "148149468\"" },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "144\"" },
     ];
 
     for (const testEntry of testQuantityData) {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
+      assert.strictEqual(formattedValue, testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
