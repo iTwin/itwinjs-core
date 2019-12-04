@@ -230,7 +230,6 @@ export class XYZ implements XYAndZ {
     b = Math.abs(this.z);
     if (b > a) {
       index = 2;
-      a = b;
     }
     return index;
   }

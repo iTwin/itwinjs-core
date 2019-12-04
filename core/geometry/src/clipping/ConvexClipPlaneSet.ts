@@ -201,7 +201,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param result
    */
   public static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet) {
-    let i0 = points.length - 1;
+    const i0 = points.length - 1;
     const n = points.length;
     let x0 = points.getXAtUncheckedPointIndex(i0);
     let y0 = points.getYAtUncheckedPointIndex(i0);
@@ -211,7 +211,7 @@ export class ConvexClipPlaneSet implements Clipper {
     const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
     ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
     if (planeNormal.normalizeInPlace()) {
-      for (let i1 = 0; i1 < n; i0 = i1, i1++ , x0 = x1, y0 = y1) {
+      for (let i1 = 0; i1 < n; i1++ , x0 = x1, y0 = y1) {
         x1 = points.getXAtUncheckedPointIndex(i1);
         y1 = points.getYAtUncheckedPointIndex(i1);
         nx = -(y1 - y0);

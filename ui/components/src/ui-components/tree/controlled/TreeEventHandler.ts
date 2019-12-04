@@ -59,8 +59,8 @@ export class TreeEventHandler implements TreeEvents {
         takeUntil(this._selectionReplaced),
       )
       .subscribe({
-        next: ({ selectedNodeIds, deselectedNodeIds }) => {
-          this._modelMutator.modifySelection(selectedNodeIds, deselectedNodeIds);
+        next: ({ selectedNodeItems, deselectedNodeItems }) => {
+          this._modelMutator.modifySelection(selectedNodeItems, deselectedNodeItems);
         },
       });
   }
@@ -75,13 +75,13 @@ export class TreeEventHandler implements TreeEvents {
         takeUntil(this._selectionReplaced),
       )
       .subscribe({
-        next: ({ selectedNodeIds }) => {
+        next: ({ selectedNodeItems }) => {
           if (firstEmission) {
             firstEmission = false;
-            this._modelMutator.replaceSelection(selectedNodeIds);
+            this._modelMutator.replaceSelection(selectedNodeItems);
           }
 
-          this._modelMutator.modifySelection(selectedNodeIds, []);
+          this._modelMutator.modifySelection(selectedNodeItems, []);
         },
       });
   }

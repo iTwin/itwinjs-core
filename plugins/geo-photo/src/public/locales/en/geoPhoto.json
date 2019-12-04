@@ -1,12 +1,12 @@
 {
   "tools": {
-    "GeoTagTool": {
+    "GeoPhotoTool": {
       "keyin": "GeoPhoto",
       "description": "Turns on and off display of GeoTagged photos from Project Share"
     }
   },
   "messages": {
-    "RootFolderName": "Project Share Photos",
+    "RootFolderName": "Project Share",
     "NotGeolocated": "The iModel is not Geolocated, so photo locations can not be computed.",
     "GatheringPhotos": "Gathering Geolocated Photos from ProjectShare",
     "GeneratingMarkers": "Generating {{photoCount}} Geolocated Photo Markers",
@@ -14,7 +14,7 @@
     "PanoramaFile": "<b>File:</b> {{fileName}} (Panorama)",
     "PhotoFile": "<b>File:</b> {{fileName}} (Jpeg)",
     "TakenTime": " <b>Time:</b> {{date}}<br>",
-    "ToolTipGeo": "<b>GPS Latitude, Longitude:</b> {{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}<br><b>Altitude:</b> {{formattedHeight}}<br>",
+    "ToolTipGeo": "<b>GPS Latitude, Longitude:</b> {{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}<br><b>Altitude:</b> {{formattedHeight}} <b>Track: {{formattedTrack}}</b><br>",
     "ToolTipXY": "<b>Model Coordinate:</b> {{formattedX}}, {{formattedY}}, {{formattedHeight}}<br>",
     "Viewer": "Panorama Viewer"
   },
@@ -26,5 +26,18 @@
     "genericWebGLError": "Your browser does not have the necessary WebGL support to display this panorama.",
     "textureSizeError": "This panorama is too big for your device! It's {{panWidth}} wide, but your but your device only supports images up to {{deviceWidth}} wide. Try another device or scale down the image.",
     "unknownError": "Unknown error. Check developer console."
+  },
+  "LoadDialog": {
+    "LoadTitle": "GeoPhoto Load Progress",
+    "FoldersTitle": "GeoPhoto Folders",
+    "Finding": "Finding Files in Project Share",
+    "FolderName": "Folder: {{folderName}}",
+    "FolderCount": "Found {{count}} folders",
+    "FileCount": "Found {{count}} files",
+    "Processing": "Extracting File Locations",
+    "FolderProgress": "Folders {{folderNum}} / {{folderCount}}",
+    "FileProgress": "Files {{fileNum}} / {{fileCount}}",
+    "Panoramas": "Panoramas: {{panoramas}}",
+    "Photos": "Photos: {{photos}}"
   }
 }

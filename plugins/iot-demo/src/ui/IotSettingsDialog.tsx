@@ -25,8 +25,6 @@ interface IotSettingsDialogState {
   startTime: Date;
   endTime: Date;
   monitorTime: Date;
-  minDate: Date;
-  maxDate: Date;
 }
 
 /**
@@ -78,8 +76,6 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
       currentTab: 0, sensor: "0", startTime: this.props.dataProvider.minDate, endTime: this.props.dataProvider.maxDate,
       monitorTime: this.props.dataProvider.monitorTime,
       alarm: (this.props.dataProvider.alarmText) ? this.props.dataProvider.alarmText : "None",
-      minDate: this.props.dataProvider.minDate,
-      maxDate: this.props.dataProvider.maxDate,
     };
   }
 
@@ -87,34 +83,26 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
     if (args.properties && args.properties.length) {
       for (const prop of args.properties) {
         if (prop.propertyName === this.props.dataProvider.monitorTimePropertyName) {
-          this.setState({ monitorTime: this.props.dataProvider.monitorTime });
+          this.setState((_prevState, props) => ({ monitorTime: props.dataProvider.monitorTime }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.alarmTextPropertyName) {
-          this.setState({ alarm: this.props.dataProvider.alarmText });
+          this.setState((_prevState, props) => ({ alarm: props.dataProvider.alarmText }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.currentAnimationTypePropertyName) {
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.monitorModePropertyName) {
-          this.setState({ currentTab: this.props.dataProvider.monitorMode ? 1 : 0 });
+          this.setState((_prevState, props) => ({ currentTab: props.dataProvider.monitorMode ? 1 : 0 }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.startTimePropertyName) {
-          this.setState({ startTime: this.props.dataProvider.startTime });
+          this.setState((_prevState, props) => ({ startTime: props.dataProvider.startTime }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.endTimePropertyName) {
-          this.setState({ endTime: this.props.dataProvider.endTime });
-          continue;
-        }
-        if (prop.propertyName === this.props.dataProvider.minDatePropertyName) {
-          this.setState({ minDate: this.props.dataProvider.minDate });
-          continue;
-        }
-        if (prop.propertyName === this.props.dataProvider.maxDatePropertyName) {
-          this.setState({ maxDate: this.props.dataProvider.maxDate });
+          this.setState((_prevState, props) => ({ endTime: props.dataProvider.endTime }));
           continue;
         }
       }
@@ -420,7 +408,7 @@ class Tabs extends React.Component<TabsProps, TabsState> {
 
   public componentDidUpdate() {
     if (this.props.defaultTab !== this.state.activeTab)
-      this.setState({ activeTab: this.props.defaultTab });
+      this.setState((_, props) => ({ activeTab: props.defaultTab }));
   }
 
   // set active tab

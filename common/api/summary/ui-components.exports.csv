@@ -285,6 +285,7 @@ alpha;Subscribable
 alpha;Subscription 
 public;Table 
 public;TableArrayValueRenderer 
+beta;TableCellContextMenuArgs
 public;TableCellEditorState
 public;TableCellUpdatedArgs
 internal;TableColumn 

@@ -5,7 +5,7 @@
 /** @module Timeline */
 
 import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Angle } from "@bentley/geometry-core";
 import { IModelConnection, ScreenViewport, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
 import {
   SolarDataProvider,
@@ -94,14 +94,28 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     return this._viewport;
   }
 
+  private getZone(location: Cartographic) {
+    const longitude = Angle.radiansToDegrees(location.longitude);
+    return Math.floor(.5 + longitude / 15.0);
+  }
+
   public get sunrise(): Date {
     // return date to nearest minute
-    return new Date(calculateSunriseOrSunset(this.day, this._cartographicCenter, true).setSeconds(0, 0));
+    const utcSunrise = calculateSunriseOrSunset(this.day, this._cartographicCenter, true);
+    const zone = this.getZone(this._cartographicCenter);
+    utcSunrise.setHours(utcSunrise.getUTCHours() + zone);
+    utcSunrise.setSeconds(0, 0);
+    return new Date(utcSunrise);
   }
 
   public get sunset(): Date {
     // return date to nearest minute
-    return new Date(calculateSunriseOrSunset(this.day, this._cartographicCenter, false).setSeconds(0, 0));
+    // return new Date(calculateSunriseOrSunset(this.day, this._cartographicCenter, false).setSeconds(0, 0));
+    const utcSunset = calculateSunriseOrSunset(this.day, this._cartographicCenter, false);
+    const zone = this.getZone(this._cartographicCenter);
+    utcSunset.setHours(utcSunset.getUTCHours() + zone);
+    utcSunset.setSeconds(0, 0);
+    return new Date(utcSunset);
   }
 
   // instanbul ignore next

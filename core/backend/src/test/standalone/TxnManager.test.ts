@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, OpenMode, BeDuration } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Point3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
 import { assert, expect } from "chai";
@@ -11,7 +11,6 @@ import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhys
 import { UpdateModelOptions } from "../../IModelDb";
 
 describe("TxnManager", () => {
-  const pause = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
   const requestContext = new BackendRequestContext();
@@ -204,7 +203,7 @@ describe("TxnManager", () => {
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
 
     const lastMod = models.queryLastModifiedTime(modelId);
-    await pause(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
+    await BeDuration.wait(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
     const modelProps2 = model.toJSON() as UpdateModelOptions;
     modelProps2.updateLastMod = true;
     models.updateModel(modelProps2);
@@ -213,7 +212,7 @@ describe("TxnManager", () => {
     assert.notEqual(lastMod, lastMod2);
 
     // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
-    await pause(300); // for lastMod...
+    await BeDuration.wait(300); // for lastMod...
     const guid4 = model.geometryGuid;
     toModify.delete();
     imodel.saveChanges("save deletion of element");

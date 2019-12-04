@@ -57,7 +57,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value))) {
       boolValue = this.props.boolFunc();
       if (this.state.boolValue !== boolValue) {
-        this.setState((_prevState) => ({ boolValue }));
+        this.setState({ boolValue });
       }
     }
   }

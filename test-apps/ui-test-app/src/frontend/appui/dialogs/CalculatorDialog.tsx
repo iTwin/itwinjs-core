@@ -55,7 +55,7 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
 
   public componentDidUpdate(oldProps: CalculatorDialogProps) {
     if (oldProps.opened !== this.props.opened) {
-      this.setState({ opened: this.props.opened });
+      this.setState((_, props) => ({ opened: props.opened }));
     }
   }
 }

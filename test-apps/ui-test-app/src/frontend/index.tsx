@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, Store } from "redux";
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
@@ -30,6 +30,7 @@ import {
   FrontstageDef,
   SafeAreaContext,
   SyncUiEventArgs,
+  ToolbarDragInteractionContext,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -73,17 +74,20 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
+  toggleDragInteraction = "sampleapp:toggledraginteraction",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
+  dragInteraction: boolean;
   isIModelLocal: boolean;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
+  dragInteraction: false,
   isIModelLocal: false,
 };
 
@@ -93,6 +97,7 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
+  toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -126,6 +131,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
+    }
+    case SampleAppUiActionId.toggleDragInteraction: {
+      return { ...state, dragInteraction: !state.dragInteraction };
     }
   }
 
@@ -463,6 +471,21 @@ export class SampleAppIModelApp {
   }
 }
 
+function AppDragInteractionComponent(props: { dragInteraction: boolean, children: React.ReactNode }) {
+  return (
+    <ToolbarDragInteractionContext.Provider value={props.dragInteraction}>
+      {props.children}
+    </ToolbarDragInteractionContext.Provider>
+  );
+}
+
+function mapStateToProps(state: RootState) {
+  return { dragInteraction: state.sampleAppState.dragInteraction };
+}
+
+// tslint:disable-next-line:variable-name
+const AppDragInteraction = connect(mapStateToProps)(AppDragInteractionComponent);
+
 export class SampleAppViewer extends React.Component<any> {
   private _backstageItemProvider = new AppBackstageItemProvider();
 
@@ -496,9 +519,11 @@ export class SampleAppViewer extends React.Component<any> {
         <ThemeManager>
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <ConfigurableUiContent
-                appBackstage={<AppBackstageComposer />}
-              />
+              <AppDragInteraction>
+                <ConfigurableUiContent
+                  appBackstage={<AppBackstageComposer />}
+                />
+              </AppDragInteraction>
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>

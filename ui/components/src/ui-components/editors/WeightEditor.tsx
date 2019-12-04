@@ -140,6 +140,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
           activeWeight={this.state.weightValue}
           weights={this._availableWeights.length > 0 ? this._availableWeights : undefined}
           disabled={this.state.isDisabled ? true : false}
+          readonly={this.state.readonly}
           onLineWeightPick={this._onLineWeightPick}
           data-testid="components-weight-editor" />
       </div>

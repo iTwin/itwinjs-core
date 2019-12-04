@@ -15,6 +15,8 @@ import "./Expandable.scss";
  * @beta
  */
 export interface ExpandableItemProps extends CommonProps {
+  /** Describes if expandable item triangle indicator should be hidden. */
+  hideIndicator?: boolean;
   /** History of the toolbar.
    * @deprecated
    */
@@ -60,7 +62,7 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
         style={this.props.style}
       >
         {this.props.children}
-        <div className="nz-triangle" />
+        {this.props.hideIndicator ? undefined : <div className="nz-triangle" />}
         {panel}
         {history}
       </div>

@@ -51,6 +51,7 @@ public;DisplayValuesArray
 public;DisplayValuesMap 
 public;ECClassGroupingNodeKey 
 public;ECInstanceNodeKey 
+public;ECInstancesNodeKey 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
@@ -110,9 +111,10 @@ internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 internal;toJSON(node: Node): NodeJSON
 public;NodeArtifactsRule 
-public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
+deprecated;isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey
 internal;toJSON(key: NodeKey): NodeKeyJSON
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
@@ -189,6 +191,7 @@ internal;RulesetVariablesState
 internal;RulesetVariablesState
 public;RuleTypes
 public;SameLabelInstanceGroup 
+beta;SameLabelInstanceGroupApplicationStage
 public;SchemasSpecification
 public;SelectClassInfo
 public;SelectedNodeInstancesSpecification 

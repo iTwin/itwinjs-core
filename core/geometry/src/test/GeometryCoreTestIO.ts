@@ -163,7 +163,7 @@ export class GeometryCoreTestIO {
         const radians = i * radiansStep;
         const u = a * Math.cos(radians);
         const v = a * Math.sin(radians);
-        linestring.addPointXYZ(x + u, y + v, dz);
+        linestring.addPointXYZ(x + u, y + v, z);
       }
       linestring.addPointXYZ(x + a, y, z);
       collection.push(linestring);
@@ -175,7 +175,7 @@ export class GeometryCoreTestIO {
         const radians = i * radiansStep;
         const u = a * Math.cos(radians);
         const v = a * Math.sin(radians);
-        linestring.addPointXYZ(x + u, y + v, dz);
+        linestring.addPointXYZ(x + u, y + v, z);
         linestring.addPointXYZ(x, y, z);
       }
       collection.push(linestring);

@@ -13,6 +13,7 @@ import { PropertyValueRendererManager } from "../../../properties/ValueRendererM
 import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { ITreeImageLoader } from "../../ImageLoader";
 import { ImageRenderer } from "../../../common/ImageRenderer";
+import { TreeTest } from "../../component/Tree";
 
 /**
  * Properties for [[TreeNodeRenderer]].
@@ -22,6 +23,7 @@ export interface TreeNodeRendererProps extends CommonProps {
   node: TreeModelNode;
   treeActions: TreeActions;
   onLabelRendered?: (node: TreeModelNode) => void;
+  nodeHighlightProps?: HighlightableTreeNodeProps;
 }
 
 /**
@@ -31,7 +33,6 @@ export interface TreeNodeRendererProps extends CommonProps {
 export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
   checkboxRenderer?: NodeCheckboxRenderer;
   descriptionEnabled?: boolean;
-  nodeHighlightProps?: HighlightableTreeNodeProps;
   imageLoader?: ITreeImageLoader;
 }
 
@@ -71,6 +72,7 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
 
   return (
     <TreeNode
+      data-testid={TreeTest.TestId.Node}
       className={props.className}
       checkboxProps={props.node.checkbox.isVisible ? createCheckboxProps(props.node.checkbox) : undefined}
       style={props.style}

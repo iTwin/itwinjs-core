@@ -56,6 +56,7 @@ interface TreeRendererContext {
   nodeLoader: ITreeNodeLoader;
   visibleNodes: VisibleTreeNodes;
   onLabelRendered?: (node: TreeModelNode) => void;
+  highlightingEngine?: HighlightingEngine;
 }
 
 export const [
@@ -88,6 +89,7 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
   }
 
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
+  const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
 
   const rendererContext = useMemo<TreeRendererContext>(() => ({
     nodeRenderer: props.nodeRenderer ? props.nodeRenderer : (nodeProps) => (<TreeNodeRenderer {...nodeProps} />),
@@ -95,7 +97,8 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
     nodeLoader: props.nodeLoader,
     visibleNodes: props.visibleNodes,
     onLabelRendered,
-  }), [props.nodeRenderer, props.treeActions, props.visibleNodes, onLabelRendered]);
+    highlightingEngine,
+  }), [props.nodeRenderer, props.treeActions, props.visibleNodes, onLabelRendered, highlightingEngine]);
 
   const itemKey = useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
@@ -153,7 +156,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
     const { index, style } = props;
 
     const context = useTreeRendererContext(Node);
-    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered } = context;
+    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine } = context;
     const node = visibleNodes!.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
@@ -183,11 +186,12 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
       <div className={className} style={style}>
         {useMemo(() => {
           if (isTreeModelNode(node)) {
-            return nodeRenderer({ node, treeActions, onLabelRendered });
+            const nodeHighlightProps = highlightingEngine ? highlightingEngine.createRenderProps(node) : undefined;
+            return nodeRenderer({ node, treeActions, onLabelRendered, nodeHighlightProps });
           }
 
           return <TreeNodePlaceholder level={node.depth} />;
-        }, [node, treeActions, nodeRenderer, onLabelRendered])}
+        }, [node, treeActions, nodeRenderer, onLabelRendered, highlightingEngine])}
       </div>
     );
   },

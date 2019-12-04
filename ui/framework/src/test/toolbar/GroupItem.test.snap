@@ -100,6 +100,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_tooltip": "",
       "badgeType": undefined,
       "betaBadge": false,
+      "defaultActiveItemId": undefined,
       "direction": 3,
       "directionExplicit": true,
       "execute": [Function],

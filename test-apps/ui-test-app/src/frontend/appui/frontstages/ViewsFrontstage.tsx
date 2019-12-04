@@ -116,7 +116,7 @@ export class ViewsFrontstage extends FrontstageProvider {
   };
 
   private _bottomPanel = {
-    allowedZones: [2],
+    allowedZones: [2, 7],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -215,7 +215,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories] }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true }} fillZone={true} />,
               <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
@@ -266,6 +266,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             />}
             defaultState={StagePanelState.Minimized}
             size={280}
+            minSize={300}
+            maxSize={800}
             widgets={this._leftPanel.widgets}
           />
         }

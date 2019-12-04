@@ -28,7 +28,7 @@ import {
 } from "@bentley/imodeljs-common";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
- *  - `id=elementId` where `elementId` is a hexadecimal element Id such as "0x12cb";
+ *  - `id=elementId,elementId,elementId` comma-separated list of element Idswhere each `elementId` is a hexadecimal element Id such as "0x12cb";
  *  - `symbology=0|1` where 1 indicates detailed symbology information should be included in the output;
  *  - `placement=0|1` where 1 indicates detailed geometric element placement should be included; and
  *  - `verbosity=0|1|2` controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note verbosity=2 can produce megabytes of data for certain types of geometric primitives like large meshes.
@@ -44,17 +44,17 @@ export class InspectElementTool extends PrimitiveTool {
   public static get maxArgs() { return 6; }
 
   private _options: GeometrySummaryOptions = {};
-  private _elementId?: Id64String;
+  private _elementIds?: Id64String[];
   private _modal = false;
   private _useSelection = false;
   private _doCopy = false;
 
-  constructor(options?: GeometrySummaryOptions, elementId?: Id64String) {
+  constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]) {
     super();
     if (undefined !== options)
       this._options = { ...options };
 
-    this._elementId = elementId;
+    this._elementIds = elementIds;
   }
 
   private setupAndPromptForNextAction(): void {
@@ -80,8 +80,8 @@ export class InspectElementTool extends PrimitiveTool {
   public onPostInstall(): void {
     super.onPostInstall();
 
-    if (undefined !== this._elementId)
-      this.process([this._elementId]).then(() => {
+    if (undefined !== this._elementIds)
+      this.process(this._elementIds).then(() => {
         this.onReinitialize();
       }).catch((err) => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
@@ -125,7 +125,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   public onReinitialize(): void {
-    if (this._useSelection || undefined !== this._elementId) {
+    if (this._useSelection || undefined !== this._elementIds) {
       this.exitTool();
     } else {
       this.onRestartTool();
@@ -193,7 +193,7 @@ export class InspectElementTool extends PrimitiveTool {
       const name = parts[0][0].toLowerCase();
 
       if ("i" === name) {
-        this._elementId = parts[1];
+        this._elementIds = parts[1].split(",");
         continue;
       }
 

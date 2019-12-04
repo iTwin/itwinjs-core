@@ -26,7 +26,7 @@ if (!fs.existsSync("./lib/docs/json/file.json")) {
 const docJson = JSON.parse(fs.readFileSync("./lib/docs/json/file.json"));
 
 if (docJson === undefined || docJson.children === undefined) {
-  console.log("Error - Could not successfully parse the json document into a json object.")
+  console.log("Error - Could not successfully parse the json document into a json object.");
   process.exit(1);
 }
 
@@ -130,7 +130,7 @@ for (const child of docJson.children) {
 
 // Create folder for coverage on a per-file basis
 if (!fs.existsSync("./lib/docs/coveragePerFile"))
-  fs.mkdirSync("./lib/docs/coveragePerFile")
+  fs.mkdirSync("./lib/docs/coveragePerFile");
 
 // For each found file, output specific info regarding class, method, and enumerations coverage
 // Also, keep a stream open for the general file holding all file percentages

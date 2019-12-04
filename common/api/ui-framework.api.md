@@ -82,7 +82,6 @@ import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
-import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -304,6 +303,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     componentDidUpdate(prevProps: BackstageProps): void;
     // (undocumented)
     componentWillUnmount(): void;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): CommandItemDef;
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
@@ -627,32 +627,23 @@ export interface CardSelectedEventArgs {
 }
 
 // @alpha
-export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTreeState> {
-    constructor(props: CategoryTreeProps);
-    // @internal (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: CategoryTreeProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
+export const CategoryTree: React.FC<CategoryTreeProps>;
 
 // @alpha
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
     clearAll?: boolean;
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     iModel: IModelConnection;
     selectAll?: boolean;
     showSearchBox?: boolean;
+    useControlledTree?: boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface CategoryTreeState {
     // (undocumented)
     activeView?: Viewport;
@@ -661,11 +652,9 @@ export interface CategoryTreeState {
     // (undocumented)
     checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
     // (undocumented)
-    dataProvider?: PresentationTreeDataProvider;
+    dataProvider?: IPresentationTreeDataProvider;
     // (undocumented)
     filterInfo?: FilterInfo;
-    // (undocumented)
-    isLoading: boolean;
     // (undocumented)
     selectedNodes: string[];
 }
@@ -782,6 +771,25 @@ export interface CommonBackstageItem {
     readonly subtitle?: string;
     readonly tooltip?: string;
     readonly type: BackstageItemType;
+}
+
+// @public
+export class ConditionalField extends React.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
+    constructor(props: ConditionalFieldProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: ConditionalFieldProps): void;
+    // (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: ConditionalFieldState;
+}
+
+// @public
+export interface ConditionalFieldProps extends StatusFieldProps {
+    boolFunc: (props: StatusFieldProps) => boolean;
+    defaultValue?: boolean;
 }
 
 // @beta
@@ -1030,7 +1038,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ContentLayoutState>;
-    }
+}
 
 // @public
 export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> {
@@ -1774,7 +1782,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
     vector: Vector3d;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface FilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
@@ -1784,6 +1792,12 @@ export interface FilterInfo {
     filtering?: boolean;
     // (undocumented)
     matchesCount?: number;
+}
+
+// @public
+export class FooterModeField extends React.PureComponent<StatusFieldProps> {
+    // (undocumented)
+    render(): React.ReactNode;
 }
 
 // @beta
@@ -1803,7 +1817,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
     componentDidUpdate(): void;
     // (undocumented)
     render(): React.ReactNode;
-}
+    }
 
 // @internal
 export interface FrameworkStagePanelProps {
@@ -1825,6 +1839,10 @@ export interface FrameworkStagePanelProps {
     isTargeted: boolean;
     // (undocumented)
     location: StagePanelLocation;
+    // (undocumented)
+    maxSize?: number;
+    // (undocumented)
+    minSize?: number;
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
     // (undocumented)
@@ -2134,6 +2152,8 @@ export class FrontstageManager {
     static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
+    // @internal
+    static readonly onToolPanelOpenedEvent: UiEvent<void>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -2255,6 +2275,12 @@ export const getBackstageItemStateFromProps: (props: BackstageItemProps) => Back
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
 // @internal (undocumented)
+export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+
+// @internal (undocumented)
+export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
+
+// @internal (undocumented)
 export const getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps;
 
 // @internal (undocumented)
@@ -2292,6 +2318,8 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
+    getItemById(id: string): ItemDefBase | undefined;
+    // (undocumented)
     render(): React.ReactNode;
     // (undocumented)
     shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState): boolean;
@@ -2304,6 +2332,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc);
     // @internal (undocumented)
     static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef;
+    // (undocumented)
+    defaultActiveItemId?: string;
     // (undocumented)
     direction: Direction;
     // (undocumented)
@@ -2338,6 +2368,8 @@ export class GroupItemDef extends ActionButtonItemDef {
 
 // @public
 export interface GroupItemProps extends ItemProps {
+    // (undocumented)
+    defaultActiveItemId?: string;
     // (undocumented)
     direction?: Direction;
     // (undocumented)
@@ -2396,6 +2428,9 @@ export const IModelConnectedCategoryTree: any;
 // @beta
 export const IModelConnectedCubeNavigationAid: any;
 
+// @alpha
+export const IModelConnectedModelsTree: any;
+
 // @beta
 export const IModelConnectedNavigationWidget: any;
 
@@ -2408,7 +2443,7 @@ export const IModelConnectedViewSelector: any;
 // @beta
 export const IModelConnectedVisibilityComponent: any;
 
-// @beta
+// @beta @deprecated
 export const IModelConnectedVisibilityTree: any;
 
 // @internal
@@ -2832,7 +2867,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     isExpanded: () => boolean;
     minimize: () => void;
     render(): JSX.Element;
-    }
+}
 
 // @beta
 export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
@@ -3127,6 +3162,23 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
 
+// @alpha
+export const ModelsTree: React.FC<ModelsTreeProps>;
+
+// @alpha
+export interface ModelsTreeProps {
+    activeView?: Viewport;
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
+    enablePreloading?: boolean;
+    imodel: IModelConnection;
+    rootElementRef?: React.Ref<HTMLDivElement>;
+    selectionMode?: SelectionMode;
+    useControlledTree?: boolean;
+    // @internal
+    visibilityHandler?: VisibilityHandler;
+}
+
 // @public
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
 }
@@ -3307,7 +3359,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     readonly label: string;
     minimize: () => void;
     render(): JSX.Element | null;
-    }
+}
 
 // @public
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
@@ -3532,6 +3584,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
 // @beta
 export interface ReviewToolWidgetProps {
+    iconSpec?: IconSpec_2;
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
     showCategoryAndModelsContextTools?: boolean;
@@ -3899,31 +3952,22 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @alpha
-export class SpatialContainmentTree extends React.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
-    constructor(props: SpatialContainmentTreeProps);
-    // @internal (undocumented)
-    componentDidMount(): Promise<void>;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
+export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
 
 // @alpha
 export interface SpatialContainmentTreeProps {
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
+    useControlledTree?: boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface SpatialContainmentTreeState {
     // (undocumented)
     dataProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
-    initialized: false;
 }
 
 // @public
@@ -4052,6 +4096,8 @@ export interface StagePanelProps {
     applicationData?: any;
     defaultState?: StagePanelState;
     header?: React.ReactNode;
+    maxSize?: number;
+    minSize?: number;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
@@ -4547,6 +4593,9 @@ export class ToolbarButtonHelper {
     static searchVerticalToolbarsByTitle(title: string): HTMLButtonElement | null;
 }
 
+// @beta
+export const ToolbarDragInteractionContext: React.Context<boolean>;
+
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
@@ -4622,6 +4671,9 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 // @public
 export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
+
+// @internal (undocumented)
+export const ToolGroupPanelContext: React.Context<boolean>;
 
 // @public
 export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> {
@@ -4985,7 +5037,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
-    render(): JSX.Element;
+    render(): JSX.Element | null;
     static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
@@ -5066,6 +5118,7 @@ export interface VisibilityComponentProps {
     activeViewport?: Viewport;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
+    useControlledTree?: boolean;
 }
 
 // @internal (undocumented)
@@ -5101,7 +5154,7 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// @public
+// @public @deprecated
 export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
     constructor(props: VisibilityTreeProps);
     // (undocumented)
@@ -5116,7 +5169,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     static readonly RULESET: Ruleset;
     }
 
-// @public
+// @public @deprecated
 export interface VisibilityTreeProps {
     activeView?: Viewport;
     // @internal

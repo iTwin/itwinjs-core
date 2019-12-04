@@ -54,7 +54,7 @@ export default class App extends React.Component<{}, State> {
     this.tryPreloadHierarchy(imodel, this.state.currentRulesetId);
 
     const viewDefinitionId = imodel ? await this.getFirstViewDefinitionId(imodel) : undefined;
-    this.setState({ ...this.state, imodel, currentViewDefinitionId: viewDefinitionId });
+    this.setState({ imodel, currentViewDefinitionId: viewDefinitionId });
   }
 
   // tslint:disable-next-line:naming-convention
@@ -64,12 +64,12 @@ export default class App extends React.Component<{}, State> {
 
     this.tryPreloadHierarchy(this.state.imodel, rulesetId);
 
-    this.setState({ ...this.state, currentRulesetId: rulesetId });
+    this.setState({ currentRulesetId: rulesetId });
   }
 
   // tslint:disable-next-line:naming-convention
   private onTreeTypeSelected = (treeType: TreeType) => {
-    this.setState({ ...this.state, currentTreeType: treeType });
+    this.setState({ currentTreeType: treeType });
   }
 
   private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {

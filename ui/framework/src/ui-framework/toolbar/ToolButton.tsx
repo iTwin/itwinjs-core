@@ -64,11 +64,17 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
     if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
       refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+
     if (refreshState) {
       if (this.props.stateFunc)
         newState = this.props.stateFunc(newState);
+
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
-        this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
+        this.setState({
+          isActive: newState.isActive,
+          isEnabled: newState.isEnabled,
+          isVisible: newState.isVisible,
+        });
       }
     }
   }

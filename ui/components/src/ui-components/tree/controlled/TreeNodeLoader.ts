@@ -11,6 +11,7 @@ import { of } from "rxjs/internal/observable/of";
 import { concatMap } from "rxjs/internal/operators/concatMap";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
+import { tap } from "rxjs/internal/operators/tap";
 import { publish } from "rxjs/internal/operators/publish";
 import { toArray } from "rxjs/internal/operators/toArray";
 import { refCount } from "rxjs/internal/operators/refCount";
@@ -33,7 +34,7 @@ import { UiComponents } from "../../UiComponents";
  */
 export interface ITreeNodeLoader {
   onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
-  loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+  loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
 }
 
 /**
@@ -50,7 +51,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
  */
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
   private _treeDataSource: TreeDataSource;
-  private _loadScheduler = new SubscriptionScheduler<string[]>();
+  private _loadScheduler = new SubscriptionScheduler<LoadedNodeHierarchy>();
   private _dataProvider: TDataProvider;
   private _activeRequests = new Map<string | undefined, RxjsObservable<LoadedNodeHierarchy>>();
 
@@ -63,13 +64,12 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
 
   public getDataProvider(): TDataProvider { return this._dataProvider; }
 
-  public loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<string[]> {
+  public loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
     return this.loadForParent(parentItem, parentNode.numChildren === undefined)
       .pipe(
-        map((loadedHierarchy) => {
+        tap((loadedHierarchy) => {
           this.onNodeLoaded.emit(loadedHierarchy);
-          return collectNodeIds(loadedHierarchy.hierarchyItems);
         }),
         scheduleSubscription(this._loadScheduler),
       );
@@ -97,7 +97,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
  */
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
   private _pageLoader: PageLoader;
-  private _loadScheduler = new SubscriptionScheduler<string[]>();
+  private _loadScheduler = new SubscriptionScheduler<LoadedNodeHierarchy>();
   private _dataProvider: TDataProvider;
   private _pageSize: number;
 
@@ -113,13 +113,12 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> impleme
 
   public getDataProvider(): TDataProvider { return this._dataProvider; }
 
-  public loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]> {
+  public loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
     return this._pageLoader.loadPageWithItem(parentItem, childIndex, parentNode.numChildren === undefined)
       .pipe(
-        map((loadedHierarchy) => {
+        tap((loadedHierarchy) => {
           this.onNodeLoaded.emit(loadedHierarchy);
-          return collectNodeIds(loadedHierarchy.hierarchyItems);
         }),
         scheduleSubscription(this._loadScheduler),
       );
@@ -179,17 +178,6 @@ class PageLoader {
     this._activePageRequests.set(parentId, parentPageRequests);
     return newRequest;
   }
-}
-
-function collectNodeIds(items: LoadedNodeHierarchyItem[], result: string[] = []): string[] {
-  for (const { item, children } of items) {
-    result.push(item.id);
-    if (children) {
-      collectNodeIds(children, result);
-    }
-  }
-
-  return result;
 }
 
 function requestLoadedHierarchy(

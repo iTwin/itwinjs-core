@@ -31,6 +31,7 @@ export * from "./ui-framework/oidc/SignOut";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
+export * from "./ui-framework/imodel-components/visibility-tree/ModelsTree";
 
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
@@ -138,6 +139,7 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
 
 export * from "./ui-framework/toolbar/ActionItemButton";
+export * from "./ui-framework/toolbar/DragInteraction";
 export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";
@@ -174,16 +176,18 @@ export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
 export * from "./ui-framework/statusfields/ActivityCenter";
-export * from "./ui-framework/statusfields/MessageCenter";
-export * from "./ui-framework/statusfields/SnapMode";
-export * from "./ui-framework/statusfields/PromptField";
-export * from "./ui-framework/statusfields/SelectionInfo";
-export * from "./ui-framework/statusfields/StatusFieldProps";
-export * from "./ui-framework/statusfields/SelectionScope";
-export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
+export * from "./ui-framework/statusfields/ConditionalField";
+export * from "./ui-framework/statusfields/FooterModeField";
 export * from "./ui-framework/statusfields/Indicator";
+export * from "./ui-framework/statusfields/MessageCenter";
+export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SectionsField";
+export * from "./ui-framework/statusfields/SelectionInfo";
+export * from "./ui-framework/statusfields/SelectionScope";
+export * from "./ui-framework/statusfields/SnapMode";
+export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/ViewAttributes";
+export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
 
 export * from "./ui-framework/theme/ThemeManager";
 

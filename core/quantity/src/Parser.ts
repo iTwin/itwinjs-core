@@ -295,10 +295,8 @@ export class Parser {
       if (processingNumber) {
         if (signToken.length > 0) {
           wipToken = signToken + wipToken;
-          signToken = "";
         }
         tokens.push(new ParseToken(parseFloat(wipToken)));
-        processingNumber = false;
       } else {
         tokens.push(new ParseToken(wipToken));
       }

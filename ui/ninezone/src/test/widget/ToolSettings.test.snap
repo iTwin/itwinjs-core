@@ -4,17 +4,19 @@ exports[`<ToolSettings /> renders correctly 1`] = `
 <div
   className="nz-widget-toolSettings"
 >
-  <DragHandle
-    className="nz-handle"
-  >
-    <TitleBar
-      className="nz-title"
-    />
-  </DragHandle>
   <div
-    className="nz-content"
+    className="nz-widget"
   >
-    <div />
+    <DragHandle
+      className="nz-handle"
+    >
+      <TitleBar
+        className="nz-title"
+      />
+    </DragHandle>
+    <div
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -23,17 +25,19 @@ exports[`<ToolSettings /> renders correctly to fill zone 1`] = `
 <div
   className="nz-widget-toolSettings nz-fill"
 >
-  <DragHandle
-    className="nz-handle"
-  >
-    <TitleBar
-      className="nz-title"
-    />
-  </DragHandle>
   <div
-    className="nz-content"
+    className="nz-widget"
   >
-    <div />
+    <DragHandle
+      className="nz-handle"
+    >
+      <TitleBar
+        className="nz-title"
+      />
+    </DragHandle>
+    <div
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -42,18 +46,20 @@ exports[`<ToolSettings /> renders draggable correctly 1`] = `
 <div
   className="nz-widget-toolSettings nz-draggable"
 >
-  <DragHandle
-    className="nz-handle"
-    onDrag={[Function]}
-  >
-    <TitleBar
-      className="nz-title"
-    />
-  </DragHandle>
   <div
-    className="nz-content"
+    className="nz-widget"
   >
-    <div />
+    <DragHandle
+      className="nz-handle"
+      onDrag={[Function]}
+    >
+      <TitleBar
+        className="nz-title"
+      />
+    </DragHandle>
+    <div
+      className="nz-content"
+    />
   </div>
 </div>
 `;
@@ -62,45 +68,47 @@ exports[`<ToolSettings /> renders resizable correctly 1`] = `
 <div
   className="nz-widget-toolSettings"
 >
-  <DragHandle
-    className="nz-handle"
-  >
-    <TitleBar
-      className="nz-title"
-    />
-  </DragHandle>
   <div
-    className="nz-content"
+    className="nz-widget"
   >
-    <div />
+    <DragHandle
+      className="nz-handle"
+    >
+      <TitleBar
+        className="nz-title"
+      />
+    </DragHandle>
+    <div
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-left-grip"
+      direction={0}
+      onResize={[Function]}
+      onResizeEnd={[Function]}
+      onResizeStart={[Function]}
+    />
+    <ResizeGrip
+      className="nz-top-grip"
+      direction={1}
+      onResize={[Function]}
+      onResizeEnd={[Function]}
+      onResizeStart={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+      onResizeEnd={[Function]}
+      onResizeStart={[Function]}
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+      onResizeEnd={[Function]}
+      onResizeStart={[Function]}
+    />
   </div>
-  <ResizeGrip
-    className="nz-left-grip"
-    direction={0}
-    onResize={[Function]}
-    onResizeEnd={[Function]}
-    onResizeStart={[Function]}
-  />
-  <ResizeGrip
-    className="nz-top-grip"
-    direction={1}
-    onResize={[Function]}
-    onResizeEnd={[Function]}
-    onResizeStart={[Function]}
-  />
-  <ResizeGrip
-    className="nz-right-grip"
-    direction={0}
-    onResize={[Function]}
-    onResizeEnd={[Function]}
-    onResizeStart={[Function]}
-  />
-  <ResizeGrip
-    className="nz-bottom-grip"
-    direction={1}
-    onResize={[Function]}
-    onResizeEnd={[Function]}
-    onResizeStart={[Function]}
-  />
 </div>
 `;

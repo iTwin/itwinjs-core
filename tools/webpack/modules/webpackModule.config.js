@@ -36,7 +36,7 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
     dependentsAndPeerDependents = Object.getOwnPropertyNames(packageContents.dependencies);
   if (packageContents.peerDependencies)
     dependentsAndPeerDependents = dependentsAndPeerDependents.concat(Object.getOwnPropertyNames(packageContents.peerDependencies));
-  for (dependent of dependentsAndPeerDependents) {
+  for (const dependent of dependentsAndPeerDependents) {
     if (externalList[dependent]) {
       let packageName = dependent;
       if (dependent.startsWith("@bentley")) {
@@ -125,7 +125,7 @@ function getConfig(env) {
     env.outdir = "./lib/module" + (env.prod ? "/prod" : "/dev");
 
   // get the directory for the bundle.
-  bundleDirectory = path.resolve(sourceDir, env.outdir);
+  const bundleDirectory = path.resolve(sourceDir, env.outdir);
 
   // the context directory (for looking up imports, etc.) is the original module source directory.
   const contextDirectory = path.resolve(sourceDir);
@@ -243,12 +243,12 @@ function getConfig(env) {
   }
 
   // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
-  definePluginDefinitions = {
+  const definePluginDefinitions = {
     "BUILD_SEMVER": JSON.stringify(packageContents.version),
     "BUILD_TYPE": JSON.stringify(devMode ? "dev" : "prod"),
   };
 
-  webpackLib.entry = {}
+  webpackLib.entry = {};
   webpackLib.entry[bundleName] = bundleEntry;
   webpackLib.mode = devMode ? "development" : "production";
   webpackLib.devtool = devMode ? "cheap-module-source-map" : "source-map";
@@ -356,13 +356,13 @@ function getConfig(env) {
           return (resourcePath.startsWith(context)) ? undefined : "../";
         }
       },
-    }
+    };
   } else {
     finalCssLoader = require.resolve("style-loader");
   }
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
-    cssRules = [{
+    const cssRules = [{
       test: /\.scss$/,
       use: {
         loader: require.resolve("fast-sass-loader"),
@@ -466,6 +466,10 @@ function getConfig(env) {
             loader: require.resolve("file-loader"),
             options: {
               name: "static/media/[name].[hash:8].[ext]",
+              // If the output is going into a version-based subFolder, then the url must have "../" prepended to it.
+              publicPath: (env.subFolder) ? (url, resourcePath, context) => {
+                return `../${url}`;
+              } : undefined,
             },
           }
         },

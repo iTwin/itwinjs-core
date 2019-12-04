@@ -29,6 +29,10 @@ describe("ReviewToolWidget", () => {
     shallow(<ReviewToolWidget />).should.matchSnapshot();
   });
 
+  it("ReviewToolWidget with bentley B should render", () => {
+    shallow(<ReviewToolWidget showCategoryAndModelsContextTools={true} iconSpec={"icon-bentley-systems"} />).should.matchSnapshot();
+  });
+
   it("ReviewToolWidget with Categories and Models should render", () => {
     const wrapper = mount(<ReviewToolWidget showCategoryAndModelsContextTools={true} />);
     wrapper.unmount();

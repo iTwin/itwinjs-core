@@ -19,6 +19,7 @@ describe("Locate Toolbar items", () => {
   const tool1 = new CommandItemDef({
     commandId: "tool1",
     iconSpec: "icon-placeholder",
+    label: "SampleApp:group:tool1",
   });
 
   const tool2 = new CommandItemDef({

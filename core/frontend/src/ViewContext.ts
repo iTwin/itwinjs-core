@@ -436,6 +436,7 @@ export class SceneContext extends RenderContext {
   private _viewFrustum?: ViewFrustum;
   private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
   private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+  private _activeVolumeClassifierModelId?: Id64String;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
@@ -519,6 +520,9 @@ export class SceneContext extends RenderContext {
 
   public getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined { return this._activeVolumeClassifierProps; }
   public setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined) { this._activeVolumeClassifierProps = properties; }
+
+  public getActiveVolumeClassifierModelId(): Id64String | undefined { return this._activeVolumeClassifierModelId; }
+  public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
 
   public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
     const frust = undefined !== plane ? ViewFrustum.createFromViewportAndPlane(this.viewport, plane) : undefined;

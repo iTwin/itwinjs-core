@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -38,9 +38,10 @@ export class IModelCloneContext {
     this._nativeContext.dispose();
   }
 
-  /** Add a rule that remaps the specified source CodeSpec to the specified target CodeSpec.
+  /** Add a rule that remaps the specified source [CodeSpec]($common) to the specified target [CodeSpec]($common).
    * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.
    * @param targetCodeSpecName The name of the CodeSpec from the target iModel.
+   * @throws [[IModelError]] if either CodeSpec could not be found.
    */
   public remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void {
     const sourceCodeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(sourceCodeSpecName);
@@ -59,14 +60,14 @@ export class IModelCloneContext {
   }
 
   /** Look up a target CodeSpecId from the source CodeSpecId.
-   * @returns the target CodeSpecId
+   * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetCodeSpecId(sourceId: Id64String): Id64String {
     return this._nativeContext.findCodeSpecId(sourceId);
   }
 
   /** Look up a target ElementId from the source ElementId.
-   * @returns the target ElementId
+   * @returns the target ElementId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetElementId(sourceElementId: Id64String): Id64String {
     return this._nativeContext.findElementId(sourceElementId);
@@ -91,6 +92,12 @@ export class IModelCloneContext {
    */
   public cloneElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id);
+    // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
+    sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
+      if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
+        (targetElementProps as any)[propertyName] = RelatedElement.none;
+      }
+    });
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;
@@ -99,7 +106,7 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName) as any; // "as any" so we can call the protected onCloned method
+    const jsClass: any = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName); // declared as "any" so we can call the protected onCloned method
     jsClass.onCloned(this, sourceElement, targetElementProps);
     return targetElementProps;
   }

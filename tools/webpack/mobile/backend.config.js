@@ -18,10 +18,7 @@ function getConfig(env) {
     env.outdir = "./lib/module" + (env.prod ? "/prod" : "/dev");
 
   // get the directory for the bundle.
-  bundleDirectory = path.resolve(env.sourcedir, env.outdir);
-
-  // the context directory (for looking up imports, etc.) is the original module source directory.
-  const contextDirectory = path.resolve(env.sourcedir);
+  const bundleDirectory = path.resolve(env.sourcedir, env.outdir);
 
   // unless specified with env.prod, create a development build.
   const devMode = !(env.prod);

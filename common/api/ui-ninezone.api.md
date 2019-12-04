@@ -282,6 +282,7 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 
 // @beta
 export interface ExpandableItemProps extends CommonProps {
+    hideIndicator?: boolean;
     // @deprecated
     history?: React.ReactNode;
     isActive?: boolean;
@@ -405,6 +406,9 @@ export const getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps;
 // @internal
 export const getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps;
 
+// @internal (undocumented)
+export const getDragDistance: (from: Point, to: Point, direction: Direction) => number;
+
 // @alpha (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
@@ -469,6 +473,7 @@ export interface GroupToolProps extends CommonProps {
     isFocused?: boolean;
     label?: string;
     onClick?: () => void;
+    onPointerUp?: () => void;
 }
 
 // @alpha
@@ -716,6 +721,7 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
 // @alpha
 export interface NestedGroupProps extends GroupProps {
     onBack?: () => void;
+    onBackPointerUp?: () => void;
 }
 
 // @beta
@@ -1582,6 +1588,9 @@ export interface ToolbarButtonProps extends CommonProps {
     onClick?: () => void;
 }
 
+// @internal
+export const ToolbarDirectionContext: React.Context<Direction>;
+
 // @alpha
 export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
     // (undocumented)
@@ -1788,6 +1797,7 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
 // @alpha
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
     anchor: HorizontalAnchor;
+    containerRef?: React.Ref<HTMLDivElement>;
     content?: React.ReactNode;
 }
 
@@ -1887,6 +1897,16 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
 export interface WithContainInProps {
     container?: HTMLElement | null;
     containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
+}
+
+// @beta
+export const withDragInteraction: <P extends {}, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => JSX.Element;
+
+// @beta
+export interface WithDragInteractionProps {
+    direction: Direction;
+    onClick?: () => void;
+    onOpenPanel?: () => void;
 }
 
 // @beta

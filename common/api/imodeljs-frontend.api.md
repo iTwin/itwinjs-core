@@ -805,10 +805,6 @@ export class AccuSnap implements Decorator {
     // @internal
     onMotion(ev: BeButtonEvent): Promise<void>;
     // @internal (undocumented)
-    onMotionStopped(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
-    onNoMotion(ev: BeButtonEvent): Promise<void>;
-    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
     // @internal
     onStartTool(): void;
@@ -834,8 +830,6 @@ export class AccuSnap implements Decorator {
     setCurrHit(newHit?: HitDetail): void;
     // @internal (undocumented)
     protected _settings: AccuSnap.Settings;
-    // @internal (undocumented)
-    showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
     // @internal (undocumented)
     suppress(doSuppress: boolean): number;
     // @internal (undocumented)
@@ -1852,6 +1846,9 @@ export function createClassifierTileTreeReference(classifiers: SpatialClassifier
 // @internal
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
+// @alpha
+export function cssPixelsToDevicePixels(cssPixels: number): number;
+
 // @internal (undocumented)
 export class CurrentInputState {
     // (undocumented)
@@ -1868,8 +1865,6 @@ export class CurrentInputState {
     fromButton(vp: ScreenViewport, pt: XAndY, source: InputSource, applyLocks: boolean): void;
     // (undocumented)
     fromPoint(vp: ScreenViewport, pt: XAndY, source: InputSource): void;
-    // (undocumented)
-    readonly hasMotionStopped: boolean;
     // (undocumented)
     inputSource: InputSource;
     // (undocumented)
@@ -1890,8 +1885,6 @@ export class CurrentInputState {
     lastTouchStart?: BeTouchEvent;
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
-    // (undocumented)
-    motionTime: number;
     // (undocumented)
     onButtonDown(button: BeButton): void;
     // (undocumented)
@@ -1924,8 +1917,6 @@ export class CurrentInputState {
     viewPoint: Point3d;
     // (undocumented)
     viewport?: ScreenViewport;
-    // (undocumented)
-    readonly wasMotion: boolean;
 }
 
 // @internal (undocumented)
@@ -2497,6 +2488,15 @@ export interface EmphasizeElementsProps {
     neverDrawn?: Id64Array;
     // (undocumented)
     wantEmphasis?: boolean;
+}
+
+// @beta
+export class EngineeringLengthDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
 }
 
 // @public
@@ -3392,6 +3392,8 @@ export class IModelApp {
     // @internal
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
+    // @beta
+    static animationInterval: BeDuration | undefined;
     static readonly applicationId: string;
     // @beta
     static applicationLogoCard?: () => HTMLDivElement;
@@ -3409,7 +3411,7 @@ export class IModelApp {
     static readonly locateManager: ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
-    // @internal (undocumented)
+    // @internal
     static makeIModelJsLogoCard(): HTMLDivElement;
     // @beta
     static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
@@ -3425,9 +3427,13 @@ export class IModelApp {
     // @internal
     static registerModuleEntities(moduleObj: any): void;
     static readonly renderSystem: RenderSystem;
+    // @internal (undocumented)
+    static requestNextAnimation(): void;
     static sessionId: GuidString;
     static readonly settings: SettingsAdmin;
     static shutdown(): void;
+    // @internal (undocumented)
+    static startEventLoop(): void;
     static startup(opts?: IModelAppOptions): void;
     // @internal (undocumented)
     static readonly tentativePoint: TentativePoint;
@@ -3677,8 +3683,6 @@ export abstract class InteractiveTool extends Tool {
     onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
     onMouseMotion(_ev: BeButtonEvent): Promise<void>;
-    onMouseMotionStopped(_ev: BeButtonEvent): Promise<void>;
-    onMouseNoMotion(_ev: BeButtonEvent): Promise<void>;
     onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled>;
     onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled>;
     onPostInstall(): void;
@@ -5066,6 +5070,7 @@ export abstract class Plugin {
     name: string;
     abstract onExecute(_args: string[]): void;
     onLoad(_args: string[]): void;
+    reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
@@ -5377,10 +5382,17 @@ export enum QuantityType {
     // (undocumented)
     Length = 1,
     // (undocumented)
+    LengthEngineering = 9,
+    // (undocumented)
+    LengthSurvey = 8,
+    // (undocumented)
     Stationing = 7,
     // (undocumented)
     Volume = 4
 }
+
+// @alpha
+export function queryDevicePixelRatio(): number;
 
 // @alpha
 export interface RangeEditorParams extends BasePropertyEditorParams {
@@ -5891,6 +5903,8 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @alpha
+        dpiAwareViewports?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
         // @internal
@@ -5922,7 +5936,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void;
     // (undocumented)
     abstract changeBackgroundMap(_graphics: GraphicList): void;
     // (undocumented)
@@ -6117,6 +6131,8 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
+    getActiveVolumeClassifierModelId(): Id64String | undefined;
+    // (undocumented)
     getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined;
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
@@ -6140,6 +6156,8 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
+    // (undocumented)
+    setActiveVolumeClassifierModelId(modelId: Id64String | undefined): void;
     // (undocumented)
     setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined): void;
     // (undocumented)
@@ -6180,6 +6198,7 @@ export class ScreenViewport extends Viewport {
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
+    // @beta
     readonly logo: HTMLImageElement;
     maxUndoSteps: number;
     // @internal (undocumented)
@@ -6961,6 +6980,15 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
     type: PropertyEditorParamTypes.SuppressUnitLabel;
 }
 
+// @beta
+export class SurveyLengthDescription extends BaseQuantityDescription {
+    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    readonly parseError: string;
+    // (undocumented)
+    readonly quantityType: QuantityType;
+}
+
 // @internal (undocumented)
 export class SuspendedToolState {
     constructor();
@@ -7014,6 +7042,8 @@ export class SyncFlags {
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
     protected constructor(rect?: ViewRect);
     // (undocumented)
+    activeVolumeClassifierModelId?: Id64String;
+    // (undocumented)
     activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
     // (undocumented)
     activeVolumeClassifierTexture?: WebGLTexture;
@@ -7042,7 +7072,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
     // (undocumented)
     changeBackgroundMap(backgroundMap: GraphicList): void;
     // (undocumented)
@@ -7418,6 +7448,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     protected _emptySubRangeMask?: number;
     // (undocumented)
     getContentClip(): ClipVector | undefined;
+    // (undocumented)
+    protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean;
     // (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
     // (undocumented)
@@ -8020,7 +8052,7 @@ export class ToolAdmin {
     readonly activeTool: InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
-    addEvent(ev: Event, vp?: ScreenViewport): void;
+    static addEvent(ev: Event, vp?: ScreenViewport): void;
     // (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, projectToACS?: boolean, applyLocks?: boolean): void;
     // (undocumented)
@@ -8098,6 +8130,8 @@ export class ToolAdmin {
     onShutDown(): void;
     // (undocumented)
     readonly primitiveTool: PrimitiveTool | undefined;
+    // @internal
+    processEvent(): Promise<void>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
@@ -8121,8 +8155,6 @@ export class ToolAdmin {
     setViewTool(newTool?: ViewTool): void;
     // @internal
     startDefaultTool(): void;
-    // @internal (undocumented)
-    startEventLoop(): void;
     // @internal (undocumented)
     startInputCollector(newTool: InputCollector): void;
     // @internal (undocumented)
@@ -8256,7 +8288,6 @@ export class ToolSettings {
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
     static doubleTapTimeout: BeDuration;
-    static noMotionTimeout: BeDuration;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
     static startDragDelay: BeDuration;
@@ -8431,6 +8462,8 @@ export class TraversalSelectionContext {
     preload(tile: Tile): void;
     // (undocumented)
     preloaded: Set<Tile>;
+    // (undocumented)
+    select(tiles: Tile[]): void;
     // (undocumented)
     selected: Tile[];
     // (undocumented)
@@ -9120,8 +9153,6 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
     // (undocumented)
-    noMotion(_ev: BeButtonEvent): boolean;
-    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onWheel(_ev: BeWheelEvent): void;
@@ -9284,10 +9315,6 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onMouseMotionStopped(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onMouseNoMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled>;
@@ -9318,8 +9345,6 @@ export abstract class ViewManip extends ViewTool {
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
     // @internal (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
-    // (undocumented)
-    stoppedOverHandle: boolean;
     // (undocumented)
     targetCenterLocked: boolean;
     // (undocumented)
@@ -9512,7 +9537,7 @@ export abstract class Viewport implements IDisposable {
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal (undocumented)
-    renderFrame(): boolean;
+    renderFrame(): void;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
     // @internal (undocumented)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Changes ControlledTree events to pass TreeNodeItem instead of nodeId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

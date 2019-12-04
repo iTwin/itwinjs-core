@@ -10,7 +10,7 @@ const paths = require("./paths");
 
 // Load iModelJS configuration
 if (process.env.IMODELJS_USE_CONFIG_LOADER && process.env.IMODELJS_USE_CONFIG_LOADER.toLowerCase() === "yes") {
-  const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+  const configLoader = require("@bentley/config-loader/lib/IModelJsConfig");
   const configEnv = configLoader.IModelJsConfig.init(false /*suppress error*/);
   if (configEnv && process.env) {
     Object.assign(process.env, configEnv);

@@ -127,7 +127,9 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
 
   // toggle pinned state
   private _handleExpandClick = () => {
-    this.setState({ isPinned: !this.state.isPinned }, () => { this._handleOnPinClick(); });
+    this.setState(
+      (prevState) => ({ isPinned: !prevState.isPinned }),
+      () => { this._handleOnPinClick(); });
   }
 
   // handle pin clicked

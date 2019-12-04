@@ -147,7 +147,7 @@ describe("Dialog", () => {
       expect(container.style.width).to.equal("200px");
     });
     it("should resize to minWidth and minHeight", () => {
-      const component = render(<Dialog opened={true} resizable={true} minHeight={200} minWidth={200} />);
+      const component = render(<Dialog opened={true} resizable={true} height={400} width={400} minHeight={200} minWidth={200} />);
       const bottomRightDragHandle = component.getByTestId("core-dialog-drag-bottom-right");
       bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
       window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 100, clientY: 100 }));
@@ -157,9 +157,9 @@ describe("Dialog", () => {
       expect(container.style.width).to.equal("200px");
     });
     it("should resize to maxWidth and maxHeight when defined", () => {
-      const component = render(<Dialog opened={true} resizable={true} height={200} width={200} maxWidth={350} maxHeight={350} />);
+      const component = render(<Dialog opened={true} resizable={true} height={300} width={300} maxWidth={350} maxHeight={350} />);
       const bottomRightDragHandle = component.getByTestId("core-dialog-drag-bottom-right");
-      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 400 }));
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 300, clientY: 300 }));
       window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 400, clientY: 400 }));
       window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 400, clientY: 400 }));
       const container = component.getByTestId("core-dialog-container");

@@ -610,7 +610,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         detail.intervalRole = CurveIntervalRole.isolated;
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
           detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
-        else if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
+        else if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.endRadians))
           detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
         result.push(detail);
       }
@@ -799,7 +799,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param options StrokeOptions that determine count
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
-    let numStroke = 1;
+    let numStroke;
     if (options) {
       const rMax = this.maxVectorLength();
       numStroke = options.applyTolerancesToArc(rMax, this._sweep.sweepRadians);

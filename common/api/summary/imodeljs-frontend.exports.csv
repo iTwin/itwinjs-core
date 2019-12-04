@@ -91,6 +91,7 @@ public;CoordSystem
 internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
+alpha;cssPixelsToDevicePixels(cssPixels: number): number
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -121,6 +122,7 @@ internal;ElemMethod
 internal;ElemSource
 beta;EmphasizeElements 
 beta;EmphasizeElementsProps
+beta;EngineeringLengthDescription 
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
@@ -284,6 +286,7 @@ beta;PropertyValueFormat
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
+alpha;queryDevicePixelRatio(): number
 alpha;RangeEditorParams 
 public;RelativePosition
 beta;class RenderClipVolume 
@@ -358,6 +361,7 @@ internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SuppressLabelEditorParams 
 alpha;SuppressUnitLabelEditorParams 
+beta;SurveyLengthDescription 
 internal;SuspendedToolState
 internal;SyncFlags
 internal;class Target 

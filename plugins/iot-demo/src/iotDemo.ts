@@ -9,7 +9,6 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   Plugin,
-  PluginAdmin,
   RenderScheduleState,
   ToolTipProvider,
   ScreenViewport,
@@ -520,4 +519,4 @@ export class IoTDemoPlugin extends Plugin {
 
 declare var PLUGIN_NAME: string;
 
-PluginAdmin.register(new IoTDemoPlugin(PLUGIN_NAME));
+IModelApp.pluginAdmin.register(new IoTDemoPlugin(PLUGIN_NAME));

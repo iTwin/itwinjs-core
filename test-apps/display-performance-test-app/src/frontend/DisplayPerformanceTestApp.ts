@@ -13,7 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology,
+  FeatureOverrideProvider, FeatureSymbology, cssPixelsToDevicePixels, queryDevicePixelRatio,
 } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -101,6 +101,7 @@ class DisplayPerfTestApp {
     opts = opts ? opts : {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
     IModelApp.startup(opts);
+    IModelApp.animationInterval = undefined;
   }
 }
 
@@ -365,9 +366,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const w = configs.view!.width * devicePixelRatio;
-  const h = configs.view!.height * devicePixelRatio;
+  const w = cssPixelsToDevicePixels(configs.view!.width);
+  const h = cssPixelsToDevicePixels(configs.view!.height);
   rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
@@ -466,8 +466,8 @@ function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = fal
   testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
 }
 
-async function savePng(fileName: string): Promise<void> {
-  const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
+async function savePng(fileName: string, canvas?: HTMLCanvasElement): Promise<void> {
+  if (!canvas) canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const img = canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
@@ -741,11 +741,10 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
-    const devicePixelRatio = window.devicePixelRatio || 1;
-
     // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
-    viewSize.width /= devicePixelRatio;
-    viewSize.height /= devicePixelRatio;
+    const pixelRatio = queryDevicePixelRatio();
+    viewSize.width /= pixelRatio;
+    viewSize.height /= pixelRatio;
 
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";
@@ -1042,15 +1041,15 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       });
       if (elemIdImgData !== undefined) {
         ctx.putImageData(elemIdImgData, 0, 0);
-        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"), canvas);
       }
       if (depthImgData !== undefined) {
         ctx.putImageData(depthImgData, 0, 0);
-        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"), canvas);
       }
       if (typeImgData !== undefined) {
         ctx.putImageData(typeImgData, 0, 0);
-        await savePng(getImageString(testConfig, "type_" + pixStr + "_"));
+        await savePng(getImageString(testConfig, "type_" + pixStr + "_"), canvas);
       }
     }
   }

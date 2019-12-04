@@ -6,7 +6,6 @@
 
 const chalk = require("chalk");
 const {
-  spawn,
   handleInterrupts
 } = require("./utils/simpleSpawn");
 

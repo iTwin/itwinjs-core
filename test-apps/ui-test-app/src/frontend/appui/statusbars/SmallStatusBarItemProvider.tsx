@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
+import { FooterSeparator } from "@bentley/ui-ninezone";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, StatusBarItem, StatusBarSection, StatusBarItemUtilities,
-  withStatusFieldProps, withMessageCenterFieldProps, BooleanSyncUiListener,
+  withStatusFieldProps, withMessageCenterFieldProps, BooleanSyncUiListener, FooterModeField,
 } from "@bentley/ui-framework";
 import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
 
@@ -19,6 +20,8 @@ const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 const SnapMode = withMessageCenterFieldProps(SnapModeField);
 // tslint:disable-next-line: variable-name
 const ActivityCenter = withStatusFieldProps(ActivityCenterField);
+// tslint:disable-next-line: variable-name
+const FooterMode = withStatusFieldProps(FooterModeField);
 
 export class SmallStatusBarItemProvider {
   public static readonly id = "ui-test-app.SmallStatusBarItemProvider";
@@ -27,8 +30,15 @@ export class SmallStatusBarItemProvider {
   public get statusBarItems(): ReadonlyArray<StatusBarItem> {
     if (!this._statusBarItems) {
       this._statusBarItems = [
-        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 10, <MessageCenter />),
-        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance />),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistanceSeparator", StatusBarSection.Left, 15, (
+          <FooterMode> <FooterSeparator /> </FooterMode>
+        )),
+
+        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenter />),
+        StatusBarItemUtilities.createStatusBarItem("MessageCenterSeparator", StatusBarSection.Left, 25, (
+          <FooterMode> <FooterSeparator /> </FooterMode>
+        )),
         StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Left, 30, <ActivityCenter />),
 
         StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 10, (

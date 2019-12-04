@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react";
+import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
@@ -85,15 +85,21 @@ describe("<SolarTimeline />", () => {
     expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
 
     fireEvent.click(playButton);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await TestUtils.tick(100);
+    await TestUtils.tick(500);
     expect(dataProvider.timeChangeCallbackCalled).to.be.true;
-    expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
+    // the following sets up a MutationObserver which triggers when the DOM is updated
+    const update1Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+    if (update1Button)
+      expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
 
     // hit play/pause button to pause animation
     fireEvent.click(playButton);
-    await TestUtils.tick(100);
-    expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
+    // the following sets up a MutationObserver which triggers when the DOM is updated
+    const update2Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+    if (update2Button)
+      expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
   });
 
 });

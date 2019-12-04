@@ -635,6 +635,8 @@ export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
+    protected formContainerKey(id: TContentId): string;
+    // (undocumented)
     abstract formContainerName(id: TContentId): string;
     // (undocumented)
     abstract formResourceName(id: TContentId): string;
@@ -644,6 +646,8 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
     // (undocumented)
     protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
+    // (undocumented)
+    provider: CloudStorageProvider;
     // (undocumented)
     protected requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response>;
     // (undocumented)
@@ -658,10 +662,14 @@ export interface CloudStorageContainerDescriptor {
     name: string;
     // (undocumented)
     provider?: CloudStorageProvider;
+    // (undocumented)
+    resource?: string;
 }
 
 // @beta (undocumented)
 export interface CloudStorageContainerUrl {
+    // (undocumented)
+    bound?: boolean;
     // (undocumented)
     descriptor: CloudStorageContainerDescriptor;
     // (undocumented)
@@ -691,12 +699,16 @@ export enum CloudStorageProvider {
     // (undocumented)
     Azure = 0,
     // (undocumented)
-    External = 3
+    External = 3,
+    // (undocumented)
+    Unknown = 4
 }
 
 // @beta (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
     protected constructor();
+    // (undocumented)
+    protected formContainerKey(id: TileContentIdentifier): string;
     // (undocumented)
     formContainerName(id: TileContentIdentifier): string;
     // (undocumented)
@@ -3546,6 +3558,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     isCustomHandled?: boolean;
     // (undocumented)
     isCustomHandledOrphan?: boolean;
+    readonly isNavigation: boolean;
     // (undocumented)
     kindOfQuantity?: string;
     // (undocumented)

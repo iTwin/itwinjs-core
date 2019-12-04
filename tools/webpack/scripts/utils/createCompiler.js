@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-const webpack = require("webpack");
 const chalk = require("chalk");
 const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
 const clearConsole = require("react-dev-utils/clearConsole");

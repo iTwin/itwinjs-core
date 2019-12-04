@@ -175,13 +175,15 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
 
   public render() {
     return (
-      <PanelsProvider
-        histories={this.state.histories}
-        items={this.props.items}
-        panels={this.state.panels}
-      >
-        {this._renderItems}
-      </PanelsProvider>
+      <ToolbarDirectionContext.Provider value={this.props.expandsTo!}>
+        <PanelsProvider
+          histories={this.state.histories}
+          items={this.props.items}
+          panels={this.state.panels}
+        >
+          {this._renderItems}
+        </PanelsProvider>
+      </ToolbarDirectionContext.Provider>
     );
   }
 
@@ -254,3 +256,10 @@ export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarIt
     };
   return {};
 };
+
+/**
+ * Context used by Toolbar component to provide Direction to child components.
+ * @internal
+ */
+// tslint:disable-next-line: variable-name
+export const ToolbarDirectionContext = React.createContext<Direction>(Direction.Bottom);

@@ -215,4 +215,26 @@ describe("createDefaultNodeLoadHandler", () => {
     expect(modelSource.getModel().getNode(parentNode.id)!.isLoading).to.be.false;
   });
 
+  it("does not add children if parent was collapsed and children should be disposed", () => {
+    const parentNode = createRandomTreeNodeItem();
+    modelSource.modifyModel((model) => {
+      model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
+    });
+
+    // numChildren set to undefined indicates that this is not he first request for children response
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: parentNode.id,
+      offset: 0,
+      numChildren: undefined,
+      hierarchyItems: [
+        {
+          item: createRandomTreeNodeItems(1, parentNode.id)[0],
+        },
+      ],
+    };
+    createDefaultNodeLoadHandler(modelSource)(loadedHierarchy);
+
+    expect(modelSource.getModel().getChildren(parentNode.id)).to.be.undefined;
+  });
+
 });

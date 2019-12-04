@@ -123,6 +123,25 @@ export class NumberArray {
     for (let i = 0; i < n; i++) { a = Math.max(a, Math.abs(dataA[i] - dataB[i])); }
     return a;
   }
+  /**
+   * Return an array with indicated start and end points, maximum step size internally
+   * @param low low value
+   * @param high high value
+   * @param step max permitted step
+   */
+  public static createArrayWithMaxStepSize(low: number, high: number, step: number): number[] {
+    if (low === high)
+      return [low];
+    const delta = high - low;
+    const numInterval = Math.max(1, Math.floor(Math.abs(delta / step)));
+    const result = [];
+    result.push (low);
+    for (let i = 1; i < numInterval; i++) {
+      result.push(low + (i / numInterval) * delta);
+    }
+    result.push (high);
+    return result;
+  }
 
 }
 /**

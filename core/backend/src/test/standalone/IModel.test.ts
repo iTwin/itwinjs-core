@@ -33,7 +33,7 @@ import {
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
   TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps,
-  SpatialViewDefinitionProps,
+  SpatialViewDefinitionProps, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -1931,6 +1931,17 @@ describe("iModel", () => {
       typeDefinition: { id: typeDefinitionId, relClassName: "Analytical:AnalyticalElementIsOfType" },
     };
     const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
+    // test forEachProperty and PropertyMetaData.isNavigation
+    const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
+    element.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
+      switch (propertyName) {
+        case "model": assert.isTrue(meta.isNavigation); break;
+        case "category": assert.isTrue(meta.isNavigation); break;
+        case "typeDefinition": assert.isTrue(meta.isNavigation); break;
+        case "codeValue": assert.isFalse(meta.isNavigation); break;
+        case "userLabel": assert.isFalse(meta.isNavigation); break;
+      }
+    }, true); // `true` means include custom properties
     // test typeDefinition update scenarios
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");

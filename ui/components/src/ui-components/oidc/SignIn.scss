@@ -4,12 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-/************************************************************************
- * SignIn2Dialog - OIDC sign-in dialog.
- *    The SignIn dialog has not been reviewed by the UX team, so
- *    markup and styling are sure to change.
- ***********************************************************************/
-
 $signin-height: 315px; // 250px;
 $signin-width:  275px;
 
@@ -63,7 +57,7 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
 
   /* sign in button */
   .components-signin-button {
-    @include uicore-buttons-primary;
+    @include uicore-buttons-primary-large;
     margin-top: auto;
   }
 

@@ -71,12 +71,10 @@ export class ClassRegistry {
    * @param schema The schema for all found classes
    */
   public static registerModule(moduleObj: any, schema: typeof Schema) {
-    for (const thisMember in moduleObj) {
-      if (undefined !== thisMember) {
-        const thisClass = moduleObj[thisMember];
-        if (thisClass.prototype instanceof Entity)
-          this.register(thisClass, schema);
-      }
+    for (const thisMember in moduleObj) {// tslint:disable-line: forin
+      const thisClass = moduleObj[thisMember];
+      if (thisClass.prototype instanceof Entity)
+        this.register(thisClass, schema);
     }
   }
 

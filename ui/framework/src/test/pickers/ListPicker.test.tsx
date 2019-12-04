@@ -233,7 +233,7 @@ describe("ListPicker", () => {
           items={listItems}
           setEnabled={setEnabled}
         />,
-      ).should.matchSnapshot();
+      ).dive().should.matchSnapshot();
     });
 
     it("should minimize", () => {
@@ -257,7 +257,7 @@ describe("ListPicker", () => {
       listPickerBaseInstance.getExpandedContent();
     });
 
-    it("simulate expanding via click", () => {
+    it("simulate expanding", () => {
       const spyOnExpanded = sinon.spy();
 
       const component = enzyme.mount(
@@ -269,13 +269,11 @@ describe("ListPicker", () => {
         />,
       );
 
-      const itemComponent = component.find(Item);
-      expect(itemComponent).not.to.be.undefined;
-      itemComponent.simulate("click");
+      const item = component.find(Item);
+      expect(item).not.to.be.undefined;
+      item.prop("onClick")!();
       component.update();
 
-      // tslint:disable-next-line:no-console
-      // console.log(component.debug());
       expect(spyOnExpanded.calledOnce).to.be.true;
       component.unmount();
     });
@@ -348,9 +346,9 @@ describe("ListPicker", () => {
         />,
       );
 
-      const itemComponent = listPickerWrapper.find(Item);
-      expect(itemComponent).not.to.be.undefined;
-      itemComponent.simulate("click");
+      const item = listPickerWrapper.find(Item);
+      expect(item).not.to.be.undefined;
+      item.prop("onClick")!();
       listPickerWrapper.update();
     });
 
@@ -455,25 +453,24 @@ describe("ListPicker", () => {
 
       expect(spy.calledOnce).to.be.true;
     });
-
-    it("should not minimize on outside click", () => {
-      const spy = sinon.spy();
-      const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-        onExpanded={spy}
-      />);
-      sut.setState({ expanded: true });
-      const containedGroup = sut.findWhere((w) => {
-        return w.name() === "WithOnOutsideClick";
-      }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
-
-      const event = new MouseEvent("");
-      containedGroup.prop("onOutsideClick")!(event);
-
-      expect(spy.called).to.be.false;
-    });
   });
 
+  it("should not minimize on outside click", () => {
+    const spy = sinon.spy();
+    const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
+      title={title}
+      items={listItems}
+      setEnabled={setEnabled}
+      onExpanded={spy}
+    />);
+    sut.setState({ expanded: true });
+    const containedGroup = sut.findWhere((w) => {
+      return w.name() === "WithOnOutsideClick";
+    }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
+
+    const event = new MouseEvent("");
+    containedGroup.prop("onOutsideClick")!(event);
+
+    expect(spy.called).to.be.false;
+  });
 });

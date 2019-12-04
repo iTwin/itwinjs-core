@@ -57,8 +57,8 @@ export class BaseClassDelta extends SchemaItemChange {
 
 // @beta
 export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDiagnostic<TYPE, ARGS> {
-    constructor(ecDefinition: TYPE, messageArgs?: ARGS);
-    abstract readonly category: DiagnosticCategory;
+    constructor(ecDefinition: TYPE, messageArgs?: ARGS, category?: DiagnosticCategory);
+    category: DiagnosticCategory;
     abstract readonly code: string;
     abstract readonly diagnosticType: DiagnosticType;
     ecDefinition: TYPE;
@@ -115,7 +115,7 @@ export class ClassChanges extends SchemaItemChanges {
 
 // @beta
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
-    constructor(ecClass: AnyClass, messageArgs: ARGS);
+    constructor(ecClass: AnyClass, messageArgs: ARGS, category?: DiagnosticCategory);
     readonly schema: Schema;
 }
 
@@ -159,82 +159,82 @@ export class Constant extends SchemaItem {
 export function containerTypeToString(type: CustomAttributeContainerType): string;
 
 // @beta
-export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (ecClass: AnyClass, messageArgs: ARGS): {
+export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string): {
+    new (ecClass: AnyClass, messageArgs: ARGS, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyClass;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
     diagnosticType: DiagnosticType;
 };
 
 // @beta
-export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (container: CustomAttributeContainerProps, messageArgs: ARGS): {
+export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string): {
+    new (container: CustomAttributeContainerProps, messageArgs: ARGS, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: CustomAttributeContainerProps;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
 };
 
 // @beta
-export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (property: AnyProperty, messageArgs?: ARGS | undefined): {
+export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string): {
+    new (property: AnyProperty, messageArgs?: ARGS | undefined, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyProperty;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
 };
 
 // @beta
-export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (constraint: RelationshipConstraint, messageArgs: ARGS): {
+export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string): {
+    new (constraint: RelationshipConstraint, messageArgs: ARGS, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: RelationshipConstraint;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
 };
 
 // @beta
-export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (schema: Schema, messageArgs: ARGS): {
+export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string): {
+    new (schema: Schema, messageArgs: ARGS, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: Schema;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
     diagnosticType: DiagnosticType;
 };
 
 // @beta
-export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (ecDefinition: SchemaItem, messageArgs: ARGS): {
+export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string): {
+    new (ecDefinition: SchemaItem, messageArgs: ARGS, category?: DiagnosticCategory): {
         readonly code: string;
-        readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: ITEM;
         messageArgs?: ARGS | undefined;
+        category: DiagnosticCategory;
     };
     diagnosticType: DiagnosticType;
 };
@@ -276,7 +276,7 @@ export class CustomAttributeContainerChanges extends BaseSchemaChanges {
 
 // @beta
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
-    constructor(container: CustomAttributeContainerProps, messageArgs: ARGS);
+    constructor(container: CustomAttributeContainerProps, messageArgs: ARGS, category?: DiagnosticCategory);
     readonly diagnosticType: DiagnosticType;
     readonly schema: Schema;
 }
@@ -404,153 +404,153 @@ export const DiagnosticCodes: {
 // @beta
 export const Diagnostics: {
     BaseClassIsSealed: {
-        new (ecClass: AnyClass, messageArgs: [string, string]): {
+        new (ecClass: AnyClass, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassIsOfDifferentType: {
-        new (ecClass: AnyClass, messageArgs: [string, string, string]): {
+        new (ecClass: AnyClass, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     CustomAttributeNotOfConcreteClass: {
-        new (container: CustomAttributeContainerProps, messageArgs: [string, string]): {
+        new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     EnumerationTypeUnsupported: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     MixinAppliedToClassMustDeriveFromConstraint: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     IncompatibleValueTypePropertyOverride: {
-        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     IncompatibleTypePropertyOverride: {
-        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     IncompatibleUnitPropertyOverride: {
-        new (property: AnyProperty, messageArgs?: [string, string, string, string, string, string, string] | undefined): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     AbstractConstraintMustNarrowBaseConstraints: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     DerivedConstraintsMustNarrowBaseConstraints: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     ConstraintClassesDeriveFromAbstractContraint: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     AtLeastOneConstraintClassDefined: {
-        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     AbstractConstraintMustExistWithMultipleConstraints: {
-        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
 };
@@ -1209,11 +1209,68 @@ export interface IRuleSet {
     propertyRules?: Array<IRule<AnyProperty>>;
     relationshipConstraintRules?: Array<IRule<RelationshipConstraint>>;
     relationshipRules?: Array<IRule<RelationshipClass>>;
+    schemaExclusionSet?: string[];
     schemaItemRules?: Array<IRule<SchemaItem>>;
     schemaRules?: Array<IRule<Schema>>;
     structClassRules?: Array<IRule<StructClass>>;
     unitRules?: Array<IRule<Unit>>;
     unitSystemRules?: Array<IRule<UnitSystem>>;
+}
+
+// @beta
+export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
+    // (undocumented)
+    rule: ISuppressionRule<T, U>;
+    // (undocumented)
+    ruleCode: string;
+}
+
+// @beta
+export interface IRuleSuppressionSet {
+    // (undocumented)
+    classRuleSuppressions?: Array<IRuleSuppressionMap<AnyClass>>;
+    // (undocumented)
+    constantRuleSuppressions?: Array<IRuleSuppressionMap<Constant>>;
+    // (undocumented)
+    customAttributeContainerSuppressions?: Array<IRuleSuppressionMap<CustomAttributeContainerProps>>;
+    // (undocumented)
+    customAttributeInstanceSuppressions?: Array<BaseRuleSuppressionMap<CustomAttributeContainerProps, CustomAttribute>>;
+    // (undocumented)
+    customAttributeRuleSuppressions?: Array<IRuleSuppressionMap<CustomAttributeClass>>;
+    // (undocumented)
+    entityRuleSuppressions?: Array<IRuleSuppressionMap<EntityClass>>;
+    // (undocumented)
+    enumerationRuleSuppressions?: Array<IRuleSuppressionMap<Enumeration>>;
+    // (undocumented)
+    formatRuleSuppressions?: Array<IRuleSuppressionMap<Format>>;
+    // (undocumented)
+    invertedUnitRuleSuppressions?: Array<IRuleSuppressionMap<InvertedUnit>>;
+    // (undocumented)
+    koqRuleSuppressions?: Array<IRuleSuppressionMap<KindOfQuantity>>;
+    // (undocumented)
+    mixinRuleSuppressions?: Array<IRuleSuppressionMap<Mixin>>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    phenomenonRuleSuppressions?: Array<IRuleSuppressionMap<Phenomenon>>;
+    // (undocumented)
+    propertyCategoryRuleSuppressions?: Array<IRuleSuppressionMap<PropertyCategory>>;
+    // (undocumented)
+    propertyRuleSuppressions?: Array<IRuleSuppressionMap<AnyProperty>>;
+    // (undocumented)
+    relationshipConstraintRuleSuppressions?: Array<IRuleSuppressionMap<RelationshipConstraint>>;
+    // (undocumented)
+    relationshipRuleSuppressions?: Array<IRuleSuppressionMap<RelationshipClass>>;
+    // (undocumented)
+    schemaItemRuleSuppressions?: Array<IRuleSuppressionMap<SchemaItem>>;
+    // (undocumented)
+    schemaRuleSuppressions?: Array<IRuleSuppressionMap<Schema>>;
+    // (undocumented)
+    structRuleSuppressions?: Array<IRuleSuppressionMap<StructClass>>;
+    // (undocumented)
+    unitRuleSuppressions?: Array<IRuleSuppressionMap<Unit>>;
+    // (undocumented)
+    unitSystemRuleSuppressions?: Array<IRuleSuppressionMap<UnitSystem>>;
 }
 
 // @alpha
@@ -1339,6 +1396,9 @@ export interface ISchemaPartVisitor {
     visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
     visitUnitSystemSync?: (unitSystem: UnitSystem) => void;
 }
+
+// @beta
+export type ISuppressionRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
 // @beta
 export class KindOfQuantity extends SchemaItem {
@@ -1800,7 +1860,7 @@ export class PropertyChanges extends BaseSchemaChanges {
 
 // @beta
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
-    constructor(property: AnyProperty, messageArgs?: ARGS);
+    constructor(property: AnyProperty, messageArgs?: ARGS, category?: DiagnosticCategory);
     readonly diagnosticType: DiagnosticType;
     readonly schema: Schema;
 }
@@ -2008,7 +2068,7 @@ export class RelationshipConstraintClassChange extends BaseSchemaChange {
 
 // @beta
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
-    constructor(constraint: RelationshipConstraint, messageArgs: ARGS);
+    constructor(constraint: RelationshipConstraint, messageArgs: ARGS, category?: DiagnosticCategory);
     readonly diagnosticType: DiagnosticType;
     readonly schema: Schema;
 }
@@ -2226,333 +2286,333 @@ export const SchemaCompareCodes: {
 // @beta
 export const SchemaCompareDiagnostics: {
     SchemaDelta: {
-        new (schema: Schema, messageArgs: [string, any, any]): {
+        new (schema: Schema, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaReferenceMissing: {
-        new (schema: Schema, messageArgs: [Schema]): {
+        new (schema: Schema, messageArgs: [Schema], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [Schema] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaItemDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaItemMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: []): {
+        new (ecDefinition: SchemaItem, messageArgs: [], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     ClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [string, any, any]): {
+        new (ecClass: AnyClass, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined]): {
+        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined, CustomAttributeClass | EntityClass | Mixin | import("../ecschema-metadata").StructClass | RelationshipClass | undefined] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PropertyDelta: {
-        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [string, any, any] | undefined): {
+        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [string, any, any] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../ecschema-metadata").AnyProperty;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     PropertyMissing: {
-        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [] | undefined): {
+        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../ecschema-metadata").AnyProperty;
             messageArgs?: [] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     EntityMixinMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Mixin]): {
+        new (ecDefinition: SchemaItem, messageArgs: [Mixin], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [Mixin] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     MixinDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Mixin;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     RelationshipDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     RelationshipConstraintDelta: {
-        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [string, any, any]): {
+        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value  */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     RelationshipConstraintClassMissing: {
-        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [AnyClass]): {
+        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [AnyClass], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value  */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
             messageArgs?: [AnyClass] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     CustomAttributeClassDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeClass;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     CustomAttributeInstanceClassMissing: {
-        new (container: import("../Metadata/CustomAttribute").CustomAttributeContainerProps, messageArgs: [CustomAttribute]): {
+        new (container: import("../Metadata/CustomAttribute").CustomAttributeContainerProps, messageArgs: [CustomAttribute], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../Metadata/CustomAttribute").CustomAttributeContainerProps;
             messageArgs?: [CustomAttribute] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     EnumerationDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     EnumeratorMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>]): {
+        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [import("../Metadata/Enumeration").Enumerator<string | number>] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     EnumeratorDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     KoqDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format]): {
+        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [OverrideFormat | Format] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PropertyCategoryDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: PropertyCategory;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     FormatDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, any, any] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     FormatUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit]): {
+        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     UnitLabelOverrideDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined]): {
+        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     UnitDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     InvertedUnitDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     PhenomenonDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     ConstantDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Constant;
             messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -2610,7 +2670,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 
 // @beta
 export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
-    constructor(schema: Schema, messageArgs: ARGS);
+    constructor(schema: Schema, messageArgs: ARGS, category?: DiagnosticCategory);
     // (undocumented)
     static diagnosticType: DiagnosticType;
     readonly diagnosticType: DiagnosticType;
@@ -2701,7 +2761,7 @@ export class SchemaItemChanges extends BaseSchemaChanges {
 
 // @beta
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
-    constructor(ecDefinition: SchemaItem, messageArgs: ARGS);
+    constructor(ecDefinition: SchemaItem, messageArgs: ARGS, category?: DiagnosticCategory);
     // (undocumented)
     static diagnosticType: DiagnosticType;
     readonly diagnosticType: DiagnosticType;
@@ -2883,7 +2943,10 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     readonly diagnosticReporters: IDiagnosticReporter[];
     registerReporter(...reporters: IDiagnosticReporter[]): void;
     registerRuleSet(ruleSet: IRuleSet): void;
+    registerRuleSuppressionSet(suppressionSet: IRuleSuppressionSet): void;
     readonly ruleSets: RuleSetArray;
+    // (undocumented)
+    readonly suppressionSet: IRuleSuppressionSet | undefined;
     visitClass(ecClass: AnyClass): Promise<void>;
     visitConstant(constant: Constant): Promise<void>;
     visitCustomAttributeClass(customAttribute: CustomAttributeClass): Promise<void>;

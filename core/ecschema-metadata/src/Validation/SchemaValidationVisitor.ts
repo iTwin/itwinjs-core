@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AnyClass } from "../Interfaces";
+import { AnyClass, AnyECType } from "../Interfaces";
 import { StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
@@ -22,10 +22,11 @@ import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
-import { AnyDiagnostic } from "./Diagnostic";
+import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
 import { IDiagnosticReporter } from "./DiagnosticReporter";
 import { IRuleSet } from "./Rules";
 import { ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
+import { IRuleSuppressionSet, IRuleSuppressionMap, ISuppressionRule } from "./RuleSuppressionSet";
 
 interface RuleSetArray {
   [name: string]: IRuleSet;
@@ -41,10 +42,15 @@ interface RuleSetArray {
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
   private _reporters: IDiagnosticReporter[] = [];
   private _ruleSets: RuleSetArray = {};
+  private _ruleSuppressionSet?: IRuleSuppressionSet;
 
   /** Gets the IRule<AnyClass> objects registered with the visitor. */
   public get ruleSets(): RuleSetArray {
     return this._ruleSets;
+  }
+
+  public get suppressionSet(): IRuleSuppressionSet | undefined {
+    return this._ruleSuppressionSet;
   }
 
   /** Gets the IDiagnosticReporter objects registered with the visitor. */
@@ -71,6 +77,16 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       throw new Error(`A RuleSet with the name '${ruleSet.name}' has already been registered.`);
 
     this.ruleSets[ruleSet.name] = ruleSet;
+  }
+
+  /**
+   * Registers a [[IRuleSuppressionSet]] that will be applied during schema traversal.
+   * @param ruleSet The [[IRuleSuppressionSet]] to register.
+   * Only supports one Rule Suppression Set, if you call it twice it will overwrite the
+   * previous suppression set
+   */
+  public registerRuleSuppressionSet(suppressionSet: IRuleSuppressionSet) {
+    this._ruleSuppressionSet = suppressionSet;
   }
 
   /**
@@ -263,219 +279,312 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   public async applySchemaRules(schema: Schema, ruleSet: IRuleSet) {
-    if (!ruleSet.schemaRules)
+    if (!ruleSet.schemaRules || this.excludeSchemaFromRuleSet(schema, ruleSet))
       return;
 
     for (const rule of ruleSet.schemaRules) {
       const result = rule(schema);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.schemaRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, schema, suppressions);
+      }
     }
   }
 
   public async applySchemaItemRules(schemaItem: SchemaItem, ruleSet: IRuleSet) {
-    if (!ruleSet.schemaItemRules)
+    if (!ruleSet.schemaItemRules || this.excludeSchemaFromRuleSet(schemaItem.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.schemaItemRules) {
       const result = rule(schemaItem);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.schemaItemRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, schemaItem, suppressions);
+      }
     }
   }
 
   public async applyClassRules(ecClass: AnyClass, ruleSet: IRuleSet) {
-    if (!ruleSet.classRules)
+    if (!ruleSet.classRules || this.excludeSchemaFromRuleSet(ecClass.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.classRules) {
       const result = rule(ecClass);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.classRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, ecClass, suppressions);
+      }
     }
   }
 
   public async applyPropertyRules(property: AnyProperty, ruleSet: IRuleSet) {
-    if (!ruleSet.propertyRules)
+    if (!ruleSet.propertyRules || this.excludeSchemaFromRuleSet(property.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.propertyRules) {
       const result = rule(property);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.propertyRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, property, suppressions);
+      }
     }
   }
 
   public async applyEntityRules(entityClass: EntityClass, ruleSet: IRuleSet) {
-    if (!ruleSet.entityClassRules)
+    if (!ruleSet.entityClassRules || this.excludeSchemaFromRuleSet(entityClass.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.entityClassRules) {
       const result = rule(entityClass);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.entityRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, entityClass, suppressions);
+      }
     }
   }
 
   public async applyStructRules(structClass: StructClass, ruleSet: IRuleSet) {
-    if (!ruleSet.structClassRules)
+    if (!ruleSet.structClassRules || this.excludeSchemaFromRuleSet(structClass.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.structClassRules) {
       const result = rule(structClass);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.structRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, structClass, suppressions);
+      }
     }
   }
 
   public async applyMixinRules(mixin: Mixin, ruleSet: IRuleSet) {
-    if (!ruleSet.mixinRules)
+    if (!ruleSet.mixinRules || this.excludeSchemaFromRuleSet(mixin.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.mixinRules) {
       const result = rule(mixin);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.mixinRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, mixin, suppressions);
+      }
     }
   }
 
   public async applyRelationshipRules(relationship: RelationshipClass, ruleSet: IRuleSet) {
-    if (!ruleSet.relationshipRules)
+    if (!ruleSet.relationshipRules || this.excludeSchemaFromRuleSet(relationship.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.relationshipRules) {
       const result = rule(relationship);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.relationshipRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, relationship, suppressions);
+      }
     }
   }
 
   public async applyRelationshipConstraintRules(constraint: RelationshipConstraint, ruleSet: IRuleSet) {
-    if (!ruleSet.relationshipConstraintRules)
+    if (!ruleSet.relationshipConstraintRules || this.excludeSchemaFromRuleSet(constraint.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.relationshipConstraintRules) {
       const result = rule(constraint);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.relationshipConstraintRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, constraint, suppressions);
+      }
     }
   }
 
   public async applyCustomAttributeRules(customAttribute: CustomAttributeClass, ruleSet: IRuleSet) {
-    if (!ruleSet.customAttributeClassRules)
+    if (!ruleSet.customAttributeClassRules || this.excludeSchemaFromRuleSet(customAttribute.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.customAttributeClassRules) {
       const result = rule(customAttribute);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, customAttribute, suppressions);
+      }
     }
   }
 
   public async applyCustomAttributeContainerRules(container: CustomAttributeContainerProps, ruleSet: IRuleSet) {
-    if (!ruleSet.customAttributeContainerRules)
+    if (!ruleSet.customAttributeContainerRules || this.excludeSchemaFromRuleSet(container.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.customAttributeContainerRules) {
       const result = rule(container);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeContainerSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, container, suppressions);
+      }
     }
   }
 
   public async applyCustomAttributeInstanceRules(container: CustomAttributeContainerProps, customAttribute: CustomAttribute, ruleSet: IRuleSet) {
-    if (!ruleSet.customAttributeInstanceRules)
+    if (!ruleSet.customAttributeInstanceRules || this.excludeSchemaFromRuleSet(container.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.customAttributeInstanceRules) {
       const result = rule(container, customAttribute);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeInstanceSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, container, suppressions);
+      }
     }
   }
 
   public async applyEnumerationRules(enumeration: Enumeration, ruleSet: IRuleSet) {
-    if (!ruleSet.enumerationRules)
+    if (!ruleSet.enumerationRules || this.excludeSchemaFromRuleSet(enumeration.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.enumerationRules) {
       const result = rule(enumeration);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.enumerationRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, enumeration, suppressions);
+      }
     }
   }
 
   public async applyKindOfQuantityRules(kindOfQuantity: KindOfQuantity, ruleSet: IRuleSet) {
-    if (!ruleSet.kindOfQuantityRules)
+    if (!ruleSet.kindOfQuantityRules || this.excludeSchemaFromRuleSet(kindOfQuantity.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.kindOfQuantityRules) {
       const result = rule(kindOfQuantity);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.koqRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, kindOfQuantity, suppressions);
+      }
     }
   }
 
   public async applyPropertyCategoryRules(propertyCategory: PropertyCategory, ruleSet: IRuleSet) {
-    if (!ruleSet.propertyCategoryRules)
+    if (!ruleSet.propertyCategoryRules || this.excludeSchemaFromRuleSet(propertyCategory.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.propertyCategoryRules) {
       const result = rule(propertyCategory);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.propertyCategoryRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, propertyCategory, suppressions);
+      }
     }
   }
 
   public async applyFormatRules(format: Format, ruleSet: IRuleSet) {
-    if (!ruleSet.formatRules)
+    if (!ruleSet.formatRules || this.excludeSchemaFromRuleSet(format.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.formatRules) {
       const result = rule(format);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.formatRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, format, suppressions);
+      }
     }
   }
 
   public async applyUnitRules(unit: Unit, ruleSet: IRuleSet) {
-    if (!ruleSet.unitRules)
+    if (!ruleSet.unitRules || this.excludeSchemaFromRuleSet(unit.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.unitRules) {
       const result = rule(unit);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.unitRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, unit, suppressions);
+      }
     }
   }
 
   public async applyInvertedUnitRules(invertedUnit: InvertedUnit, ruleSet: IRuleSet) {
-    if (!ruleSet.invertedUnitRules)
+    if (!ruleSet.invertedUnitRules || this.excludeSchemaFromRuleSet(invertedUnit.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.invertedUnitRules) {
       const result = rule(invertedUnit);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.invertedUnitRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, invertedUnit, suppressions);
+      }
     }
   }
 
   public async applyUnitSystemRules(unitSystem: UnitSystem, ruleSet: IRuleSet) {
-    if (!ruleSet.unitSystemRules)
+    if (!ruleSet.unitSystemRules || this.excludeSchemaFromRuleSet(unitSystem.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.unitSystemRules) {
       const result = rule(unitSystem);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.unitSystemRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, unitSystem, suppressions);
+      }
     }
   }
 
   public async applyPhenomenonRules(phenomenon: Phenomenon, ruleSet: IRuleSet) {
-    if (!ruleSet.phenomenonRules)
+    if (!ruleSet.phenomenonRules || this.excludeSchemaFromRuleSet(phenomenon.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.phenomenonRules) {
       const result = rule(phenomenon);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.phenomenonRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, phenomenon, suppressions);
+      }
     }
   }
 
   public async applyConstantRules(constant: Constant, ruleSet: IRuleSet) {
-    if (!ruleSet.constantRules)
+    if (!ruleSet.constantRules || this.excludeSchemaFromRuleSet(constant.schema, ruleSet))
       return;
 
     for (const rule of ruleSet.constantRules) {
       const result = rule(constant);
-      await this.reportDiagnostics(result);
+      for await (const diagnostic of result) {
+        const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.constantRuleSuppressions : undefined;
+        await this.reportDiagnostics(diagnostic, constant, suppressions);
+      }
     }
   }
 
-  private async reportDiagnostics(diagnostics: AsyncIterable<AnyDiagnostic>) {
-    for await (const diagnostic of diagnostics) {
-      if (diagnostic)
-        this._reporters.forEach((reporter) => { reporter.report(diagnostic); });
+  private findSuppressionRule<T extends AnyECType, U = {}>(suppressionSet: Array<IRuleSuppressionMap<T, U>>, code: string): ISuppressionRule<T, U> | undefined {
+    if (!suppressionSet)
+      return;
+
+    for (const suppression of suppressionSet) {
+      if (suppression.ruleCode === code) {
+        return suppression.rule;
+      }
     }
+
+    return;
+  }
+
+  private excludeSchemaFromRuleSet(schema: Schema, ruleSet: IRuleSet): boolean {
+    if (!ruleSet.schemaExclusionSet)
+      return false;
+
+    return ruleSet.schemaExclusionSet.includes(schema.name);
+  }
+
+  private async reportDiagnostics<T extends AnyECType, U = {}>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
+    if (!diagnostic)
+      return;
+
+    if (suppressionMap) {
+      const suppressRule = this.findSuppressionRule(suppressionMap, diagnostic.code);
+      if (suppressRule) {
+        const ecSuppression = await suppressRule(ecType);
+        if (ecSuppression) {
+          diagnostic.category = DiagnosticCategory.Warning;
+        }
+      }
+    }
+
+    this._reporters.forEach((reporter) => { reporter.report(diagnostic); });
   }
 }

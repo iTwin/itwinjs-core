@@ -12,11 +12,10 @@ import { BaseQuantityDescription } from "./BaseQuantityDescription";
  * @beta
  */
 export class AngleDescription extends BaseQuantityDescription {
-  private static _defaultName = "angle";
-
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
+    const defaultName = "angle";
     super(
-      name ? name : AngleDescription._defaultName,
+      name ? name : defaultName,
       displayLabel ? displayLabel : IModelApp.i18n.translate("iModelJs:Properties.Angle"),
       iconSpec,
     );

@@ -46,7 +46,7 @@ function configMockSettings() {
 export function createFileHanlder(useDownloadBuffer?: boolean) {
   if (MobileRpcConfiguration.isMobileBackend) {
     return new IOSAzureFileHandler();
-  } else if (TestConfig.enableIModelBank) {
+  } else if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
     return new UrlFileHandler();
   }
   return new AzureFileHandler(useDownloadBuffer);

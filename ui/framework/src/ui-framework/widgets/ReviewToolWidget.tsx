@@ -10,6 +10,7 @@ import { CoreTools } from "../CoreToolDefinitions";
 import { ItemList } from "../shared/ItemMap";
 import { Backstage } from "../../ui-framework";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
+import { IconSpec } from "@bentley/ui-core";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta
@@ -25,6 +26,8 @@ export interface ReviewToolWidgetProps {
   suffixVerticalItems?: ItemList;
   /** Controls visibility of hide/isolate tools that act on a selection set's categories/models */
   showCategoryAndModelsContextTools?: boolean;
+  /** Icon specification for application button */
+  iconSpec?: IconSpec;
 }
 
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
@@ -53,6 +56,11 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
   ]);
 
   public render() {
+    let appButtonCommandItemDef = Backstage.backstageToggleCommand;
+    if (this.props.iconSpec) {
+      appButtonCommandItemDef = Backstage.getBackstageToggleCommand(this.props.iconSpec);
+    }
+
     const horizontalToolbarItems = new ItemList();
     // istanbul ignore else
     if (this.props.prefixHorizontalItems) horizontalToolbarItems.addItems(this.props.prefixHorizontalItems);
@@ -71,7 +79,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
     return (
       <ToolWidget
-        appButton={Backstage.backstageToggleCommand}
+        appButton={appButtonCommandItemDef}
         horizontalItems={horizontalToolbarItems}
         verticalItems={verticalToolbarItems}
       />

@@ -34,7 +34,9 @@
     "themeTitle": "Theme",
     "themeDescription": "Toggle the theme between light and dark",
     "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity"
+    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+    "dragInteractionTitle": "Drag Interaction",
+    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag"
   },
   "backstage": {
     "command": "Command",
@@ -280,6 +282,14 @@
       "remove-favorite": {
         "label": "Remove from Favorite",
         "description": "Remove this property from Favorite category"
+      }
+    }
+  },
+  "table": {
+    "context-menu": {
+      "sample-item": {
+        "label": "Sample menu item",
+        "description": "A sample of a context menu item"
       }
     }
   }

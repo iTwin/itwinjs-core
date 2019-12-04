@@ -55,7 +55,7 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
-alpha;CategoryTree 
+alpha;CategoryTree: React.FC
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
@@ -72,6 +72,8 @@ public;CommandItemProps
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
 beta;CommonBackstageItem
+public;ConditionalField 
+public;ConditionalFieldProps 
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -168,6 +170,7 @@ beta;ExpandableSectionProps
 internal;FaceCell 
 internal;FaceCellProps 
 alpha;FilterInfo
+public;FooterModeField 
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
@@ -193,6 +196,8 @@ public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
+internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
+internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
@@ -212,6 +217,7 @@ public;IconProps
 public;IconSpec = IconSpec_2
 beta;IModelConnectedCategoryTree: any
 beta;IModelConnectedCubeNavigationAid: any
+alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
 beta;IModelConnectedViewport: any
 beta;IModelConnectedViewSelector: any
@@ -288,6 +294,8 @@ public;ModelessDialogProps
 public;ModelessDialogRenderer 
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
+alpha;ModelsTree: React.FC
+alpha;ModelsTreeProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 
@@ -369,7 +377,7 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
-alpha;SpatialContainmentTree 
+alpha;SpatialContainmentTree: React.FC
 alpha;SpatialContainmentTreeProps
 alpha;SpatialContainmentTreeState
 public;SpecialKey
@@ -444,11 +452,13 @@ internal;ToolAssistanceFieldDefaultProps = Pick
 beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
+beta;ToolbarDragInteractionContext: React.Context
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
+internal;ToolGroupPanelContext: React.Context
 public;ToolIconChangedEvent 
 public;ToolIconChangedEventArgs
 public;ToolInformation

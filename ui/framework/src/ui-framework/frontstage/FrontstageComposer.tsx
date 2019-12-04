@@ -88,7 +88,7 @@ export interface FrontstageRuntimeProps {
  * @internal
  */
 interface FrontstageComposerState {
-  frontstageId: string;
+  allowPointerUpSelection: boolean;
   modalFrontstageCount: number;
   nineZone: NineZoneManagerProps;
   widgetTabs: WidgetTabs;
@@ -125,8 +125,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
     this.state = {
+      allowPointerUpSelection: false,
       nineZone,
-      frontstageId: activeFrontstageId,
       modalFrontstageCount: FrontstageManager.modalFrontstageCount,
       widgetTabs: getDefaultWidgetTabs(),
     };
@@ -192,7 +192,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this._frontstageDef = args.activatedFrontstageDef;
 
     // Get the id and nineZoneProps for the current FrontstageDef
-    const frontstageId = this._frontstageDef.id;
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
     const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
     const widgetTabs = this.determineWidgetTabs();
@@ -200,7 +199,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     // istanbul ignore else
     if (this._isMounted)
       this.setState({
-        frontstageId,
         nineZone,
         widgetTabs,
       }, () => {
@@ -264,6 +262,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private renderModalFrontstage(): React.ReactNode {
+    if (this.state.modalFrontstageCount === 0)
+      return null;
+
     const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
     if (!activeModalFrontstage)
       return null;
@@ -305,10 +306,18 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     }
 
     return (
-      <div id="uifw-frontstage-composer" className={this.props.className} style={this.props.style}>
-        {this.renderModalFrontstage()}
-        {content}
-      </div>
+      <ToolGroupPanelContext.Provider value={this.state.allowPointerUpSelection}>
+        <div
+          className={this.props.className}
+          id="uifw-frontstage-composer"
+          onPointerDown={this._handlePointerDown}
+          onPointerUp={this._handlePointerUp}
+          style={this.props.style}
+        >
+          {this.renderModalFrontstage()}
+          {content}
+        </div>
+      </ToolGroupPanelContext.Provider>
     );
   }
 
@@ -321,6 +330,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public componentWillUnmount(): void {
@@ -631,22 +641,42 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleToolActivatedEvent = () => {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
+    this.setState((prevState) => {
+      const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const manager = FrontstageManager.NineZoneManager;
+      const nineZone = activeToolSettingsNode ? manager.showWidget(2, prevState.nineZone) : manager.hideWidget(2, prevState.nineZone);
+      if (nineZone === prevState.nineZone)
+        return null;
+      return {
+        nineZone,
+      };
+    });
+  }
+
+  private _handleToolPanelOpenedEvent = () => {
+    if (this._isMounted)
+      this.setState({
+        allowPointerUpSelection: true,
+      });
+  }
+
+  private _handlePointerDown = () => {
     // istanbul ignore else
     if (this._isMounted)
-      this.setState((prevState) => {
-        const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
-        const manager = FrontstageManager.NineZoneManager;
-        let nineZone = prevState.nineZone;
-        if (activeToolSettingsNode) {
-          nineZone = manager.showWidget(2, prevState.nineZone);
-        } else {
-          nineZone = manager.hideWidget(2, prevState.nineZone);
-        }
-        if (nineZone === prevState.nineZone)
-          return null;
-        return {
-          nineZone,
-        };
+      this.setState({
+        allowPointerUpSelection: false,
+      });
+  }
+
+  private _handlePointerUp = () => {
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        allowPointerUpSelection: false,
       });
   }
 
@@ -689,3 +719,6 @@ export const isCollapsedToPanelState = (isCollapsed: boolean) => {
       return StagePanelState.Open;
   }
 };
+
+/** @internal */
+export const ToolGroupPanelContext = React.createContext(false); // tslint:disable-line: variable-name

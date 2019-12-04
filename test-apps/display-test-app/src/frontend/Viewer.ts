@@ -26,7 +26,6 @@ import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
 import { ClassificationsPanel } from "./ClassificationsPanel";
-import { selectFileName } from "./FileOpen";
 import { setTitle } from "./Title";
 import { Window } from "./Window";
 import { Surface } from "./Surface";
@@ -106,7 +105,6 @@ export class MarkupTool extends Tool {
 
 export interface ViewerProps {
   iModel: IModelConnection;
-  fileDirectoryPath?: string;
   defaultViewName?: string;
 }
 
@@ -115,7 +113,6 @@ export class Viewer extends Window {
   public readonly viewport: ScreenViewport;
   public readonly toolBar: ToolBar;
   private _imodel: IModelConnection;
-  private readonly _fileDirectoryPath?: string;
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
   private _isSavedView = false;
@@ -131,7 +128,6 @@ export class Viewer extends Window {
     const view = this.viewport.view.clone();
     const viewer = new Viewer(Surface.instance, view, this.views, {
       iModel: view.iModel,
-      fileDirectoryPath: this._fileDirectoryPath,
     });
 
     if (!this.isDocked) {
@@ -156,7 +152,6 @@ export class Viewer extends Window {
     this._imodel = props.iModel;
     this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
-    this._fileDirectoryPath = props.fileDirectoryPath;
 
     const toolbarDiv = document.createElement("div");
     toolbarDiv.className = "topdiv";
@@ -306,18 +301,6 @@ export class Viewer extends Window {
       tooltip: "Override feature symbology",
     });
 
-    const fileSelector = document.getElementById("browserFileSelector") as HTMLInputElement;
-    fileSelector.onchange = async () => {
-      const files = fileSelector.files;
-      if (files && files.length > 0) {
-        try {
-          await this.resetIModel(this._fileDirectoryPath! + "/" + files[0].name);
-        } catch {
-          alert("Error Opening iModel - Make sure you are selecting files from the following directory: " + this._fileDirectoryPath!);
-        }
-      }
-    };
-
     this.updateTitle();
   }
 
@@ -386,7 +369,7 @@ export class Viewer extends Window {
   }
 
   private async selectIModel(): Promise<void> {
-    const filename = selectFileName();
+    const filename = await this.surface.selectFileName();
     if (undefined !== filename) {
       try {
         await this.resetIModel(filename);

@@ -434,7 +434,7 @@ export class AccuDraw {
       return true;
 
     // XY Lock:
-    if (isRectMode && !axisIsIndexed) {
+    if (isRectMode) {
       const locked = this.locked & LockedStates.XY_BM;
 
       if ((0 !== locked) && isOnCompassPlane) {
@@ -1155,7 +1155,7 @@ export class AccuDraw {
     const yVec = viewNormal.crossProduct(inVec);
 
     if (!yVec.normalizeInPlace()) {
-      normalVec = viewNormal;
+      normalVec.setFrom(viewNormal);
       return false;
     }
 
@@ -1329,11 +1329,8 @@ export class AccuDraw {
       if (undefined !== yVec) {
         const viewX = vp.rotation.rowX();
         if (snap.primitive instanceof LineString3d) {
-          if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
-            const tVec = xVec;
+          if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX)))
             xVec = yVec;
-            yVec = tVec;
-          }
           if (xVec.dotProduct(viewX) < 0.0)
             xVec.negate(xVec);
         } else {

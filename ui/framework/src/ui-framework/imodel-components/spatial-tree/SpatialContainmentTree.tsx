@@ -6,15 +6,10 @@
 
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, treeWithUnifiedSelection, PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Tree } from "@bentley/ui-components";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import "./SpatialContainmentTree.scss";
-
-// tslint:disable-next-line:variable-name naming-convention
-const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
-const RULESET: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
+import { OldSpatialContainmentTree } from "./OldSpatialContainmentTree";
+import { ControlledSpatialContainmentTree } from "./ControlledSpatialContainmentTree";
 
 /**
  * Properties for the [[SpatialContainmentTree]] component
@@ -27,14 +22,24 @@ export interface SpatialContainmentTreeProps {
    * @alpha
    */
   enablePreloading?: boolean;
+  /**
+   * Specify to use ControlledTree as underlying tree implementation
+   * @alpha Temporary property
+   */
+  useControlledTree?: boolean;
+  /**
+   * Used for testing
+   * @internal
+   */
+  dataProvider?: IPresentationTreeDataProvider;
 }
 
 /**
  * State for the [[SpatialContainmentTree]] component
  * @alpha
+ * @deprecated
  */
 export interface SpatialContainmentTreeState {
-  initialized: false;
   dataProvider?: IPresentationTreeDataProvider;
 }
 
@@ -42,55 +47,12 @@ export interface SpatialContainmentTreeState {
  * Tree which displays and manages models or categories contained in an iModel.
  * @alpha
  */
-// istanbul ignore next
-export class SpatialContainmentTree extends React.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
-  private _rulesetRegistration?: RegisteredRuleset;
+// tslint:disable-next-line:variable-name naming-convention
+export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps> = (props: SpatialContainmentTreeProps) => {
+  const { useControlledTree, ...strippedProps } = props;
 
-  /**
-   * Presentation rules used by this component
-   * @internal
-   */
-  public static readonly RULESET: Ruleset = RULESET;
+  if (useControlledTree)
+    return <ControlledSpatialContainmentTree {...strippedProps} />;
 
-  constructor(props: SpatialContainmentTreeProps) {
-    super(props);
-
-    this.state = { initialized: false };
-  }
-
-  /** @internal */
-  public async componentDidMount() {
-    await this._initialize();
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    if (this._rulesetRegistration)
-      Presentation.presentation.rulesets().remove(this._rulesetRegistration); // tslint:disable-line:no-floating-promises
-  }
-
-  private _initialize = async () => {
-    this._rulesetRegistration = await Presentation.presentation.rulesets().add(RULESET);
-    const dataProvider = new PresentationTreeDataProvider(this.props.iModel, RULESET.id);
-    if (this.props.enablePreloading && dataProvider.loadHierarchy)
-      await dataProvider.loadHierarchy();
-    this.setState({ dataProvider });
-  }
-
-  /** @internal */
-  public render() {
-    const { dataProvider } = this.state;
-
-    if (!dataProvider)
-      return (
-        <div />
-      );
-    else {
-      return (
-        <div className="uifw-spatial-tree">
-          <UnifiedSelectionTree dataProvider={dataProvider} />
-        </div>
-      );
-    }
-  }
-}
+  return <OldSpatialContainmentTree {...strippedProps} />;
+};

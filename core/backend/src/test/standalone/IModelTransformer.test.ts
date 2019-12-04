@@ -7,9 +7,9 @@ import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3dProps, IModel, Placement3d } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
+import { BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformer3d, IModelTransformerUtils, IModelTransformerWithAsserts, TestIModelTransformer } from "../IModelTransformerUtils";
+import { ClassCounter, CountingIModelImporter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
@@ -26,6 +26,8 @@ describe("IModelTransformer", () => {
     if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
+      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
   });
@@ -43,9 +45,6 @@ describe("IModelTransformer", () => {
     await IModelTransformerUtils.prepareTargetDb(targetDb);
     targetDb.saveChanges();
 
-    let numElementsExcluded: number;
-    let numElementAspectsExcluded: number;
-    let numRelationshipExcluded: number;
     const numSourceUniqueAspects: number = count(sourceDb, ElementUniqueAspect.classFullName);
     const numSourceMultiAspects: number = count(sourceDb, ElementMultiAspect.classFullName);
     const numSourceRelationships: number = count(sourceDb, ElementRefersToElements.classFullName);
@@ -57,27 +56,20 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Initial Import");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
-      const transformer = new TestIModelTransformer(sourceDb, targetDb);
+      const targetImporter = new CountingIModelImporter(targetDb);
+      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
       assert.isTrue(transformer.context.isBetweenIModels);
-      transformer.importAll();
-      assert.isAbove(transformer.numCodeSpecsExcluded, 0);
-      assert.isAbove(transformer.numRelationshipsExcluded, 0);
-      assert.isAbove(transformer.numModelsInserted, 0);
-      assert.equal(transformer.numModelsUpdated, 0);
-      assert.isAbove(transformer.numElementsInserted, 0);
-      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
-      assert.isAbove(transformer.numElementsUpdated, 0);
-      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
-      assert.equal(transformer.numElementsDeleted, 0);
-      assert.isAbove(transformer.numElementsExcluded, 0);
-      assert.isAbove(transformer.numElementAspectsExcluded, 0);
-      assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
-      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementCalls);
-      assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
+      transformer.processAll();
+      assert.isAtLeast(targetImporter.numModelsInserted, 1);
+      assert.equal(targetImporter.numModelsUpdated, 0);
+      assert.isAtLeast(targetImporter.numElementsInserted, 1);
+      assert.isAtLeast(targetImporter.numElementsUpdated, 1);
+      assert.equal(targetImporter.numElementsDeleted, 0);
+      assert.isAtLeast(targetImporter.numElementAspectsInserted, 1);
+      assert.equal(targetImporter.numElementAspectsUpdated, 0);
+      assert.isAtLeast(targetImporter.numRelationshipsInserted, 1);
+      assert.equal(targetImporter.numRelationshipsUpdated, 0);
       assert.isAtLeast(count(targetDb, ElementRefersToElements.classFullName), 1);
-      numElementsExcluded = transformer.numElementsExcluded;
-      numElementAspectsExcluded = transformer.numElementAspectsExcluded;
-      numRelationshipExcluded = transformer.numRelationshipsExcluded;
       targetDb.saveChanges();
       IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
       transformer.dispose();
@@ -88,29 +80,42 @@ describe("IModelTransformer", () => {
     const numTargetMultiAspects: number = count(targetDb, ElementMultiAspect.classFullName);
     const numTargetExternalSourceAspects: number = count(targetDb, ExternalSourceAspect.classFullName);
     const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
-    assert.isAbove(numTargetUniqueAspects, 0);
-    assert.isAbove(numTargetMultiAspects, 0);
-    assert.equal(numSourceUniqueAspects + numSourceMultiAspects, numTargetUniqueAspects + numTargetMultiAspects + numElementAspectsExcluded - numTargetExternalSourceAspects);
-    assert.equal(numSourceRelationships, numTargetRelationships + numRelationshipExcluded);
+    assert.isAtLeast(numTargetUniqueAspects, 1);
+    assert.isAtLeast(numTargetMultiAspects, 1);
+
+    if (true) { // tests of IModelExporter
+      // test #1 - export structure
+      const exportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Export.txt");
+      assert.isFalse(IModelJsFs.existsSync(exportFileName));
+      const exporter = new IModelToTextFileExporter(sourceDb, exportFileName);
+      exporter.export();
+      assert.isTrue(IModelJsFs.existsSync(exportFileName));
+
+      // test #2 - count occurrences of classFullNames
+      const classCountsFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Counts.txt");
+      assert.isFalse(IModelJsFs.existsSync(classCountsFileName));
+      const classCounter = new ClassCounter(sourceDb, classCountsFileName);
+      classCounter.count();
+      assert.isTrue(IModelJsFs.existsSync(classCountsFileName));
+    }
 
     if (true) { // second import with no changes to source, should be a no-op
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport (no-op)");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
-      const transformer = new TestIModelTransformer(sourceDb, targetDb);
-      transformer.importAll();
-      assert.equal(transformer.numModelsInserted, 0);
-      assert.equal(transformer.numModelsUpdated, 0);
-      assert.equal(transformer.numElementsInserted, 0);
-      assert.equal(transformer.numElementsUpdated, 0);
-      assert.equal(transformer.numElementsDeleted, 0);
-      assert.equal(transformer.numElementsExcluded, numElementsExcluded);
-      assert.equal(transformer.numInsertElementCalls, 0);
-      assert.equal(transformer.numInsertElementProvenanceCalls, 0);
-      assert.equal(transformer.numUpdateElementCalls, 0);
-      assert.equal(transformer.numUpdateElementProvenanceCalls, 0);
-      assert.equal(transformer.numExcludedElementCalls, numElementsExcluded);
+      const targetImporter = new CountingIModelImporter(targetDb);
+      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+      transformer.processAll();
+      assert.equal(targetImporter.numModelsInserted, 0);
+      assert.equal(targetImporter.numModelsUpdated, 0);
+      assert.equal(targetImporter.numElementsInserted, 0);
+      assert.equal(targetImporter.numElementsUpdated, 0);
+      assert.equal(targetImporter.numElementsDeleted, 0);
+      assert.equal(targetImporter.numElementAspectsInserted, 0);
+      assert.equal(targetImporter.numElementAspectsUpdated, 0);
+      assert.equal(targetImporter.numRelationshipsInserted, 0);
+      assert.equal(targetImporter.numRelationshipsUpdated, 0);
       assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
       assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
@@ -124,22 +129,20 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport after sourceDb update");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
-      const transformer = new TestIModelTransformer(sourceDb, targetDb);
-      transformer.importAll();
-      assert.equal(transformer.numModelsInserted, 0);
-      assert.equal(transformer.numModelsUpdated, 0);
-      assert.equal(transformer.numElementsInserted, 0);
-      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
-      assert.equal(transformer.numElementsUpdated, 3);
-      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
-      assert.equal(transformer.numElementsDeleted, 1);
-      assert.equal(transformer.numElementsExcluded, numElementsExcluded);
+      const targetImporter = new CountingIModelImporter(targetDb);
+      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+      transformer.processAll();
+      assert.equal(targetImporter.numModelsInserted, 0);
+      assert.equal(targetImporter.numModelsUpdated, 0);
+      assert.equal(targetImporter.numElementsInserted, 0);
+      assert.equal(targetImporter.numElementsUpdated, 4);
+      assert.equal(targetImporter.numElementsDeleted, 1);
+      assert.equal(targetImporter.numElementAspectsInserted, 0);
+      assert.equal(targetImporter.numElementAspectsUpdated, 2);
+      assert.equal(targetImporter.numRelationshipsInserted, 0);
+      assert.equal(targetImporter.numRelationshipsUpdated, 1);
       targetDb.saveChanges();
       IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
-      const expectedNumTargetElements: number = numTargetElements + transformer.numElementsInserted - transformer.numElementsDeleted;
-      const expectedNumExternalSourceAspects: number = numTargetExternalSourceAspects + transformer.numElementsInserted - transformer.numElementsDeleted;
-      assert.equal(expectedNumTargetElements, count(targetDb, Element.classFullName), "Third import should not add elements");
-      assert.equal(expectedNumExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Third import should not add aspects");
       assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Third import should not add relationships");
       transformer.dispose();
     }
@@ -180,9 +183,9 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
     // Import from beneath source Subject into target Subject
     const transformer = new TestIModelTransformer(sourceDb, targetDb);
-    transformer.importFonts();
-    transformer.importSubject(sourceSubjectId, targetSubjectId);
-    transformer.importRelationships(ElementRefersToElements.classFullName);
+    transformer.processFonts();
+    transformer.processSubject(sourceSubjectId, targetSubjectId);
+    transformer.processRelationships(ElementRefersToElements.classFullName);
     transformer.dispose();
     targetDb.saveChanges();
     IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb, "Target Subject");
@@ -206,8 +209,8 @@ describe("IModelTransformer", () => {
     assert.isTrue(Id64.isValidId64(targetSubjectId));
     iModelDb.saveChanges();
     // Import from beneath source Subject into target Subject
-    const transformer = new IModelTransformerWithAsserts(iModelDb, iModelDb);
-    transformer.importSubject(sourceSubjectId, targetSubjectId);
+    const transformer = new IModelTransformer(iModelDb, iModelDb);
+    transformer.processSubject(sourceSubjectId, targetSubjectId);
     transformer.dispose();
     iModelDb.saveChanges();
     iModelDb.closeSnapshot();
@@ -226,18 +229,8 @@ describe("IModelTransformer", () => {
     const targetFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
     const targetDb: IModelDb = IModelDb.openSnapshot("d:/data/DgnDb/PlantSight/PlantSightTarget.bim").createSnapshot(targetFileName);
     // Import
-    const transformer = new IModelTransformerWithAsserts(sourceDb, targetDb);
-    if (true) {
-      transformer.importAll();
-    } else { // old test case
-      const targetModelId: Id64String = "0x30000000002";
-      assert.doesNotThrow(() => targetDb.elements.getElement<PhysicalPartition>(targetModelId));
-      assert.doesNotThrow(() => targetDb.models.getModel<PhysicalModel>(targetModelId));
-      assert.equal(countElementsInModel(targetDb, targetModelId), 0, "Target Model should not contain Elements yet");
-      transformer.importModelContents(IModel.dictionaryId, IModel.dictionaryId, SpatialCategory.classFullName);
-      transformer.importModelContents(sourceModelId, targetModelId);
-      transformer.importSkippedElements();
-    }
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    transformer.processAll();
     transformer.dispose();
     // Close
     sourceDb.closeSnapshot();
@@ -264,8 +257,8 @@ describe("IModelTransformer", () => {
     assert.exists(targetDb);
     // import
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    await transformer.importSchemas(new BackendRequestContext());
-    transformer.importAll();
+    await transformer.processSchemas(new BackendRequestContext());
+    transformer.processAll();
     transformer.dispose();
     const numTargetElements: number = count(targetDb, Element.classFullName);
     assert.isAtLeast(numTargetElements, numSourceElements);
@@ -306,7 +299,7 @@ describe("IModelTransformer", () => {
     // transform
     const transform3d: Transform = Transform.createTranslation(new Point3d(100, 200));
     const transformer = new IModelTransformer3d(sourceDb, targetDb, transform3d);
-    transformer.importAll();
+    transformer.processAll();
     const targetModelId: Id64String = transformer.context.findTargetElementId(sourceModelId);
     const targetModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(targetModelId);
     const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents();
@@ -324,12 +317,13 @@ describe("IModelTransformer", () => {
     if (true) {
       const iModelA: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "A", Point3d.create(0, 0, 0), ColorDef.green);
       IModelTransformerUtils.assertTeamIModelContents(iModelA, "A");
+      const iModelExporterA = new IModelExporter(iModelA);
+      iModelExporterA.excludeElement(iModelA.elements.queryElementIdByCode(Subject.createCode(iModelA, IModel.rootSubjectId, "Context"))!);
+      iModelExporterA.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
-      const transformerA2S = new IModelTransformer(iModelA, iModelShared, { targetScopeElementId: subjectId });
+      const transformerA2S = new IModelTransformer(iModelExporterA, iModelShared, { targetScopeElementId: subjectId });
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
-      transformerA2S.excludeSubject("/Context");
-      transformerA2S.excludeElement(IModel.dictionaryId);
-      transformerA2S.importAll();
+      transformerA2S.processAll();
       transformerA2S.dispose();
       iModelA.closeSnapshot();
       iModelShared.saveChanges("Imported A");
@@ -339,12 +333,13 @@ describe("IModelTransformer", () => {
     if (true) {
       const iModelB: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "B", Point3d.create(0, 10, 0), ColorDef.blue);
       IModelTransformerUtils.assertTeamIModelContents(iModelB, "B");
+      const iModelExporterB = new IModelExporter(iModelB);
+      iModelExporterB.excludeElement(iModelB.elements.queryElementIdByCode(Subject.createCode(iModelB, IModel.rootSubjectId, "Context"))!);
+      iModelExporterB.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
-      const transformerB2S = new IModelTransformer(iModelB, iModelShared, { targetScopeElementId: subjectId });
+      const transformerB2S = new IModelTransformer(iModelExporterB, iModelShared, { targetScopeElementId: subjectId });
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
-      transformerB2S.excludeSubject("/Context");
-      transformerB2S.excludeElement(IModel.dictionaryId);
-      transformerB2S.importAll();
+      transformerB2S.processAll();
       transformerB2S.dispose();
       iModelB.closeSnapshot();
       iModelShared.saveChanges("Imported B");
@@ -366,17 +361,31 @@ describe("IModelTransformer", () => {
       const physicalC: Id64String = IModelTransformerUtils.queryPhysicalPartitionId(iModelConsolidated, IModel.rootSubjectId, "Consolidated");
       transformerS2C.context.remapElement(physicalA, physicalC);
       transformerS2C.context.remapElement(physicalB, physicalC);
-      transformerS2C.importModel(definitionA);
-      transformerS2C.importModel(definitionB);
-      transformerS2C.importModel(physicalA);
-      transformerS2C.importModel(physicalB);
-      transformerS2C.importSkippedElements();
-      transformerS2C.importRelationships(ElementRefersToElements.classFullName);
+      transformerS2C.processModel(definitionA);
+      transformerS2C.processModel(definitionB);
+      transformerS2C.processModel(physicalA);
+      transformerS2C.processModel(physicalB);
+      transformerS2C.processSkippedElements();
+      transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
       iModelConsolidated.closeSnapshot();
     }
 
     iModelShared.closeSnapshot();
+  });
+
+  it("IModelCloneContext remap tests", async () => {
+    const iModelDb: IModelDb = IModelTransformerUtils.createTeamIModel(outputDir, "Test", Point3d.create(0, 0, 0), ColorDef.green);
+    const cloneContext = new IModelCloneContext(iModelDb);
+    const sourceId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 1);
+    const targetId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 2);
+    cloneContext.remapElement(sourceId, targetId);
+    assert.equal(targetId, cloneContext.findTargetElementId(sourceId));
+    assert.equal(Id64.invalid, cloneContext.findTargetElementId(targetId));
+    assert.equal(Id64.invalid, cloneContext.findTargetCodeSpecId(targetId));
+    assert.throws(() => cloneContext.remapCodeSpec("SourceNotFound", "TargetNotFound"));
+    cloneContext.dispose();
+    iModelDb.closeSnapshot();
   });
 });

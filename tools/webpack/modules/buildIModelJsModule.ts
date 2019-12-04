@@ -673,7 +673,7 @@ class DigitalSignatureOperation {
       return new Result(op, 1, undefined, undefined, 'The "sign" property must have a "publicKey" property');
     }
     // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
-    const privateKeyFileName = process.env[signProp.privateKey]
+    const privateKeyFileName = process.env[signProp.privateKey];
     if (!privateKeyFileName) {
       return new Result(op, 1, undefined, undefined, `The "sign.privateKey" property is set to "${signProp.privateKey}" but that is not an environment variable (which must point to a ".pem" file).`);
     }
@@ -688,7 +688,7 @@ class DigitalSignatureOperation {
     }
 
     // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
-    const publicKeyFileName = process.env[signProp.publicKey]
+    const publicKeyFileName = process.env[signProp.publicKey];
     if (!publicKeyFileName) {
       return new Result(op, 1, undefined, undefined, `The "sign.publicKey" property is set to "${signProp.publicKey}", but that is not an environment variable (which must point to a ".pem" file).`);
     }
@@ -725,7 +725,7 @@ class DigitalSignatureOperation {
     try {
       for (const fileName of fileList) {
         // read each file into a buffer.
-        const filePath = path.resolve(rootDir, fileName)
+        const filePath = path.resolve(rootDir, fileName);
         const contents: Buffer = fs.readFileSync(filePath);
         // accumulate its data.
         this._sign.update(contents);
@@ -926,6 +926,7 @@ class IModelJsModuleBuilder {
     return Promise.resolve(dependentTracker.symlinkOrCopyExternalModules(outputDirectory));
   }
 
+  // makes a config file
   private makeConfig(): Promise<Result> {
     let useCreateConfig: boolean = false;
     if (!this._moduleDescription.makeConfig)
@@ -991,6 +992,62 @@ class IModelJsModuleBuilder {
     }
   }
 
+  private installPlugin(): Promise<Result> {
+    if (this._detail > 0)
+      console.log("Install plugins to specified applications");
+
+    // only attempt if this is a plugin, with an installTo key, and we can symlink.
+    if ((this._moduleDescription.type !== "plugin") || !this._moduleDescription.installTo || this._alwaysCopy)
+      return Promise.resolve(new Result("installPlugin", 0));
+    if (!Array.isArray(this._moduleDescription.installTo))
+      return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, "iModelJs.buildModule.installTo must be an array of strings containing test applications to install the plugin to."));
+    try {
+      for (const installDest of this._moduleDescription.installTo) {
+        // the string must be a path relative to the directory of package.json
+        if (typeof installDest !== "string") {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, "iModelJs.buildModule.installTo must be an array of strings containing test applications to install the plugin to."));
+        }
+
+        if (this._detail > 2)
+          console.log(`  Install plugin ${this._moduleDescription.webpack.bundleName} to specified ${installDest}`);
+
+        // see if we can find the path.
+        const destRoot: string = path.resolve(process.cwd(), installDest);
+        if (!fs.existsSync(destRoot)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the root directory of the destination: ${destRoot}`));
+        }
+
+        const destWebResources = path.join(destRoot, "lib/webresources");
+        if (!fs.existsSync(destWebResources)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the output webresources directory of the destination: ${destWebResources}`));
+        }
+
+        const pluginDirectory = path.join(destWebResources, "imjs_plugins");
+        if (!fs.existsSync(pluginDirectory)) {
+          fs.mkdirSync(pluginDirectory);
+        }
+
+        const buildDir = path.resolve(process.cwd(), this._moduleDescription.webpack.build);
+        if (!fs.existsSync(buildDir)) {
+          return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the build directory of the plugin: ${destWebResources}`));
+        }
+
+        const outDir = path.resolve (pluginDirectory, this._moduleDescription.webpack.bundleName);
+        if (fs.existsSync(outDir)) {
+          if (this._detail > 3) {
+            console.log (`  Plugin ${this._moduleDescription.webpack.bundleName} is already installed to ${pluginDirectory}`);
+          }
+          continue;
+        }
+        fs.symlinkSync(buildDir, outDir);
+      }
+    }
+    catch (e) {
+      return Promise.resolve(new Result("installPlugin", 1, e));
+    }
+    return Promise.resolve(new Result("installPlugin", 0));
+  }
+
   // find webpack executable.
   private findWebpack(): string | undefined {
     // first look in node_modules/webpack
@@ -1026,6 +1083,10 @@ class IModelJsModuleBuilder {
       args.push("--env.plugin");
     else if (buildType === "webworker")
       args.push("--env.webworker");
+
+    // if the buildType is application, or there's a version, then the output is going into a subdirectory. That changes urls needed for resources loaded by file-loader.
+    if (buildType === "application" || (version !== undefined))
+      args.push("--env.subFolder")
 
     if (!isDevelopment)
       args.push("--env.prod");
@@ -1087,7 +1148,7 @@ class IModelJsModuleBuilder {
     let outputPath = path.resolve(process.cwd(), webpack.dest);
 
     if (this._moduleDescription.type === "plugin") {
-      return this.buildPlugin(webpack, outputPath, styleSheets, 0)
+      return this.buildPlugin(webpack, outputPath, styleSheets, 0);
     } else {
       if (this._moduleDescription.type === "system") {
         outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
@@ -1190,7 +1251,7 @@ class IModelJsModuleBuilder {
 
     // Make a JSON file called manifest.json with keys versionsRequired, prodVersion, devVersion. We will tar that in.
     const dependentTracker: DependentTracker = new DependentTracker(process.cwd(), true, this._detail, this._alwaysCopy);
-    manifest.versionsRequired = dependentTracker.getExternalModuleVersionsObject()
+    manifest.versionsRequired = dependentTracker.getExternalModuleVersionsObject();
 
     const signer: DigitalSignatureOperation | Result | undefined = DigitalSignatureOperation.createInstance(subModule.sign, buildDir);
     if (signer instanceof Result)
@@ -1354,7 +1415,7 @@ class IModelJsModuleBuilder {
     if (0 !== exitCode)
       return exitCode;
 
-    const compileResults = await this.compileSource()
+    const compileResults = await this.compileSource();
     exitCode = this.reportResults([compileResults]);
     if (0 !== exitCode)
       return exitCode;
@@ -1379,6 +1440,11 @@ class IModelJsModuleBuilder {
 
     const makeConfigResult: Result = await this.makeConfig();
     exitCode = this.reportResults([makeConfigResult]);
+    if (0 != exitCode)
+      return exitCode;
+
+    const installPluginResult: Result = await this.installPlugin();
+    exitCode = this.reportResults([installPluginResult]);
 
     return exitCode;
   }

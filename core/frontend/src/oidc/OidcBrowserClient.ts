@@ -133,10 +133,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     let user: User;
     if (window.parent !== window) {
       // This is an i-frame, and we are doing a silent signin.
-      user = await this._userManager!.signinSilentCallback();
-      if (!user || user.expired) {
-        throw new Error("Silent renew has failed");
-      }
+      await this._userManager!.signinSilentCallback();
       return true;
     }
 

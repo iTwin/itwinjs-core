@@ -67,7 +67,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
 * `fdt inspect element` - Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments (only the first character of each is checked), all of which are optional:
-  * "id=elementId" where "elementId" is a hexadecimal element Id such as `0x12cb`;
+  * "id=elementId" where "elementId" is a hexadecimal element Id such as `0x12cb` - can also specify as a comma-separated list of any number of elementIds;
   * "symbology=0|1" where `1` indicates detailed symbology information should be included in the output;
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
@@ -102,6 +102,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt compile shaders` - Compile all uncompiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
+* `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.

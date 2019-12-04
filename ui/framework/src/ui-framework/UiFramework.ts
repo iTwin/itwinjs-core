@@ -136,13 +136,15 @@ export class UiFramework {
     UiFramework._oidcClient = oidcClient;
 
     if (oidcClient) {
-      oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
-        .then((accessToken: AccessToken) => {
-          UiFramework.setAccessTokenInternal(accessToken);
-        }).catch(() => {
-          UiFramework.setAccessTokenInternal(undefined);
-        });
       UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
+      if (oidcClient.isAuthorized) {
+        oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
+          .then((accessToken: AccessToken) => {
+            UiFramework.setAccessTokenInternal(accessToken);
+          });
+      } else {
+        UiFramework.setAccessTokenInternal(undefined);
+      }
     }
   }
 

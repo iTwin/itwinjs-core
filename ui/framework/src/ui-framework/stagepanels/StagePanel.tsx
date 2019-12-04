@@ -67,6 +67,10 @@ export interface StagePanelProps {
   defaultState?: StagePanelState;
   /** Stage panel header. */
   header?: React.ReactNode;
+  /** Maximum size of the panel. */
+  maxSize?: number;
+  /** Minimum size of the panel. */
+  minSize?: number;
   /** Indicates whether the panel is resizable. Defaults to true. */
   resizable: boolean;
   /** Default size of the panel. */

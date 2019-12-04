@@ -34,6 +34,7 @@ export function base64StringToUint8Array(base64: string): Uint8Array;
 
 // @public
 export class BeDuration {
+    executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T>;
     static fromMilliseconds(milliseconds: number): BeDuration;
     static fromSeconds(seconds: number): BeDuration;
     readonly isTowardsFuture: boolean;
@@ -45,6 +46,7 @@ export class BeDuration {
     // (undocumented)
     readonly seconds: number;
     static wait(ms: number): Promise<void>;
+    wait(): Promise<void>;
 }
 
 // @public

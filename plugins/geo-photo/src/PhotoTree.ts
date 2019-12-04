@@ -3,25 +3,27 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, BentleyError, BentleyStatus, SortedArray } from "@bentley/bentleyjs-core";
+import { Logger, BeEvent, BentleyError, BentleyStatus, SortedArray } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Point3d, XYZProps } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection, GeoConverter, QuantityType } from "@bentley/imodeljs-frontend";
 import { Cartographic, IModelCoordinatesResponseProps, GeoCoordStatus } from "@bentley/imodeljs-common";
 import { JpegTagReader, ImageTags, ImageTagValue, ImageTagsMap } from "./JpegTagReader";
+import { ITreeDataProvider, TreeNodeItem, TreeDataChangesListener, PageOptions, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core";
 
 export const loggerCategory = "Plugins.GeoPhoto";
 
 /* -------------------- Callback for photo tree traversal ---------------------- */
 export type PhotoTraverseFunction = (photoFile: PhotoFile, photoFolder: PhotoFolder) => Promise<void>;
-export type FolderTraverseFunction = (folder: PhotoFolder, parentFolder: PhotoFolder) => void;
+export type FolderTraverseFunction = (folder: PhotoFolder, parentFolder: PhotoFolder | undefined) => void;
 
 /* -------------------- Interface implemented to access a particular photo storage mechanism --------------- */
 
 /** this interface is provided to allow retrieval of the tree of photos from any storage mechanism. */
 export interface PhotoTreeHandler {
   // create the root folder. Do not read contents yet.
-  createRootFolder(): Promise<PhotoFolder>;
+  createPhotoTree(): Promise<PhotoTree>;
 
   // read the folder contents (subFolders and photos).
   readFolderContents(folder: PhotoFolder, subFolders: boolean): Promise<FolderEntry[]>;
@@ -38,12 +40,33 @@ export interface PhotoTreeHandler {
   getIModel(): IModelConnection;
 }
 
+/** this interface allows tracking the load process */
+export interface GPLoadTracker {
+  // called when the number of folders and files that need to be considered is known.
+  setLoadPhase(loadPhase: number): void;
+  // called when starting a file in the repository.
+  startFolder(folderName: string): void;
+  // called when a new folder is found in the repository.
+  doneFolder(): void;
+  // called when a prospective file is found in the repository.
+  foundFile(final: boolean): void;
+  // called when a new photo is added within the tree.
+  foundPhoto(final: boolean): void;
+  // called when a new panorama is added within the tree.
+  foundPanorama(final: boolean): void;
+  // called when checking the next file.
+  nextFile(final: boolean): void;
+  // called when finished checking the contents of a folder.
+  nextFolder(): void;
+}
+
 // ---------------------- Base Classes for GeoPhoto tree members ---------------------------
 // Implementation specific subclasses of these base classes are created by each storage-specific TreeHandler
 
 /** Abstract base class for PhotoFolder and PhotoEntry */
 export abstract class FolderEntry {
-  private _visible: boolean;
+  protected _visible: boolean;
+
   constructor(protected _treeHandler: PhotoTreeHandler, protected _parent: PhotoFolder | undefined) {
     this._visible = true;
   }
@@ -52,40 +75,118 @@ export abstract class FolderEntry {
 
   abstract get createTime(): string;
 
-  get rootFolder(): PhotoFolder {
+  abstract get visible(): boolean;
+
+  abstract set visible(value: boolean);
+
+  public get photoTree(): PhotoTree {
     if (this._parent === undefined)
-      return (this as unknown) as PhotoFolder;
-    return this._parent.rootFolder;
+      return (this as unknown) as PhotoTree;
+    return this._parent.photoTree;
   }
 
-  get visible(): boolean {
-    return this._visible;
+  public get parent(): PhotoFolder | undefined {
+    return this._parent;
   }
 
-  set visible(value: boolean) {
-    this._visible = value;
+  // returns the full path from the root.
+  public get fullPath(): string {
+    let path: string = "";
+    for (let parent = this.parent; parent !== undefined && !(parent instanceof PhotoTree); parent = parent.parent) {
+      path = parent.name.concat("/", path);
+    }
+    return path.concat(this.name);
   }
 }
 
 /** Abstract base class for folders in the GeoPhotos tree. */
-export abstract class PhotoFolder extends FolderEntry {
-  private _entries: FolderEntry[] | undefined;
+export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTreeNodeItem {
+  public entries: FolderEntry[] | undefined;
   private _sortedByXNoChildren: DistanceSorter | undefined;
   private _sortedByXWithChildren: DistanceSorter | undefined;
   private _sortedByYNoChildren: DistanceSorter | undefined;
   private _sortedByYWithChildren: DistanceSorter | undefined;
+  // public isCheckboxVisible?: boolean = true;
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder | undefined) {
     super(treeHandler, parent);
-    this._entries = undefined;
+    this.entries = undefined;
+  }
+
+  /* ------ These methods implement DelayLoadedTreeNodeItem --------- */
+  public get id(): string {
+    return this.name;
+  }
+
+  get label(): string {
+    return this.name;
+  }
+
+  public get hasChildren(): boolean {
+    if (this.entries !== undefined) {
+      for (const entry of this.entries) {
+        if (entry instanceof PhotoFolder)
+          return true;
+      }
+    }
+    return false;
+  }
+
+  public get autoExpand(): boolean {
+    return true;
+  }
+
+  public get isCheckboxVisible(): boolean {
+    return true;
+  }
+
+  public get isCheckboxDisabled(): boolean {
+    if (!this.parent)
+      return false;
+    return this.parent.checkBoxState === CheckBoxState.Off || this.parent.isCheckboxDisabled;
+  }
+
+  public get checkBoxState(): CheckBoxState {
+    return this.visible ? CheckBoxState.On : CheckBoxState.Off;
+  }
+
+  /* ------ End of DelayLoadedTreeNodeItem -------- */
+
+  public getSubFolders(): PhotoFolder[] {
+    const subFolders: PhotoFolder[] = [];
+    if (this.entries) {
+      for (const entry of this.entries) {
+        if (entry instanceof PhotoFolder)
+          subFolders.push(entry);
+      }
+    }
+    return subFolders;
+  }
+
+  public get visible(): boolean {
+    // for a folder to be visible, all the parents must be visible as well.
+    if (!this._visible)
+      return false;
+
+    if (!this.parent)
+      return true;
+
+    if (!this.parent.visible)
+      return false;
+
+    return true;
+  }
+
+  public set visible(value: boolean) {
+    this._visible = value;
   }
 
   /** uses treeHandler to read the contents of this Folder. */
   public async getFolderContents(subFolders: boolean): Promise<FolderEntry[]> {
-    if (!this._entries)
-      this._entries = await this._treeHandler.readFolderContents(this, subFolders);
+    if (!this.entries)
+      this.entries = await this._treeHandler.readFolderContents(this, subFolders);
 
-    return this._entries;
+    return this.entries;
   }
 
   public async getSortedByX(subFolders: boolean): Promise<DistanceSorter> {
@@ -95,7 +196,7 @@ export abstract class PhotoFolder extends FolderEntry {
       return this._sortedByXNoChildren;
 
     const sorter: DistanceSorter = new DistanceSorter(0);
-    await this.traversePhotos(sorter.insert.bind(sorter), subFolders, true);
+    await this.traversePhotos(sorter.insert.bind(sorter), undefined, subFolders, true);
     if (subFolders)
       this._sortedByXWithChildren = sorter;
     else
@@ -110,7 +211,7 @@ export abstract class PhotoFolder extends FolderEntry {
       return this._sortedByYNoChildren;
 
     const sorter: DistanceSorter = new DistanceSorter(1);
-    await this.traversePhotos(sorter.insert.bind(sorter), subFolders, true);
+    await this.traversePhotos(sorter.insert.bind(sorter), undefined, subFolders, true);
     if (subFolders)
       this._sortedByYWithChildren = sorter;
     else
@@ -119,12 +220,19 @@ export abstract class PhotoFolder extends FolderEntry {
     return sorter;
   }
 
+  public clearDistanceSort() {
+    this._sortedByXNoChildren = undefined;
+    this._sortedByXWithChildren = undefined;
+    this._sortedByYNoChildren = undefined;
+    this._sortedByYWithChildren = undefined;
+  }
+
   /** traverse each photo in this folder, calling func. Recurses into subFolders if desired. */
-  public async traversePhotos(func: PhotoTraverseFunction, subFolders: boolean, visibleOnly: boolean) {
-    if (!this._entries)
+  public async traversePhotos(func: PhotoTraverseFunction, folderFunc: FolderTraverseFunction | undefined, subFolders: boolean, visibleOnly: boolean) {
+    if (!this.entries)
       return;
 
-    for (const thisEntry of this._entries) {
+    for (const thisEntry of this.entries) {
       if (thisEntry instanceof PhotoFile) {
         if (!visibleOnly || thisEntry.visible) {
           await func(thisEntry, this);
@@ -135,20 +243,22 @@ export abstract class PhotoFolder extends FolderEntry {
     if (!subFolders)
       return;
 
-    for (const thisEntry of this._entries) {
+    for (const thisEntry of this.entries) {
       if (thisEntry instanceof PhotoFolder) {
+        if (folderFunc)
+          folderFunc(thisEntry, this);
         if (!visibleOnly || thisEntry.visible) {
-          await thisEntry.traversePhotos(func, true, visibleOnly);
+          await thisEntry.traversePhotos(func, folderFunc, true, visibleOnly);
         }
       }
     }
   }
 
   public get photoCount(): number {
-    if (!this._entries)
+    if (!this.entries)
       return 0;
     let count: number = 0;
-    for (const entry of this._entries) {
+    for (const entry of this.entries) {
       if (entry instanceof PhotoFile) {
         count++;
       }
@@ -156,12 +266,12 @@ export abstract class PhotoFolder extends FolderEntry {
     return count;
   }
 
-  /** traverse each photo in this folder, calling func. Recurses into subFolders if desired. */
+  /** traverse each folder subFolder in this folder, calling func. Recurses if desired. */
   public traverseFolders(func: FolderTraverseFunction, subFolders: boolean, visibleOnly: boolean) {
-    if (!this._entries)
+    if (!this.entries)
       return;
 
-    for (const thisEntry of this._entries) {
+    for (const thisEntry of this.entries) {
       if (thisEntry instanceof PhotoFolder) {
         if (!visibleOnly || thisEntry.visible) {
           func(thisEntry, this);
@@ -172,7 +282,7 @@ export abstract class PhotoFolder extends FolderEntry {
     if (!subFolders)
       return;
 
-    for (const thisEntry of this._entries) {
+    for (const thisEntry of this.entries) {
       if (thisEntry instanceof PhotoFolder) {
         if (!visibleOnly || thisEntry.visible) {
           thisEntry.traverseFolders(func, true, visibleOnly);
@@ -180,13 +290,71 @@ export abstract class PhotoFolder extends FolderEntry {
       }
     }
   }
+}
+
+// This class represents the root folder of the tree.
+export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
+  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+
+  constructor(treeHandler: PhotoTreeHandler, private _i18n: I18N) {
+    super(treeHandler, undefined);
+  }
+
+  get createTime(): string {
+    return "";
+  }
+
+  get name(): string {
+    return this._i18n.translate("geoPhoto:messages.RootFolderName");
+  }
+
+  // implementation of ITreeDataProvider.getNodesCount
+  public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
+    // return count of the folder nodes.
+    if (!parent)
+      parent = this;
+    if (!(parent instanceof PhotoFolder) || (undefined === parent.entries))
+      return 0;
+
+    let count = 0;
+    for (const entry of parent.entries) {
+      if (entry instanceof PhotoFolder)
+        count++;
+    }
+    return count;
+  }
+
+  // implementation of ITreeDataProvider.getNodes
+  public async getNodes(parent?: TreeNodeItem, _page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
+    // return only the folder nodes.
+    if (!parent)
+      parent = this;
+
+    if (!(parent instanceof PhotoFolder) || (undefined === parent.entries))
+      return [];
+
+    return parent.getSubFolders();
+  }
+
+  // traverse callback to clear the distance sort results for an individual folder
+  private _clearFolderDistanceSort (folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    folder.clearDistanceSort();
+  }
+
+  /** Called when different folders are chosen to be visible. We have to reset the distance sorter to calculate the new set of visible photos. */
+  public clearCloseNeighborData() {
+    this.clearDistanceSort();
+    this.traverseFolders(this._clearFolderDistanceSort.bind(this), true, false);
+  }
 
 }
 
+// not actually used yet.
 export class GeoPhotoThumbnail {
   constructor(public comp: number, public xRes: number, public yRes: number, public resUnit: number, public offset: number, public byteCount: number) {
   }
 }
+
 /**
  * Subset of Jpeg Tags that are of interest to the geo-photo plugin.
  */
@@ -220,6 +388,18 @@ export abstract class PhotoFile extends FolderEntry {
   /** Gets an Url that corresponds to the photo file. */
   public abstract get accessUrl(): string;
 
+  public get visible(): boolean {
+    return this.parent!.visible && this._visible;
+  }
+
+  public set visible(value: boolean) {
+    this._visible = value;
+  }
+
+  public get hasChildren(): boolean {
+    return false;
+  }
+
   public get isPanorama(): boolean {
     return this.probablyPano ? this.probablyPano : false;
   }
@@ -227,7 +407,7 @@ export abstract class PhotoFile extends FolderEntry {
   public async getClosestNeighbors(allFolders: boolean, maxDistance?: number): Promise<PhotoFile[]> {
     if (undefined === maxDistance)
       maxDistance = 100.0; // meters
-    const parentFolder: PhotoFolder = allFolders ? this.rootFolder : this._parent!;
+    const parentFolder: PhotoFolder = allFolders ? this.photoTree : this._parent!;
     const xSorted: DistanceSorter = await parentFolder.getSortedByX(allFolders);
     const ySorted: DistanceSorter = await parentFolder.getSortedByY(allFolders);
     const xList: PhotoFile[] = xSorted.findClosePhotos(this, maxDistance);
@@ -260,9 +440,10 @@ export abstract class PhotoFile extends FolderEntry {
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = IModelApp.quantityFormatter.formatQuantity(zAdjusted, coordFormatterSpec);
+        const formattedTrack = this.track ? this.track.toFixed(2) : "";
         const latDir = cartographic.latitude < 0 ? "S" : "N";
         const longDir = cartographic.longitude < 0 ? "W" : "E";
-        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight });
+        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight, formattedTrack });
         if (this.spatial) {
           const xAdjusted = this.spatial.x - globalOrigin.x;
           const yAdjusted = this.spatial.y - globalOrigin.y;
@@ -452,7 +633,7 @@ class SpatialPositionCollector {
       this._gcsConverter = this._iModel.geoServices.getConverter("WGS84");
       this._geoPoints = [];
       this._photoFiles = [];
-      await this._folder.traversePhotos(this.gatherRequests.bind(this), this._subFolders, false);
+      await this._folder.traversePhotos(this.gatherRequests.bind(this), undefined, this._subFolders, false);
 
       // make a single request to the server (it is broken up by the GeoServices layer)
       const response: IModelCoordinatesResponseProps = await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(this._geoPoints);
@@ -466,7 +647,7 @@ class SpatialPositionCollector {
       }
     } else {
       // no gcs, just use ecef for each position.
-      await this._folder.traversePhotos(this.getEcefResults.bind(this), this._subFolders, false);
+      await this._folder.traversePhotos(this.getEcefResults.bind(this), undefined, this._subFolders, false);
     }
   }
 }
@@ -475,7 +656,7 @@ class DistanceSorter {
   public sortedArray: SortedArray<PhotoFile>;
 
   constructor(private _axis: number) {
-    const sortFunc = this._axis ? this.sortOnX : this.sortOnY;
+    const sortFunc = this._axis ? this.sortOnY : this.sortOnX;
     this.sortedArray = new SortedArray<PhotoFile>(sortFunc, true);
   }
 
@@ -506,14 +687,11 @@ class DistanceSorter {
     const maxIndex = this.sortedArray.length;
     let highIndex = thisIndex + 1;
     for (; highIndex < maxIndex; ++highIndex) {
-      const thisVal = (this.sortedArray.get(lowIndex)!.spatial as any)[selector];
+      const thisVal = (this.sortedArray.get(highIndex)!.spatial as any)[selector];
       if ((thisVal - photoVal) > maxDistance)
         break;
     }
-
-    // highIndex points to the first beyond the acceptable range, so decrement it.
-    if (highIndex <= lowIndex)
-      return [];
+    // don't decrement highIndex, because slice does not include highIndex.
 
     // this is not good practice, but SortedArray has no slice.
     return (this.sortedArray as any)._array.slice(lowIndex, highIndex);

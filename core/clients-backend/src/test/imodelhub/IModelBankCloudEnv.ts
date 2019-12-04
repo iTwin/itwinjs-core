@@ -30,7 +30,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
 
   const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
 
-  const basicAuthentication: string = Config.App.get("imjs_test_imodel_bank_basic_authentication", false);
+  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
@@ -139,7 +139,7 @@ function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
     });
   }
 
-  const basicAuthentication: string = Config.App.get("imjs_test_imodel_bank_basic_authentication", false);
+  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;

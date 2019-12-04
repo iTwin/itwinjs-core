@@ -668,9 +668,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (this._points.length >= 2) {
       let i0 = 0;
       let i1 = this._points.length - 1;
-      let a: Point3d = this._points.getPoint3dAtUncheckedPointIndex(0);
+      const a: Point3d = this._points.getPoint3dAtUncheckedPointIndex(0);
       while (i0 < i1) {
-        a = this._points.getPoint3dAtUncheckedPointIndex(i0);
+        this._points.getPoint3dAtUncheckedPointIndex(i0, a);
         this._points.setAtCheckedPointIndex(i0, this._points.getPoint3dAtUncheckedPointIndex(i1));
         this._points.setAtCheckedPointIndex(i1, a);
         i0++;

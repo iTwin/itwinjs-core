@@ -149,6 +149,8 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 
 /** @internal */
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
+  private _activeUploads: Set<string> = new Set();
+
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelTokenProps, treeId: string): Promise<TileTreeProps> {
@@ -198,20 +200,34 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
 
     setTimeout(async () => {
+      let key = "";
+
       try {
         const cache = CloudStorageTileCache.getCache();
+        const containerKey = cache.formContainerName(id);
+        const resourceKey = cache.formResourceName(id);
+        key = containerKey + resourceKey;
+
+        if (this._activeUploads.has(key)) {
+          return;
+        }
+
+        this._activeUploads.add(key);
 
         const options: CloudStorageUploadOptions = {};
         if (IModelHost.compressCachedTiles) {
           options.contentEncoding = "gzip";
         }
+
         const perfInfo = { ...iModelToken, treeId, contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
         const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), content, options);
+        await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options);
         perfLogger.dispose();
       } catch (err) {
         Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
       }
+
+      this._activeUploads.delete(key);
     });
   }
 }

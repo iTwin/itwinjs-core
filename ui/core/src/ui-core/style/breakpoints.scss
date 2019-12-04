@@ -28,6 +28,14 @@
   @media (min-width: 1100px) { @content; }
 }
 
+@mixin for-small-desktop-down {
+  @media (max-width: 1299px) { @content; }
+}
+
+@mixin for-medium-desktop-up {
+  @media (min-width: 1300px) { @content; }
+}
+
 @mixin for-big-desktop-up {
   @media (min-width: 1800px) { @content; }
 }

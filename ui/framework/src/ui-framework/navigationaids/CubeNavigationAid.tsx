@@ -448,11 +448,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       return;
     // set animation variables, let css transitions animate it.
     this._animationFrame = setTimeout(this._animation, 16.667);
-    this.setState({
-      startRotMatrix: this.state.endRotMatrix, endRotMatrix,
+    this.setState((prevState) => ({
+      startRotMatrix: prevState.endRotMatrix, endRotMatrix,
       animation: 0,
       face,
-    });
+    }));
   }
 
   private _setRotation = (endRotMatrix: Matrix3d, face: Face) => {

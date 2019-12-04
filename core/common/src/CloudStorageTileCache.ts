@@ -5,7 +5,7 @@
 /** @module CloudStorage */
 
 import { IModelToken } from "./IModel";
-import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
+import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
 
 /** @beta */
@@ -69,5 +69,13 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
     const changeSetId = id.iModelToken.changeSetId || "first";
     const version = id.guid ? id.guid : changeSetId; // NB: id.guid can be null (backend) OR undefined (frontend) here...
     return `tiles/${id.treeId}/${version}/${id.contentId}`;
+  }
+
+  protected formContainerKey(id: TileContentIdentifier): string {
+    if (this.provider === CloudStorageProvider.AliCloud) {
+      return this.formContainerName(id) + this.formResourceName(id);
+    }
+
+    return super.formContainerKey(id);
   }
 }

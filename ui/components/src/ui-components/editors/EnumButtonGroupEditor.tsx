@@ -18,7 +18,6 @@ import { Icon } from "@bentley/ui-core";
 /** @internal */
 interface EnumEditorState {
   selectValue: string | number;
-  valueIsNumber: boolean;
 }
 
 /** EnumButtonGroupEditor React component that is a property editor with select input
@@ -32,7 +31,6 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
-    valueIsNumber: false,
   };
 
   /** @internal */
@@ -135,19 +133,16 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   private static getStateFromProps(props: PropertyEditorProps): EnumEditorState | null {
     const propertyRecord = props.propertyRecord;
     let selectValue: string | number;
-    let valueIsNumber: boolean;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
       if (typeof primitiveValue === "string") {
         selectValue = primitiveValue as string;
-        valueIsNumber = false;
       } else {
         selectValue = primitiveValue as number;
-        valueIsNumber = true;
       }
-      return { selectValue, valueIsNumber };
+      return { selectValue };
     }
     return null;
   }

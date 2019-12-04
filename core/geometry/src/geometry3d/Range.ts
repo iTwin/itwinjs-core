@@ -5,7 +5,7 @@
 
 /** @module CartesianGeometry */
 
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, AxisIndex } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
@@ -660,7 +660,15 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (z < this.low.z) this.low.z = z;
     if (z > this.high.z) this.high.z = z;
   }
-
+  /** Expand one component of this range  */
+  public extendSingleAxis(a: number, axisIndex: AxisIndex) {
+    if (axisIndex === AxisIndex.X)
+      this.extendXOnly(a);
+    if (axisIndex === AxisIndex.Y)
+      this.extendYOnly(a);
+    if (axisIndex === AxisIndex.Z)
+      this.extendZOnly(a);
+  }
   /** Expand this range by distances a (weighted and possibly signed) in all directions */
   public extendXYZW(x: number, y: number, z: number, w: number): void {
     if (!Geometry.isSmallMetricDistance(w))

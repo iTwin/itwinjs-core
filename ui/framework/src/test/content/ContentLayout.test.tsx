@@ -167,7 +167,6 @@ describe("ContentLayout", () => {
     wrapper.unmount();
   });
 
-  // TODO - does not work
   it("Vertical SplitPane onChanged", () => {
     const wrapper = mount(
       <div>

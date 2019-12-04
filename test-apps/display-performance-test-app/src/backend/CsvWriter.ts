@@ -5,7 +5,6 @@
 
 import { IModelJsFs } from "@bentley/imodeljs-backend";
 import * as path from "path";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 
 export function createFilePath(filePath: string) {
   // ###TODO: Make this function platform independent
@@ -101,13 +100,6 @@ export function addColumnsToCsvFile(filePath: string, rowData: Map<string, numbe
   IModelJsFs.writeFileSync(filePath, origFile);
 }
 
-// ###TODO: Remove this once IModelJsFs.appendFileSync has an iOS implementation.
-function _fakeAppendFileSync(pathStr: string, str: string) {
-  let contents = IModelJsFs.readFileSync(pathStr).toString();
-  contents += str;
-  IModelJsFs.writeFileSync(pathStr, contents);
-}
-
 export function addDataToCsvFile(file: string, data: Map<string, number | string>) {
   try {
     const columns = IModelJsFs.readFileSync(file).toString().split(/[\r\n]+/)[0].split(",");
@@ -126,10 +118,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
         stringData += value + ",";
     });
     stringData += "\r\n";
-    if (MobileRpcConfiguration.isMobileBackend)
-      _fakeAppendFileSync(file, stringData);
-    else
-      IModelJsFs.appendFileSync(file, stringData);
+    IModelJsFs.appendFileSync(file, stringData);
   } catch (err) {
     /* Handle the error */
   }
@@ -137,10 +126,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
 
 export function addEndOfTestToCsvFile(data: string, file: string) {
   try {
-    if (MobileRpcConfiguration.isMobileBackend)
-      _fakeAppendFileSync(file, data);
-    else
-      IModelJsFs.appendFileSync(file, data);
+    IModelJsFs.appendFileSync(file, data);
   } catch (err) {
     /* Handle the error */
   }

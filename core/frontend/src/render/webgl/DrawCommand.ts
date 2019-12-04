@@ -81,13 +81,8 @@ export class DrawParams {
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 
-  public init(programParams: ShaderProgramParams, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass?: RenderPass) {
+  public init(programParams: ShaderProgramParams, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity) {
     this._programParams = programParams;
-    if (undefined === pass)
-      pass = programParams.renderPass;
-    else
-      assert(pass === this.programParams.renderPass);
-
     this._geometry = geometry;
     if (this.isViewCoords) {
       // Zero out Z for silly clipping tools...
@@ -741,7 +736,17 @@ export class RenderCommands {
       }
     }
 
+    // If we have an active volume classifier then force all batches for the reality data being classified into a special render pass.
+    let savedForcedRenderPass = RenderPass.None;
+    if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.modelId === this.target.activeVolumeClassifierModelId) {
+      savedForcedRenderPass = this._forcedRenderPass;
+      this._forcedRenderPass = RenderPass.VolumeClassifiedRealityData;
+    }
+
     (batch.graphic as Graphic).addCommands(this);
+
+    if (RenderPass.VolumeClassifiedRealityData === this._forcedRenderPass)
+      this._forcedRenderPass = savedForcedRenderPass;
 
     this._batchState.pop();
 

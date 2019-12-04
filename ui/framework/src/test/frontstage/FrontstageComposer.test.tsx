@@ -240,6 +240,30 @@ describe("FrontstageComposer", () => {
     wrapper.unmount();
   });
 
+  it("should disallow pointer up selection on pointer down", async () => {
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    sut.setState({ allowPointerUpSelection: true });
+
+    const composer = sut.find("#uifw-frontstage-composer");
+    composer.simulate("pointerdown");
+
+    expect(sut.state().allowPointerUpSelection).to.be.false;
+
+    sut.unmount();
+  });
+
+  it("should disallow pointer up selection on pointer up", async () => {
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    sut.setState({ allowPointerUpSelection: true });
+
+    const composer = sut.find("#uifw-frontstage-composer");
+    composer.simulate("pointerup");
+
+    expect(sut.state().allowPointerUpSelection).to.be.false;
+
+    sut.unmount();
+  });
+
   describe("isCollapsedToPanelState", () => {
     it("should return Minimized if is collapsed", () => {
       expect(isCollapsedToPanelState(true)).to.eq(StagePanelState.Minimized);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration, BeEvent, BeTimePoint, AbandonedError, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, AbandonedError, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -122,7 +122,6 @@ export class CurrentInputState {
   private readonly _point: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
   public qualifiers = BeModifierKeys.None;
-  public motionTime = 0;
   public viewport?: ScreenViewport;
   public button: BeButtonState[] = [new BeButtonState(), new BeButtonState(), new BeButtonState()];
   public lastButton: BeButton = BeButton.Data;
@@ -139,7 +138,6 @@ export class CurrentInputState {
   public set point(pt: Point3d) { this._point.setFrom(pt); }
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
-  public get wasMotion() { return 0 !== this.motionTime; }
   public get isShiftDown() { return 0 !== (this.qualifiers & BeModifierKeys.Shift); }
   public get isControlDown() { return 0 !== (this.qualifiers & BeModifierKeys.Control); }
   public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKeys.Alt); }
@@ -159,25 +157,8 @@ export class CurrentInputState {
   }
 
   public onMotion(pt2d: XAndY) {
-    this.motionTime = Date.now();
     this.lastMotion.x = pt2d.x;
     this.lastMotion.y = pt2d.y;
-  }
-
-  public get hasMotionStopped(): boolean {
-    const result = this.hasEventInputStopped(this.motionTime, ToolSettings.noMotionTimeout);
-    if (result.stopped)
-      this.motionTime = result.eventTimer;
-    return result.stopped;
-  }
-
-  private hasEventInputStopped(timer: number, eventTimeout: BeDuration) {
-    let isStopped = false;
-    if (0 !== timer && ((Date.now() - timer) >= eventTimeout.milliseconds)) {
-      isStopped = true;
-      timer = 0;
-    }
-    return { eventTimer: timer, stopped: isStopped };
   }
 
   public changeButtonToDownPoint(ev: BeButtonEvent) {
@@ -326,8 +307,6 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _modifierKey = BeModifierKeys.None;
-  private static _tileTreePurgeTime?: BeTimePoint;
-  private static _tileTreePurgeInterval?: BeDuration;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @internal
@@ -405,7 +384,6 @@ export class ToolAdmin {
     return IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical);
   }
 
-  private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
 
   /** Handler that wants to process synching latest tool setting properties with UI.
@@ -425,7 +403,7 @@ export class ToolAdmin {
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
     if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
-      IModelApp.toolAdmin.addEvent(ev);
+      ToolAdmin.addEvent(ev);
   }
 
   /** @internal */
@@ -444,52 +422,15 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public startEventLoop() {
-    if (!ToolAdmin._wantEventLoop) {
-      ToolAdmin._wantEventLoop = true;
-      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
-      if (undefined !== treeExpirationTime) {
-        ToolAdmin._tileTreePurgeInterval = treeExpirationTime;
-        ToolAdmin._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
-      }
-
-      requestAnimationFrame(ToolAdmin.eventLoop);
-    }
-  }
-
-  /** @internal */
   public onShutDown() {
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
-    ToolAdmin._wantEventLoop = false;
     ToolAdmin._removals.forEach((remove) => remove());
     ToolAdmin._removals.length = 0;
   }
 
   /** Get the ScreenViewport where the cursor is currently, if any. */
   public get cursorView(): ScreenViewport | undefined { return this.currentInputState.viewport; }
-
-  /** A first-in-first-out queue of ToolEvents. */
-  private _toolEvents: ToolEvent[] = [];
-  private tryReplace(event: ToolEvent): boolean {
-    if (this._toolEvents.length < 1)
-      return false;
-    const last = this._toolEvents[this._toolEvents.length - 1];
-    if ((last.ev.type !== "mousemove" && last.ev.type !== "touchmove") || last.ev.type !== event.ev.type)
-      return false; // only mousemove and touchmove can replace previous
-    last.ev = event.ev; // sequential moves are not important. Replace the previous one with this one.
-    last.vp = event.vp;
-    return true;
-  }
-
-  /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
-   * @internal
-   */
-  public addEvent(ev: Event, vp?: ScreenViewport): void {
-    const event = { ev, vp };
-    if (!this.tryReplace(event)) // see if this event replaces the last event in the queue
-      this._toolEvents.push(event); // otherwise put it at the end of the queue.
-  }
 
   /** Called from ViewManager.dropViewport to prevent tools from continuing to operate on the dropped viewport.
    * @internal
@@ -499,7 +440,7 @@ export class ToolAdmin {
     this.onMouseLeave(vp);
 
     // Remove any events associated with this viewport.
-    this._toolEvents = this._toolEvents.filter((ev) => ev.vp !== vp);
+    ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
@@ -564,6 +505,38 @@ export class ToolAdmin {
     if (undefined === tool || EventHandled.Yes !== await tool.onMouseWheel(wheelEvent) && vp !== this.markupView)
       return this.idleTool.onMouseWheel(wheelEvent);
     return EventHandled.Yes;
+  }
+
+  private async sendTapEvent(touchEv: BeTouchEvent): Promise<EventHandled> {
+    const overlayHit = this.pickCanvasDecoration(touchEv);
+    if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
+      return EventHandled.Yes;
+
+    if (await IModelApp.accuSnap.onTouchTap(touchEv))
+      return EventHandled.Yes;
+
+    const tool = this.activeTool;
+    if (undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv))
+      return EventHandled.Yes;
+
+    return this.idleTool.onTouchTap(touchEv);
+  }
+
+  private async doubleTapTimeout(): Promise<void> {
+    const current = this.currentInputState;
+    if (undefined === current.touchTapTimer)
+      return;
+
+    const touchEv = current.lastTouchStart;
+    const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchCount : 0);
+    const numTaps = (undefined !== current.touchTapCount ? current.touchTapCount : 0);
+
+    current.touchTapTimer = current.touchTapCount = current.lastTouchStart = undefined;
+    if (undefined === touchEv || 0 > numTouches || 0 > numTaps)
+      return;
+
+    touchEv.tapCount = numTaps;
+    await this.sendTapEvent(touchEv);
   }
 
   private async onTouch(event: ToolEvent): Promise<void> {
@@ -635,6 +608,7 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
+          ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this); // tslint:disable-line: no-floating-promises
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -660,7 +634,7 @@ export class ToolAdmin {
           return;
 
         // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
+        for (let i = 0; i < ev.touchEvent.changedTouches.length; ++i) {
           const currTouch = ev.touchEvent.changedTouches[i];
           const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchEvent.targetTouches, currTouch.identifier);
 
@@ -688,9 +662,41 @@ export class ToolAdmin {
     }
   }
 
+  /** A first-in-first-out queue of ToolEvents. */
+  private static _toolEvents: ToolEvent[] = [];
+  private static tryReplace(ev: Event, vp?: ScreenViewport): boolean {
+    if (ToolAdmin._toolEvents.length < 1)
+      return false;
+    const last = ToolAdmin._toolEvents[ToolAdmin._toolEvents.length - 1];
+    const lastType = last.ev.type;
+    if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
+      return false; // only mousemove and touchmove can replace previous
+    last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
+    last.vp = vp;
+    return true;
+  }
+
+  /** @internal */
+  private static getNextEvent(): ToolEvent | undefined {
+    if (ToolAdmin._toolEvents.length > 1) // if there is more than one event, we're going to need another animation frame to process it.
+      IModelApp.requestNextAnimation();
+
+    return ToolAdmin._toolEvents.shift(); // pull first event from the queue
+  }
+
+  /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
+   * @internal
+   */
+  public static addEvent(ev: Event, vp?: ScreenViewport): void {
+    if (!ToolAdmin.tryReplace(ev, vp)) // see if this event replaces the last event in the queue
+      this._toolEvents.push({ ev, vp }); // otherwise put it at the end of the queue.
+
+    IModelApp.requestNextAnimation(); // wake up event loop, if
+  }
+
   /** Process the next event in the event queue, if any. */
   private async processNextEvent(): Promise<any> {
-    const event = this._toolEvents.shift(); // pull first event from the queue
+    const event = ToolAdmin.getNextEvent(); // pull first event from the queue
     if (undefined === event)
       return; // nothing in queue
 
@@ -713,45 +719,20 @@ export class ToolAdmin {
   private _processingEvent = false;
   /**
    * Process a single event, plus timer events. Don't start work on new events if the previous one has not finished.
+   * @internal
    */
-  private async processEvent(): Promise<void> {
+  public async processEvent(): Promise<void> {
     if (this._processingEvent)
       return; // we're still working on the previous event.
 
     try {
       this._processingEvent = true;  // we can't allow any further event processing until the current event completes.
-      await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
     } catch (exception) {
       await ToolAdmin.exceptionHandler(exception); // we don't attempt to exit here
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
     }
-  }
-
-  /** The main event processing loop for Tools (and rendering). */
-  private static eventLoop() {
-    if (!ToolAdmin._wantEventLoop) // flag turned on at startup
-      return;
-
-    try {
-      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
-      IModelApp.viewManager.renderLoop();
-      IModelApp.tileAdmin.process();
-
-      if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
-        const now = BeTimePoint.now();
-        ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
-      }
-    } catch (exception) {
-      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
-        close(); // this does nothing in a web browser, closes electron.
-      });
-      return; // unrecoverable after exception, don't request any further frames.
-    }
-
-    requestAnimationFrame(ToolAdmin.eventLoop);
   }
 
   /** The idleTool handles events that are not otherwise processed. */
@@ -831,57 +812,6 @@ export class ToolAdmin {
     const context = new DynamicsContext(ev.viewport);
     this.activeTool.onDynamicFrame(ev, context);
     context.changeDynamics();
-  }
-
-  /** This is invoked on a timer to update  input state and forward events to tools.
-   * @internal
-   */
-  private async onTimerEvent(): Promise<void> {
-    const tool = this.activeTool;
-    const current = this.currentInputState;
-
-    if (undefined !== current.touchTapTimer) {
-      const now = Date.now();
-      if ((now - current.touchTapTimer) >= ToolSettings.doubleTapTimeout.milliseconds) {
-        const touchEv = current.lastTouchStart;
-        const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchCount : 0);
-        const numTaps = (undefined !== current.touchTapCount ? current.touchTapCount : 0);
-
-        current.touchTapTimer = current.touchTapCount = current.lastTouchStart = undefined;
-
-        if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
-          touchEv.tapCount = numTaps;
-          const overlayHit = this.pickCanvasDecoration(touchEv);
-          if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
-            return;
-          if (await IModelApp.accuSnap.onTouchTap(touchEv))
-            return;
-          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
-            return;
-        }
-      }
-    }
-
-    const ev = new BeButtonEvent();
-    current.toEvent(ev, true);
-
-    const wasMotion = current.wasMotion;
-    if (!wasMotion) {
-      if (tool)
-        await tool.onMouseNoMotion(ev);
-
-      if (InputSource.Mouse === current.inputSource && this.currentInputState.viewport) {
-        await IModelApp.accuSnap.onNoMotion(ev);
-      }
-    }
-
-    if (current.hasMotionStopped) {
-      if (tool)
-        await tool.onMouseMotionStopped(ev);
-      if (InputSource.Mouse === current.inputSource) {
-        IModelApp.accuSnap.onMotionStopped(ev);
-      }
-    }
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {

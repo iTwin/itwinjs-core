@@ -11,6 +11,7 @@ import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 
 /** The possible actions for which a locate filter can be called.
  * @public
@@ -167,12 +168,16 @@ export class ElementPicker {
 
     const pickPointView = vp.worldToView(pickPointWorld);
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
-    const pixelRadius = Math.floor(pickRadiusView + 0.5);
+    let pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
     let result: number = 0;
     vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
       if (undefined === pixels)
         return;
+
+      testPointView.x = cssPixelsToDevicePixels(testPointView.x);
+      testPointView.y = cssPixelsToDevicePixels(testPointView.y);
+      pixelRadius = cssPixelsToDevicePixels(pixelRadius);
 
       const elmHits = new Map<string, Point2d>();
       const testPoint = Point2d.createZero();

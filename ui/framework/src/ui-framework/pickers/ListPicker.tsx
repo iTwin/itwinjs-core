@@ -6,11 +6,15 @@
 
 import * as React from "react";
 import { CommonProps, withOnOutsideClick, SizeProps } from "@bentley/ui-core";
-import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
+import {
+  Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally,
+} from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -117,6 +121,10 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
     this.state = { expanded: !!this.props.expanded };
   }
 
+  private _onClick = () => {
+    this.setState((prevState) => ({ expanded: !prevState.expanded }));
+  }
+
   /** Renders ExpandableSection */
   public render() {
     const className = classnames(
@@ -124,15 +132,11 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
       this.props.className,
     );
 
-    const onClick = () => {
-      this.setState(Object.assign({}, this.state, { expanded: !this.state.expanded }));
-    };
-
     const icon = this.state.expanded ? <i className="icon icon-chevron-down" /> : <i className="icon icon-chevron-right" />;
 
     return (
       <Panel className={className} style={this.props.style} key={this.props.title}>
-        <div onClick={onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
+        <div onClick={this._onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
           <div className="ListPickerInnerContainer-header-content">
             <div className="ListPickerInnerContainer-expander">{icon}</div>
             <div className="ListPickerInnerContainer-title">{this.props.title}</div>
@@ -155,6 +159,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
   private _isMounted = false;
+  private _closeOnPanelOpened = true;
   private _ref = React.createRef<HTMLDivElement>();
 
   /** Creates a ListPickerBase */
@@ -163,31 +168,6 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     this.state = {
       expanded: false,
     };
-  }
-
-  private _toggleIsExpanded = () => {
-    const expand = !this.state.expanded;
-
-    // Minimize any other list picker that has been opened
-    // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
-    if (expand) {
-      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.isExpanded())
-        lastOpenedPicker!.minimize();
-
-      lastOpenedPicker = this;
-    }
-
-    // istanbul ignore else
-    if (this._isMounted)
-      this.setState((prevState) => {
-        return {
-          ...prevState,
-          expanded: !prevState.expanded,
-        };
-      });
-
-    if (this.props.onExpanded)
-      this.props.onExpanded(expand);
   }
 
   /** Minimizes the expandable component. */
@@ -207,11 +187,13 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
+    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   /** Renders ListPickerBase */
@@ -220,18 +202,26 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
 
     return (
-      <ExpandableItem
-        {...this.props}
-        panel={this.getExpandedContent()}>
-        <div ref={this._ref}>
-          <Item
-            title={this.props.title}
-            onClick={this._toggleIsExpanded}
-            icon={icon}
-            onSizeKnown={this.props.onSizeKnown}
-          />
-        </div>
-      </ExpandableItem>
+      <ToolbarDragInteractionContext.Consumer>
+        {(isEnabled) => {
+          return (
+            <ExpandableItem
+              {...this.props}
+              hideIndicator={isEnabled}
+              panel={this.getExpandedContent()}
+            >
+              <div ref={this._ref}>
+                <Item
+                  icon={icon}
+                  onClick={this._handleClick}
+                  onSizeKnown={this.props.onSizeKnown}
+                  title={this.props.title}
+                />
+              </div>
+            </ExpandableItem>
+          );
+        }}
+      </ToolbarDragInteractionContext.Consumer>
     );
   }
 
@@ -254,7 +244,6 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
             <ListPickerItem
               {...this.props}
               key={itemIndex.toString()}
-              ref={itemIndex.toString()}
               label={item.name}
               isActive={item.enabled}
               onClick={() => { this.props.setEnabled(item, !item.enabled); }}
@@ -271,7 +260,8 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
                 key={itemIndex.toString()}
                 title={item.name}
                 className="ListPickerInnerContainer"
-                expanded={expandSingleSection()}>
+                expanded={expandSingleSection()}
+              >
                 <GroupColumn>
                   {item.children!.map(listItemToElement)}
                 </GroupColumn>
@@ -302,15 +292,43 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
   private _handleOnOutsideClick = (e: MouseEvent) => {
     if (!this._ref.current || !(e.target instanceof Node) || this._ref.current.contains(e.target))
       return;
+    this.minimize();
+    this.props.onExpanded && this.props.onExpanded(false);
+  }
+
+  private _handleToolPanelOpenedEvent = () => {
+    if (!this._closeOnPanelOpened)
+      return;
+    this.minimize();
+  }
+
+  private _handleClick = () => {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
 
     this.setState((prevState) => {
+      const expanded = !prevState.expanded;
       return {
-        ...prevState,
-        expanded: false,
+        expanded,
       };
-    });
+    }, () => {
+      const expanded = this.state.expanded;
+      if (expanded) {
+        // Minimize any other list picker that has been opened
+        // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
+        if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.isExpanded())
+          lastOpenedPicker!.minimize();
 
-    this.props.onExpanded && this.props.onExpanded(false);
+        lastOpenedPicker = this;
+
+        this._closeOnPanelOpened = false;
+        expanded && FrontstageManager.onToolPanelOpenedEvent.emit();
+        this._closeOnPanelOpened = true;
+      }
+
+      this.props.onExpanded && this.props.onExpanded(expanded);
+    });
   }
 }
 
@@ -337,9 +355,6 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
   /** Creates a ListPicker */
   constructor(props: ListPickerPropsExtended) {
     super(props);
-    this.state = {
-      items: this.createItems(props.items),
-    };
   }
 
   // Creates an array of items containing the separator and special requests (all, none, invert)

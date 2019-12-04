@@ -26,7 +26,7 @@
 * Json Fragment: `[{"lineSegment":[[0,0,0], [3,0,0]]}`
 * typescript object:
 ```
-        const myLineSegment = LineSegment.create (Point3d.create (1,2,3), Point3d.create(6,4,2));
+const myLineSegment = LineSegment.create (Point3d.create (1,2,3), Point3d.create(6,4,2));
 ```
 ![>](./figs/CurvePrimitives/LineSegment.png)
 
@@ -45,18 +45,18 @@
 ![>](./figs/CurvePrimitives/LineString.png)
 * Typescript object:
 ```
-        const myLineString = LineString.create ([point0, point1, point2 ....]);
+const myLineString = LineString.create ([point0, point1, point2 ....]);
 ```
 * Fractional Parameterization
 
 Having both individual line segments and the composite linestring complicates parameterization.
 
-* * As with all CurvePrimitives, the fractional parameterization for the complete linestring must have `fraction=0` at the start and `fraction=1` at the end.
-  * The fractional positions of each inerior vertex are then defined at _equal intervals in the fraction space_.
-  * ![>](./figs/CurvePrimitives/LineStringFractions.png)
-  * Hence in the example, with 4 segments the vertex fractions increment by one quarter.
-  * Within each segment, the fraction interval is mapped as if it were a line segment.
-  * Note that having uniform vertex-to-vertex fraction means that the distance-along-the-linestring is _not proportional to fraction-along-entire-linestring_.   Fraction and distance changes are only proportional within individual segments.
+* As with all CurvePrimitives, the fractional parameterization for the complete linestring must have `fraction=0` at the start and `fraction=1` at the end.
+* The fractional positions of each inerior vertex are then defined at _equal intervals in the fraction space_.
+* ![>](./figs/CurvePrimitives/LineStringFractions.png)
+* Hence in the example, with 4 segments the vertex fractions increment by one quarter.
+* Within each segment, the fraction interval is mapped as if it were a line segment.
+* Note that having uniform vertex-to-vertex fraction means that the distance-along-the-linestring is _not proportional to fraction-along-entire-linestring_.   Fraction and distance changes are only proportional within individual segments.
 
 ## arcs (circular and elliptic)
 
@@ -66,14 +66,15 @@ The equational forms for circular and elliptic cases are identical.  Telling whe
 
 The stroking equation that maps  an angle to a coordinates to points around a (full) elliptic (or circular) arc is
 ```
-    C = center point
-    U = vector from center point to 0-degere point
-    V = vector from center point to 90-degree point.
-    theta = angle
-    X(theta) = C + cos (theta * U + sin(theta) * V
+C = center point
+U = vector from center point to 0-degere point
+V = vector from center point to 90-degree point.
+theta = angle
+X(theta) = C + cos (theta * U + sin(theta) * V
 ```
 
 ### True Circles
+
 * If the `U` and `V` vectors are (both) _perpendicular_ and _the same length_, this is a true circle.
 * In the both circles below, the `U` and `V`  are identical length and perpendicular to each other.
 * For the left circle, `U` and `V` happen to be in the global x and y directions.
@@ -89,16 +90,17 @@ If the `U` and `V` vectors either (a) have different lengths or (b) are not perp
 If `U` and `V` are perpendicular, their lengths correspond to the common usage of "major" and "minor" axis lengths.   But the perpendicular condition is not required -- non-perpendicular vectors occur due to transformation and construction history.
 
 ### Angular limits
+
 To draw an arc that is not the complete circle or ellipse, simply limit the theta range to something other than 0 to 360 degrees.
 
 ```
-    theta0 = angular start point
-    theta1 = angular and point
-    f = fraction varying from 0 to 1
-    theta(f) = (1-f) * theta0 + f * theta1
-        Point X(f) at fractional position f along the arc is
+theta0 = angular start point
+theta1 = angular and point
+f = fraction varying from 0 to 1
+theta(f) = (1-f) * theta0 + f * theta1
+    Point X(f) at fractional position f along the arc is
 
-    X(f) = C + cos (theta(f)) * U + sin(theta(f)) * V
+X(f) = C + cos (theta(f)) * U + sin(theta(f)) * V
 ```
 
 
@@ -126,44 +128,45 @@ A BSplineCurve3d (or BSplineCurve3dH) is a curve that (loosely) follows a sequen
 Internally, the curve is a is a sequence of polynomial curves that join together smoothly.  Call each of those separate pieces a _span_.
 
 The "control point" structure has remarkable properties for computation:
+
 * The curve never leaves the overall xyz range of the control points.
 * This bounding propery applies "from any veiwpoint", not just in the coordinate system where they are given.
 * Even tighter, the curve is contained within the convex hull of the control points.
 * No plane can intersect the curve more often than it intersects the control polygon.
-   * that is, the polygon may overestimate the number of intersections, (i.e. suggest false intersections), but it never underestimates.
+  * that is, the polygon may overestimate the number of intersections, (i.e. suggest false intersections), but it never underestimates.
 * Inspection of the control polygon gives similar "never understimate" statements can be made about other propperties such as
   * the number of inflections.
   * the number of minima and maxima of the curve and its derivatives.
 * The use of "weights" on the control points allows a bspline curve to exactly trace circular and elliptic arcs without use of trig functions.
 
 ## References
+
 There are innumerable books and web pages explaining splines.  There is a high level of consistency of the concepts -- control points, basis functions, knots, and order.  But be very careful about subtle deatils of indexing.   Correct presentations may superficially appear to differ depending on whether the writer has consdiders `n` indices to run
+
 * C-style, `0 <= i < n` (with index `n` _not_ part of the sequence)
 * Fortran style , `1<=i<n`
 * (rare) `0<=i<=n`
 
 Some typcial descriptions are:
-   * https://en.wikipedia.org/wiki/B-spline
-   * http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node17.html
-   * https://www.cs.unc.edu/~dm/UNC/COMP258/LECTURES/B-spline.pdf
+  * https://en.wikipedia.org/wiki/B-spline
+  * http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node17.html
+  * https://www.cs.unc.edu/~dm/UNC/COMP258/LECTURES/B-spline.pdf
 
 Be especially careful about the number of knot counts, which can differ by 2 as described in the "overclamping" section.
-
-
 
 The `order` of the bspline is the number of control points that are "in effect" over an individual span.
 
 * The first span is controlled by the first `order` control points, i.e. those indexed `0, 1, .. (order-1)`.
 * The next span is controled by control points indexed `1,2,..order`.
-   * That is, there is a "moving window" of `order` points that control successive spans.
-   * When moving from one cluster of `order` control points to the next, the first (left) point of the first cluster is dropped and a new one is added at the right.
+  * That is, there is a "moving window" of `order` points that control successive spans.
+  * When moving from one cluster of `order` control points to the next, the first (left) point of the first cluster is dropped and a new one is added at the right.
 * The sharing of control points provide the critical properties for the curve:
   * No matter how many control points there are (think dozens to hundreds), each individual span is controled by only `order` points.
   * this "local control" prevents changes "far away" in the control points from causing unexpected global changes in the curve.
   * The sharing of `order-1` points works into the formulas to guarantee smoothness of the curve.
   * Specifically, for a bspline of given `order`:
-     * If the knots are strictly increasing (no duplicates) the curve has `order-2` (i.e. `degree-1`) continuous derivatives.
-     * Introducing repeated knots reduces the continuity.  In particular, with `order-1` repeated knots there is a cusp (abrupt slope change) at that knot.
+    * If the knots are strictly increasing (no duplicates) the curve has `order-2` (i.e. `degree-1`) continuous derivatives.
+    * Introducing repeated knots reduces the continuity.  In particular, with `order-1` repeated knots there is a cusp (abrupt slope change) at that knot.
 
 ## Summary
 
@@ -183,17 +186,17 @@ The required data for a bspline curve is:
 * The `order` is the number of control points that affect each span of the curve.
 * Bspline equations hypothetically allow any integer `order`.
 * For practical use the common orders are quite low - 2,3,4, with occasional 5 through 8
-   * `order=2` - the Bspline is a collection of straight lines (degree 1)
-   * `order=3`  - the Bspline is a collection of quadratic curves. (degree = 2)   (Quadratic curves with weights can exactly trace circular and elliptic arcs)
-   * `order=4` - the Bspline is a collection of cubic spans. These can have inflections within a span.
-   * many graphics systems focus on cubic (`order=4, degree=3` bsplines.   These are a good balance of curve flexibility and computational cost.
+  * `order=2` - the Bspline is a collection of straight lines (degree 1)
+  * `order=3`  - the Bspline is a collection of quadratic curves. (degree = 2)   (Quadratic curves with weights can exactly trace circular and elliptic arcs)
+  * `order=4` - the Bspline is a collection of cubic spans. These can have inflections within a span.
+  * many graphics systems focus on cubic (`order=4, degree=3` bsplines.   These are a good balance of curve flexibility and computational cost.
 * Conversationally, if one is thinking of "quadratic" cubic "curves", it is common to refer to the `degree`, which is one less than the order
-   * the `degree` is the highest power appearing in the polynomial
-   * A conventional polynomial form would have coefficients of terms with power 1,2, through `degree`.
-   * That polynomial would alwo include a constant term that does not muliply a power of x.
-   * Hence there is _one more coefficient_ than the degree.
-   * textbook algebra discussions prefer reference to the highest power (`degree`) because that is short indicator of complexity
-   * Bspline discussion prefers reference to `order` rather than `degree` because all of the internal matrix manipulations must account for that many coefficients.
+  * the `degree` is the highest power appearing in the polynomial
+  * A conventional polynomial form would have coefficients of terms with power 1,2, through `degree`.
+  * That polynomial would alwo include a constant term that does not muliply a power of x.
+  * Hence there is _one more coefficient_ than the degree.
+  * textbook algebra discussions prefer reference to the highest power (`degree`) because that is short indicator of complexity
+  * Bspline discussion prefers reference to `order` rather than `degree` because all of the internal matrix manipulations must account for that many coefficients.
 
 ## knots
 
@@ -257,9 +260,7 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * There are no concavity changes within any single span.
 * Clamping (2 identical knots at start, 2 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
 
-
 ![>](./figs/BCurves/order3.png)
-
 
 ## Example: Order 4 (cubic) bspline curve
 
@@ -271,9 +272,7 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * There can be one concavity change within a span.
 * Clamping (3 identical knots at start, 3 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
 
-
 ![>](./figs/BCurves/order4.png)
-
 
 ## Example: Order 5 (quartic) bspline curve
 
@@ -285,7 +284,4 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * There can be two concavity change within a span.
 * Clamping (4 identical knots at start, 4 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
 
-
 ![>](./figs/BCurves/order5.png)
-
-

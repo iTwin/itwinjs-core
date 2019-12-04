@@ -26,9 +26,10 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { TreeActions } from "./TreeActions";
 import { TreeEvents } from "./TreeEvents";
 import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
+import { ITreeNodeLoader, LoadedNodeHierarchyItem } from "./TreeNodeLoader";
 import { TreeSelectionManager, IndividualSelection, RangeSelection, isRangeSelection } from "./internal/TreeSelectionManager";
 import { SelectionMode } from "../../common/selection/SelectionModes";
+import { TreeNodeItem } from "../TreeDataProvider";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.
@@ -41,7 +42,7 @@ export class TreeEventDispatcher implements TreeActions {
 
   private _selectionManager: TreeSelectionManager;
 
-  private _activeSelections = new Set<Observable<{ selectedNodeIds: string[], deselectedNodeIds?: string[] }>>();
+  private _activeSelections = new Set<Observable<{ selectedNodeItems: TreeNodeItem[], deselectedNodeItems?: TreeNodeItem[] }>>();
 
   constructor(
     treeEvents: TreeEvents,
@@ -60,9 +61,9 @@ export class TreeEventDispatcher implements TreeActions {
         .pipe(
           map(({ selectedNodes, deselectedNodes }) => from(this.collectSelectionChanges(selectedNodes, []))
             .pipe(
-              concatMap(({ selectedNodeIds }) => from(selectedNodeIds)),
+              concatMap(({ selectedNodeItems }) => from(selectedNodeItems)),
               toArray(),
-              map((collectedIds) => ({ selectedNodeIds: collectedIds, deselectedNodeIds: deselectedNodes })),
+              map((collectedIds) => ({ selectedNodeItems: collectedIds, deselectedNodeItems: this.collectNodeItems(deselectedNodes) })),
             ),
           ),
           concatAll(),
@@ -124,16 +125,19 @@ export class TreeEventDispatcher implements TreeActions {
   }
 
   public onNodeCheckboxClicked(nodeId: string, newState: CheckBoxState) {
-    const immediateStateChanges = [{ nodeId, newState }];
+    if (this._getVisibleNodes === undefined)
+      return;
 
-    if (this._getVisibleNodes !== undefined) {
-      const visibleNodes = this._getVisibleNodes();
-      const clickedNode = visibleNodes.getModel().getNode(nodeId);
-      if (clickedNode && clickedNode.isSelected) {
-        for (const node of visibleNodes) {
-          if (isTreeModelNode(node) && node.isSelected && node.checkbox.state !== newState) {
-            immediateStateChanges.push({ nodeId: node.id, newState });
-          }
+    const visibleNodes = this._getVisibleNodes();
+    const clickedNode = visibleNodes.getModel().getNode(nodeId);
+    if (clickedNode === undefined)
+      return;
+
+    const immediateStateChanges = [{ nodeItem: clickedNode.item, newState }];
+    if (clickedNode.isSelected) {
+      for (const node of visibleNodes) {
+        if (isTreeModelNode(node) && node.id !== clickedNode.id && node.isSelected && node.checkbox.state !== newState) {
+          immediateStateChanges.push({ nodeItem: node.item, newState });
         }
       }
     }
@@ -143,7 +147,7 @@ export class TreeEventDispatcher implements TreeActions {
       from(this._activeSelections)
         .pipe(
           mergeAll(),
-          map(({ selectedNodeIds }) => selectedNodeIds.map((id) => ({ nodeId: id, newState }))),
+          map(({ selectedNodeItems }) => selectedNodeItems.map((item) => ({ nodeItem: item, newState }))),
         ),
     )
       .pipe(
@@ -183,26 +187,28 @@ export class TreeEventDispatcher implements TreeActions {
   private collectSelectionChanges(
     selection: IndividualSelection | RangeSelection,
     deselection: IndividualSelection,
-  ): Observable<{ selectedNodeIds: string[], deselectedNodeIds: string[] }> {
+  ): Observable<{ selectedNodeItems: TreeNodeItem[], deselectedNodeItems: TreeNodeItem[] }> {
+    const deselectedItems = this.collectNodeItems(deselection);
     if (isRangeSelection(selection)) {
       let firstEmission = true;
       return this.collectNodesBetween(selection.from, selection.to)
         .pipe(
-          map((selectedNodeIds) => {
+          map((selectedNodeItems) => {
             if (firstEmission) {
               firstEmission = false;
-              return { selectedNodeIds, deselectedNodeIds: deselection };
+              return { selectedNodeItems, deselectedNodeItems: deselectedItems };
             }
 
-            return { selectedNodeIds, deselectedNodeIds: [] };
+            return { selectedNodeItems, deselectedNodeItems: [] };
           }),
         );
     }
 
-    return of({ selectedNodeIds: selection, deselectedNodeIds: deselection });
+    const selectedItems = this.collectNodeItems(selection);
+    return of({ selectedNodeItems: selectedItems, deselectedNodeItems: deselectedItems });
   }
 
-  private collectNodesBetween(nodeId1: string, nodeId2: string): Observable<string[]> {
+  private collectNodesBetween(nodeId1: string, nodeId2: string): Observable<TreeNodeItem[]> {
     const [readyNodes, nodesToLoad] = TreeEventDispatcher.groupNodesByLoadingState(
       this.iterateNodesBetween(nodeId1, nodeId2),
     );
@@ -220,6 +226,7 @@ export class TreeEventDispatcher implements TreeActions {
         // Maybe we could simplify this to `this._nodeLoader.loadNodes(nodesToLoad)`?
         mergeAll(),
         distinctUntilChanged(),
+        map((loadedHierarchy) => TreeEventDispatcher.collectTreeNodeItems(loadedHierarchy.hierarchyItems)),
       );
 
     return concat(of(readyNodes), loadedSelectedNodes)
@@ -261,19 +268,43 @@ export class TreeEventDispatcher implements TreeActions {
     }
   }
 
+  private collectNodeItems(nodeIds: string[]): TreeNodeItem[] {
+    const items: TreeNodeItem[] = [];
+    if (this._getVisibleNodes === undefined)
+      return items;
+
+    for (const nodeId of nodeIds) {
+      const node = this._getVisibleNodes().getModel().getNode(nodeId);
+      // istanbul ignore else
+      if (node !== undefined)
+        items.push(node.item);
+    }
+    return items;
+  }
+
+  private static collectTreeNodeItems(hierarchyItems: LoadedNodeHierarchyItem[], result: TreeNodeItem[] = []) {
+    for (const hierarchyItem of hierarchyItems) {
+      result.push(hierarchyItem.item);
+      if (hierarchyItem.children)
+        TreeEventDispatcher.collectTreeNodeItems(hierarchyItem.children, result);
+    }
+
+    return result;
+  }
+
   private static groupNodesByLoadingState(
     nodes: Iterable<TreeModelNode | TreeModelNodePlaceholder>,
-  ): [string[], TreeModelNodePlaceholder[]] {
-    const loadedNodes: string[] = [];
+  ): [TreeNodeItem[], TreeModelNodePlaceholder[]] {
+    const loadedNodeItems: TreeNodeItem[] = [];
     const nodesToLoad: TreeModelNodePlaceholder[] = [];
     for (const node of nodes) {
       if (isTreeModelNode(node)) {
-        loadedNodes.push(node.id);
+        loadedNodeItems.push(node.item);
       } else {
         nodesToLoad.push(node);
       }
     }
 
-    return [loadedNodes, nodesToLoad];
+    return [loadedNodeItems, nodesToLoad];
   }
 }

@@ -166,14 +166,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
       selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props;
-    let renderDirection = parentMenu === undefined ? this.state.direction : direction;
-    // check if menu should flip
-    if (autoflip && parentMenu === undefined) {
-      const menuRect = this.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
-      if (renderDirection !== this.state.direction)
-        this.setState({ direction: renderDirection });
-    }
+    const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
       this._injectedChildren = this._injectMenuItemProps(children, renderDirection, this.state.selectedIndex);
@@ -299,12 +292,28 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   public componentDidMount() {
     window.addEventListener("focus", this._handleFocusChange);
     window.addEventListener("mouseup", this._handleFocusChange);
+
+    this.checkRenderDirection();
   }
 
   /** @internal */
   public componentWillUnmount() {
     window.removeEventListener("focus", this._handleFocusChange);
     window.removeEventListener("mouseup", this._handleFocusChange);
+  }
+
+  private checkRenderDirection() {
+    const { direction, autoflip, parentMenu } = this.props;
+
+    let renderDirection = parentMenu === undefined ? this.state.direction : direction;
+
+    // check if menu should flip
+    if (autoflip && parentMenu === undefined) {
+      const menuRect = this.getRect();
+      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
+      if (renderDirection !== this.state.direction)
+        this.setState({ direction: renderDirection });
+    }
   }
 
   public focus = () => {
@@ -414,15 +423,15 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   public componentDidUpdate(prevProps: ContextMenuProps) {
     if (prevProps.selectedIndex !== this.props.selectedIndex) {
-      this.setState((_prevState, props) => ({ selectedIndex: props.selectedIndex! }));
+      this.setState((_, props) => ({ selectedIndex: props.selectedIndex! }));
     }
     if (!prevProps.opened && this.props.opened) {
-      this.setState((_prevState, props) => ({ selectedIndex: props.selectedIndex! }));
+      this.setState((_, props) => ({ selectedIndex: props.selectedIndex! }));
     }
     if (!this.props.parentMenu) {
       const direction = this.props.direction!;
       if ((!this.props.opened && prevProps.opened && direction !== this.state.direction) || prevProps.direction !== direction)
-        this.setState({ direction });
+        this.checkRenderDirection();
     }
   }
 }
@@ -689,14 +698,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       children, onClick, className, badgeType, ...props } = this.props;
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
     const badge = BadgeUtilities.getComponentForBadge(badgeType);
-
-    let renderDirection = this.state.direction;
-    if (autoflip && this._menuElement) {
-      const menuRect = this._menuElement.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, window.innerWidth, window.innerHeight);
-      if (renderDirection !== this.state.direction)
-        this.setState({ direction: renderDirection });
-    }
+    const renderDirection = this.state.direction;
 
     if (this._lastLabel !== label) {
       this._parsedLabel = TildeFinder.findAfterTilde(label).node;
@@ -739,9 +741,12 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       </div>
     );
   }
+
   public componentDidMount() {
     document.addEventListener("click", this._handleClickGlobal);
     this._updateHotkey(this.props.label);
+
+    this.checkRenderDirection();
   }
 
   public componentWillUnmount() {
@@ -751,9 +756,21 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   public componentDidUpdate(prevProps: ContextSubMenuProps, prevState: ContextSubMenuState) {
     const direction = this.props.direction!;
     if ((this.state.opened !== prevState.opened && direction !== this.state.direction) || prevProps.direction !== direction)
-      this.setState({ direction });
+      this.checkRenderDirection();
     if (this.props.children !== prevProps.children) {
       this._updateHotkey(this.props.label);
+    }
+  }
+
+  private checkRenderDirection() {
+    const { autoflip } = this.props;
+    let renderDirection = this.state.direction;
+    // istanbul ignore else
+    if (autoflip && this._menuElement) {
+      const menuRect = this._menuElement.getRect();
+      renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, window.innerWidth, window.innerHeight);
+      if (renderDirection !== this.state.direction)
+        this.setState({ direction: renderDirection });
     }
   }
 
@@ -767,6 +784,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
 
   public select = () => {
     this.setState({ opened: true }, () => {
+      // istanbul ignore else
       if (this._menuElement)
         this._menuElement.focus();
       if (this.props.onSelect !== undefined)
@@ -776,6 +794,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
 
   public close = (propagate?: boolean) => {
     this.setState({ opened: false }, () => {
+      // istanbul ignore else
       if (this._menuElement)
         this._menuElement.blur();
     });
@@ -785,6 +804,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   }
 
   private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
+    // istanbul ignore else
     if (this._menuButtonElement && this._menuButtonElement.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
@@ -792,7 +812,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
 
   private _handleClick = (event: any) => {
     event.stopPropagation();
+    // istanbul ignore else
     if (!this.props.disabled) {
+      // istanbul ignore else
       if (this.props.onClick !== undefined)
         this.props.onClick(event);
       if (this.props.opened)

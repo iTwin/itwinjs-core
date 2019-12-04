@@ -146,6 +146,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
           colorDefs={this._availableColors.length > 0 ? this._availableColors : undefined}
           numColumns={this._numColumns}
           disabled={this.state.isDisabled ? true : false}
+          readonly={this.state.readonly}
           onColorPick={this._onColorPick}
           data-testid="components-color-editor" />
       </div>

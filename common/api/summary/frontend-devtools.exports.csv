@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyViewTool 
 alpha;Button

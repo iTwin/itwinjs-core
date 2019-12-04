@@ -63,6 +63,7 @@ internal;getDefaultZoneManagerProps: (id: WidgetZoneId) => ZoneManagerProps
 beta;getDefaultZonesManagerProps: () => ZonesManagerProps
 internal;getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps
 internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
+internal;getDragDistance: (from: Point, to: Point, direction: Direction) => number
 alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;getToolbarItemProps: 
 internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
@@ -214,6 +215,7 @@ beta;ToolAssistanceSeparatorProps
 beta;Toolbar 
 alpha;ToolbarButton 
 alpha;ToolbarButtonProps 
+internal;ToolbarDirectionContext: React.Context
 alpha;ToolbarIcon 
 alpha;ToolbarIconProps 
 alpha;ToolbarItem
@@ -247,6 +249,8 @@ beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray
 alpha;withContainIn: 
 alpha;WithContainInProps
+beta;withDragInteraction: 
+beta;WithDragInteractionProps
 beta;Zone 
 internal;ZoneId = WidgetZoneId | ContentZoneId
 internal;ZoneManager

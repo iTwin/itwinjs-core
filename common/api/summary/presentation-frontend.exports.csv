@@ -18,6 +18,7 @@ public;SelectionChangeEventArgs
 public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
 public;SelectionChangeType
 public;SelectionHandler 
+internal;SelectionHelper
 public;SelectionManager 
 public;SelectionManagerProps
 public;SelectionScopesManager

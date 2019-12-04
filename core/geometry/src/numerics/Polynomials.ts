@@ -1203,7 +1203,7 @@ export class TrigPolynomial {
     ax: number, ay: number, a1: number, radians: number[]): boolean {
     const Coffs = new Float64Array(5);
     PowerPolynomial.zero(Coffs);
-    let degree = 2;
+    let degree;
     if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a1)) {
       PowerPolynomial.accumulate(Coffs, this.CW, ax);
       PowerPolynomial.accumulate(Coffs, this.SW, ay);
@@ -1608,7 +1608,7 @@ export class SmallSystem {
     const s = Geometry.conditionalDivideFraction(detCYZ, detXYZ);
     const t = Geometry.conditionalDivideFraction(detXCZ, detXYZ);
     const u = Geometry.conditionalDivideFraction(detXYC, detXYZ);
-    if (s !== undefined && t !== undefined && t !== undefined) {
+    if (s !== undefined && t !== undefined && u !== undefined) {
       return Vector3d.create(s, t, u, result);
     }
     return undefined;

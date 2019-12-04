@@ -9,8 +9,28 @@
         <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
         <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECNavigationProperty propertyName="SourceNavigation" relationshipName="SourcePhysicalElementUsesSourceDefinition" direction="Forward" description="A NavigationProperty that only exists in the source schema but should be remapped"/>
+        <ECNavigationProperty propertyName="CommonNavigation" relationshipName="SourcePhysicalElementUsesCommonDefinition" direction="Forward" description="A NavigationProperty that exists in both schemas"/>
         <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be dropped"/>
     </ECEntityClass>
+
+    <ECRelationshipClass typeName="SourcePhysicalElementUsesSourceDefinition" strength="referencing" modifier="None">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="SourcePhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SourcePhysicalElementUsesCommonDefinition" strength="referencing" modifier="Sealed">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="SourcePhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
 
     <ECRelationshipClass typeName="SourceRelToExclude" strength="referencing" modifier="None" description="For testing relationship exclusion by class." >
         <BaseClass>bis:ElementRefersToElements</BaseClass>

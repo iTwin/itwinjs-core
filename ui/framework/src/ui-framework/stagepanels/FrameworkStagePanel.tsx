@@ -22,8 +22,9 @@ import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { StagePanelLocation, getStagePanelType } from "./StagePanel";
+import { StagePanelLocation, getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
 import "./FrameworkStagePanel.scss";
+import { FrontstageManager } from "../../ui-framework";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal
@@ -37,6 +38,8 @@ export interface FrameworkStagePanelProps {
   initialSize?: number;
   isInFooterMode: boolean;
   isTargeted: boolean;
+  maxSize?: number;
+  minSize?: number;
   location: StagePanelLocation;
   panel: NineZoneStagePanelManagerProps;
   renderPane: (index: number) => React.ReactNode;
@@ -55,10 +58,12 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
 
   public componentDidMount(): void {
     this.initializeSize();
+    this.setMinMaxSize();
   }
 
   public componentDidUpdate(): void {
     this.initializeSize();
+    this.setMinMaxSize();
   }
 
   public render(): React.ReactNode {
@@ -161,6 +166,13 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
         }}
       </SafeAreaContext.Consumer>
     );
+  }
+
+  private setMinMaxSize() {
+    const panel = getNestedStagePanelKey(this.props.location);
+    const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
+    this.props.minSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
+    this.props.maxSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
   }
 
   private _handleResize = (resizeBy: number) => {

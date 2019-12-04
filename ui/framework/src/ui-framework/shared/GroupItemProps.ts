@@ -13,6 +13,7 @@ import { ItemProps } from "./ItemProps";
  * @public
  */
 export interface GroupItemProps extends ItemProps {
+  defaultActiveItemId?: string;
   groupId?: string;
   items: AnyItemDef[];
   direction?: Direction;

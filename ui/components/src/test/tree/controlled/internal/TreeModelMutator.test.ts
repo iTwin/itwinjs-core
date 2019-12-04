@@ -112,10 +112,10 @@ describe("TreeModelMutator", () => {
     const nodeToDeselect: MutableTreeModelNode = { ...createRandomMutableTreeModelNode(), isSelected: true };
 
     it("selects and deselects nodes", () => {
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToDeselect.id)).returns(() => nodeToDeselect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToDeselect.item.id)).returns(() => nodeToDeselect).verifiable(moq.Times.once());
 
-      modelMutator.modifySelection([nodeToSelect.id], [nodeToDeselect.id]);
+      modelMutator.modifySelection([nodeToSelect.item], [nodeToDeselect.item]);
       treeModelMock.verifyAll();
       treeModelSourceMock.verifyAll();
 
@@ -124,10 +124,10 @@ describe("TreeModelMutator", () => {
     });
 
     it("tries to select and deselect nodes even if they were removed", () => {
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => undefined).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToDeselect.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToDeselect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
 
-      modelMutator.modifySelection([nodeToSelect.id], [nodeToDeselect.id]);
+      modelMutator.modifySelection([nodeToSelect.item], [nodeToDeselect.item]);
       treeModelMock.verifyAll();
       treeModelSourceMock.verifyAll();
     });
@@ -142,9 +142,9 @@ describe("TreeModelMutator", () => {
     it("replaces selection", () => {
       const nodes: MutableTreeModelNode[] = [selectedNode, nodeToSelect];
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]()).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
 
-      modelMutator.replaceSelection([nodeToSelect.id]);
+      modelMutator.replaceSelection([nodeToSelect.item]);
       treeModelMock.verifyAll();
       expect(selectedNode.isSelected).to.be.false;
       expect(nodeToSelect.isSelected).to.be.true;
@@ -153,9 +153,9 @@ describe("TreeModelMutator", () => {
     it("tries to replace selection even if nodes were removed", () => {
       const nodes: MutableTreeModelNode[] = [];
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]()).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
 
-      modelMutator.replaceSelection([nodeToSelect.id]);
+      modelMutator.replaceSelection([nodeToSelect.item]);
       treeModelMock.verifyAll();
     });
 
@@ -178,7 +178,7 @@ describe("TreeModelMutator", () => {
 
     it("sets checkbox state", () => {
       const checkboxStateChange: CheckboxStateChange = {
-        nodeId: node.id,
+        nodeItem: node.item,
         newState: CheckBoxState.On,
       };
 
@@ -190,7 +190,7 @@ describe("TreeModelMutator", () => {
 
     it("tries to set checkbox state even if node was removed", () => {
       const checkboxStateChange: CheckboxStateChange = {
-        nodeId: node.id,
+        nodeItem: node.item,
         newState: CheckBoxState.On,
       };
 

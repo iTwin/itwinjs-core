@@ -387,91 +387,91 @@ export class CategoryModelTree extends React.Component<
 
   private _onToggleSearchBox() {
     this._onFilterClear();
-    this.setState({
-      showSearchBox: !this.state.showSearchBox,
+    this.setState((prevState) => ({
+      showSearchBox: !prevState.showSearchBox,
       filterInfo: {
-        ...this.state.filterInfo,
+        ...prevState.filterInfo,
         filter: "",
         filtering: false,
       },
-    });
+    }));
   }
 
   private _onFilterCancel() {
     if (!this.state.filterInfo) return;
 
-    this.setState({
+    this.setState((prevState) => ({
       filterInfo: {
-        ...this.state.filterInfo,
+        ...prevState.filterInfo,
         filter: "",
         filtering: false,
       },
-    });
+    }));
   }
 
   private _onFilterClear() {
     if (!this.state.filterInfo) return;
 
-    this.setState({
+    this.setState((prevState) => ({
       filterInfo: {
-        ...this.state.filterInfo,
+        ...prevState.filterInfo,
         filter: "",
         filtering: false,
       },
-    });
+    }));
   }
 
   private _onFilterStart(filter: string) {
     if (!this.state.filterInfo) return;
 
-    this.setState({
+    this.setState((prevState) => ({
       filterInfo: {
-        ...this.state.filterInfo,
+        ...prevState.filterInfo,
         filter,
         filtering: true,
       },
-    });
+    }));
   }
 
   private _onSelectedMatchChanged(index: number) {
     if (this.state.filterInfo && index !== this.state.filterInfo.matchesCount) {
-      this.setState({
+      this.setState((prevState) => ({
         filterInfo: {
-          ...this.state.filterInfo,
+          ...prevState.filterInfo,
           activeMatchIndex: index,
         },
-      });
+      }));
     }
   }
 
   // tslint:disable-next-line:naming-convention
   private async onFilterApplied(_filter?: string): Promise<void> {
     if (this.state.filterInfo && this.state.filterInfo.filtering) {
-      this.setState({
+      this.setState((prevState) => ({
         filterInfo: {
-          ...this.state.filterInfo,
+          ...prevState.filterInfo,
           filtering: false,
         },
-      });
+      }));
     }
   }
 
   private _onMatchesCounted(count: number) {
     if (this.state.filterInfo && count !== this.state.filterInfo.matchesCount) {
-      this.setState({
+      this.setState((prevState) => ({
         filterInfo: {
-          ...this.state.filterInfo,
+          ...prevState.filterInfo,
           matchesCount: count,
         },
-      });
+      }));
     }
   }
 
   private _onShowOptions(event: any) {
     event.stopPropagation();
-    this.setState({
-      isOptionsOpened: !this.state.isOptionsOpened,
-    });
+    this.setState((prevState) => ({
+      isOptionsOpened: !prevState.isOptionsOpened,
+    }));
   }
 
   private _onCloseContextMenu() {
@@ -542,13 +542,13 @@ export class CategoryModelTree extends React.Component<
       }
     }
 
-    this.setState({
+    this.setState((prevState) => ({
       activeGroup: {
-        ...this.state.activeGroup,
+        ...prevState.activeGroup,
         items: categories,
       },
       checkboxInfo: this.createCheckBoxInfoCallback(),
-    });
+    }));
   }
 
   private async _manageNodesState(nodes: TreeNodeItem[], enable: boolean) {

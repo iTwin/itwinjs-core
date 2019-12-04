@@ -21,6 +21,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides, CoreTools } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceInputMethod } from "./ToolAssistance";
+import { cssPixelsToDevicePixels } from "../render/DevicePixelRatio";
 
 // cSpell:ignore buttongroup
 
@@ -331,15 +332,19 @@ export class SelectionTool extends PrimitiveTool {
       if (undefined === pixels)
         return;
 
+      const sRange = Range2d.createNull();
+      sRange.extendPoint(Point2d.create(cssPixelsToDevicePixels(range.low.x), cssPixelsToDevicePixels(range.low.y)));
+      sRange.extendPoint(Point2d.create(cssPixelsToDevicePixels(range.high.x), cssPixelsToDevicePixels(range.high.y)));
+
       let contents = new Set<string>();
       const testPoint = Point2d.createZero();
 
       if (SelectionMethod.Box === method) {
         const outline = overlap ? undefined : new Set<string>();
-        const offset = range.clone();
+        const offset = sRange.clone();
         offset.expandInPlace(-2);
-        for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
-          for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+        for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+          for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
             const pixel = pixels.getPixel(testPoint.x, testPoint.y);
             if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
               continue; // no geometry at this location...
@@ -360,8 +365,8 @@ export class SelectionTool extends PrimitiveTool {
         }
       } else {
         const closePoint = Point2d.createZero();
-        for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
-          for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+        for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+          for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
             const pixel = pixels.getPixel(testPoint.x, testPoint.y);
             if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
               continue; // no geometry at this location...

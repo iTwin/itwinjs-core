@@ -65,7 +65,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
     const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
 
-    let t = alpha;
+    let t = 0;
 
     if (!isHorizontal) {
       // istanbul ignore next

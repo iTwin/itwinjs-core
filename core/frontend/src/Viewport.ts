@@ -31,6 +31,7 @@ import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
+import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -74,6 +75,7 @@ export class SyncFlags {
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void {
     this._decorations = false;
+    IModelApp.requestNextAnimation();
   }
   public invalidateScene(): void {
     this._scene = false;
@@ -1730,7 +1732,13 @@ export abstract class Viewport implements IDisposable {
    * @note An application which enables continuous rendering should disable it as soon as it is no longer needed.
    */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
-  public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
+  public set continuousRendering(contRend: boolean) {
+    if (contRend !== this._doContinuousRendering) {
+      this._doContinuousRendering = contRend;
+      if (contRend)
+        IModelApp.requestNextAnimation();
+    }
+  }
   /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
@@ -1982,6 +1990,11 @@ export abstract class Viewport implements IDisposable {
     this.readPixels(readRect, Pixel.Selector.GeometryAndDistance, (pixels) => {
       if (!pixels)
         return;
+
+      readRect.left = cssPixelsToDevicePixels(readRect.left);
+      readRect.right = cssPixelsToDevicePixels(readRect.right);
+      readRect.bottom = cssPixelsToDevicePixels(readRect.bottom);
+      readRect.top = cssPixelsToDevicePixels(readRect.top);
 
       let maximum = 0;
       let minimum = 1;
@@ -2567,7 +2580,7 @@ export abstract class Viewport implements IDisposable {
   public readonly onRender = new BeEvent<(vp: Viewport) => void>();
 
   /** @internal */
-  public renderFrame(): boolean {
+  public renderFrame(): void {
     const changeFlags = this._changeFlags;
     if (changeFlags.hasChanges)
       this._changeFlags = new ChangeFlags(ChangeFlag.None);
@@ -2638,7 +2651,7 @@ export abstract class Viewport implements IDisposable {
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
-        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps());
+        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps(), context.getActiveVolumeClassifierModelId());
         target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;
@@ -2660,9 +2673,11 @@ export abstract class Viewport implements IDisposable {
       isRedrawNeeded = true;
     }
 
+    let requestNextAnimation = false;
     if (this.processFlash()) {
       target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
+      requestNextAnimation = undefined !== this._flashedElem;
     }
 
     timer.stop();
@@ -2701,16 +2716,17 @@ export abstract class Viewport implements IDisposable {
       }
     }
 
-    return true;
+    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering)
+      IModelApp.requestNextAnimation();
   }
 
   /** @internal */
   public addDecorations(_decorations: Decorations): void { }
 
   /** Read selected data about each pixel within a rectangular region of this Viewport.
-   * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
+   * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
-   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
+   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    * @beta
@@ -2752,7 +2768,11 @@ export abstract class Viewport implements IDisposable {
     const vf = this._viewFrustum;
 
     const result = undefined !== out ? out : new Point3d();
-    const viewRect = this.viewRect;
+    const viewRect = this.viewRect.clone();
+    viewRect.left = cssPixelsToDevicePixels(viewRect.left);
+    viewRect.right = cssPixelsToDevicePixels(viewRect.right);
+    viewRect.bottom = cssPixelsToDevicePixels(viewRect.bottom);
+    viewRect.top = cssPixelsToDevicePixels(viewRect.top);
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
     if (vf.frustFraction < 1.0)
@@ -2852,6 +2872,7 @@ export class ScreenViewport extends Viewport {
   private readonly _backStack: ViewStateUndo[] = [];
   private _currentBaseline?: ViewStateUndo;
   private _webglCanvas?: HTMLCanvasElement;
+  private _logo!: HTMLImageElement;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2925,20 +2946,20 @@ export class ScreenViewport extends Viewport {
     return logoDiv;
   }
 
-  private _logo!: HTMLImageElement;
-  /** internal */
+  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+   * @beta
+   */
   public get logo() { return this._logo; }
 
   /** @internal */
   protected addLogo() {
-    const logo = document.createElement("img");
-    this._logo = logo;
+    const logo = this._logo = document.createElement("img");
     logo.src = "images/imodeljs.svg";
     logo.className = "imodeljs-logo";
     this.vpDiv.appendChild(logo);
 
     let popup: HTMLDivElement | undefined;
-    const stopProp = (ev: MouseEvent, fn: () => void) => { fn(); ev.stopPropagation(); };
+    const stopProp = (ev: Event, fn: () => void) => { fn(); ev.stopPropagation(); };
     logo.onmouseenter = (ev) => stopProp(ev, () => {
       popup = document.createElement("div"); // this div is to allow the logo cards to animate from the bottom of the view
       popup.className = "logo-cards-container";
@@ -2949,14 +2970,17 @@ export class ScreenViewport extends Viewport {
       popup.appendChild(cards);
 
       setTimeout(() => {
-        if (popup)
+        if (undefined !== popup) {
           popup.style.height = cards.clientHeight + 10 + "px"; // wait for a delay to allow the cards to load. We need to set the height before we start the animation
-        cards.style.top = "0%"; // this causes the "up" animation
+          cards.style.top = "0%"; // this causes the "up" animation
+        }
       }, 10);
     });
-    logo.onclick = (ev) => stopProp(ev, () => {
+    const showLogos = (ev: Event) => stopProp(ev, () => {
       IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, this.makeLogoCards(), MessageBoxIconType.Information); // tslint:disable-line: no-floating-promises
     });
+    logo.onclick = showLogos;
+    logo.addEventListener("touchstart", showLogos);
     logo.onmouseleave = (ev) => stopProp(ev, () => {
       if (undefined !== popup) { // if we have a popup showing, remove it
         this.vpDiv.removeChild(popup);

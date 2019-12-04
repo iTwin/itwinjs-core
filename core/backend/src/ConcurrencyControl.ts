@@ -507,7 +507,7 @@ export class ConcurrencyControl {
     this._policy = policy;
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
-    let rc: RepositoryStatus = RepositoryStatus.Success;
+    let rc: RepositoryStatus;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
       rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);

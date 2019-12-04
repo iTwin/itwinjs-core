@@ -101,6 +101,30 @@ export interface ClassGroup extends GroupingSpecificationBase {
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
   specType: GroupingSpecificationTypes.SameLabelInstance;
+  /**
+   * Stage of hierarchy creation at which the rule is applied.
+   * Defaults to [[SameLabelInstanceGroupApplicationStage.Query]].
+   * @beta
+   */
+  applicationStage?: SameLabelInstanceGroupApplicationStage;
+}
+
+/**
+ * Specifies hierarchy creation stages used to apply [[SameLabelInstanceGroup]] grouping.
+ * @beta
+ */
+export enum SameLabelInstanceGroupApplicationStage {
+  /** Apply grouping at query stage. */
+  Query = "Query",
+
+  /**
+   * Apply grouping at post-processing stage.
+   *
+   * This allows grouping nodes created by different hierarchy specifications at
+   * a higher performance cost as it requires loading the whole hierarchy level before
+   * returning even the first node - avoid using with large numbers of nodes.
+   */
+  PostProcess = "PostProcess",
 }
 
 /**

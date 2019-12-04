@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+
+import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -52,14 +54,14 @@ declare var BUILD_SEMVER: string;
 (() => {
   const style = document.createElement("style");
   style.appendChild(document.createTextNode(`
-  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none;}
   .logo-cards-div {position:relative;top:0%;left:0%;transition:top .3s;transition-timing-function:ease-out}
-  .logo-card p {margin:0;}
+  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none}
+  .logo-card p {margin:0}
   .logo-cards-container {position:absolute;bottom:0px;z-index:50;pointer-events:none;overflow:hidden;left:34px;height:0px}
-  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65));}
-  .imodeljs-logo:hover {opacity:1.0;}`,
+  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65))}
+  .imodeljs-logo:hover {opacity:1.0}`,
   ));
-  document.head.prepend(style);
+  document.head.prepend(style); // put our styles at the beginning so any application-supplied styles will override them
 })();
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -122,7 +124,6 @@ export interface IModelAppOptions {
  * @public
  */
 export class IModelApp {
-  private static _copyrightNotice = '© 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
   private static _initialized = false;
   private static _accuDraw: AccuDraw;
   private static _accuSnap: AccuSnap;
@@ -142,6 +143,12 @@ export class IModelApp {
   private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
+  private static _wantEventLoop = false;
+  private static _animationRequested = false;
+  private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
+  private static _animationIntervalId?: number;
+  private static _tileTreePurgeTime?: BeTimePoint;
+  private static _tileTreePurgeInterval?: BeDuration;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -206,10 +213,7 @@ export class IModelApp {
    * @internal
    */
   public static registerModuleEntities(moduleObj: any) {
-    for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
+    for (const thisMember in moduleObj) { // tslint:disable-line: forin
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
         this.registerEntityState(thisEntityState.classFullName, thisEntityState);
@@ -327,12 +331,107 @@ export class IModelApp {
   /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
     if (this._initialized) {
+      this._wantEventLoop = false;
+      window.removeEventListener("resize", IModelApp.requestNextAnimation);
+      this.clearIntervalAnimation();
+
       this.toolAdmin.onShutDown();
       this.viewManager.onShutDown();
       this.tileAdmin.onShutDown();
+
       this._renderSystem = dispose(this._renderSystem);
       this._entityClasses.clear();
+
       this._initialized = false;
+    }
+  }
+
+  /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
+   * Such changes include resizing a Viewport or changing the device pixel ratio by zooming in or out in the browser.
+   * The default interval is 1 second. It may be desirable to override the default for specific apps and/or devices.
+   *  - Increasing the interval can conserve battery life on battery-powered devices at the expense of slower response to resize events.
+   *  - An application that only displays a single Viewport whose dimensions only change when the dimensions of the application window change, and which does not support changing application zoom level, could disable the interval altogether.
+   * @param interval The interval at which to poll for changes. If undefined (or negative), the application will never poll. If zero, the application will poll as frequently as possible.
+   * @beta
+   */
+  public static get animationInterval(): BeDuration | undefined { return IModelApp._animationInterval; }
+  public static set animationInterval(interval: BeDuration | undefined) {
+    if (undefined !== interval && interval.isTowardsPast)
+      interval = undefined;
+
+    if (interval !== IModelApp._animationInterval) {
+      IModelApp._animationInterval = interval;
+      if (IModelApp._wantEventLoop)
+        IModelApp.requestIntervalAnimation();
+    }
+  }
+
+  /** @internal */
+  public static requestNextAnimation() {
+    if (!IModelApp._animationRequested) {
+      IModelApp._animationRequested = true;
+      requestAnimationFrame(IModelApp.eventLoop);
+    }
+  }
+
+  /** @internal */
+  private static clearIntervalAnimation(): void {
+    if (undefined !== IModelApp._animationIntervalId) {
+      window.clearInterval(IModelApp._animationIntervalId);
+      IModelApp._animationIntervalId = undefined;
+    }
+  }
+
+  /** @internal */
+  private static requestIntervalAnimation(): void {
+    IModelApp.clearIntervalAnimation();
+
+    if (undefined !== IModelApp.animationInterval)
+      IModelApp._animationIntervalId = window.setInterval(() => {
+        IModelApp.requestNextAnimation();
+      }, IModelApp.animationInterval.milliseconds);
+  }
+
+  /** @internal */
+  public static startEventLoop() {
+    if (!IModelApp._wantEventLoop) {
+      IModelApp._wantEventLoop = true;
+      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
+      if (undefined !== treeExpirationTime) {
+        IModelApp._tileTreePurgeInterval = treeExpirationTime;
+        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
+      }
+
+      window.addEventListener("resize", IModelApp.requestNextAnimation);
+      IModelApp.requestIntervalAnimation();
+      IModelApp.requestNextAnimation();
+    }
+  }
+
+  /** The main event processing loop for Tools and rendering. */
+  private static eventLoop() {
+    IModelApp._animationRequested = false;
+    if (!IModelApp._wantEventLoop) // flag turned on at startup
+      return;
+
+    try {
+      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.viewManager.renderLoop();
+      IModelApp.tileAdmin.process();
+
+      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
+        const now = BeTimePoint.now();
+        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
+        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
+      }
+    } catch (exception) {
+      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
+        close(); // this does nothing in a web browser, closes electron.
+      });
+
+      IModelApp._wantEventLoop = false;
+      IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
+      window.removeEventListener("resize", IModelApp.requestNextAnimation);
     }
   }
 
@@ -375,6 +474,8 @@ export class IModelApp {
 
   /** Make a new Logo Card, optionally supplying its content and id.
    * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
+   * @param el content of the logo card (optional)
+   * @param id id of the logo card (optional)
    * @beta
    */
   public static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement {
@@ -387,11 +488,13 @@ export class IModelApp {
     return card;
   }
 
-  /** @internal */
+  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+   *  @internal
+   */
   public static makeIModelJsLogoCard() {
     const imjsP = document.createElement("p");
     const poweredBy = document.createElement("span");
-    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy");
+    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy"); // this is localized
     const version = document.createElement("span");
     version.innerText = this.applicationVersion;
     const logo = document.createElement("img");
@@ -401,7 +504,7 @@ export class IModelApp {
     logo.style.marginLeft = "5px";
     logo.style.marginRight = "5px"; //
     const copyright = document.createElement("p");
-    copyright.innerHTML = this._copyrightNotice;
+    copyright.innerHTML = copyrightNotice; // copyright notice is not localized
     imjsP.appendChild(poweredBy);
     imjsP.appendChild(logo);
     imjsP.appendChild(version);

@@ -96,6 +96,11 @@ function updateChildren(
     model.setNumChildren(parentId, numChildren);
   }
 
+  // if children array is undefined do not add children as they should be disposed
+  if (model.getChildren(parentId) === undefined) {
+    return;
+  }
+
   model.setChildren(
     parentId,
     hierarchyItems.map(({ item }) => convertToTreeModelNodeInput(item)),

@@ -158,7 +158,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       }
     }
 
-    this.setState({ initialized: true, models: _models, showToast: !this.state.docCodes });
+    this.setState((prevState) => ({ initialized: true, models: _models, showToast: !prevState.docCodes }));
   }
 
   public componentWillUnmount() {

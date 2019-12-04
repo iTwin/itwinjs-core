@@ -42,8 +42,8 @@ describe("ProjectShareClient (#integration)", () => {
     // inFolder
     folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
     chai.assert.strictEqual(2, folders.length);
-    let folder2B = folders[0];
-    let folder2A = folders[1];
+    let folder2A = folders[0];
+    let folder2B = folders[1];
     chai.assert.strictEqual(folder2B.name, "2B");
     chai.assert.strictEqual(folder2A.name, "2A");
 
@@ -56,16 +56,16 @@ describe("ProjectShareClient (#integration)", () => {
     // inPath
     folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, "360-Images"));
     chai.assert.strictEqual(2, folders.length);
-    folder2B = folders[0];
-    folder2A = folders[1];
+    folder2A = folders[0];
+    folder2B = folders[1];
     chai.assert.strictEqual(folder2B.name, "2B");
     chai.assert.strictEqual(folder2A.name, "2A");
 
     // inFolderWithNameLike
     folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolderWithNameLike(folder360Images.wsgId, "2*"));
     chai.assert.strictEqual(2, folders.length);
-    folder2B = folders[0];
-    folder2A = folders[1];
+    folder2A = folders[0];
+    folder2B = folders[1];
     chai.assert.strictEqual(folder2B.name, "2B");
     chai.assert.strictEqual(folder2A.name, "2A");
 
@@ -75,14 +75,14 @@ describe("ProjectShareClient (#integration)", () => {
     folder2A = folders[0];
     chai.assert.strictEqual(folder2A.name, "2A");
     folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "360-Images", "*"));
-    chai.assert.strictEqual(4, folders.length);
+    chai.assert.strictEqual(3, folders.length);
   });
 
   it("should be able to query files with different options", async () => {
     const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
     const subFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
-    const folder2B = subFolders[0];
-    const folder2A = subFolders[1];
+    const folder2A = subFolders[0];
+    const folder2B = subFolders[1];
 
     // inRootFolder
     let files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inRootFolder(projectId));
@@ -100,7 +100,7 @@ describe("ProjectShareClient (#integration)", () => {
     // startsWithPath
     files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPath(projectId, "360-Images/2A"));
     chai.assert(files);
-    chai.assert.isAtLeast(files.length, 500);
+    chai.assert.isAtLeast(files.length, 28);
 
     // inFolderWithNameLike
     files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folder2A.wsgId, "2A_v0410462"));

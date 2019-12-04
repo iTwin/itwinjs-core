@@ -733,7 +733,7 @@ export interface CheckboxStateChange {
     // (undocumented)
     newState: CheckBoxState;
     // (undocumented)
-    nodeId: string;
+    nodeItem: TreeNodeItem;
 }
 
 // @beta
@@ -1328,8 +1328,6 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     descriptionEnabled?: boolean;
     // (undocumented)
     imageLoader?: ITreeImageLoader;
-    // (undocumented)
-    nodeHighlightProps?: HighlightableTreeNodeProps;
 }
 
 // @alpha
@@ -1746,7 +1744,7 @@ export interface ITreeImageLoader extends IImageLoader {
 // @alpha
 export interface ITreeNodeLoader {
     // (undocumented)
-    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
 }
@@ -1923,18 +1921,21 @@ export class MutableTreeModel implements TreeModel {
     // (undocumented)
     computeVisibleNodes(): VisibleTreeNodes;
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): MutableTreeModelNode | undefined;
     // (undocumented)
-    getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
+    getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined;
     // (undocumented)
     getRootNode(): TreeModelRootNode;
+    insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     // (undocumented)
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     // (undocumented)
+    removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    // (undocumented)
     setNumChildren(parentId: string | undefined, numChildren: number): void;
     }
 
@@ -2106,7 +2107,7 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> impleme
     // (undocumented)
     getPageSize(): number;
     // (undocumented)
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<string[]>;
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
     }
@@ -2322,8 +2323,6 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<PropertyGridState>;
     }
 
 // @public
@@ -2345,6 +2344,10 @@ export interface PropertyGridContextMenuArgs {
 // @public
 export interface PropertyGridProps extends CommonProps {
     dataProvider: IPropertyDataProvider;
+    // @beta
+    horizontalOrientationMinWidth?: number;
+    // @beta
+    isOrientationFixed?: boolean;
     // @beta
     isPropertyEditingEnabled?: boolean;
     isPropertyHoverEnabled?: boolean;
@@ -2974,6 +2977,15 @@ export class TableArrayValueRenderer extends React.PureComponent<TableSpecificVa
     render(): JSX.Element;
 }
 
+// @beta
+export interface TableCellContextMenuArgs {
+    cellItem?: CellItem;
+    cellKey: string;
+    colIndex: number;
+    event: React.MouseEvent;
+    rowIndex: number;
+}
+
 // @public
 export interface TableCellEditorState {
     // (undocumented)
@@ -3084,6 +3096,8 @@ export interface TableProps extends CommonProps {
     isRowSelected?: (row: RowItem) => boolean;
     // @internal (undocumented)
     onApplyFilter?: () => void;
+    // @beta
+    onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
     onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
     // @beta
@@ -3586,7 +3600,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
     // (undocumented)
     getDataProvider(): TDataProvider;
     // (undocumented)
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<string[]>;
+    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
     // (undocumented)
     onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
     }
@@ -3629,6 +3643,8 @@ export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNod
 export interface TreeNodeRendererProps extends CommonProps {
     // (undocumented)
     node: TreeModelNode;
+    // (undocumented)
+    nodeHighlightProps?: HighlightableTreeNodeProps;
     // (undocumented)
     onLabelRendered?: (node: TreeModelNode) => void;
     // (undocumented)
@@ -3712,9 +3728,9 @@ export interface TreeRendererProps {
 // @alpha
 export interface TreeSelectionChange {
     // (undocumented)
-    deselectedNodeIds: string[];
+    deselectedNodeItems: TreeNodeItem[];
     // (undocumented)
-    selectedNodeIds: string[];
+    selectedNodeItems: TreeNodeItem[];
 }
 
 // @alpha
@@ -3727,7 +3743,7 @@ export interface TreeSelectionModificationEvent {
 export interface TreeSelectionReplacementEvent {
     // (undocumented)
     replacements: Observable<{
-        selectedNodeIds: string[];
+        selectedNodeItems: TreeNodeItem[];
     }>;
 }
 

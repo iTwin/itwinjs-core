@@ -24,8 +24,9 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { SchemaValidationVisitor } from "../../src/Validation/SchemaValidationVisitor";
-import { TestReporter, TestRuleSet, TestRuleSetB, EmptyRuleSet, TestDiagnostics } from "../TestUtils/DiagnosticHelpers";
+import { TestReporter, TestRuleSet, TestRuleSetB, EmptyRuleSet, TestDiagnostics, IgnoreSuppressionSet, ApplySuppressionSet } from "../TestUtils/DiagnosticHelpers";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
+import { DiagnosticCategory } from "../../src/ecschema-metadata";
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;
@@ -56,6 +57,18 @@ describe("SchemaValidationVisitor tests", () => {
     visitor.registerRuleSet(testRuleSet);
 
     expect(() => visitor.registerRuleSet(testRuleSet)).to.throw(Error, `A RuleSet with the name '${testRuleSet.name}' has already been registered.`);
+  });
+
+  it("registerSuppressionSet, AppliedSuppressionSet registered properly", async () => {
+    const suppressionSet = new ApplySuppressionSet();
+    visitor.registerRuleSuppressionSet(suppressionSet);
+    expect(visitor.suppressionSet).to.be.not.undefined;
+  });
+
+  it("registerSuppressionSet, AppliedSuppressionSet registered properly", async () => {
+    const suppressionSet = new IgnoreSuppressionSet();
+    visitor.registerRuleSuppressionSet(suppressionSet);
+    expect(visitor.suppressionSet).to.be.not.undefined;
   });
 
   it("registerReporter, reporter registered properly", async () => {
@@ -102,6 +115,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+
+      await visitor.visitFullSchema(testSchema);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Schema suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+
+      await visitor.visitFullSchema(testSchema);
+
+      const diagnostic = new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Schema suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+
+      await visitor.visitFullSchema(testSchema);
+
+      const diagnostic = new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitSchemaItem tests", () => {
@@ -137,6 +197,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitSchemaItem(schemaItem);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("schemaItem suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitSchemaItem(schemaItem);
+
+      const diagnostic = new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("schemaItem suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitSchemaItem(schemaItem);
+
+      const diagnostic = new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error)
     });
   });
 
@@ -174,6 +281,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingClassDiagnostic(entityClass, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+
+      await visitor.visitClass(entityClass);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Class suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+
+      await visitor.visitClass(entityClass);
+
+      const diagnostic = new TestDiagnostics.FailingClassDiagnostic(entityClass, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Class suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+
+      await visitor.visitClass(entityClass);
+
+      const diagnostic = new TestDiagnostics.FailingClassDiagnostic(entityClass, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitProperty tests", () => {
@@ -209,6 +363,56 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(entityClass.properties![0] as AnyProperty, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+
+      await visitor.visitProperty(entityClass.properties![0] as AnyProperty);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Property suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+
+      await visitor.visitProperty(entityClass.properties![0] as AnyProperty);
+
+      const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(entityClass.properties![0] as AnyProperty, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Property suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entityClass = new EntityClass(schema, "TestClass");
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+
+      await visitor.visitProperty(entityClass.properties![0] as AnyProperty);
+
+      const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(entityClass.properties![0] as AnyProperty, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -246,6 +450,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingEntityClassDiagnostic(entity, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entity = new EntityClass(schema, "TestClass");
+
+      await visitor.visitEntityClass(entity);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Entity suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entity = new EntityClass(schema, "TestClass");
+
+      await visitor.visitEntityClass(entity);
+
+      const diagnostic = new TestDiagnostics.FailingEntityClassDiagnostic(entity, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Entity suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const entity = new EntityClass(schema, "TestClass");
+
+      await visitor.visitEntityClass(entity);
+
+      const diagnostic = new TestDiagnostics.FailingEntityClassDiagnostic(entity, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitStructClass tests", () => {
@@ -281,6 +532,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const struct = new StructClass(schema, "TestClass");
+
+      await visitor.visitStructClass(struct);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Struct suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const struct = new StructClass(schema, "TestClass");
+
+      await visitor.visitStructClass(struct);
+
+      const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"])
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Struct suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const struct = new StructClass(schema, "TestClass");
+
+      await visitor.visitStructClass(struct);
+
+      const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -318,6 +616,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const mixin = new Mixin(schema, "TestClass");
+
+      await visitor.visitMixin(mixin);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Mixin suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const mixin = new Mixin(schema, "TestClass")
+
+      await visitor.visitMixin(mixin);
+
+      const diagnostic = new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Mixin suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const mixin = new Mixin(schema, "TestClass")
+
+      await visitor.visitMixin(mixin);
+
+      const diagnostic = new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitRelationshipClass tests", () => {
@@ -350,6 +695,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+
+      await visitor.visitRelationshipClass(relationship);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Relationship class suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+
+      await visitor.visitRelationshipClass(relationship);
+
+      const diagnostic = new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Relationship class suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+
+      await visitor.visitRelationshipClass(relationship);
+
+      const diagnostic = new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -387,6 +779,56 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
+
+      await visitor.visitRelationshipConstraint(constraint);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Relationship Constraint suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
+
+      await visitor.visitRelationshipConstraint(constraint);
+
+      const diagnostic = new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Relationship Constraint suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationship = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
+
+      await visitor.visitRelationshipConstraint(constraint);
+
+      const diagnostic = new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitCustomAttributeClass tests", () => {
@@ -422,6 +864,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingCustomAttributeClassDiagnostic(schemaItem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Custom Attribute Class suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeClassDiagnostic(schemaItem, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Custom Attribute Class suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeClassDiagnostic(schemaItem, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -459,6 +948,19 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass.properties![0], property.customAttributes!.get("TestSchema.TestCA"))).to.be.true);
     });
 
+    it("Property, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const entityClass = new EntityClass(schema, "TestClass");
+      const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+      (property as unknown as MutableProperty).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(entityClass.properties![0] as AnyProperty);
+
+      ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.notCalled).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.notCalled).to.be.true);
+    });
+
     it("RelationshipClass, calls CustomAttributeContainer rules properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -469,6 +971,18 @@ describe("SchemaValidationVisitor tests", () => {
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(relationshipClass)).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(relationshipClass, relationshipClass.customAttributes!.get("TestSchema.TestCA"))).to.be.true);
+    });
+
+    it("RelationshipClass, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const relationshipClass = new RelationshipClass(schema, "TestClass");
+      (relationshipClass as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(relationshipClass);
+
+      ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.notCalled).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.notCalled).to.be.true);
     });
 
     it("RelationshipConstraint, calls CustomAttributeContainer rules properly", async () => {
@@ -482,6 +996,19 @@ describe("SchemaValidationVisitor tests", () => {
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(constraint)).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(constraint, constraint.customAttributes!.get("TestSchema.TestCA"))).to.be.true);
+    });
+
+    it("RelationshipConstraint, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const relationshipClass = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationshipClass, RelationshipEnd.Source);
+      (constraint as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(constraint);
+
+      ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.notCalled).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.notCalled).to.be.true);
     });
 
     it("failing rules, reporter called properly", async () => {
@@ -499,6 +1026,46 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(entityClass, ["Param1", "Param2"]);
       expect(reportSpy.calledTwice).to.be.true;
       expect(reportSpy.calledWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Custom Attribute Container suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+
+      const relationshipClass = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationshipClass, RelationshipEnd.Source);
+      (constraint as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(constraint);
+
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(constraint, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledTwice).to.be.true;
+      expect(reportSpy.alwaysCalledWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Custom Attribute Container suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const relationshipClass = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationshipClass, RelationshipEnd.Source);
+      (constraint as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(constraint);
+
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(constraint, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.false;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -533,6 +1100,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const enumeration = new Enumeration(schema, "TestClass");
+
+      await visitor.visitEnumeration(enumeration);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Enumeration suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const enumeration = new Enumeration(schema, "TestClass");
+
+      await visitor.visitEnumeration(enumeration);
+
+      const diagnostic = new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Enumeration suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const enumeration = new Enumeration(schema, "TestClass");
+
+      await visitor.visitEnumeration(enumeration);
+
+      const diagnostic = new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitKindOfQuantity tests", () => {
@@ -565,6 +1179,52 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingKindOfQuantityDiagnostic(koq, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude Schema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const koq = new KindOfQuantity(schema, "TestClass");
+
+      await visitor.visitKindOfQuantity(koq);
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Kind of Quantity suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSet(ruleSet);
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const koq = new KindOfQuantity(schema, "TestClass");
+
+      await visitor.visitKindOfQuantity(koq);
+
+      const diagnostic = new TestDiagnostics.FailingKindOfQuantityDiagnostic(koq, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Kind of Quantity suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSet(ruleSet);
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const koq = new KindOfQuantity(schema, "TestClass");
+
+      await visitor.visitKindOfQuantity(koq);
+
+      const diagnostic = new TestDiagnostics.FailingKindOfQuantityDiagnostic(koq, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -599,6 +1259,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingPropertyCategoryDiagnostic(category, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude Schema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const category = new PropertyCategory(schema, "TestClass");
+
+      await visitor.visitPropertyCategory(category);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Property Category suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const category = new PropertyCategory(schema, "TestClass");
+
+      await visitor.visitPropertyCategory(category);
+
+      const diagnostic = new TestDiagnostics.FailingPropertyCategoryDiagnostic(category, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Property Category suppression applied and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const category = new PropertyCategory(schema, "TestClass");
+
+      await visitor.visitPropertyCategory(category);
+
+      const diagnostic = new TestDiagnostics.FailingPropertyCategoryDiagnostic(category, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitFormat tests", () => {
@@ -632,6 +1339,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const format = new Format(schema, "TestClass");
+
+      await visitor.visitFormat(format);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Format suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const format = new Format(schema, "TestClass");
+
+      await visitor.visitFormat(format);
+
+      const diagnostic = new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Format suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const format = new Format(schema, "TestClass");
+
+      await visitor.visitFormat(format);
+
+      const diagnostic = new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitUnit tests", () => {
@@ -652,6 +1406,19 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitUnit(schemaItem);
     });
 
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unit = new Unit(schema, "TestClass");
+
+      await visitor.visitUnit(unit);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -664,6 +1431,40 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Unit suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unit = new Unit(schema, "TestClass");
+
+      await visitor.visitUnit(unit);
+
+      const diagnostic = new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Unit suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unit = new Unit(schema, "TestClass");
+
+      await visitor.visitUnit(unit);
+
+      const diagnostic = new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -698,6 +1499,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const invertedUnit = new InvertedUnit(schema, "TestClass");
+
+      await visitor.visitInvertedUnit(invertedUnit);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Inverted Unit suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const invertedUnit = new InvertedUnit(schema, "TestClass");
+
+      await visitor.visitInvertedUnit(invertedUnit);
+
+      const diagnostic = new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Inverted Unit suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const invertedUnit = new InvertedUnit(schema, "TestClass");
+
+      await visitor.visitInvertedUnit(invertedUnit);
+
+      const diagnostic = new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error)
+    });
   });
 
   describe("visitUnitSystem tests", () => {
@@ -730,6 +1578,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unitSystem = new UnitSystem(schema, "TestClass");
+
+      await visitor.visitUnitSystem(unitSystem);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Unit System suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unitSystem = new UnitSystem(schema, "TestClass");
+
+      await visitor.visitUnitSystem(unitSystem);
+
+      const diagnostic = new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Unit System suppression applied and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const unitSystem = new UnitSystem(schema, "TestClass");
+
+      await visitor.visitUnitSystem(unitSystem);
+
+      const diagnostic = new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -764,6 +1659,53 @@ describe("SchemaValidationVisitor tests", () => {
       const diagnostic = new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
+
+    it("failing rules, exclude TestSchema reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const phenomenon = new Phenomenon(schema, "TestClass");
+
+      await visitor.visitPhenomenon(phenomenon);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Phenomenon suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const phenomenon = new Phenomenon(schema, "TestClass");
+
+      await visitor.visitPhenomenon(phenomenon);
+
+      const diagnostic = new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Phenomenon suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const phenomenon = new Phenomenon(schema, "TestClass");
+
+      await visitor.visitPhenomenon(phenomenon);
+
+      const diagnostic = new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+    });
   });
 
   describe("visitConstant tests", () => {
@@ -796,6 +1738,53 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("failing rules, exclude TestSchema, reporter not called", async () => {
+      const ruleSet = new TestRuleSet(true);
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const constant = new Constant(schema, "TestClass");
+
+      await visitor.visitConstant(constant);
+
+      expect(reportSpy.notCalled).to.be.true;
+    });
+
+    it("Constant suppression applied and diagnostic category set to warning", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new ApplySuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const constant = new Constant(schema, "TestClass");
+
+      await visitor.visitConstant(constant);
+
+      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"])
+      diagnostic.category = DiagnosticCategory.Warning;
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+
+    it("Constant suppression ignored and diagnostic category left as error", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const suppressionSet = new IgnoreSuppressionSet();
+      visitor.registerRuleSuppressionSet(suppressionSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const constant = new Constant(schema, "TestClass");
+
+      await visitor.visitConstant(constant);
+
+      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"])
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 });

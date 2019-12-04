@@ -285,7 +285,6 @@ interface SolarTimelineComponentProps {
 interface SolarTimelineComponentState {
   isPlaying: boolean;     // timeline is currently playing or paused
   isDateOpened: boolean;  // date picker is opened
-  isTimeOpened: boolean;  // time picker is opened
   isSettingsOpened: boolean;  // settings popup is opened
   dayStartMs: number;
   sunRiseOffsetMs: number;
@@ -370,7 +369,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
     this.state = {
       isDateOpened: false,
-      isTimeOpened: false,
       isSettingsOpened: false,
       isPlaying: false,
       dayStartMs,
@@ -525,7 +523,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     this._timeLastCycle = new Date().getTime();
 
     // update the timeline
-    this.setState({ isTimeOpened: false, currentTimeOffsetMs });
+    this.setState({ currentTimeOffsetMs });
   }
 
   private _onCloseDayPicker = () => {
@@ -533,7 +531,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onOpenDayPicker = () => {
-    this.setState({ isDateOpened: !this.state.isDateOpened });
+    this.setState((prevState) => ({ isDateOpened: !prevState.isDateOpened }));
   }
 
   private _onCloseSettingsPopup = () => {
@@ -541,7 +539,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onOpenSettingsPopup = () => {
-    this.setState({ isSettingsOpened: !this.state.isSettingsOpened });
+    this.setState((prevState) => ({ isSettingsOpened: !prevState.isSettingsOpened }));
   }
 
   private ensureRange(value: number, min: number, max: number): number {
@@ -583,11 +581,11 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onToggleLoop = () => {
-    this.setState({ loop: !this.state.loop });
+    this.setState((prevState) => ({ loop: !prevState.loop }));
   }
 
   private _onToggleDisplay = () => {
-    this.setState({ isExpanded: !this.state.isExpanded });
+    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
   }
 
   private _formatTick = (millisec: number) => {

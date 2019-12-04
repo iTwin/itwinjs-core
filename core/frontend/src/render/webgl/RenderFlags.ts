@@ -26,6 +26,7 @@ export const enum RenderPass {
   ClassificationByIndex, // Stencil volumes for processing classification one classifier at a time (used for generating pick data Ids and flashing a single classifier).
   HilitePlanarClassification,
   PlanarClassification,
+  VolumeClassifiedRealityData,
   COUNT,
 }
 

@@ -88,10 +88,10 @@ export class MultiCode extends CodeBase {
  * @returns Encoded part of a code.
  */
 function encodeForCodeId(str: string): string {
-  return encodeURIComponent(str.replace("-", "_0x2D_"))
-    .replace("~", "~7E")
-    .replace("*", "~2A")
-    .replace("%", "~");
+  return encodeURIComponent(str.replace(/-/g, "_0x2D_"))
+    .replace(/~/g, "~7E")
+    .replace(/\*/g, "~2A")
+    .replace(/%/g, "~");
 }
 
 /**

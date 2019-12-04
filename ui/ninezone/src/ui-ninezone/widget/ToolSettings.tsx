@@ -69,60 +69,65 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     return (
       <div
         className={className}
-        onMouseEnter={this.props.onMouseEnter}
-        onMouseLeave={this.props.onMouseLeave}
-        ref={this._widget}
         style={this.props.style}
       >
-        <DragHandle
-          className="nz-handle"
-          lastPosition={this.props.lastPosition}
-          onDrag={this.props.onDrag}
-          onDragEnd={this.props.onDragEnd}
-          onDragStart={this.props.onDragStart}
+        <div
+          className="nz-widget"
+          onMouseEnter={this.props.onMouseEnter}
+          onMouseLeave={this.props.onMouseLeave}
+          ref={this._widget}
         >
-          <TitleBar
-            className="nz-title"
-            title={this.props.title}
+          <DragHandle
+            className="nz-handle"
+            lastPosition={this.props.lastPosition}
+            onDrag={this.props.onDrag}
+            onDragEnd={this.props.onDragEnd}
+            onDragStart={this.props.onDragStart}
           >
-            {this.props.buttons}
-          </TitleBar>
-        </DragHandle>
-        <div className="nz-content">
-          <div ref={this.props.contentRef}>
+            <TitleBar
+              className="nz-title"
+              title={this.props.title}
+            >
+              {this.props.buttons}
+            </TitleBar>
+          </DragHandle>
+          <div
+            className="nz-content"
+            ref={this.props.contentRef}
+          >
             {this.props.children}
           </div>
+          {this.props.onResize && (<>
+            <ResizeGrip
+              className="nz-left-grip"
+              direction={ResizeDirection.EastWest}
+              onResize={this._handleLeftGripResize}
+              onResizeEnd={this._handleResizeEnd}
+              onResizeStart={this._handleResizeStart}
+            />
+            <ResizeGrip
+              className="nz-top-grip"
+              direction={ResizeDirection.NorthSouth}
+              onResize={this._handleTopGripResize}
+              onResizeEnd={this._handleResizeEnd}
+              onResizeStart={this._handleResizeStart}
+            />
+            <ResizeGrip
+              className="nz-right-grip"
+              direction={ResizeDirection.EastWest}
+              onResize={this._handleRightGripResize}
+              onResizeEnd={this._handleResizeEnd}
+              onResizeStart={this._handleResizeStart}
+            />
+            <ResizeGrip
+              className="nz-bottom-grip"
+              direction={ResizeDirection.NorthSouth}
+              onResize={this._handleBottomGripResize}
+              onResizeEnd={this._handleResizeEnd}
+              onResizeStart={this._handleResizeStart}
+            />
+          </>)}
         </div>
-        {this.props.onResize && (<>
-          <ResizeGrip
-            className="nz-left-grip"
-            direction={ResizeDirection.EastWest}
-            onResize={this._handleLeftGripResize}
-            onResizeEnd={this._handleResizeEnd}
-            onResizeStart={this._handleResizeStart}
-          />
-          <ResizeGrip
-            className="nz-top-grip"
-            direction={ResizeDirection.NorthSouth}
-            onResize={this._handleTopGripResize}
-            onResizeEnd={this._handleResizeEnd}
-            onResizeStart={this._handleResizeStart}
-          />
-          <ResizeGrip
-            className="nz-right-grip"
-            direction={ResizeDirection.EastWest}
-            onResize={this._handleRightGripResize}
-            onResizeEnd={this._handleResizeEnd}
-            onResizeStart={this._handleResizeStart}
-          />
-          <ResizeGrip
-            className="nz-bottom-grip"
-            direction={ResizeDirection.NorthSouth}
-            onResize={this._handleBottomGripResize}
-            onResizeEnd={this._handleResizeEnd}
-            onResizeStart={this._handleResizeStart}
-          />
-        </>)}
       </div>
     );
   }

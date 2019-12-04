@@ -373,11 +373,20 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECClassGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface ECInstanceNodeKey extends BaseNodeKey {
     instanceKey: InstanceKey;
     // (undocumented)
     type: StandardNodeTypes.ECInstanceNode;
+}
+
+// @public
+export interface ECInstancesNodeKey extends BaseNodeKey {
+    // @alpha
+    instanceKey: InstanceKey;
+    instanceKeys: InstanceKey[];
+    // (undocumented)
+    type: StandardNodeTypes.ECInstancesNode;
 }
 
 // @public
@@ -820,7 +829,7 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
 }
 
 // @public
-export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
 // @public (undocumented)
 export namespace NodeKey {
@@ -828,7 +837,9 @@ export namespace NodeKey {
     export function fromJSON(json: NodeKeyJSON): NodeKey;
     export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
     export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
+    // @deprecated
     export function isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey;
+    export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
     export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
     export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
     // @internal
@@ -1416,7 +1427,15 @@ export enum RuleTypes {
 
 // @public
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
+    // @beta
+    applicationStage?: SameLabelInstanceGroupApplicationStage;
     specType: GroupingSpecificationTypes.SameLabelInstance;
+}
+
+// @beta
+export enum SameLabelInstanceGroupApplicationStage {
+    PostProcess = "PostProcess",
+    Query = "Query"
 }
 
 // @public
@@ -1494,8 +1513,10 @@ export enum StandardNodeTypes {
     DisplayLabelGroupingNode = "DisplayLabelGroupingNode",
     // (undocumented)
     ECClassGroupingNode = "ECClassGroupingNode",
-    // (undocumented)
+    // @deprecated (undocumented)
     ECInstanceNode = "ECInstanceNode",
+    // (undocumented)
+    ECInstancesNode = "ECInstancesNode",
     // (undocumented)
     ECPropertyGroupingNode = "ECPropertyGroupingNode"
 }

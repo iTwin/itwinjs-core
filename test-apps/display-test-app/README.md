@@ -96,7 +96,7 @@ You can use these environment variables to alter the default behavior of various
 * SVT_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH (browser only)
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels.
+  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
 * SVT_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
@@ -128,6 +128,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
  * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
+ * SVT_DISABLE_DPI_AWARE_VIEWPORTS
+  * If defined, do not respect the DPI of the system when rendering viewports.
 
 ## Key-ins
 

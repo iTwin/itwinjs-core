@@ -10,6 +10,8 @@ import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core"
 import { Direction, DirectionHelpers } from "../../../../utilities/Direction";
 import "./Tray.scss";
 
+// tslint:disable: deprecation
+
 /** Key to identify history item.
  * @alpha
  * @deprecated History tray removed from design standard.

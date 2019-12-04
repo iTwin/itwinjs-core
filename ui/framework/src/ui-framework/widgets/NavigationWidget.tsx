@@ -154,7 +154,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 
   public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) {
     if (this.props !== prevProps) {
-      this.setState({ navigationWidgetDef: new NavigationWidgetDef(this.props) });
+      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) }));
     }
   }
 
@@ -210,7 +210,7 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
   private _handleNavigationAidActivatedEvent = (args: NavigationAidActivatedEventArgs): void => {
     this.props.navigationWidgetDef.updateNavigationAid(args.navigationAidId, args.iModelConnection);
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
-    this.setState((_prevState) => ({ cornerItem: navigationAid }));
+    this.setState({ cornerItem: navigationAid });
   }
 
   private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {

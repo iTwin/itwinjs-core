@@ -1580,8 +1580,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * uv params are the 0..1 fractions.
    * * normals are cross products of u and v direction partial derivatives.
    * @param surface
-   * @param numU
-   * @param numV
+   * @param numU number of intervals (edges) in the u direction.  (Number of points is `numU + 1`)
+   * @param numV number of intervals (edges) in the v direction.  (Number of points is `numV + 1`)
+   * @param uMap optional mapping from u fraction to parameter space (such as texture)
+   * @param vMap optional mapping from v fraction to parameter space (such as texture)
    */
   public addUVGridBody(surface: UVSurface, numU: number, numV: number, uMap?: Segment1d, vMap?: Segment1d) {
     let xyzIndex0 = new GrowableFloat64Array(numU);

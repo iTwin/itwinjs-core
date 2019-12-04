@@ -68,11 +68,11 @@ export function bisectRange3d(range: Range3d, takeUpper: boolean): void {
   const diag = range.diagonal();
   const pt = takeUpper ? range.high : range.low;
   if (diag.x > diag.y && diag.x > diag.z)
-  pt.x = (range.low.x + range.high.x) / 2.0;
+    pt.x = (range.low.x + range.high.x) / 2.0;
   else if (diag.y > diag.z)
-  pt.y = (range.low.y + range.high.y) / 2.0;
+    pt.y = (range.low.y + range.high.y) / 2.0;
   else
-  pt.z = (range.low.z + range.high.z) / 2.0;
+    pt.z = (range.low.z + range.high.z) / 2.0;
 }
 
 /** @internal */
@@ -80,9 +80,9 @@ export function bisectRange2d(range: Range3d, takeUpper: boolean): void {
   const diag = range.diagonal();
   const pt = takeUpper ? range.high : range.low;
   if (diag.x > diag.y)
-  pt.x = (range.low.x + range.high.x) / 2.0;
+    pt.x = (range.low.x + range.high.x) / 2.0;
   else
-  pt.y = (range.low.y + range.high.y) / 2.0;
+    pt.y = (range.low.y + range.high.y) / 2.0;
 }
 
 /**
@@ -143,6 +143,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _localContentRange?: ElementAlignedBox3d;
   protected _emptySubRangeMask?: number;
   private _state: TileState;
+  private static _loadedRealityChildren = new Array<Tile>();
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -189,11 +190,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._graphic)
-    this._graphic.collectStatistics(stats);
+            this._graphic.collectStatistics(stats);
 
     if (undefined !== this._children)
-    for (const child of this._children)
-    child.collectStatistics(stats);
+      for (const child of this._children)
+        child.collectStatistics(stats);
   }
 
   public get loadStatus(): Tile.LoadStatus {
@@ -239,7 +240,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // this tile is too coarse for view based on its size in pixels.
     // That is different than an "undisplayable" tile (maximumSize=0) whose children should be loaded immediately.
     if (undefined !== graphic && 0 === this._maximumSize)
-    this._maximumSize = 512;
+      this._maximumSize = 512;
 
     if (undefined !== isLeaf && isLeaf !== this._isLeaf) {
       this._isLeaf = isLeaf;
@@ -254,7 +255,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     }
 
     if (undefined !== contentRange)
-    this._contentRange = contentRange;
+      this._contentRange = contentRange;
 
     this._emptySubRangeMask = content.emptySubRangeMask;
 
@@ -266,8 +267,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public setAbandoned(): void {
     const children = this.children;
     if (undefined !== children)
-    for (const child of children)
-    child.setAbandoned();
+      for (const child of children)
+        child.setAbandoned();
 
     this._state = TileState.Abandoned;
   }
@@ -435,6 +436,19 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         return false;
     return true;
   }
+  protected getLoadedRealityChildren(args: Tile.DrawArgs): boolean {
+    if (this._childrenLoadStatus !== TileTree.LoadStatus.Loaded || this._children === undefined)
+      return false;
+
+    for (const child of this._children) {
+      if (child.isReady && Tile.Visibility.Visible === child.computeVisibility(args)) {
+        this._childrenLastUsed = args.now;
+        Tile._loadedRealityChildren.push(child);
+      } else if (!child.getLoadedRealityChildren(args))
+        return false;
+    }
+    return true;
+  }
 
   public selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails) {
     const vis = this.computeVisibility(args);
@@ -443,7 +457,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return;
     }
 
-    if (this.isDisplayable && (vis === Tile.Visibility.Visible || this.isLeaf || this._anyChildNotFound)) { //  || this.root.tileNeedsReprojection(this)) {
+    if (this.isDisplayable && (vis === Tile.Visibility.Visible || this.isLeaf || this._anyChildNotFound)) {
       context.selectOrQueue(this, traversalDetails);
       const preloadSkip = this.root.loader.preloadRealityParentSkip;
       let preloadCount = this.root.loader.preloadRealityParentDepth + preloadSkip;
@@ -452,6 +466,12 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         if (parent.children!.length > 1 && ++parentDepth > preloadSkip) {
           context.preload(parent);
           preloadCount--;
+        }
+
+        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
+          if (this.getLoadedRealityChildren(args))
+            context.select(Tile._loadedRealityChildren);
+          Tile._loadedRealityChildren.length = 0;
         }
       }
     } else {
@@ -708,11 +728,11 @@ export namespace Tile {
    */
   export const enum LoadStatus {
     NotLoaded = 0, // No attempt to load the tile has been made, or the tile has since been unloaded. It currently has no graphics.
-      Queued = 1, // A request has been made to load the tile from the backend, and a response is pending.
-      Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
-      Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
-      NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
-      Abandoned = 5, // The tile has been discarded.
+    Queued = 1, // A request has been made to load the tile from the backend, and a response is pending.
+    Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
+    Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
+    NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
+    Abandoned = 5, // The tile has been discarded.
   }
 
   /**
@@ -721,8 +741,8 @@ export namespace Tile {
    */
   export const enum Visibility {
     OutsideFrustum, // this tile is entirely outside of the viewing frustum
-      TooCoarse, // this tile is too coarse to be drawn
-      Visible, // this tile is of the correct size to be drawn
+    TooCoarse, // this tile is too coarse to be drawn
+    Visible, // this tile is of the correct size to be drawn
   }
 
   /**
@@ -731,7 +751,7 @@ export namespace Tile {
    */
   export const enum SelectParent {
     No,
-      Yes,
+    Yes,
   }
 
   /**
@@ -742,14 +762,14 @@ export namespace Tile {
   export const enum LoadPriority {
     /** Background map tiles. */
     Map = 1,
-      /** Typically, tiles generated from the contents of geometric models. */
-      Primary = 20,
-      /** Terrain -- requires background/map tiles for drape. */
-      Terrain = 30,
-      /** Typically, context reality models. */
-      Context = 40,
-      /** Supplementary tiles used to classify the contents of geometric or reality models. */
-      Classifier = 50,
+    /** Typically, tiles generated from the contents of geometric models. */
+    Primary = 20,
+    /** Terrain -- requires background/map tiles for drape. */
+    Terrain = 30,
+    /** Typically, context reality models. */
+    Context = 40,
+    /** Supplementary tiles used to classify the contents of geometric or reality models. */
+    Classifier = 50,
   }
 
   /**
@@ -765,16 +785,16 @@ export namespace Tile {
   export const enum DebugBoundingBoxes {
     /** Display no bounding boxes */
     None = 0,
-      /** Display boxes representing the tile's full volume. */
-      Volume,
-      /** Display boxes representing the range of the tile's contents, which may be tighter than (but never larger than) the tile's full volume. */
-      Content,
-      /** Display both volume and content boxes. */
-      Both,
-      /** Display boxes for direct children, where blue boxes indicate empty volumes. */
-      ChildVolumes,
-      /** Display bounding sphere. */
-      Sphere,
+    /** Display boxes representing the tile's full volume. */
+    Volume,
+    /** Display boxes representing the range of the tile's contents, which may be tighter than (but never larger than) the tile's full volume. */
+    Content,
+    /** Display both volume and content boxes. */
+    Both,
+    /** Display boxes for direct children, where blue boxes indicate empty volumes. */
+    ChildVolumes,
+    /** Display bounding sphere. */
+    Sphere,
   }
 
   /**
@@ -839,7 +859,7 @@ export namespace Tile {
     /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
      * @see [[Viewport.tileSizeModifier]].
      */
-    public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
+    public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
     private static _scratchRange = new Range3d();
@@ -853,7 +873,7 @@ export namespace Tile {
 
     public drawGraphics(): void {
       if (this.graphics.isEmpty)
-      return;
+        return;
 
       const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
       const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
@@ -923,7 +943,7 @@ export namespace Tile {
 // Tile.LoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
 const enum TileState {
   NotReady = Tile.LoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.
-    Ready = Tile.LoadStatus.Ready, // request completed successfully, or no loading was required.
-    NotFound = Tile.LoadStatus.NotFound, // request failed.
-    Abandoned = Tile.LoadStatus.Abandoned, // tile was abandoned.
+  Ready = Tile.LoadStatus.Ready, // request completed successfully, or no loading was required.
+  NotFound = Tile.LoadStatus.NotFound, // request failed.
+  Abandoned = Tile.LoadStatus.Abandoned, // tile was abandoned.
 }

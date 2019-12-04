@@ -28,6 +28,8 @@ export interface GroupToolProps extends CommonProps {
   label?: string;
   /** Function called when the item is clicked. */
   onClick?: () => void;
+  /** Function called when pointer up event is received. */
+  onPointerUp?: () => void;
   /** A badge to draw. */
   badge?: React.ReactNode;
 }
@@ -42,6 +44,7 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
       this.props.isActive && "nz-active",
       this.props.isFocused && "nz-focused",
       this.props.isDisabled && "nz-disabled",
+      this.props.onPointerUp && "nz-pointer-up",
       this.props.className);
 
     return (
@@ -49,6 +52,7 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
         className={itemClassName}
         style={this.props.style}
         onClick={this._handleClick}
+        onPointerUp={this._handlePointerUp}
       >
         <div className="nz-icon">
           {this.props.icon}
@@ -71,5 +75,9 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
       return;
 
     this.props.onClick && this.props.onClick();
+  }
+
+  private _handlePointerUp = () => {
+    !this.props.isDisabled && this.props.onPointerUp && this.props.onPointerUp();
   }
 }

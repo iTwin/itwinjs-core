@@ -117,9 +117,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
   }
 
   private animateOut() {
-    if (!this._toast.current)
-      return;
-    if (!this.props.animateOutTo || !this.props.animateOutTo)
+    if (!this._toast.current || !this.props.animateOutTo)
       return;
 
     const animateTo = Rectangle.create(this.props.animateOutTo.getBoundingClientRect());
