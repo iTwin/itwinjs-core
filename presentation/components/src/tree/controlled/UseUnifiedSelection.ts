@@ -6,8 +6,8 @@
 
 import { useEffect, useRef, useMemo } from "react";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { Keys, StandardNodeTypes, ECInstanceNodeKey, NodeKey } from "@bentley/presentation-common";
-import { Presentation, SelectionHandler, SelectionChangeEventArgs, SelectionChangeType } from "@bentley/presentation-frontend";
+import { Keys, NodeKey } from "@bentley/presentation-common";
+import { Presentation, SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, SelectionHelper } from "@bentley/presentation-frontend";
 import {
   TreeNodeItem, TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent, TreeModelSource, MutableTreeModel,
   TreeSelectionModificationEvent, TreeSelectionReplacementEvent, Subscription,
@@ -134,12 +134,13 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
       if (selection.has(nodeKey))
         return true;
 
+      // ... or if it's an ECInstances node and any of instance keys is in selection
+      if (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.some((instanceKey) => selection.has(instanceKey)))
+        return true;
+
       // ... or if it's an ECInstance node and instance key is in selection
-      if (nodeKey.type === StandardNodeTypes.ECInstanceNode) {
-        const instanceKey = (nodeKey as ECInstanceNodeKey).instanceKey;
-        if (selection.has(instanceKey))
-          return true;
-      }
+      if (NodeKey.isInstanceNodeKey(nodeKey) && selection.has(nodeKey.instanceKey))
+        return true;
 
       return false;
     };
@@ -172,11 +173,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
 
   private getKeys(nodes: TreeNodeItem[]): Keys {
     const nodeKeys: NodeKey[] = nodes.map((node) => this._dataProvider.getNodeKey(node));
-    return nodeKeys.map((key) => {
-      if (key.type === StandardNodeTypes.ECInstanceNode)
-        return (key as ECInstanceNodeKey).instanceKey;
-      return key;
-    });
+    return SelectionHelper.getKeysForSelection(nodeKeys);
   }
 }
 

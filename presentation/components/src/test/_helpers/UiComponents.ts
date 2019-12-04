@@ -5,7 +5,7 @@
 /* tslint:disable:no-direct-imports */
 
 import * as faker from "faker";
-import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
@@ -19,7 +19,7 @@ export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): Dela
     description: faker.random.words(),
     hasChildren: faker.random.boolean(),
   };
-  (node as any)[PRESENTATION_TREE_NODE_KEY] = key ? key : createRandomECInstanceNodeKey();
+  (node as any)[PRESENTATION_TREE_NODE_KEY] = key ? key : createRandomECInstancesNodeKey();
   return node;
 };
 

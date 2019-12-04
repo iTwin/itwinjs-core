@@ -9,9 +9,9 @@ import * as sinon from "sinon";
 import { render, cleanup, waitForElement, within, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../../TestUtils";
-import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String, using, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection, ViewState, Viewport, ViewState3d, SpatialViewState, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { KeySet, ECInstanceNodeKey, StandardNodeTypes, BaseNodeKey, InstanceKey } from "@bentley/presentation-common";
+import { KeySet, StandardNodeTypes, BaseNodeKey, InstanceKey, ECInstancesNodeKey } from "@bentley/presentation-common";
 import { SelectionManager, Presentation, SelectionChangeEvent } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
@@ -84,8 +84,8 @@ describe("VisibilityTree", () => {
       ]);
     };
 
-    const createSubjectNode = () => ({
-      __key: createKey("subject", "subject_id"),
+    const createSubjectNode = (ids?: Id64String | Id64String[]) => ({
+      __key: createKey("subject", ids ? ids : "subject_id"),
       id: "subject",
       label: "subject",
       extendedData: {
@@ -123,7 +123,7 @@ describe("VisibilityTree", () => {
       },
     });
 
-    const createKey = (type: "subject" | "model" | "category" | "element", id: Id64String): ECInstanceNodeKey => {
+    const createKey = (type: "subject" | "model" | "category" | "element", ids: Id64String | Id64String[]): ECInstancesNodeKey => {
       let className: string;
       switch (type) {
         case "subject": className = "MyDomain:Subject"; break;
@@ -131,9 +131,12 @@ describe("VisibilityTree", () => {
         case "category": className = "MyDomain:SpatialCategory"; break;
         default: className = "MyDomain:SomeElementType";
       }
+      const instanceKeys = new Array<InstanceKey>();
+      Id64.forEach(ids, (id) => instanceKeys.push({ className, id }));
       return {
-        type: StandardNodeTypes.ECInstanceNode,
-        instanceKey: { className, id },
+        type: StandardNodeTypes.ECInstancesNode,
+        instanceKeys,
+        instanceKey: instanceKeys[0],
         pathFromRoot: [],
       };
     };
@@ -382,19 +385,23 @@ describe("VisibilityTree", () => {
           });
 
           it("return false when all models are not displayed", async () => {
-            const node = createSubjectNode();
-            const key = node.__key.instanceKey;
-
+            const subjectIds = ["0x1", "0x2"];
+            const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
               imodelMock,
-              subjectsHierarchy: new Map([["0x0", [key.id]]]),
-              subjectModels: new Map([[key.id, ["0x1", "0x2"]]]),
+              subjectsHierarchy: new Map([["0x0", subjectIds]]),
+              subjectModels: new Map([
+                [subjectIds[0], ["0x3", "0x4"]],
+                [subjectIds[1], ["0x5", "0x6"]],
+              ]),
             });
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.viewsModel("0x1")).returns(() => false);
-            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x3")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x4")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x5")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x6")).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
@@ -406,19 +413,23 @@ describe("VisibilityTree", () => {
           });
 
           it("return true when at least one direct model is displayed", async () => {
-            const node = createSubjectNode();
-            const key = node.__key.instanceKey;
-
+            const subjectIds = ["0x1", "0x2"];
+            const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
               imodelMock,
-              subjectsHierarchy: new Map([["0x0", [key.id]]]),
-              subjectModels: new Map([[key.id, ["0x1", "0x2"]]]),
+              subjectsHierarchy: new Map([["0x0", subjectIds]]),
+              subjectModels: new Map([
+                [subjectIds[0], ["0x3", "0x4"]],
+                [subjectIds[1], ["0x5", "0x6"]],
+              ]),
             });
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.viewsModel("0x1")).returns(() => true);
-            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x3")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x4")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x5")).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x6")).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
@@ -430,19 +441,25 @@ describe("VisibilityTree", () => {
           });
 
           it("return true when at least one nested model is displayed", async () => {
-            const node = createSubjectNode();
-            const key = node.__key.instanceKey;
-
+            const subjectIds = ["0x1", "0x2"];
+            const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
               imodelMock,
-              subjectsHierarchy: new Map([[key.id, ["0x1"]], ["0x1", ["0x2", "0x3"]]]),
-              subjectModels: new Map([["0x3", ["0x4", "0x5"]]]),
+              subjectsHierarchy: new Map([
+                [subjectIds[0], ["0x3"]],
+                [subjectIds[1], ["0x4"]],
+                ["0x3", ["0x5", "0x6"]],
+                ["0x7", ["0x8"]],
+              ]),
+              subjectModels: new Map([
+                ["0x6", ["0x10", "0x11"]],
+              ]),
             });
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.viewsModel("0x4")).returns(() => true);
-            viewStateMock.setup((x) => x.viewsModel("0x5")).returns(() => false);
+            viewStateMock.setup((x) => x.viewsModel("0x10")).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x11")).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
