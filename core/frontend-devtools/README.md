@@ -118,3 +118,6 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "y" - Wipe along Y axis.
   * "z' - wipe along Z axis.
   * "transparent" - Fade from reality model to BIM model.
+* `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
+  * the URL for the reality model root JSON file.
+

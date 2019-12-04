@@ -1007,6 +1007,20 @@ export class ToolSettingsTracker {
     }
 
 // @alpha
+export class ViewportAddRealityModel extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(url: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class ViewportTileSizeModifierTool extends Tool {
     // (undocumented)
     static readonly maxArgs: number;
