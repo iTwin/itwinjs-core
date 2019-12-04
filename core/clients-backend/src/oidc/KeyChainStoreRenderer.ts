@@ -23,8 +23,16 @@ export class KeyChainStoreRenderer {
     if (!ipc)
       throw new Error("This code should only be run in the electron renderer process");
 
-    const password: string | null = await ipc.invoke("KeyChainStore-getPassword", service, account);
-    return password;
+    return new Promise<string | null>((resolve, reject) => {
+      ipc.send("KeyChainStore.getPassword", service, account);
+      ipc.on("KeyChainStore.getPassword:complete", (_event: any, err: Error, password: string | null) => {
+        if (err)
+          reject(err);
+        else
+          resolve(password);
+      });
+    });
+
   }
 
   /**
@@ -38,7 +46,11 @@ export class KeyChainStoreRenderer {
     if (!ipc)
       throw new Error("This code should only be run in the electron renderer process");
 
-    return ipc.invoke("KeyChainStore-setPassword", service, account, password);
+    return new Promise<void>((resolve, reject) => {
+      ipc.send("KeyChainStore.setPassword", service, account, password);
+      ipc.on("KeyChainStore.setPassword:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+    });
+
   }
 
   /**
@@ -51,7 +63,9 @@ export class KeyChainStoreRenderer {
     if (!ipc)
       throw new Error("This code should only be run in the electron renderer process");
 
-    const status: boolean = await ipc.invoke("KeyChainStore-deletePassword", service, account);
-    return status;
+    return new Promise<boolean>((resolve, reject) => {
+      ipc.send("KeyChainStore.deletePassword", service, account);
+      ipc.on("KeyChainStore.deletePassword:complete", (_event: any, err: Error, status: boolean) => err ? reject(err) : resolve(status));
+    });
   }
 }

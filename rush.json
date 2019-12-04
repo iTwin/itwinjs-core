@@ -17,11 +17,6 @@
       "@types"
     ]
   },
-  "eventHooks": {
-    "postRushInstall": [
-      ".\\common\\temp\\node_modules\\.bin\\electron-rebuild -f -m ./core/clients-backend/node_modules/keytar"
-    ]
-  },
   "projects": [
     {
       "packageName": "@bentley/build-tools",

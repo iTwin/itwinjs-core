@@ -64,12 +64,11 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
    */
   private async loadAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
     const tokenResponse: TokenResponse | undefined = await this._tokenStore.load();
-    if (tokenResponse === undefined)
+    if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
     try {
       Logger.logTrace(loggerCategory, "Refreshing token from storage");
-      this._tokenResponse = tokenResponse; // Only refresh token has been stashed away
-      await this.refreshAccessToken(requestContext || new ClientRequestContext());
+      await this.refreshAccessToken(requestContext || new ClientRequestContext(), tokenResponse.refreshToken);
     } catch (err) {
       return undefined;
     }
@@ -168,11 +167,10 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
-  private async refreshAccessToken(requestContext: ClientRequestContext): Promise<AccessToken> {
+  private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {
     requestContext.enter();
 
-    assert(!!this._tokenResponse);
-    const tokenResponse: TokenResponse = await this.makeRefreshTokenRequest(requestContext);
+    const tokenResponse: TokenResponse = await this.makeRefreshAccessTokenRequest(requestContext, refreshToken);
 
     Logger.logTrace(loggerCategory, "Refresh token completed, and issued access token");
     await this.setTokenResponse(requestContext, tokenResponse);
@@ -189,12 +187,13 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     if (requestContext) requestContext.enter();
 
     // Ensure user is signed in
-    if (!this._tokenResponse)
+    if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
     // Refresh token if necessary
-    if (!this._tokenResponse.isValid())
-      await this.refreshAccessToken(requestContext || new ClientRequestContext());
+    if (!this._tokenResponse.isValid()) {
+      await this.refreshAccessToken(requestContext || new ClientRequestContext(), this._tokenResponse.refreshToken);
+    }
 
     assert(this._tokenResponse.isValid() && !!this._accessToken);
     return this._accessToken!;
@@ -275,16 +274,14 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
   }
 
-  private async makeRefreshTokenRequest(requestContext: ClientRequestContext): Promise<TokenResponse> {
+  private async makeRefreshAccessTokenRequest(requestContext: ClientRequestContext, refreshToken: string): Promise<TokenResponse> {
     requestContext.enter();
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
-    if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
 
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
-      refresh_token: this._tokenResponse.refreshToken,
+      refresh_token: refreshToken,
       redirect_uri: this._clientConfiguration.redirectUri,
       client_id: this._clientConfiguration.clientId,
     };

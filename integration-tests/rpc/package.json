@@ -24,7 +24,7 @@
     "@bentley/imodeljs-clients": "1.9.0-dev.14",
     "@bentley/imodeljs-common": "1.9.0-dev.14",
     "chai": "^4.1.2",
-    "electron": "^7.1.2",
+    "electron": "^6.1.5",
     "express": "^4.16.3",
     "semver": "^5.5.0"
   },

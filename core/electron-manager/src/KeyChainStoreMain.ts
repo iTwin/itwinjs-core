@@ -21,17 +21,31 @@ export class KeyChainStoreMain {
     if (!KeyChainStore)
       Logger.logError(loggerCategory, "Could not obtain a handle to the native implementation of key chain store");
 
-    ipc.handle("KeyChainStore-getPassword", async (_event, service, account) => {
-      const password = await KeyChainStore.getPassword(service, account);
-      return password;
+    ipc.on("KeyChainStore.getPassword", async (event, service, account) => {
+      try {
+        const password = await KeyChainStore.getPassword(service, account);
+        event.sender.send("KeyChainStore.getPassword:complete", null, password);
+      } catch (err) {
+        event.sender.send("KeyChainStore.getPassword:complete", err);
+      }
     });
 
-    ipc.handle("KeyChainStore-setPassword", async (_event, service, account, password) => {
-      await KeyChainStore.setPassword(service, account, password);
+    ipc.on("KeyChainStore.setPassword", async (event, service, account, password) => {
+      try {
+        await KeyChainStore.setPassword(service, account, password);
+        event.sender.send("KeyChainStore.setPassword:complete");
+      } catch (err) {
+        event.sender.send("KeyChainStore.setPassword:complete", err);
+      }
     });
 
-    ipc.handle("KeyChainStore-deletePassword", async (_event, service, account) => {
-      await KeyChainStore.deletePassword(service, account);
+    ipc.on("KeyChainStore.deletePassword", async (event, service, account) => {
+      try {
+        const status = await KeyChainStore.deletePassword(service, account);
+        event.sender.send("KeyChainStore.deletePassword:complete", null, status);
+      } catch (err) {
+        event.sender.send("KeyChainStore.deletePassword:complete", err);
+      }
     });
   }
 }
