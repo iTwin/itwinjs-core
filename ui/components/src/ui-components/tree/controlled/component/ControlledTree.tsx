@@ -22,24 +22,40 @@ import { TreeImageLoader } from "../../ImageLoader";
 
 /**
  * Properties for [[ControlledTree]]
- * @alpha
+ * @beta
  */
 export interface ControlledTreeProps extends CommonProps {
+  /** Flat list of nodes to be rendered in tree. */
   visibleNodes: VisibleTreeNodes;
+  /** Node loader used to load root nodes and placeholder nodes. */
   nodeLoader: ITreeNodeLoader;
+  /** Tree events handler. */
   treeEvents: TreeEvents;
+  /** Mode of nodes' selection in tree. */
   selectionMode: SelectionMode;
+  /** Specifies whether to show node description or not. It is used in default node renderer and to determine node height.
+   * If custom node renderer and node height callbacks are used it does nothing.
+   */
   descriptionsEnabled?: boolean;
+  /** Specifies whether to show node icon or not. It is used in default node renderer.
+   * If custom node renderer is used it does nothing.
+   */
   iconsEnabled?: boolean;
+  /** Used to highlight matches when filtering tree.
+   * It is passed to treeRenderer.
+   */
   nodeHighlightingProps?: HighlightableTreeProps;
+  /** Custom renderer to be used to render a tree. */
   treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
+  /** Custom renderer to be used while root nodes is loading. */
   spinnerRenderer?: () => React.ReactElement;
+  /** Custom renderer to be used when there is no data to show in tree. */
   noDataRenderer?: () => React.ReactElement;
 }
 
 /**
  * React tree component which rendering is fully controlled from outside.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {

@@ -65,6 +65,7 @@
     "object-literal-sort-keys": false,
     "no-bitwise": false,
     "no-unused-expression": false,
+    "no-unused-variable": true,
     "no-namespace": false,
     "one-variable-per-declaration": false,
     "no-empty": false,
@@ -140,10 +141,15 @@
     "require-basic-rpc-values": true,
     "deprecation": {
       "severity": "warning"
-    }
+    },
+    "tslint-react-set-state-usage": [
+      true,
+      "allow-object"
+    ]
   },
   "rulesDirectory": [
     "./tslint-rules/tslint-consistent-codestyle/rules",
+    "./tslint-rules/tslint-react-set-state-usage/src/rules",
     "./tslint-rules"
   ]
 }

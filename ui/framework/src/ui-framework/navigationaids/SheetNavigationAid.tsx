@@ -166,12 +166,16 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Updates view to the next lowest index in sheetData */
   private _handleOnClickLeftArrow = () => {
-    this.setState({ index: this.state.index <= 0 ? this.state.sheetData.length - 1 : this.state.index - 1 }, async () => this._updateView());
+    this.setState(
+      (prevState) => ({ index: prevState.index <= 0 ? prevState.sheetData.length - 1 : prevState.index - 1 }),
+      async () => this._updateView());
   }
 
   /** Updates view to next highest index in sheetData */
   private _handleOnClickRightArrow = () => {
-    this.setState({ index: (this.state.index + 1) % this.state.sheetData.length }, async () => this._updateView());
+    this.setState(
+      (prevState) => ({ index: (prevState.index + 1) % prevState.sheetData.length }),
+      async () => this._updateView());
   }
 
   /** Handles a Viewport change & synchs the index */

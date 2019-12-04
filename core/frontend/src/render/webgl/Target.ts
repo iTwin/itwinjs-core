@@ -88,6 +88,7 @@ import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
+import { WebGlDisposable } from "./Disposable";
 import { cssPixelsToDevicePixels, queryDevicePixelRatio } from "../DevicePixelRatio";
 
 // tslint:disable:no-const-enum
@@ -261,7 +262,7 @@ class EmptyHiliteSet {
 }
 
 /** @internal */
-export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGlDisposable {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
   private _batchState = new BatchState(this._stack);
@@ -320,6 +321,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+  public activeVolumeClassifierModelId?: Id64String;
 
   // RenderTargetDebugControl
   public useLogZ = true;
@@ -444,12 +446,27 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
+  private _isDisposed = false;
+  public get isDisposed(): boolean {
+    return 0 === this._scene.length
+      && undefined === this._decorations
+      && undefined === this._dynamics
+      && undefined === this._worldDecorations
+      && undefined === this._planarClassifiers
+      && undefined === this._textureDrapes
+      && this._renderCommands.isEmpty
+      && 0 === this._batches.length
+      && undefined === this._activeClipVolume
+      && this._isDisposed;
+  }
+
   public dispose() {
     this.reset();
 
     dispose(this._compositor);
 
     this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
+    this._isDisposed = true;
   }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
@@ -618,8 +635,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._planarClassifiers = planarClassifiers;
 
   }
-  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void {
+  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void {
     this.activeVolumeClassifierProps = props;
+    this.activeVolumeClassifierModelId = modelId;
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -1380,12 +1398,19 @@ export class OnScreenTarget extends Target {
     this._webglCanvas = new CanvasState(System.instance.canvas);
   }
 
+  public get isDisposed(): boolean {
+    return undefined === this._fbo
+      && undefined === this._blitGeom
+      && undefined === this._scratchProgParams
+      && undefined === this._scratchDrawParams
+      && super.isDisposed;
+  }
+
   public dispose() {
     this._fbo = dispose(this._fbo);
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
-
     super.dispose();
   }
 

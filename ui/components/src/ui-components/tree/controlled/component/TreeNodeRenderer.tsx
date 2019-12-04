@@ -14,31 +14,42 @@ import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { ITreeImageLoader } from "../../ImageLoader";
 import { ImageRenderer } from "../../../common/ImageRenderer";
 import { TreeTest } from "../../component/Tree";
+import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /**
  * Properties for [[TreeNodeRenderer]].
- * @alpha
+ * @beta
  */
 export interface TreeNodeRendererProps extends CommonProps {
   node: TreeModelNode;
   treeActions: TreeActions;
-  onLabelRendered?: (node: TreeModelNode) => void;
+  /** Properties used to highlight matches when tree is filtered. */
   nodeHighlightProps?: HighlightableTreeNodeProps;
+
+  /** Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+   * @internal
+   */
+  onLabelRendered?: (node: TreeModelNode) => void;
 }
 
 /**
  * Extended properties for [[TreeNodeRenderer]].
- * @alpha
+ * @beta
  */
 export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
+  /** Callback to render custom checkbox. */
   checkboxRenderer?: NodeCheckboxRenderer;
+  /** Callback to render custom node editor when node is in editing mode. */
+  nodeEditorRenderer?: TreeNodeEditorRenderer;
+  /** Specifies whether to show descriptions or not. */
   descriptionEnabled?: boolean;
+  /** Image loader used to load icon. */
   imageLoader?: ITreeImageLoader;
 }
 
 /**
  * Default component for rendering tree node.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => {
@@ -50,6 +61,7 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
       valueRendererManager={PropertyValueRendererManager.defaultManager}
       highlightProps={props.nodeHighlightProps}
       onLabelRendered={props.onLabelRendered}
+      nodeEditorRenderer={props.nodeEditorRenderer}
     />
   );
 

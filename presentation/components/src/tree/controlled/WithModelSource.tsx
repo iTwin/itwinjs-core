@@ -9,7 +9,7 @@ import { ControlledTreeProps, TreeModelSource, useVisibleTreeNodes } from "@bent
 
 /**
  * Props that are injected to the ControlledTreeWithModelSource HOC component.
- * @alpha
+ * @beta
  */
 export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
   /** Model source used by ControlledTree. */
@@ -20,7 +20,7 @@ export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeP
  * A HOC component that injects visible nodes into supplied tree component. It uses TreeModelSource
  * to produce visible nodes.
  *
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>) {

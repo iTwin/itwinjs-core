@@ -28,9 +28,11 @@ import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Polyface } from "../../polyface/Polyface";
+import { Polyface, IndexedPolyface } from "../../polyface/Polyface";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-
+import * as fs from "fs";
+import { Geometry } from "../../Geometry";
+/* tslint:disable:no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();
@@ -583,4 +585,70 @@ describe("PolyfaceClip", () => {
 
   });
 
+  it("CutFill", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const sideAngle = Angle.createDegrees(0.001);
+    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/iModelJsonSamples/polyface/ArnoldasEarthWorks/meshA.imjs", "utf8")));
+    if (ck.testTrue(meshA instanceof IndexedPolyface, "Expected one indexed polyface in meshA") && meshA instanceof IndexedPolyface) {
+      ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(meshA), " expect this input to have boundary issue");
+      const boundaries = PolyfaceQuery.boundaryEdges(meshA, true, true, true);
+      const range = meshA.range ();
+      const rv = raggedVolume(meshA);
+      console.log("Volume estimate", rv);
+
+      const dz = range.zLength() * 2.0;
+      const dzFront = 4 * dz;
+      const dzSide = 3 * dz;
+      const dzRear = 2 * dz;
+      const dx = 2.0 * range.xLength();
+      const x1 = dx;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, 0, 0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, 0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dz);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzFront);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzSide);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzRear);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaries, 0, 0, dz);
+
+      const partitionedIndices = PolyfaceQuery.partitionFacetIndicesByVisibilityVector(meshA, Vector3d.unitZ(), sideAngle);
+      const meshes = PolyfaceQuery.clonePartitions(meshA, partitionedIndices);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzFront);
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[0] as IndexedPolyface, Angle.createDegrees(5));
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[1] as IndexedPolyface, Angle.createDegrees(5));
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[0], 0, 0, dzFront);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[2], 0, 0, dzSide);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[1], 0, 0, dzRear);
+      const front = meshes[0] as IndexedPolyface;
+      const rear = meshes[1] as IndexedPolyface;
+      rear.reverseIndices();
+      const cutFill = PolyfaceClip.computeCutFill(front, rear);
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x1, 0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x1, 0, dz);
+
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ArnoldasEarthWorks", "meshA");
+    }
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });
+/** Estimate a volume for a mesh that may be missing side faces.
+ * * Compute volume "between" the mesh facets and the bottom plane of the mesh range
+ * * Compute volume "between" the mesh facets and the top plane of the mesh range.
+ * * The return structure contains
+ *    * a volume estimate
+ *    * a relative error estimate based on the difference between upper and lower volumes.
+ *
+ */
+function raggedVolume(mesh: Polyface): { volume: number, volumeDifferenceRelativeError: number } {
+  const range = mesh.range();
+  const xyPlane0 = Plane3dByOriginAndUnitNormal.createXYPlane(range.low);
+  const xyPlane1 = Plane3dByOriginAndUnitNormal.createXYPlane(range.high);
+  const volume0 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane0);
+  const volume1 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane1);
+  const volumeDifference = Math.abs(volume1.volume - volume0.volume);
+  return { volume: volume0.volume, volumeDifferenceRelativeError: Geometry.safeDivideFraction(volumeDifference, Math.abs(volume0.volume), 1000.0) };
+}

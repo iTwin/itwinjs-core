@@ -16,6 +16,8 @@ import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
 import { UiComponents } from "../UiComponents";
 
+// cspell:ignore itree autocompleting
+
 /** @internal */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
@@ -282,7 +284,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     // istanbul ignore else
     if (this._mounted) {
       const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
-      this.setState({ modelReady: true, pathString: current ? current.getTextualHierarchy().join(this.props.delimiter) : "" });
+      this.setState((_prevState, props) => ({ modelReady: true, pathString: current ? current.getTextualHierarchy().join(props.delimiter) : "" }));
     }
   }
 

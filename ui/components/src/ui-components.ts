@@ -113,6 +113,8 @@ export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
+export * from "./ui-components/tooltip/UITooltipRenderer";
+
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export * from "./ui-components/tree/component/Tree";

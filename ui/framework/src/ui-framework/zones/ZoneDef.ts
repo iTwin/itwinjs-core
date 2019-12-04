@@ -24,6 +24,8 @@ export enum ZoneState {
  * @public
  */
 export class ZoneDef extends WidgetHost {
+  private _initialWidth: number | undefined = undefined;
+
   /** Zone state.  Defaults to ZoneState.Open. */
   public zoneState: ZoneState = ZoneState.Open;
   /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
@@ -32,6 +34,10 @@ export class ZoneDef extends WidgetHost {
   public applicationData?: any;
   /** Indicates with which other zone to merge. */
   public mergeWithZone?: ZoneLocation;
+  /** Initial zone width. */
+  public get initialWidth(): number | undefined {
+    return this._initialWidth;
+  }
 
   /** Constructor for ZoneDef.
    */
@@ -58,5 +64,10 @@ export class ZoneDef extends WidgetHost {
   /** Determines if the Zone should fill the available space. */
   public get shouldFillZone(): boolean {
     return this.widgetDefs.some((widgetDef: WidgetDef) => widgetDef.fillZone);
+  }
+
+  /** @internal */
+  public setInitialWidth(width: number | undefined) {
+    this._initialWidth = width;
   }
 }

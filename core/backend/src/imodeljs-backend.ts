@@ -45,6 +45,7 @@ export * from "./IModelTransformer";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
+export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./IModelDb"; // must be last
 
@@ -131,4 +132,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description CloudStorageBackend
  * Classes for working with cloud storage.
+ */
+/**
+ * @docs-group-description AliCloudStorageService
+ * Classes for working with cloud storage using AliCloud.
  */

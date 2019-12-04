@@ -828,7 +828,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void { }
+  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;

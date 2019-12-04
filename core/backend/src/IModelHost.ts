@@ -27,6 +27,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
+import { AliCloudStorageService } from "./AliCloudStorageService";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -400,6 +401,8 @@ export class IModelHost {
 
     if (credentials.service === "azure" && !IModelHost.tileCacheService) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
+    } else if (credentials.service === "alicloud") {
+      IModelHost.tileCacheService = new AliCloudStorageService(credentials);
     } else if (credentials.service !== "external") {
       throw new IModelError(BentleyStatus.ERROR, "Unsupported cloud service credentials for tile cache.");
     }

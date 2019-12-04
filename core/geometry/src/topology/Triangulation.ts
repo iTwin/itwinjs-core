@@ -690,9 +690,6 @@ export class Triangulator {
     let left = start.facePredecessor;
     let right = start.faceSuccessor;
     // P0, P1, P2 are successive edges along evolving chain
-    let P0: HalfEdge = start;  // will be reinitialized -- use start to quiet linter
-    let P1: HalfEdge = start;  // will be reinitialized -- use start to quiet linter
-    let P2: HalfEdge = start;  // will be reinitialized -- use start to quiet linter
     let upperSideOfNewEdge;
     while (left !== right
       && right !== start
@@ -710,9 +707,9 @@ export class Triangulator {
 
         /*      Phase 1: move upward, adding back edges
            when prior nodes are visible. */
-        P0 = left;
-        P1 = start;
-        P2 = right;
+        let P0 = left;
+        let P1 = start;
+        let P2 = right;
         /*      Invariant: the path from P0 back to P1 is concave.
            Each loop pass moves P0 up the left side, filling in
            edges as needed.  The right side edge
@@ -761,9 +758,9 @@ export class Triangulator {
 
         /*      Phase 1: move upward, adding back edges
            when prior nodes are visible. */
-        P0 = left;
-        P1 = start;
-        P2 = right;
+        let P0 = left;
+        let P1 = start;
+        let P2 = right;
         /*      Invariant: the path up to P1 is concave.
            Each loop pass advances P1, filling in
            edges as needed. Note that the
@@ -794,7 +791,7 @@ export class Triangulator {
         while (P2.faceSuccessor !== P0 && P2 !== right) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
           P0 = upperSideOfNewEdge;
-          P1 = P2;
+          // P1 = P2;   // original code (ported from native) carefully maintained P1..P2 relationship.  But code analyzer says P1 is not used again.  So skip it.
           P2 = P2.faceSuccessor;
         }
         /*      Finish off with the last stroke from the

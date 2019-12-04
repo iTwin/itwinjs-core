@@ -6,7 +6,7 @@ import * as React from "react";
 import {
   CoreTools, ContentGroup, ContentControl,
   ConfigurableCreateInfo, FrontstageProvider, FrontstageProps,
-  Frontstage, IModelInfo,
+  Frontstage, IModelInfo, UiFramework,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -15,7 +15,7 @@ class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (SampleAppIModelApp.oidcClient.isAuthorized)
+    if (UiFramework.oidcClient && UiFramework.oidcClient.isAuthorized)
       this.reactElement = <IModelOpen onIModelSelected={this._onOpenIModel} />;
     else
       this.reactElement = null;

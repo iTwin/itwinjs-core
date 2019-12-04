@@ -14,7 +14,7 @@ import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarg
 import "./DragDropTreeNode.scss";
 
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
-/** @internal */
+/** @internal @deprecated  */
 export interface DragDropNodeProps extends React.AllHTMLAttributes<HTMLDivElement> {
   isOver?: boolean;
   isDragging?: boolean;
@@ -28,13 +28,13 @@ enum HoverMode {
   Below,
 }
 
-/** @internal */
+/** @internal @deprecated  */
 export interface DragDropNodeState {
   hoverMode: HoverMode;
 }
 
 // Used internally in ./Tree.tsx
-/** @internal */
+/** @internal @deprecated  */
 export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps, DragDropNodeState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: DragDropNodeState = {

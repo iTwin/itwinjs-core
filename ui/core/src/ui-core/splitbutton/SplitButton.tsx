@@ -92,10 +92,12 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
 
   private _open = () => {
     if (!this.state.expanded && !this._closing) {
-      this.setState({ expanded: true }, () => {
-        if (this._menu && this.state.expanded)
-          this._menu.focus();
-      });
+      this.setState(
+        { expanded: true },
+        () => {
+          if (this._menu && this.state.expanded)
+            this._menu.focus();
+        });
     } else {
       this._closing = false;
     }

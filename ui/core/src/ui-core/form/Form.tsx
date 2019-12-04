@@ -170,7 +170,7 @@ export class Form extends React.Component<IFormProps, FormState> {
   }
 
   private _setValues = (values: FieldValues) => {
-    this.setState({ values: { ...this.state.values, ...values } });
+    this.setState((prevState) => ({ values: { ...prevState.values, ...values } }));
   }
 
   private _handleSubmit = (event: React.FormEvent<HTMLFormElement>, values: FieldValues) => {

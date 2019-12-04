@@ -288,7 +288,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         return;
 
       // Update the state so that we show the user it was enabled while we work in the background
-      this.setState(Object.assign({}, this.state, { items: itemsWithEnabled }));
+      this.setState({ items: itemsWithEnabled });
     }
 
     // Load the view state using the viewSpec's ID
@@ -320,7 +320,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
    */
   public render() {
     if (!this.state.initialized)
-      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises
+      return null;
 
     const { imodel, ...props } = this.props;
 

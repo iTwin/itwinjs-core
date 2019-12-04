@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
@@ -74,7 +75,7 @@ export class BufferParameters {
  * An abstract class which specifies an interface for binding and unbinding vertex buffers and their associated state.
  * @internal
  */
-export abstract class BuffersContainer implements IDisposable {
+export abstract class BuffersContainer implements WebGlDisposable {
   protected _linkages: BufferHandleLinkage[] = [];
 
   protected constructor() { }
@@ -86,7 +87,8 @@ export abstract class BuffersContainer implements IDisposable {
   public abstract addBuffer(buffer: BufferHandle, params: BufferParameters[]): void;
   public abstract appendLinkages(linkages: BufferHandleLinkage[]): void;
 
-  public dispose() { } // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
+  public abstract get isDisposed(): boolean;
+  public abstract dispose(): void; // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
 
   public static create(): BuffersContainer {
     const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
@@ -146,8 +148,9 @@ export class VAOContainer extends BuffersContainer {
     this.unbind();
   }
 
+  public get isDisposed(): boolean { return this._vao.isDisposed; }
+
   public dispose(): void {
-    super.dispose();
     this._vao.dispose();
   }
 }
@@ -187,6 +190,10 @@ export class VBOContainer extends BuffersContainer {
       this._linkages.push(BufferHandleLinkage.clone(linkage));
     }
   }
+
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+  public dispose() { this._isDisposed = true; }
 }
 
 /**
@@ -194,7 +201,7 @@ export class VBOContainer extends BuffersContainer {
  * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class VertexArrayObjectHandle implements IDisposable {
+export class VertexArrayObjectHandle implements WebGlDisposable {
   private _vaoExt: OES_vertex_array_object;
   private _arrayObject?: WebGLVertexArrayObjectOES;
 
@@ -241,7 +248,7 @@ export class VertexArrayObjectHandle implements IDisposable {
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class BufferHandle implements IDisposable {
+export class BufferHandle implements WebGlDisposable {
   private _target: GL.Buffer.Target;
   private _glBuffer?: WebGLBuffer;
   private _bytesUsed = 0;

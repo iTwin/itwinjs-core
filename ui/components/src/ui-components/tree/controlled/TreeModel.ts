@@ -11,7 +11,7 @@ import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } 
 
 /**
  * Immutable data structure that describes tree node.
- * @alpha
+ * @beta
  */
 export interface TreeModelNode {
   readonly id: string;
@@ -26,6 +26,9 @@ export interface TreeModelNode {
   readonly label: string;
   readonly isSelected: boolean;
 
+  /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
+  readonly editingInfo?: TreeModelNodeEditingInfo;
+
   readonly checkbox: CheckBoxInfo;
 
   readonly item: TreeNodeItem;
@@ -33,7 +36,7 @@ export interface TreeModelNode {
 
 /**
  * Immutable data structure that describes checkbox info.
- * @alpha
+ * @beta
  */
 export interface CheckBoxInfo {
   readonly state: CheckBoxState;
@@ -45,7 +48,7 @@ export interface CheckBoxInfo {
 
 /**
  * Mutable data structure that describes tree node.
- * @alpha
+ * @beta
  */
 export interface MutableTreeModelNode extends TreeModelNode {
   isLoading: boolean;
@@ -55,14 +58,26 @@ export interface MutableTreeModelNode extends TreeModelNode {
   label: string;
   isSelected: boolean;
 
+  /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
+  editingInfo?: TreeModelNodeEditingInfo;
+
   checkbox: MutableCheckBoxInfo;
 
   item: TreeNodeItem;
 }
 
 /**
+ * Data structure that holds callbacks used for tree node editing.
+ * @beta
+ */
+export interface TreeModelNodeEditingInfo {
+  onCommit: (node: TreeModelNode, newValue: string) => void;
+  onCancel: () => void;
+}
+
+/**
  * Mutable data structure that describes checkbox info.
- * @alpha
+ * @beta
  */
 export interface MutableCheckBoxInfo extends CheckBoxInfo {
   state: CheckBoxState;
@@ -74,7 +89,7 @@ export interface MutableCheckBoxInfo extends CheckBoxInfo {
 
 /**
  * Data structure that describes tree node placeholder.
- * @alpha
+ * @beta
  */
 export interface TreeModelNodePlaceholder {
   readonly childIndex: number;
@@ -84,7 +99,7 @@ export interface TreeModelNodePlaceholder {
 
 /**
  * Data structure that describes tree root node.
- * @alpha
+ * @beta
  */
 export interface TreeModelRootNode {
   readonly depth: -1;
@@ -95,7 +110,7 @@ export interface TreeModelRootNode {
 
 /**
  * Data structure that describes input used to create tree node.
- * @alpha
+ * @beta
  */
 export interface TreeModelNodeInput {
   readonly description?: string;
@@ -108,29 +123,45 @@ export interface TreeModelNodeInput {
   readonly isSelected: boolean;
 }
 
-type TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode;
+/**
+ * Type definition of all tree model nodes.
+ * @beta
+ */
+export type TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode;
 
-/** @alpha */
+/**
+ * Checks if object is [[TreeModelNode]]
+ * @beta
+ */
 export function isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode {
   return obj !== undefined && !isTreeModelNodePlaceholder(obj) && !isTreeModelRootNode(obj);
 }
 
-/** @alpha */
+/**
+ * Checks if object is [[TreeModelNodePlaceholder]]
+ * @beta
+ */
 export function isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder {
   return obj !== undefined && "childIndex" in obj;
 }
 
-/** @alpha */
+/**
+ * Checks if object is [[TreeModelRootNode]]
+ * @beta
+ */
 export function isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode {
   return obj !== undefined && (obj as TreeModelRootNode).id === undefined && !("childIndex" in obj);
 }
 
-/** @alpha */
+/**
+ * Type definition of tree node item data.
+ * @beta
+ */
 export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem;
 
 /**
  * Data structure that describes set of visible tree nodes as a flat list.
- * @alpha
+ * @beta
  */
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {
   getNumNodes(): number;
@@ -141,7 +172,7 @@ export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNode
 
 /**
  * Data structure that describes tree model.
- * @alpha
+ * @beta
  */
 export interface TreeModel {
   getRootNode(): TreeModelRootNode;
@@ -157,7 +188,7 @@ export interface TreeModel {
 
 /**
  * Mutable tree model which holds nodes and allows adding or removing them.
- * @alpha
+ * @beta
  */
 export class MutableTreeModel implements TreeModel {
   public static [immerable] = true;
@@ -165,10 +196,14 @@ export class MutableTreeModel implements TreeModel {
   private _tree = new SparseTree<MutableTreeModelNode>();
   private _rootNode: TreeModelRootNode = { depth: -1, id: undefined, numChildren: undefined };
 
+  /** Returns root node of a tree. This node is not visible and is there to allow having multiple visible root nodes. */
   public getRootNode(): TreeModelRootNode {
     return this._rootNode;
   }
 
+  /** Returns tree node or placeholder for node that is not loaded yet.
+   * @returns node, node placeholder or undefined if node is not found in model.
+   */
   public getNode(id: string): MutableTreeModelNode | undefined;
   public getNode(parentId: string | undefined, childIndex: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined;
   public getNode(nodeId: string | undefined, childIndex?: number): MutableTreeModelNode | TreeModelNodePlaceholder | undefined {
@@ -194,10 +229,15 @@ export class MutableTreeModel implements TreeModel {
     return undefined;
   }
 
+  /** Returns children for specific parent.
+   * @param parentId id of parent node.
+   * @returns children of parent node or root nodes if undefined is passed as parent id.
+   */
   public getChildren(parentId: string | undefined): SparseArray<string> | undefined {
     return this._tree.getChildren(parentId);
   }
 
+  /** Returns children offset in children array for specific parent. */
   public getChildOffset(parentId: string | undefined, childId: string): number | undefined {
     return this._tree.getChildOffset(parentId, childId);
   }
@@ -257,6 +297,10 @@ export class MutableTreeModel implements TreeModel {
     this._tree.setNumChildren(parentId, numChildren);
   }
 
+  /** Removes children specified by id.
+   * @param parentId id of parent node or undefined to remove root node.
+   * @param childId id of node that should be removed.
+   */
   public removeChild(parentId: string | undefined, childId: string) {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     this._tree.removeChild(parentId, childId);
@@ -266,6 +310,9 @@ export class MutableTreeModel implements TreeModel {
       MutableTreeModel.setNumChildrenForNode(parentNode, this._tree.getChildren(parentNode.id));
   }
 
+  /** Removes all children for parent specified by id.
+   * @param parentId id of parent node or undefined to remove root nodes.
+   */
   public clearChildren(parentId: string | undefined) {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode !== undefined) {
@@ -274,6 +321,7 @@ export class MutableTreeModel implements TreeModel {
     this._tree.deleteSubtree(parentId, false);
   }
 
+  /** Generates flat list of visible nodes in the tree model. */
   public computeVisibleNodes(): VisibleTreeNodes {
     const result = MutableTreeModel.getVisibleDescendants(this._tree, this._rootNode);
     return {
@@ -291,6 +339,7 @@ export class MutableTreeModel implements TreeModel {
     };
   }
 
+  /** Iterates over all nodes present in the tree model. */
   public * iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode> {
     const _this = this;
     function* iterateDescendants(subParentId: string | undefined): IterableIterator<MutableTreeModelNode> {

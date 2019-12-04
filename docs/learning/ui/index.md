@@ -1,8 +1,12 @@
 # Learning iModel.js UI
 
-This section provides explanations of the concepts you'll encounter in iModel.js UI.
+This section provides explanations of the concepts that are in the iModel.js UI.
 
-## React version requirements
+## Why React?
+
+iModel.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library. For more information about why, see [Why We Chose React](./React.md).
+
+### React version requirements
 
 iModel.js UI is compatible with React 16.8 and later.
 
@@ -21,6 +25,5 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 See also:
 
 * [Glossary of terms used in iModel.js UI](./UIGlossary)
-* [Frequently Asked Questions](./faq)
 * [React](https://reactjs.org/)
 * [Redux](https://redux.js.org/)

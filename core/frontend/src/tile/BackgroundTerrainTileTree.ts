@@ -214,7 +214,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     return div;
   }
   /** Add logo cards to logo div. */
-  public addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void {
+  public addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void {
     const drapeTree = this._mapDrapeTree as MapTileTreeReference;
     if (undefined !== drapeTree &&
       undefined !== drapeTree.treeOwner.tileTree &&
@@ -225,6 +225,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
       drapeTree.addLogoCards(logoDiv, vp);
     }
   }
+
   private get _symbologyOverrides(): FeatureSymbology.Overrides | undefined {
     if (undefined === this._overrides || this._overrides.defaultOverrides.transparency !== this.settings.transparencyOverride) {
       this._overrides = new FeatureSymbology.Overrides();

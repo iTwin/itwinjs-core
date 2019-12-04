@@ -2,6 +2,18 @@
   "name": "@bentley/electron-manager",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/electron-manager_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to allow Node 12"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/electron-manager_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -30,24 +30,31 @@ import { UiComponents } from "../../UiComponents";
 
 /**
  * Tree node loader which is used to load tree nodes.
- * @alpha
+ * @beta
  */
 export interface ITreeNodeLoader {
+  /** Event that is raised when hierarchy for a node is loaded. */
   onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+  /** Loads node at specified place in tree.
+   *
+   * @param parentId specifies tree branch
+   * @param childIndex specifies offset in the branch.
+   */
   loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
 }
 
 /**
  * Tree node loader which uses TreeDataProvider to load nodes.
- * @alpha
+ * @beta
  */
 export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends ITreeNodeLoader {
+  /** Returns TreeDataProvider used to load nodes. */
   getDataProvider(): TDataProvider;
 }
 
 /**
- * Default tree node loader implementation.
- * @alpha
+ * Default tree node loader with TreeDataProvider implementation.
+ * @beta
  */
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
   private _treeDataSource: TreeDataSource;
@@ -62,8 +69,15 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
     this._dataProvider = dataProvider;
   }
 
+  /** Returns TreeDataProvider used to load nodes. */
   public getDataProvider(): TDataProvider { return this._dataProvider; }
 
+  /**
+   * Schedules to load children of node and returns an Observable.
+   *
+   * **Note:** It does not start loading node until '.subscribe()' is called
+   * on returned Observable. If called multiple times to load children for same node it will return same Observable.
+   */
   public loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
     return this.loadForParent(parentItem, parentNode.numChildren === undefined)
@@ -92,8 +106,8 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
 }
 
 /**
- * Default paged tree node loader implementation which loads tree nodes in pages.
- * @alpha
+ * Default paged tree node loader with TreeDataProvider implementation.
+ * @beta
  */
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
   private _pageLoader: PageLoader;
@@ -109,10 +123,18 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> impleme
     this._dataProvider = dataProvider;
   }
 
+  /** Returns page size used by tree node loader. */
   public getPageSize(): number { return this._pageSize; }
 
+  /** Returns TreeDataProvider used to load nodes. */
   public getDataProvider(): TDataProvider { return this._dataProvider; }
 
+  /**
+   * Schedules to load one page of node children and returns an Observable.
+   *
+   * **Note:** It does not start loading node page until '.subscribe()' is called
+   * on returned Observable. If called multiple times to load same page it will return same Observable.
+   */
   public loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
     return this._pageLoader.loadPageWithItem(parentItem, childIndex, parentNode.numChildren === undefined)
@@ -125,18 +147,29 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> impleme
   }
 }
 
-/** @alpha */
+/** Data structure that describes hierarchy loaded for parent node.
+ * @beta
+ */
 export interface LoadedNodeHierarchy {
+  /** Node id of the parent node for loaded hierarchy. */
   parentId: string | undefined;
+  /** Hierarchy items offset in parent node children array. */
   offset: number;
+  /** Loaded hierarchy items. */
   hierarchyItems: LoadedNodeHierarchyItem[];
+  /** Number of children parent node has. */
   numChildren?: number;
 }
 
-/** @alpha */
+/** Data structure that describes one loaded hierarchy item.
+ * @beta
+ */
 export interface LoadedNodeHierarchyItem {
+  /** Loaded tree node item. */
   item: TreeNodeItemData;
+  /** Children of loaded tree node item. */
   children?: LoadedNodeHierarchyItem[];
+  /** Number of children tree node item has. */
   numChildren?: number;
 }
 
@@ -233,7 +266,12 @@ interface TreeDataSourceResult {
   numChildren?: number;
 }
 
-/** @internal */
+/**
+ * Wrapper to handle different types of TreeDataProvider. Provides one method
+ * to request items from TreeDataProviderRaw, TreeDataProviderMethod,
+ * TreeDataProviderPromise or TreeDataProviderInterface.
+ * @internal
+ */
 export class TreeDataSource {
   private _dataProvider: TreeDataProvider;
 

@@ -107,44 +107,31 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return itemDef;
   }
 
-  private insertItemDefAtLocation(item: ItemDefBase, itemList: ItemList | ItemDefBase[], relativePath: string[], insertBefore: boolean): void {
+  private insertItemDefAtLocation(item: ItemDefBase, itemList: ItemList | ItemDefBase[], parentGroupId: string | undefined, insertAtStart: boolean): void {
     // istanbul ignore else
-    if (0 === relativePath.length) {
-      if (insertBefore)
+    if (!parentGroupId) {
+      if (insertAtStart)
         itemList.splice(0, 0, item);
       else
         itemList.push(item);
       return;
     }
 
-    const pathToFind = relativePath[0].toLowerCase();
-    let foundIndex = itemList.findIndex((itemDef: ItemDefBase) => {
-      const id = itemDef.id ? itemDef.id : "none";
-      return (id.toLowerCase() === pathToFind);
-    });
-    if (foundIndex >= 0 && relativePath.length > 1) {
-      const parentItem = itemList[foundIndex];
+    // see if the parentGroupId is contained in the current or nested item list.
+    itemList.forEach((siblingItem: ItemDefBase) => {
       // istanbul ignore else
-      if ((parentItem instanceof GroupItemDef) || (parentItem instanceof ConditionalItemDef)) {
-        this.insertItemDefAtLocation(item, parentItem.items, relativePath.slice(1), insertBefore);
-        parentItem.resolveItems(true);
+      if (siblingItem instanceof ConditionalItemDef) {
+        this.insertItemDefAtLocation(item, siblingItem.items, parentGroupId, insertAtStart);
+        siblingItem.resolveItems(true);
         return;
       }
-    }
-
-    if (!insertBefore)
-      foundIndex += 1;
-
-    // istanbul ignore else
-    if (foundIndex <= 0)
-      foundIndex = 0;
-
-    // istanbul ignore else
-    if (foundIndex < itemList.length)
-      itemList.splice(foundIndex, 0, item);
-    else
-      itemList.push(item);
-    return;
+      // istanbul ignore else
+      if (siblingItem instanceof GroupItemDef) {
+        this.insertItemDefAtLocation(item, siblingItem.items, parentGroupId === siblingItem.id ? undefined : parentGroupId, insertAtStart);
+        siblingItem.resolveItems(true);
+        return;
+      }
+    });
   }
 
   /** Ensure all containers are duplicated so new items can be inserted while preserving the original Groups */
@@ -185,7 +172,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
 
   /** Create a Merged ItemList leaving the original ItemList untouched. */
   // Istanbul ignore next
-  protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]) {
+  protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart = false) {
     // initially just copy original list and add new items to it.
     const mergedItemList = new ItemList();
     // istanbul ignore else
@@ -205,7 +192,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
       const itemToInsert = this.createItemDefFromInsertSpec(spec);
       // istanbul ignore else
       if (itemToInsert) {
-        this.insertItemDefAtLocation(itemToInsert, mergedItemList, spec.relativeToolIdPath ? spec.relativeToolIdPath.split("\\") : [], !!spec.insertBefore);
+
+        this.insertItemDefAtLocation(itemToInsert, mergedItemList, spec.parentToolGroupId, insertAtStart);
       }
     });
     return mergedItemList;
@@ -220,7 +208,10 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
     // istanbul ignore else
     if (insertSpecs && insertSpecs.length > 0) {
-      this._cachedHorizontalItems = this.createMergedItemList(this.horizontalItems, insertSpecs);
+      // hacky way, but I don't want to modify public api to pass this in
+      const insertAtStart = (-1 !== this.widgetBaseName.search("NavigationWidget")); // use insert before on horizontal toolbar of Navigation Widget.
+
+      this._cachedHorizontalItems = this.createMergedItemList(this.horizontalItems, insertSpecs, insertAtStart);
     }
   }
 

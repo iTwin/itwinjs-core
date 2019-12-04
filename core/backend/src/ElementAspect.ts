@@ -93,7 +93,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   public identifier: string;
   /** The kind of object within the source repository. */
   public kind: string;
-  /** The cryptographic hash (any algorithm) of the source object's content. It must be guaranteed to change when the source object's content changes. */
+  /** The cryptographic hash (any algorithm) of the source object's content. If defined, it must be guaranteed to change when the source object's content changes. */
   public checksum?: string;
   /** An optional value that is typically a version number or a pseudo version number like last modified time.
    * It will be used by the synchronization process to detect that a source object is unchanged so that computing a cryptographic hash can be avoided.
@@ -101,7 +101,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
    */
   public version?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
-  public jsonProperties: { [key: string]: any };
+  public jsonProperties?: string;
 
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
@@ -111,7 +111,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     this.kind = props.kind;
     this.checksum = props.checksum;
     this.version = props.version;
-    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+    this.jsonProperties = props.jsonProperties;
   }
 
   /** @internal */
@@ -121,10 +121,8 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     val.identifier = this.identifier;
     val.kind = this.kind;
     val.checksum = this.checksum;
-    if (this.version)
-      val.version = this.version;
-    if (Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
+    val.version = this.version;
+    val.jsonProperties = this.jsonProperties;
     return val;
   }
 }
@@ -136,5 +134,6 @@ export namespace ExternalSourceAspect {
    */
   export enum Kind {
     Element = "Element",
+    Relationship = "Relationship",
   }
 }

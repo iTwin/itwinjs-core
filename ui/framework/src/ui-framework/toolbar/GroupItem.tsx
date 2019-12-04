@@ -338,7 +338,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (this.props !== prevProps) {
       if (this.props.groupItemDef !== prevProps.groupItemDef)
         Logger.logTrace(UiFramework.loggerCategory(this), `Different GroupItemDef for same groupId of ${this.state.groupItemDef.groupId}`);
-      this.setState(this.getGroupItemState(this.props));
+      this.setState((_, props) => this.getGroupItemState(props));
     }
   }
 

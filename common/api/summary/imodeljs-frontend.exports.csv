@@ -239,6 +239,8 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;MockRender
+internal;ModalOptions
+internal;ModalReturn
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
@@ -251,6 +253,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
+internal;OidcBrowserSamlClient 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 public;OrthographicViewState 

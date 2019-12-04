@@ -425,6 +425,9 @@ export function disposeArray(list?: IDisposable[]): undefined;
 // @public
 export type DisposeFunc = () => void;
 
+// @internal
+export const electronRenderer: any;
+
 // @public
 export class Entry<K, V> {
     constructor(key: K, value: V);
@@ -856,6 +859,9 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
 }
 
+// @internal
+export const isElectronRenderer: boolean;
+
 // @public
 export namespace JsonUtils {
     export function asArray(json: any): any;
@@ -1054,6 +1060,9 @@ export enum RepositoryStatus {
     Success = 0,
     SyncError = 86019
 }
+
+// @internal
+export function requireInElectronRenderer(moduleName: string): any;
 
 // @beta
 export enum RpcInterfaceStatus {

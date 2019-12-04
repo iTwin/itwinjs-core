@@ -184,6 +184,7 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { User } from 'oidc-client';
 import { UserManagerSettings } from 'oidc-client';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -1295,7 +1296,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 // @internal
 export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
-    addLogoCards(logoDiv: HTMLDivElement, vp: ScreenViewport): void;
+    addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
@@ -2132,7 +2133,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
     // @internal (undocumented)
-    getAttribution(div: HTMLDivElement, vp: ScreenViewport): void;
+    getAttribution(div: HTMLTableElement, vp: ScreenViewport): void;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
@@ -3353,7 +3354,7 @@ export abstract class ImageryProvider {
     // (undocumented)
     geometryAttributionProvider?: MapTileGeometryAttributionProvider;
     // (undocumented)
-    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+    abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
     // (undocumented)
@@ -3396,7 +3397,7 @@ export class IModelApp {
     static animationInterval: BeDuration | undefined;
     static readonly applicationId: string;
     // @beta
-    static applicationLogoCard?: () => HTMLDivElement;
+    static applicationLogoCard?: () => HTMLTableRowElement;
     static readonly applicationVersion: string;
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
@@ -3412,9 +3413,24 @@ export class IModelApp {
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     // @internal
-    static makeIModelJsLogoCard(): HTMLDivElement;
+    static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
+        parent?: HTMLElement;
+        className?: string;
+        id?: string;
+        innerHTML?: string;
+        innerText?: string;
+    }): HTMLElementTagNameMap[K];
+    // @internal
+    static makeIModelJsLogoCard(): HTMLTableRowElement;
     // @beta
-    static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement;
+    static makeLogoCard(opts: {
+        heading: string | HTMLElement;
+        iconSrc?: string | HTMLImageElement;
+        iconWidth?: number;
+        notice?: string | HTMLElement;
+    }): HTMLTableRowElement;
+    // @internal
+    static makeModalDiv(options: ModalOptions): ModalReturn;
     static readonly notifications: NotificationManager;
     // @internal (undocumented)
     static readonly pluginAdmin: PluginAdmin;
@@ -3914,7 +3930,7 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
     // (undocumented)
-    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+    getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
 }
 
 // @internal (undocumented)
@@ -3954,7 +3970,7 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
 
 // @internal
 export abstract class MapTileTreeReference extends TileTree.Reference {
-    addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void;
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
@@ -4553,6 +4569,20 @@ export namespace MockRender {
     }
 }
 
+// @internal
+export interface ModalOptions {
+    autoClose?: boolean;
+    closeBox?: boolean;
+    rootDiv?: HTMLElement;
+    width?: number;
+}
+
+// @internal
+export interface ModalReturn {
+    modal: HTMLDivElement;
+    stop: (_ev: Event) => void;
+}
+
 // @public
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
@@ -4776,6 +4806,8 @@ export class OffScreenViewport extends Viewport {
 // @beta
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
+    // (undocumented)
+    protected _accessToken?: AccessToken;
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal
@@ -4786,8 +4818,14 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     readonly isAuthorized: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
+
+// @internal
+export class OidcBrowserSamlClient extends OidcBrowserClient {
+    getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+}
 
 // @internal
 export class OnScreenTarget extends Target {
@@ -4804,6 +4842,8 @@ export class OnScreenTarget extends Target {
     protected drawOverlayDecorations(): void;
     // (undocumented)
     protected _endPaint(): void;
+    // (undocumented)
+    readonly isDisposed: boolean;
     // (undocumented)
     onResized(): void;
     // (undocumented)
@@ -5936,7 +5976,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void;
     // (undocumented)
     abstract changeBackgroundMap(_graphics: GraphicList): void;
     // (undocumented)
@@ -6131,6 +6171,8 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
+    getActiveVolumeClassifierModelId(): Id64String | undefined;
+    // (undocumented)
     getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined;
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
@@ -6154,6 +6196,8 @@ export class SceneContext extends RenderContext {
     readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
+    // (undocumented)
+    setActiveVolumeClassifierModelId(modelId: Id64String | undefined): void;
     // (undocumented)
     setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined): void;
     // (undocumented)
@@ -7035,8 +7079,10 @@ export class SyncFlags {
 }
 
 // @internal (undocumented)
-export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGlDisposable {
     protected constructor(rect?: ViewRect);
+    // (undocumented)
+    activeVolumeClassifierModelId?: Id64String;
     // (undocumented)
     activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
     // (undocumented)
@@ -7066,7 +7112,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier): void;
+    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
     // (undocumented)
     changeBackgroundMap(backgroundMap: GraphicList): void;
     // (undocumented)
@@ -7199,6 +7245,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly is2d: boolean;
     // (undocumented)
     readonly is3d: boolean;
+    // (undocumented)
+    readonly isDisposed: boolean;
     // (undocumented)
     readonly isDrawingShadowMap: boolean;
     // (undocumented)

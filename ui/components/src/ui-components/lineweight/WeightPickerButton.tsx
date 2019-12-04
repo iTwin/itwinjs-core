@@ -69,7 +69,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   private _togglePopup = () => {
     if (this.props.readonly)
       return;
-    this.setState({ showPopup: !this.state.showPopup });
+    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
   }
 
   private _onPopupOpened = () => {

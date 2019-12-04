@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "dan.east@bentley.com"
+}

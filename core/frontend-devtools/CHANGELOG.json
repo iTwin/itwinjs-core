@@ -2,6 +2,36 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/frontend-devtools_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Key-in for selecting elements by Id; option to include part references in InspectElementTool output."
+          },
+          {
+            "comment": "Fixed missing exports."
+          },
+          {
+            "comment": "Stop the keypress and keydown events in the frontend-devtools keyin field from propagating to other elements."
+          },
+          {
+            "comment": "Inspect element key-in now accepts any number of elemnent Ids as a comma-separated list."
+          },
+          {
+            "comment": "Key-in for compiling all registered shader programs."
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Remove manipulator and marker test code from project extents debug decoration."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/frontend-devtools_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

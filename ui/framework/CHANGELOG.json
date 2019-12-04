@@ -2,6 +2,63 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-framework_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Hide, Isolate, emphasize tools and status bar item to UiFramework."
+          },
+          {
+            "comment": "Fix bug where ToolSettings title was not reset after view undo/redo tool usage."
+          },
+          {
+            "comment": "Initializing OidcBrowserClient before setting it in UiFramework"
+          },
+          {
+            "comment": "Responsive logic in Property Grid to switch to Vertical orientation when too narrow"
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added StatusBarItemsManager.setIsVisible & StatusBarItem.isVisible"
+          },
+          {
+            "comment": "Support multiple status bars in the StatusBarManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Ensure item uniqueness in BackstageItemsManager and StatusBarItemsManager."
+          },
+          {
+            "comment": "Remove unsupported fit-content CSS value."
+          },
+          {
+            "comment": "Expose stage panel minSize and maxSize props."
+          },
+          {
+            "comment": "Do not show widget resize indicator when widget can not be resized."
+          },
+          {
+            "comment": "Remove history trays."
+          },
+          {
+            "comment": "Open tool panel via drag interaction."
+          },
+          {
+            "comment": "Update TileRendering StatusField width."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-framework_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

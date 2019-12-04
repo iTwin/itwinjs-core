@@ -74,7 +74,6 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
 
     this.state = {
       checkboxInfo: this.createCheckBoxInfoCallback(),
-      isLoading: false,
       filterInfo: {},
       selectedNodes: [],
       categories: [],
@@ -364,12 +363,10 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
   private _onSetEnableAll = async (enable: boolean) => {
     const ids = this.state.categories.map((category: Category) => category.key);
     if (ids.length > 0) {
-      this.setState({ isLoading: true });
-
       this._enableCategory(ids, enable);
 
       if (this._isMounted)
-        this.setState({ isLoading: false, checkboxInfo: this.createCheckBoxInfoCallback() });
+        this.setState({ checkboxInfo: this.createCheckBoxInfoCallback() });
     }
   }
 

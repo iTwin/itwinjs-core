@@ -34,7 +34,7 @@ export class StatusBarComposer extends React.PureComponent<StatusBarComposerProp
   /** @internal */
   public componentDidMount() {
     this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-    this.setState({ statusBarItems: this.props.itemsManager.items });
+    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
   }
 
   /** @internal */
@@ -47,12 +47,12 @@ export class StatusBarComposer extends React.PureComponent<StatusBarComposerProp
     if (this.props.itemsManager !== prevProps.itemsManager) {
       prevProps.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
       this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-      this.setState({ statusBarItems: this.props.itemsManager.items });
+      this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
     }
   }
 
   private _handleStatusBarItemsChanged = () => {
-    this.setState({ statusBarItems: this.props.itemsManager.items });
+    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
   }
 
   private getSectionItems(section: StatusBarSection): React.ReactNode[] {

@@ -225,7 +225,7 @@ describe("useBackstageItems", () => {
       onRender={() => spy(useBackstageItems(manager))}  // tslint:disable-line: react-hooks-nesting
     />);
 
-    spy.calledOnceWithExactly(sinon.match([manager.items[0]]) as any).should.true;
+    spy.calledOnceWithExactly(sinon.match([manager.items[0]])).should.true;
   });
 
   it("should add onChanged listener", () => {
@@ -253,7 +253,7 @@ describe("useBackstageItems", () => {
 
     manager.items = [];
 
-    spy.lastCall.calledWithExactly(sinon.match([]) as any).should.true;
+    spy.lastCall.calledWithExactly(sinon.match([])).should.true;
   });
 
   it("should remove onChanged listener", () => {

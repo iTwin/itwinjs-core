@@ -7,7 +7,7 @@ import * as React from "react";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
-  SnapModeField, SectionsStatusField, ViewAttributesStatusField,
+  SnapModeField, ViewAttributesStatusField, SectionsStatusField,
   SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
   StatusBarItem, StatusBarSection, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
   BooleanSyncUiListener, TileLoadingIndicator, FooterModeField,
@@ -60,7 +60,7 @@ export class AppStatusBarItemProvider {
         StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 40, <DisplayStyle />),
         StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 10, <ActivityCenter />),
         StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 60, <ViewAttributes />),
-        StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 50, <Sections />),
+        StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 50, <Sections hideWhenUnused={true} />),
         StatusBarItemUtilities.createStatusBarItem("ClearEmphasis", StatusBarSection.Center, 40, <ClearEmphasis hideWhenUnused={true} />),
 
         StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 30, (

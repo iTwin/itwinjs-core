@@ -165,10 +165,9 @@ export class IconSpecUtilities {
 export interface InsertSpec {
     // (undocumented)
     condition?: ConditionalDisplaySpecification;
-    insertBefore?: boolean;
     // (undocumented)
     label: string;
-    relativeToolIdPath?: string;
+    parentToolGroupId?: string;
 }
 
 // @beta

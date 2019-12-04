@@ -45,6 +45,7 @@ import {
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
   ViewportTileSizeModifierTool,
+  ViewportAddRealityModel,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
@@ -113,6 +114,7 @@ export class FrontendDevTools {
     FadeOutTool.register(i18n);
     DefaultTileSizeModifierTool.register(i18n);
     ViewportTileSizeModifierTool.register(i18n);
+    ViewportAddRealityModel.register(i18n);
 
     RealityTransitionTool.register(i18n);
     ChangeUnitsTool.register(i18n);

@@ -124,19 +124,8 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
 
-  public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLDivElement {
-    const div = document.createElement("div");
-    const image = new Image();
-    image.src = "images/cesium_ion.png";
-    image.width = 114;
-    image.height = 20;
-    div.appendChild(image);
-
-    const attr = document.createElement("p");
-    attr.style.margin = "0";
-    attr.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
-    div.appendChild(attr);
-    return IModelApp.makeLogoCard(div);
+  public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLTableRowElement {
+    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
   }
 
   public get maxDepth(): number { return this._maxDepth; }

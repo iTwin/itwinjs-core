@@ -21,7 +21,6 @@ import {
   ConfigurableUiManager,
   CubeNavigationAidControl,
   AnyWidgetProps,
-  WidgetDefFactory,
   NavigationWidgetDef,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
@@ -424,8 +423,7 @@ describe("CubeNavigationAid", () => {
     };
 
     it("CubeNavigationAidControl creates CubeNavigationAid", () => {
-
-      const widgetDef = WidgetDefFactory.create(widgetProps);
+      const widgetDef = new NavigationWidgetDef(widgetProps);
       expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
 
       const navigationWidgetDef = widgetDef as NavigationWidgetDef;

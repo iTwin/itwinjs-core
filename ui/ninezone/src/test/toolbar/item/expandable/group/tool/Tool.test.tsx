@@ -5,36 +5,47 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { GroupTool } from "../../../../../../ui-ninezone";
+import * as useTargetedModule from "../../../../../../ui-ninezone/base/useTargeted";
 
 describe("<GroupTool />", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should render", () => {
     mount(<GroupTool />);
   });
 
   it("renders correctly", () => {
-    shallow(<GroupTool />).should.matchSnapshot();
+    shallow(<GroupTool />).dive().should.matchSnapshot();
   });
 
   it("renders active correctly", () => {
-    shallow(<GroupTool isActive />).should.matchSnapshot();
+    shallow(<GroupTool isActive />).dive().should.matchSnapshot();
   });
 
   it("renders focused correctly", () => {
-    shallow(<GroupTool isFocused />).should.matchSnapshot();
+    shallow(<GroupTool isFocused />).dive().should.matchSnapshot();
   });
 
   it("renders disabled correctly", () => {
-    shallow(<GroupTool isDisabled />).should.matchSnapshot();
+    shallow(<GroupTool isDisabled />).dive().should.matchSnapshot();
   });
 
   it("renders with badge correctly", () => {
-    shallow(<GroupTool badge />).should.matchSnapshot();
+    shallow(<GroupTool badge />).dive().should.matchSnapshot();
   });
 
   it("renders with pointer up correctly", () => {
-    shallow(<GroupTool onPointerUp={sinon.spy()} />).should.matchSnapshot();
+    shallow(<GroupTool onPointerUp={sinon.spy()} />).dive().should.matchSnapshot();
+  });
+
+  it("renders targeted correctly", () => {
+    sandbox.stub(useTargetedModule, "useTargeted").returns(true);
+    shallow(<GroupTool />).dive().should.matchSnapshot();
   });
 
   it("should invoke onClick handler", () => {

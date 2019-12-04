@@ -295,3 +295,24 @@ export class ViewportTileSizeModifierTool extends Tool {
     return this.run(modifier);
   }
 }
+
+/** Sets or clears the tile size modifier override for the selected viewport.
+ * @alpha
+ */
+export class ViewportAddRealityModel extends Tool {
+  public static toolId = "ViewportAddRealityModel";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public run(url: string): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
+  }
+}

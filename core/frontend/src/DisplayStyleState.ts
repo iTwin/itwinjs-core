@@ -286,7 +286,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
   /** @internal */
-  public getAttribution(div: HTMLDivElement, vp: ScreenViewport): void {
+  public getAttribution(div: HTMLTableElement, vp: ScreenViewport): void {
     if (this.viewFlags.backgroundMap)
       this._backgroundMap.addLogoCards(div, vp);
   }

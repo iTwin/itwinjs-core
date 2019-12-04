@@ -58,6 +58,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       this.setOpenWidget(this._className);
   }
 
+  // istanbul ignore next
   private updateState() {
     if (IModelApp.viewManager.selectedView) {
       const viewFlags: ViewFlagProps = { ...IModelApp.viewManager.selectedView.view.viewFlags.toJSON() };
@@ -70,6 +71,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     }
   }
 
+  // istanbul ignore next
   private _handleViewFlagClick = (flagName: string) => {
     if (IModelApp.viewManager.selectedView) {
       const props: ViewFlagProps = IModelApp.viewManager.selectedView.viewFlags.toJSON();
@@ -86,6 +88,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     this.updateState();
   }
 
+  // istanbul ignore next
   private stylizeName(name: string) {
     name = name.charAt(0).toUpperCase() + name.slice(1);
     name = name.replace(/([A-Z])/g, " $1").trim();

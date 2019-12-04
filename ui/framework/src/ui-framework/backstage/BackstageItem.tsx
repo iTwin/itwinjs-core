@@ -35,9 +35,8 @@ export interface BackstageItemState {
 }
 
 /** Helper method to set backstage item state from props.
- * Deprecated - Use [[BackstageItemUtilities.getBackstageItemStateFromProps]] instead.
  * @public
- * @deprecated Use BackstageItemUtilities.getBackstageItemStateFromProps instead
+ * @deprecated Use [[BackstageItemUtilities.getBackstageItemStateFromProps]] instead
  */
 // istanbul ignore next
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {

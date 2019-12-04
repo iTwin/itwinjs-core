@@ -298,8 +298,10 @@ export class SelectionContextUtilities {
    * @param vp Viewport to affect
    *
    */
-  public static clearEmphasize(vp: Viewport) {
-    EmphasizeElements.clear(vp);
+  public static clearEmphasize(vp: Viewport | undefined) {
+    if (vp)
+      EmphasizeElements.clear(vp);
+    SelectionContextUtilities.emphasizeElementsChanged.raiseEvent();
   }
 
   /**

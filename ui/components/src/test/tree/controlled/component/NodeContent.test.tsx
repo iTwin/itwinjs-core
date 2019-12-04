@@ -12,7 +12,6 @@ import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/
 import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
-import { CellEditingEngine } from "../../../../ui-components/tree/controlled/component/CellEditingEngine";
 import { TestUtils } from "../../../TestUtils";
 
 describe("NodeContent", () => {
@@ -133,21 +132,6 @@ describe("NodeContent", () => {
     getByText("New label");
   });
 
-  it("renders node editor", () => {
-    const editingEngineMock = moq.Mock.ofType<CellEditingEngine>();
-    editingEngineMock.setup((x) => x.isEditingEnabled(node)).returns(() => true);
-    editingEngineMock.setup((x) => x.renderEditor(node, moq.It.isAny())).returns(() => <div data-testid="editorMock-id" />);
-
-    const { getByTestId } = render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-        cellEditing={editingEngineMock.object}
-      />);
-
-    getByTestId("editorMock-id");
-  });
-
   it("uses node typename", () => {
     node.item.typename = "TestNodeType";
 
@@ -203,6 +187,40 @@ describe("NodeContent", () => {
     );
 
     expect(spy).to.be.calledOnce;
+  });
+
+  it("renders node editor if node editing is active", () => {
+    node.editingInfo = {
+      onCancel: () => { },
+      onCommit: () => { },
+    };
+
+    const { getByTestId } = render(
+      <TreeNodeContent
+        node={node}
+        valueRendererManager={rendererManagerMock.object}
+      />,
+    );
+
+    getByTestId("editor-container");
+  });
+
+  it("uses custom tree node editor renderer", () => {
+    node.editingInfo = {
+      onCancel: () => { },
+      onCommit: () => { },
+    };
+    const editorRendererSpy = sinon.spy();
+
+    render(
+      <TreeNodeContent
+        node={node}
+        valueRendererManager={rendererManagerMock.object}
+        nodeEditorRenderer={editorRendererSpy}
+      />,
+    );
+
+    expect(editorRendererSpy).to.be.calledOnce;
   });
 
 });

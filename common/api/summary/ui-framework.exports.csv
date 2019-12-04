@@ -59,8 +59,7 @@ alpha;CategoryTree: React.FC
 alpha;CategoryTreeProps
 alpha;CategoryTreeState
 internal;ChangeSetInfo
-beta;ClearEmphasisStatusField 
-beta;ClearEmphasisStatusFieldProps 
+beta;ClearEmphasisStatusField: React.FC
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
 public;CombinedReducerState
@@ -351,7 +350,8 @@ beta;SavedViewLayout
 beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
-beta;SectionsStatusField 
+beta;SectionsStatusField: React.FC
+beta;SectionsStatusFieldProps 
 beta;selectionContextStateFunc(state: Readonly
 beta;SelectionContextToolDefinitions
 alpha;SelectionContextUtilities
@@ -479,6 +479,8 @@ alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
 beta;useActiveFrontstageId: () => string
+beta;useActiveIModelConnection(): IModelConnection | undefined
+beta;useActiveViewport(): ScreenViewport | undefined
 beta;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useBackstageManager: () => BackstageManager
 internal;useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[]
@@ -510,7 +512,6 @@ beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler
 public;WidgetControl 
 public;WidgetDef
-internal;WidgetDefFactory
 public;WidgetHost
 public;WidgetProps 
 internal;WidgetStack 

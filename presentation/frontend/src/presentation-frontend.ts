@@ -25,7 +25,7 @@ export { IFavoritePropertiesStorage, IModelAppFavoritePropertiesStorage } from "
 export { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionChangesListener } from "./selection/SelectionChangeEvent";
 export { ISelectionProvider } from "./selection/ISelectionProvider";
 export { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
-export { SelectionScopesManager, SelectionScopesManagerProps } from "./selection/SelectionScopesManager";
+export { SelectionScopesManager, SelectionScopesManagerProps, getScopeId } from "./selection/SelectionScopesManager";
 export { SelectionHandler } from "./selection/SelectionHandler";
 export { HiliteSet, HiliteSetProvider } from "./selection/HiliteSetProvider";
 

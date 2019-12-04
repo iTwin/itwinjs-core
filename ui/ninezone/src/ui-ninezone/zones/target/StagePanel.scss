@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/z-index";
 @import "../../safearea";
+@import "../../target";
 @import "../variables";
-@import "variables";
 
 .nz-zones-target-stagePanel {
   @mixin background($direction) {

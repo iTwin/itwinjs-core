@@ -2,6 +2,24 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/build-tools_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix mocha report failing when running in a context without a package.json"
+          },
+          {
+            "comment": "Fix issue with custom Mocha reporter not correctly outputting mocha file when run in Certa."
+          },
+          {
+            "comment": "Update API-extractor to 5.7.4 to consume a fix for Node 12."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/build-tools_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

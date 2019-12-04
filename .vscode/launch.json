@@ -198,6 +198,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run OIDC Signin Tool Tests (Integration)",
+      "program": "${workspaceFolder}/tools/oidc-signin-tool/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/tools/oidc-signin-tool",
+      "args": [
+        "--testDir=${workspaceFolder}/tools/oidc-signin-tool/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",

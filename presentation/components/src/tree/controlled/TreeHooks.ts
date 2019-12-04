@@ -12,7 +12,7 @@ import { PresentationTreeDataProvider } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /** Properties for [[usePresentationNodeLoader]] hook.
- * @alpha
+ * @beta
  */
 export interface PresentationNodeLoaderProps {
   imodel: IModelConnection;
@@ -28,7 +28,7 @@ export interface PresentationNodeLoaderProps {
 /** Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
  * supplied imodel and ruleset id.
  *
- * @alpha
+ * @beta
  */
 export function usePresentationNodeLoader(props: PresentationNodeLoaderProps) {
   const [dataProvider, setDataProvider] = useState(createDataProvider(props));

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, using, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { HasMaterialAtlas, IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
@@ -38,11 +38,12 @@ import { createBlurProgram } from "./glsl/Blur";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { System } from "./System";
+import { WebGlDisposable } from "./Disposable";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
  */
-export interface Technique extends IDisposable {
+export interface Technique extends WebGlDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
@@ -60,6 +61,8 @@ export class SingularTechnique implements Technique {
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
   public compileShaders(): boolean { return this.program.compile(); }
+
+  public get isDisposed(): boolean { return this.program.isDisposed; }
 
   public dispose(): void {
     dispose(this.program);
@@ -100,7 +103,12 @@ export abstract class VariedTechnique implements Technique {
     assert(-1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)), "Shader index " + emptyShaderIndex + " is undefined in " + this.constructor.name);
   }
 
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+
   public dispose(): void {
+    if (this._isDisposed)
+      return;
     for (const program of this._basicPrograms) {
       assert(undefined !== program);
       dispose(program);
@@ -118,6 +126,7 @@ export abstract class VariedTechnique implements Technique {
 
       clipShaderObj.shaders.length = 0;
       clipShaderObj.maskShader = undefined;
+      this._isDisposed = true;
     }
   }
 
@@ -512,7 +521,7 @@ class PointCloudTechnique extends VariedTechnique {
 /** A collection of rendering techniques accessed by ID.
  * @internal
  */
-export class Techniques implements IDisposable {
+export class Techniques implements WebGlDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
@@ -645,6 +654,8 @@ export class Techniques implements IDisposable {
       }
     });
   }
+
+  public get isDisposed(): boolean { return 0 === this._list.length; }
 
   public dispose(): void {
     for (const tech of this._list)

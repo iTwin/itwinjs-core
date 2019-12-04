@@ -1,6 +1,46 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Added iModel.js logo in lower right corner of views.
+- Touch move event should not clear viewport animator. Put a time limit on what's considered a touch tap.
+- Clip low resolution terrain tiles to their displayable children ranges.
+- Fix bing tile attribution.  Optimize map reprojection.
+- Logo card link opens in a new tab/window.
+- Fix whitespace
+- Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined.
+- optimized ReadPixels call for when volumes classifiers are in use
+- Flashed element wasn't being cleared after a tentative.
+- Limit map tile loading in orthographic views.
+- Add css styles in IModelApp.ts
+- Open logo card on touch start.
+- Allow zoom handle to move through depth point.
+- Added measure area by points tool. Measure and clip tool decoration improvements.
+- Added missing topic descriptions
+- When rendering transparent objects during opaque pass, ensure alpha is set to 1.
+- Report unsuported snap mode for view independent geometry when not using origin snap instead of unsnappable subcategory
+- Rework reality model loading to preload tiles.
+- Added method to Plugin that allows a Plugin to control whether the "loaded" message appears on repeated loads of same Plugin.
+- When a reality tile is not present use higher resolution tiles if ready.
+- Fix excessive number of tile requests when solar shadows are enabled.
+- Change shadow bias to 0.1
+- Ensure only surfaces cast shadows.
+- Tweak map and terrain tile loading.
+- Improve user experience by not displaying underresolved tiles.
+- Add support for view-independent display.
+- View target center handle now uses depth preview point instead of AccuSnap.
+- Added depth point preview for rotate, pan, and zoom tools.
+- When depth point is from an element hit, flash the element too.
+- Depth preview refinement and new view tool cursors.
+- Simplify walk tool by using Viewport Animator interface
+- Add walk cursor
+- Fix shadows failing to draw after resizing a viewport.
+- Use Viewport.animate for zoom and scroll tools
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

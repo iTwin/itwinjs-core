@@ -17,6 +17,8 @@ import { Polyface } from "../polyface/Polyface";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Loop } from "../curve/Loop";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { UVSurface } from "../geometry3d/GeometryHandler";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -207,7 +209,8 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
       }
     }
-  } public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  }
+  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
       if (momentData1) {
@@ -229,5 +232,10 @@ export class GeometryCoreTestIO {
         }
       }
     }
+  }
+  public static captureMesh(collection: GeometryQuery[], patch: UVSurface, numX: number, numY: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    const builder = PolyfaceBuilder.create();
+    builder.addUVGridBody(patch, numX, numY);
+    this.captureGeometry(collection, builder.claimPolyface(), dx, dy, dz);
   }
 }

@@ -5,3 +5,9 @@ exports[`<BackArrow /> renders correctly 1`] = `
   className="nz-toolbar-item-expandable-group-backArrow"
 />
 `;
+
+exports[`<BackArrow /> renders targeted correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow nz-targeted"
+/>
+`;

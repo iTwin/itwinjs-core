@@ -4,25 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Viewport } from "@bentley/imodeljs-frontend";
+import { Viewport, IModelApp } from "@bentley/imodeljs-frontend";
 
 export interface ToolButtonProps {
-  className: string;
+  iconUnicode: string;
   click: (ev: Event) => void;
   tooltip?: string;
 }
 
-export function createToolButton(props: ToolButtonProps): HTMLElement {
-  const img = document.createElement("i");
-  img.className = props.className;
+const createTestAppIcon = (iconUnicode: string) => {
+  const icon = IModelApp.makeHTMLElement("span", { innerText: iconUnicode });
+  icon.style.fontFamily = "Display-Test-App-Icons";
+  icon.style.fontSize = "35px";
+  return icon;
+};
 
-  const div = document.createElement("div");
-  div.className = "simpleicon";
+export function createToolButton(props: ToolButtonProps) {
+  const icon = createTestAppIcon(props.iconUnicode);
+  const div = IModelApp.makeHTMLElement("div", { className: "simpleicon" });
+
   div.addEventListener("click", (ev: Event) => props.click(ev));
   if (undefined !== props.tooltip)
     div.title = props.tooltip;
 
-  div.appendChild(img);
+  div.appendChild(icon);
   return div;
 }
 
@@ -32,9 +37,8 @@ export interface ImageButtonProps {
   click: (ev: Event) => void;
 }
 
-export function createImageButton(props: ImageButtonProps): HTMLElement {
-  const img = document.createElement("img");
-  img.className = "simpleicon";
+export function createImageButton(props: ImageButtonProps) {
+  const img = IModelApp.makeHTMLElement("img", { className: "simpleicon" });
   img.src = props.src;
   if (undefined !== props.tooltip)
     img.title = props.tooltip;
@@ -73,7 +77,7 @@ export abstract class ToolBarDropDown {
 export type CreateToolBarDropDown = (parent: HTMLElement) => Promise<ToolBarDropDown>;
 
 export interface ToolBarDropDownProps {
-  className: string;
+  iconUnicode: string;
   createDropDown: CreateToolBarDropDown;
   tooltip?: string;
   only3d?: boolean;
@@ -86,22 +90,19 @@ class DropDown {
   public readonly only3d: boolean;
 
   public constructor(toolBar: ToolBar, index: number, props: ToolBarDropDownProps) {
-    this.element = document.createElement("div");
-    this.element.className = "simpleicon";
+    this.element = IModelApp.makeHTMLElement("div", { parent: toolBar.element, className: "simpleicon" });
     this._createDropDown = props.createDropDown;
     this.only3d = true === props.only3d;
 
-    const image = document.createElement("i");
-    image.className = props.className;
-    image.addEventListener("click", () => {
+    const icon = createTestAppIcon(props.iconUnicode);
+    icon.addEventListener("click", () => {
       toolBar.toggle(index); // tslint:disable-line:no-floating-promises
     });
 
     if (undefined !== props.tooltip)
       this.element.title = props.tooltip;
 
-    this.element.appendChild(image);
-    toolBar.element.appendChild(this.element);
+    this.element.appendChild(icon);
   }
 
   public async createDropDown(): Promise<ToolBarDropDown> {
@@ -116,9 +117,6 @@ export class ToolBar {
 
   public constructor(container: HTMLElement) {
     this.element = container;
-    // this.element = document.createElement("div");
-    // this.element.className = "topdiv";
-    // parent.appendChild(this.element);
   }
 
   public addDropDown(props: ToolBarDropDownProps): void {

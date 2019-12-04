@@ -7,14 +7,14 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
-  Placement3d, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
+  Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement,
-  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect, ExternalSourceAspect,
+  AuthorizedBackendRequestContext, AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, ChangeSummaryExtractOptions,
+  DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
   Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
@@ -24,6 +24,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 /** IModelTransformer utilities shared by both standalone and integration tests. */
 export namespace IModelTransformerUtils {
 
+  const uniqueAspectGuid: GuidString = Guid.createValue();
   const federationGuid3: GuidString = Guid.createValue();
 
   export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
@@ -156,12 +157,15 @@ export namespace IModelTransformerUtils {
       },
       sourceString: "S1",
       sourceDouble: 1.1,
+      sourceNavigation: { id: sourcePhysicalCategoryId, relClassName: "TestTransformerSource:SourcePhysicalElementUsesSourceDefinition" },
+      commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
       extraString: "Extra",
     } as GeometricElement3dProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
+    assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceUniqueAspect",
@@ -172,9 +176,18 @@ export namespace IModelTransformerUtils {
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
-      sourceGuid: Guid.createValue(),
+      sourceGuid: uniqueAspectGuid,
       extraString: "Extra",
     } as ElementAspectProps);
+    const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect")[0];
+    assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
+    assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
+    assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceDouble, 11.1);
+    assert.equal(sourceUniqueAspect.asAny.sourceString, "UniqueAspect");
+    assert.equal(sourceUniqueAspect.asAny.sourceLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceGuid, uniqueAspectGuid);
+    assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
     sourceDb.elements.insertAspect({
       classFullName: "TestTransformerSource:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -210,22 +223,32 @@ export namespace IModelTransformerUtils {
       description: "SourceMultiAspect1",
     } as ElementAspectProps);
     // Insert DrawingGraphics
-    const drawingGraphicProps: GeometricElement2dProps = {
+    const drawingGraphicProps1: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
       model: drawingId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
-      userLabel: "DrawingGraphic",
+      userLabel: "DrawingGraphic1",
       geom: createRectangle(Point2d.create(1, 1)),
-      placement: {
-        origin: Point2d.create(2, 2),
-        angle: 0,
-      },
+      placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId = sourceDb.elements.insertElement(drawingGraphicProps);
-    assert.isTrue(Id64.isValidId64(drawingGraphicId));
-    const drawingGraphicRepresentsId = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId, physicalObjectId1);
-    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId));
+    const drawingGraphicId1: Id64String = sourceDb.elements.insertElement(drawingGraphicProps1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicId1));
+    const drawingGraphicRepresentsId1: Id64String = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId1));
+    const drawingGraphicProps2: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic2",
+      geom: createRectangle(Point2d.create(1, 1)),
+      placement: { origin: Point2d.create(3, 3), angle: 0 },
+    };
+    const drawingGraphicId2: Id64String = sourceDb.elements.insertElement(drawingGraphicProps2);
+    assert.isTrue(Id64.isValidId64(drawingGraphicId2));
+    const drawingGraphicRepresentsId2: Id64String = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId2));
     // Insert DisplayStyles
     const displayStyle2dId: Id64String = DisplayStyle2d.insert(sourceDb, definitionModelId, "DisplayStyle2d");
     assert.isTrue(Id64.isValidId64(displayStyle2dId));
@@ -305,11 +328,22 @@ export namespace IModelTransformerUtils {
     sourceMultiAspects[1].asAny.commonString += "-Updated";
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
     sourceDb.elements.updateAspect(sourceMultiAspects[1]);
+    // clear NavigationProperty of PhysicalElement1
+    const physicalElementId: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
+    let physicalElement: PhysicalElement = sourceDb.elements.getElement(physicalElementId);
+    physicalElement.asAny.commonNavigation = RelatedElement.none;
+    physicalElement.update();
+    physicalElement = sourceDb.elements.getElement(physicalElementId);
+    assert.isUndefined(physicalElement.asAny.commonNavigation);
     // delete PhysicalObject3
     const physicalObjectId3: Id64String = queryByUserLabel(sourceDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
     sourceDb.elements.deleteElement(physicalObjectId3);
     assert.equal(Id64.invalid, queryByUserLabel(sourceDb, "PhysicalObject3"));
+    // delete relationship
+    const drawingGraphicId2: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic2");
+    const relationship: Relationship = sourceDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 });
+    relationship.delete();
   }
 
   export async function prepareTargetDb(targetDb: IModelDb): Promise<void> {
@@ -417,8 +451,10 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
-    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by transformElement override");
-    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by transformElement override");
+    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetNavigation.id, targetPhysicalCategoryId, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
@@ -433,7 +469,8 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
+    assert.equal(uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
     // ElementMultiAspects
     const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
     assert.equal(targetMultiAspects.length, 2);
@@ -443,14 +480,14 @@ export namespace IModelTransformerUtils {
     assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
     assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
     assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid));
     assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
     assert.equal(targetMultiAspects[1].asAny.commonString, "Multi");
     assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
     assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
     assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
     assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid));
     // DisplayStyle
     const displayStyle3dId = targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(targetDb, definitionModelId, "DisplayStyle3d"))!;
     assertTargetElement(sourceDb, targetDb, displayStyle3dId);
@@ -469,10 +506,13 @@ export namespace IModelTransformerUtils {
     // AuxCoordSystem2d
     assert.equal(undefined, targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
     // DrawingGraphic
-    const drawingGraphicId: Id64String = queryByUserLabel(targetDb, "DrawingGraphic");
-    assertTargetElement(sourceDb, targetDb, drawingGraphicId);
+    const drawingGraphicId1: Id64String = queryByUserLabel(targetDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = queryByUserLabel(targetDb, "DrawingGraphic2");
+    assertTargetElement(sourceDb, targetDb, drawingGraphicId1);
+    assertTargetElement(sourceDb, targetDb, drawingGraphicId2);
     // DrawingGraphicRepresentsElement
-    assert.exists(targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId, targetId: physicalObjectId1 }));
+    assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId1, physicalObjectId1);
+    assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId2, physicalObjectId1);
     // TargetRelWithProps
     const relWithProps: any = targetDb.relationships.getInstanceProps(
       "TestTransformerTarget:TargetRelWithProps",
@@ -532,15 +572,23 @@ export namespace IModelTransformerUtils {
     assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
     assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect-Updated");
     assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1);
+    // assert NavigationProperty of PhysicalElement1 was cleared
+    const physicalElementId: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
+    const physicalElement: PhysicalElement = targetDb.elements.getElement(physicalElementId);
+    assert.isUndefined(physicalElement.asAny.commonNavigation);
     // assert PhysicalObject3 was deleted
     assert.equal(Id64.invalid, queryByUserLabel(targetDb, "PhysicalObject3"));
+    // assert relationship was deleted
+    const drawingGraphicId2: Id64String = queryByUserLabel(targetDb, "DrawingGraphic2");
+    assert.throws(() => targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
   }
 
   function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
     assert.isTrue(Id64.isValidId64(targetElementId));
     const element: Element = targetDb.elements.getElement(targetElementId);
     assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
-    const aspect: ExternalSourceAspect = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName)[0] as ExternalSourceAspect;
+    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] as ExternalSourceAspect;
     assert.exists(aspect);
     assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
     assert.equal(aspect.scope.id, IModel.rootSubjectId);
@@ -550,6 +598,19 @@ export namespace IModelTransformerUtils {
     assert.equal(aspect.version, sourceLastMod);
     const sourceElement: Element = sourceDb.elements.getElement(aspect.identifier);
     assert.exists(sourceElement);
+  }
+
+  function assertTargetRelationship(sourceDb: IModelDb, targetDb: IModelDb, targetRelClassFullName: string, targetRelSourceId: Id64String, targetRelTargetId: Id64String): void {
+    const targetRelationship: Relationship = targetDb.relationships.getInstance(targetRelClassFullName, { sourceId: targetRelSourceId, targetId: targetRelTargetId });
+    assert.exists(targetRelationship);
+    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetRelSourceId, ExternalSourceAspect.classFullName);
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] as ExternalSourceAspect;
+    assert.exists(aspect);
+    const sourceRelationship: Relationship = sourceDb.relationships.getInstance(ElementRefersToElements.classFullName, aspect.identifier);
+    assert.exists(sourceRelationship);
+    assert.isDefined(aspect.jsonProperties);
+    const json: any = JSON.parse(aspect.jsonProperties!);
+    assert.equal(targetRelationship.id, json.targetRelInstanceId);
   }
 
   export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {
@@ -797,6 +858,7 @@ export class TestIModelTransformer extends IModelTransformer {
   /** Initialize some class remapping rules for testing */
   private initClassRemapping(): void {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
+    this.context.remapElementClass("TestTransformerSource:SourcePhysicalElementUsesCommonDefinition", "TestTransformerTarget:TargetPhysicalElementUsesCommonDefinition");
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */
@@ -813,6 +875,10 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetNavigation = {
+        id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
+        relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
+      };
     }
     return targetElementProps;
   }
@@ -873,12 +939,13 @@ export class CountingIModelImporter extends IModelImporter {
   public numElementAspectsUpdated: number = 0;
   public numRelationshipsInserted: number = 0;
   public numRelationshipsUpdated: number = 0;
+  public numRelationshipsDeleted: number = 0;
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): void {
+  protected onInsertModel(modelProps: ModelProps): Id64String {
     this.numModelsInserted++;
-    super.onInsertModel(modelProps);
+    return super.onInsertModel(modelProps);
   }
   protected onUpdateModel(modelProps: ModelProps): void {
     this.numModelsUpdated++;
@@ -912,12 +979,92 @@ export class CountingIModelImporter extends IModelImporter {
     this.numRelationshipsUpdated++;
     super.onUpdateRelationship(relationshipProps);
   }
+  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+    this.numRelationshipsDeleted++;
+    super.onDeleteRelationship(relationshipProps);
+  }
+}
+
+/** Specialization of IModelImporter that creates an InformationRecordElement for each PhysicalElement that it imports. */
+export class RecordingIModelImporter extends CountingIModelImporter {
+  public constructor(targetDb: IModelDb) {
+    super(targetDb);
+  }
+  protected onInsertModel(modelProps: ModelProps): Id64String {
+    const modelId: Id64String = super.onInsertModel(modelProps);
+    const model: Model = this.targetDb.models.getModel(modelId);
+    if (model instanceof PhysicalModel) {
+      const modeledElement: Element = this.targetDb.elements.getElement(model.modeledElement.id);
+      if (modeledElement instanceof PhysicalPartition) {
+        const parentSubjectId: Id64String = modeledElement.parent!.id; // InformationPartitionElements are always parented to Subjects
+        const recordPartitionId: Id64String = InformationRecordModel.insert(this.targetDb, parentSubjectId, `Records for ${model.name}`);
+        this.targetDb.relationships.insertInstance({
+          classFullName: "TestTransformerTarget:PhysicalPartitionIsTrackedByRecords",
+          sourceId: modeledElement.id,
+          targetId: recordPartitionId,
+        });
+      }
+    }
+    return modelId;
+  }
+  protected onInsertElement(elementProps: ElementProps): Id64String {
+    const elementId: Id64String = super.onInsertElement(elementProps);
+    const element: Element = this.targetDb.elements.getElement(elementId);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Insert", recordPartitionId, element);
+      }
+    }
+    return elementId;
+  }
+  protected onUpdateElement(elementProps: ElementProps): void {
+    super.onUpdateElement(elementProps);
+    const element: Element = this.targetDb.elements.getElement(elementProps.id!);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Update", recordPartitionId, element);
+      }
+    }
+  }
+  protected onDeleteElement(elementId: Id64String): void {
+    const element: Element = this.targetDb.elements.getElement(elementId);
+    if (element instanceof PhysicalElement) {
+      const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
+      if (Id64.isValidId64(recordPartitionId)) {
+        this.insertAuditRecord("Delete", recordPartitionId, element);
+      }
+    }
+    super.onDeleteElement(elementId); // delete element after AuditRecord is inserted
+  }
+  private getRecordPartitionId(physicalPartitionId: Id64String): Id64String {
+    const sql = "SELECT TargetECInstanceId FROM TestTransformerTarget:PhysicalPartitionIsTrackedByRecords WHERE SourceECInstanceId=:physicalPartitionId";
+    return this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String => {
+      statement.bindId("physicalPartitionId", physicalPartitionId);
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
+  }
+  private insertAuditRecord(operation: string, recordPartitionId: Id64String, physicalElement: PhysicalElement): Id64String {
+    const auditRecord: any = {
+      classFullName: "TestTransformerTarget:AuditRecord",
+      model: recordPartitionId,
+      code: Code.createEmpty(),
+      userLabel: `${operation} of ${physicalElement.getDisplayLabel()} at ${new Date()}`,
+      operation,
+      physicalElement: { id: physicalElement.id },
+    };
+    return this.targetDb.elements.insertElement(auditRecord);
+  }
 }
 
 /** Specialization of IModelExport that exports to an output text file. */
 export class IModelToTextFileExporter extends IModelExportHandler {
   public outputFileName: string;
   public exporter: IModelExporter;
+  private _shouldIndent: boolean = true;
+  private _firstFont: boolean = true;
+  private _firstRelationship: boolean = true;
   public constructor(sourceDb: IModelDb, outputFileName: string) {
     super();
     this.outputFileName = outputFileName;
@@ -925,56 +1072,76 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.exporter.registerHandler(this);
   }
   public export(): void {
+    this._shouldIndent = true;
     this.exporter.exportAll();
   }
+  public async exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+    this._shouldIndent = false;
+    return this.exporter.exportChanges(requestContext, options);
+  }
   private writeLine(line: string, indentLevel: number = 0): void {
-    for (let i = 0; i < indentLevel; i++) {
-      IModelJsFs.appendFileSync(this.outputFileName, "  ");
+    if (this._shouldIndent) {
+      for (let i = 0; i < indentLevel; i++) {
+        IModelJsFs.appendFileSync(this.outputFileName, "  ");
+      }
     }
     IModelJsFs.appendFileSync(this.outputFileName, line);
     IModelJsFs.appendFileSync(this.outputFileName, "\n");
   }
-  private getIndentLevelForModel(model: Model): number {
-    if (IModel.repositoryModelId === model.id) {
-      return 0;
-    }
-    const parentModel: Model = this.exporter.sourceDb.models.getModel(model.parentModel);
-    return 1 + this.getIndentLevelForModel(parentModel);
+  private writeSeparator(): void {
+    this.writeLine("--------------------------------");
+  }
+  private formatOperationName(isUpdate: boolean | undefined): string {
+    if (undefined === isUpdate) return "";
+    return isUpdate ? ", UPDATE" : ", INSERT";
   }
   private getIndentLevelForElement(element: Element): number {
+    if (!this._shouldIndent) {
+      return 0;
+    }
     if ((undefined !== element.parent) && (Id64.isValidId64(element.parent.id))) {
       const parentElement: Element = this.exporter.sourceDb.elements.getElement(element.parent.id);
       return 1 + this.getIndentLevelForElement(parentElement);
     }
-    const model: Model = this.exporter.sourceDb.models.getModel(element.model);
-    return 1 + this.getIndentLevelForModel(model);
+    return 1;
   }
   private getIndentLevelForElementAspect(aspect: ElementAspect): number {
+    if (!this._shouldIndent) {
+      return 0;
+    }
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  protected onExportCodeSpec(codeSpec: CodeSpec): void {
-    this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}`);
-    super.onExportCodeSpec(codeSpec);
+  protected onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
+    this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
+    super.onExportCodeSpec(codeSpec, isUpdate);
   }
   protected onExportFont(font: FontProps): void {
+    if (this._firstFont) {
+      this.writeSeparator();
+      this._firstFont = false;
+    }
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
     super.onExportFont(font);
   }
-  protected onExportModel(model: Model): void {
-    const indentLevel: number = this.getIndentLevelForModel(model);
-    this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}`, indentLevel);
-    super.onExportModel(model);
+  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
+    this.writeSeparator();
+    this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}${this.formatOperationName(isUpdate)}`);
+    super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element): void {
+  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElement(element);
-    this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}`, indentLevel);
-    super.onExportElement(element);
+    this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}${this.formatOperationName(isUpdate)}`, indentLevel);
+    super.onExportElement(element, isUpdate);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+  protected onDeleteElement(elementId: Id64String): void {
+    this.writeLine(`[Element] ${elementId}, DELETE`);
+    super.onDeleteElement(elementId);
+  }
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
-    this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
-    super.onExportElementUniqueAspect(aspect);
+    this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}${this.formatOperationName(isUpdate)}`, indentLevel);
+    super.onExportElementUniqueAspect(aspect, isUpdate);
   }
   protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
@@ -983,9 +1150,17 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship): void {
-    this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}`);
-    super.onExportRelationship(relationship);
+  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+    if (this._firstRelationship) {
+      this.writeSeparator();
+      this._firstRelationship = false;
+    }
+    this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}${this.formatOperationName(isUpdate)}`);
+    super.onExportRelationship(relationship, isUpdate);
+  }
+  protected onDeleteRelationship(relInstanceId: Id64String): void {
+    this.writeLine(`[Relationship] ${relInstanceId}, DELETE`);
+    super.onDeleteRelationship(relInstanceId);
   }
 }
 
@@ -1037,17 +1212,17 @@ export class ClassCounter extends IModelExportHandler {
     });
     IModelJsFs.appendFileSync(this.outputFileName, `\n`);
   }
-  protected onExportModel(model: Model): void {
+  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._modelClassCounts, model.classFullName);
-    super.onExportModel(model);
+    super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element): void {
+  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._elementClassCounts, element.classFullName);
-    super.onExportElement(element);
+    super.onExportElement(element, isUpdate);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect): void {
+  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
-    super.onExportElementUniqueAspect(aspect);
+    super.onExportElementUniqueAspect(aspect, isUpdate);
   }
   protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     for (const aspect of aspects) {
@@ -1055,8 +1230,8 @@ export class ClassCounter extends IModelExportHandler {
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship): void {
+  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
-    super.onExportRelationship(relationship);
+    super.onExportRelationship(relationship, isUpdate);
   }
 }

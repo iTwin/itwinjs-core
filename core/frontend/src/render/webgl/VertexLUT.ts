@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { ColorInfo } from "./ColorInfo";
 import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
 import { VertexTable } from "../primitives/VertexTable";
 import { AuxChannelTable, AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
+import { WebGlDisposable } from "./Disposable";
 
 type ChannelPropName = "normals" | "displacements" | "params";
 
 /** @internal */
-export class AuxChannelLUT implements IDisposable {
+export class AuxChannelLUT implements WebGlDisposable {
   public readonly texture: TextureHandle;
   public readonly numVertices: number;
   public readonly numBytesPerVertex: number;
@@ -50,6 +51,8 @@ export class AuxChannelLUT implements IDisposable {
   public get bytesUsed(): number { return this.texture.bytesUsed; }
   public get hasScalarAnimation() { return undefined !== this.params; }
 
+  public get isDisposed(): boolean { return this.texture.isDisposed; }
+
   public dispose() {
     dispose(this.texture);
   }
@@ -63,7 +66,7 @@ export class AuxChannelLUT implements IDisposable {
 /** Represents the finished lookup table ready for submittal to GPU.
  * @internal
  */
-export class VertexLUT implements IDisposable {
+export class VertexLUT implements WebGlDisposable {
   public readonly texture: TextureHandle; // Texture containing vertex data
   public readonly numVertices: number;
   public readonly numRgbaPerVertex: number;
@@ -105,6 +108,8 @@ export class VertexLUT implements IDisposable {
     if (undefined !== uvParams)
       this.uvQParams = qparams2dToArray(uvParams);
   }
+
+  public get isDisposed(): boolean { return this.texture.isDisposed; }
 
   public dispose() {
     dispose(this.texture);

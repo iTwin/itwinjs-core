@@ -104,10 +104,12 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
     public componentDidMount() {
       const filter = normalizeFilter(this.props.filter);
       if (filter) {
-        this.setState({ inProgress: createFilterKey(this.props.dataProvider, filter) }, () => {
-          // tslint:disable-next-line: no-floating-promises
-          this.loadDataProvider(filter);
-        });
+        this.setState(
+          (_prevState, props) => ({ inProgress: createFilterKey(props.dataProvider, filter) }),
+          () => {
+            // tslint:disable-next-line: no-floating-promises
+            this.loadDataProvider(filter);
+          });
       }
     }
 

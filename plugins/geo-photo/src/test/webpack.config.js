@@ -38,6 +38,10 @@ function createConfig(shouldInstrument) {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
           use: "null-loader"
         },
+        {
+          test: /\.scss|.svg|.css$/,
+          use: "null-loader"
+        }
       ]
     },
     stats: "errors-only",

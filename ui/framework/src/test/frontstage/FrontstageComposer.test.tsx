@@ -235,7 +235,7 @@ describe("FrontstageComposer", () => {
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
 
-    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any)).to.be.true;
 
     wrapper.unmount();
   });
@@ -260,6 +260,29 @@ describe("FrontstageComposer", () => {
     composer.simulate("pointerup");
 
     expect(sut.state().allowPointerUpSelection).to.be.false;
+
+    sut.unmount();
+  });
+
+  it("should set zone width based on initialWidth of the zone", async () => {
+    const nineZoneManager = FrontstageManager.NineZoneManager;
+    sandbox.stub(FrontstageManager, "NineZoneManager").returns(nineZoneManager);
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = frontstageProvider.frontstageDef!;
+    const zoneDef4 = frontstageDef.getZoneDef(4)!;
+    sandbox.stub(zoneDef4, "initialWidth").get(() => 200);
+
+    const manager = nineZoneManager.getZonesManager();
+    const zones = {
+      ...sut.state().nineZone.zones,
+    };
+    const stub = sandbox.stub(manager, "setZoneWidth").returns(zones);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+
+    expect(stub.calledOnceWithExactly(4, 200, sinon.match.any)).to.be.true;
+    expect(sut.state().nineZone.zones).to.eq(zones);
 
     sut.unmount();
   });

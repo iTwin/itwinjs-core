@@ -962,25 +962,11 @@ interface ToolSettingsWidgetProps {
   onTabClick: () => void;
 }
 
-interface ToolSettingsWidgetState {
-  isNestedPopupOpen: boolean;
-  isPopupOpen: boolean;
-  nestedToggle: HTMLElement | null;
-  toggle: HTMLElement | null;
-}
-
-class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps, ToolSettingsWidgetState> {
+class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
   private _widget = React.createRef<ToolSettings>();
 
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
-  };
-
-  public readonly state: ToolSettingsWidgetState = {
-    isNestedPopupOpen: false,
-    isPopupOpen: false,
-    nestedToggle: null,
-    toggle: null,
   };
 
   public render() {
@@ -1086,9 +1072,9 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   }
 
   private updateTooltipPosition() {
-    this.setState((prevState) => {
+    this.setState((prevState, props) => {
       const tooltipBounds = Rectangle.createFromSize(this._tooltipSize).offset(this._mousePosition);
-      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, this.props.getContainerSize());
+      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, props.getContainerSize());
       if (tooltipPosition.equals(prevState.tooltipPosition))
         return null;
       return {
@@ -1183,22 +1169,6 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
         >
           Toggle
         </button>
-        {/*ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />*/}
         <ToolSettingsPopup
           isOpen={this.state.isPopupOpen}
           onClose={this._handleCloseTogglePopup}
@@ -1887,7 +1857,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -2970,8 +2940,19 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   public componentDidMount() {
-    this.setState({
-      nineZone: this._nineZone.showWidget(2, this.state.nineZone),
+    this.setState((prevState) => ({
+      nineZone: this._nineZone.showWidget(2, prevState.nineZone),
+    }));
+    this.setState((prevState) => {
+      const manager = this._nineZone.getZonesManager();
+      let zones = manager.setZoneWidth(4, 100, prevState.nineZone.zones);
+      zones = manager.setZoneWidth(6, 100, zones);
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
     });
   }
 

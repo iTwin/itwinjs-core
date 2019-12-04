@@ -53,7 +53,6 @@ export interface VisibilityComponentProps {
 }
 
 interface VisibilityTreeState {
-  initialized: boolean;
   activeTree: VisibilityComponentHierarchy;
   showOptions: boolean;
   showSearchBox: boolean;
@@ -72,7 +71,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   constructor(props: any) {
     super(props);
     this.state = {
-      initialized: false, activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
+      activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
       viewport: this.props.activeViewport, selectAll: false, clearAll: false,
     };
   }
@@ -92,7 +91,9 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   }
 
   private _onShowOptions = () => {
-    this.setState({ showOptions: !this.state.showOptions });
+    this.setState((state) => ({
+      showOptions: !state.showOptions,
+    }));
   }
 
   private _onCloseOptions = () => {
@@ -106,16 +107,20 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 
   private _onSetEnableAll = () => {
     this._onCloseOptions();
-    this.setState((_prevState) => ({ selectAll: true }), () => { this.setState({ selectAll: false }); });
+    this.setState(
+      { selectAll: true },
+      () => { this.setState({ selectAll: false }); });
   }
 
   private _onClearAll = () => {
     this._onCloseOptions();
-    this.setState((_prevState) => ({ clearAll: true }), () => { this.setState({ clearAll: false }); });
+    this.setState(
+      { clearAll: true },
+      () => { this.setState({ clearAll: false }); });
   }
 
   private _onToggleSearchBox = () => {
-    this.setState({ showSearchBox: !this.state.showSearchBox });
+    this.setState((prevState) => ({ showSearchBox: !prevState.showSearchBox }));
   }
 
   private shouldEnablePreloading(hierarchy: VisibilityComponentHierarchy) {

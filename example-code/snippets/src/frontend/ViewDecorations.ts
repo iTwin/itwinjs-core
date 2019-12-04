@@ -7,6 +7,8 @@ import { ColorDef, NpcCenter, ColorByName, AxisAlignedBox3d } from "@bentley/imo
 import { Point3d, XYAndZ, XAndY, Point2d, AngleSweep, Arc3d } from "@bentley/geometry-core";
 import { Logger } from "@bentley/bentleyjs-core";
 
+/// cSpell:ignore lerp
+
 export class ExampleGraphicDecoration {
   // __PUBLISH_EXTRACT_START__ View_Graphic_Decoration
   /** Add a world decoration to display 3d graphics showing the project extents interspersed with the scene graphics. */
@@ -302,19 +304,7 @@ export class IncidentMarkerDemo {
 // __PUBLISH_EXTRACT_START__ Application_LogoCard
 
 IModelApp.applicationLogoCard = () => {
-  const div = document.createElement("div");
-  const image = document.createElement("img");
-  image.src = "MyApp.png";
-  image.width = 300;
-  div.appendChild(image);
-
-  const attr = document.createElement("p");
-  attr.style.textAlign = "center";
-  attr.style.fontStyle = "italic";
-  attr.style.fontWeight = "bold";
-  attr.innerHTML = "My Great Application";
-  div.appendChild(attr);
-  return IModelApp.makeLogoCard(div, "my-app-name");
+  return IModelApp.makeLogoCard({ iconSrc: "MyApp.png", heading: "My Great Application", notice: "Example Application<br>Version 2.0" });
 };
 
 // __PUBLISH_EXTRACT_END__

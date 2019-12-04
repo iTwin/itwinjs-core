@@ -799,7 +799,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param options StrokeOptions that determine count
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
-    let numStroke = 1;
+    let numStroke;
     if (options) {
       const rMax = this.maxVectorLength();
       numStroke = options.applyTolerancesToArc(rMax, this._sweep.sweepRadians);

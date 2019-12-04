@@ -21,23 +21,20 @@ class TestUiProvider implements PluginUiProvider {
     // console.log(`Requesting tools for toolbar ${toolBarId}`);
 
     if ("[ViewsFrontstage]ToolWidget-horizontal" === toolBarId) {
-      const firstActionSpec: ActionItemInsertSpec = {
+      const simpleActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: true,
-        itemId: "first-test-action-tool",
+        itemId: "simple-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
           console.log("Got Here!");
         },
         icon: "icon-developer",
-        label: "test action tool (first)",
+        label: "simple-test-action-tool",
       };
 
-      const middleActionSpec: ActionItemInsertSpec = {
+      const childActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: true,
-        relativeToolIdPath: "Tool1",
-        itemId: "middle-test-action-tool",
+        itemId: "child-test-action-tool",
         condition: {
           type: ConditionalDisplayType.Visibility,
           testFunc: (): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE",
@@ -48,13 +45,12 @@ class TestUiProvider implements PluginUiProvider {
           console.log("Got Here!");
         },
         icon: "icon-developer",
-        label: "test action tool (middle)",
+        label: "child-test-action-tool",
       };
 
       const nestedActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: false,
-        relativeToolIdPath: "Conditional-formatting\\tool-formatting-setting\\toggleLengthFormat",
+        parentToolGroupId: "tool-formatting-setting",
         itemId: "nested-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
@@ -68,19 +64,16 @@ class TestUiProvider implements PluginUiProvider {
         itemType: ToolbarItemType.GroupButton,
         itemId: "test-tool-group",
         badge: BadgeType.TechnicalPreview,
-        insertBefore: false,
         icon: "icon-developer",
         label: "test group",
-        items: [firstActionSpec, nestedActionSpec],
+        items: [childActionSpec, simpleActionSpec],
       };
 
-      return [firstActionSpec, middleActionSpec, nestedActionSpec, groupSpec];
+      return [simpleActionSpec, nestedActionSpec, groupSpec];
 
     } else if ("[ViewsFrontstage]NavigationWidget-horizontal" === toolBarId) {
       const navHorizontalSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: true,
-        relativeToolIdPath: "View.Pan",
         itemId: "nav1-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
@@ -93,8 +86,6 @@ class TestUiProvider implements PluginUiProvider {
     } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
       const navVerticalSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,
-        insertBefore: false,
-        relativeToolIdPath: "View.Fly",
         itemId: "nav2-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console

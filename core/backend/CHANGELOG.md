@@ -1,6 +1,19 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Option to include part references in GeometrySummary output.
+- Expose isTwoSided flag on ExportGraphicsMesh
+- SchemaDesignPerf import tests
+- Added missing topic descriptions
+- Add experimental Node 12 support
+- Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation.
+- Add support for view-independent display of geometry streams.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

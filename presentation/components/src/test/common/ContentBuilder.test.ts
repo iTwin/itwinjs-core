@@ -530,7 +530,7 @@ describe("ContentBuilder", () => {
               [nestedField.name]: "some value 1",
             },
             displayValues: {
-              [nestedField.name]: "some display value 1 with link testLink.com",
+              [nestedField.name]: "some display value 1 with link www.testLink.com",
             },
             mergedFieldNames: [],
           }, {
@@ -539,7 +539,7 @@ describe("ContentBuilder", () => {
               [nestedField.name]: "some value 2",
             },
             displayValues: {
-              [nestedField.name]: "some display value 2 with link testLinkTwo.com",
+              [nestedField.name]: "some display value 2 with link http://www.testLinkTwo.com",
             },
             mergedFieldNames: [],
           }] as NestedContentValue[],

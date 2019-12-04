@@ -47,6 +47,7 @@ export class BufferedStream extends Transform {
 export enum ClientsBackendLoggerCategory {
     IModelHub = "imodeljs-clients.imodelhub",
     OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
+    OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
     OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"
 }
 
@@ -129,8 +130,8 @@ export class OidcDelegationClient extends OidcBackendClient {
 // @beta (undocumented)
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
-// @alpha (undocumented)
-export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
+// @alpha
+export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
     constructor(clientConfiguration: OidcFrontendClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -138,7 +139,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     readonly hasSignedIn: boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
     readonly isAuthorized: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }

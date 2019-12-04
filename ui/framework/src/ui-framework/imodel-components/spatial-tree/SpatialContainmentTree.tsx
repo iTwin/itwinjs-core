@@ -40,7 +40,6 @@ export interface SpatialContainmentTreeProps {
  * @deprecated
  */
 export interface SpatialContainmentTreeState {
-  initialized: false;
   dataProvider?: IPresentationTreeDataProvider;
 }
 

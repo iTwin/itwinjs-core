@@ -2,86 +2,21 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, GuidString, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ChangeOpCode, ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, ConcurrencyControl,
-  Element, ElementAspect, Entity, ExternalSourceAspect, GenericSchema, IModelDb, IModelJsFs, IModelTransformer, InstanceChange, KeepBriefcase, Model, OpenParams, Relationship, IModelExporter,
+  AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
+  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, OpenParams,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
+import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
-
-class EntityTypeChanges {
-  public insertedIds: Id64Set = new Set<Id64String>();
-  public updatedIds: Id64Set = new Set<Id64String>();
-  public deletedIds: Id64Set = new Set<Id64String>();
-  public addChange(changeOpCode: ChangeOpCode, id: Id64String): void {
-    switch (changeOpCode) {
-      case ChangeOpCode.Insert: this.insertedIds.add(id); break;
-      case ChangeOpCode.Update: this.updatedIds.add(id); break;
-      case ChangeOpCode.Delete: this.deletedIds.add(id); break;
-      default: throw new Error(`Unexpected ChangedOpCode ${changeOpCode}`);
-    }
-  }
-}
-
-class EntityChanges {
-  public codeSpecs: EntityTypeChanges = new EntityTypeChanges();
-  public elements: EntityTypeChanges = new EntityTypeChanges();
-  public elementAspects: EntityTypeChanges = new EntityTypeChanges();
-  public models: EntityTypeChanges = new EntityTypeChanges();
-  public relationships: EntityTypeChanges = new EntityTypeChanges();
-  private constructor() { }
-  public static async initialize(requestContext: AuthorizedBackendRequestContext, iModelDb: IModelDb, options: ChangeSummaryExtractOptions): Promise<EntityChanges> {
-    const entityChanges = new EntityChanges();
-    const changeSummaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModelDb, options);
-    assert.strictEqual(changeSummaryIds.length, 1);
-    ChangeSummaryManager.attachChangeCache(iModelDb);
-    assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModelDb));
-    const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModelDb, changeSummaryIds[0]);
-    iModelDb.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=?", (statement) => {
-      statement.bindId(1, changeSummary.id);
-      while (statement.step() === DbResult.BE_SQLITE_ROW) {
-        const instanceId: Id64String = statement.getValue(0).getId();
-        const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModelDb, instanceId);
-        const entityClassFullName: string = EntityChanges._toClassFullName(instanceChange.changedInstance.className);
-        try {
-          const entityType: typeof Entity = iModelDb.getJsClass<typeof Entity>(entityClassFullName);
-          if (entityType.prototype instanceof Element) {
-            // const propertyNames: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModelDb, instanceChange.id);
-            entityChanges.elements.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof ElementAspect) {
-            entityChanges.elementAspects.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof Model) {
-            entityChanges.models.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof Relationship) {
-            entityChanges.relationships.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          }
-        } catch (error) {
-          if ("BisCore:CodeSpec" === entityClassFullName) {
-            // In TypeScript, CodeSpec is not a subclass of Entity (should it be?), so must be handled separately.
-            entityChanges.codeSpecs.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else {
-            // Changes to *navigation* relationship are also tracked (should they be?), but can be ignored
-            // console.log(`Ignoring ${entityClassFullName}`); // tslint:disable-line
-          }
-        }
-      }
-    });
-    return entityChanges;
-  }
-  /** Converts string from ChangedInstance format to classFullName format. For example: "[BisCore].[PhysicalElement]" --> "BisCore:PhysicalElement" */
-  private static _toClassFullName(changedInstanceClassName: string): string {
-    return changedInstanceClassName.replace(/\[|\]/g, "").replace(".", ":");
-  }
-}
 
 describe("IModelTransformerHub (#integration)", () => {
 
@@ -127,14 +62,20 @@ describe("IModelTransformerHub (#integration)", () => {
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
-      // Import #1
-      if (true) {
+      if (true) { // initial import
         IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Populate source");
 
-        const sourceDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, sourceDb, { currentVersionOnly: true });
+        // Use IModelExporter.exportChanges to verify the changes to the sourceDb
+        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
+        assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
+        const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
+        await sourceExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
+        const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
+        assert.exists(sourceDbChanges);
         // expect inserts and 1 update from populateSourceDb
         assert.isAtLeast(sourceDbChanges.codeSpecs.insertedIds.size, 1);
         assert.isAtLeast(sourceDbChanges.elements.insertedIds.size, 1);
@@ -162,7 +103,14 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.pushChanges(requestContext, () => "Import #1");
         IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
-        const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
+        // Use IModelExporter.exportChanges to verify the changes to the targetDb
+        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
+        assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
+        const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
+        await targetExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
+        const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
+        assert.exists(targetDbChanges);
         // expect inserts and a few updates from transforming the result of populateSourceDb
         assert.isAtLeast(targetDbChanges.elements.insertedIds.size, 1);
         assert.equal(targetDbChanges.elements.updatedIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
@@ -183,14 +131,46 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
       }
 
-      // Import #2
-      if (true) {
+      if (true) { // second import with no changes to source, should be a no-op
+        const numTargetElements: number = count(targetDb, Element.classFullName);
+        const numTargetExternalSourceAspects: number = count(targetDb, ExternalSourceAspect.classFullName);
+        const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
+        const targetImporter = new CountingIModelImporter(targetDb);
+        const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+        await transformer.processChanges(requestContext, { currentVersionOnly: true });
+        assert.equal(targetImporter.numModelsInserted, 0);
+        assert.equal(targetImporter.numModelsUpdated, 0);
+        assert.equal(targetImporter.numElementsInserted, 0);
+        assert.equal(targetImporter.numElementsUpdated, 0);
+        assert.equal(targetImporter.numElementsDeleted, 0);
+        assert.equal(targetImporter.numElementAspectsInserted, 0);
+        assert.equal(targetImporter.numElementAspectsUpdated, 0);
+        assert.equal(targetImporter.numRelationshipsInserted, 0);
+        assert.equal(targetImporter.numRelationshipsUpdated, 0);
+        assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
+        assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
+        assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
+        transformer.dispose();
+        await targetDb.concurrencyControl.request(requestContext);
+        targetDb.saveChanges();
+        assert.isFalse(targetDb.briefcase.nativeDb.hasSavedChanges());
+        await targetDb.pushChanges(requestContext, () => "Should not actually push because there are no changes");
+      }
+
+      if (true) { // update source db, then import again
         IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Update source");
 
-        const sourceDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, sourceDb, { currentVersionOnly: true });
+        // Use IModelExporter.exportChanges to verify the changes to the sourceDb
+        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
+        assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
+        const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
+        await sourceExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
+        const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
+        assert.exists(sourceDbChanges);
         // expect no inserts from updateSourceDb
         assert.equal(sourceDbChanges.codeSpecs.insertedIds.size, 0);
         assert.equal(sourceDbChanges.elements.insertedIds.size, 0);
@@ -204,22 +184,29 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isAtLeast(sourceDbChanges.relationships.updatedIds.size, 1);
         // expect some deletes from updateSourceDb
         assert.isAtLeast(sourceDbChanges.elements.deletedIds.size, 1);
+        assert.equal(sourceDbChanges.relationships.deletedIds.size, 1);
         // don't expect other changes from updateSourceDb
         assert.equal(sourceDbChanges.codeSpecs.updatedIds.size, 0);
         assert.equal(sourceDbChanges.codeSpecs.deletedIds.size, 0);
         assert.equal(sourceDbChanges.elementAspects.deletedIds.size, 0);
         assert.equal(sourceDbChanges.models.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.relationships.deletedIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        transformer.processAll();
+        await transformer.processChanges(requestContext, { currentVersionOnly: true });
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #2");
         IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
-        const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
+        // Use IModelExporter.exportChanges to verify the changes to the targetDb
+        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
+        assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
+        const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
+        await targetExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
+        const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
+        assert.exists(targetDbChanges);
         // expect no inserts from transforming the result of updateSourceDb
         assert.equal(targetDbChanges.codeSpecs.insertedIds.size, 0);
         assert.equal(targetDbChanges.elements.insertedIds.size, 0);
@@ -234,11 +221,11 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect some deletes from transforming the result of updateSourceDb
         assert.isAtLeast(targetDbChanges.elements.deletedIds.size, 1);
         assert.isAtLeast(targetDbChanges.elementAspects.deletedIds.size, 1);
+        assert.equal(targetDbChanges.relationships.deletedIds.size, 1);
         // don't expect other changes from transforming the result of updateSourceDb
         assert.equal(targetDbChanges.codeSpecs.updatedIds.size, 0);
         assert.equal(targetDbChanges.codeSpecs.deletedIds.size, 0);
         assert.equal(targetDbChanges.models.deletedIds.size, 0);
-        assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
       }
 
       await sourceDb.close(requestContext, KeepBriefcase.No);
@@ -326,6 +313,12 @@ describe("IModelTransformerHub (#integration)", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }
   });
+
+  function count(iModelDb: IModelDb, classFullName: string): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
 });
 
 // cspell:words ecchange

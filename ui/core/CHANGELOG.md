@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version
+- Fixed Dialog position after moving or resizing. Fixed sizing on Firefox for different alignments.
+- Implemented more efficient CSS animation for Spinner component
+- Added slight delay before spinner animation. LoadingSpinnner tests in SpinnerTestDialog.
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added tslint-react-hooks to UI packages
+- Add useEffectSkipFirst custom hook
+- Update Statusbar index scss file.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

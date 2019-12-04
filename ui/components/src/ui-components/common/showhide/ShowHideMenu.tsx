@@ -57,7 +57,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
   /** @internal */
   public componentDidUpdate(oldProps: ShowHideMenuProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
-      this.setState({ hiddenColumns: this.props.initialHidden });
+      this.setState((_, props) => ({ hiddenColumns: props.initialHidden || [] }));
     }
   }
 
@@ -71,10 +71,12 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
   }
 
   private _hide = (item: ShowHideItem<T>) => {
-    this.setState({ hiddenColumns: [...this.state.hiddenColumns, item.id] }, () => {
-      if (this.props.onShowHideChange)
-        this.props.onShowHideChange(this.state.hiddenColumns);
-    });
+    this.setState(
+      (prevState) => ({ hiddenColumns: [...prevState.hiddenColumns, item.id] }),
+      () => {
+        if (this.props.onShowHideChange)
+          this.props.onShowHideChange(this.state.hiddenColumns);
+      });
   }
 
   private _show = (item: ShowHideItem<T>) => {

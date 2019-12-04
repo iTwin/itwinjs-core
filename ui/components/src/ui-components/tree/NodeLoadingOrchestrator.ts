@@ -23,7 +23,7 @@ import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { takeWhile } from "rxjs/internal/operators/takeWhile";
 import { tap } from "rxjs/internal/operators/tap";
 
-/** @internal */
+/** @internal @deprecated */
 export interface NodeLoadingOrchestratorCallbacks {
   onLoadProgress: (loaded: number, total: number, cancel: () => void) => void;
   onLoadCanceled: () => void;
@@ -31,7 +31,7 @@ export interface NodeLoadingOrchestratorCallbacks {
 }
 
 /**
- * @internal
+ * @internal @deprecated
  * Loads tree nodes for event handling. Makes sure that the order of
  * subscribers that receive loaded nodes is the same as their subscription order.
  */
@@ -309,7 +309,7 @@ export class NodeLoadingOrchestrator {
 }
 
 /**
- * @internal
+ * @internal @deprecated
  * Keeps track of which nodes are queued for loading.
  */
 export class PendingNodeTracker implements Iterable<NodeKey> {
@@ -453,7 +453,7 @@ export class PendingNodeTracker implements Iterable<NodeKey> {
 }
 
 /**
- * @internal
+ * @internal @deprecated
  * Node identifier used by [[NodeSet]]
  */
 export class NodeKey {

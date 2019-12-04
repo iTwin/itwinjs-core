@@ -656,8 +656,6 @@ export interface CategoryTreeState {
     // (undocumented)
     filterInfo?: FilterInfo;
     // (undocumented)
-    isLoading: boolean;
-    // (undocumented)
     selectedNodes: string[];
 }
 
@@ -680,21 +678,7 @@ export interface ChangeSetInfo {
 }
 
 // @beta
-export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatusFieldProps, any> {
-    constructor(props: ClearEmphasisStatusFieldProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta
-export interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
-    // (undocumented)
-    hideWhenUnused?: boolean;
-}
+export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps>;
 
 // @beta
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -1040,7 +1024,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ContentLayoutState>;
-    }
+}
 
 // @public
 export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> {
@@ -3662,13 +3646,13 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export class SectionsStatusField extends React.Component<StatusFieldProps, SectionsStatusFieldState> {
-    constructor(props: StatusFieldProps);
-    componentDidMount(): void;
-    componentWillUnmount(): void;
+export const SectionsStatusField: React.FC<SectionsStatusFieldProps>;
+
+// @beta
+export interface SectionsStatusFieldProps extends StatusFieldProps {
     // (undocumented)
-    render(): JSX.Element;
-    }
+    hideWhenUnused?: boolean;
+}
 
 // @beta
 export function selectionContextStateFunc(state: Readonly<BaseItemState_2>): BaseItemState_2;
@@ -3698,7 +3682,7 @@ export class SelectionContextToolDefinitions {
 // @alpha
 export class SelectionContextUtilities {
     static areFeatureOverridesActive(vp: Viewport): boolean;
-    static clearEmphasize(vp: Viewport): void;
+    static clearEmphasize(vp: Viewport | undefined): void;
     // (undocumented)
     static emphasizeElementsChanged: BeEvent<() => void>;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
@@ -3923,7 +3907,7 @@ export interface SignInProps extends CommonProps {
     oidcClient?: IOidcFrontendClient;
     onOffline?: () => void;
     onRegister?: () => void;
-    onSignedIn: () => void;
+    onSignedIn?: () => void;
     // @internal (undocumented)
     onStartSignIn?: () => void;
 }
@@ -3970,8 +3954,6 @@ export interface SpatialContainmentTreeProps {
 export interface SpatialContainmentTreeState {
     // (undocumented)
     dataProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
-    initialized: false;
 }
 
 // @public
@@ -4621,7 +4603,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     protected createCachedHorizontalItemList(toolbarId: string): void;
     // (undocumented)
     protected createCachedVerticalItemList(toolbarId: string): void;
-    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]): ItemList;
+    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart?: boolean): ItemList;
     // (undocumented)
     generateMergedItemLists(): void;
     protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;
@@ -4946,6 +4928,12 @@ export interface UiVisibilityEventArgs {
 export const useActiveFrontstageId: () => string;
 
 // @beta
+export function useActiveIModelConnection(): IModelConnection | undefined;
+
+// @beta
+export function useActiveViewport(): ScreenViewport | undefined;
+
+// @beta
 export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
@@ -5041,7 +5029,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
-    render(): JSX.Element;
+    render(): JSX.Element | null;
     static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
@@ -5304,11 +5292,6 @@ export class WidgetDef {
     readonly widgetControl: WidgetControl | undefined;
     // (undocumented)
     widgetType: WidgetType;
-}
-
-// @internal
-export class WidgetDefFactory {
-    static create(widgetProps: WidgetProps): WidgetDef;
 }
 
 // @public
@@ -5700,9 +5683,12 @@ export class ZoneDef extends WidgetHost {
     constructor();
     allowsMerging: boolean;
     applicationData?: any;
+    readonly initialWidth: number | undefined;
     readonly isStatusBar: boolean;
     readonly isToolSettings: boolean;
     mergeWithZone?: ZoneLocation;
+    // @internal (undocumented)
+    setInitialWidth(width: number | undefined): void;
     readonly shouldFillZone: boolean;
     zoneState: ZoneState;
 }
@@ -5738,6 +5724,7 @@ export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
     defaultState?: ZoneState;
+    initialWidth?: number;
     mergeWithZone?: ZoneLocation;
     // @internal (undocumented)
     runtimeProps?: ZoneRuntimeProps;

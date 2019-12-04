@@ -18,7 +18,7 @@ describe("<Panel />", () => {
   });
 
   it("isPanelOpen should return false", () => {
-    expect(Panel.isPanelOpen).to.be.false;
+    expect(Panel.isPanelOpen).to.be.false; // tslint:disable-line: deprecation
   });
 
   it("isPanelOpen should return true", () => {
@@ -26,7 +26,7 @@ describe("<Panel />", () => {
     document.body.appendChild(attachTo);
 
     const wrapper = mount(<Panel />, { attachTo });
-    expect(Panel.isPanelOpen).to.be.true;
+    expect(Panel.isPanelOpen).to.be.true; // tslint:disable-line: deprecation
     wrapper.detach();
     wrapper.unmount();
 

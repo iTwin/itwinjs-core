@@ -108,7 +108,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     if (this.state.percent === 100) {
       this.props.onSetCategory(1);
     } else {
-      this.setState({ percent: this.state.percent + 10 }, () => { this._timer.start(); });
+      this.setState((prevState) => ({ percent: prevState.percent + 10 }), () => { this._timer.start(); });
     }
   }
 

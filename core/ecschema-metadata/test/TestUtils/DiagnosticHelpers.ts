@@ -102,171 +102,171 @@ export const TestDiagnostics = {
     "Failed with param {0} {1}"),
 };
 
-export async function* failingSchemaRule(schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<[string, string]>> | undefined {
+export async function* failingSchemaRule(schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
 }
 
-export async function* passingSchemaRule(_schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<any[]>> | undefined {
+export async function* passingSchemaRule(_schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingSchemaItemRule(schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, [string, string]>> | undefined {
+export async function* failingSchemaItemRule(schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, [string, string]>> {
   yield new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
 }
 
-export async function* passingSchemaItemRule(_schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, any[]>> | undefined {
+export async function* passingSchemaItemRule(_schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, any[]>> {
   return undefined;
 }
 
-export async function* failingClassRule(ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<[string, string]>> | undefined {
+export async function* failingClassRule(ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingClassDiagnostic(ecClass, ["Param1", "Param2"]);
 }
 
-export async function* passingClassRule(_ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<any[]>> | undefined {
+export async function* passingClassRule(_ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingPropertyRule(property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<[string, string]>> | undefined {
+export async function* failingPropertyRule(property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingPropertyDiagnostic(property, ["Param1", "Param2"]);
 }
 
-export async function* passingPropertyRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> | undefined {
+export async function* passingPropertyRule(_property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingEntityClassRule(entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> | undefined {
+export async function* failingEntityClassRule(entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> {
   yield new TestDiagnostics.FailingEntityClassDiagnostic(entityClass, ["Param1", "Param2"]);
 }
 
-export async function* passingEntityClassRule(_entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, any[]>> | undefined {
+export async function* passingEntityClassRule(_entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, any[]>> {
   return undefined;
 }
 
-export async function* failingStructClassRule(structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> | undefined {
+export async function* failingStructClassRule(structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> {
   yield new TestDiagnostics.FailingStructClassDiagnostic(structClass, ["Param1", "Param2"]);
 }
 
-export async function* passingStructClassRule(_structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, any[]>> | undefined {
+export async function* passingStructClassRule(_structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, any[]>> {
   return undefined;
 }
 
-export async function* failingMixinRule(mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, [string, string]>> | undefined {
+export async function* failingMixinRule(mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, [string, string]>> {
   yield new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
 }
 
-export async function* passingMixinRule(_mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, any[]>> | undefined {
+export async function* passingMixinRule(_mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, any[]>> {
   return undefined;
 }
 
-export async function* failingRelationshipRule(relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> | undefined {
+export async function* failingRelationshipRule(relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> {
   yield new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> | undefined {
+export async function* passingRelationshipRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   return undefined;
 }
 
-export async function* failingRelationshipConstraintRule(constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> | undefined {
+export async function* failingRelationshipConstraintRule(constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipConstraintRule(_constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> | undefined {
+export async function* passingRelationshipConstraintRule(_constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeClassRule(customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> | undefined {
+export async function* failingCustomAttributeClassRule(customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeClassDiagnostic(customAttributeClass, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeClassRule(_customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> | undefined {
+export async function* passingCustomAttributeClassRule(_customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeContainerRule(container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> | undefined {
+export async function* failingCustomAttributeContainerRule(container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeContainerRule(_container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> | undefined {
+export async function* passingCustomAttributeContainerRule(_container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeRule(container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> | undefined {
+export async function* failingCustomAttributeRule(container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeRule(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> | undefined {
+export async function* passingCustomAttributeRule(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingEnumerationRule(enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> | undefined {
+export async function* failingEnumerationRule(enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> {
   yield new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
 }
 
-export async function* passingEnumerationRule(_enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, any[]>> | undefined {
+export async function* passingEnumerationRule(_enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, any[]>> {
   return undefined;
 }
 
-export async function* failingKindOfQuantityRule(kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> | undefined {
+export async function* failingKindOfQuantityRule(kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> {
   yield new TestDiagnostics.FailingKindOfQuantityDiagnostic(kindOfQuantity, ["Param1", "Param2"]);
 }
 
-export async function* passingKindOfQuantityRule(_kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> | undefined {
+export async function* passingKindOfQuantityRule(_kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> {
   return undefined;
 }
 
-export async function* failingPropertyCategoryRule(propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> | undefined {
+export async function* failingPropertyCategoryRule(propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> {
   yield new TestDiagnostics.FailingPropertyCategoryDiagnostic(propertyCategory, ["Param1", "Param2"]);
 }
 
-export async function* passingPropertyCategoryRule(_propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> | undefined {
+export async function* passingPropertyCategoryRule(_propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> {
   return undefined;
 }
 
-export async function* failingFormatRule(format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, [string, string]>> | undefined {
+export async function* failingFormatRule(format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, [string, string]>> {
   yield new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
 }
 
-export async function* passingFormatRule(_format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, any[]>> | undefined {
+export async function* passingFormatRule(_format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, any[]>> {
   return undefined;
 }
 
-export async function* failingUnitRule(unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, [string, string]>> | undefined {
+export async function* failingUnitRule(unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, [string, string]>> {
   yield new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
 }
 
-export async function* passingUnitRule(_unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, any[]>> | undefined {
+export async function* passingUnitRule(_unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, any[]>> {
   return undefined;
 }
 
-export async function* failingInvertedUnitRule(invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> | undefined {
+export async function* failingInvertedUnitRule(invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> {
   yield new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
 }
 
-export async function* passingInvertedUnitRule(_invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, any[]>> | undefined {
+export async function* passingInvertedUnitRule(_invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, any[]>> {
   return undefined;
 }
 
-export async function* failingUnitSystemRule(unitSystem: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, [string, string]>> | undefined {
+export async function* failingUnitSystemRule(unitSystem: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, [string, string]>> {
   yield new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
 }
 
-export async function* passingUnitSystemRule(_format: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, any[]>> | undefined {
+export async function* passingUnitSystemRule(_format: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, any[]>> {
   return undefined;
 }
 
-export async function* failingPhenomenonRule(phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, [string, string]>> | undefined {
+export async function* failingPhenomenonRule(phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, [string, string]>> {
   yield new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
 }
 
-export async function* passingPhenomenonRule(_phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, any[]>> | undefined {
+export async function* passingPhenomenonRule(_phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, any[]>> {
   return undefined;
 }
 
-export async function* failingConstantRule(constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, [string, string]>> | undefined {
+export async function* failingConstantRule(constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, [string, string]>> {
   yield new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
 }
 
-export async function* passingConstantRule(_constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, any[]>> | undefined {
+export async function* passingConstantRule(_constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, any[]>> {
   return undefined;
 }
 

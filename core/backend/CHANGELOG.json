@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-backend_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Option to include part references in GeometrySummary output."
+          },
+          {
+            "comment": "Expose isTwoSided flag on ExportGraphicsMesh"
+          },
+          {
+            "comment": "SchemaDesignPerf import tests"
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Add experimental Node 12 support"
+          },
+          {
+            "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
+          },
+          {
+            "comment": "Add support for view-independent display of geometry streams."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-backend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

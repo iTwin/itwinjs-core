@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
+/// cSpell:ignore quadkey
+
 import {
   BentleyError,
   BeTimePoint,
@@ -164,7 +166,7 @@ export class WebMapTileProps implements TileProps {
 
 /** @internal */
 export interface MapTileGeometryAttributionProvider {
-  getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+  getGeometryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
 }
 
 /** @internal */
@@ -304,7 +306,7 @@ export abstract class ImageryProvider {
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-  public abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLDivElement | undefined;
+  public abstract getImageryLogo(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLTableRowElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -438,7 +440,6 @@ function replaceHttpWithHttps(originalUrl: string) {
 class BingImageryProvider extends ImageryProvider {
   private _urlTemplate?: string;
   private _urlSubdomains?: string[];
-  private _logoUrl?: string;
   private _zoomMin: number;
   private _zoomMax: number;
   private _tileHeight: number;
@@ -517,25 +518,19 @@ class BingImageryProvider extends ImageryProvider {
   }
 
   public getImageryLogo(tileProvider: MapTileTreeReference, vp: ScreenViewport) {
-    const div = document.createElement("div");
-    if (undefined !== this._logoUrl) {
-      const logoImage = new Image();
-      logoImage.src = this._logoUrl;
-      div.appendChild(logoImage);
-    }
-
-    const copyrights = document.createElement("p");
-    copyrights.style.margin = "0";
-
     const tiles = tileProvider.getTilesForView(vp);
     const matchingAttributions = this.getMatchingAttributions(tiles);
-    for (const match of matchingAttributions) {
-      const p = document.createElement("p");
-      p.innerText = match.copyrightMessage;
-      copyrights.appendChild(p);
+    const copyrights: string[] = [];
+    for (const match of matchingAttributions)
+      copyrights.push(match.copyrightMessage);
+
+    let copyrightMsg = "";
+    for (let i = 0; i < copyrights.length; ++i) {
+      if (i > 0)
+        copyrightMsg += "<br>";
+      copyrightMsg += copyrights[i];
     }
-    div.appendChild(copyrights);
-    return IModelApp.makeLogoCard(div);
+    return IModelApp.makeLogoCard({ iconSrc: "images/bing.svg", heading: "Microsoft Bing", notice: copyrightMsg });
   }
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
@@ -573,8 +568,6 @@ class BingImageryProvider extends ImageryProvider {
     try {
       const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
-      // this._logoUrl = replaceHttpWithHttps(bingResponseProps.brandLogoUri); // toDataUrl throws tainted canvas exception...
-      this._logoUrl = "images/logo_powered_by.png";
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];
       const thisResourceProps = thisResourceSetProps.resources[0];
@@ -661,9 +654,7 @@ class MapBoxImageryProvider extends ImageryProvider {
   }
 
   public getImageryLogo(_tileProvider: MapTileTreeReference, _vp: ScreenViewport) {
-    const div = document.createElement("p");
-    div.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright");
-    return IModelApp.makeLogoCard(div);
+    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright") });
   }
 
   // no initialization needed for MapBoxImageryProvider.
@@ -833,21 +824,22 @@ export abstract class MapTileTreeReference extends TileTree.Reference {
   }
 
   /** Add logo cards to container div. */
-  public addLogoCards(cardDiv: HTMLDivElement, vp: ScreenViewport): void {
+  public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const provider = this._imageryProvider;
     if (undefined === provider)
       return;
 
     const imagAttr = provider.getImageryLogo(this, vp);
     if (undefined !== imagAttr)
-      cardDiv.appendChild(imagAttr);
+      cards.appendChild(imagAttr);
 
     const geomProv = provider.geometryAttributionProvider;
     if (undefined !== geomProv) {
       const geomAttr = geomProv.getGeometryLogo(this, vp);
       if (undefined !== geomAttr)
-        cardDiv.appendChild(geomAttr);
+        cards.appendChild(geomAttr);
     }
+
   }
 
   /** Draw the tiles into the viewport. */

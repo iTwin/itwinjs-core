@@ -6,19 +6,25 @@
 
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 
-/** @alpha */
-export function from<T>(iterable: Iterable<T>): Observable<T> {
+/** Helper method that creates an Observable from Iterable or Promise.
+ * @beta
+ */
+export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T> {
   return rxjsFrom(iterable);
 }
 
 /**
  * Observable interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
  * This interface ensures that consumers are not required to have rxjs as dependency.
- * @alpha
+ * @beta
  */
 export interface Observable<T> extends Subscribable<T> { }
 
-/** @alpha */
+/**
+ * Subscribable interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface Subscribable<T> {
   subscribe(observer?: Observer<T>): Subscription;
   subscribe(next: null | undefined, error: null | undefined, complete: () => void): Subscription;
@@ -30,23 +36,35 @@ export interface Subscribable<T> {
 /**
  * Observer interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
  * This interface ensures that consumers are not required to have rxjs as dependency.
- * @alpha
+ * @beta
  */
 export declare type Observer<T> = NextObserver<T> | ErrorObserver<T> | CompletionObserver<T>;
 
-/** @alpha */
+/**
+ * Unsubscribable interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface Unsubscribable {
   unsubscribe(): void;
 }
 
-/** @alpha */
+/**
+ * Subscription interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface Subscription extends Unsubscribable {
   readonly closed: boolean;
   unsubscribe(): void;
   add(tearDown: Unsubscribable | (() => void) | void): void;
 }
 
-/** @alpha */
+/**
+ * NextObserver interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface NextObserver<T> {
   closed?: boolean;
   next: (value: T) => void;
@@ -54,7 +72,11 @@ export interface NextObserver<T> {
   complete?: () => void;
 }
 
-/** @alpha */
+/**
+ * ErrorObserver interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface ErrorObserver<T> {
   closed?: boolean;
   next?: (value: T) => void;
@@ -62,7 +84,11 @@ export interface ErrorObserver<T> {
   complete?: () => void;
 }
 
-/** @alpha */
+/**
+ * CompletionObserver interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
+ * This interface ensures that consumers are not required to have rxjs as dependency.
+ * @beta
+ */
 export interface CompletionObserver<T> {
   closed?: boolean;
   next?: (value: T) => void;

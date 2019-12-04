@@ -2,6 +2,45 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-ninezone_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version."
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Remove unsupported fit-content CSS value."
+          },
+          {
+            "comment": "Fix flex CSS rule shorthand issue in stage panel splitter."
+          },
+          {
+            "comment": "Touch support for widget drag, widget resize and stage panel splitter."
+          },
+          {
+            "comment": "Add disabled resize handles option to widget."
+          },
+          {
+            "comment": "Deprecate history tray components."
+          },
+          {
+            "comment": "Open tool panel via drag interaction."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-ninezone_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

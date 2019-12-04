@@ -25,6 +25,14 @@ export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } f
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
 
 /**
+ * @module FavoriteProperties
+ *
+ * @docs-group-description FavoriteProperties
+ * Types related to `FavoriteProperties` component in `@bentley/ui-components` package.
+ */
+export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./favorite-properties/DataProvider";
+
+/**
  * @module Table
  *
  * @docs-group-description Table
@@ -43,7 +51,7 @@ export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
 export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
-export { useControlledTreeUnifiedSelection } from "./tree/controlled/UseUnifiedSelection";
+export { useControlledTreeUnifiedSelection, UnifiedSelectionTreeEventHandler } from "./tree/controlled/UseUnifiedSelection";
 export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";

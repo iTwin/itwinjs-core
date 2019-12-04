@@ -26,7 +26,7 @@ const enum WMSImageryType { Temperature, Precipitation }
 class WMSImageryProvider extends ImageryProviderEPSG3857 {
   private _baseUrl: string;
 
-  constructor(imageryType: WMSImageryType, private _i18n: I18N, private _i18NNamespace: I18NNamespace, private _logoImage?: HTMLImageElement) {
+  constructor(imageryType: WMSImageryType, private _i18n: I18N, private _i18NNamespace: I18NNamespace, private _logoImage?: string | HTMLImageElement) {
     super();
 
     // this url should be generated from a user interface that allows selection of forecast parameters.
@@ -64,11 +64,7 @@ class WMSImageryProvider extends ImageryProviderEPSG3857 {
 
   /** Supplies attribution for the wms supplier. */
   public getImageryLogo(_tileProvider: MapTileTreeReference) {
-    const copyrightElement = document.createElement("p");
-    if (this._logoImage)
-      copyrightElement.appendChild(this._logoImage);
-    copyrightElement.innerText = this._i18n.translate("WmsPlugin:Messages.Copyright");
-    return IModelApp.makeLogoCard(copyrightElement);
+    return IModelApp.makeLogoCard({ iconSrc: this._logoImage, heading: "WMS", notice: this._i18n.translate("WmsPlugin:Messages.Copyright") });
   }
 
   public async initialize(): Promise<void> {
@@ -144,7 +140,6 @@ class WMSPlugin extends Plugin {
   public readonly treeSupplier: TileTree.Supplier;
   private _currentImageryType = WMSImageryType.Precipitation;
   private _i18NNamespace?: I18NNamespace;
-  private _logoImage?: HTMLImageElement;
   private _graphicsProvider?: WMSGraphicsProvider;
 
   public get currentImageryType() { return this._currentImageryType; }
@@ -158,12 +153,10 @@ class WMSPlugin extends Plugin {
   /** Invoked the first time this plugin is loaded. */
   public onLoad(_args: string[]): void {
     this._i18NNamespace = this.i18n.registerNamespace("WmsPlugin");
-    this._logoImage = new Image();
-    this._logoImage.src = this.resolveResourceUrl("wmsPlugin.svg");
-    this._logoImage.width = this._logoImage.height = 64;
+    const logoImage = this.resolveResourceUrl("wmsPlugin.svg");
 
-    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Temperature, this.i18n, this._i18NNamespace, this._logoImage));
-    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Precipitation, this.i18n, this._i18NNamespace, this._logoImage));
+    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Temperature, this.i18n, this._i18NNamespace, logoImage));
+    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Precipitation, this.i18n, this._i18NNamespace, logoImage));
   }
 
   /** Invoked each time this plugin is loaded. */

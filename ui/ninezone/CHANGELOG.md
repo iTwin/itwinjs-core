@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version.
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added tslint-react-hooks to UI packages
+- Remove unsupported fit-content CSS value.
+- Fix flex CSS rule shorthand issue in stage panel splitter.
+- Touch support for widget drag, widget resize and stage panel splitter.
+- Add disabled resize handles option to widget.
+- Deprecate history tray components.
+- Open tool panel via drag interaction.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

@@ -9,8 +9,9 @@ import { Texture } from "./Texture";
 import { Target } from "./Target";
 import { Matrix4d } from "@bentley/geometry-core";
 import { SceneContext } from "../../ViewContext";
+import { WebGlDisposable } from "./Disposable";
 
-export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer {
+export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGlDisposable {
   protected _texture?: Texture;
   protected _projectionMatrix = Matrix4d.createIdentity();
   public get texture(): Texture | undefined { return this._texture; }
@@ -23,6 +24,8 @@ export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.C
     if (undefined !== this._texture)
       stats.addPlanarClassifier(this._texture.bytesUsed);
   }
+
+  public get isDisposed(): boolean { return undefined === this.texture; }
 
   public dispose() {
     this._texture = dispose(this._texture);

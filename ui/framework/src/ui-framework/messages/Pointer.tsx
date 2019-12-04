@@ -33,7 +33,6 @@ export interface PointerMessageProps extends CommonProps {
  */
 interface PointerMessageState {
   isVisible: boolean;
-  priority: OutputMessagePriority;
   message: HTMLElement | string;
   detailedMessage?: HTMLElement | string;
   position: PointProps;
@@ -112,7 +111,6 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   public readonly state: Readonly<PointerMessageState> = {
     message: "",
     isVisible: false,
-    priority: OutputMessagePriority.None,
     position: {
       x: 0,
       y: 0,
@@ -179,7 +177,6 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     this._position = args.pt;
     this.setState(() => ({
       isVisible: args.isVisible,
-      priority: args.priority,
       message: args.message,
       detailedMessage: args.detailedMessage,
       messageDetails: args.messageDetails,

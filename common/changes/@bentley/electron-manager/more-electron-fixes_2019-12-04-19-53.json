@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "Switched to electron version 6.1.5 from 7.1.2",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "Ramanujam.Raman@bentley.com"
+}

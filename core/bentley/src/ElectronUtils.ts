@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+declare var __non_webpack_require__: NodeRequire;
+
+function isElectronRendererFn() {
+  return (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.toLowerCase().indexOf("electron") >= 0);
+}
+
+/**
+ * Set to true if the process is running in Electron
+ * @internal
+ */
+export const isElectronRenderer = isElectronRendererFn();
+
+/**
+ * Imports the specified module only if it's running in electron
+ * @param moduleName
+ * @internal
+ */
+export function requireInElectronRenderer(moduleName: string) {
+  if (!isElectronRenderer)
+    return undefined;
+
+  const realRequire = (typeof __non_webpack_require__ !== "undefined") ? __non_webpack_require__ : require;
+  return realRequire(moduleName);
+}
+
+/**
+ * Utility to wrap import of the electron module
+ * @note The value is set to undefined if not running in Electron.
+ * @internal
+ */
+export const electronRenderer = requireInElectronRenderer("electron");

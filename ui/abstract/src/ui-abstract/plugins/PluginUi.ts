@@ -20,12 +20,8 @@ export interface ConditionalDisplaySpecification {
  * @alpha
  */
 export interface InsertSpec {
-  /** if insertBefore is true and no relativeToolIdPath is defined then insert at beginning of toolbar. If the value
-   * is falsy and relativeToolIdPath is not defined the item is added to end of toolbar.
-   */
-  insertBefore?: boolean;
-  /** Defines relative item, if empty then item is inserted and beginning or end of toolbar. */
-  relativeToolIdPath?: string;
+  /** Optional parent tool group to add tool. */
+  parentToolGroupId?: string;
   condition?: ConditionalDisplaySpecification;
   label: string;
 }

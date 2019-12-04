@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Added a favorite property data provider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "vismantas.stonkus@bentley.com"
+}
