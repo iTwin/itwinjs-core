@@ -7,7 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore } from "@bentley/ui-core";
 import {
   Footer,
   Toast as ToastMessage,
@@ -208,7 +208,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           <ToastMessage
             animateOutTo={this.state.toastTarget}
             onAnimatedOut={() => this._hideMessages()}
-            timeout={2500}
+            timeout={this.state.messageDetails.displayTime.milliseconds}
             content={
               <Message
                 status={StatusBar.severityToStatus(severity)}
@@ -269,6 +269,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
     const messageDetails = this.state.activityMessageInfo.details;
     const percentComplete = UiFramework.translate("activityCenter.percentComplete");
+    const cancelMessage = UiCore.translate("dialog.cancel");
     return (
       <Message
         status={Status.Information}
@@ -280,7 +281,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           buttons={
             (messageDetails && messageDetails.supportsCancellation) ?
               <div>
-                <MessageHyperlink onClick={this._cancelActivityMessage}>Cancel</MessageHyperlink>
+                <MessageHyperlink onClick={this._cancelActivityMessage}>{cancelMessage}</MessageHyperlink>
                 <span>&nbsp;</span>
                 <MessageButton onClick={this._dismissActivityMessage}>
                   <i className="icon icon-close" />
