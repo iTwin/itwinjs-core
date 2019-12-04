@@ -55,6 +55,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get enableInstancing(): boolean;
   /** @internal */
+  public abstract get enableImprovedElision(): boolean;
+  /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get disableMagnification(): boolean;
@@ -210,6 +212,13 @@ export namespace TileAdmin {
      * Default value: true
      */
     enableInstancing?: boolean;
+
+    /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
+     * This can reduce the number of tiles requested and the number of tile requests that return no content.
+     *
+     * Default value: false
+     */
+    enableImprovedElision?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
@@ -432,6 +441,7 @@ class Admin extends TileAdmin {
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _enableImprovedElision: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
@@ -486,6 +496,7 @@ class Admin extends TileAdmin {
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = false !== options.enableInstancing;
+    this._enableImprovedElision = true === options.enableImprovedElision;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
     this._useProjectExtents = true === options.useProjectExtents;
@@ -516,6 +527,7 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableImprovedElision() { return this._enableImprovedElision; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
