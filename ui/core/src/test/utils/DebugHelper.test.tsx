@@ -7,7 +7,6 @@ import { expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";
 import { useLifecycleLogging } from "../../ui-core/utils/DebugHelpers";
 
-// tslint:disable: react-hooks-nesting
 describe("UseLifecycleLogging", () => {
   interface HookProps {
     name: string;

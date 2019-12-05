@@ -37,11 +37,10 @@ export interface TreeNodeContentProps extends CommonProps {
 // tslint:disable-next-line: variable-name
 export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeContentProps) => {
   const label = useLabel(props.node, props.valueRendererManager, props.highlightProps);
+  const { node, onLabelRendered } = props;
   useEffect(() => {
-    if (props.onLabelRendered) {
-      props.onLabelRendered(props.node);
-    }
-  }, [label, props.node]);
+    onLabelRendered && onLabelRendered(node);
+  }, [label, node, onLabelRendered]);
 
   // handle cell editing
   let editor: React.ReactNode;

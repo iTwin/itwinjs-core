@@ -222,7 +222,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     shallow(<TestHook
-      onRender={() => spy(useBackstageItems(manager))}  // tslint:disable-line: react-hooks-nesting
+      onRender={() => spy(useBackstageItems(manager))}
     />);
 
     spy.calledOnceWithExactly(sinon.match([manager.items[0]])).should.true;
@@ -235,7 +235,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     mount(<TestHook
-      onRender={() => useBackstageItems(manager)} // tslint:disable-line: react-hooks-nesting
+      onRender={() => useBackstageItems(manager)}
     />);
 
     spy.calledOnce.should.true;
@@ -248,7 +248,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     mount(<TestHook
-      onRender={() => spy(useBackstageItems(manager))}  // tslint:disable-line: react-hooks-nesting
+      onRender={() => spy(useBackstageItems(manager))}
     />);
 
     manager.items = [];
@@ -263,7 +263,7 @@ describe("useBackstageItems", () => {
       getActionItem(),
     ];
     const sut = mount(<TestHook
-      onRender={() => useBackstageItems(manager)} // tslint:disable-line: react-hooks-nesting
+      onRender={() => useBackstageItems(manager)}
     />);
     sut.unmount();
 
