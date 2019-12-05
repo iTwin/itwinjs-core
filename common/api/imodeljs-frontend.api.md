@@ -7726,6 +7726,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
     // @internal (undocumented)
+    abstract readonly enableImprovedElision: boolean;
+    // @internal (undocumented)
     abstract readonly enableInstancing: boolean;
     // @internal
     abstract forgetViewport(vp: Viewport): void;
@@ -7778,6 +7780,7 @@ export namespace TileAdmin {
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
+        enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
         // @internal

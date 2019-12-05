@@ -90,7 +90,7 @@ export {
  */
 export { NodeKey, NodeKeyPath, StandardNodeTypes } from "./hierarchy/Key";
 export {
-  BaseNodeKey, ECInstanceNodeKey, GroupingNodeKey,
+  BaseNodeKey, ECInstanceNodeKey, ECInstancesNodeKey, GroupingNodeKey,
   ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
 } from "./hierarchy/Key";
 export { Node } from "./hierarchy/Node";
@@ -135,7 +135,7 @@ export { SortingRule, PropertySortingRule, DisabledSortingRule, SortingRuleBase 
 export { StyleOverride } from "./rules/customization/StyleOverride";
 export {
   GroupingRule, GroupingSpecification, GroupingSpecificationTypes,
-  SameLabelInstanceGroup, ClassGroup,
+  SameLabelInstanceGroup, SameLabelInstanceGroupApplicationStage, ClassGroup,
   PropertyGroup, PropertyGroupingValue, PropertyRangeGroupSpecification,
   GroupingSpecificationBase,
 } from "./rules/customization/GroupingRule";

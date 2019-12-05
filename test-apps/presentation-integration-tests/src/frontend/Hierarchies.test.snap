@@ -5,7 +5,6 @@ Array [
   Object {
     "description": "A container for persisting definition elements.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:DefinitionModel",
     "key": Object {
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
@@ -19,7 +18,6 @@ Array [
   Object {
     "description": "The singleton container for repository-specific definition elements.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:DictionaryModel",
     "key": Object {
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
@@ -33,7 +31,6 @@ Array [
   Object {
     "description": "Contains a list of document elements.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:DocumentListModel",
     "key": Object {
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
@@ -46,7 +43,6 @@ Array [
   },
   Object {
     "hasChildren": true,
-    "imageId": "ECClassImage://Generic:GroupModel",
     "key": Object {
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
@@ -60,7 +56,6 @@ Array [
   Object {
     "description": "A container for persisting link elements.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:LinkModel",
     "key": Object {
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
@@ -74,7 +69,6 @@ Array [
   Object {
     "description": "A container for persisting physical elements that model physical space.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:PhysicalModel",
     "key": Object {
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
@@ -88,7 +82,6 @@ Array [
   Object {
     "description": "The singleton container of repository-related information elements.",
     "hasChildren": true,
-    "imageId": "ECClassImage://BisCore:RepositoryModel",
     "key": Object {
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
@@ -255,20 +248,25 @@ Array [
                 "index": 0,
                 "isMarked": false,
                 "node": Object {
-                  "imageId": "ECInstanceImage://BisCore:DefinitionPartition",
                   "key": Object {
                     "instanceKey": Object {
                       "className": "BisCore:DefinitionPartition",
                       "id": "0x10",
                     },
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:DefinitionPartition",
+                        "id": "0x10",
+                      },
+                    ],
                     "pathFromRoot": Array [
                       "679ccbb46ad76244084d352b5d7f7983",
-                      "4e7b3e326652fc7d86cb1bb1b7113562",
-                      "e2b9192c757416566c8ea1b9a5540d8a",
+                      "2711094066a9995f601d286b6e6866e6",
+                      "44d4d5acfd7d3656dcb40a5281d67c61",
                       "8b9e160f3866c7f4fadae569eba9ef25",
-                      "6d789572a4f347ff0ed0d9e5b9393d68",
+                      "0efd370a8754de2427d0fd20b7714777",
                     ],
-                    "type": "ECInstanceNode",
+                    "type": "ECInstancesNode",
                   },
                   "label": "BisCore.DictionaryModel",
                 },
@@ -283,14 +281,13 @@ Array [
             "node": Object {
               "description": "A Definition Partition element indicates that there is a definition-related modeling perspective within the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and broken down by a Definition Model.",
               "hasChildren": true,
-              "imageId": "ECClassImage://BisCore:DefinitionPartition",
               "key": Object {
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
                   "679ccbb46ad76244084d352b5d7f7983",
-                  "4e7b3e326652fc7d86cb1bb1b7113562",
-                  "e2b9192c757416566c8ea1b9a5540d8a",
+                  "2711094066a9995f601d286b6e6866e6",
+                  "44d4d5acfd7d3656dcb40a5281d67c61",
                   "8b9e160f3866c7f4fadae569eba9ef25",
                 ],
                 "type": "ECClassGroupingNode",
@@ -309,20 +306,25 @@ Array [
                 "index": 0,
                 "isMarked": true,
                 "node": Object {
-                  "imageId": "ECInstanceImage://BisCore:LinkPartition",
                   "key": Object {
                     "instanceKey": Object {
                       "className": "BisCore:LinkPartition",
                       "id": "0xe",
                     },
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:LinkPartition",
+                        "id": "0xe",
+                      },
+                    ],
                     "pathFromRoot": Array [
                       "679ccbb46ad76244084d352b5d7f7983",
-                      "4e7b3e326652fc7d86cb1bb1b7113562",
-                      "e2b9192c757416566c8ea1b9a5540d8a",
+                      "2711094066a9995f601d286b6e6866e6",
+                      "44d4d5acfd7d3656dcb40a5281d67c61",
                       "93e5eef1bcd27c39e00b3f62d4df415b",
-                      "2755e0da989519af5b6478e5f8f325d2",
+                      "1554b13b284ed9a3ac984f4d0b885cfc",
                     ],
-                    "type": "ECInstanceNode",
+                    "type": "ECInstancesNode",
                   },
                   "label": "BisCore.RealityDataSources",
                 },
@@ -337,14 +339,13 @@ Array [
             "node": Object {
               "description": "A Link Partition element indicates that there is a link-related modeling perspective within the overall DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link Model.",
               "hasChildren": true,
-              "imageId": "ECClassImage://BisCore:LinkPartition",
               "key": Object {
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
                   "679ccbb46ad76244084d352b5d7f7983",
-                  "4e7b3e326652fc7d86cb1bb1b7113562",
-                  "e2b9192c757416566c8ea1b9a5540d8a",
+                  "2711094066a9995f601d286b6e6866e6",
+                  "44d4d5acfd7d3656dcb40a5281d67c61",
                   "93e5eef1bcd27c39e00b3f62d4df415b",
                 ],
                 "type": "ECClassGroupingNode",
@@ -361,18 +362,23 @@ Array [
         "isMarked": false,
         "node": Object {
           "hasChildren": true,
-          "imageId": "ECInstanceImage://BisCore:Subject",
           "key": Object {
             "instanceKey": Object {
               "className": "BisCore:Subject",
               "id": "0x1",
             },
+            "instanceKeys": Array [
+              Object {
+                "className": "BisCore:Subject",
+                "id": "0x1",
+              },
+            ],
             "pathFromRoot": Array [
               "679ccbb46ad76244084d352b5d7f7983",
-              "4e7b3e326652fc7d86cb1bb1b7113562",
-              "e2b9192c757416566c8ea1b9a5540d8a",
+              "2711094066a9995f601d286b6e6866e6",
+              "44d4d5acfd7d3656dcb40a5281d67c61",
             ],
-            "type": "ECInstanceNode",
+            "type": "ECInstancesNode",
           },
           "label": "DgnV8Bridge",
         },
@@ -386,17 +392,22 @@ Array [
     "isMarked": false,
     "node": Object {
       "hasChildren": true,
-      "imageId": "ECInstanceImage://BisCore:RepositoryModel",
       "key": Object {
         "instanceKey": Object {
           "className": "BisCore:RepositoryModel",
           "id": "0x1",
         },
+        "instanceKeys": Array [
+          Object {
+            "className": "BisCore:RepositoryModel",
+            "id": "0x1",
+          },
+        ],
         "pathFromRoot": Array [
           "679ccbb46ad76244084d352b5d7f7983",
-          "4e7b3e326652fc7d86cb1bb1b7113562",
+          "2711094066a9995f601d286b6e6866e6",
         ],
-        "type": "ECInstanceNode",
+        "type": "ECInstancesNode",
       },
       "label": "DgnV8Bridge",
     },

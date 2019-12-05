@@ -43,6 +43,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
+  if (undefined !== process.env.SVT_IMPROVED_ELISION)
+    configuration.enableImprovedElision = true;
+
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
