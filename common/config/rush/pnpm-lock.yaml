@@ -2,7 +2,7 @@ dependencies:
   '@azure/storage-blob': 10.5.0
   '@bentley/icons-generic': 0.0.43
   '@bentley/icons-generic-webfont': 0.0.43
-  '@bentley/imodeljs-native': 1.9.3
+  '@bentley/imodeljs-native': 1.9.5
   '@microsoft/api-extractor': 7.6.2
   '@openid/appauth': 1.2.6
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -440,11 +440,11 @@ packages:
     dev: false
     resolution:
       integrity: sha1-uxfChcWdrP7Cw6c5gR2JIb84VKg=
-  /@bentley/imodeljs-native/1.9.3:
+  /@bentley/imodeljs-native/1.9.5:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-/xjOYWfrt/0dcSHPuRbrty9EzG8=
+      integrity: sha1-LWtx/kUqgOl2PD7qeX2fUAeNJfY=
   /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@3.6.4:
     dependencies:
       '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@3.6.4
@@ -15123,7 +15123,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.5.0
-      '@bentley/imodeljs-native': 1.9.3
+      '@bentley/imodeljs-native': 1.9.5
       '@types/chai': 4.2.6
       '@types/formidable': 1.0.31
       '@types/fs-extra': 4.0.9
@@ -15157,7 +15157,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-DMom4tWDOd10TdcTe7jfWk0gn4inOwBl1S1B7ud2WsrTm8NfRDi/3zGnabxh+Gbo9uWA9D4AaLUcdl9g3QOKww==
+      integrity: sha512-iqPZBKDrQqyvafUdjk/u33ahui4peOaoh9CrkNkWFnksGmJRO0RQ6CwbrP33m1JbBB0a6QFnjWjH2jDArUZ5qA==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -16294,7 +16294,7 @@ specifiers:
   '@azure/storage-blob': ^10.4.0
   '@bentley/icons-generic': ^0.0.43
   '@bentley/icons-generic-webfont': ^0.0.43
-  '@bentley/imodeljs-native': 1.9.3
+  '@bentley/imodeljs-native': 1.9.5
   '@microsoft/api-extractor': 7.6.2
   '@openid/appauth': ^1.2.6
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
