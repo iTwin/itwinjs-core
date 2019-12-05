@@ -78,6 +78,7 @@ describe("IModelTransformer", () => {
       assert.isAtLeast(count(targetDb, InformationRecordModel.classFullName), 1);
       assert.isAtLeast(count(targetDb, "TestTransformerTarget:PhysicalPartitionIsTrackedByRecords"), 1);
       assert.isAtLeast(count(targetDb, "TestTransformerTarget:AuditRecord"), 1);
+      assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
       transformer.dispose();
@@ -128,6 +129,7 @@ describe("IModelTransformer", () => {
       assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
       assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
+      assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       transformer.dispose();
     }
 
@@ -144,8 +146,8 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.equal(targetImporter.numElementsInserted, 0);
-      assert.equal(targetImporter.numElementsUpdated, 4);
-      assert.equal(targetImporter.numElementsDeleted, 1);
+      assert.equal(targetImporter.numElementsUpdated, 5);
+      assert.equal(targetImporter.numElementsDeleted, 2);
       assert.equal(targetImporter.numElementAspectsInserted, 0);
       assert.equal(targetImporter.numElementAspectsUpdated, 2);
       assert.equal(targetImporter.numRelationshipsInserted, 0);
@@ -154,6 +156,7 @@ describe("IModelTransformer", () => {
       targetDb.saveChanges();
       IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
       assert.equal(numTargetRelationships - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
+      assert.equal(2, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       transformer.dispose();
     }
 

@@ -48,8 +48,10 @@ export namespace IModelTransformerUtils {
     // Insert CodeSpecs
     const codeSpecId1: Id64String = sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
     const codeSpecId2: Id64String = sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
+    const codeSpecId3: Id64String = sourceDb.codeSpecs.insert("InformationRecords", CodeScopeSpec.Type.Model);
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
+    assert.isTrue(Id64.isValidId64(codeSpecId3));
     // Insert RepositoryModel structure
     const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject Description");
     assert.isTrue(Id64.isValidId64(subjectId));
@@ -91,6 +93,34 @@ export namespace IModelTransformerUtils {
     };
     const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+    // Insert InformationRecords
+    const informationRecordProps1: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord1" },
+      commonString: "Common1",
+      sourceString: "One",
+    };
+    const informationRecordId1: Id64String = sourceDb.elements.insertElement(informationRecordProps1);
+    assert.isTrue(Id64.isValidId64(informationRecordId1));
+    const informationRecordProps2: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord2" },
+      commonString: "Common2",
+      sourceString: "Two",
+    };
+    const informationRecordId2: Id64String = sourceDb.elements.insertElement(informationRecordProps2);
+    assert.isTrue(Id64.isValidId64(informationRecordId2));
+    const informationRecordProps3: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord3" },
+      commonString: "Common3",
+      sourceString: "Three",
+    };
+    const informationRecordId3: Id64String = sourceDb.elements.insertElement(informationRecordProps3);
+    assert.isTrue(Id64.isValidId64(informationRecordId3));
     // Insert PhysicalObject1
     const physicalObjectProps1: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
@@ -344,6 +374,21 @@ export namespace IModelTransformerUtils {
     const drawingGraphicId2: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic2");
     const relationship: Relationship = sourceDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 });
     relationship.delete();
+    // update InformationRecord2
+    const informationRecordCodeSpec: CodeSpec = sourceDb.codeSpecs.getByName("InformationRecords");
+    const informationModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Information"))!;
+    const informationRecodeCode2: Code = new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" });
+    const informationRecordId2: Id64String = sourceDb.elements.queryElementIdByCode(informationRecodeCode2)!;
+    assert.isTrue(Id64.isValidId64(informationRecordId2));
+    const informationRecord2: any = sourceDb.elements.getElement(informationRecordId2);
+    informationRecord2.commonString = informationRecord2.commonString + "-Updated";
+    informationRecord2.sourceString = informationRecord2.sourceString + "-Updated";
+    informationRecord2.update();
+    // delete InformationRecord3
+    const informationRecodeCode3: Code = new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" });
+    const informationRecordId3: Id64String = sourceDb.elements.queryElementIdByCode(informationRecodeCode3)!;
+    assert.isTrue(Id64.isValidId64(informationRecordId3));
+    sourceDb.elements.deleteElement(informationRecordId3);
   }
 
   export async function prepareTargetDb(targetDb: IModelDb): Promise<void> {
@@ -367,6 +412,7 @@ export namespace IModelTransformerUtils {
   export function assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb, targetSubjectName: string = "Subject"): void {
     // CodeSpec
     assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec"));
+    assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
     assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
     assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
     // Font
@@ -488,6 +534,18 @@ export namespace IModelTransformerUtils {
     assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
     assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
     assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid));
+    // InformationRecords
+    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
+    assert.isTrue(Id64.isValidId64(informationRecordCodeSpec.id));
+    const informationRecordId1 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" }));
+    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
+    const informationRecordId3 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" }));
+    assert.isTrue(Id64.isValidId64(informationRecordId1!));
+    assert.isTrue(Id64.isValidId64(informationRecordId2!));
+    assert.isTrue(Id64.isValidId64(informationRecordId3!));
+    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    assert.equal(informationRecord2.commonString, "Common2");
+    assert.equal(informationRecord2.targetString, "Two");
     // DisplayStyle
     const displayStyle3dId = targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(targetDb, definitionModelId, "DisplayStyle3d"))!;
     assertTargetElement(sourceDb, targetDb, displayStyle3dId);
@@ -581,6 +639,18 @@ export namespace IModelTransformerUtils {
     // assert relationship was deleted
     const drawingGraphicId2: Id64String = queryByUserLabel(targetDb, "DrawingGraphic2");
     assert.throws(() => targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
+    // assert InformationRecord2 was updated
+    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
+    const informationModelId: Id64String = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
+    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
+    assert.isTrue(Id64.isValidId64(informationRecordId2!));
+    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    assert.equal(informationRecord2.commonString, "Common2-Updated");
+    assert.equal(informationRecord2.targetString, "Two-Updated");
+    // assert InformationRecord3 was deleted
+    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" })));
+    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" })));
+    assert.isUndefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" })));
   }
 
   function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
@@ -859,6 +929,7 @@ export class TestIModelTransformer extends IModelTransformer {
   private initClassRemapping(): void {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElementUsesCommonDefinition", "TestTransformerTarget:TargetPhysicalElementUsesCommonDefinition");
+    this.context.remapElementClass("TestTransformerSource:SourceInformationRecord", "TestTransformerTarget:TargetInformationRecord");
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */
@@ -879,6 +950,8 @@ export class TestIModelTransformer extends IModelTransformer {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
         relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
       };
+    } else if ("TestTransformerSource:SourceInformationRecord" === sourceElement.classFullName) {
+      targetElementProps.targetString = sourceElement.asAny.sourceString;
     }
     return targetElementProps;
   }

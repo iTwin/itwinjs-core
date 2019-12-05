@@ -90,4 +90,10 @@
         <ECProperty propertyName="Description" typeName="string" />
     </ECEntityClass>
 
+    <ECEntityClass typeName="SourceInformationRecord" modifier="Sealed">
+        <BaseClass>bis:InformationRecordElement</BaseClass>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists on both SourceInformationRecord and TargetInformationRecord"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+    </ECEntityClass>
+
 </ECSchema>

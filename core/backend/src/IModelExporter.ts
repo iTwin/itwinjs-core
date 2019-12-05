@@ -497,7 +497,6 @@ class ChangeOpTracker {
       case ChangeOpCode.Insert: this.insertedIds.add(id); break;
       case ChangeOpCode.Update: this.updatedIds.add(id); break;
       case ChangeOpCode.Delete: this.deletedIds.add(id); break;
-      default: throw new Error(`Unexpected ChangedOpCode ${changeOpCode}`);
     }
   }
 }
@@ -512,38 +511,38 @@ class EntityChangeOps {
   public static async initialize(requestContext: AuthorizedBackendRequestContext, iModelDb: IModelDb, options: ChangeSummaryExtractOptions): Promise<EntityChangeOps> {
     const entityChanges = new EntityChangeOps();
     const changeSummaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModelDb, options);
-    // assert.strictEqual(changeSummaryIds.length, 1);
     ChangeSummaryManager.attachChangeCache(iModelDb);
-    // assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModelDb));
-    const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModelDb, changeSummaryIds[0]);
-    iModelDb.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=?", (statement) => {
-      statement.bindId(1, changeSummary.id);
-      while (statement.step() === DbResult.BE_SQLITE_ROW) {
-        const instanceId: Id64String = statement.getValue(0).getId();
-        const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModelDb, instanceId);
-        const entityClassFullName: string = EntityChangeOps._toClassFullName(instanceChange.changedInstance.className);
-        try {
-          const entityType: typeof Entity = iModelDb.getJsClass<typeof Entity>(entityClassFullName);
-          if (entityType.prototype instanceof Element) {
-            // const propertyNames: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModelDb, instanceChange.id);
-            entityChanges.elements.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof ElementAspect) {
-            entityChanges.elementAspects.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof Model) {
-            entityChanges.models.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else if (entityType.prototype instanceof Relationship) {
-            entityChanges.relationships.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          }
-        } catch (error) {
-          if ("BisCore:CodeSpec" === entityClassFullName) {
-            // In TypeScript, CodeSpec is not a subclass of Entity (should it be?), so must be handled separately.
-            entityChanges.codeSpecs.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-          } else {
-            // Changes to *navigation* relationship are also tracked (should they be?), but can be ignored
-            // console.log(`Ignoring ${entityClassFullName}`); // tslint:disable-line
+    changeSummaryIds.forEach((changeSummaryId: Id64String) => {
+      const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModelDb, changeSummaryId);
+      iModelDb.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=?", (statement) => {
+        statement.bindId(1, changeSummary.id);
+        while (statement.step() === DbResult.BE_SQLITE_ROW) {
+          const instanceId: Id64String = statement.getValue(0).getId();
+          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModelDb, instanceId);
+          const entityClassFullName: string = EntityChangeOps._toClassFullName(instanceChange.changedInstance.className);
+          try {
+            const entityType: typeof Entity = iModelDb.getJsClass<typeof Entity>(entityClassFullName);
+            if (entityType.prototype instanceof Element) {
+              // const propertyNames: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModelDb, instanceChange.id);
+              entityChanges.elements.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+            } else if (entityType.prototype instanceof ElementAspect) {
+              entityChanges.elementAspects.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+            } else if (entityType.prototype instanceof Model) {
+              entityChanges.models.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+            } else if (entityType.prototype instanceof Relationship) {
+              entityChanges.relationships.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+            }
+          } catch (error) {
+            if ("BisCore:CodeSpec" === entityClassFullName) {
+              // In TypeScript, CodeSpec is not a subclass of Entity (should it be?), so must be handled separately.
+              entityChanges.codeSpecs.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+            } else {
+              // Changes to *navigation* relationship are also tracked (should they be?), but can be ignored
+              // console.log(`Ignoring ${entityClassFullName}`); // tslint:disable-line
+            }
           }
         }
-      }
+      });
     });
     return entityChanges;
   }

@@ -112,6 +112,7 @@ describe("IModelTransformerHub (#integration)", () => {
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
         // expect inserts and a few updates from transforming the result of populateSourceDb
+        assert.isAtLeast(targetDbChanges.codeSpecs.insertedIds.size, 1);
         assert.isAtLeast(targetDbChanges.elements.insertedIds.size, 1);
         assert.equal(targetDbChanges.elements.updatedIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
         assert.isAtLeast(targetDbChanges.elementAspects.insertedIds.size, 1);
@@ -120,7 +121,6 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(targetDbChanges.models.updatedIds.has(IModel.repositoryModelId));
         assert.isAtLeast(targetDbChanges.relationships.insertedIds.size, 1);
         // expect no other changes from transforming the result of populateSourceDb
-        assert.equal(targetDbChanges.codeSpecs.insertedIds.size, 0);
         assert.equal(targetDbChanges.codeSpecs.updatedIds.size, 0);
         assert.equal(targetDbChanges.codeSpecs.deletedIds.size, 0);
         assert.equal(targetDbChanges.elements.deletedIds.size, 0);
