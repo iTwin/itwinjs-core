@@ -24,19 +24,20 @@ export function WidgetTarget(props: WidgetTargetProps) {
   const targeted = useTargeted(ref);
   const isInitialMount = React.useRef(true);
   const isTargeted = React.useRef(targeted);
+  const { onTargetChanged } = props;
   React.useEffect(() => {
     if (isInitialMount.current)
       isInitialMount.current = false;
     else {
       isTargeted.current = targeted;
-      props.onTargetChanged && props.onTargetChanged(targeted);
+      onTargetChanged && onTargetChanged(targeted);
     }
-  }, [targeted]);
+  }, [onTargetChanged, targeted]);
   React.useEffect(() => {
     return () => {
-      isTargeted.current && props.onTargetChanged && props.onTargetChanged(false);
+      isTargeted.current && onTargetChanged && onTargetChanged(false);
     };
-  }, []);
+  }, [onTargetChanged]);
   const className = classnames(
     "nz-zones-target-target",
     targeted && "nz-targeted",

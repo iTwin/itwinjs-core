@@ -37,6 +37,7 @@
   display: flex;
   align-items: center;
   visibility: visible;
+  color: $buic-foreground-body;
 
   &.uifw-indicator-fade-in  {
     animation: uifw-indicator-FadeIn 1s linear;

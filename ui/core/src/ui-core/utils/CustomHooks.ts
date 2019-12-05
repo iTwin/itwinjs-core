@@ -19,5 +19,5 @@ export function useEffectSkipFirst(callback: () => void, deps?: any[]) {
     }
 
     callback();
-  }, deps);
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 }

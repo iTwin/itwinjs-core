@@ -7,7 +7,6 @@ import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
 import { useEffectSkipFirst } from "../../ui-core/utils/CustomHooks";
 
-// tslint:disable: react-hooks-nesting
 describe("useEffectSkipFirst", () => {
 
   it("does not invoke callback on first effect", () => {

@@ -119,7 +119,7 @@ const useTreeRenderer = () => {
       checkboxRenderer={renderNodeCheckbox}
       imageLoader={imageLoader}
     />
-  ), [renderNodeCheckbox]);
+  ), [renderNodeCheckbox, imageLoader]);
 
   return React.useCallback((props: TreeRendererProps) => (
     <TreeRenderer

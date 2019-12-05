@@ -23,20 +23,21 @@ export interface WithDragInteractionProps {
 const style = { touchAction: "none" };
 
 interface UseDragArgs extends Readonly<Pick<WithDragInteractionProps, "direction">> {
-  readonly initialPosition: React.RefObject<Point | undefined>;
+  readonly initialPosition: React.MutableRefObject<Point | undefined>;
   readonly onDrag: () => void;
 }
 
 function useDrag(args: UseDragArgs) {
+  const { direction, initialPosition, onDrag } = args;
   const handlePointerMove = React.useCallback((e: PointerEvent) => {
-    if (!args.initialPosition.current)
+    if (!initialPosition.current)
       return;
     const newPosition = new Point(e.clientX, e.clientY);
-    const dragDistance = getDragDistance(args.initialPosition.current, newPosition, args.direction);
+    const dragDistance = getDragDistance(initialPosition.current, newPosition, direction);
     if (dragDistance < 20)
       return;
-    args.onDrag();
-  }, [args.onDrag, args.direction]);
+    onDrag();
+  }, [direction, initialPosition, onDrag]);
   return { handlePointerMove };
 }
 
@@ -53,6 +54,7 @@ function useLongPress(args: UseLongPressArgs) {
   const handlePointerUp = React.useCallback(() => {
     longPressTimer.current.stop();
   }, []);
+
   const handlePointerMove = React.useCallback((e: PointerEvent) => {
     if (!args.initialPosition.current)
       return;
@@ -61,11 +63,11 @@ function useLongPress(args: UseLongPressArgs) {
     if (distance < 2)
       return;
     longPressTimer.current.stop();
-  }, []);
+  }, [args.initialPosition]);
   React.useEffect(() => {
     longPressTimer.current.setOnExecute(args.onLongPress);
     return () => {
-      longPressTimer.current.setOnExecute(undefined);
+      longPressTimer.current.setOnExecute(undefined); // eslint-disable-line react-hooks/exhaustive-deps
     };
   }, [args.onLongPress]);
   return { handlePointerDown, handlePointerMove, handlePointerUp };
@@ -88,12 +90,18 @@ export const withDragInteraction = <P extends {}, C>(
       skipClick.current = true;
       onOpenPanel && onOpenPanel();
     }, [onOpenPanel]);
-    const drag = useDrag({
+    const {
+      handlePointerMove: dragPointerMove,
+    } = useDrag({
       initialPosition,
       direction,
       onDrag: handleOpenPanel,
     });
-    const longPress = useLongPress({
+    const {
+      handlePointerDown: longPressPointerDown,
+      handlePointerMove: longPressPointerMove,
+      handlePointerUp: longPressPointerUp,
+    } = useLongPress({
       initialPosition,
       onLongPress: handleOpenPanel,
     });
@@ -106,16 +114,16 @@ export const withDragInteraction = <P extends {}, C>(
       (e.target instanceof Element) && e.target.releasePointerCapture(e.pointerId);
       initialPosition.current = new Point(e.clientX, e.clientY);
       skipClick.current = false;
-      longPress.handlePointerDown();
-    }, [longPress.handlePointerDown]);
+      longPressPointerDown();
+    }, [longPressPointerDown]);
     const handlePointerMove = React.useCallback((e: PointerEvent) => {
-      drag.handlePointerMove(e);
-      longPress.handlePointerMove(e);
-    }, [drag.handlePointerMove, longPress.handlePointerMove]);
+      dragPointerMove(e);
+      longPressPointerMove(e);
+    }, [dragPointerMove, longPressPointerMove]);
     const handlePointerUp = React.useCallback(() => {
       initialPosition.current = undefined;
-      longPress.handlePointerUp();
-    }, [longPress.handlePointerUp]);
+      longPressPointerUp();
+    }, [longPressPointerUp]);
     React.useEffect(() => {
       document.addEventListener("pointermove", handlePointerMove);
       document.addEventListener("pointerup", handlePointerUp);

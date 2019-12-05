@@ -29,7 +29,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   const handleClick = React.useCallback(() => {
     manager.close();
     item.execute();
-  }, [manager]);
+  }, [manager, item]);
   return (
     <NZ_BackstageItem
       icon={<Icon iconSpec={item.icon} />}
