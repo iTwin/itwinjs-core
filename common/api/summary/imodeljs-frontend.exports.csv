@@ -30,6 +30,7 @@ public;ActivityMessageEndReason
 beta;AngleDescription 
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
+public;AnimationOptions
 beta;Animator
 beta;AppearanceOverrideProps
 internal;areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean
@@ -419,7 +420,7 @@ alpha;UiProviderRegisteredEventArgs
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
-public;ViewChangeOptions
+public;ViewChangeOptions 
 alpha;ViewClipByElementTool 
 alpha;ViewClipByPlaneTool 
 alpha;ViewClipByRangeTool 

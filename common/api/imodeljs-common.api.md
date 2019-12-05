@@ -1340,6 +1340,66 @@ export interface DistanceExpressionProps {
 // @beta
 export type DPoint2dProps = number[];
 
+// @beta
+export const Easing: {
+    Linear: {
+        None: (k: number) => number;
+    };
+    Quadratic: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Cubic: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Quartic: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Quintic: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Sinusoidal: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Exponential: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Circular: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Elastic: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Back: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+    Bounce: {
+        In: (k: number) => number;
+        Out: (k: number) => number;
+        InOut: (k: number) => number;
+    };
+};
+
+// @beta (undocumented)
+export type EasingFunction = (k: number) => number;
+
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
@@ -2718,6 +2778,22 @@ export const INSTANCE: unique symbol;
 
 // @internal (undocumented)
 export const interop: any;
+
+// @beta
+export const Interpolation: {
+    Linear: (v: any, k: number) => number;
+    Bezier: (v: any, k: number) => number;
+    CatmullRom: (v: any, k: number) => number;
+    Utils: {
+        Linear: (p0: number, p1: number, t: number) => number;
+        Bernstein: (n: number, i: number) => number;
+        Factorial: (n: number) => number;
+        CatmullRom: (p0: number, p1: number, p2: number, p3: number, t: number) => number;
+    };
+};
+
+// @beta (undocumented)
+export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
 export interface IReferentProps {
@@ -5206,6 +5282,89 @@ export interface TileTreeProps {
     yAxisUp?: boolean;
 }
 
+// @beta
+export class Tween {
+    constructor(_group: Tweens, _object: any);
+    // (undocumented)
+    chain(...tweens: Tween[]): this;
+    // (undocumented)
+    delay(amount?: number): this;
+    // (undocumented)
+    duration(d: number): this;
+    // (undocumented)
+    easing(easingFunction?: EasingFunction): this;
+    // (undocumented)
+    end(): this;
+    // (undocumented)
+    getId(): number;
+    // (undocumented)
+    group(group: Tweens): this;
+    // (undocumented)
+    interpolation(interpolationFunction?: InterpolationFunction): this;
+    // (undocumented)
+    readonly isPaused: boolean;
+    // (undocumented)
+    readonly isPlaying: boolean;
+    // (undocumented)
+    onComplete(callback: TweenCallback): this;
+    // (undocumented)
+    onRepeat(callback: TweenCallback): this;
+    // (undocumented)
+    onStart(callback: TweenCallback): this;
+    // (undocumented)
+    onStop(callback: TweenCallback): this;
+    // (undocumented)
+    onUpdate(callback: UpdateCallback): this;
+    // (undocumented)
+    pause(time: number): this;
+    // (undocumented)
+    repeat(times: number): this;
+    // (undocumented)
+    repeatDelay(amount: number): this;
+    // (undocumented)
+    resume(time?: number): this;
+    // (undocumented)
+    start(time?: string | number): this;
+    // (undocumented)
+    stop(): this;
+    // (undocumented)
+    stopChainedTweens(): void;
+    // (undocumented)
+    to(properties: any, duration?: number): this;
+    // (undocumented)
+    update(time: number): boolean;
+    // (undocumented)
+    yoyo(yoyo: boolean): this;
+    }
+
+// @beta (undocumented)
+export type TweenCallback = (obj: any) => void;
+
+// @beta
+export class Tweens {
+    // (undocumented)
+    add(tween: Tween): void;
+    create(from: any, opts?: {
+        to: any;
+        duration: number;
+        onUpdate: UpdateCallback;
+        delay?: number;
+        start?: boolean;
+        easing?: EasingFunction;
+        interpolation?: InterpolationFunction;
+    }): Tween;
+    // (undocumented)
+    getAll(): any[];
+    // (undocumented)
+    nextId(): number;
+    // (undocumented)
+    remove(tween: Tween): void;
+    // (undocumented)
+    removeAll(): void;
+    // (undocumented)
+    update(time?: number, preserve?: boolean): boolean;
+}
+
 // @public
 export class TypeDefinition extends RelatedElement {
 }
@@ -5215,6 +5374,9 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     // (undocumented)
     recipe?: RelatedElementProps;
 }
+
+// @beta (undocumented)
+export type UpdateCallback = (obj: any, t: number) => void;
 
 // @public (undocumented)
 export interface ViewAttachmentLabelProps extends GeometricElement2dProps {

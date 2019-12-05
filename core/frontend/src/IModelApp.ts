@@ -294,24 +294,28 @@ export class IModelApp {
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
 
-    const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
+    // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = this.i18n.registerNamespace("CoreTools");
-    tools.registerModule(selectTool, coreNamespace);
-    tools.registerModule(idleTool, coreNamespace);
-    tools.registerModule(viewTool, coreNamespace);
-    tools.registerModule(clipViewTool, coreNamespace);
-    tools.registerModule(measureTool, coreNamespace);
-    tools.registerModule(accudrawTool, coreNamespace);
-    tools.registerModule(pluginTool, coreNamespace);
+    [
+      selectTool,
+      idleTool,
+      viewTool,
+      clipViewTool,
+      measureTool,
+      accudrawTool,
+      pluginTool,
+    ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
-    this.registerModuleEntities(modelState);
-    this.registerModuleEntities(sheetState);
-    this.registerModuleEntities(viewState);
-    this.registerModuleEntities(displayStyleState);
-    this.registerModuleEntities(modelselector);
-    this.registerModuleEntities(categorySelectorState);
-    this.registerModuleEntities(auxCoordState);
+    [
+      modelState,
+      sheetState,
+      viewState,
+      displayStyleState,
+      modelselector,
+      categorySelectorState,
+      auxCoordState,
+    ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
@@ -329,36 +333,36 @@ export class IModelApp {
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
 
-    this.renderSystem.onInitialized();
-    this.viewManager.onInitialized();
-    this.toolAdmin.onInitialized();
-    this.accuDraw.onInitialized();
-    this.accuSnap.onInitialized();
-    this.locateManager.onInitialized();
-    this.tentativePoint.onInitialized();
-    this.pluginAdmin.onInitialized();
-    this.quantityFormatter.onInitialized();
-    if (this._terrainProvider)
-      this._terrainProvider.onInitialized();
-    this.uiAdmin.onInitialized();
+    [
+      this.renderSystem,
+      this.viewManager,
+      this.toolAdmin,
+      this.accuDraw,
+      this.accuSnap,
+      this.locateManager,
+      this.tentativePoint,
+      this.pluginAdmin,
+      this.quantityFormatter,
+      this._terrainProvider,
+      this.uiAdmin,
+    ].forEach((sys) => {
+      if (sys)
+        sys.onInitialized();
+    });
   }
 
   /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
-    if (this._initialized) {
-      this._wantEventLoop = false;
-      window.removeEventListener("resize", IModelApp.requestNextAnimation);
-      this.clearIntervalAnimation();
+    if (!this._initialized)
+      return;
 
-      this.toolAdmin.onShutDown();
-      this.viewManager.onShutDown();
-      this.tileAdmin.onShutDown();
-
-      this._renderSystem = dispose(this._renderSystem);
-      this._entityClasses.clear();
-
-      this._initialized = false;
-    }
+    this._wantEventLoop = false;
+    window.removeEventListener("resize", IModelApp.requestNextAnimation);
+    this.clearIntervalAnimation();
+    [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
+    this._renderSystem = dispose(this._renderSystem);
+    this._entityClasses.clear();
+    this._initialized = false;
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.

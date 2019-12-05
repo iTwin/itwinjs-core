@@ -57,6 +57,11 @@ const enum ViewManipPriority {
 
 const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 
+// dampen an inertia vector according to tool settings
+const inertialDampen = (pt: Vector3d) => {
+  pt.scaleInPlace(Geometry.clamp(ToolSettings.viewingInertia.damping, .75, .999));
+};
+
 /** An InteractiveTool that manipulates a view.
  * @public
  */
@@ -917,7 +922,7 @@ abstract class HandleWithInertia extends ViewingToolHandle implements Animator {
       return true; // remove this as the animator
     }
     this.perform(pt); // perform the viewing operation
-    this._inertiaVec.scaleInPlace(ToolSettings.viewingInertia.damping); // dampen the inertia vector
+    inertialDampen(this._inertiaVec);
     return false;
   }
 
@@ -2188,7 +2193,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
     this._lastPtView.setFrom(pt);
     this.perform();
-    this._inertiaVec.scaleInPlace(ToolSettings.viewingInertia.damping); // dampen the inertia vector
+    inertialDampen(this._inertiaVec);
     return false;
   }
 
@@ -2644,7 +2649,7 @@ export class SetupCameraTool extends PrimitiveTool {
       return;
 
     vp.synchWithView(true);
-    vp.animateToCurrent(startFrust, BeDuration.fromMilliseconds(500));
+    vp.animateToCurrent(startFrust);
   }
 
   private _useCameraHeightValue = new ToolSettingsValue(false);

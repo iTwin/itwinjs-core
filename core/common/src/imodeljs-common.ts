@@ -36,6 +36,7 @@ export * from "./ViewProps";
 export * from "./Render";
 export * from "./Paging";
 export * from "./RenderSchedule";
+export * from "./Tween";
 export * from "./ChangedElements";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
@@ -138,4 +139,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description SpatialClassificationProps
  * Classes for spatial classification.
+ */
+/**
+ * @docs-group-description Tween
+ * Tweening library adapted from tween.js
  */

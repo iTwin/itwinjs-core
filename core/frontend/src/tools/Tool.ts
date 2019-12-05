@@ -21,7 +21,7 @@ import { ScreenViewport, Viewport } from "../Viewport";
  */
 export class ToolSettings {
   /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(260);
+  public static animationTime = BeDuration.fromMilliseconds(750);
   /** Two tap must be within this period to be a double tap. */
   public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
   /** Two clicks must be within this period to be a double click. */
@@ -59,15 +59,15 @@ export class ToolSettings {
   /** the speed to zoom for the "zoom view" tool (ratio per second). */
   public static zoomSpeed = 2;
   /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.75;
+  public static wheelZoomRatio = 1.5;
   /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
   public static viewingInertia = {
     /** Flag to enable inertia. */
     enabled: true,
     /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
-    damping: .9,
+    damping: .96,
     /** Maximum duration of the inertia operation. Important when frame rates are low. */
-    duration: BeDuration.fromMilliseconds(450),
+    duration: BeDuration.fromMilliseconds(500),
   };
 }
 

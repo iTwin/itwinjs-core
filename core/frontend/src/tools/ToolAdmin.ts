@@ -6,7 +6,7 @@
 
 import { BeEvent, AbandonedError, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -15,7 +15,7 @@ import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsVal
 import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
+import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -1552,8 +1552,6 @@ export class WheelEventProcessor {
     await this.doZoom(ev);
 
     if (doUpdate) {
-      vp.synchWithView(true);
-
       // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
       IModelApp.accuSnap.clear();
     }
@@ -1581,6 +1579,10 @@ export class WheelEventProcessor {
       isSnapOrPrecision = CoordSource.Precision === ev.coordsFrom;
       target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
     }
+
+    const animationOptions: ViewChangeOptions = {
+      saveInUndo: true, animateFrustumChange: true, cancelOnAbort: true, animationTime: 175, easingFunction: Easing.Linear.None,
+    };
 
     let status: ViewStatus;
     if (vp.view.is3d() && vp.isCameraOn) {
@@ -1627,8 +1629,11 @@ export class WheelEventProcessor {
         IModelApp.toolAdmin.currentInputState.lastWheelEvent = thisEvent;
       }
 
+      const before = vp.getFrustum();
       status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
-      vp.synchWithView(false);
+      vp.synchWithView(true);
+      vp.animateToCurrent(before, animationOptions);
+
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
@@ -1636,7 +1641,7 @@ export class WheelEventProcessor {
 
       trans.multiplyPoint3d(viewCenter, viewCenter);
       vp.npcToWorld(viewCenter, viewCenter);
-      vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
+      vp.zoom(viewCenter, zoomRatio, animationOptions);
       status = ViewStatus.Success;
     }
 

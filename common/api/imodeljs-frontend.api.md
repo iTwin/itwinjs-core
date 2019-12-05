@@ -43,6 +43,7 @@ import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
 import { ElementAlignedBox2d } from '@bentley/imodeljs-common';
@@ -964,6 +965,13 @@ export class AnimationBranchState {
 
 // @internal
 export type AnimationBranchStates = Map<string, AnimationBranchState>;
+
+// @public
+export interface AnimationOptions {
+    animationTime?: number;
+    cancelOnAbort?: boolean;
+    easingFunction?: EasingFunction;
+}
 
 // @beta
 export interface Animator {
@@ -6221,9 +6229,9 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
-    animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
+    animateFrustumChange(start: Frustum, end: Frustum, options: AnimationOptions, fromUndo?: ViewStateUndo): void;
     // @internal
-    animateToCurrent(start: Frustum, animationTime?: BeDuration): void;
+    animateToCurrent(start: Frustum, options?: AnimationOptions): void;
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState): void;
     clearViewUndo(): void;
@@ -8558,9 +8566,8 @@ export enum UsesSelection {
 }
 
 // @public
-export interface ViewChangeOptions {
+export interface ViewChangeOptions extends AnimationOptions {
     animateFrustumChange?: boolean;
-    animationTime?: BeDuration;
     marginPercent?: MarginPercent;
     saveInUndo?: boolean;
 }

@@ -11,7 +11,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
-  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, Easing, EasingFunction,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -416,13 +416,37 @@ export interface Animator {
   interrupt(): void;
 }
 
+/** Options that control how an Viewport animation behaves.
+ * @public
+ */
+export interface AnimationOptions {
+  /** Amount of time for animation. Default is ToolSettings.animationTime, in milliseconds */
+  animationTime?: number;
+  /** if animation is aborted, don't move to end, leave at current point instead. */
+  cancelOnAbort?: boolean;
+  /** easing function for animation */
+  easingFunction?: EasingFunction;
+}
+
+/** Options that control how operations that change a viewport behave.
+ * @public
+ */
+export interface ViewChangeOptions extends AnimationOptions {
+  /** Whether to save the result of this change into the view undo stack. Default is yes. */
+  saveInUndo?: boolean;
+  /** Whether the change should be animated or not. Default is yes. */
+  animateFrustumChange?: boolean;
+  /** The percentage of the view to leave blank around the edges. */
+  marginPercent?: MarginPercent;
+}
+
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
  * @internal
  */
 class FrustumAnimator implements Animator {
   private readonly _currFrustum = new Frustum();
-  private _startTime?: BeTimePoint;
   private _interpolator?: SmoothTransformBetweenFrusta;
+  private _tweens = new Tweens();
 
   private moveToFraction(fraction: number): boolean {
     const vp = this.viewport;
@@ -441,36 +465,29 @@ class FrustumAnimator implements Animator {
     return false;
   }
 
-  public constructor(public totalTime: BeDuration, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
-    if (totalTime.isTowardsFuture)
-      this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
+  public constructor(public options: AnimationOptions, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
+    const duration = options.animationTime ? options.animationTime : ToolSettings.animationTime.milliseconds;
+    if (duration <= 0)
+      return;
+    this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
+
+    this._tweens.create({ fraction: 0.0 }, {
+      to: { fraction: 1.0 },
+      duration,
+      easing: options.easingFunction ? options.easingFunction : Easing.Quadratic.InOut,
+      start: true,
+      onUpdate: (obj: any) => this.moveToFraction(obj.fraction),
+    });
   }
 
   public animate() {
-    const currTime = BeTimePoint.now();
-    if (undefined === this._startTime)
-      this._startTime = currTime;
-
-    return this.moveToFraction((currTime.milliseconds - this._startTime.milliseconds) / this.totalTime.milliseconds);
+    return !this._tweens.update();
   }
 
   public interrupt() {
-    this.moveToFraction(1.0); // Skip to final frustum
+    if (!this.options.cancelOnAbort)
+      this.moveToFraction(1.0); // Skip to final frustum
   }
-}
-
-/** Options that control how operations that change a view work.
- * @public
- */
-export interface ViewChangeOptions {
-  /** Whether to save the result of this change into the view undo stack. Default is yes. */
-  saveInUndo?: boolean;
-  /** Whether the change should be animated or not. Default is yes. */
-  animateFrustumChange?: boolean;
-  /** Amount of time for animation. Default = `ToolSettings.animationTime` */
-  animationTime?: BeDuration;
-  /** The percentage of the view to leave blank around the edges. */
-  marginPercent?: MarginPercent;
 }
 
 /** Options to allow changing the view rotation with zoomTo methods.
@@ -3080,11 +3097,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
-    if (!animationTime || 0.0 >= animationTime.milliseconds)
-      animationTime = ToolSettings.animationTime;
-
-    this.setAnimator(new FrustumAnimator(animationTime, this, start, end, fromUndo));
+  public animateFrustumChange(start: Frustum, end: Frustum, options: AnimationOptions, fromUndo?: ViewStateUndo) {
+    this.setAnimator(new FrustumAnimator(options, this, start, end, fromUndo));
   }
 
   /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
@@ -3093,15 +3107,16 @@ export class ScreenViewport extends Viewport {
    * frustum will be restored to its current location.
    * @internal
    */
-  public animateToCurrent(start: Frustum, animationTime?: BeDuration) {
-    this.animateFrustumChange(start, this.getFrustum(), animationTime, this.view.saveForUndo());
+  public animateToCurrent(start: Frustum, options?: AnimationOptions) {
+    options = options ? options : {};
+    this.animateFrustumChange(start, this.getFrustum(), options, this.view.saveForUndo());
   }
 
   protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
     options = options === undefined ? {} : options;
     this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
     if (options.animateFrustumChange === undefined || options.animateFrustumChange)
-      this.animateToCurrent(startFrust, options.animationTime);
+      this.animateToCurrent(startFrust, options);
   }
 
   /** @internal */
@@ -3216,12 +3231,12 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  private finishUndoRedo(animationTime?: BeDuration): void {
+  private finishUndoRedo(duration?: BeDuration): void {
     this.updateChangeFlags(this.view);
-    const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
+    const startFrust = undefined !== duration ? this.getFrustum() : undefined;
     this.setupFromView();
     if (undefined !== startFrust)
-      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime, this._currentBaseline);
+      this.animateFrustumChange(startFrust, this.getFrustum(), { animationTime: duration ? duration.milliseconds : undefined }, this._currentBaseline);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
