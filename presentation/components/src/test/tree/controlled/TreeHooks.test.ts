@@ -13,7 +13,6 @@ import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import { usePresentationNodeLoader, PresentationNodeLoaderProps } from "../../../tree/controlled/TreeHooks";
 
-// tslint:disable: react-hooks-nesting
 describe("usePresentationNodeLoader", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();

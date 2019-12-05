@@ -148,14 +148,14 @@ function useTreeRenderer() {
       descriptionEnabled={true}
       imageLoader={imageLoader}
     />
-  ), [renderNodeCheckbox]);
+  ), [renderNodeCheckbox, imageLoader]);
 
   return React.useCallback((props: TreeRendererProps) => (
     <TreeRenderer
       {...props}
       nodeRenderer={nodeRenderer}
     />
-  ), []);
+  ), [nodeRenderer]);
 }
 
 function useEventHandler(
