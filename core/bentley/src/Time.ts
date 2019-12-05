@@ -43,6 +43,22 @@ export class BeDuration {
     return new Promise<void>((resolve: any) => setTimeout(resolve, ms));
   }
 
+  /** Utility function to wait for either the specified time or a promise, whichever resolves first
+   * @param ms Maximum duration in milliseconds to wait
+   * @param promise A pending promise to wait for
+   * @return Promise that resolves after the specified wait period or the provided promise resolves, whichever comes first
+   */
+  public static async race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void> {
+    let timeout: any;
+    const waitPromise = new Promise<void>((resolve) => {
+      timeout = setTimeout(resolve, ms);
+    });
+    return Promise.race([waitPromise, promise]).finally(() => {
+      if (timeout)
+        clearTimeout(timeout);
+    });
+  }
+
   /** Utility function to just wait for the specified time
    * @return Promise that resolves after the specified wait period
    */

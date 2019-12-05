@@ -59,9 +59,8 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     this.log("received", props);
 
     const tileQP = this.memoize(props);
-    const waitPromise = BeDuration.wait(this._timeoutMilliseconds);
 
-    await Promise.race([tileQP.promise, waitPromise]).catch(() => Promise.resolve());
+    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(() => { });
     // Note: Rejections must be caught so that the memoization entry can be deleted
 
     props.requestContext.enter();

@@ -322,10 +322,12 @@ export class IModelDb extends IModel {
         if (typeof openParams.timeout === "undefined")
           await briefcaseEntry.isPending;
         else {
-          const waitPromise = BeDuration.wait(openParams.timeout).then(() => {
-            timedOut = true;
-          });
-          await Promise.race([briefcaseEntry.isPending, waitPromise]);
+          timedOut = true;
+          const waitForOpen = async () => {
+            await briefcaseEntry.isPending;
+            timedOut = false;
+          };
+          await BeDuration.race(openParams.timeout, waitForOpen());
         }
       }
     } catch (error) {

@@ -43,6 +43,7 @@ export class BeDuration {
     readonly milliseconds: number;
     minus(other: BeDuration): BeDuration;
     plus(other: BeDuration): BeDuration;
+    static race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void>;
     // (undocumented)
     readonly seconds: number;
     static wait(ms: number): Promise<void>;
