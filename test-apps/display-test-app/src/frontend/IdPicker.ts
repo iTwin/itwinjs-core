@@ -350,7 +350,7 @@ export class ModelPicker extends IdPicker {
         const enabledIds = this._enabledIds;
         for (let i = 0; i < this._availableIdList.length; i++) {
           if (enabledIds.has(this._availableIdList[i])) {
-            this._stepIndex = i;
+            this.stepToIndex(i);
             break;
           }
         }
