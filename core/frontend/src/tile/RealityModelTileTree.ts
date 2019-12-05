@@ -15,7 +15,7 @@ import {
   Guid,
   Id64String,
 } from "@bentley/bentleyjs-core";
-import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ } from "@bentley/geometry-core";
+import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
 import { Tile } from "./Tile";
@@ -348,9 +348,22 @@ export namespace RealityModelTileTree {
     const json = await tileClient.getRootDocument(url);
     const ecefLocation = iModel.ecefLocation;
     let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
-    if (json.root.transform)
-      rootTransform = rootTransform.multiplyTransformTransform(RealityModelTileUtils.transformFromJson(json.root.transform));
-    else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
+    if (json.root.transform) {
+      const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
+      rootTransform = rootTransform.multiplyTransformTransform(realityToEcef);
+      if (undefined !== ecefLocation) {
+        const carto = Cartographic.fromEcef(realityToEcef.getOrigin());
+        const ypr = YawPitchRollAngles.createFromMatrix3d(rootTransform.matrix);
+        // If the reality model is located in the same region then align the cartesian systems as otherwise different origins
+        // will result in a misalignment from the curvature of the earth.
+        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.pitch.degrees) < .5 && Math.abs(ypr.roll.degrees) < .5) {
+          ypr.pitch.setRadians(0);
+          ypr.roll.setRadians(0);
+          ypr.toMatrix3d(rootTransform.matrix);
+          rootTransform.origin.z = carto.height;
+        }
+      }
+    } else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
       rootTransform = Transform.createTranslationXYZ(0, 0, (json.root.boundingVolume.region[4] + json.root.boundingVolume.region[5]) / 2.0).multiplyTransformTransform(rootTransform);
 
     if (undefined !== tilesetToDbJson)
