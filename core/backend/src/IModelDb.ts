@@ -1885,18 +1885,22 @@ export namespace IModelDb {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result as IModelJsNative.TileContent;
-        const iModelGuid = this._iModel.getGuid();
+        let iModelId = this._iModel.iModelToken.iModelId;
+        if (undefined === iModelId) {
+          // iModel not in hub - therefore we're almost certainly not logging to SEQ so don't much care...
+          iModelId = "";
+        }
 
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;
         const tileSize = res.content.length;
         if (tileSize > tileSizeThreshold) {
-          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelId }));
         }
 
         const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
         const loadTime = res.elapsedSeconds;
         if (loadTime > loadTimeThreshold) {
-          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelId }));
         }
 
         resolve(res.content);
