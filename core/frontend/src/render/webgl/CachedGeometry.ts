@@ -6,7 +6,7 @@
 
 import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Vector2d, Point2d } from "@bentley/geometry-core";
 import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
@@ -25,11 +25,12 @@ import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
 import { AttributeMap } from "./AttributeMap";
+import { WebGlDisposable } from "./Disposable";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
  */
-export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class CachedGeometry implements WebGlDisposable, RenderMemory.Consumer {
   protected _range?: Range3d;
   /**
    * Functions for obtaining a subclass of CachedGeometry.
@@ -52,6 +53,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   // Returns the edge/line pattern used to render this geometry
   protected _getLineCode(_params: ShaderProgramParams): number { return LineCode.solid; }
 
+  public abstract get isDisposed(): boolean;
   // Returns the Id of the Technique used to render this geometry
   public abstract get techniqueId(): TechniqueId;
   // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
@@ -181,7 +183,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 /** Parameters used to construct an IndexedGeometry
  * @internal
  */
-export class IndexedGeometryParams implements IDisposable {
+export class IndexedGeometryParams implements WebGlDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
@@ -210,6 +212,12 @@ export class IndexedGeometryParams implements IDisposable {
     return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.positions.isDisposed
+      && this.indices.isDisposed;
+  }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this.positions);
@@ -227,6 +235,8 @@ export abstract class IndexedGeometry extends CachedGeometry {
     super();
     this._params = params;
   }
+
+  public get isDisposed(): boolean { return this._params.isDisposed; }
 
   public dispose() {
     dispose(this._params);
@@ -336,7 +346,7 @@ class SkyBoxQuads {
 /** Parameters used to construct an SkyBox
  * @internal
  */
-export class SkyBoxGeometryParams implements IDisposable {
+export class SkyBoxGeometryParams implements WebGlDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
 
@@ -355,6 +365,8 @@ export class SkyBoxGeometryParams implements IDisposable {
 
     return new SkyBoxGeometryParams(posBuf);
   }
+
+  public get isDisposed(): boolean { return this.buffers.isDisposed && this.positions.isDisposed; }
 
   public dispose() {
     dispose(this.buffers);
@@ -408,6 +420,8 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
 
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
+
+  public get isDisposed(): boolean { return this._params.isDisposed; }
 
   public dispose() {
     dispose(this._params);
@@ -626,7 +640,10 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 
+  public get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
+
   public dispose() {
+    super.dispose();
     dispose(this._worldPosBuff);
   }
 }
@@ -878,6 +895,8 @@ export class ScreenPointsGeometry extends CachedGeometry {
     this.buffers.unbind();
   }
 
+  public get isDisposed(): boolean { return this.buffers.isDisposed && this._positions.isDisposed; }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this._positions);
@@ -896,7 +915,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 }
 
 /** @internal */
-export class PolylineBuffers implements IDisposable {
+export class PolylineBuffers implements WebGlDisposable {
   public buffers: BuffersContainer;
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
@@ -934,6 +953,13 @@ export class PolylineBuffers implements IDisposable {
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
     stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
+  }
+
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.indices.isDisposed
+      && this.prevIndices.isDisposed
+      && this.nextIndicesAndParams.isDisposed;
   }
 
   public dispose() {

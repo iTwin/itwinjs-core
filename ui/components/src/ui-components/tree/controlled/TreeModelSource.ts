@@ -12,18 +12,23 @@ import { LoadedNodeHierarchy, LoadedNodeHierarchyItem, ITreeNodeLoader } from ".
 /**
  * Controls tree model and visible tree nodes.
  * It is used to modify model and inform when tree model changes.
- * @alpha
+ * @beta
  */
 export class TreeModelSource {
   private _model = new MutableTreeModel();
   private _visibleNodes?: VisibleTreeNodes;
 
+  /** Event that is emitted every time tree model is changed. */
   public onModelChanged = new BeUiEvent<TreeModel>();
 
   constructor() {
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
   }
 
+  /**
+   * Modifies tree model using provided callback.
+   * If changes to tree model is detected then onModelChanged event is emitted.
+   */
   public modifyModel(callback: (model: MutableTreeModel) => void): void {
     const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft));
     if (newModel !== this._model) {
@@ -32,8 +37,10 @@ export class TreeModelSource {
     }
   }
 
+  /** Returns tree model. */
   public getModel(): TreeModel { return this._model; }
 
+  /** Computes and returns flat list of visible tree nodes. */
   public getVisibleNodes(): VisibleTreeNodes {
     if (!this._visibleNodes) {
       this._visibleNodes = this._model.computeVisibleNodes();
@@ -49,7 +56,7 @@ export class TreeModelSource {
  *
  * @returns created TreeModelSource and callback to remove listener from onNodeLoaded event.
  *
- * @alpha
+ * @beta
  */
 export function createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader) {
   const modelSource = new TreeModelSource();
@@ -60,7 +67,7 @@ export function createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader) {
 
 /**
  * Creates a function which can handle ITreeNodeLoader onNodeLoaded event.
- * @alpha
+ * @beta
  */
 export function createDefaultNodeLoadHandler(modelSource: TreeModelSource) {
   return (loadedHierarchy: LoadedNodeHierarchy) => {

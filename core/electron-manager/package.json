@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "1.9.0-dev.6",
+  "version": "1.9.0-dev.15",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -31,20 +31,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "electron": "^4.1.0"
+    "electron": "^6.1.5",
+    "@bentley/bentleyjs-core": "^1.9.0-dev.15",
+    "@bentley/imodeljs-backend": "^1.9.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "1.9.0-dev.6",
+    "@bentley/build-tools": "1.9.0-dev.15",
+    "@bentley/bentleyjs-core": "1.9.0-dev.15",
+    "@bentley/imodeljs-backend": "1.9.0-dev.15",
     "@types/node": "10.14.1",
-    "electron": "^4.1.0",
+    "electron": "^6.1.5",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.6.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@openid/appauth": "^1.2.6"
+  }
 }

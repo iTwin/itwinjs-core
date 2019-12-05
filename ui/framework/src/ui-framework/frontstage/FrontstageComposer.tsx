@@ -161,6 +161,33 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     return nineZone;
   }
 
+  private initializeZoneBounds() {
+    this.setState((prevState) => {
+      const frontstageDef = this._frontstageDef;
+      if (!frontstageDef)
+        return null;
+      const manager = FrontstageManager.NineZoneManager;
+      const zonesManager = manager.getZonesManager();
+      let zones = prevState.nineZone.zones;
+      for (const zoneId of widgetZoneIds) {
+        const zoneDef = frontstageDef.getZoneDef(zoneId);
+        if (!zoneDef)
+          continue;
+        if (zoneDef.initialWidth)
+          zones = zonesManager.setZoneWidth(zoneId, zoneDef.initialWidth, zones);
+      }
+      if (zones === prevState.nineZone.zones)
+        return null;
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
+
+  }
+
   private determineWidgetTabs(): WidgetTabs {
     const defaultWidgetTabs = getDefaultWidgetTabs();
     const widgetTabs = widgetZoneIds.reduce((acc, zoneId) => {
@@ -202,9 +229,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         nineZone,
         widgetTabs,
       }, () => {
-        if (needInitialLayout)
-          this.initializeFrontstageLayout(nineZone);
+        needInitialLayout && this.initializeFrontstageLayout(nineZone);
         this.layout();
+        needInitialLayout && this.initializeZoneBounds();
       });
   }
 
@@ -324,6 +351,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   public componentDidMount(): void {
     this._isMounted = true;
     this.layout();
+    this.initializeZoneBounds();
     window.addEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);

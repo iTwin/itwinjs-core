@@ -1,6 +1,6 @@
 # Guidelines for Contributing to iModel.js UI Source Code
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
@@ -12,7 +12,7 @@ In order to maintain consistency in the iModel.js UI source code, please abide b
 
 ```typescript
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 ```

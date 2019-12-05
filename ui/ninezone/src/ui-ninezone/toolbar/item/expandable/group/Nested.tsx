@@ -34,13 +34,11 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
 
     return (
       <Panel className={className} style={this.props.style}>
-        <div
-          className="nz-back-arrow-container"
+        <BackArrow
+          className="nz-back"
           onClick={this.props.onBack}
           onPointerUp={this.props.onBackPointerUp}
-        >
-          <BackArrow />
-        </div>
+        />
         <Title>
           {this.props.title}
         </Title>

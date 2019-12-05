@@ -4,7 +4,7 @@
 
 ## Default ToolSettings Provider
 
-Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of 'ToolSettingsPropertyRecord' objects that define the  property definitions and its position with a grid layout. The default ToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified.  Unless suppressed via an `EditorParams` a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor.  The editor can occupy multiple columns in the layout grid by specifying a `columnSpan` value in the properties editor position parameters. The default `columnSpan` value is 1.
+Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of 'ToolSettingsPropertyRecord' objects that define the  property definitions and its position with a grid layout. The default ToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified.  Unless suppressed via an `EditorParams`, a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor.  The editor can occupy multiple columns in the layout grid by specifying a `columnSpan` value in the properties editor position parameters. The default `columnSpan` value is 1.
 
 ### Informing Tool of property changes
 
@@ -18,14 +18,14 @@ If the 'Active' Tool updates a property that is being displayed by a type editor
 
 The following classes defined within the imodeljs-frontend package are used by the Default Tool Settings Provider.
 
-* ToolSettingsPropertyRecord
-* PropertyRecord
-* PropertyDescription
-* ToolSettingsValue
-* ToolSettingsPropertySyncItem
-* EditorPosition
-* PropertyEditorParamTypes
-* PropertyValue
+* [ToolSettingsPropertyRecord]($imodeljs-frontend)
+* [PropertyRecord]($imodeljs-frontend)
+* [PropertyDescription]($imodeljs-frontend)
+* [ToolSettingsValue]($imodeljs-frontend)
+* [ToolSettingsPropertySyncItem]($imodeljs-frontend)
+* [EditorPosition]($imodeljs-frontend)
+* [PropertyEditorParamTypes]($imodeljs-frontend)
+* [PropertyValue]($imodeljs-frontend)
 
 ## API Reference
 

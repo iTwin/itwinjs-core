@@ -2,6 +2,117 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-frontend_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added iModel.js logo in lower right corner of views."
+          },
+          {
+            "comment": "Touch move event should not clear viewport animator. Put a time limit on what's considered a touch tap."
+          },
+          {
+            "comment": "Clip low resolution terrain tiles to their displayable children ranges."
+          },
+          {
+            "comment": "Fix bing tile attribution.  Optimize map reprojection."
+          },
+          {
+            "comment": "Logo card link opens in a new tab/window."
+          },
+          {
+            "comment": "Fix whitespace"
+          },
+          {
+            "comment": "Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined."
+          },
+          {
+            "comment": "optimized ReadPixels call for when volumes classifiers are in use"
+          },
+          {
+            "comment": "Flashed element wasn't being cleared after a tentative."
+          },
+          {
+            "comment": "Limit map tile loading in orthographic views."
+          },
+          {
+            "comment": "Add css styles in IModelApp.ts"
+          },
+          {
+            "comment": "Open logo card on touch start."
+          },
+          {
+            "comment": "Allow zoom handle to move through depth point."
+          },
+          {
+            "comment": "Added measure area by points tool. Measure and clip tool decoration improvements."
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "When rendering transparent objects during opaque pass, ensure alpha is set to 1."
+          },
+          {
+            "comment": "Report unsuported snap mode for view independent geometry when not using origin snap instead of unsnappable subcategory"
+          },
+          {
+            "comment": "Rework reality model loading to preload tiles."
+          },
+          {
+            "comment": "Added method to Plugin that allows a Plugin to control whether the \"loaded\" message appears on repeated loads of same Plugin."
+          },
+          {
+            "comment": "When a reality tile is not present use higher resolution tiles if ready."
+          },
+          {
+            "comment": "Fix excessive number of tile requests when solar shadows are enabled."
+          },
+          {
+            "comment": "Change shadow bias to 0.1"
+          },
+          {
+            "comment": "Ensure only surfaces cast shadows."
+          },
+          {
+            "comment": "Tweak map and terrain tile loading."
+          },
+          {
+            "comment": "Improve user experience by not displaying underresolved tiles."
+          },
+          {
+            "comment": "Add support for view-independent display."
+          },
+          {
+            "comment": "View target center handle now uses depth preview point instead of AccuSnap."
+          },
+          {
+            "comment": "Added depth point preview for rotate, pan, and zoom tools."
+          },
+          {
+            "comment": "When depth point is from an element hit, flash the element too."
+          },
+          {
+            "comment": "Depth preview refinement and new view tool cursors."
+          },
+          {
+            "comment": "Simplify walk tool by using Viewport Animator interface"
+          },
+          {
+            "comment": "Add walk cursor"
+          },
+          {
+            "comment": "Fix shadows failing to draw after resizing a viewport."
+          },
+          {
+            "comment": "Use Viewport.animate for zoom and scroll tools"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-frontend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

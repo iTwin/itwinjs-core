@@ -254,7 +254,7 @@ describe("ToolSettingsZone", () => {
     const initialPosition = { x: 2, y: 4 };
     toolSettings.prop("onDragStart")!(initialPosition);
 
-    expect(spy.calledOnceWithExactly(2, 0, sinon.match(initialPosition) as any, sinon.match(widgetBounds) as any)).to.true;
+    expect(spy.calledOnceWithExactly(2, 0, sinon.match(initialPosition), sinon.match(widgetBounds))).to.true;
   });
 
   it("should not handle drag start with unset ref", () => {

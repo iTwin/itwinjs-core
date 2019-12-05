@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
@@ -21,7 +21,9 @@ import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
-import { TestUsers } from "./TestUsers";
+
+import { TestUsers, UserCredentials } from "./TestUsers";
+import { getToken } from "@bentley/oidc-signin-tool";
 
 /** Class for simple test timing */
 export class Timer {
@@ -143,8 +145,20 @@ export class IModelTestUtils {
     return iModelInfo;
   }
 
-  public static async getTestUserRequestContext(userCredentials: ImsUserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
-    const accessToken: AccessToken = await HubUtility.login(userCredentials);
+  // Cache the users and access token so each call doesn't need to sign-in again
+  private static _testUsers: Map<string, AccessToken> = new Map<string, AccessToken>();
+
+  public static async getTestUserRequestContext(userCredentials: UserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
+    // TODO: This caching won't work if the current token times out.  Need to implement some kind of refresh or purge it from the cache when it expires
+    // to trigger another signin cycle.
+    let accessToken: AccessToken;
+    if (IModelTestUtils._testUsers.has(userCredentials.email))
+      accessToken = IModelTestUtils._testUsers.get(userCredentials.email)!;
+    else {
+      accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.scopes, TestUsers.oidcConfig, Config.App.getNumber("imjs_buddi_resolve_url_using_region", 0));
+      IModelTestUtils._testUsers.set(userCredentials.email, accessToken);
+    }
+
     return new AuthorizedBackendRequestContext(accessToken);
   }
 

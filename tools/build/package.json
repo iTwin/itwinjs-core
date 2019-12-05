@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "1.9.0-dev.6",
+  "version": "1.9.0-dev.15",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -26,7 +26,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@microsoft/api-extractor": "7.5.4",
+    "@microsoft/api-extractor": "7.6.2",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",
     "commander": "^2.14.1",

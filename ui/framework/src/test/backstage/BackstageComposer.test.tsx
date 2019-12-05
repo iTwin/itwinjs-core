@@ -80,7 +80,7 @@ describe("useGroupedItems", () => {
     sandbox.stub(manager, "items").get(() => items);
     shallow(<TestHook renderItems={spy} />);
 
-    spy.calledOnceWithExactly(sinon.match([]) as any).should.true;
+    spy.calledOnceWithExactly(sinon.match([])).should.true;
   });
 
   it("should group items by group priority", () => {
@@ -95,6 +95,6 @@ describe("useGroupedItems", () => {
     spy.calledOnceWithExactly(sinon.match([[
       items[0],
       items[1],
-    ]]) as any).should.true;
+    ]])).should.true;
   });
 });

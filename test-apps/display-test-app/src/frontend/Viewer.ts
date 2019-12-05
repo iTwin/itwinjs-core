@@ -153,18 +153,16 @@ export class Viewer extends Window {
     this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
 
-    const toolbarDiv = document.createElement("div");
-    toolbarDiv.className = "topdiv";
-    this.toolBar = new ToolBar(toolbarDiv);
+    this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-properties",
+      iconUnicode: "\ue90c", // properties
       tooltip: "Debug info",
       createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
     });
 
     this.toolBar.addItem(createToolButton({
-      className: "bim-icon-briefcases",
+      iconUnicode: "\ue9cc",
       tooltip: "Open iModel from disk",
       click: () => {
         this.selectIModel(); // tslint:disable-line:no-floating-promises
@@ -176,7 +174,7 @@ export class Viewer extends Window {
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
 
     this.toolBar.addDropDown({
-      className: "bim-icon-model",
+      iconUnicode: "\ue90b", // "model"
       tooltip: "Models",
       only3d: true,
       createDropDown: async (container: HTMLElement) => {
@@ -187,7 +185,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-categories",
+      iconUnicode: "\ue901", // "categories"
       tooltip: "Categories",
       createDropDown: async (container: HTMLElement) => {
         const picker = new CategoryPicker(this.viewport, container);
@@ -197,7 +195,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-savedview",
+      iconUnicode: "\ue90d", // "savedview"
       tooltip: "External saved views",
       createDropDown: async (container: HTMLElement) => {
         const picker = new SavedViewPicker(this.viewport, container, this);
@@ -213,13 +211,14 @@ export class Viewer extends Window {
     }));
 
     this.toolBar.addItem(createToolButton({
-      className: "rd-icon-measure-distance",
+      iconUnicode: "\ueb08",
       click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
       tooltip: "Measure distance",
     }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-settings",
+      iconUnicode: "\ue90e",
+      tooltip: "View settings",
       createDropDown: async (container: HTMLElement) => {
         const panel = new ViewAttributesPanel(this.viewport, container);
         await panel.populate();
@@ -246,7 +245,7 @@ export class Viewer extends Window {
     }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-gyroscope",
+      iconUnicode: "\ue909", // "gyroscope"
       createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
       tooltip: "Standard rotations",
       only3d: true,
@@ -261,31 +260,31 @@ export class Viewer extends Window {
     this.toolBar.addItem(walk);
 
     this.toolBar.addItem(createToolButton({
-      className: "bim-icon-undo",
+      iconUnicode: "\ue982", // "undo"
       click: () => IModelApp.tools.run("View.Undo", this.viewport),
-      tooltip: "View redo",
-    }));
-
-    this.toolBar.addItem(createToolButton({
-      className: "bim-icon-redo",
-      click: () => IModelApp.tools.run("View.Redo", this.viewport),
       tooltip: "View undo",
     }));
 
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue983", // "redo"
+      click: () => IModelApp.tools.run("View.Redo", this.viewport),
+      tooltip: "View redo",
+    }));
+
     this.toolBar.addDropDown({
-      className: "bim-icon-animation",
+      iconUnicode: "\ue931", // "animation"
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
       tooltip: "Animation / solar time",
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-viewtop",
+      iconUnicode: "\ue916", // "viewtop"
       tooltip: "Sectioning tools",
       createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-property-data",
+      iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Spatial Classification",
       only3d: true,
       createDropDown: async (container: HTMLElement) => {
@@ -296,7 +295,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-isolate",
+      iconUnicode: "\ue90a", // "isolate"
       createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
     });

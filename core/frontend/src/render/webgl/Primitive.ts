@@ -47,6 +47,8 @@ export class Primitive extends Graphic {
     return undefined !== geom ? new this(geom) : undefined;
   }
 
+  public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
+
   public dispose() {
     dispose(this.cachedGeometry);
   }

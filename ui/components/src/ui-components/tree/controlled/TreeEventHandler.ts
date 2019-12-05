@@ -15,43 +15,64 @@ import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
 import { ITreeNodeLoader } from "./TreeNodeLoader";
 import { TreeModelSource } from "./TreeModelSource";
+import { TreeModelNode } from "./TreeModel";
+
+/**
+ * Params used for tree node editing.
+ * @beta
+ */
+export interface TreeEditingParams {
+  /** Callback that is called when node is updated. */
+  onNodeUpdated: (node: TreeModelNode, newValue: string) => void;
+}
 
 /**
  * Data structure that describes tree event handler params.
- * @alpha
+ * @beta
  */
 export interface TreeEventHandlerParams {
+  /** Model source used to modify tree model while handling events. */
   modelSource: TreeModelSource;
+  /** Node loader used to load children when node is expanded. */
   nodeLoader: ITreeNodeLoader;
+  /** Specifies whether children should be disposed when parent node is collapsed or not. */
   collapsedChildrenDisposalEnabled?: boolean;
+  /** Parameters used for node editing. */
+  editingParams?: TreeEditingParams;
 }
 
 /**
  * Default tree event handler.
- * @alpha
+ * @beta
  */
 export class TreeEventHandler implements TreeEvents {
   private _modelMutator: TreeModelMutator;
+  private _editingParams?: TreeEditingParams;
 
   private _disposed = new Subject();
   private _selectionReplaced = new Subject();
 
   constructor(params: TreeEventHandlerParams) {
     this._modelMutator = new TreeModelMutator(params.modelSource, params.nodeLoader, !!params.collapsedChildrenDisposalEnabled);
+    this._editingParams = params.editingParams;
   }
 
+  /** Disposes tree event handler. */
   public dispose() {
     this._disposed.next();
   }
 
+  /** Expands node and starts loading children. */
   public onNodeExpanded({ nodeId }: TreeNodeEvent) {
     from(this._modelMutator.expandNode(nodeId)).pipe(takeUntil(this._disposed)).subscribe();
   }
 
+  /** Collapses node */
   public onNodeCollapsed({ nodeId }: TreeNodeEvent) {
     this._modelMutator.collapseNode(nodeId);
   }
 
+  /** Selects and deselects nodes until event is handled, handler is disposed or selection replaced event occurs. */
   public onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined {
     return from(modifications)
       .pipe(
@@ -65,6 +86,7 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
+  /** Replaces currently selected nodes until event is handled, handler is disposed or another selection replaced event occurs. */
   public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined {
     this._selectionReplaced.next();
 
@@ -86,7 +108,16 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
+  /** Changes nodes checkbox states. */
   public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined {
     return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
+  }
+
+  /** Activates node editing if editing parameters is supplied and node is editable. */
+  public onDelayedNodeClick({ nodeId }: TreeNodeEvent) {
+    if (this._editingParams === undefined)
+      return;
+
+    this._modelMutator.activateEditing(nodeId, this._editingParams.onNodeUpdated);
   }
 }

@@ -9,6 +9,7 @@ import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { SmallSystem } from "./Polynomials";
+// cspell:word currentdFdX
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries
  * from this base class.
@@ -70,7 +71,7 @@ export abstract class AbstractNewtonIterator {
   }
   /**
    * Run iterations, calling various methods from base and derived classes:
-   * * computeStep -- typically evaluate derivatives and solve lineary system.
+   * * computeStep -- typically evaluate derivatives and solve linear system.
    * * currentStepSize -- return numeric measure of the step just computed by computeStep
    * * testConvergence -- test if the step from currentStepSize (along with recent steps) is converged.
    * * applyCurrentStep -- apply the step to the independent variables
@@ -147,7 +148,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
  * @internal
  */
 export abstract class NewtonEvaluatorRtoR {
-/** Evalute function value into member currentF */
+/** Evaluate function value into member currentF */
   public abstract evaluate(x: number): boolean;
   /** Most recent function evaluation. */
   public currentF!: number;
@@ -162,7 +163,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
   private _currentX!: number;
   /** Step size for iteration.
    * * Initialized to 1e-8, which is appropriate for iteration in fraction space.
-   * * Shoulde larger for iteration with real distance as x.
+   * * Should be larger for iteration with real distance as x.
    */
   public derivativeH: number; // step size for approximate derivative
 
@@ -208,14 +209,14 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
  */
 export abstract class NewtonEvaluatorRRtoRRD {
   /** Iteration controller calls this to ask for evaluation of the function and its two partial derivatives.
-   * * The implemention returns true, it must set the currentF object.
+   * * The implementation returns true, it must set the currentF object.
    */
   public abstract evaluate(x: number, y: number): boolean;
   /** most recent function evaluation as xy parts of the plane */
   public currentF!: Plane3dByOriginAndVectors;
   /**
    * constructor.
-   * * This creates a crrentF object to (repeatedly) receive function and derivatives.
+   * * This creates a currentF object to (repeatedly) receive function and derivatives.
    */
   public constructor() {
     this.currentF = Plane3dByOriginAndVectors.createXYPlane();
@@ -243,7 +244,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public getU(): number { return this._currentUV.x; }
   /** Get the current v coordinate */
   public getV(): number { return this._currentUV.y; }
-  /** Move the currentUV coordiante by currentStep. */
+  /** Move the currentUV coordinate by currentStep. */
   public applyCurrentStep(): boolean { return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y); }
   /** Evaluate the functions and derivatives at this._currentUV
    * Invert the jacobian and compute the this._currentStep.

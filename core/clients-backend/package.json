@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "1.9.0-dev.6",
+  "version": "1.9.0-dev.15",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -39,22 +39,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.9.0-dev.6",
-    "@bentley/geometry-core": "^1.9.0-dev.6",
-    "@bentley/imodeljs-clients": "^1.9.0-dev.6",
-    "@bentley/imodeljs-common": "^1.9.0-dev.6"
+    "@bentley/bentleyjs-core": "^1.9.0-dev.15",
+    "@bentley/geometry-core": "^1.9.0-dev.15",
+    "@bentley/imodeljs-clients": "^1.9.0-dev.15",
+    "@bentley/imodeljs-common": "^1.9.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.9.0-dev.6",
-    "@bentley/build-tools": "1.9.0-dev.6",
-    "@bentley/config-loader": "1.9.0-dev.6",
-    "@bentley/geometry-core": "1.9.0-dev.6",
-    "@bentley/imodeljs-clients": "1.9.0-dev.6",
-    "@bentley/imodeljs-common": "1.9.0-dev.6",
+    "@bentley/bentleyjs-core": "1.9.0-dev.15",
+    "@bentley/build-tools": "1.9.0-dev.15",
+    "@bentley/config-loader": "1.9.0-dev.15",
+    "@bentley/geometry-core": "1.9.0-dev.15",
+    "@bentley/imodeljs-clients": "1.9.0-dev.15",
+    "@bentley/imodeljs-common": "1.9.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
@@ -78,14 +78,15 @@
   },
   "dependencies": {
     "openid-client": "^2.3.1",
-    "@openid/appauth": "^1.1.1",
     "https-proxy-agent": "^3.0.0",
     "deep-assign": "^2.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",
     "fs-write-stream-atomic": "^1.0.10",
     "semver": "^5.5.0",
-    "jsonwebtoken": "^8.5.0"
+    "jsonwebtoken": "^8.5.0",
+    "@openid/appauth": "^1.2.6",
+    "username": "^5.1.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

@@ -2,6 +2,36 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/geometry-core_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal "
+          },
+          {
+            "comment": "BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections"
+          },
+          {
+            "comment": "Feature#211247 Intersect Ray with Sphere"
+          },
+          {
+            "comment": "Spherical patch range; optional result in range3d.corners()"
+          },
+          {
+            "comment": "Refactor analysis of range of a+b sin(theta) + c sin(theta)"
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Added earthRadiusWGS84 constants"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/geometry-core_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

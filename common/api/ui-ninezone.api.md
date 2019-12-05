@@ -35,6 +35,8 @@ export class BackArrow extends React.PureComponent<BackArrowProps> {
 
 // @alpha
 export interface BackArrowProps extends CommonProps, NoChildrenProps {
+    onClick?: () => void;
+    onPointerUp?: () => void;
 }
 
 // @alpha
@@ -967,6 +969,7 @@ export interface OverflowProps extends ExpandableItemProps {
 
 // @alpha
 export class Panel extends React.PureComponent<PanelProps> {
+    // @deprecated
     static readonly isPanelOpen: boolean;
     // (undocumented)
     render(): JSX.Element;
@@ -2075,6 +2078,8 @@ export class ZonesManager {
     setZoneProps(zoneProps: ZoneManagerProps, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
     setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    setZoneWidth(zoneId: WidgetZoneId, width: number, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     readonly shrinkBottom: UpdateWindowResizeSettings;
     // @internal (undocumented)

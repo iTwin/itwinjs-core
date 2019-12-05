@@ -103,6 +103,7 @@ export const withDragInteraction = <P extends {}, C>(
       onClick && onClick();
     }, [onClick]);
     const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
+      (e.target instanceof Element) && e.target.releasePointerCapture(e.pointerId);
       initialPosition.current = new Point(e.clientX, e.clientY);
       skipClick.current = false;
       longPress.handlePointerDown();

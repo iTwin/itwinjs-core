@@ -247,9 +247,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat: DbResult = this._stmt!.clearBindings();
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
+    if (this._stmt) {
+      const stat: DbResult = this._stmt!.clearBindings();
+      if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
+    }
   }
 
   /** Step this statement to the next row.

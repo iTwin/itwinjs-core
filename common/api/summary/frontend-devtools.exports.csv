@@ -104,4 +104,5 @@ beta;ToggleSkyboxTool
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker
+alpha;ViewportAddRealityModel 
 alpha;ViewportTileSizeModifierTool 

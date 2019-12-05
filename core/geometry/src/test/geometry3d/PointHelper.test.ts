@@ -288,6 +288,10 @@ describe("PolygonOps", () => {
       Point2d.create(ax1, 8),
       Point2d.create(ax0, 8),
       Point2d.create(ax0, 0)];
+    const points3d = [];
+    for (const p of points)
+      points3d.push(Point3d.create(p.x, p.y));
+    const carrier = new Point3dArrayCarrier(points3d);
     const q = 0.1;
     const onEdge = Point2d.create(0, 1);
     ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(onEdge.x, onEdge.y, points)!);
@@ -309,6 +313,12 @@ describe("PolygonOps", () => {
     ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(easyOut.x, easyOut.y, points)!);
     ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(ax1 + q, ay + q, points)!);
 
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygonXY(xHit.x, xHit.y, carrier)!, "IN with horizontal vertex hits");
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygonXY(yHit.x, yHit.y, carrier)!, "IN with vertical vertex hits");
+    ck.testExactNumber(0, PolygonOps.classifyPointInPolygonXY(xyHit.x, xyHit.y, carrier)!, "ON with xy vertex hits");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygonXY(easyOut.x, easyOut.y, carrier)!);
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygonXY(ax1 + q, ay + q, carrier)!);
+
     ck.testExactNumber(0, PolygonOps.testXYPolygonTurningDirections([]));
 
     for (let x = -1.5; x < 14; x += 1.0) {
@@ -320,6 +330,14 @@ describe("PolygonOps", () => {
       else if (x >= ax1 && x <= ax2)
         ck.testExactNumber(0, classification, " expect ON " + x);
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DegenerateInOut", () => {
+    const ck = new Checker();
+    const pointsOnXAxis = [Point3d.create(1, 0, 0), Point3d.create(2, 0, 0), Point3d.create(3, 0, 0)];
+    ck.testUndefined(PolygonOps.classifyPointInPolygon(0, 0, pointsOnXAxis));
+    ck.testUndefined(PolygonOps.classifyPointInPolygonXY(0, 0, new Point3dArrayCarrier(pointsOnXAxis)));
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -20,10 +20,10 @@ if (ElectronRpcConfiguration.isElectron) {
 function selectForElectron(): string | undefined {
   const options = {
     properties: ["openFile"],
-    filters: [{name: "iModels", extensions: ["ibim", "bim"]}],
+    filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
   };
 
-  const filenames = remote.dialog.showOpenDialog(options);
+  const filenames = remote.dialog.showOpenDialogSync(options);
   return undefined !== filenames ? filenames[0] : undefined;
 }
 

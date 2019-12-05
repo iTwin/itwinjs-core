@@ -33,6 +33,7 @@
  * * Angles
  *   * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
  *   * AngleSweep -- an angular interval
+ *   * LatitudeLongitudeNumber -- carrier for position and altitude on sphere or ellipsoid
  *   * YawPitchAndRollAngles -- 3 angles that define a rotated coordinate system.
  * * Utility classes
  *   * FrameBuilder -- construction of coordinate frames from mixed data sources.
@@ -119,8 +120,10 @@
  */
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
+export * from "./geometry3d/LongitudeLatitudeAltitude";
 export * from "./geometry3d/BarycentricTriangle";
 export * from "./geometry3d/BilinearPatch";
+export * from "./geometry3d/Ellipsoid";
 export * from "./geometry3d/FrameBuilder";
 export * from "./geometry3d/FrustumAnimation";
 export * from "./geometry3d/GeometryHandler";

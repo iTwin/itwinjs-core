@@ -1,6 +1,19 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Key-in for selecting elements by Id; option to include part references in InspectElementTool output.
+- Fixed missing exports.
+- Stop the keypress and keydown events in the frontend-devtools keyin field from propagating to other elements.
+- Inspect element key-in now accepts any number of elemnent Ids as a comma-separated list.
+- Key-in for compiling all registered shader programs.
+- Added missing topic descriptions
+- Remove manipulator and marker test code from project extents debug decoration.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

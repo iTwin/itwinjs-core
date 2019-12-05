@@ -1,6 +1,19 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
+- Feature#211247 Intersect Ray with Sphere
+- Spherical patch range; optional result in range3d.corners()
+- Refactor analysis of range of a+b sin(theta) + c sin(theta)
+- Added missing topic descriptions
+- Added earthRadiusWGS84 constants
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

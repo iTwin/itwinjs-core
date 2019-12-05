@@ -32,28 +32,28 @@ The widget is to fill the available space in the zone.
 The content of the widget comes from a **TreeWidget** class that subclasses WidgetControl.
 `applicationData` is defined, which is provided to the WidgetControl constructor via the `options` parameter.
 
-```TSX
-        centerRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
-            widgets={[
-              <Widget iconSpec="icon-tree" labelKey="NineZoneSample:components.tree" fillZone={true}
-                control={TreeWidget}
-                applicationData={{
-                  iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
-                  rulesetId: this._rulesetId,
-                }}
-              />,
-            ]}
-          />
+```tsx
+centerRight={
+  <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+    widgets={[
+      <Widget iconSpec="icon-tree" labelKey="NineZoneSample:components.tree" fillZone={true}
+        control={TreeWidget}
+        applicationData={{
+          iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
+          rulesetId: this._rulesetId,
+        }}
+      />,
+    ]}
+  />
 ```
 
 ## WidgetControls
 
 A subclass of [WidgetControl]($ui-framework) may be used to populate a widget. The `reactElement` property specifies the React component.
 The `options` parameter in the constructor contains the `applicationData` from the Widget component.
-The `setWidgetState` method may called to set the state of the widget.
+The `setWidgetState` method may be called to set the state of the widget.
 
-```TSX
+```tsx
 import * as React from "react";
 
 import {

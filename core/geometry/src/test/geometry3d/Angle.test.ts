@@ -805,6 +805,51 @@ describe("MiscAngles", () => {
     const sweepF = AngleSweep.createStartSweepDegrees();
     ck.testTrue(sweepF.isAlmostEqualAllowPeriodShift(fullDegreesA));
 
+    for (const sign of [-1, 1]) {
+      ck.testFalse(Angle.createDegrees(sign * 90).isHalfCircle);
+      ck.testFalse(Angle.createDegrees(sign * 45).isHalfCircle);
+      ck.testTrue(Angle.createDegrees(sign * 180).isHalfCircle);
+      for (const e of [1.e0 - 8, -1.0e-8]) {
+        ck.testFalse(Angle.createDegrees(sign * 180 + e).isHalfCircle);
+      }
+    }
+    // This demonstrates that addMultipleOf2PiInPlace does indeed protect integer degree
+    let maxDeltaStepBRadians = 0;
+    let maxDeltaStepADegrees = 0;
+    for (const baseDegrees of [0, 45, 60, 90, 270, 10]) {
+      const angleA = Angle.createDegrees(baseDegrees);
+      const baseRadians = Angle.degreesToRadians(baseDegrees);
+      const angleB = Angle.createRadians(Angle.degreesToRadians(baseDegrees));
+      let totalMultiple = 0;
+      // Repeatedly add multiples of 2pi, exercising internal degrees and radians flavors of angles.
+      for (const incrementalMultiple of [0, 1, 2, -1, -2, 5, 10]) {
+        totalMultiple += incrementalMultiple;
+        angleA.addMultipleOf2PiInPlace(incrementalMultiple);
+        angleB.addMultipleOf2PiInPlace(incrementalMultiple);
+        const stepADegrees = (angleA.degrees - baseDegrees);
+        const deltaStepADegrees = stepADegrees - totalMultiple * 360;
+        const stepBRadians = (angleB.radians - baseRadians);
+        const deltaStepBRadians = stepBRadians - totalMultiple * 2.0 * Math.PI;
+        maxDeltaStepADegrees = Math.max(maxDeltaStepADegrees, Math.abs(deltaStepADegrees));
+        maxDeltaStepBRadians = Math.max(maxDeltaStepBRadians, Math.abs(deltaStepBRadians));
+      }
+    }
+    ck.testTrue(0 === maxDeltaStepADegrees, "degree shifts are exact");
+    ck.testFalse(0 === maxDeltaStepBRadians, "radians shifts are not exact");
+    console.log({
+      maxErrDegrees: maxDeltaStepADegrees,
+      maxErrRadians: maxDeltaStepBRadians,
+      maxErrRadiansConvertedToDegrees: Angle.radiansToDegrees(maxDeltaStepBRadians),
+    });
+
+    const f = Angle.createDegrees(10);
+    f.freeze();
+    try {
+      f.setDegrees(20);
+    } catch {
+      console.log(" Yes! We caught the update to frozen angle.");
+    }
+
     expect(ck.getNumErrors()).equals(0);
   });
 

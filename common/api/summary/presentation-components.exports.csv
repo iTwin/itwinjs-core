@@ -3,14 +3,16 @@ Release Tag;API Item
 public;CacheInvalidationProps
 internal;ContentBuilder
 public;ContentDataProvider 
-alpha;controlledTreeWithFilteringSupport
-alpha;ControlledTreeWithFilteringSupportProps
-alpha;controlledTreeWithModelSource
-alpha;ControlledTreeWithModelSourceProps 
-alpha;controlledTreeWithUnifiedSelection
-alpha;ControlledTreeWithUnifiedSelectionProps
+beta;controlledTreeWithFilteringSupport
+beta;ControlledTreeWithFilteringSupportProps
+beta;controlledTreeWithModelSource
+beta;ControlledTreeWithModelSourceProps 
+beta;controlledTreeWithUnifiedSelection
+beta;ControlledTreeWithUnifiedSelectionProps
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
+beta;FavoritePropertiesDataProvider 
+beta;FavoritePropertiesDataProviderProps
 public;IContentDataProvider 
 public;IPresentationDataProvider
 public;IPresentationLabelsProvider
@@ -19,7 +21,7 @@ public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider
 public;IPresentationTreeDataProvider 
 public;IUnifiedSelectionComponent 
 public;LabelsProvider 
-alpha;PresentationNodeLoaderProps
+beta;PresentationNodeLoaderProps
 public;PresentationPropertyDataProvider 
 public;PresentationTableDataProvider 
 public;PresentationTableDataProviderProps
@@ -32,9 +34,10 @@ public;treeWithFilteringSupport
 public;TreeWithFilteringSupportProps
 public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
-alpha;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
-alpha;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
-alpha;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader
+beta;UnifiedSelectionTreeEventHandler 
+beta;useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider
+beta;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
+beta;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader
 alpha;useRulesetRegistration(ruleset: Ruleset): void
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

@@ -572,7 +572,7 @@ export class RegionOps {
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points.
-   *  * Contigous concentric circular or elliptic arcs
+   *  * Contiguous concentric circular or elliptic arcs
    *   * combine angular ranges
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.

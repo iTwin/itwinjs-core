@@ -191,7 +191,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._graphic)
-            this._graphic.collectStatistics(stats);
+      this._graphic.collectStatistics(stats);
 
     if (undefined !== this._children)
       for (const child of this._children)
@@ -415,6 +415,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
       this._childrenLastUsed = args.now;
+      return;
     }
 
     if (undefined !== this.children) {
@@ -862,7 +863,8 @@ export namespace Tile {
     /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
      * @see [[Viewport.tileSizeModifier]].
      */
-    public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
+    public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
+
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
     private static _scratchRange = new Range3d();

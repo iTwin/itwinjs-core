@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { WebGlDisposable } from "./Disposable";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -121,7 +122,7 @@ interface TextureImageProperties {
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
-export class Texture extends RenderTexture {
+export class Texture extends RenderTexture implements WebGlDisposable {
   public readonly texture: TextureHandle;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
@@ -130,6 +131,8 @@ export class Texture extends RenderTexture {
     super(params);
     this.texture = texture;
   }
+
+  public get isDisposed(): boolean { return this.texture.isDisposed; }
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
@@ -267,7 +270,7 @@ class TextureCubeCreateParams {
 /** Wraps a WebGLTextureHandle
  * @internal
  */
-export abstract class TextureHandle implements IDisposable {
+export abstract class TextureHandle implements WebGlDisposable {
   protected _glTexture?: WebGLTexture;
   protected _bytesUsed = 0;
 

@@ -189,7 +189,10 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={250}
             widgets={[
               <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
                 syncEventIds={[SampleAppUiActionId.setTestProperty]}
@@ -208,7 +211,10 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
@@ -222,7 +228,10 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={450}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,

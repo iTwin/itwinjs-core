@@ -36,6 +36,7 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
     width: 1280,
     height: 800,
     webPreferences: {
+      nodeIntegration: true,
       experimentalFeatures: true, // Needed for CSS Grid support
     },
     autoHideMenuBar: true,

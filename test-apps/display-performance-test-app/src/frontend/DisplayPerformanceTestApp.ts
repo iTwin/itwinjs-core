@@ -964,24 +964,28 @@ function restartIModelApp(testConfig: DefaultConfigs) {
 }
 
 async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
-  const width = testConfig.view!.width;
-  const height = testConfig.view!.height;
-  const viewRect = new ViewRect(0, 0, width, height);
   const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
-      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
-      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+      const cssWidth = testConfig.view!.width;
+      const cssHeight = testConfig.view!.height;
+      const cssRect = new ViewRect(0, 0, cssWidth, cssHeight);
 
-      theViewport!.readPixels(viewRect, pix, (pixels: any) => {
+      const imgWidth = cssPixelsToDevicePixels(cssWidth);
+      const imgHeight = cssPixelsToDevicePixels(cssHeight);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+
+      theViewport!.readPixels(cssRect, pix, (pixels: any) => {
         if (undefined === pixels)
           return;
-        for (let y = viewRect.top; y < viewRect.bottom; ++y) {
-          for (let x = viewRect.left; x < viewRect.right; ++x) {
-            const index = (x * 4) + (y * 4 * viewRect.right);
+        for (let y = 0; y < imgHeight; ++y) {
+          for (let x = 0; x < imgWidth; ++x) {
+            const index = (x * 4) + (y * 4 * imgWidth);
             const pixel = pixels.getPixel(x, y);
             // // RGB for element ID
             if (elemIdImgData !== undefined) {

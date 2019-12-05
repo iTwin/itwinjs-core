@@ -34,7 +34,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     };
     // IModelTestUtils.setupDebugLogLevels();
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Only needed for DEV
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.prodUser);
   });
 
   it.skip("should be able to open the Retail Building Sample", async () => {
@@ -100,17 +100,17 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download and backup required test files from the Hub", async () => {
-    const projectName = "iModelJsIntegrationTest";
-    const iModelName = "ReadOnlyTest";
+    const projectName = "vGIS_test3";
+    const iModelName = "vGIS_test3";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "iModelJsIntegrationTest";
-    const iModelName = "Stadium Dataset 1";
+    const projectName = "vGIS_2b";
+    const iModelName = "vGIS_test3";
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, "vGIS_2b");
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {

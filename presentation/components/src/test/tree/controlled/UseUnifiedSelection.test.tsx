@@ -12,7 +12,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
-  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent,
+  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent, MutableTreeModel,
 } from "@bentley/ui-components";
 import { KeySet, NodeKey } from "@bentley/presentation-common";
 import {
@@ -174,6 +174,28 @@ describe("UnifiedSelectionEventHandler", () => {
       treeEventsMock.setup((x) => x.onCheckboxStateChanged!(event)).verifiable(moq.Times.once());
       unifiedEventHandler.onCheckboxStateChanged(event);
       treeEventsMock.verifyAll();
+    });
+
+  });
+
+  describe("onDelayedNodeClick", () => {
+
+    it("passes event to wrapped handler", () => {
+      const event = { nodeId: "TestId" };
+      treeEventsMock.setup((x) => x.onDelayedNodeClick!(event)).verifiable(moq.Times.once());
+      unifiedEventHandler.onDelayedNodeClick(event);
+      treeEventsMock.verifyAll();
+    });
+
+  });
+
+  describe("getModel", () => {
+
+    it("returns tree model", () => {
+      const treeModel = new MutableTreeModel();
+      treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModel);
+      const returnedModel = (unifiedEventHandler as any).getModel();
+      expect(returnedModel).to.be.deep.eq(treeModel);
     });
 
   });

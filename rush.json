@@ -1,5 +1,5 @@
 {
-  "rushVersion": "5.14.0",
+  "rushVersion": "5.17.2",
   "pnpmVersion": "3.5.3",
   "nodeSupportedVersionRange": ">=10.6.0 <13.0.0",
   "projectFolderMinDepth": 2,
@@ -231,6 +231,13 @@
     {
       "packageName": "@bentley/perf-tools",
       "projectFolder": "tools/perf-tools",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "projectFolder": "tools/oidc-signin-tool",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

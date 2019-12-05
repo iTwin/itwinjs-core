@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/presentation-components_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix property data provider failing to create data when content includes empty nested content values"
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Add usePresentationNodeLoader custom hook"
+          },
+          {
+            "comment": "Added custom hook and HOC that adds filtering support to ControlledTree"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/presentation-components_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -131,7 +131,7 @@ describe("Tree withDragDrop HOC", () => {
       expect(ret).to.equal("test");
     });
     it("should pass data through for functional objectType", async () => {
-      const objectType = sinon.spy((data: { testType: string }) => data.testType);
+      const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
       const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testType: "function-test" } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });

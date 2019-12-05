@@ -11,7 +11,7 @@ import { TreeNodeItem } from "./TreeDataProvider";
 import { PropertyUpdatedArgs, EditorContainer } from "../editors/EditorContainer";
 
 /** Properties for a [[Tree]] that has cell editing enabled
- * @beta
+ * @beta @deprecated Use [[ControlledTree]] instead
  */
 export interface EditableTreeProps {
   /** Callback to when editing starts */
@@ -24,7 +24,7 @@ export interface EditableTreeProps {
 }
 
 /** Arguments for the Tree Cell Updated event callback
- * @beta
+ * @beta @deprecated Use [[ControlledTree]] instead
  */
 export interface TreeCellUpdatedArgs {
   /** The cell being updated. */
@@ -34,17 +34,17 @@ export interface TreeCellUpdatedArgs {
 }
 
 /** Prototype for function to set the currently edited tree node
- * @beta
+ * @beta @deprecated Use [[ControlledTree]] instead
  */
 export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
 /** Prototype for function to get the currently edited tree node
- * @beta
+ * @beta @deprecated Use [[ControlledTree]] instead
  */
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
 /** Tree Cell editing information
- * @beta
+ * @beta @deprecated Use [[ControlledTree]] instead
  */
 export class CellEditingEngine {
   private _getCurrentlyEditedNode?: GetCurrentlyEditedNode;

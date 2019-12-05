@@ -110,6 +110,9 @@
     },
     "ViewportTileSizeMod": {
       "keyin": "fdt tilesize viewport"
+    },
+    "ViewportAddRealityModel": {
+      "keyin": "fdt attach reality model"
     }
   }
 }

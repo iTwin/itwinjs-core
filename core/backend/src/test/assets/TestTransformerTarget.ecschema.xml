@@ -67,4 +67,31 @@
         <ECProperty propertyName="TargetGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that should be remapped"/>
     </ECEntityClass>
 
+    <ECRelationshipClass typeName="PhysicalPartitionIsTrackedByRecords" strength="referencing" modifier="Sealed" description="Relates a PhysicalPartition to the InformationRecordPartition that tracks it." >
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="is tracked by" polymorphic="true">
+            <Class class="bis:PhysicalPartition"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="tracks" polymorphic="true">
+            <Class class="bis:InformationRecordPartition"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="AuditRecord" modifier="Sealed">
+        <BaseClass>bis:InformationRecordElement</BaseClass>
+        <ECProperty propertyName="Operation" typeName="string"/>
+        <ECNavigationProperty propertyName="PhysicalElement" relationshipName="AuditRecordTracksPhysicalElement" direction="Forward">
+            <!-- AuditRecord elements are not deleted, so PhysicalElement.Id will become invalid when the PhysicalElement is deleted. -->
+        </ECNavigationProperty>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="AuditRecordTracksPhysicalElement" strength="referencing" modifier="Sealed">
+        <Source multiplicity="(0..*)" roleLabel="tracks" polymorphic="true">
+            <Class class="AuditRecord" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is tracked by" polymorphic="true">
+            <Class class="bis:PhysicalElement"/>
+        </Target>
+    </ECRelationshipClass>
+
 </ECSchema>

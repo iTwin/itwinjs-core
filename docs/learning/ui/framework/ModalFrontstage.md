@@ -3,13 +3,14 @@
 A **Modal Frontstage** is accessed from another frontstage or the Backstage.
 It may contain any content along with a Back button.
 It does not use zones or stage panels.
-It is useful for application settings and data management user interfaces.
+
+The usual use-cases are for application settings and data management user interfaces.
 
 ## Definition of Modal Frontstage
 
 The definition of a modal frontstage is in two parts: a [ModalFrontstageInfo]($ui-framework) implementation and a React component.
 
-```TSX
+```tsx
 /** Modal frontstage. */
 export class SampleModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:sampleModalFrontstage");

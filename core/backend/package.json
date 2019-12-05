@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "1.9.0-dev.6",
+  "version": "1.9.0-dev.15",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -27,9 +27,11 @@
     "perftest:cs": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "perftest:elAspect": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
     "perftest:schema": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
-    "copy:mobile-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
-    "build:ios-test-app": "npm run build:mobile-test && rimraf ./lib/test/ios/DerivedData && xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos  -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData",
-    "build:mobile-test": "npm run copy:mobile-test-assets && cpx \"./src/test/ios/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/ios/mobile.webpack.config.js"
+    "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
+    "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
+    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx \"./src/test/ios/config/ignoreTest.js\" ./lib/test && cpx \"./src/test/ios/runMochaTestsDirectly.js\" ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
+    "install-ios-lib": "node ./src/test/ios/scripts/installIosNativeLib.js",
+    "build:ios-test": "npm run install-ios-lib && npm run webpack:imodeljs-test && npm run build:imodeljs-backend-test-app"
   },
   "repository": {
     "type": "git",
@@ -45,25 +47,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.9.0-dev.6",
-    "@bentley/geometry-core": "^1.9.0-dev.6",
-    "@bentley/imodeljs-clients": "^1.9.0-dev.6",
-    "@bentley/imodeljs-clients-backend": "^1.9.0-dev.6",
-    "@bentley/imodeljs-common": "^1.9.0-dev.6"
+    "@bentley/bentleyjs-core": "^1.9.0-dev.15",
+    "@bentley/geometry-core": "^1.9.0-dev.15",
+    "@bentley/imodeljs-clients": "^1.9.0-dev.15",
+    "@bentley/imodeljs-clients-backend": "^1.9.0-dev.15",
+    "@bentley/imodeljs-common": "^1.9.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "1.9.0-dev.6",
-    "@bentley/bentleyjs-core": "1.9.0-dev.6",
-    "@bentley/build-tools": "1.9.0-dev.6",
-    "@bentley/geometry-core": "1.9.0-dev.6",
-    "@bentley/imodeljs-clients": "1.9.0-dev.6",
-    "@bentley/imodeljs-clients-backend": "1.9.0-dev.6",
-    "@bentley/imodeljs-common": "1.9.0-dev.6",
-    "@bentley/perf-tools": "1.9.0-dev.6",
+    "@bentley/config-loader": "1.9.0-dev.15",
+    "@bentley/bentleyjs-core": "1.9.0-dev.15",
+    "@bentley/build-tools": "1.9.0-dev.15",
+    "@bentley/geometry-core": "1.9.0-dev.15",
+    "@bentley/imodeljs-clients": "1.9.0-dev.15",
+    "@bentley/imodeljs-clients-backend": "1.9.0-dev.15",
+    "@bentley/imodeljs-common": "1.9.0-dev.15",
+    "@bentley/perf-tools": "1.9.0-dev.15",
+    "@bentley/oidc-signin-tool": "1.9.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
@@ -86,7 +89,8 @@
     "typescript": "~3.6.2",
     "webpack": "^4.20.2",
     "source-map-loader": "^0.2.3",
-    "null-loader": "^0.1.1"
+    "null-loader": "^0.1.1",
+    "event-stream": "~4.0.1"
   },
   "dependencies": {
     "@bentley/imodeljs-native": "1.9.3",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Made detecting links have stricter rules. Links have to start with a schema or `www.`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "vismantas.stonkus@bentley.com"
+}

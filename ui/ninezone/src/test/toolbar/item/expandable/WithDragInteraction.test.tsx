@@ -39,6 +39,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     const pointerMove = document.createEvent("MouseEvent");
@@ -71,6 +72,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     const pointerMove = document.createEvent("MouseEvent");
@@ -88,6 +90,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     const pointerUp = document.createEvent("MouseEvent");
@@ -111,8 +114,8 @@ describe("<WithDragInteraction />", () => {
     sut.unmount();
 
     spy.calledTwice.should.true;
-    spy.firstCall.calledWithExactly("pointermove", sinon.match.any as any).should.true;
-    spy.secondCall.calledWithExactly("pointerup", sinon.match.any as any).should.true;
+    spy.firstCall.calledWithExactly("pointermove", sinon.match.any).should.true;
+    spy.secondCall.calledWithExactly("pointerup", sinon.match.any).should.true;
   });
 
   it("should invoke onClick handler", () => {
@@ -122,6 +125,7 @@ describe("<WithDragInteraction />", () => {
       onClick={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("click");
 
     spy.calledOnceWithExactly().should.true;
@@ -134,6 +138,7 @@ describe("<WithDragInteraction />", () => {
       onClick={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     const pointerMove = document.createEvent("MouseEvent");
@@ -154,6 +159,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     fakeTimers.tick(750);
@@ -169,6 +175,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
     const div = sut.childAt(0);
+    div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
     const pointerMove = document.createEvent("MouseEvent");

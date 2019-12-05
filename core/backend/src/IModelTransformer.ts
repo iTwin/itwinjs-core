@@ -7,6 +7,8 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
+import { ChangeSummaryExtractOptions } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
@@ -90,24 +92,49 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
    * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
-   * @param targetDb The target iModel where this ExternalSourceAspect will be persisted.
-   * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
-   * @param targetElementId The optional Id of the Element that will own the ExternalSourceAspect. If not provided, it will be set to Id64.invalid.
+   * @param targetElementId The optional Id of the target Element that will own the ExternalSourceAspect.
    */
-  private static initExternalSourceAspect(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
+  private initElementProvenance(sourceElement: Element, targetElementId: Id64String): ExternalSourceAspectProps {
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
       element: { id: targetElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
-      scope: { id: targetScopeElementId },
+      scope: { id: this.targetScopeElementId },
       identifier: sourceElement.id,
       kind: ExternalSourceAspect.Kind.Element,
       version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
     };
     const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
-    aspectProps.id = targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", targetElementId);
-      statement.bindId("scopeId", targetScopeElementId);
+      statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
+    });
+    return aspectProps;
+  }
+
+  /** Create an ExternalSourceAspectProps in a standard way for a Relationship in an iModel --> iModel transformations.
+   * The ExternalSourceAspect is meant to be owned by the Element in the target iModel that is the `sourceId` of transformed relationship.
+   * The `identifier` property of the ExternalSourceAspect will be the ECInstanceId of the relationship in the source iModel.
+   * The ECInstanceId of the relationship in the target iModel will be stored in the JsonProperties of the ExternalSourceAspect.
+   */
+  private initRelationshipProvenance(sourceRelationship: Relationship, targetRelInstanceId: Id64String): ExternalSourceAspectProps {
+    const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, targetRelInstanceId);
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: targetRelationship.sourceId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: this.targetScopeElementId },
+      identifier: sourceRelationship.id,
+      kind: ExternalSourceAspect.Kind.Relationship,
+      jsonProperties: JSON.stringify({ targetRelInstanceId }),
+    };
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect` +
+      ` WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
+    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", targetRelationship.sourceId);
+      statement.bindId("scopeId", this.targetScopeElementId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
+      statement.bindString("identifier", sourceRelationship.id);
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
     return aspectProps;
@@ -118,7 +145,7 @@ export class IModelTransformer extends IModelExportHandler {
     const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
     this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindString("kind", Element.className);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceElementId: Id64String = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
         const targetElementId: Id64String = statement.getValue(1).getId();
@@ -134,7 +161,10 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Detect source element deletes from unmatched ExternalSourceAspects in the target iModel. */
+  /** Detect Element deletes using a *brute force* comparison.
+   * @see processChanges
+   * @note The preferred way of detecting deletes is via `processChanges`. This method is not needed when `processChanges` is used.
+   */
   public detectElementDeletes(): void {
     const targetElementIds: Id64String[] = [];
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
@@ -260,11 +290,21 @@ export class IModelTransformer extends IModelExportHandler {
     this.importer.importElement(targetElementProps);
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     // record provenance in ExternalSourceAspect
-    const aspectProps: ExternalSourceAspectProps = IModelTransformer.initExternalSourceAspect(sourceElement, this.targetDb, this.targetScopeElementId, targetElementProps.id);
+    const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
     if (aspectProps.id === undefined) {
       this.targetDb.elements.insertAspect(aspectProps);
     } else {
       this.targetDb.elements.updateAspect(aspectProps);
+    }
+  }
+
+  /** Called when an Element should be deleted.
+   * @see IModelExportHandler
+   */
+  protected onDeleteElement(sourceElementId: Id64String): void {
+    const targetElementId: Id64String = this.context.findTargetElementId(sourceElementId);
+    if (Id64.isValidId64(targetElementId)) {
+      this.importer.deleteElement(targetElementId);
     }
   }
 
@@ -278,6 +318,13 @@ export class IModelTransformer extends IModelExportHandler {
     const targetModeledElementId: Id64String = this.context.findTargetElementId(sourceModel.id);
     const targetModelProps: ModelProps = this.onTransformModel(sourceModel, targetModeledElementId);
     this.importer.importModel(targetModelProps);
+  }
+
+  /** Called when a Model should be deleted.
+   * @see IModelExportHandler
+   */
+  protected onDeleteModel(_sourceModelId: Id64String): void {
+    // WIP: currently ignored
   }
 
   /** Cause the model container, contents, and sub-models to be exported from the source iModel and imported into the target iModel.
@@ -378,7 +425,61 @@ export class IModelTransformer extends IModelExportHandler {
    */
   protected onExportRelationship(sourceRelationship: Relationship): void {
     const targetRelationshipProps: RelationshipProps = this.onTransformRelationship(sourceRelationship);
-    this.importer.importRelationship(targetRelationshipProps);
+    const targetRelationshipInstanceId: Id64String = this.importer.importRelationship(targetRelationshipProps);
+    const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
+    if (undefined === aspectProps.id) {
+      this.targetDb.elements.insertAspect(aspectProps);
+    }
+  }
+
+  /** Called when a Relationship should be deleted.
+   * @see IModelExportHandler
+   */
+  protected onDeleteRelationship(sourceRelInstanceId: Id64String): void {
+    const sql = `SELECT ECInstanceId,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect` +
+      ` WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
+    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("scopeId", this.targetScopeElementId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
+      statement.bindString("identifier", sourceRelInstanceId);
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const json: any = JSON.parse(statement.getValue(1).getString());
+        if (undefined !== json.targetRelInstanceId) {
+          const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+          this.importer.deleteRelationship(targetRelationship);
+          this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
+        }
+      }
+    });
+  }
+
+  /** Detect Relationship deletes using a *brute force* comparison.
+   * @see processChanges
+   * @note The preferred way of detecting deletes is via `processChanges`. This method is not needed when `processChanges` is used.
+   */
+  public detectRelationshipDeletes(): void {
+    const aspectDeleteIds: Id64String[] = [];
+    const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
+    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("scopeId", this.targetScopeElementId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const sourceRelInstanceId: Id64String = Id64.fromJSON(statement.getValue(1).getString());
+        try {
+          this.sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId);
+        } catch (error) {
+          if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
+            const json: any = JSON.parse(statement.getValue(2).getString());
+            if (undefined !== json.targetRelInstanceId) {
+              const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+              this.importer.deleteRelationship(targetRelationship);
+            }
+            aspectDeleteIds.push(statement.getValue(0).getId());
+          }
+        }
+      }
+    });
+    this.targetDb.elements.deleteAspect(aspectDeleteIds);
   }
 
   /** Transform the specified sourceRelationship into RelationshipProps for the target iModel.
@@ -501,7 +602,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.processSkippedElements();
   }
 
-  /** Import everything from the source iModel into the target iModel. */
+  /** Export everything from the source iModel and import the transformed entities into the target iModel. */
   public processAll(): void {
     this.initFromExternalSourceAspects();
     this.exporter.exportCodeSpecs();
@@ -512,5 +613,13 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     this.processSkippedElements();
     this.detectElementDeletes();
+    this.detectRelationshipDeletes();
+  }
+
+  /** Export changes from the source iModel and import the transformed entities into the target iModel. */
+  public async processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+    this.initFromExternalSourceAspects();
+    await this.exporter.exportChanges(requestContext, options);
+    this.processSkippedElements();
   }
 }

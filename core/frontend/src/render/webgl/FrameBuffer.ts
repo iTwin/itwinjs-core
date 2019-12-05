@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, assert } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;
@@ -23,7 +24,7 @@ export const enum FrameBufferBindState {
 }
 
 /** @internal */
-export class FrameBuffer implements IDisposable {
+export class FrameBuffer implements WebGlDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
   private readonly _colorTextures: TextureHandle[] = [];

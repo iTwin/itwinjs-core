@@ -6,36 +6,192 @@
 
 import * as _ from "lodash";
 import {
-  PropertyData, PropertyDataChangeEvent, PropertyCategory, IPropertyDataProvider,
+  PropertyData, PropertyDataChangeEvent, IPropertyDataProvider, PropertyCategory,
 } from "@bentley/ui-components";
 import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, Descriptor, DescriptorOverrides,
-  Field, NestedContentField, DefaultContentDisplayTypes, Item,
-  PresentationError, PresentationStatus, ContentFlags, Value, InstanceKey,
+  CategoryDescription, DescriptorOverrides,
+  Field, DefaultContentDisplayTypes, ContentFlags, Ruleset,
+  Descriptor, NestedContentField, Item,
+  PresentationError, PresentationStatus, Value,
+  PropertyValueFormat as PresentationPropertyValueFormat,
+  InstanceKey,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
+import { priorityAndNameSortFunction } from "../common/Utils";
 import { ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
-import { priorityAndNameSortFunction, translate } from "../common/Utils";
+import { getFavoritesCategory } from "../favorite-properties/DataProvider";
 
-const favoritesCategoryName = "Favorite";
-let favoritesCategoryPromise: Promise<CategoryDescription> | undefined;
-const getFavoritesCategory = async (): Promise<CategoryDescription> => {
-  if (!favoritesCategoryPromise) {
-    favoritesCategoryPromise = Promise.all([
-      translate("categories.favorite.label"),
-      translate("categories.favorite.description"),
-    ]).then(([label, description]): CategoryDescription => ({
-      name: favoritesCategoryName,
-      label,
-      description,
-      priority: Number.MAX_VALUE,
-      expand: true,
-    }));
+/** @internal */
+// tslint:disable-next-line: no-var-requires
+export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
+
+/** The function registers DEFAULT_PROPERTY_GRID_RULESET the first time it's called and does nothing on other calls */
+const registerDefaultRuleset = _.once(async () => Presentation.presentation.rulesets().add(DEFAULT_PROPERTY_GRID_RULESET));
+
+/**
+ * Interface for presentation rules-driven property data provider.
+ * @public
+ */
+export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
+
+/**
+ * Presentation Rules-driven property data provider implementation.
+ * @public
+ */
+export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
+  public onDataChanged = new PropertyDataChangeEvent();
+  private _useDefaultRuleset: boolean;
+  private _includeFieldsWithNoValues: boolean;
+  private _includeFieldsWithCompositeValues: boolean;
+  private _onFavoritesChangedRemoveListener: () => void;
+
+  /**
+   * Constructor
+   * @param imodel IModelConnection to use for requesting property data
+   * @param rulesetId Optional ID of a custom ruleset to use. If not set, default presentation rules are used which return
+   * content for the selected elements.
+   */
+  constructor(imodel: IModelConnection, rulesetId?: string) {
+    super(imodel, rulesetId ? rulesetId : DEFAULT_PROPERTY_GRID_RULESET.id, DefaultContentDisplayTypes.PropertyPane);
+    this._useDefaultRuleset = !rulesetId;
+    this._includeFieldsWithNoValues = true;
+    this._includeFieldsWithCompositeValues = true;
+    this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
   }
-  return favoritesCategoryPromise;
-};
+
+  /**
+   * Dispose the presentation property data provider.
+   */
+  public dispose() {
+    super.dispose();
+    this._onFavoritesChangedRemoveListener();
+  }
+
+  /**
+   * Invalidates cached content and clears categorized data.
+   */
+  protected invalidateCache(props: CacheInvalidationProps): void {
+    super.invalidateCache(props);
+    if (this.getMemoizedData)
+      this.getMemoizedData.cache.clear!();
+    if (this.onDataChanged)
+      this.onDataChanged.raiseEvent();
+  }
+
+  /**
+   * Tells the data provider to _not_ request descriptor and instead configure
+   * content using `getDescriptorOverrides()` call
+   */
+  protected shouldConfigureContentDescriptor(): boolean { return false; }
+
+  /**
+   * Provides content configuration for the property grid
+   */
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    return {
+      ...super.getDescriptorOverrides(),
+      contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
+    };
+  }
+
+  /**
+   * Hides the computed display label field from the list of properties
+   */
+  protected isFieldHidden(field: Field) {
+    return field.name === "/DisplayLabel/";
+  }
+
+  /**
+   * Should fields with no values be included in the property list. No value means:
+   * - For *primitive* fields: null, undefined, "" (empty string)
+   * - For *array* fields: [] (empty array)
+   * - For *struct* fields: {} (object with no members)
+   */
+  public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
+  public set includeFieldsWithNoValues(value: boolean) {
+    if (this._includeFieldsWithNoValues === value)
+      return;
+    this._includeFieldsWithNoValues = value;
+    this.invalidateCache({ content: true });
+  }
+
+  /**
+   * Should fields with composite values be included in the property list.
+   * Fields with composite values:
+   * - *array* fields.
+   * - *struct* fields.
+   */
+  public get includeFieldsWithCompositeValues(): boolean { return this._includeFieldsWithCompositeValues; }
+  public set includeFieldsWithCompositeValues(value: boolean) {
+    if (this._includeFieldsWithCompositeValues === value)
+      return;
+    this._includeFieldsWithCompositeValues = value;
+    this.invalidateCache({ content: true });
+  }
+
+  /** Should the specified field be included in the favorites category. */
+  protected isFieldFavorite = (field: Field): boolean => {
+    const projectId = this.imodel.iModelToken.contextId;
+    const imodelId = this.imodel.iModelToken.iModelId;
+
+    return Presentation.favoriteProperties.has(field, projectId, imodelId);
+  }
+
+  /**
+   * Sorts the specified list of categories by priority. May be overriden
+   * to supply a different sorting algorithm.
+   */
+  protected sortCategories(categories: CategoryDescription[]): void {
+    categories.sort(priorityAndNameSortFunction);
+  }
+
+  /**
+   * Sorts the specified list of fields by priority. May be overriden
+   * to supply a different sorting algorithm.
+   */
+  protected sortFields(_category: CategoryDescription, fields: Field[]): void {
+    fields.sort(priorityAndNameSortFunction);
+  }
+
+  /**
+   * Returns property data.
+   */
+  // tslint:disable-next-line:naming-convention
+  protected getMemoizedData = _.memoize(async (): Promise<PropertyData> => {
+    if (this._useDefaultRuleset)
+      await registerDefaultRuleset();
+
+    const content = await this.getContent();
+    if (!content || 0 === content.contentSet.length)
+      return createDefaultPropertyData();
+
+    const contentItem = content.contentSet[0];
+    const callbacks: PropertyPaneCallbacks = {
+      isFavorite: this.isFieldFavorite,
+      isHidden: this.isFieldHidden,
+      sortCategories: this.sortCategories,
+      sortFields: this.sortFields,
+    };
+    const builder = new PropertyDataBuilder(content.descriptor, contentItem,
+      this.includeFieldsWithNoValues, this.includeFieldsWithCompositeValues, callbacks);
+    return builder.buildPropertyData();
+  });
+
+  /**
+   * Returns property data.
+   */
+  public async getData(): Promise<PropertyData> {
+    return this.getMemoizedData();
+  }
+}
+
+const createDefaultPropertyData = (): PropertyData => ({
+  label: "",
+  categories: [],
+  records: {},
+});
 
 interface PropertyPaneCallbacks {
   isFavorite(field: Field): boolean;
@@ -56,30 +212,29 @@ interface CategorizedRecords {
   records: { [categoryName: string]: PropertyRecord[] };
 }
 
-const isValueEmpty = (v: PropertyValue): boolean => {
-  switch (v.valueFormat) {
-    case PropertyValueFormat.Primitive:
-      return (null === v.value || undefined === v.value || "" === v.value);
-    case PropertyValueFormat.Array:
-      return 0 === v.items.length;
-    case PropertyValueFormat.Struct:
-      return 0 === Object.keys(v.members).length;
-  }
-  /* istanbul ignore next */
-  throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
-};
-
 class PropertyDataBuilder {
   private _descriptor: Descriptor;
   private _contentItem: Item;
   private _includeWithNoValues: boolean;
+  private _includeWithCompositeValues: boolean;
   private _callbacks: PropertyPaneCallbacks;
 
-  constructor(descriptor: Descriptor, item: Item, includeWithNoValues: boolean, callbacks: PropertyPaneCallbacks) {
+  constructor(descriptor: Descriptor, item: Item, includeWithNoValues: boolean, includeWithCompositeValues: boolean, callbacks: PropertyPaneCallbacks) {
     this._descriptor = descriptor;
     this._contentItem = item;
-    this._callbacks = callbacks;
     this._includeWithNoValues = includeWithNoValues;
+    this._includeWithCompositeValues = includeWithCompositeValues;
+    this._callbacks = callbacks;
+  }
+
+  public async buildPropertyData(): Promise<PropertyData> {
+    const fields = await this.createCategorizedFields();
+    const records = await this.createCategorizedRecords(fields);
+    return {
+      ...records,
+      label: this._contentItem.label,
+      description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
+    } as PropertyData;
   }
 
   private async createCategorizedFields(): Promise<CategorizedFields> {
@@ -88,7 +243,11 @@ class PropertyDataBuilder {
     const categoryFields: { [categoryName: string]: Field[] } = {};
     const hiddenFieldPaths = new Array<Field[]>();
     const hiddenAncestorsFieldPaths = new Array<Field[]>();
+
     const includeField = (category: CategoryDescription, field: Field) => {
+      if (field.type.valueFormat !== PresentationPropertyValueFormat.Primitive && !this._includeWithCompositeValues)
+        return;
+
       if (!categoryFields.hasOwnProperty(category.name)) {
         categories.push(category);
         categoryFields[category.name] = new Array<Field>();
@@ -116,7 +275,7 @@ class PropertyDataBuilder {
     };
     const visitFields = (fields: Field[], isNested: boolean) => {
       fields.forEach((field) => {
-        if (favoritesCategoryName !== field.category.name && this._callbacks.isFavorite(field)) {
+        if (favoritesCategory.name !== field.category.name && this._callbacks.isFavorite(field)) {
           // if the field is not already in favorites group and we want to make it favorite, visit it
           // with the favorites category as a top level (isNested = false) field
           visitField(favoritesCategory, field, false);
@@ -143,48 +302,8 @@ class PropertyDataBuilder {
     };
   }
 
-  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): PropertyRecord | undefined {
-    const pathToRootField = createFieldPath(field);
-
-    if (createStruct) {
-      const rootField = pathToRootField[0];
-      const pathToFieldFromRoot = pathToRootField.slice(1);
-      return ContentBuilder.createPropertyRecord(rootField, this._contentItem, {
-        exclusiveIncludePath: pathToFieldFromRoot,
-        hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, rootField),
-      });
-    }
-
-    let item = this._contentItem;
-    // need to remove the last element because the Field information is in `field`
-    const pathUpToField = pathToRootField.slice(undefined, -1);
-    for (const parentField of pathUpToField) {
-      if (item.isFieldMerged(parentField.name))
-        return this.createRecord(field, true, hiddenFieldPaths);
-
-      const nestedContentValues = item.values[parentField.name];
-      if (!Value.isNestedContent(nestedContentValues))
-        throw new PresentationError(PresentationStatus.Error, "value should be nested content");
-
-      if (nestedContentValues.length === 0)
-        return undefined;
-
-      if (nestedContentValues.length > 1) {
-        const mergedItem = new Item(nestedContentValues.reduce((keys, ncv) => {
-          keys.push(...ncv.primaryKeys);
-          return keys;
-        }, new Array<InstanceKey>()), "", "", undefined, { [field.name]: undefined }, { [field.name]: undefined }, [field.name]);
-        return ContentBuilder.createPropertyRecord(field, mergedItem);
-      }
-
-      const nestedContentValue = nestedContentValues[0];
-      item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
-        nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
-    }
-    return ContentBuilder.createPropertyRecord(field, item, undefined);
-  }
-
-  private createCategorizedRecords(fields: CategorizedFields): CategorizedRecords {
+  private async createCategorizedRecords(fields: CategorizedFields): Promise<CategorizedRecords> {
+    const favoritesCategory = await getFavoritesCategory();
     const result: CategorizedRecords = {
       categories: [],
       records: {},
@@ -192,7 +311,7 @@ class PropertyDataBuilder {
     for (const category of fields.categories) {
       const records = new Array<PropertyRecord>();
       const addRecord = (field: Field, record: PropertyRecord) => {
-        if (category.name !== favoritesCategoryName) {
+        if (category.name !== favoritesCategory.name) {
           // note: favorite fields should be displayed even if they're hidden
           if (this._callbacks.isHidden(field))
             return;
@@ -258,153 +377,60 @@ class PropertyDataBuilder {
     return result;
   }
 
-  public async buildPropertyData(): Promise<PropertyData> {
-    const fields = await this.createCategorizedFields();
-    const records = this.createCategorizedRecords(fields);
-    return {
-      ...records,
-      label: this._contentItem.label,
-      description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
-    } as PropertyData;
+  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): PropertyRecord | undefined {
+    const pathToRootField = createFieldPath(field);
+
+    if (createStruct) {
+      const rootField = pathToRootField[0];
+      const pathToFieldFromRoot = pathToRootField.slice(1);
+      return ContentBuilder.createPropertyRecord(rootField, this._contentItem, {
+        exclusiveIncludePath: pathToFieldFromRoot,
+        hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, rootField),
+      });
+    }
+
+    let item = this._contentItem;
+    // need to remove the last element because the Field information is in `field`
+    const pathUpToField = pathToRootField.slice(undefined, -1);
+    for (const parentField of pathUpToField) {
+      if (item.isFieldMerged(parentField.name))
+        return this.createRecord(field, true, hiddenFieldPaths);
+
+      const nestedContentValues = item.values[parentField.name];
+      if (!Value.isNestedContent(nestedContentValues))
+        throw new PresentationError(PresentationStatus.Error, "value should be nested content");
+
+      if (nestedContentValues.length === 0)
+        return undefined;
+
+      if (nestedContentValues.length > 1) {
+        const mergedItem = new Item(nestedContentValues.reduce((keys, ncv) => {
+          keys.push(...ncv.primaryKeys);
+          return keys;
+        }, new Array<InstanceKey>()), "", "", undefined, { [field.name]: undefined }, { [field.name]: undefined }, [field.name]);
+        return ContentBuilder.createPropertyRecord(field, mergedItem);
+      }
+
+      const nestedContentValue = nestedContentValues[0];
+      item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
+        nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
+    }
+    return ContentBuilder.createPropertyRecord(field, item, undefined);
   }
 }
 
-/**
- * Interface for presentation rules-driven property data provider.
- * @public
- */
-export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
-
-/**
- * Presentation Rules-driven property data provider implementation.
- * @public
- */
-export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
-  public onDataChanged = new PropertyDataChangeEvent();
-  private _includeFieldsWithNoValues: boolean;
-  private _onFavoritesChangedRemoveListener: () => void;
-
-  /** Constructor. */
-  constructor(imodel: IModelConnection, rulesetId: string) {
-    super(imodel, rulesetId, DefaultContentDisplayTypes.PropertyPane);
-    this._includeFieldsWithNoValues = true;
-    this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
+const isValueEmpty = (v: PropertyValue): boolean => {
+  switch (v.valueFormat) {
+    case PropertyValueFormat.Primitive:
+      return (null === v.value || undefined === v.value || "" === v.value);
+    case PropertyValueFormat.Array:
+      return 0 === v.items.length;
+    case PropertyValueFormat.Struct:
+      return 0 === Object.keys(v.members).length;
   }
-
-  /**
-   * Dispose the presentation property data provider.
-   */
-  public dispose() {
-    super.dispose();
-    this._onFavoritesChangedRemoveListener();
-  }
-
-  /**
-   * Invalidates cached content and clears categorized data.
-   */
-  protected invalidateCache(props: CacheInvalidationProps): void {
-    super.invalidateCache(props);
-    if (this.getMemoizedData)
-      this.getMemoizedData.cache.clear!();
-    if (this.onDataChanged)
-      this.onDataChanged.raiseEvent();
-  }
-
-  /**
-   * Tells the data provider to _not_ request descriptor and instead configure
-   * content using `getDescriptorOverrides()` call
-   */
-  protected shouldConfigureContentDescriptor(): boolean { return false; }
-
-  /**
-   * Provides content configuration for the property grid
-   */
-  protected getDescriptorOverrides(): DescriptorOverrides {
-    return {
-      ...super.getDescriptorOverrides(),
-      contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
-    };
-  }
-
-  /**
-   * Hides the computed display label field from the list of properties
-   */
-  protected isFieldHidden(field: Field) {
-    return field.name === "/DisplayLabel/";
-  }
-
-  /**
-   * Should fields with no values be included in the property list. No value means:
-   * - For *primitive* fields: null, undefined, "" (empty string)
-   * - For *array* fields: [] (empty array)
-   * - For *struct* fields: {} (object with no members)
-   */
-  public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
-  public set includeFieldsWithNoValues(value: boolean) {
-    if (this._includeFieldsWithNoValues === value)
-      return;
-    this._includeFieldsWithNoValues = value;
-    this.invalidateCache({ content: true });
-  }
-
-  /** Should the specified field be included in the favorites category. */
-  protected isFieldFavorite = (field: Field): boolean => {
-    const projectId = this.imodel.iModelToken.contextId;
-    const imodelId = this.imodel.iModelToken.iModelId;
-
-    return Presentation.favoriteProperties.has(field, projectId, imodelId);
-  }
-
-  /**
-   * Sorts the specified list of categories by priority. May be overriden
-   * to supply a different sorting algorithm.
-   */
-  protected sortCategories(categories: CategoryDescription[]): void {
-    categories.sort(priorityAndNameSortFunction);
-  }
-
-  /**
-   * Sorts the specified list of fields by priority. May be overriden
-   * to supply a different sorting algorithm.
-   */
-  protected sortFields(_category: CategoryDescription, fields: Field[]): void {
-    fields.sort(priorityAndNameSortFunction);
-  }
-
-  /**
-   * Returns property data.
-   */
-  // tslint:disable-next-line:naming-convention
-  protected getMemoizedData = _.memoize(async (): Promise<PropertyData> => {
-    const content = await this.getContent();
-    if (!content || 0 === content.contentSet.length)
-      return createDefaultPropertyData();
-
-    const contentItem = content.contentSet[0];
-    const callbacks: PropertyPaneCallbacks = {
-      isFavorite: this.isFieldFavorite,
-      isHidden: this.isFieldHidden,
-      sortCategories: this.sortCategories,
-      sortFields: this.sortFields,
-    };
-    const builder = new PropertyDataBuilder(content.descriptor, contentItem,
-      this.includeFieldsWithNoValues, callbacks);
-    return builder.buildPropertyData();
-  });
-
-  /**
-   * Returns property data.
-   */
-  public async getData(): Promise<PropertyData> {
-    return this.getMemoizedData();
-  }
-}
-
-const createDefaultPropertyData = (): PropertyData => ({
-  label: "",
-  categories: [],
-  records: {},
-});
+  /* istanbul ignore next */
+  throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
+};
 
 const createFieldPath = (field: Field): Field[] => {
   const path = [field];

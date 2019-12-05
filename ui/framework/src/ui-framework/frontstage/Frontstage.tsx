@@ -547,6 +547,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public componentWillUnmount() {
+    this._content.parentNode && this._content.parentNode.removeChild(this._content);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }

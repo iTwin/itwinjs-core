@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Checker } from "../Checker";
@@ -257,6 +257,28 @@ describe("Transform", () => {
     const translateA = Transform.createTranslation(shift);
     const translateB = Transform.createOriginAndMatrix(shift, undefined);
     ck.testTransform(translateA, translateB);
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("createRigidFromOriginAndColumns", () => {
+    const ck = new Checker();
+    const origin = Point3d.create(5, 6, 7);
+    const vectorU = Vector3d.create(1, 2, 3);
+    const vectorV = Vector3d.create(4, 2, -1);
+    const transform0 = Transform.createIdentity();
+    const transform1 = Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorV, AxisOrder.XYZ);
+    const transform2 = Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorV, AxisOrder.XYZ, transform0);
+    if (ck.testDefined(transform1) && transform1
+      && ck.testDefined(transform2) && transform2
+      && ck.testTrue(transform1.matrix.isRigid())) {
+      ck.testTransform(transform1, transform2);
+      ck.testParallel(vectorU, transform0.matrix.columnX());
+      ck.testPerpendicular(vectorU, transform0.matrix.columnZ());
+      ck.testPerpendicular(vectorU, transform0.matrix.columnY());
+      ck.testPerpendicular(vectorU, transform0.matrix.columnY());
+      ck.testLE(0.0, transform0.matrix.dotColumnX(vectorU));
+      ck.testLE(0.0, transform0.matrix.dotColumnY(vectorV));
+    }
+    ck.testUndefined(Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorU, AxisOrder.XYZ));
     expect(ck.getNumErrors()).equals(0);
   });
 

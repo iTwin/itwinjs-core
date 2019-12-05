@@ -5,3 +5,9 @@ exports[`<WidgetTarget /> renders correctly 1`] = `
   className="nz-zones-target-target"
 />
 `;
+
+exports[`<WidgetTarget /> renders targeted correctly 1`] = `
+<div
+  className="nz-zones-target-target nz-targeted"
+/>
+`;

@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version
+- Responsive logic in Property Grid to switch to Vertical orientation when too narrow
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added Table cell context menu support
+- Added Tree Node.tsx export to ui-components package
+- Added tslint-react-hooks to UI packages
+- Change componentDidUpdate to call _setDuration instead of setState directly. This will make sure the onChange handler is called.
+- Refactor ControlledTree custom hooks to use useEffectSkipFirst
+- Separated TreeModelSource and TreeNodeLoader. Added highlighting support to ControlledTree.
+- Added node icon rendering to ControlledTree
+- Fix node content sometimes not being re-rendered when editor state changed very quickly
+- Add componentDidUpdate() to the TimelineComponent, updating currentDuration after the app changes the state of initialDuration.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

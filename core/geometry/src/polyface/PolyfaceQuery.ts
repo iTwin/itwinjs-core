@@ -377,6 +377,43 @@ export class PolyfaceQuery {
     }
     return facetsInComponent;
   }
+  /**
+   * * Examine the normal orientation for each faces.
+   * * Separate to 3 partitions:
+   *    * facets with normal in the positive direction of the vectorToEye (partition 0)
+   *    * facets with normal in the negative direction of the vectorToEye (partition 1)
+   *    * facets nearly perpendicular to the view vector  (partition 2)
+   * * Return array of arrays of facet indices.
+   */
+  public static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][] {
+    if (polyface instanceof Polyface) {
+      return this.partitionFacetIndicesByVisibilityVector(polyface.createVisitor(0), vectorToEye, sideAngleTolerance);
+    }
+    const facetsInComponent: number[][] = [];
+    for (let i = 0; i < 3; i++) {
+      facetsInComponent.push([]);
+    }
+    const forwardComponent = facetsInComponent[0];
+    const rearComponent = facetsInComponent[1];
+    const sideComponent = facetsInComponent[2];
+    const radiansTol = Math.max(sideAngleTolerance.radians, 1.0e-8);
+    for (polyface.reset(); polyface.moveToNextFacet();) {
+      const areaNormal = PolygonOps.areaNormalGo(polyface.point);
+      const index = polyface.currentReadIndex();
+      if (areaNormal) {
+        const angle = areaNormal.angleFromPerpendicular(vectorToEye);
+        if (Math.abs(angle.radians) < radiansTol) {
+          sideComponent.push(index);
+        } else if (areaNormal.dotProduct(vectorToEye) < 0) {
+          rearComponent.push(index);
+        } else {
+          forwardComponent.push(index);
+        }
+      }
+    }
+    return facetsInComponent;
+  }
+
   /** Clone the facets in each partition to a separate polyface.
    *
    */

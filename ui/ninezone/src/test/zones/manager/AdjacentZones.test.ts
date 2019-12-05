@@ -91,9 +91,9 @@ describe("AdjacentZonesStrategy", () => {
 
       const sut = new AdjacentZones(manager.object);
       const getInitial = sinon.stub(sut, "getInitial");
-      getInitial.withArgs(3, sinon.match.any as any).returns(2);
-      getInitial.withArgs(6, sinon.match.any as any).returns(undefined);
-      getInitial.withArgs(9, sinon.match.any as any).returns(8);
+      getInitial.withArgs(3, sinon.match.any).returns(2);
+      getInitial.withArgs(6, sinon.match.any).returns(undefined);
+      getInitial.withArgs(9, sinon.match.any).returns(8);
       sinon.stub(sut, "getSingleMergedZone").returns(false);
 
       const adjacentZones = sut.getCurrent(3, managerProps.object);
@@ -117,7 +117,7 @@ describe("AdjacentZonesStrategy", () => {
       manager.setup((x) => x.findZoneWithWidget(6, Moq.It.isAny())).returns(() => z9.object);
 
       const sut = new AdjacentZones(manager.object);
-      sinon.stub(sut, "getInitial").withArgs(6, sinon.match.any as any).returns(9);
+      sinon.stub(sut, "getInitial").withArgs(6, sinon.match.any).returns(9);
       sinon.stub(sut, "reduceToFirstZone").returns(false);
 
       const adjacentZones = sut.getCurrent(3, managerProps.object);
@@ -140,7 +140,7 @@ describe("AdjacentZonesStrategy", () => {
       manager.setup((x) => x.findZoneWithWidget(6, Moq.It.isAny())).returns(() => z9.object);
 
       const sut = new AdjacentZones(manager.object);
-      sinon.stub(sut, "getInitial").withArgs(6, sinon.match.any as any).returns(9);
+      sinon.stub(sut, "getInitial").withArgs(6, sinon.match.any).returns(9);
 
       const adjacentZones = sut.getCurrent(3, managerProps.object);
       adjacentZones.length.should.eq(0, "length");

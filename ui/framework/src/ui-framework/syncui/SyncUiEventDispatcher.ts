@@ -22,7 +22,7 @@ import { SelectionScope, getInstancesCount } from "@bentley/presentation-common"
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
 
-/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control.
+/** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
  * @public
  */
 export enum SyncUiEventId {
@@ -76,7 +76,7 @@ export interface SyncUiEventArgs {
  */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
-/** SyncUi Event Dispatcher class. This class is used to send eventIds to interested Ui components so the component can determine if it needs
+/** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
  */

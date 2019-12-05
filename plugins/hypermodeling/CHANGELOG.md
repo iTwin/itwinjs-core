@@ -1,6 +1,15 @@
 # Change Log - @bentley/hypermodeling-plugin
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Activating a section callout now displays the drawing view aligned with the spatial model.
+- Toolbar button to open section location view attachment now works.
+- Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

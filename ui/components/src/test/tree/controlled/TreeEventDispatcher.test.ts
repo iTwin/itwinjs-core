@@ -11,7 +11,7 @@ import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/Tree
 import { TreeEvents, TreeSelectionModificationEvent, TreeSelectionReplacementEvent, TreeCheckboxStateChangeEvent } from "../../../ui-components/tree/controlled/TreeEvents";
 import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, TreeModelNode, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
+import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { extractSequence } from "../ObservableTestHelpers";
@@ -34,7 +34,7 @@ describe("TreeEventDispatcher", () => {
   let placeholderChildNode: TreeModelNodePlaceholder;
   let loadedNode: MutableTreeModelNode;
   let loadedChildNode: MutableTreeModelNode;
-  let testNodes: TreeModelNode[];
+  let testNodes: MutableTreeModelNode[];
 
   beforeEach(() => {
     treeEventsMock.reset();
@@ -355,6 +355,36 @@ describe("TreeEventDispatcher", () => {
       const spy = sinon.spy(selectionManager, "onNodeClicked");
       dispatcher.onNodeClicked(testNodes[0].id, eventMock.object);
       expect(spy).to.be.calledWith(testNodes[0].id, eventMock.object);
+    });
+
+    it("calls tree events onDelayedNodeClick if node is selected", () => {
+      const eventMock = moq.Mock.ofType<React.MouseEvent<Element, MouseEvent>>();
+      testNodes[0].isSelected = true;
+      dispatcher.onNodeClicked(testNodes[0].id, eventMock.object);
+      treeEventsMock.verify((x) => x.onDelayedNodeClick!({ nodeId: testNodes[0].id }), moq.Times.exactly(2));
+    });
+
+    it("does not call tree events onDelayedNodeClick if node is not selected", () => {
+      const eventMock = moq.Mock.ofType<React.MouseEvent<Element, MouseEvent>>();
+      testNodes[0].isSelected = false;
+      dispatcher.onNodeClicked(testNodes[0].id, eventMock.object);
+      treeEventsMock.verify((x) => x.onDelayedNodeClick!({ nodeId: testNodes[0].id }), moq.Times.never());
+    });
+
+    it("does not call tree events onDelayedNodeClick if node does not exist", () => {
+      modelMock.reset();
+      const eventMock = moq.Mock.ofType<React.MouseEvent<Element, MouseEvent>>();
+      testNodes[0].isSelected = false;
+      dispatcher.onNodeClicked(testNodes[0].id, eventMock.object);
+      treeEventsMock.verify((x) => x.onDelayedNodeClick!({ nodeId: testNodes[0].id }), moq.Times.never());
+    });
+
+    it("does not call tree events onDelayedNodeClick if visible nodes are not set", () => {
+      dispatcher.setVisibleNodes(undefined!);
+      const eventMock = moq.Mock.ofType<React.MouseEvent<Element, MouseEvent>>();
+      testNodes[0].isSelected = false;
+      dispatcher.onNodeClicked(testNodes[0].id, eventMock.object);
+      treeEventsMock.verify((x) => x.onDelayedNodeClick!({ nodeId: testNodes[0].id }), moq.Times.never());
     });
 
   });

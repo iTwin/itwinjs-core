@@ -7,8 +7,8 @@ tableRowAnchors: true
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**Backstage**|A menu used to open Frontstages and launch Tasks and commands. It is opened by clicking or pressing the App button. It can open a full-screen overlay presenting application settings and data management to the user.
-|**Content&nbsp;Control**|A collection of Content Views.
-|**Content&nbsp;Group**|A collection of Content Views.
+|**Content&nbsp;Control**|A class that specifies the React component to display for a Content View.
+|**Content&nbsp;Group**|A collection of Content Controls.
 |**Content&nbsp;Layout**|A layout configuration of Content Views.
 |**Content&nbsp;View**|A representation of an iModel's data.
 |**Dialog**|A small temporary window of options presented to the user.
@@ -18,7 +18,6 @@ tableRowAnchors: true
 |**Stage&nbsp;Panel**|A panel defined as part of a Frontstage that displays to the left, right, above or below the 9-zone area.
 |**Status&nbsp;Bar**|The Widget that gives the user feedback about the state of an application.
 |**Status&nbsp;Field**|An area of the Status Bar assigned to display specific feedback about the active application.
-|**Task**|A specific piece of work to accomplish.
 |**Tool&nbsp;Settings**|Properties that modify the behavior and outcome of the active tool.
 |**Widget**|A collection of UI components tied to a particular zone that allows the user to view and/or modify data relevant to their current context.
 |**Workflow**|A defined sequence of tasks used to accomplish a goal.

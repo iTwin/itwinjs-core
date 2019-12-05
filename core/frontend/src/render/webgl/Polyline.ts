@@ -48,6 +48,8 @@ export class PolylineGeometry extends LUTGeometry {
     this._buffers = buffers;
   }
 
+  public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
+
   public dispose() {
     dispose(this.lut);
     dispose(this._buffers);

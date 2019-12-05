@@ -1570,9 +1570,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    jsonProperties: {
-        [key: string]: any;
-    };
+    jsonProperties?: string;
     kind: string;
     scope: RelatedElement;
     // @internal (undocumented)
@@ -1584,7 +1582,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 export namespace ExternalSourceAspect {
     export enum Kind {
         // (undocumented)
-        Element = "Element"
+        Element = "Element",
+        // (undocumented)
+        Relationship = "Relationship"
     }
 }
 
@@ -2135,6 +2135,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): void;
+    exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
     exportChildElements(elementId: Id64String): void;
     exportCodeSpecById(codeSpecId: Id64String): void;
     exportCodeSpecByName(codeSpecName: string): void;
@@ -2150,19 +2151,22 @@ export class IModelExporter {
     protected readonly handler: IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
-}
+    }
 
 // @alpha
 export abstract class IModelExportHandler {
     // @internal
     readonly callProtected: any;
-    protected onExportCodeSpec(_codeSpec: CodeSpec): void;
-    protected onExportElement(_element: Element): void;
+    protected onDeleteElement(_elementId: Id64String): void;
+    protected onDeleteModel(_modelId: Id64String): void;
+    protected onDeleteRelationship(_relInstanceId: Id64String): void;
+    protected onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
+    protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
     protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect): void;
+    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
     protected onExportFont(_font: FontProps): void;
-    protected onExportModel(_model: Model): void;
-    protected onExportRelationship(_relationship: Relationship): void;
+    protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
+    protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2246,6 +2250,7 @@ export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     readonly autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
+    deleteRelationship(relationshipProps: RelationshipProps): void;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
@@ -2253,9 +2258,10 @@ export class IModelImporter {
     importRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
-    protected onInsertModel(modelProps: ModelProps): void;
+    protected onInsertModel(modelProps: ModelProps): Id64String;
     protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onUpdateElement(elementProps: ElementProps): void;
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
@@ -2312,11 +2318,15 @@ export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
     detectElementDeletes(): void;
+    detectRelationshipDeletes(): void;
     dispose(): void;
     readonly exporter: IModelExporter;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
+    protected onDeleteElement(sourceElementId: Id64String): void;
+    protected onDeleteModel(_sourceModelId: Id64String): void;
+    protected onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     protected onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
     protected onExportElement(sourceElement: Element): void;
     protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
@@ -2329,6 +2339,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): void;
+    processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
     processChildElements(sourceElementId: Id64String): void;
     processCodeSpec(codeSpecName: string): void;
     processCodeSpecs(): void;
@@ -2913,8 +2924,8 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 // @public
 export class OpenParams {
     constructor(
-    openMode: OpenMode, 
-    syncMode?: SyncMode | undefined, 
+    openMode: OpenMode,
+    syncMode?: SyncMode | undefined,
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;

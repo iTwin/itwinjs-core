@@ -2,12 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { CodeSpec, FontProps, IModel } from "@bentley/imodeljs-common";
+import { DbResult, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ChangeOpCode, CodeSpec, FontProps, IModel } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
+import { ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, InstanceChange } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
@@ -30,9 +33,10 @@ export abstract class IModelExportHandler {
 
   /** Called when a CodeSpec should be exported.
    * @param codeSpec The CodeSpec to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportCodeSpec(_codeSpec: CodeSpec): void { }
+  protected onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void { }
 
   /** Called when a font should be exported.
    * @param font The font to export
@@ -42,26 +46,36 @@ export abstract class IModelExportHandler {
 
   /** Called when a model should be exported.
    * @param model The model to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportModel(_model: Model): void { }
+  protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void { }
+
+  /** Called when a model should be deleted. */
+  protected onDeleteModel(_modelId: Id64String): void { }
 
   /** If `true` is returned, then the element will be exported. */
   protected shouldExportElement(_element: Element): boolean { return true; }
 
   /** Called when an element should be exported.
    * @param element The element to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportElement(_element: Element): void { }
+  protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void { }
+
+  /** Called when an element should be deleted. */
+  protected onDeleteElement(_elementId: Id64String): void { }
 
   /** If `true` is returned, then the ElementAspect will be exported. */
   protected shouldExportElementAspect(_aspect: ElementAspect): boolean { return true; }
 
   /** Called when an ElementUniqueAspect should be exported.
+   * @param aspect The ElementUniqueAspect to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect): void { }
+  protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void { }
 
   /** Called when ElementMultiAspects should be exported.
    * @note This should be overridden to actually do the export.
@@ -73,9 +87,13 @@ export abstract class IModelExportHandler {
 
   /** Called when a Relationship should be exported.
    * @param relationship The Relationship to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportRelationship(_relationship: Relationship): void { }
+  protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void { }
+
+  /** Called when a relationship should be deleted. */
+  protected onDeleteRelationship(_relInstanceId: Id64String): void { }
 
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
@@ -89,6 +107,8 @@ export abstract class IModelExportHandler {
 export class IModelExporter {
   /** The read-only source iModel. */
   public readonly sourceDb: IModelDb;
+  /** Optionally cached entity change information */
+  private _sourceDbChanges?: EntityChangeOps;
   /** The handler called by this IModelExporter. */
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
@@ -165,6 +185,31 @@ export class IModelExporter {
     this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
+  /** Export changes between the specified versions of the source iModel. */
+  public async exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+    if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
+      this.exportAll(); // no changesets, so revert to exportAll
+      return Promise.resolve();
+    }
+    this._sourceDbChanges = await EntityChangeOps.initialize(requestContext, this.sourceDb, options);
+    this.exportCodeSpecs();
+    // WIP: handle font changes???
+    this.exportElement(IModel.rootSubjectId);
+    this.exportSubModels(IModel.repositoryModelId);
+    this.exportRelationships(ElementRefersToElements.classFullName);
+    // handle deletes
+    for (const elementId of this._sourceDbChanges.elements.deletedIds) {
+      this.handler.callProtected.onDeleteElement(elementId);
+    }
+    // WIP: handle ElementAspects?
+    for (const modelId of this._sourceDbChanges.models.deletedIds) {
+      this.handler.callProtected.onDeleteModel(modelId);
+    }
+    for (const relInstanceId of this._sourceDbChanges.relationships.deletedIds) {
+      this.handler.callProtected.onDeleteRelationship(relInstanceId);
+    }
+  }
+
   /** Export all CodeSpecs from the source iModel. */
   public exportCodeSpecs(): void {
     Logger.logTrace(loggerCategory, `exportCodeSpecs()`);
@@ -177,32 +222,35 @@ export class IModelExporter {
     });
   }
 
-  /** Returns true if the specified CodeSpec should be exported. */
-  private shouldExportCodeSpec(codeSpec: CodeSpec): boolean {
-    if (this._excludedCodeSpecNames.has(codeSpec.name)) {
-      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
-      return false;
-    }
-    // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.callProtected.shouldExportCodeSpec(codeSpec);
-  }
-
   /** Export a single CodeSpec from the source iModel. */
   public exportCodeSpecByName(codeSpecName: string): void {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(codeSpecName);
-    if (this.shouldExportCodeSpec(codeSpec)) {
-      Logger.logTrace(loggerCategory, `exportCodeSpecByName(${codeSpecName})`);
-      this.handler.callProtected.onExportCodeSpec(codeSpec);
+    let isUpdate: boolean | undefined;
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      if (this._sourceDbChanges.codeSpecs.insertedIds.has(codeSpec.id)) {
+        isUpdate = false;
+      } else if (this._sourceDbChanges.codeSpecs.updatedIds.has(codeSpec.id)) {
+        isUpdate = true;
+      } else {
+        return; // not in changeSet, don't export
+      }
+    }
+    // passed changeSet test, now apply standard exclusion rules
+    if (this._excludedCodeSpecNames.has(codeSpec.name)) {
+      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
+      return;
+    }
+    // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
+    if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
+      Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})` + isUpdate ? " UPDATE" : "");
+      this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
     }
   }
 
   /** Export a single CodeSpec from the source iModel. */
   public exportCodeSpecById(codeSpecId: Id64String): void {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getById(codeSpecId);
-    if (this.shouldExportCodeSpec(codeSpec)) {
-      Logger.logTrace(loggerCategory, `exportCodeSpecById(${codeSpecId})`);
-      this.handler.callProtected.onExportCodeSpec(codeSpec);
-    }
+    this.exportCodeSpecByName(codeSpec.name);
   }
 
   /** Export all fonts from the source iModel. */
@@ -244,12 +292,27 @@ export class IModelExporter {
 
   /** Export the model (the container only) from the source iModel. */
   private exportModelContainer(modeledElementId: Id64String): void {
+    let isUpdate: boolean | undefined;
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      if (this._sourceDbChanges.models.insertedIds.has(modeledElementId)) {
+        isUpdate = false;
+      } else if (this._sourceDbChanges.models.updatedIds.has(modeledElementId)) {
+        isUpdate = true;
+      } else {
+        return; // not in changeSet, don't export
+      }
+    }
     const model: Model = this.sourceDb.models.getModel(modeledElementId);
-    this.handler.callProtected.onExportModel(model);
+    this.handler.callProtected.onExportModel(model, isUpdate);
   }
 
   /** Export the model contents. */
   public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      if (!this._sourceDbChanges.models.insertedIds.has(modelId) && !this._sourceDbChanges.models.updatedIds.has(modelId)) {
+        return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
+      }
+    }
     Logger.logTrace(loggerCategory, `exportModelContents()`);
     const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -296,7 +359,7 @@ export class IModelExporter {
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (element instanceof excludedElementClass) {
-        Logger.logInfo(loggerCategory, `Excluded element by class`);
+        Logger.logInfo(loggerCategory, `Excluded element by class: ${excludedElementClass.classFullName}`);
         return false;
       }
     }
@@ -306,10 +369,23 @@ export class IModelExporter {
 
   /** Export the specified element and its child elements (if applicable). */
   public exportElement(elementId: Id64String): void {
+    let isUpdate: boolean | undefined;
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      if (this._sourceDbChanges.elements.insertedIds.has(elementId)) {
+        isUpdate = false;
+      } else if (this._sourceDbChanges.elements.updatedIds.has(elementId)) {
+        isUpdate = true;
+      } else {
+        // NOTE: This optimization assumes that the Element will change (LastMod) if an owned ElementAspect changes
+        // NOTE: However, child elements may have changed without the parent changing
+        this.exportChildElements(elementId);
+        return;
+      }
+    }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: true });
     Logger.logTrace(loggerCategory, `exportElement()`);
     if (this.shouldExportElement(element)) {
-      this.handler.callProtected.onExportElement(element);
+      this.handler.callProtected.onExportElement(element, isUpdate);
       this.exportElementAspects(elementId);
       this.exportChildElements(elementId);
     }
@@ -348,7 +424,17 @@ export class IModelExporter {
       });
       if (uniqueAspects.length > 0) {
         uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
-          this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect);
+          if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+            if (this._sourceDbChanges.elementAspects.insertedIds.has(uniqueAspect.id)) {
+              this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
+            } else if (this._sourceDbChanges.elementAspects.updatedIds.has(uniqueAspect.id)) {
+              this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
+            } else {
+              // not in changeSet, don't export
+            }
+          } else {
+            this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
+          }
         });
       }
       // ElementMultiAspects
@@ -359,18 +445,6 @@ export class IModelExporter {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
       }
     }
-  }
-
-  /** Returns true if the specified relationship should be exported. */
-  private shouldExportRelationship(relationship: Relationship): boolean {
-    for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
-      if (relationship instanceof excludedRelationshipClass) {
-        Logger.logInfo(loggerCategory, `Excluded relationship by class`);
-        return false;
-      }
-    }
-    // relationship has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.callProtected.shouldExportRelationship(relationship);
   }
 
   /** Exports all relationships that subclass from the specified base class. */
@@ -388,10 +462,93 @@ export class IModelExporter {
 
   /** Export a relationship from the source iModel. */
   private exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
-    Logger.logTrace(loggerCategory, `exportRelationship(${relClassFullName}, ${relInstanceId})`);
-    const rel: Relationship = this.sourceDb.relationships.getInstance(relClassFullName, relInstanceId);
-    if (this.shouldExportRelationship(rel)) {
-      this.handler.callProtected.onExportRelationship(rel);
+    let isUpdate: boolean | undefined;
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      if (this._sourceDbChanges.relationships.insertedIds.has(relInstanceId)) {
+        isUpdate = false;
+      } else if (this._sourceDbChanges.relationships.updatedIds.has(relInstanceId)) {
+        isUpdate = true;
+      } else {
+        return; // not in changeSet, don't export
+      }
     }
+    // passed changeSet test, now apply standard exclusion rules
+    Logger.logTrace(loggerCategory, `exportRelationship(${relClassFullName}, ${relInstanceId})`);
+    const relationship: Relationship = this.sourceDb.relationships.getInstance(relClassFullName, relInstanceId);
+    for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
+      if (relationship instanceof excludedRelationshipClass) {
+        Logger.logInfo(loggerCategory, `Excluded relationship by class: ${excludedRelationshipClass.classFullName}`);
+        return;
+      }
+    }
+    // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
+    if (this.handler.callProtected.shouldExportRelationship(relationship)) {
+      this.handler.callProtected.onExportRelationship(relationship, isUpdate);
+    }
+  }
+}
+
+class ChangeOpTracker {
+  public insertedIds: Id64Set = new Set<Id64String>();
+  public updatedIds: Id64Set = new Set<Id64String>();
+  public deletedIds: Id64Set = new Set<Id64String>();
+  public addChange(changeOpCode: ChangeOpCode, id: Id64String): void {
+    switch (changeOpCode) {
+      case ChangeOpCode.Insert: this.insertedIds.add(id); break;
+      case ChangeOpCode.Update: this.updatedIds.add(id); break;
+      case ChangeOpCode.Delete: this.deletedIds.add(id); break;
+      default: throw new Error(`Unexpected ChangedOpCode ${changeOpCode}`);
+    }
+  }
+}
+
+class EntityChangeOps {
+  public codeSpecs: ChangeOpTracker = new ChangeOpTracker();
+  public elements: ChangeOpTracker = new ChangeOpTracker();
+  public elementAspects: ChangeOpTracker = new ChangeOpTracker();
+  public models: ChangeOpTracker = new ChangeOpTracker();
+  public relationships: ChangeOpTracker = new ChangeOpTracker();
+  private constructor() { }
+  public static async initialize(requestContext: AuthorizedBackendRequestContext, iModelDb: IModelDb, options: ChangeSummaryExtractOptions): Promise<EntityChangeOps> {
+    const entityChanges = new EntityChangeOps();
+    const changeSummaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModelDb, options);
+    // assert.strictEqual(changeSummaryIds.length, 1);
+    ChangeSummaryManager.attachChangeCache(iModelDb);
+    // assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModelDb));
+    const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModelDb, changeSummaryIds[0]);
+    iModelDb.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=?", (statement) => {
+      statement.bindId(1, changeSummary.id);
+      while (statement.step() === DbResult.BE_SQLITE_ROW) {
+        const instanceId: Id64String = statement.getValue(0).getId();
+        const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModelDb, instanceId);
+        const entityClassFullName: string = EntityChangeOps._toClassFullName(instanceChange.changedInstance.className);
+        try {
+          const entityType: typeof Entity = iModelDb.getJsClass<typeof Entity>(entityClassFullName);
+          if (entityType.prototype instanceof Element) {
+            // const propertyNames: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModelDb, instanceChange.id);
+            entityChanges.elements.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+          } else if (entityType.prototype instanceof ElementAspect) {
+            entityChanges.elementAspects.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+          } else if (entityType.prototype instanceof Model) {
+            entityChanges.models.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+          } else if (entityType.prototype instanceof Relationship) {
+            entityChanges.relationships.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+          }
+        } catch (error) {
+          if ("BisCore:CodeSpec" === entityClassFullName) {
+            // In TypeScript, CodeSpec is not a subclass of Entity (should it be?), so must be handled separately.
+            entityChanges.codeSpecs.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
+          } else {
+            // Changes to *navigation* relationship are also tracked (should they be?), but can be ignored
+            // console.log(`Ignoring ${entityClassFullName}`); // tslint:disable-line
+          }
+        }
+      }
+    });
+    return entityChanges;
+  }
+  /** Converts string from ChangedInstance format to classFullName format. For example: "[BisCore].[PhysicalElement]" --> "BisCore:PhysicalElement" */
+  private static _toClassFullName(changedInstanceClassName: string): string {
+    return changedInstanceClassName.replace(/\[|\]/g, "").replace(".", ":");
   }
 }

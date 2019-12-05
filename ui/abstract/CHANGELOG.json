@@ -2,6 +2,24 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-abstract_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-abstract_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, IModelHubClient,
-  HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
-  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery, BriefcaseQuery,
+  IModelHubClient, HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
+  AuthorizedClientRequestContext, VersionQuery, BriefcaseQuery,
 } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb, BackendRequestContext } from "../../imodeljs-backend";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
+import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../imodeljs-backend";
+
 import * as path from "path";
 import * as os from "os";
 
@@ -16,10 +16,6 @@ import * as os from "os";
 export class HubUtility {
 
   public static logCategory = "HubUtility";
-
-  public static async login(user: ImsUserCredentials): Promise<AccessToken> {
-    return getIModelPermissionAbstraction().authorizeUser(new BackendRequestContext(), user);
-  }
 
   private static makeDirectoryRecursive(dirPath: string) {
     if (IModelJsFs.existsSync(dirPath))
@@ -277,26 +273,26 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string): Promise<GuidString> {
+  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string): Promise<GuidString> {
     // Delete any existing iModels with the same name as the required iModel
-    const iModelName = path.basename(pathname, ".bim");
-    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const locIModelName = iModelName || path.basename(pathname, ".bim");
+    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
     if (iModel) {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModel.id!);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { path: pathname });
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, locIModelName, { path: pathname });
     return iModel.id!;
   }
 
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
-  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string): Promise<GuidString> {
+  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string): Promise<GuidString> {
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
-    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname);
+    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName);
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
@@ -461,19 +457,6 @@ export class HubUtility {
   }
 }
 
-class ImsUserMgr {
-  public async authorizeUser(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials);
-    assert(!!authToken);
-
-    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
-    assert(!!accessToken);
-
-    Logger.logTrace(HubUtility.logCategory, `Logged in test user ${userCredentials.email}`);
-    return accessToken;
-  }
-}
-
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
@@ -510,7 +493,7 @@ export function getIModelPermissionAbstraction(): any {
     return authorizationAbstraction;
 
   if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return authorizationAbstraction = new ImsUserMgr();
+    return authorizationAbstraction = {};
   }
 
   throw new Error("WIP");

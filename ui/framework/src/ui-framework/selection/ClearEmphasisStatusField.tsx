@@ -4,84 +4,65 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
+// cSpell:ignore statusfields
+
 import * as React from "react";
+// tslint:disable-next-line: no-duplicate-imports
+import { useState, useEffect } from "react";
 import { Indicator } from "../statusfields/Indicator";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SelectionContextUtilities } from "./SelectionContextUtilities";
 import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { UiFramework } from "../UiFramework";
+import { useActiveViewport } from "../hooks/useActiveViewport";
 
 /** Clear Emphasis StatusField Props
  * @beta
  */
-export interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
+interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
   hideWhenUnused?: boolean;
 }
 
 /** Clear Emphasis StatusField
  * @beta
  */
-export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatusFieldProps, any> {
-  private _toolTip: string = UiFramework.translate("tools.clearVisibility");
+// tslint:disable-next-line: variable-name
+export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps> = (props) => {
+  const [toolTip] = useState(UiFramework.translate("tools.clearVisibility"));
+  const activeViewport = useActiveViewport();
+  const [showIndicator, setShowIndicator] = useState(false);
 
-  constructor(props: ClearEmphasisStatusFieldProps) {
-    super(props);
-
-    this.state = {
-      wantShow: this._wantShow(),
-    };
-  }
-
-  private _updateState = () => {
-    this.setState({
-      wantShow: this._wantShow(),
-    });
-  }
-
-  // istanbul ignore next
-  private _attachToVp = (vp: ScreenViewport) => {
-    vp.onFeatureOverridesChanged.addListener(this._updateState);
-  }
-
-  // istanbul ignore next
-  private _detachFromVp = (vp: ScreenViewport) => {
-    vp.onFeatureOverridesChanged.removeListener(this._updateState);
-  }
-
-  public componentDidMount() {
-    SelectionContextUtilities.emphasizeElementsChanged.addListener(this._updateState);
-    IModelApp.viewManager.onViewOpen.addListener(this._attachToVp);
-    IModelApp.viewManager.onViewClose.addListener(this._detachFromVp);
-  }
-
-  public componentWillUnmount() {
-    SelectionContextUtilities.emphasizeElementsChanged.removeListener(this._updateState);
-    IModelApp.viewManager.onViewOpen.removeListener(this._attachToVp);
-    IModelApp.viewManager.onViewClose.removeListener(this._detachFromVp);
-  }
-
-  private _wantShow() {
-    const vp = IModelApp.viewManager.selectedView;
+  useEffect(() => {
     // istanbul ignore next
-    if (!vp)
-      return false;
+    const onEmphasizeChange = () => {
+      // istanbul ignore next
+      const hasEmphasizeElements = !!activeViewport && SelectionContextUtilities.areFeatureOverridesActive(activeViewport);
+      setShowIndicator(hasEmphasizeElements || !props.hideWhenUnused);
+    };
 
-    return SelectionContextUtilities.areFeatureOverridesActive(vp);
-  }
+    // istanbul ignore next
+    setShowIndicator((!!activeViewport && SelectionContextUtilities.areFeatureOverridesActive(activeViewport)) || !props.hideWhenUnused);
+
+    SelectionContextUtilities.emphasizeElementsChanged.addListener(onEmphasizeChange);
+    if (activeViewport)
+      activeViewport.onFeatureOverridesChanged.addListener(onEmphasizeChange);
+
+    return () => {
+      if (activeViewport)
+        activeViewport.onFeatureOverridesChanged.removeListener(onEmphasizeChange);
+
+      SelectionContextUtilities.emphasizeElementsChanged.removeListener(onEmphasizeChange);
+    };
+  }, [activeViewport, props.hideWhenUnused]);
+
+  const classes = (showIndicator) ? "uifw-indicator-fade-in" : "uifw-indicator-fade-out";
 
   // istanbul ignore next
-  private _clearEmphasize = () => {
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      SelectionContextUtilities.clearEmphasize(vp);
-  }
+  const clearEmphasize = () => {
+    SelectionContextUtilities.clearEmphasize(activeViewport);
+  };
 
-  public render() {
-    const classes = (this.props.hideWhenUnused && !this.state.wantShow) ? "uifw-indicator-fade-out" : "uifw-indicator-fade-in";
-
-    return (
-      <Indicator toolTip={this._toolTip} className={classes} opened={false} onClick={this._clearEmphasize} iconName="icon-visibility"
-        isInFooterMode={this.props.isInFooterMode} />
-    );
-  }
-}
+  return (
+    <Indicator toolTip={toolTip} className={classes} opened={false} onClick={clearEmphasize} iconName="icon-visibility"
+      isInFooterMode={props.isInFooterMode} />
+  );
+};
