@@ -73,14 +73,13 @@ Name | Required? | Type | Default | Meaning
 
 ### Same Label Instance Grouping
 
-Allows grouping multiple instances with the same label into one ECInstance node.
-It can be used in cases when these instances represent the same object for the user.
+Allows grouping multiple instances with the same label into one ECInstance node. Similar to display label grouping, but instead of showing a grouping node with multiple grouped nodes, it shows a single ECInstances node which represents multiple ECInstances.
 
-When multiple instances are grouped, an ECInstance node is created instead of a
-grouping node and the ECInstance key for the node is assigned to key of one of grouped
-instances.
+#### Attributes
 
-The rule does not have any attributes - it's applied to all nodes which match grouping rule's criteria.
+Name | Required? | Type | Default | Meaning
+-|-|-|-|-
+`applicationStage` | No | `SameLabelInstanceGroupApplicationStage` | `"Query"` | Stage of hierarchy creation at which the rule is applied.
 
 ## Example
 

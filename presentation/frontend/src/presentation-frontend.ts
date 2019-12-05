@@ -28,6 +28,7 @@ export { SelectionManager, SelectionManagerProps } from "./selection/SelectionMa
 export { SelectionScopesManager, SelectionScopesManagerProps, getScopeId } from "./selection/SelectionScopesManager";
 export { SelectionHandler } from "./selection/SelectionHandler";
 export { HiliteSet, HiliteSetProvider } from "./selection/HiliteSetProvider";
+export { SelectionHelper } from "./selection/SelectionHelper";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

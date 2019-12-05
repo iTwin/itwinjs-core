@@ -36,7 +36,7 @@ describe("Content", () => {
         const keys = new KeySet([key1, key2]);
         const descriptor = await Presentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.id }, "Grid", keys, undefined);
         expect(descriptor).to.not.be.undefined;
-        const field = descriptor!.getFieldByName("Element_Model");
+        const field = descriptor!.getFieldByName("pc_bis_Element_Model");
         expect(field).to.not.be.undefined;
         const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.id }, descriptor!, keys, field!.name);
         expect(distinctValues).to.be.deep.equal([

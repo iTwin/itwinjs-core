@@ -11,15 +11,15 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey, createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
+import { KeySet, BaseNodeKey } from "@bentley/presentation-common";
 import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent,
-  ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
+  ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHelper,
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
@@ -49,7 +49,7 @@ describe("Tree withUnifiedSelection", () => {
       onTreeNodeChanged: undefined,
       getNodesCount: async () => 0,
       getNodes: async () => [],
-      getNodeKey: () => createRandomECInstanceNodeKey(),
+      getNodeKey: () => createRandomECInstancesNodeKey(),
       getFilteredNodePaths: async () => [],
     });
     selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
@@ -178,7 +178,7 @@ describe("Tree withUnifiedSelection", () => {
       });
 
       it("returns true when node key is in selection", () => {
-        const nodeKey = createRandomECInstanceNodeKey();
+        const nodeKey = createRandomECInstancesNodeKey();
         const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey]));
 
@@ -196,6 +196,21 @@ describe("Tree withUnifiedSelection", () => {
         const nodeKey = createRandomECInstanceNodeKey();
         const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey.instanceKey]));
+
+        const tree = shallow(<PresentationTree
+          dataProvider={dataProviderMock.object}
+          selectionHandler={selectionHandlerMock.object}
+        />).dive();
+
+        const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
+        const result = propCallback(node);
+        expect(result).to.be.true;
+      });
+
+      it("returns true when ECInstance key of ECInstances node is in selection", () => {
+        const nodeKey = createRandomECInstancesNodeKey();
+        const node = createRandomTreeNodeItem(nodeKey);
+        selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey.instanceKeys[0]]));
 
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
@@ -231,6 +246,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("calls props callback and adds node keys to selection manager when callback returns true", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
+        const selectionKeys = SelectionHelper.getKeysForSelection(nodes.map((n) => dataProviderMock.target.getNodeKey(n)));
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
         callback.setup((x) => x(nodes, false)).returns(() => true).verifiable();
 
@@ -242,7 +258,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, false);
 
-        selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => (dataProviderMock.target.getNodeKey(n) as ECInstanceNodeKey).instanceKey)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.addToSelection(selectionKeys), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
@@ -279,7 +295,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("replaces ECInstance keys in selection manager", () => {
         const keys = [
-          createRandomECInstanceNodeKey(),
+          createRandomECInstancesNodeKey(),
           { type: faker.random.word(), pathFromRoot: [] },
         ];
         const nodes = keys.map((key) => createRandomTreeNodeItem(key));
@@ -292,10 +308,7 @@ describe("Tree withUnifiedSelection", () => {
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny()), moq.Times.never());
-        selectionHandlerMock.verify((x) => x.replaceSelection([
-          (keys[0] as ECInstanceNodeKey).instanceKey,
-          keys[1],
-        ]), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.replaceSelection(SelectionHelper.getKeysForSelection(keys)), moq.Times.once());
       });
 
     });
@@ -304,6 +317,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("calls props callback and removes node keys from selection manager when callback returns true", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
+        const selectionKeys = SelectionHelper.getKeysForSelection(nodes.map((n) => dataProviderMock.target.getNodeKey(n)));
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
         callback.setup((x) => x(nodes)).returns(() => true).verifiable();
 
@@ -315,7 +329,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
-        selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => (dataProviderMock.target.getNodeKey(n) as ECInstanceNodeKey).instanceKey)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.removeFromSelection(selectionKeys), moq.Times.once());
         callback.verifyAll();
       });
 
@@ -349,7 +363,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("removes ECInstance keys from selection manager", () => {
         const keys = [
-          createRandomECInstanceNodeKey(),
+          createRandomECInstancesNodeKey(),
           { type: faker.random.word(), pathFromRoot: [] },
         ];
         const nodes = keys.map((key) => createRandomTreeNodeItem(key));
@@ -361,10 +375,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
-        selectionHandlerMock.verify((x) => x.removeFromSelection([
-          (keys[0] as ECInstanceNodeKey).instanceKey,
-          keys[1],
-        ]), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.removeFromSelection(SelectionHelper.getKeysForSelection(keys)), moq.Times.once());
       });
 
     });

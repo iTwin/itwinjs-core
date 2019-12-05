@@ -144,6 +144,9 @@ async function main() {
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
 
+  if (configuration.enableImprovedElision)
+    DisplayTestApp.tileAdminProps.enableImprovedElision = true;
+
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
 

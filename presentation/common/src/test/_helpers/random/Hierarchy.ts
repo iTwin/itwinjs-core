@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { ECInstanceNodeKey, StandardNodeTypes, Node, NodePathElement } from "../../../presentation-common";
+import { ECInstanceNodeKey, ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement } from "../../../presentation-common";
 import {
-  ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
+  ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
   LabelGroupingNodeKey, GroupingNodeKey, BaseNodeKey,
 } from "../../../hierarchy/Key";
 import { NodeJSON } from "../../../hierarchy/Node";
@@ -20,6 +20,7 @@ export const createRandomBaseNodeKey = (): BaseNodeKey => {
   };
 };
 
+/** @deprecated */
 export const createRandomECInstanceNodeKey = (): ECInstanceNodeKey => {
   return {
     type: StandardNodeTypes.ECInstanceNode,
@@ -28,11 +29,30 @@ export const createRandomECInstanceNodeKey = (): ECInstanceNodeKey => {
   };
 };
 
+/** @deprecated */
 export const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
   return {
     type: StandardNodeTypes.ECInstanceNode,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKey: createRandomECInstanceKeyJSON(),
+  };
+};
+
+export const createRandomECInstancesNodeKey = (): ECInstancesNodeKey => {
+  const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+  return {
+    type: StandardNodeTypes.ECInstancesNode,
+    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
+    instanceKeys,
+    instanceKey: instanceKeys[0],
+  };
+};
+
+export const createRandomECInstancesNodeKeyJSON = (): ECInstancesNodeKeyJSON => {
+  return {
+    type: StandardNodeTypes.ECInstancesNode,
+    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
+    instanceKeys: [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
   };
 };
 

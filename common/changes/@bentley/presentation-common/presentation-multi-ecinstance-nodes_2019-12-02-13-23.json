@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Add a way to group same-label ECInstance nodes at post-processing stage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
