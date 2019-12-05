@@ -24,7 +24,7 @@ import { Tile } from "./tile/Tile";
 import { TileTree } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
 
-const gridConstants = { minSeparation: 20, maxRefLines: 80, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
+const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -278,7 +278,7 @@ export class DecorateContext extends RenderContext {
 
       let nGridRepetitionsX = nRefRepetitionsX;
       let nGridRepetitionsY = nRefRepetitionsY;
-      const drawGridLines = (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
+
       const dirPoints: Point3d[] = [Point3d.create(minX, minY), Point3d.create(minX, minY + refSpacing.y), Point3d.create(minX + refSpacing.x, minY)];
       transform.multiplyPoint3dArrayInPlace(dirPoints);
 
@@ -306,61 +306,70 @@ export class DecorateContext extends RenderContext {
 
       const refColor = color.clone(); refColor.setTransparency(gridConstants.refTransparency);
       const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-      builder.setSymbology(refColor, planeColor, 1, linePat);
 
-      for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
-        const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
-        transform.multiplyPoint3dArrayInPlace(linePoints);
+      const drawRefX = (nRefRepetitionsX < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousX));
+      const drawRefY = (nRefRepetitionsY < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousY));
+      const drawGridLines = drawRefX && drawRefY && (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
 
-        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+      if (drawRefX) {
+        builder.setSymbology(refColor, planeColor, 1, linePat);
 
-        if (doFadeX) {
-          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
-          builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (xRef > 0 && nRefRepetitionsX > 10) {
-          if (xRef > gridConstants.maxRefLines) {
-            doFadeX = true;
-          } else if (unambiguousX && (vp.isCameraOn || 1 === xRef)) {
-            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-            if (thisDist < gridConstants.minSeparation)
-              doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
-            lastDist = thisDist;
+        for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
+          const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
+          transform.multiplyPoint3dArrayInPlace(linePoints);
+
+          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+
+          if (doFadeX) {
+            refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
+            builder.setSymbology(refColor, planeColor, 1, linePat);
+          } else if (xRef > 0 && nRefRepetitionsX > 10) {
+            if (xRef > gridConstants.maxRefLines) {
+              doFadeX = true;
+            } else if (unambiguousX && vp.isCameraOn) {
+              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+              if (thisDist < gridConstants.minSeparation)
+                doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
+              lastDist = thisDist;
+            }
+            if (doFadeX) nGridRepetitionsX = xRef;
           }
-          if (doFadeX) nGridRepetitionsX = xRef;
-        }
 
-        thisPt0.interpolate(0.5, thisPt1, lastPt);
-        builder.addLineString(linePoints);
+          thisPt0.interpolate(0.5, thisPt1, lastPt);
+          builder.addLineString(linePoints);
+        }
       }
 
-      refColor.setTransparency(gridConstants.refTransparency);
-      builder.setSymbology(refColor, planeColor, 1, linePat);
+      if (drawRefY) {
+        refColor.setTransparency(gridConstants.refTransparency);
+        builder.setSymbology(refColor, planeColor, 1, linePat);
 
-      for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
-        const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
-        transform.multiplyPoint3dArrayInPlace(linePoints);
+        for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
+          const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
+          transform.multiplyPoint3dArrayInPlace(linePoints);
 
-        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
 
-        if (doFadeY) {
-          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
-          builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (yRef > 0 && nRefRepetitionsY > 10) {
-          if (yRef > gridConstants.maxRefLines) {
-            doFadeY = true;
-          } else if (unambiguousY && (vp.isCameraOn || 1 === yRef)) {
-            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-            if (thisDist < gridConstants.minSeparation)
-              doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
-            lastDist = thisDist;
+          if (doFadeY) {
+            refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
+            builder.setSymbology(refColor, planeColor, 1, linePat);
+          } else if (yRef > 0 && nRefRepetitionsY > 10) {
+            if (yRef > gridConstants.maxRefLines) {
+              doFadeY = true;
+            } else if (unambiguousY && vp.isCameraOn) {
+              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+              if (thisDist < gridConstants.minSeparation)
+                doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
+              lastDist = thisDist;
+            }
+            if (doFadeY) nGridRepetitionsY = yRef;
           }
-          if (doFadeY) nGridRepetitionsY = yRef;
-        }
 
-        thisPt0.interpolate(0.5, thisPt1, lastPt);
-        builder.addLineString(linePoints);
+          thisPt0.interpolate(0.5, thisPt1, lastPt);
+          builder.addLineString(linePoints);
+        }
       }
 
       if (drawGridLines) {

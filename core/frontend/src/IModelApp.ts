@@ -525,12 +525,10 @@ export class IModelApp {
     overlay.tabIndex = -1; // so we can catch keystroke events
 
     // function to remove modal dialog
-    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); ev.preventDefault(); };
+    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;
-      overlay.addEventListener("touchstart", stop); // can't use global events for touch on Firefox
-      overlay.onmousemove = overlay.onmousedown = overlay.onmouseup = (ev) => ev.stopPropagation();
       overlay.onkeydown = overlay.onkeyup = (ev: KeyboardEvent) => { // ignore all keystrokes other than enter and escape
         switch (ev.key) {
           case "Enter":
