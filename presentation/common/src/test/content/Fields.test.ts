@@ -8,7 +8,7 @@ import {
   createRandomECClassInfo, createRandomECClassInfoJSON,
   createRandomRelationshipPath, createRandomRelationshipPathJSON,
   createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomNestedFieldJSON,
+  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomNestedFieldJSON, createRandomNestedContentField,
 } from "../_helpers/random";
 import { PropertiesFieldJSON } from "../../content/Fields";
 import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "../../presentation-common";
@@ -137,6 +137,27 @@ describe("PropertiesField", () => {
 });
 
 describe("NestedContentField", () => {
+
+  describe("getFieldByName", () => {
+
+    it("returns undefined when there are no nested fields", () => {
+      const field = createRandomNestedContentField([]);
+      expect(field.getFieldByName("test")).to.be.undefined;
+    });
+
+    it("returns undefined when field is not found", () => {
+      const field = createRandomNestedContentField();
+      const name = field.nestedFields[0].name + "_does_not_exist";
+      expect(field.getFieldByName(name, true)).to.be.undefined;
+    });
+
+    it("returns a field", () => {
+      const field = createRandomNestedContentField();
+      const nestedField = field.nestedFields[0];
+      expect(field.getFieldByName(nestedField.name)).to.eq(nestedField);
+    });
+
+  });
 
   describe("fromJSON", () => {
 

@@ -62,7 +62,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "application",
-          "name": "black",
+          "name": "Namibia$black",
           "typename": "bit",
         },
         "value": Object {
@@ -81,7 +81,7 @@ Object {
             "name": "Dynamic",
             "params": Array [],
           },
-          "name": "XML",
+          "name": "Namibia$XML",
           "typename": "binary",
         },
         "value": Object {
@@ -134,7 +134,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "generating Borders",
-          "name": "out-of-the-box",
+          "name": "Rustic Fresh Pants$out-of-the-box",
           "typename": "geometry",
         },
         "value": Object {
@@ -223,7 +223,7 @@ Object {
             "name": "Games",
             "params": Array [],
           },
-          "name": "payment",
+          "name": "Bahrain$payment",
           "typename": "point",
         },
         "value": Object {
@@ -243,7 +243,7 @@ Object {
             "name": "Games",
             "params": Array [],
           },
-          "name": "payment",
+          "name": "Bahrain$payment",
           "typename": "point",
         },
         "value": Object {
@@ -266,7 +266,7 @@ Object {
             "Representative": PropertyRecord {
               "property": Object {
                 "displayLabel": "Rubber Web zero tolerance",
-                "name": "Representative",
+                "name": "Bahrain$Representative",
                 "typename": "int",
               },
               "value": Object {
@@ -319,7 +319,7 @@ Object {
         "description": "disintermediate",
         "property": Object {
           "displayLabel": "Bedfordshire",
-          "name": "protocol",
+          "name": "Row$protocol",
           "typename": "bigint",
         },
         "value": Object {
@@ -347,7 +347,7 @@ Object {
                   "name": "users",
                   "params": Array [],
                 },
-                "name": "Progressive",
+                "name": "Row$Progressive",
                 "typename": "bit",
               },
               "value": Object {
@@ -424,7 +424,7 @@ Object {
                         "name": "Baht",
                         "params": Array [],
                       },
-                      "name": "COM",
+                      "name": "paradigms$COM",
                       "typename": "int",
                     },
                     "value": Object {
@@ -455,7 +455,7 @@ Object {
                         "name": "Baht",
                         "params": Array [],
                       },
-                      "name": "COM",
+                      "name": "paradigms$COM",
                       "typename": "int",
                     },
                     "value": Object {
@@ -480,7 +480,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "XSS",
-          "name": "Burkina Faso",
+          "name": "paradigms$Burkina Faso",
           "typename": "set",
         },
         "value": Object {
@@ -528,7 +528,7 @@ Object {
                   "Kenyan Shilling": PropertyRecord {
                     "property": Object {
                       "displayLabel": "Metal Germany Texas",
-                      "name": "Kenyan Shilling",
+                      "name": "Avon$Kenyan Shilling",
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -546,7 +546,7 @@ Object {
                         "name": "solid state",
                         "params": Array [],
                       },
-                      "name": "Mobility",
+                      "name": "Avon$Mobility",
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -572,7 +572,7 @@ Object {
                   "Kenyan Shilling": PropertyRecord {
                     "property": Object {
                       "displayLabel": "Metal Germany Texas",
-                      "name": "Kenyan Shilling",
+                      "name": "Avon$Kenyan Shilling",
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -590,7 +590,7 @@ Object {
                         "name": "solid state",
                         "params": Array [],
                       },
-                      "name": "Mobility",
+                      "name": "Avon$Mobility",
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -667,7 +667,7 @@ Object {
                     "description": "West Virginia Grocery Credit Card Account",
                     "property": Object {
                       "displayLabel": "Connecticut Grocery Prairie",
-                      "name": "Massachusetts",
+                      "name": "Supervisor$Massachusetts",
                       "typename": "int",
                     },
                     "value": Object {
@@ -680,7 +680,7 @@ Object {
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Centralized Auto Loan Account Computers",
-                      "name": "deposit",
+                      "name": "Supervisor$deposit",
                       "typename": "point",
                     },
                     "value": Object {
@@ -707,7 +707,7 @@ Object {
                     "description": "District Lek Comoro Franc",
                     "property": Object {
                       "displayLabel": "Connecticut Grocery Prairie",
-                      "name": "Massachusetts",
+                      "name": "Supervisor$Massachusetts",
                       "typename": "int",
                     },
                     "value": Object {
@@ -720,7 +720,7 @@ Object {
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Centralized Auto Loan Account Computers",
-                      "name": "deposit",
+                      "name": "Supervisor$deposit",
                       "typename": "point",
                     },
                     "value": Object {
@@ -767,7 +767,7 @@ Object {
             "Supervisor": PropertyRecord {
               "property": Object {
                 "displayLabel": "Licensed Fresh Fish index Soft",
-                "name": "Supervisor",
+                "name": "payment$Supervisor",
                 "typename": "decimal",
               },
               "value": Object {
@@ -781,7 +781,7 @@ Object {
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Place plum",
-                "name": "Wisconsin",
+                "name": "payment$Wisconsin",
                 "typename": "binary",
               },
               "value": Object {
@@ -837,7 +837,7 @@ Object {
             "name": "Soap",
             "params": Array [],
           },
-          "name": "Tasty",
+          "name": "Bedfordshire$Tasty",
           "typename": "int",
         },
         "value": Object {
@@ -849,7 +849,7 @@ Object {
       PropertyRecord {
         "property": Object {
           "displayLabel": "Soap Communications",
-          "name": "Soft",
+          "name": "Bedfordshire$Soft",
           "typename": "text",
         },
         "value": Object {
@@ -881,7 +881,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Metical blue",
-          "name": "HTTP",
+          "name": "Nakfa$HTTP",
           "typename": "smallint",
         },
         "value": Object {
@@ -894,7 +894,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Computers Turkish Lira",
-          "name": "Georgia",
+          "name": "Nakfa$Georgia",
           "typename": "boolean",
         },
         "value": Object {

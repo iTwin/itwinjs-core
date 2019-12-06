@@ -20,7 +20,7 @@ import {
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
 import { priorityAndNameSortFunction } from "../common/Utils";
-import { ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
+import { ContentBuilder, filterMatchingFieldPaths, applyOptionalPrefix } from "../common/ContentBuilder";
 import { getFavoritesCategory } from "../favorite-properties/DataProvider";
 
 /** @internal */
@@ -392,6 +392,7 @@ class PropertyDataBuilder {
     let item = this._contentItem;
     // need to remove the last element because the Field information is in `field`
     const pathUpToField = pathToRootField.slice(undefined, -1);
+    let namePrefix: string | undefined;
     for (const parentField of pathUpToField) {
       if (item.isFieldMerged(parentField.name))
         return this.createRecord(field, true, hiddenFieldPaths);
@@ -403,19 +404,21 @@ class PropertyDataBuilder {
       if (nestedContentValues.length === 0)
         return undefined;
 
+      namePrefix = applyOptionalPrefix(parentField.name, namePrefix);
+
       if (nestedContentValues.length > 1) {
         const mergedItem = new Item(nestedContentValues.reduce((keys, ncv) => {
           keys.push(...ncv.primaryKeys);
           return keys;
         }, new Array<InstanceKey>()), "", "", undefined, { [field.name]: undefined }, { [field.name]: undefined }, [field.name]);
-        return ContentBuilder.createPropertyRecord(field, mergedItem);
+        return ContentBuilder.createPropertyRecord(field, mergedItem, { namePrefix });
       }
 
       const nestedContentValue = nestedContentValues[0];
       item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
         nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
     }
-    return ContentBuilder.createPropertyRecord(field, item, undefined);
+    return ContentBuilder.createPropertyRecord(field, item, { namePrefix });
   }
 }
 

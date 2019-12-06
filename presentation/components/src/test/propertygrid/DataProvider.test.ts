@@ -29,6 +29,7 @@ import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetMa
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { applyOptionalPrefix } from "../../common/ContentBuilder";
 
 const favoritesCategoryName = "Favorite";
 /**
@@ -890,7 +891,7 @@ describe("PropertyDataProvider", () => {
           const data = await provider.getData();
           expect(data.categories.length).to.eq(2);
           expect(data.records[favoritesCategoryName].length).to.eq(1);
-          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(propertiesField.name);
+          expect(data.records[favoritesCategoryName][0].property.name).to.be.eq(applyOptionalPrefix(propertiesField.name, nestedContentField.name));
           expect((data.records[favoritesCategoryName][0].value as PrimitiveValue).value as string).to.be.eq(propertyValue);
         });
 

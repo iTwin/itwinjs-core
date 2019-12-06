@@ -124,7 +124,7 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   return record;
 };
 
-const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps): PropertyRecord => {
+const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord => {
   const exclusiveIncludePath = props.exclusiveIncludePath ? [...props.exclusiveIncludePath] : undefined;
   let exclusiveIncludePathField: Field | undefined;
   if (exclusiveIncludePath && 0 !== exclusiveIncludePath.length) {
@@ -134,6 +134,7 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
   const item = new Item(nestedContent.primaryKeys, "", "",
     field.contentClassInfo, nestedContent.values, nestedContent.displayValues, nestedContent.mergedFieldNames);
 
+  const namePrefix = applyOptionalPrefix(field.name, props.namePrefix);
   const members: { [name: string]: PropertyRecord } = {};
   for (const nestedField of field.nestedFields) {
     if (exclusiveIncludePathField && exclusiveIncludePathField !== nestedField) {
@@ -149,19 +150,19 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
       // pick all paths that start with current field
       hiddenFieldPaths = filterMatchingFieldPaths(hiddenFieldPaths, nestedField);
     }
-    members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, { exclusiveIncludePath, hiddenFieldPaths });
+    members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, { exclusiveIncludePath, hiddenFieldPaths, namePrefix });
   }
   const value: StructValue = {
     valueFormat: UiPropertyValueFormat.Struct,
     members,
   };
-  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field));
+  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field, props));
   record.isReadonly = field.isReadonly;
   record.isMerged = false;
   return record;
 };
 
-const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps): PropertyRecord => {
+const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord => {
   const isMerged = item.isFieldMerged(field.name);
   let value: PropertyValue;
 
@@ -191,7 +192,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, props:
       value = value.items[0].value!;
   }
 
-  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field));
+  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field, props));
   if (isMerged)
     record.isMerged = true;
   if (field.isReadonly || isMerged)
@@ -217,6 +218,12 @@ export interface NestedContentCreationProps {
   hiddenFieldPaths?: Field[][];
 }
 
+/** @internal */
+export interface PropertyDescriptionCreationProps {
+  /** Name prefix for the created property record. */
+  namePrefix?: string;
+}
+
 /**
  * A helper class which creates `ui-components` objects from `presentation` objects.
  * @internal
@@ -226,14 +233,14 @@ export class ContentBuilder {
    * Create a property record for specified field and item
    * @param field Content field to create the record for
    * @param item Content item containing the values for `field`
-   * @param props Parameters for creating nested content record. Only makes sense if `field` is `NestedContentField`
+   * @param props Parameters for creating the record
    */
-  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps): PropertyRecord {
+  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord {
     if (field.isNestedContentField())
       return createNestedContentRecord(field, item, props ? props : {});
 
     const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
-    return createRecord(ContentBuilder.createPropertyDescription(field), field.type,
+    return createRecord(ContentBuilder.createPropertyDescription(field, props!), field.type,
       item.values[field.name], item.displayValues[field.name],
       isValueReadOnly, item.isFieldMerged(field.name), item.extendedData);
   }
@@ -241,10 +248,11 @@ export class ContentBuilder {
   /**
    * Create a property description for the specified field
    * @param field Content field to create description for
+   * @param props Parameters for creating the description
    */
-  public static createPropertyDescription(field: Field): PropertyDescription {
+  public static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription {
     const descr: PropertyDescription = {
-      name: field.name,
+      name: applyOptionalPrefix(field.name, props ? props.namePrefix : undefined),
       displayLabel: field.label,
       typename: field.type.typeName,
     };
@@ -266,3 +274,9 @@ export class ContentBuilder {
 export const filterMatchingFieldPaths = (paths: Field[][], start: Field) => paths
   .filter((path) => path.length > 1 && path[0] === start)
   .map((path) => path.slice(1));
+
+/** @internal */
+export const FIELD_NAMES_SEPARATOR = "$";
+
+/** @internal */
+export const applyOptionalPrefix = (str: string, prefix?: string) => (prefix ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str);

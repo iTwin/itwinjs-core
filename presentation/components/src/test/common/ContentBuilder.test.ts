@@ -15,7 +15,7 @@ import {
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
-import { ContentBuilder, getLinks } from "../../common/ContentBuilder";
+import { ContentBuilder, getLinks, FIELD_NAMES_SEPARATOR } from "../../common/ContentBuilder";
 import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 describe("ContentBuilder", () => {
@@ -26,6 +26,12 @@ describe("ContentBuilder", () => {
       const field = createRandomPrimitiveField();
       const descr = ContentBuilder.createPropertyDescription(field);
       expect(descr).to.matchSnapshot();
+    });
+
+    it("creates description with name prefix", () => {
+      const field = createRandomPrimitiveField();
+      const descr = ContentBuilder.createPropertyDescription(field, { namePrefix: "test" });
+      expect(descr.name).to.eq(`test${FIELD_NAMES_SEPARATOR}${field.name}`);
     });
 
     it("creates description with editor", () => {
@@ -584,7 +590,7 @@ describe("ContentBuilder", () => {
         const item = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, [field.name]);
         const record = ContentBuilder.createPropertyRecord(field, item);
-        expect(await (record.value as PrimitiveValue).displayValue).to.eq("");
+        expect((record.value as PrimitiveValue).displayValue).to.eq("");
       });
 
       it("throws when display value of merged nested content is not primitive", () => {

@@ -12,17 +12,18 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
   createRandomDescriptor, createRandomRuleset, createRandomContent,
-  createRandomECInstanceKey, createRandomPropertiesField,
+  createRandomECInstanceKey, createRandomPropertiesField, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription, createRandomECClassInfo, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection, PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   Descriptor, Field,
   SelectionInfo, Item,
   KeySet, Ruleset, RegisteredRuleset,
-  Content, DescriptorOverrides,
+  Content, DescriptorOverrides, NestedContentField,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { FIELD_NAMES_SEPARATOR } from "../../common/ContentBuilder";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
@@ -615,6 +616,19 @@ describe("ContentDataProvider", () => {
       expect(field).to.be.undefined;
     });
 
+    it("return undefined when field is not found", async () => {
+      const descriptor = createRandomDescriptor();
+
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+
+      const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(resultField).to.be.undefined;
+    });
+
     it("return a field", async () => {
       const descriptor = createRandomDescriptor();
       const field = createRandomPropertiesField();
@@ -630,6 +644,25 @@ describe("ContentDataProvider", () => {
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
       expect(resultField).to.be.eq(field);
+    });
+
+    it("return a nested field", async () => {
+      const descriptor = createRandomDescriptor();
+      const nestedField = createRandomPrimitiveField();
+      const field = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
+      descriptor.fields = [field];
+      propertyRecord.property.name = `${field.name}${FIELD_NAMES_SEPARATOR}${nestedField.name}`;
+
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+
+      const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(resultField).to.be.eq(nestedField);
     });
 
   });

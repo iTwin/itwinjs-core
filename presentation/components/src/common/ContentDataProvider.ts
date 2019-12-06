@@ -14,6 +14,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
+import { findField } from "./Utils";
 
 /**
  * Properties for invalidating content cache.
@@ -343,9 +344,7 @@ export class ContentDataProvider implements IContentDataProvider {
    */
   public async getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined> {
     const descriptor = await this.getContentDescriptor();
-    if (undefined === descriptor)
-      return undefined;
-    return descriptor.getFieldByName(propertyRecord.property.name, true);
+    return descriptor ? findField(descriptor, propertyRecord.property.name) : undefined;
   }
 
   private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {

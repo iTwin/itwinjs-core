@@ -7,6 +7,8 @@
 import * as React from "react";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
+import { Descriptor, Field } from "@bentley/presentation-common";
+import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
 
 /**
  * An interface of something that has a priority.
@@ -67,4 +69,20 @@ export const getDisplayName = <P>(component: React.ComponentType<P>): string => 
   if (component.name)
     return component.name;
   return "Component";
+};
+
+/**
+ * Finds a field given the name of property record created from that field.
+ * @internal
+ */
+export const findField = (descriptor: Descriptor, recordPropertyName: string): Field | undefined => {
+  let fieldsSource: { getFieldByName: (name: string) => Field | undefined } | undefined = descriptor;
+  const fieldNames = recordPropertyName.split(FIELD_NAMES_SEPARATOR);
+  while (fieldsSource && fieldNames.length) {
+    const field: Field | undefined = fieldsSource.getFieldByName(fieldNames.shift()!);
+    fieldsSource = (field && field.isNestedContentField()) ? field : undefined;
+    if (!fieldNames.length)
+      return field;
+  }
+  return undefined;
 };

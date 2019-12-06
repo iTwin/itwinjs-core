@@ -109,25 +109,73 @@ describe("FavoritePropertiesManager", () => {
       expect(() => manager.has(propertyField1, projectId, imodelId2)).to.throw(`Favorite properties are not initialized for iModel: ${imodelId2}. In project: ${projectId}.`);
     });
 
-    it("returns false for not favorited property field", async () => {
+    it("returns false for not favorite property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-
       expect(manager.has(propertyField1)).to.be.false;
     });
 
-    it("returns true for favorited property field", async () => {
+    it("returns true for favorite property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-
       await manager.add(propertyField1);
       expect(manager.has(propertyField1)).to.be.true;
     });
 
-    it("returns true for primitive fields that are not nested", async () => {
+    it("returns false for not favorite primitive fields", async () => {
       await manager.initializeConnection(imodelMock.object);
+      const field = createRandomPrimitiveField();
+      expect(manager.has(field)).to.be.false;
+    });
 
+    it("returns true for favorite primitive fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
       const field = createRandomPrimitiveField();
       await manager.add(field);
       expect(manager.has(field)).to.be.true;
+    });
+
+    it("returns false for not favorite nested content fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const field = createRandomNestedContentField();
+      expect(manager.has(field)).to.be.false;
+    });
+
+    it("returns true for favorite nested content fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const field = createRandomNestedContentField();
+      await manager.add(field);
+      expect(manager.has(field)).to.be.true;
+    });
+
+    it("returns false for not favorite property fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const field = createRandomPropertiesField();
+      expect(manager.has(field)).to.be.false;
+    });
+
+    it("returns true for favorite nested fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const field = createRandomPropertiesField();
+      await manager.add(field);
+      expect(manager.has(field)).to.be.true;
+    });
+
+    it("returns false for not favorite nested fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const parentField = createRandomNestedContentField();
+      const nestedField = createRandomPropertiesField();
+      parentField.nestedFields.push(nestedField);
+      parentField.rebuildParentship();
+      expect(manager.has(nestedField)).to.be.false;
+    });
+
+    it("returns true for favorite nested fields", async () => {
+      await manager.initializeConnection(imodelMock.object);
+      const parentField = createRandomNestedContentField();
+      const nestedField = createRandomPropertiesField();
+      parentField.nestedFields.push(nestedField);
+      parentField.rebuildParentship();
+      await manager.add(nestedField);
+      expect(manager.has(nestedField)).to.be.true;
     });
 
     it("checks iModel scope for favorite properties", async () => {

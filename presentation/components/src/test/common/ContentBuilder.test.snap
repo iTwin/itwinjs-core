@@ -145,7 +145,7 @@ PropertyRecord {
             "name": "Intranet",
             "params": Array [],
           },
-          "name": "Buckinghamshire",
+          "name": "Tasty Wooden Chair$Buckinghamshire",
           "typename": "bit",
         },
         "value": Object {
@@ -205,7 +205,7 @@ PropertyRecord {
                   "name": "eyeballs",
                   "params": Array [],
                 },
-                "name": "Armenian Dram",
+                "name": "mindshare$Armenian Dram",
                 "typename": "point",
               },
               "value": Object {
@@ -236,7 +236,7 @@ PropertyRecord {
                   "name": "eyeballs",
                   "params": Array [],
                 },
-                "name": "Armenian Dram",
+                "name": "mindshare$Armenian Dram",
                 "typename": "point",
               },
               "value": Object {
@@ -285,7 +285,7 @@ PropertyRecord {
               },
               "property": Object {
                 "displayLabel": "SDD",
-                "name": "Movies",
+                "name": "Florida$Movies",
                 "typename": "float",
               },
               "value": Object {
@@ -316,7 +316,7 @@ PropertyRecord {
               },
               "property": Object {
                 "displayLabel": "SDD",
-                "name": "Movies",
+                "name": "Florida$Movies",
                 "typename": "float",
               },
               "value": Object {
@@ -350,7 +350,7 @@ PropertyRecord {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Investor",
-          "name": "XSS",
+          "name": "Field$XSS",
           "typename": "bigint",
         },
         "value": Object {
@@ -360,7 +360,7 @@ PropertyRecord {
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Investor",
-                "name": "XSS",
+                "name": "Field$XSS",
                 "typename": "bigint",
               },
               "value": Object {
@@ -369,7 +369,7 @@ PropertyRecord {
                     "description": "some display value 1.2",
                     "property": Object {
                       "displayLabel": "indigo",
-                      "name": "Ohio",
+                      "name": "Field$XSS$Ohio",
                       "typename": "int",
                     },
                     "value": Object {
@@ -387,7 +387,7 @@ PropertyRecord {
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Investor",
-                "name": "XSS",
+                "name": "Field$XSS",
                 "typename": "bigint",
               },
               "value": Object {
@@ -396,7 +396,7 @@ PropertyRecord {
                     "description": "some display value 2.2",
                     "property": Object {
                       "displayLabel": "indigo",
-                      "name": "Ohio",
+                      "name": "Field$XSS$Ohio",
                       "typename": "int",
                     },
                     "value": Object {
@@ -441,7 +441,7 @@ PropertyRecord {
             "name": "Salad",
             "params": Array [],
           },
-          "name": "Bacon",
+          "name": "Riel$Bacon",
           "typename": "text",
         },
         "value": Object {
@@ -470,7 +470,7 @@ PropertyRecord {
       "Fantastic Steel Hat": PropertyRecord {
         "property": Object {
           "displayLabel": "systems",
-          "name": "Fantastic Steel Hat",
+          "name": "bluetooth$Fantastic Steel Hat",
           "typename": "double",
         },
         "value": Object {
@@ -480,7 +480,7 @@ PropertyRecord {
               "isReadonly": false,
               "property": Object {
                 "displayLabel": "systems",
-                "name": "Fantastic Steel Hat",
+                "name": "bluetooth$Fantastic Steel Hat",
                 "typename": "double",
               },
               "value": Object {
@@ -493,7 +493,7 @@ PropertyRecord {
                         "name": "virtual",
                         "params": Array [],
                       },
-                      "name": "Home Loan Account",
+                      "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
                       "typename": "datetime",
                     },
                     "value": Object {
@@ -511,7 +511,7 @@ PropertyRecord {
               "isReadonly": false,
               "property": Object {
                 "displayLabel": "systems",
-                "name": "Fantastic Steel Hat",
+                "name": "bluetooth$Fantastic Steel Hat",
                 "typename": "double",
               },
               "value": Object {
@@ -524,7 +524,7 @@ PropertyRecord {
                         "name": "virtual",
                         "params": Array [],
                       },
-                      "name": "Home Loan Account",
+                      "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
                       "typename": "datetime",
                     },
                     "value": Object {

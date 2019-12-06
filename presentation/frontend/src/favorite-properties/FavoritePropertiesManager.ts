@@ -191,14 +191,29 @@ export class FavoritePropertiesManager {
     if (field.isNestedContentField()) {
       nestedContentInfos.add(field.contentClassInfo.name);
     } else if (field.isPropertiesField()) {
+      const prefix = getNestingPrefix(field);
       for (const property of field.properties)
-        propertyInfos.add(`${property.property.classInfo.name}:${property.property.name}`);
+        propertyInfos.add(`${prefix}${property.property.classInfo.name}:${property.property.name}`);
     } else {
       baseFieldInfos.add(field.name);
     }
     return { nestedContentInfos, propertyInfos, baseFieldInfos };
   }
 }
+
+const getNestingPrefix = (field: Field) => {
+  let path = new Array<string>();
+  let curr = field.parent;
+  while (curr) {
+    path = [...curr.pathToPrimaryClass.map((rel) => `${rel.isForwardRelationship ? "F" : "B"}:${rel.relationshipInfo.name}`), ...path];
+    curr = curr.parent;
+  }
+  if (path.length) {
+    // push an empty string so we get a '-' suffix
+    path.push("");
+  }
+  return path.join("-");
+};
 
 const getiModelInfo = (projectId: string | undefined, imodelId: string) => projectId + "/" + imodelId;
 

@@ -758,6 +758,7 @@ export class NestedContentField extends Field {
     contentClassInfo: ClassInfo;
     // @internal
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
+    getFieldByName(name: string, recurse?: boolean): Field | undefined;
     nestedFields: Field[];
     pathToPrimaryClass: RelationshipPath;
     // @internal (undocumented)
