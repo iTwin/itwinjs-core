@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { assert, BeDuration, ClientRequestContext, Id64Array, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps, RpcInvocation } from "@bentley/imodeljs-common";
+import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, IModelToken, IModelTokenProps, RpcInterface, RpcInvocation, RpcPendingResponse, TileTreeProps, RpcManager } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { CloudStorageUploadOptions } from "../CloudStorageBackend";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -148,8 +147,6 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 
 /** @internal */
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
-  private _activeUploads: Set<string> = new Set();
-
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelTokenProps, treeId: string): Promise<TileTreeProps> {
@@ -174,7 +171,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const content = await RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
 
     // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
-    this.cacheTile(tokenProps, treeId, contentId, content, guid);
+    if (IModelHost.usingExternalTileCache)
+      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, content, guid);
+
     return content;
   }
 
@@ -188,45 +187,5 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
-  }
-
-  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
-    if (!IModelHost.usingExternalTileCache) {
-      return;
-    }
-
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
-
-    setTimeout(async () => {
-      let key = "";
-
-      try {
-        const cache = CloudStorageTileCache.getCache();
-        const containerKey = cache.formContainerName(id);
-        const resourceKey = cache.formResourceName(id);
-        key = containerKey + resourceKey;
-
-        if (this._activeUploads.has(key)) {
-          return;
-        }
-
-        this._activeUploads.add(key);
-
-        const options: CloudStorageUploadOptions = {};
-        if (IModelHost.compressCachedTiles) {
-          options.contentEncoding = "gzip";
-        }
-
-        const perfInfo = { ...iModelToken, treeId, contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
-        const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-        await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options);
-        perfLogger.dispose();
-      } catch (err) {
-        Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
-      }
-
-      this._activeUploads.delete(key);
-    });
   }
 }

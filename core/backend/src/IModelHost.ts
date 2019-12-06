@@ -24,7 +24,7 @@ import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
+import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { AliCloudStorageService } from "./AliCloudStorageService";
@@ -264,6 +264,9 @@ export class IModelHost {
    */
   public static tileCacheService: CloudStorageService;
 
+  /** @internal */
+  public static tileUploader: CloudStorageTileUploader;
+
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
@@ -398,6 +401,8 @@ export class IModelHost {
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;
+
+    IModelHost.tileUploader = new CloudStorageTileUploader();
 
     if (credentials.service === "azure" && !IModelHost.tileCacheService) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);

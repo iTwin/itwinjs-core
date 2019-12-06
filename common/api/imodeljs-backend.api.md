@@ -86,6 +86,7 @@ import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelToken } from '@bentley/imodeljs-common';
+import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -632,6 +633,14 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     service: "azure" | "alicloud" | "external";
 }
+
+// @internal (undocumented)
+export class CloudStorageTileUploader {
+    // (undocumented)
+    readonly activeUploads: Iterable<Promise<void>>;
+    // (undocumented)
+    cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
+    }
 
 // @beta (undocumented)
 export interface CloudStorageUploadOptions {
@@ -2209,6 +2218,8 @@ export class IModelHost {
     static readonly tileContentRequestTimeout: number;
     // @internal
     static readonly tileTreeRequestTimeout: number;
+    // @internal (undocumented)
+    static tileUploader: CloudStorageTileUploader;
     // @internal
     static readonly usingExternalTileCache: boolean;
     }

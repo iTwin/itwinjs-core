@@ -2,10 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelToken, IModelTokenProps, TileContentIdentifier } from "@bentley/imodeljs-common";
 import * as Azure from "@azure/storage-blob";
+import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
@@ -142,5 +145,50 @@ export class AzureBlobStorage extends CloudStorageService {
         return reject(new IModelError(BentleyStatus.ERROR, `Unable to upload "${name}".`));
       }
     });
+  }
+}
+
+/** @internal */
+export class CloudStorageTileUploader {
+  private _activeUploads: Map<string, Promise<void>> = new Map();
+
+  public get activeUploads(): Iterable<Promise<void>> {
+    return this._activeUploads.values();
+  }
+
+  private async uploadToCache(id: TileContentIdentifier, content: Uint8Array, containerKey: string, resourceKey: string) {
+    await new Promise((resolve) => setTimeout(resolve));
+
+    try {
+      const options: CloudStorageUploadOptions = {};
+      if (IModelHost.compressCachedTiles) {
+        options.contentEncoding = "gzip";
+      }
+
+      const { iModelToken, treeId, contentId } = id;
+      const perfInfo = { ...iModelToken, treeId, contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
+      const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
+      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options);
+      perfLogger.dispose();
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
+    }
+
+    this._activeUploads.delete(containerKey + resourceKey);
+  }
+
+  public cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
+
+    const cache = CloudStorageTileCache.getCache();
+    const containerKey = cache.formContainerName(id);
+    const resourceKey = cache.formResourceName(id);
+    const key = containerKey + resourceKey;
+
+    if (this._activeUploads.has(key))
+      return;
+
+    this._activeUploads.set(key, this.uploadToCache(id, content, containerKey, resourceKey));
   }
 }

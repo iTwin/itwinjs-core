@@ -37,6 +37,7 @@ beta;ChangeSummaryManager
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
+internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 beta;ComparisonOption
