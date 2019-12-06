@@ -8,7 +8,9 @@ import {
   imageBufferToPngDataUrl,
   IModelApp,
   IModelConnection,
+  NotifyMessageDetails,
   openImageDataUrlInNewWindow,
+  OutputMessagePriority,
   ScreenViewport,
   Tool,
   Viewport,
@@ -347,19 +349,26 @@ export class Viewer extends Window {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    let newIModel;
-    try {
-      newIModel = await IModelConnection.openSnapshot(filename);
-    } catch (err) {
-      alert(err.toString());
-      return;
+    let newIModel: IModelConnection;
+    const sameFile = filename === this._imodel.iModelToken.key;
+    if (!sameFile) {
+      try {
+        newIModel = await IModelConnection.openSnapshot(filename);
+      } catch (err) {
+        alert(err.toString());
+        return;
+      }
     }
 
     Surface.instance.onResetIModel(this);
     IModelApp.viewManager.dropViewport(this.viewport, false);
 
     await this.clearViews();
-    this._imodel = newIModel;
+
+    if (sameFile)
+      newIModel = await IModelConnection.openSnapshot(filename);
+
+    this._imodel = newIModel!;
     await this.buildViewList();
     const view = await this.views.getDefaultView(this._imodel);
     await this.openView(view);
@@ -367,15 +376,21 @@ export class Viewer extends Window {
     this.updateTitle();
   }
 
+  public async openFile(filename?: string): Promise<void> {
+    return undefined !== filename ? this.openIModel(filename) : this.selectIModel();
+  }
+
   private async selectIModel(): Promise<void> {
     const filename = await this.surface.selectFileName();
-    if (undefined !== filename) {
-      try {
-        await this.resetIModel(filename);
-        setTitle(filename);
-      } catch (_) {
-        alert("Error - could not open file.");
-      }
+    return undefined !== filename ? this.openIModel(filename) : Promise.resolve();
+  }
+
+  private async openIModel(filename: string): Promise<void> {
+    try {
+      await this.resetIModel(filename);
+      setTitle(filename);
+    } catch (_) {
+      alert("Error - could not open file.");
     }
   }
 
@@ -405,7 +420,9 @@ export class Viewer extends Window {
   }
 
   public onClosed(): void {
-    if (undefined === IModelApp.viewManager.selectedView)
-      this._imodel.closeSnapshot(); // tslint:disable-line:no-floating-promises
+    if (undefined === IModelApp.viewManager.selectedView) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
+      this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
+    }
   }
 }

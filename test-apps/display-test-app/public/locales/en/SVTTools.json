@@ -64,6 +64,15 @@
     },
     "PurgeTileTrees": {
       "keyin": "dta purge tiletrees"
+    },
+    "OpenIModel": {
+      "keyin": "dta file open"
+    },
+    "CloseIModel": {
+      "keyin": "dta file close"
+    },
+    "ReopenIModel": {
+      "keyin": "dta file reopen"
     }
   }
 }

@@ -31,11 +31,14 @@ import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer"
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import {
   CloneViewportTool,
+  CloseIModelTool,
   CloseWindowTool,
   CreateWindowTool,
   DockWindowTool,
   FocusWindowTool,
   MaximizeWindowTool,
+  OpenIModelTool,
+  ReopenIModelTool,
   ResizeWindowTool,
   RestoreWindowTool,
   Surface,
@@ -224,6 +227,7 @@ export class DisplayTestApp {
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
       CloneViewportTool,
+      CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
       DockWindowTool,
@@ -233,8 +237,10 @@ export class DisplayTestApp {
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
+      OpenIModelTool,
       PurgeTileTreesTool,
       RefreshTilesTool,
+      ReopenIModelTool,
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
