@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "1.9.0-dev.15",
+  "version": "1.9.0-dev.16",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -29,15 +29,15 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "1.9.0-dev.15",
-    "@bentley/bentleyjs-core": "1.9.0-dev.15",
-    "@bentley/geometry-core": "1.9.0-dev.15",
+    "@bentley/imodeljs-clients": "1.9.0-dev.16",
+    "@bentley/bentleyjs-core": "1.9.0-dev.16",
+    "@bentley/geometry-core": "1.9.0-dev.16",
     "openid-client": "^3.7.2",
     "puppeteer": "chrome-stable"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.9.0-dev.15",
-    "@bentley/config-loader": "1.9.0-dev.15",
+    "@bentley/build-tools": "1.9.0-dev.16",
+    "@bentley/config-loader": "1.9.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
