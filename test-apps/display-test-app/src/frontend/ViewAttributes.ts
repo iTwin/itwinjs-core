@@ -225,7 +225,7 @@ export class ViewAttributes {
       else
         (this._vp.view as ViewState3d).turnCameraOff();
 
-      this.sync();
+      this.sync(true);
     }, parent);
 
     const update = (view: ViewState) => {
@@ -475,8 +475,8 @@ export class ViewAttributes {
     }
   }
 
-  private sync(): void {
-    this._vp.synchWithView(true);
+  private sync(saveUndo = false): void {
+    this._vp.synchWithView(saveUndo);
   }
 
   private get _nextId(): string {
