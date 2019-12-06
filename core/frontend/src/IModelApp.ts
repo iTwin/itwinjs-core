@@ -473,7 +473,9 @@ export class IModelApp {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
         authorization = accessToken.toTokenString(IncludePrefix.Yes);
-        userId = accessToken.getUserInfo()!.id;
+        const userInfo = accessToken.getUserInfo();
+        if (userInfo)
+          userId = userInfo.id;
       }
       return {
         id,
