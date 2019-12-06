@@ -1337,7 +1337,9 @@ export abstract class Viewport implements IDisposable {
   public get animationFraction(): number { return this._animationFraction; }
   /** @internal */
   public set animationFraction(fraction: number) {
-    this._animationFraction = fraction; this.sync.invalidateAnimationFraction();
+    this._animationFraction = fraction;
+    this.sync.invalidateAnimationFraction();
+    IModelApp.requestNextAnimation();
   }
 
   /** @internal */
