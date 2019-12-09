@@ -551,7 +551,9 @@ export abstract class ViewState extends ElementState {
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
-    this.validateViewDelta(viewDelta, false);
+    const status = this.validateViewDelta(viewDelta, false);
+    if (ViewStatus.Success !== status)
+      return status;
 
     this.setOrigin(viewOrg);
     this.setExtents(viewDelta);

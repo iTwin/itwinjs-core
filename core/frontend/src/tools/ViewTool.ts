@@ -1352,14 +1352,25 @@ class ViewScroll extends AnimatedHandle {
 }
 
 /** ViewingToolHandle for performing the "zoom view" operation */
-class ViewZoom extends AnimatedHandle {
-  private readonly _anchorPtNpc = new Point3d();
-  private _lastZoomRatio = 1.0;
+class ViewZoom extends ViewingToolHandle {
+  protected readonly _anchorPtNpc = new Point3d();
+  protected readonly _anchorPtView = new Point3d();
+  protected readonly _anchorPtWorld = new Point3d();
+  protected readonly _lastPtView = new Point3d();
+  protected readonly _startEyePoint = new Point3d();
+  protected _startFrust?: Frustum;
+  protected _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
   public getHandleCursor() { return IModelApp.viewManager.zoomCursor; }
 
-  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
-    if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
+  public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+    out.distance = 0.0;
+    out.priority = ViewManipPriority.Medium; // Always prefer over pan handle which is only force enabled by IdleTool middle button action...
+    return true;
+  }
+
+  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+    if (!hasFocus || context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
     const radius = Math.floor(context.viewport.pixelsFromInches(0.15)) + 0.5;
@@ -1388,50 +1399,65 @@ class ViewZoom extends AnimatedHandle {
   }
 
   public firstPoint(ev: BeButtonEvent) {
-    super.firstPoint(ev);
-    ev.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+    const vp = ev.viewport!;
+    this.viewTool.inDynamicUpdate = true;
+    if (this.needDepthPoint(ev, false)) {
+      const visiblePoint = this.viewTool.getDepthPoint(ev);
+      if (undefined !== visiblePoint) {
+        vp.worldToView(visiblePoint, this._anchorPtView);
+      } else {
+        vp.worldToNpc(ev.point, this._anchorPtView);
+        this._anchorPtView.z = ViewManip.getFocusPlaneNpc(vp);
+        vp.npcToView(this._anchorPtView, this._anchorPtView);
+      }
+    } else {
+      this._anchorPtView.setFrom(ev.viewPoint);
+    }
+    this._lastPtView.setFrom(this._anchorPtView);
+
+    vp.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+    vp.viewToWorld(this._anchorPtView, this._anchorPtWorld);
+    this._startFrust = vp.getWorldFrustum();
+
+    if (vp.view.is3d() && vp.view.isCameraOn)
+      this._startEyePoint.setFrom(vp.view.getEyePoint());
+
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
     return true;
   }
 
-  public animate(): boolean {
-    if (undefined === this.getDirection()) // on anchor point?
+  protected getDirection(): Vector3d | undefined {
+    const dir = this._anchorPtView.vectorTo(this._lastPtView); dir.z = 0;
+    return dir.magnitudeSquared() < 36 ? undefined : dir; // dead zone around starting point
+  }
+
+  public doManipulation(ev: BeButtonEvent): boolean {
+    this._lastPtView.setFrom(ev.viewPoint);
+
+    if (undefined === this._startFrust || undefined === this.getDirection()) // on anchor point?
       return false;
 
-    const tool = this.viewTool;
-    const viewport = tool.viewport!;
+    const viewport = this.viewTool.viewport!;
     const view = viewport.view;
     const thisPtNpc = viewport.viewToNpc(this._lastPtView);
-    const dist = this._anchorPtNpc.minus(thisPtNpc); dist.z = 0.0;
-    let zoomRatio = 1.0 + (dist.magnitude() * ToolSettings.zoomSpeed * this.getElapsedTime());
-    const bumpDistance = ToolSettings.wheelZoomBumpDistance * zoomRatio;
-    if (dist.y < 0)
+    const dist = this._anchorPtNpc.minus(thisPtNpc); dist.z = 0.0; dist.x = 0.0;
+    let zoomRatio = 1.0 + (dist.magnitude() * ToolSettings.zoomSpeed);
+    if (dist.y > 0)
       zoomRatio = 1.0 / zoomRatio;
     this._lastZoomRatio = zoomRatio;
 
+    const frustum = this._startFrust.clone();
+    const transform = Transform.createFixedPointAndMatrix(this._anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, view.is3d() ? zoomRatio : 1.0));
+
     if (view.is3d() && view.isCameraOn) {
-      const anchorPtWorld = viewport.npcToWorld(this._anchorPtNpc);
-      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
-      const oldEyePoint = view.getEyePoint();
+      const oldEyePoint = this._startEyePoint;
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
-
-      // As you near the depth point, the zoom operation continues to slow. Apply "bump distance" to move through the initial depth point.
-      if (cameraOffset.magnitude() < bumpDistance)
-        cameraOffset.scaleToLength(bumpDistance, cameraOffset);
-
-      const cameraOffsetTransform = Transform.createTranslation(cameraOffset);
-      const frustum = viewport.getWorldFrustum();
-      frustum.transformBy(cameraOffsetTransform, frustum);
-      viewport.setupViewFromFrustum(frustum);
-    } else {
-      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1.0));
-      const frustum = viewport.getFrustum(CoordSystem.Npc, true);
-      frustum.transformBy(transform, frustum);
-      viewport.npcToWorldArray(frustum.points);
-      viewport.setupViewFromFrustum(frustum);
+      Transform.createTranslation(cameraOffset, transform);
     }
-    return false;
+
+    frustum.transformBy(transform, frustum);
+    return viewport.setupViewFromFrustum(frustum);
   }
 
   /** @internal */
@@ -1779,7 +1805,7 @@ export class ZoomViewTool extends ViewManip {
   public static toolId = "View.Zoom";
   public static iconSpec = "icon-zoom";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
-    super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
+    super(vp, ViewHandleType.Zoom | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
 }
