@@ -135,7 +135,7 @@ describe("LinearReferencing Domain", () => {
 
     // Create a Test LinearlyLocatedAttribution element
     let linearFromToPosition: LinearlyReferencedFromToLocationProps = {
-      fromPosition: { distanceAlongFromStart: 10.0 },
+      fromPosition: { distanceAlongFromStart: 0.0 },
       toPosition: { distanceAlongFromStart: 70.0 },
     };
 
@@ -149,23 +149,21 @@ describe("LinearReferencing Domain", () => {
 
     let linearLocationAspect = LinearlyLocated.getFromToLocation(iModelDb, linearlyLocatedAttributionId);
     assert.isFalse(linearLocationAspect === undefined);
-    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 0.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     const linearlyLocatedAttribution = iModelDb.elements.getElement<TestLinearlyLocatedAttribution>(linearlyLocatedAttributionId);
     linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
-    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 0.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
     assert.equal(linearlyLocatedAttribution.getLinearElementId(), linearElementId);
 
-    // TODO: Enable testing of updateFromToLocation below once iModel.elements.updateAspect is fixed.
-    // It currently doesn't work with LinearReferencing aspects since its schema declares handlers.
-    // linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
-    // linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
+    linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
+    linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
 
-    // linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
-    // assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
-    // assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
+    linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     // Create a Test PhysicalLinear element
     const testPhysicalLinarProps: GeometricElement3dProps = {
