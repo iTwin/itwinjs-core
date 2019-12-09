@@ -6,7 +6,7 @@
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, IModelError, Easing } from "@bentley/imodeljs-common";
 import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
@@ -20,8 +20,21 @@ import { ScreenViewport, Viewport } from "../Viewport";
  * @public
  */
 export class ToolSettings {
-  /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(750);
+  /** @deprecated */
+  public static get animationTime() { return ToolSettings.viewAnimate.time.normal; }
+  /** @deprecated */
+  public static set animationTime(val: BeDuration) { ToolSettings.viewAnimate.time.normal = val; }
+
+  /** @beta */
+  public static viewAnimate = {
+    easing: Easing.Cubic.InOut,
+    /** Duration of animations of viewing operations. */
+    time: {
+      fast: BeDuration.fromSeconds(.75),
+      normal: BeDuration.fromSeconds(1.5),
+      slow: BeDuration.fromSeconds(3.0),
+    },
+  };
   /** Two tap must be within this period to be a double tap. */
   public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
   /** Two clicks must be within this period to be a double click. */

@@ -530,7 +530,7 @@ export abstract class ViewManip extends ViewTool {
       vp.synchWithView(true);
 
       if (restorePrevious)
-        vp.doUndo(ToolSettings.animationTime);
+        vp.doUndo(ToolSettings.viewAnimate.time.normal);
 
       vp.invalidateDecorations();
     }
@@ -2415,7 +2415,7 @@ export class ViewUndoTool extends ViewTool {
 
   public onPostInstall() {
     if (this.viewport)
-      this.viewport.doUndo(ToolSettings.animationTime);
+      this.viewport.doUndo(ToolSettings.viewAnimate.time.normal);
     this.exitTool();
   }
 }
@@ -2429,7 +2429,7 @@ export class ViewRedoTool extends ViewTool {
 
   public onPostInstall() {
     if (this.viewport)
-      this.viewport.doRedo(ToolSettings.animationTime);
+      this.viewport.doRedo(ToolSettings.viewAnimate.time.normal);
     this.exitTool();
   }
 }

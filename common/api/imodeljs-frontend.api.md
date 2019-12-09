@@ -966,13 +966,6 @@ export class AnimationBranchState {
 // @internal
 export type AnimationBranchStates = Map<string, AnimationBranchState>;
 
-// @public
-export interface AnimationOptions {
-    animationTime?: number;
-    cancelOnAbort?: boolean;
-    easingFunction?: EasingFunction;
-}
-
 // @beta
 export interface Animator {
     animate(): boolean;
@@ -6221,7 +6214,7 @@ export class SceneContext extends RenderContext {
 // @public
 export class ScreenViewport extends Viewport {
     // @internal
-    protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, view: ViewState);
+    protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
     // @internal (undocumented)
     addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
@@ -6229,9 +6222,9 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
-    animateFrustumChange(start: Frustum, end: Frustum, options: AnimationOptions, fromUndo?: ViewStateUndo): void;
+    animateFrustumChange(start: Frustum, end: Frustum, options: ViewAnimationOptions, fromUndo?: ViewStateUndo): void;
     // @internal
-    animateToCurrent(start: Frustum, options?: AnimationOptions): void;
+    animateToCurrent(start: Frustum, options?: ViewAnimationOptions): void;
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState): void;
     clearViewUndo(): void;
@@ -8337,6 +8330,7 @@ export class ToolRegistry {
 
 // @public
 export class ToolSettings {
+    // @deprecated (undocumented)
     static animationTime: BeDuration;
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
@@ -8348,6 +8342,15 @@ export class ToolSettings {
     static touchMoveDelay: BeDuration;
     static touchMoveDistanceInches: number;
     static touchZoomChangeThresholdInches: number;
+    // @beta (undocumented)
+    static viewAnimate: {
+        easing: (k: number) => number;
+        time: {
+            fast: BeDuration;
+            normal: BeDuration;
+            slow: BeDuration;
+        };
+    };
     static viewingInertia: {
         enabled: boolean;
         damping: number;
@@ -8566,7 +8569,14 @@ export enum UsesSelection {
 }
 
 // @public
-export interface ViewChangeOptions extends AnimationOptions {
+export interface ViewAnimationOptions {
+    animationTime?: number;
+    cancelOnAbort?: boolean;
+    easingFunction?: EasingFunction;
+}
+
+// @public
+export interface ViewChangeOptions extends ViewAnimationOptions {
     animateFrustumChange?: boolean;
     marginPercent?: MarginPercent;
     saveInUndo?: boolean;
@@ -9416,7 +9426,7 @@ export abstract class ViewManip extends ViewTool {
 // @public
 export abstract class Viewport implements IDisposable {
     // @internal
-    protected constructor(target: RenderTarget, view: ViewState);
+    protected constructor(target: RenderTarget);
     // @internal (undocumented)
     addDecorations(_decorations: Decorations): void;
     // @internal
@@ -9523,6 +9533,8 @@ export abstract class Viewport implements IDisposable {
     invalidateRenderPlan(): void;
     // @internal (undocumented)
     invalidateScene(): void;
+    // (undocumented)
+    protected _inViewChangedEvent: boolean;
     readonly isAlwaysDrawnExclusive: boolean;
     // @internal (undocumented)
     readonly isAspectRatioLocked: boolean;
@@ -9708,6 +9720,8 @@ export abstract class ViewState extends ElementState {
     readonly auxiliaryCoordinateSystem: AuxCoordSystemState;
     readonly backgroundColor: ColorDef;
     calculateFrustum(result?: Frustum): Frustum | undefined;
+    // @internal
+    canAnimateTo(other: ViewState): boolean;
     categorySelector: CategorySelectorState;
     // @internal (undocumented)
     static readonly className: string;
@@ -9831,6 +9845,8 @@ export abstract class ViewState2d extends ViewState {
     readonly angle: Angle;
     // (undocumented)
     readonly baseModelId: Id64String;
+    // @internal (undocumented)
+    canAnimateTo(other: ViewState): boolean;
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)

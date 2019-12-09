@@ -20,7 +20,7 @@ export class ToolSettingsTracker {
   private static _expandToolSettings = false;
 
   public constructor(parent: HTMLElement, _vp: Viewport) {
-    const settingsDiv = document.createElement("div") as HTMLDivElement;
+    const settingsDiv = document.createElement("div");
     settingsDiv.style.display = "block";
     settingsDiv.style.textAlign = "left";
 
@@ -32,7 +32,7 @@ export class ToolSettingsTracker {
       body: settingsDiv,
     });
 
-    let div = document.createElement("div") as HTMLDivElement;
+    let div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     createCheckBox({
       parent: div,
       name: "Preserve World Up When Rotating",
@@ -41,36 +41,31 @@ export class ToolSettingsTracker {
       handler: (_cb) => { ToolSettings.preserveWorldUp = !ToolSettings.preserveWorldUp; IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
     // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
     settingsDiv.style.display = ToolSettingsTracker._expandToolSettings ? "block" : "none";
 
-    div = document.createElement("div") as HTMLDivElement;
-    let label = document.createElement("label") as HTMLLabelElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    let label = IModelApp.makeHTMLElement("label", { innerText: "Animation Duration (ms): ", parent: div });
     label.style.display = "inline";
     label.htmlFor = "ts_animationTime";
-    label.innerText = "Animation Duration (ms): ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_animationTime",
       display: "inline",
       min: 0,
       step: 1,
-      value: ToolSettings.animationTime.milliseconds,
-      handler: (value, _input) => { ToolSettings.animationTime = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
+      value: ToolSettings.viewAnimate.time.normal.milliseconds,
+      handler: (value, _input) => { ToolSettings.viewAnimate.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
-    label = document.createElement("label") as HTMLLabelElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    label = IModelApp.makeHTMLElement("label", { innerText: "Pick Radius (inches): ", parent: div });
     label.style.display = "inline";
     label.htmlFor = "ts_viewToolPickRadiusInches";
     label.innerText = "Pick Radius (inches): ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_viewToolPickRadiusInches",
@@ -83,9 +78,8 @@ export class ToolSettingsTracker {
     }, true);
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     createCheckBox({
       parent: div,
       name: "Walk Enforce Z Up",
@@ -95,14 +89,11 @@ export class ToolSettingsTracker {
     });
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
-    label = document.createElement("label") as HTMLLabelElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    label = IModelApp.makeHTMLElement("label", { innerText: "Walk Camera Angle (degrees): ", parent: div });
     label.style.display = "inline";
     label.htmlFor = "ts_walkCameraAngle";
-    label.innerText = "Walk Camera Angle (degrees): ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_walkCameraAngle",
@@ -115,14 +106,11 @@ export class ToolSettingsTracker {
     }, true);
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
-    label = document.createElement("label") as HTMLLabelElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    label = IModelApp.makeHTMLElement("label", { innerText: "Walk Velocity (meters per second): ", parent: div });
     label.style.display = "inline";
     label.htmlFor = "ts_walkVelocity";
-    label.innerText = "Walk Velocity (meters per second): ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_walkVelocity",
@@ -135,14 +123,12 @@ export class ToolSettingsTracker {
     }, true);
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Bump Distance (meters): ", parent: div });
     label = document.createElement("label") as HTMLLabelElement;
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomBumpDistance";
-    label.innerText = "Wheel Zoom Bump Distance (meters): ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_wheelZoomBumpDistance",
@@ -155,14 +141,11 @@ export class ToolSettingsTracker {
     }, true);
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
-    div = document.createElement("div") as HTMLDivElement;
-    label = document.createElement("label") as HTMLLabelElement;
+    div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
+    label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Ratio: ", parent: div });
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomRatio";
-    label.innerText = "Wheel Zoom Ratio: ";
-    div.appendChild(label);
     createNumericInput({
       parent: div,
       id: "ts_wheelZoomRatio",
@@ -175,7 +158,6 @@ export class ToolSettingsTracker {
     }, true);
     div.style.display = "block";
     div.style.textAlign = "left";
-    settingsDiv.appendChild(div);
 
     createLabeledNumericInput({
       id: "num_inertiaDamping",
@@ -186,7 +168,7 @@ export class ToolSettingsTracker {
       max: 1,
       step: 0.05,
       parseAsFloat: true,
-      name: "Interial damping: ",
+      name: "Inertial damping: ",
     });
     createLabeledNumericInput({
       id: "num_inertiaDuration",
@@ -197,7 +179,7 @@ export class ToolSettingsTracker {
       max: 10,
       step: 0.5,
       parseAsFloat: true,
-      name: "Interial duration (seconds): ",
+      name: "Inertial duration (seconds): ",
     });
   }
 

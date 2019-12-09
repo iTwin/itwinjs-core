@@ -1581,7 +1581,11 @@ export class WheelEventProcessor {
     }
 
     const animationOptions: ViewChangeOptions = {
-      saveInUndo: true, animateFrustumChange: true, cancelOnAbort: true, animationTime: 175, easingFunction: Easing.Linear.None,
+      saveInUndo: true,
+      animateFrustumChange: true,
+      cancelOnAbort: true,
+      animationTime: 200,
+      easingFunction: Easing.Linear.None,
     };
 
     let status: ViewStatus;

@@ -11,7 +11,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
-  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, Easing, EasingFunction,
+  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, EasingFunction,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -32,6 +32,8 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
 import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
+
+// cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -419,7 +421,7 @@ export interface Animator {
 /** Options that control how an Viewport animation behaves.
  * @public
  */
-export interface AnimationOptions {
+export interface ViewAnimationOptions {
   /** Amount of time for animation. Default is ToolSettings.animationTime, in milliseconds */
   animationTime?: number;
   /** if animation is aborted, don't move to end, leave at current point instead. */
@@ -431,7 +433,7 @@ export interface AnimationOptions {
 /** Options that control how operations that change a viewport behave.
  * @public
  */
-export interface ViewChangeOptions extends AnimationOptions {
+export interface ViewChangeOptions extends ViewAnimationOptions {
   /** Whether to save the result of this change into the view undo stack. Default is yes. */
   saveInUndo?: boolean;
   /** Whether the change should be animated or not. Default is yes. */
@@ -465,8 +467,8 @@ class FrustumAnimator implements Animator {
     return false;
   }
 
-  public constructor(public options: AnimationOptions, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
-    const duration = options.animationTime ? options.animationTime : ToolSettings.animationTime.milliseconds;
+  public constructor(public options: ViewAnimationOptions, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
+    const duration = undefined !== options.animationTime ? options.animationTime : ToolSettings.viewAnimate.time.normal.milliseconds;
     if (duration <= 0)
       return;
     this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
@@ -474,7 +476,7 @@ class FrustumAnimator implements Animator {
     this._tweens.create({ fraction: 0.0 }, {
       to: { fraction: 1.0 },
       duration,
-      easing: options.easingFunction ? options.easingFunction : Easing.Quadratic.InOut,
+      easing: options.easingFunction ? options.easingFunction : ToolSettings.viewAnimate.easing,
       start: true,
       onUpdate: (obj: any) => this.moveToFraction(obj.fraction),
     });
@@ -1249,10 +1251,11 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
-  private _view: ViewState;
+  private _view!: ViewState;
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
+  protected _inViewChangedEvent = false;
   private _animator?: Animator;
   /** @internal */
   protected _changeFlags = new ChangeFlags();
@@ -1727,10 +1730,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  protected constructor(target: RenderTarget, view: ViewState) {
+  protected constructor(target: RenderTarget) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
-    this._view = view; // NB: Caller must invoke changeView().
   }
 
   public dispose(): void {
@@ -1969,7 +1971,7 @@ export abstract class Viewport implements IDisposable {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
-    const prevView = undefined !== this.viewFrustum ? this.view : undefined;
+    const prevView = undefined !== this.view ? this.view : undefined;
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
@@ -2095,6 +2097,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   private doSetupFromView(view: ViewState) {
+    if (this._inViewChangedEvent)
+      return ViewStatus.Success; // ignore echos
+
     this._view = view;
 
     const vf = ViewFrustum.createFromViewport(this);
@@ -2106,7 +2111,9 @@ export abstract class Viewport implements IDisposable {
     this.sync.invalidateRenderPlan();
     this.sync.setValidController();
 
+    this._inViewChangedEvent = true;
     this.onViewChanged.raiseEvent(this);
+    this._inViewChangedEvent = false;
     return ViewStatus.Success;
   }
 
@@ -2917,7 +2924,7 @@ export class ScreenViewport extends Viewport {
       throw new Error("viewport cannot be created from a div with zero width or height");
 
     const canvas = document.createElement("canvas");
-    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas), view);
+    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
   }
@@ -2981,8 +2988,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, view: ViewState) {
-    super(target, view);
+  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
+    super(target);
     this.canvas = canvas;
     this.parentDiv = parentDiv;
 
@@ -3099,7 +3106,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public animateFrustumChange(start: Frustum, end: Frustum, options: AnimationOptions, fromUndo?: ViewStateUndo) {
+  public animateFrustumChange(start: Frustum, end: Frustum, options: ViewAnimationOptions, fromUndo?: ViewStateUndo) {
     this.setAnimator(new FrustumAnimator(options, this, start, end, fromUndo));
   }
 
@@ -3109,7 +3116,7 @@ export class ScreenViewport extends Viewport {
    * frustum will be restored to its current location.
    * @internal
    */
-  public animateToCurrent(start: Frustum, options?: AnimationOptions) {
+  public animateToCurrent(start: Frustum, options?: ViewAnimationOptions) {
     options = options ? options : {};
     this.animateFrustumChange(start, this.getFrustum(), options, this.view.saveForUndo());
   }
@@ -3159,9 +3166,22 @@ export class ScreenViewport extends Viewport {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
-    this.clearViewUndo();
+    if (view === this.view) // nothing to do
+      return;
+
+    this.setAnimator(); // make sure we clear any active animators before we change views.
+
+    // determined whether we can animate this ViewState change
+    const prev = (this.view && this.view.canAnimateTo(view)) ? this.viewFrustum.getFrustum() : undefined;
+
+    if (undefined === prev)
+      this.clearViewUndo(); // if we can animate, don't throw out view undo.
+
     super.changeView(view);
     this.saveViewUndo();
+
+    if (undefined !== prev)
+      this.animateToCurrent(prev, { animationTime: ToolSettings.viewAnimate.time.slow.milliseconds });
   }
 
   /** @internal */
@@ -3183,6 +3203,9 @@ export class ScreenViewport extends Viewport {
 
   /** Saves the current state of this viewport's [[ViewState]] in the undo stack, such that it can be restored by a call to [[ScreenViewport.doUndo]]. */
   public saveViewUndo(): void {
+    if (this._inViewChangedEvent) // echo from a view changed event.
+      return;
+
     // the first time we're called we need to establish the baseline
     if (!this._currentBaseline)
       this._currentBaseline = this.view.saveForUndo();
@@ -3235,10 +3258,10 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   private finishUndoRedo(duration?: BeDuration): void {
     this.updateChangeFlags(this.view);
-    const startFrust = undefined !== duration ? this.getFrustum() : undefined;
+    const startFrust = this.getFrustum();
     this.setupFromView();
-    if (undefined !== startFrust)
-      this.animateFrustumChange(startFrust, this.getFrustum(), { animationTime: duration ? duration.milliseconds : undefined }, this._currentBaseline);
+    if (duration)
+      this.animateFrustumChange(startFrust, this.getFrustum(), { animationTime: duration.milliseconds }, this._currentBaseline);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -3385,7 +3408,7 @@ export class OffScreenViewport extends Viewport {
     if (undefined !== viewRect)
       rect.setFrom(viewRect);
 
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect), view);
+    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
     vp.changeView(view);
     vp.sync.setValidDecorations();  // decorations are not used offscreen
     return vp;

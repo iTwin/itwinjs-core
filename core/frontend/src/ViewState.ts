@@ -970,6 +970,14 @@ export abstract class ViewState extends ElementState {
 
     return refreshed;
   }
+
+  /** Determine whether it is possible to animate a frustum change from this ViewState to the supplied one.
+   * They must be from the same iModel, the same dimension (2d/3d), and for 2d, viewing the same model.
+   * @internal
+   */
+  public canAnimateTo(other: ViewState) {
+    return this.iModel === other.iModel && this.is2d() === other.is2d();
+  }
 }
 
 /** Defines the state of a view of 3d models.
@@ -1787,6 +1795,10 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
+  /** @internal */
+  public canAnimateTo(other: ViewState) {
+    return super.canAnimateTo(other) && this.baseModelId === (other as ViewState2d).baseModelId;
+  }
 }
 
 /** A view of a DrawingModel
