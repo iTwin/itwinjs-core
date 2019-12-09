@@ -933,9 +933,9 @@ export class DistanceExpression implements DistanceExpressionProps {
     // (undocumented)
     static fromJSON(json: DistanceExpressionProps): DistanceExpression;
     // (undocumented)
-    lateralOffsetFromLinearElement?: number;
+    lateralOffsetFromILinearElement?: number;
     // (undocumented)
-    verticalOffsetFromLinearElement?: number;
+    verticalOffsetFromILinearElement?: number;
 }
 
 // @public

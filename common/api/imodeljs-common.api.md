@@ -1332,9 +1332,9 @@ export interface DistanceExpressionProps {
     // (undocumented)
     distanceAlongFromStart: number;
     // (undocumented)
-    lateralOffsetFromLinearElement?: number;
+    lateralOffsetFromILinearElement?: number;
     // (undocumented)
-    verticalOffsetFromLinearElement?: number;
+    verticalOffsetFromILinearElement?: number;
 }
 
 // @beta

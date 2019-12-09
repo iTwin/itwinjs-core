@@ -46,8 +46,8 @@ export interface ReferentElementProps extends GeometricElement3dProps, IReferent
  */
 export interface DistanceExpressionProps {
   distanceAlongFromStart: number;
-  lateralOffsetFromLinearElement?: number;
-  verticalOffsetFromLinearElement?: number;
+  lateralOffsetFromILinearElement?: number;
+  verticalOffsetFromILinearElement?: number;
   distanceAlongFromReferent?: number;
 }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Addressing typo in a couple of members, making them match the schema properly.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "diego.diaz@bentley.com"
+}

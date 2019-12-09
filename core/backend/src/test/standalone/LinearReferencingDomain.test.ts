@@ -159,10 +159,14 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearlyLocatedAttribution.getLinearElementId(), linearElementId);
 
     linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
+    linearFromToPosition.fromPosition.lateralOffsetFromILinearElement = 5.0;
+    linearFromToPosition.fromPosition.verticalOffsetFromILinearElement = 15.0;
     linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
 
     linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
     assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.lateralOffsetFromILinearElement, 5.0);
+    assert.equal(linearLocationAspect!.fromPosition.verticalOffsetFromILinearElement, 15.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     // Create a Test PhysicalLinear element
