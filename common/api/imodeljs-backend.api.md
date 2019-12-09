@@ -505,15 +505,15 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
-    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
-    getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
-    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
+    getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
+    getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
+    getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
     readonly isOpen: boolean;
-    isProcessed(changesetId: string): boolean;
+    isProcessed(changesetId: GuidString): boolean;
     // (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult>;
 }
 
 // @public

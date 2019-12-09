@@ -546,6 +546,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel. */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    requestContext.enter();
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
     IModelJsFs.mkdirSync(schemasDir);
     try {
@@ -553,6 +554,7 @@ export class IModelTransformer extends IModelExportHandler {
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
       await this.targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
     } finally {
+      requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
     }
   }
@@ -618,8 +620,10 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel. */
   public async processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+    requestContext.enter();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, options);
+    requestContext.enter();
     this.processSkippedElements();
   }
 }

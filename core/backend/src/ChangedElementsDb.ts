@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ChangedElementsDb */
 
-import { IModelError, IModelStatus, ChangedElements, ChangedModels, ChangeData } from "@bentley/imodeljs-common";
-import { DbResult, OpenMode, IDisposable } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ChangeSet, ChangesType } from "@bentley/imodeljs-clients";
+import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelDb, ChangeSetToken, ECDbOpenMode, BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractContext } from "./imodeljs-backend";
-import { ChangeSet, ChangesType, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
+import { BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
 
 /** An ChangedElementsDb file
  * @internal
@@ -91,9 +91,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param startChangesetId Start Changeset Id
    * @param endChangesetId End Changeset Id
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult> {
+    requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);
+    requestContext.enter();
     const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelToken.iModelId!));
     // ChangeSets need to be processed from newest to oldest
     tokens.reverse();
@@ -109,7 +111,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed elements between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
+  public getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed elements");
@@ -122,7 +124,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
+  public getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed models");
@@ -135,7 +137,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
+  public getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error)
       throw new IModelError(result.error.status, result.error.message);
@@ -146,7 +148,7 @@ export class ChangedElementsDb implements IDisposable {
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Returns true if the cache already contains this changeset Id */
-  public isProcessed(changesetId: string): boolean { return this.nativeDb.isProcessed(changesetId); }
+  public isProcessed(changesetId: GuidString): boolean { return this.nativeDb.isProcessed(changesetId); }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.

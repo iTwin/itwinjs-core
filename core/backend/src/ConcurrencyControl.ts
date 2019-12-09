@@ -237,11 +237,13 @@ export class ConcurrencyControl {
    * @alpha Need to determine if we want this method
    */
   public async hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean> {
+    requestContext.enter();
     const locks: Lock[] = await BriefcaseManager.imodelClient.locks.get(
       requestContext,
       this._iModel.iModelToken.iModelId!,
       new LockQuery().byBriefcaseId(this._iModel.briefcase.briefcaseId).byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive),
     );
+    requestContext.enter();
     return locks.length > 0;
   }
 
@@ -262,6 +264,7 @@ export class ConcurrencyControl {
     ];
 
     const alreadyHeld = await this.queryLocksAlreadyHeld(requestContext, locks, this._iModel.briefcase);
+    requestContext.enter();
     if (alreadyHeld.length !== 0)
       return alreadyHeld;
 
