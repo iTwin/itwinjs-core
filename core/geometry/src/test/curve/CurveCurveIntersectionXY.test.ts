@@ -244,19 +244,19 @@ describe("CurveCurveXY", () => {
         // bspline0 sweeps from high on y axis to low in 4 quadrant
         const bspline0 = BSplineCurve3d.createUniformKnots(
           [Point3d.create(0, 5, z0),
-          Point3d.create(0, 2, z0),
-          Point3d.create(4, -1, z0),
-          Point3d.create(4, -4, z0)],
+            Point3d.create(0, 2, z0),
+            Point3d.create(4, -1, z0),
+            Point3d.create(4, -4, z0)],
           order0)!;
         dy = dyOuter;
         for (const order1 of [2, 3, 4, 5]) {
           const bspline1 = BSplineCurve3d.createUniformKnots(
             [Point3d.create(-1, 2, 0),
-            Point3d.create(0, 1, 0),
-            Point3d.create(2, 2, 0),
-            Point3d.create(3, 4, 0),
-            Point3d.create(4, 4, 0),
-            Point3d.create(6, 5, 0)],
+              Point3d.create(0, 1, 0),
+              Point3d.create(2, 2, 0),
+              Point3d.create(3, 4, 0),
+              Point3d.create(4, 4, 0),
+              Point3d.create(6, 5, 0)],
             order1)!;
           GeometryCoreTestIO.captureGeometry(allGeometry, bspline0.clone(), dx, dy);
 
@@ -292,7 +292,7 @@ describe("CurveCurveXY", () => {
                           GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsBA.dataB[i].point, rB1), dx, dy);
                           captureEyeStroke(allGeometry, map, intersectionsBA.dataA[i].point, intersectionsBA.dataB[i].point, z, dx, dy);
                         }
-            */
+             */
           }
           dy += 15;
         }

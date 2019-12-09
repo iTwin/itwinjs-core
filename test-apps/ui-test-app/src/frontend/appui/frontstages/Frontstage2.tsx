@@ -160,7 +160,7 @@ class FrontstageToolWidget extends React.Component {
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
             items={[AppTools.item3, AppTools.item4, AppTools.item5,
-            AppTools.item6, AppTools.item7, AppTools.item8]}
+              AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }

@@ -167,9 +167,9 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
       left: `${(this.props.alpha * 100)}%`,
     } : {
-        left: `0px`,
-        top: `${-(this.props.alpha * 100) + 100}%`,
-      };
+      left: `0px`,
+      top: `${-(this.props.alpha * 100) + 100}%`,
+    };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="alpha-container">

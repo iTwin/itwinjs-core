@@ -131,7 +131,7 @@ export class IModelHubError extends WsgError {
     }
 
     const errorCodesToRetry: number[] = [HttpStatus.ServerError,
-    WSStatus.Unknown];
+      WSStatus.Unknown];
 
     const errorStatus = super.getErrorStatus(parsedError.name !== undefined ?
       super.getWSStatusId(parsedError.name) : WSStatus.Unknown, response.statusType);

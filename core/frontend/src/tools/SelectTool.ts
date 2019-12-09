@@ -99,19 +99,17 @@ export class SelectionTool extends PrimitiveTool {
       typename: "enum",
       editor: {
         name: "enum-buttongroup",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ButtonGroupData,
-            buttons: [
-              { iconSpec: "icon-select-single" },
-              { iconSpec: "icon-select-line" },
-              { iconSpec: "icon-select-box" },
-            ],
-          } as ButtonGroupEditorParams,
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconSpec: "icon-select-single" },
+            { iconSpec: "icon-select-line" },
+            { iconSpec: "icon-select-box" },
+          ],
+        } as ButtonGroupEditorParams, {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
       enum: {
@@ -134,22 +132,20 @@ export class SelectionTool extends PrimitiveTool {
       typename: "enum",
       editor: {
         name: "enum-buttongroup",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ButtonGroupData,
-            buttons: [
-              { iconSpec: "icon-replace" },
-              { iconSpec: "icon-select-plus" },
-              {
-                iconSpec: "icon-select-minus",
-                isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
-              },
-            ],
-          } as ButtonGroupEditorParams,
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconSpec: "icon-replace" },
+            { iconSpec: "icon-select-plus" },
+            {
+              iconSpec: "icon-select-minus",
+              isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
+            },
+          ],
+        } as ButtonGroupEditorParams, {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
       enum: {

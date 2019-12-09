@@ -2689,11 +2689,10 @@ export class SetupCameraTool extends PrimitiveTool {
       displayLabel: "",
       typename: "boolean",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
     };
@@ -2709,11 +2708,10 @@ export class SetupCameraTool extends PrimitiveTool {
       displayLabel: "",
       typename: "boolean",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
     };

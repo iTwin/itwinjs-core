@@ -175,7 +175,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get codes in chunks (#iModelBank)", async () => {
     const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId),
-    utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
+      utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
 
     utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     const codes = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery());
@@ -293,7 +293,7 @@ describe("iModelHub CodeHandler", () => {
   it("should get unavailable codes (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       const mockedCodes = [utils.randomCode(briefcaseId2),
-      utils.randomCode(briefcaseId2)];
+        utils.randomCode(briefcaseId2)];
 
       const filter = `?$filter=BriefcaseId+ne+${briefcaseId}`;
       utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);

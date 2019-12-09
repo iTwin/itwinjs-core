@@ -271,8 +271,7 @@ describe("TreeDataSource", () => {
         id: faker.random.uuid(),
         label: faker.random.uuid(),
         children: [{ id: faker.random.uuid(), label: faker.random.word() }],
-      },
-      {
+      }, {
         id: faker.random.uuid(),
         label: faker.random.uuid(),
         children: [{ id: faker.random.uuid(), label: faker.random.word() }],
@@ -323,8 +322,7 @@ describe("TreeDataSource", () => {
         id: faker.random.uuid(),
         label: faker.random.uuid(),
         children: [{ id: faker.random.uuid(), label: faker.random.word() }],
-      },
-      {
+      }, {
         id: faker.random.uuid(),
         label: faker.random.uuid(),
         children: [{ id: faker.random.uuid(), label: faker.random.word() }],

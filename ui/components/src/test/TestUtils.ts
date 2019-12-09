@@ -168,19 +168,18 @@ export class TestUtils {
   public static addEnumButtonGroupEditorSpecification(propertyRecord: PropertyRecord) {
     propertyRecord.property.editor = {
       name: "enum-buttongroup",
-      params: [
-        {
-          type: PropertyEditorParamTypes.ButtonGroupData,
-          buttons: [
-            { iconSpec: "icon-yellow" },
-            { iconSpec: "icon-red" },
-            { iconSpec: "icon-green" },
-            {
-              iconSpec: "icon-blue",
-              isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
-            },
-          ],
-        } as ButtonGroupEditorParams,
+      params: [{
+        type: PropertyEditorParamTypes.ButtonGroupData,
+        buttons: [
+          { iconSpec: "icon-yellow" },
+          { iconSpec: "icon-red" },
+          { iconSpec: "icon-green" },
+          {
+            iconSpec: "icon-blue",
+            isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
+          },
+        ],
+      } as ButtonGroupEditorParams,
       ],
     };
   }

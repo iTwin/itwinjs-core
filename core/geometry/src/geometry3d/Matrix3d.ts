@@ -1646,8 +1646,8 @@ export class Matrix3d implements BeJSONFunctions {
     const coffs = this.coffs;
     this.inverseState = InverseMatrixState.inverseStored;
     this.inverseCoffs = Float64Array.from([coffs[0], coffs[3], coffs[6],
-    coffs[1], coffs[4], coffs[7],
-    coffs[2], coffs[5], coffs[8]]);
+      coffs[1], coffs[4], coffs[7],
+      coffs[2], coffs[5], coffs[8]]);
   }
 
   /* Alternate implementation of computedCachedInverse - more direct addressing of arrays.

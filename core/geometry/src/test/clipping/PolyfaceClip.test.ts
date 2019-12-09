@@ -561,9 +561,9 @@ describe("PolyfaceClip", () => {
       for (const transform of Sample.createRigidTransforms(1.0)) {
         y0 = 0.0;
         for (const clipPlane of [ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -0.8221099398657934)!,
-        ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
-        ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
-        ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
+          ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
+          ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
+          ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
           const clipPlaneA = clipPlane.clone();
           clipPlaneA.transformInPlace(transform);
           const polyfaceA = polyface.cloneTransformed(transform) as Polyface;

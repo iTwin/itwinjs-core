@@ -303,7 +303,7 @@ class AdditionalTools {
     labelKey: "SampleApp:buttons.toolGroup",
     iconSpec: "icon-placeholder",
     items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-    AppTools.item6, AppTools.item7, AppTools.item8],
+      AppTools.item6, AppTools.item7, AppTools.item8],
     // direction: Direction.Bottom,
     itemsInColumn: 7,
   });

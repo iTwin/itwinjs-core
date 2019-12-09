@@ -39,13 +39,13 @@ describe("Useful ECSQL queries", () => {
       where
         partition.codevalue=:partitionName and partition.parent.id = parent.ecinstanceid;
     `, (stmt: ECSqlStatement) => {
-        stmt.bindValue("parentName", "Subject1");
-        stmt.bindValue("partitionName", "Physical");
-        const ids: Id64Set = new Set<Id64String>();
-        while (stmt.step() === DbResult.BE_SQLITE_ROW)
-          ids.add(stmt.getValue(0).getId());
-        return ids;
-      });
+      stmt.bindValue("parentName", "Subject1");
+      stmt.bindValue("partitionName", "Physical");
+      const ids: Id64Set = new Set<Id64String>();
+      while (stmt.step() === DbResult.BE_SQLITE_ROW)
+        ids.add(stmt.getValue(0).getId());
+      return ids;
+    });
 
     assert.isNotEmpty(partitionIds);
     assert.equal(partitionIds.size, 1);

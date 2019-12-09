@@ -102,34 +102,34 @@ describe("DefaultToolUiSettingsProvider", () => {
   };
 
   const methodsDescription: PropertyDescription = {
-      name: "methods",
-      displayLabel: "",
-      typename: "enum",
-      editor: {
-        name: "enum-buttongroup",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ButtonGroupData,
-            buttons: [
-              { iconSpec: "icon-select-single" },
-              { iconSpec: "icon-select-line" },
-              { iconSpec: "icon-select-box" },
-            ],
-          } as ButtonGroupEditorParams,
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
-        ],
-      },
-      enum: {
-        choices: [
-          { label: "Pick", value: 0 },
-          { label: "Line", value: 1 },
-          { label: "Box", value: 2 },
-        ],
-      },
-    };
+    name: "methods",
+    displayLabel: "",
+    typename: "enum",
+    editor: {
+      name: "enum-buttongroup",
+      params: [
+        {
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconSpec: "icon-select-single" },
+            { iconSpec: "icon-select-line" },
+            { iconSpec: "icon-select-box" },
+          ],
+        } as ButtonGroupEditorParams,
+        {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
+      ],
+    },
+    enum: {
+      choices: [
+        { label: "Pick", value: 0 },
+        { label: "Line", value: 1 },
+        { label: "Box", value: 2 },
+      ],
+    },
+  };
 
   afterEach(cleanup);
 

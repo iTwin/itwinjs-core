@@ -124,7 +124,7 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
             ck.testVector3d(normalA, normalB);
           }
         }
-        */
+     */
 
   }
 
@@ -694,7 +694,7 @@ describe("Polyface.Faces", () => {
     }
     /*  EDL -- this test makes assumptions about normal indices.
         With recent (Feb 2019) optimizations of normal constructions, the normals cannot be accessed this way.
-        // Check normals
+      // Check normals
         for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
           if (idx % 4 === 0) {
             const pointA = polyface.data.point.getPoint3dAt(idx);
@@ -713,7 +713,7 @@ describe("Polyface.Faces", () => {
             ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
           }
         }
-    */
+     */
     expect(ck.getNumErrors()).equals(0);
   });
   // cspell:word dgnjs
@@ -853,9 +853,9 @@ function createGridMeshByCoordinates(numXEdge: number, numYEdge: number, xShiftC
   for (let iRow = 0; iRow < numXEdge; iRow++) {
     for (let iColumn = 0; iColumn < numYEdge; iColumn++) {
       const quad = [Point3d.create(xShift + iRow * spacing, iColumn * spacing, 0.0),
-      Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0),
-      Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
-      Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing)];
+        Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0),
+        Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
+        Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing)];
       builder.addQuadFacet(quad);
     }
   }
@@ -921,8 +921,8 @@ it("SolidPrimitiveBoundary", () => {
   for (const capped of [true, false]) {
     for (const solid of
       [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!,
-      TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
-      Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
+        TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
+        Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
       const builder = PolyfaceBuilder.create();
       builder.addGeometryQuery(solid);
       const mesh = builder.claimPolyface();
@@ -1235,4 +1235,4 @@ it("IndexValidation", () => {
 /*
 public static areIndicesValid(indices: number[] | undefined,
   indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
-    */
+ */

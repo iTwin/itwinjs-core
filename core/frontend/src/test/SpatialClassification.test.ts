@@ -35,11 +35,11 @@ describe("SpatialClassifiers", () => {
         isActive: true,
       },
       {
-      modelId: "0x456",
-      expand: 123,
-      flags: new SpatialClassificationProps.Flags(),
-      name: "456",
-      isActive: true,
+        modelId: "0x456",
+        expand: 123,
+        flags: new SpatialClassificationProps.Flags(),
+        name: "456",
+        isActive: true,
       },
     ];
 

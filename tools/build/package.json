@@ -8,7 +8,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/build"
   },
   "scripts": {
-    "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src",
+    "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src && cpx \"./node_modules/tslint-eslint-rules/dist/**/*\" ./tslint-rules/tslint-eslint-rules/dist",
     "build": "tsc 1>&2 && npm run copy:rules && node ./scripts/ignoreargs.js 1>&2",
     "clean": "rimraf tslint-rules .rush ../../modules",
     "docs": "",
@@ -49,6 +49,7 @@
     "tslib": "^1.9.3",
     "tslint": "^5.11.0",
     "tslint-consistent-codestyle": "^1.11.0",
+    "tslint-eslint-rules": "^5.4.0",
     "tslint-etc": "^1.5.2",
     "tsutils": "^3.6.0",
     "typedoc": "^0.14.2",

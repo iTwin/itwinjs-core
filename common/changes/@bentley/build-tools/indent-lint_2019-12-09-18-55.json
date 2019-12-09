@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "Add lint rule to enforce two-space indentation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Paul.Connelly@bentley.com"
+}

@@ -65,8 +65,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 export abstract class CurvePrimitive extends GeometryQuery {
   /** String name for schema properties */
   public readonly geometryCategory = "curvePrimitive";
-    /** String name for schema properties */
-public abstract readonly curvePrimitiveType: CurvePrimitiveType;
+  /** String name for schema properties */
+  public abstract readonly curvePrimitiveType: CurvePrimitiveType;
 
   protected constructor() { super(); }
   /**

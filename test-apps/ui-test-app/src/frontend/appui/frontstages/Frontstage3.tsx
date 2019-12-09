@@ -144,7 +144,7 @@ export class Frontstage3 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand, AppTools.noIconMessageCommand,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+                AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
               itemsInColumn={5}
             />
@@ -163,7 +163,7 @@ export class Frontstage3 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
-              AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+                AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
               direction={Direction.Right}
               itemsInColumn={7}
             />

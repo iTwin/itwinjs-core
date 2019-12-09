@@ -197,11 +197,11 @@ describe("BSplineSurface", () => {
       Point3d.create(0, 0, 0),
       Point3d.create(0, 0, 1),
       4.0, 1.0, 2),
-    Sample.createConeBsplineSurface(
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 3, 1),
-      4.0, 1.0,
-      3)]) {
+      Sample.createConeBsplineSurface(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 3, 1),
+        4.0, 1.0,
+        3)]) {
       if (ck.testPointer(bsurf) && bsurf) {
         bsurf.tryTranslateInPlace(dx, dy);
         allGeometry.push(bsurf);

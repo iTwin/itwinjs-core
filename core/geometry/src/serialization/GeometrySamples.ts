@@ -2105,12 +2105,12 @@ export class Sample {
     dx1: number,
     dx4: number): Point3d[] {
     return [Point3d.create(0, 0),
-    Point3d.create(ax + dx1, dy1),
-    Point3d.create(2 * ax, dy2),
-    Point3d.create(2 * ax, ay + dy3),
-    Point3d.create(ax + dx4, ay + dy4),
-    Point3d.create(0.0, ay),
-    Point3d.create(0, 0)];
+      Point3d.create(ax + dx1, dy1),
+      Point3d.create(2 * ax, dy2),
+      Point3d.create(2 * ax, ay + dy3),
+      Point3d.create(ax + dx4, ay + dy4),
+      Point3d.create(0.0, ay),
+      Point3d.create(0, 0)];
   }
   /**
    * make line segments for each pair of adjacent points.

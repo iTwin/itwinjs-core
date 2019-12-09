@@ -51,11 +51,10 @@ export class HistoryManager {
     const itemToRemove = history.findIndex((entry) => {
       return entry.key === key;
     });
-    const newHistory = itemToRemove < 0 ? [...history] :
-      [
-        ...history.slice(0, itemToRemove),
-        ...history.slice(itemToRemove + 1),
-      ];
+    const newHistory = itemToRemove < 0 ? [...history] : [
+      ...history.slice(0, itemToRemove),
+      ...history.slice(itemToRemove + 1),
+    ];
 
     if (newHistory.unshift({ key, item }) > this.maxItemCount)
       newHistory.pop();

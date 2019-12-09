@@ -21,7 +21,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Sample } from "../../serialization/GeometrySamples";
 /* tslint:disable:no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
-*/
+ */
 function MakeViewableGeometry(): GeometryQuery[] {
   const geometry = [];
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0)));
@@ -29,18 +29,18 @@ function MakeViewableGeometry(): GeometryQuery[] {
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1.5)));
   geometry.push(LineString3d.create(
     [Point3d.create(-1, -1, -1),
-    Point3d.create(1, -1, -1),
-    Point3d.create(1, -1, 1),
-    Point3d.create(-1, -1, 1),
-    Point3d.create(-1, -1, -1),
-    Point3d.create(-1, -1, -1)]));
+      Point3d.create(1, -1, -1),
+      Point3d.create(1, -1, 1),
+      Point3d.create(-1, -1, 1),
+      Point3d.create(-1, -1, -1),
+      Point3d.create(-1, -1, -1)]));
   geometry.push(LineString3d.create(
     [Point3d.create(-1, 1, -1),
-    Point3d.create(1, 1, -1),
-    Point3d.create(1, 1, 1),
-    Point3d.create(-1, 1, 1),
-    Point3d.create(-1, 1, -1),
-    Point3d.create(-1, 1, -1)]));
+      Point3d.create(1, 1, -1),
+      Point3d.create(1, 1, 1),
+      Point3d.create(-1, 1, 1),
+      Point3d.create(-1, 1, -1),
+      Point3d.create(-1, 1, -1)]));
 
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, -1, 1, 1, -1));
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, 1, 1, 1, 1));
@@ -81,7 +81,7 @@ function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVe
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame0)!);
   }
-*/
+   */
   const frame1 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift, 0), axes1);
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);
@@ -101,7 +101,7 @@ function CollectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: n
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame0)!);
   }
-*/
+   */
   const frame1 = Transform.createOriginAndMatrix(Point3d.create(x, y, z), axes0);
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);

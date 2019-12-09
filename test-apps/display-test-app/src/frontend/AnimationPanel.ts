@@ -103,7 +103,7 @@ export class AnimationPanel extends ToolBarDropDown {
 
   private startAnimation(): void {
     if (this._isAnimating)
-    return;
+      return;
 
     this.message("Playing.");
 
@@ -169,7 +169,7 @@ export class AnimationPanel extends ToolBarDropDown {
     }
 
     if (!userHitStop && this._isLooping) // only loop if user did not hit stop
-    this.startAnimation();
+      this.startAnimation();
   }
 
   private message(msg: string): void {
@@ -190,10 +190,10 @@ export class AnimationPanel extends ToolBarDropDown {
     }
 
     if (!this._isAnimating)
-    this.startAnimation();
+      this.startAnimation();
 
     if (!this._isPaused)
-    this.pauseAnimation();
+      this.pauseAnimation();
 
     const sliderValue = parseInt(this._slider.value, 10);
     const fraction = sliderValue / 1000.0;
@@ -203,7 +203,7 @@ export class AnimationPanel extends ToolBarDropDown {
 
   private pauseAnimation(): void {
     if (this._isPaused || !this._isAnimating)
-    return;
+      return;
 
     this._pauseTime = (new Date()).getTime();
     this._isPaused = true;

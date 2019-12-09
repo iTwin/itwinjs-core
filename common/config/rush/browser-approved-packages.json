@@ -839,6 +839,10 @@
       "allowedCategories": [ "common", "tools" ]
     },
     {
+      "name": "tslint-eslint-rules",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "tslint-etc",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },

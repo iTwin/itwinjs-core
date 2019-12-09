@@ -75,21 +75,20 @@ export class ToolWithSettings extends PrimitiveTool {
       typename: "number",
       editor: {
         name: "color-picker",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ColorData,
-            colorValues: [
-              ColorByName.blue as number,
-              ColorByName.red as number,
-              ColorByName.green as number,
-              ColorByName.yellow as number,
-              ColorByName.black as number,
-              ColorByName.gray as number,
-              ColorByName.purple as number,
-              ColorByName.pink as number,
-            ],
-            numColumns: 2,
-          } as ColorEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.ColorData,
+          colorValues: [
+            ColorByName.blue as number,
+            ColorByName.red as number,
+            ColorByName.green as number,
+            ColorByName.yellow as number,
+            ColorByName.black as number,
+            ColorByName.gray as number,
+            ColorByName.purple as number,
+            ColorByName.pink as number,
+          ],
+          numColumns: 2,
+        } as ColorEditorParams,
         ],
       },
     };
@@ -185,12 +184,11 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
       typename: "string",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.InputEditorSize,
-            size: 4,
-            /* maxLength: 60,*/
-          } as InputEditorSizeParams,
+        params: [{
+          type: PropertyEditorParamTypes.InputEditorSize,
+          size: 4,
+          /* maxLength: 60,*/
+        } as InputEditorSizeParams,
         ],
       },
     };
@@ -275,11 +273,10 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: "",
       typename: "boolean",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
     };

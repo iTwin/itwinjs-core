@@ -32,14 +32,14 @@ describe("FrameBuilder", () => {
 
     for (const points of [
       [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 1, 0)],
       [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)],
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0)],
       [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(-2, 1, 7)],
+        Point3d.create(1, 3, 5),
+        Point3d.create(-2, 1, 7)],
     ]) {
       builder.clear();
       const point0 = points[0];
@@ -90,16 +90,16 @@ describe("FrameBuilder", () => {
 
     for (const points of [
       [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 1, 0)],
       [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 1, 0)],
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(2, 1, 0)],
       [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(2, 4, 3),
-      Point3d.create(-2, 1, 7)],
+        Point3d.create(1, 3, 5),
+        Point3d.create(2, 4, 3),
+        Point3d.create(-2, 1, 7)],
     ]) {
       builder.clear();
       const linestring = LineString3d.create(points);
@@ -130,8 +130,8 @@ describe("FrameBuilder", () => {
     // loop body assumes each set of points has 3 leading independent vectors
     for (const vectors of [
       [Vector3d.create(1, 0, 0),
-      Vector3d.create(0, 1, 0),
-      Vector3d.create(0, 0, 1)],
+        Vector3d.create(0, 1, 0),
+        Vector3d.create(0, 0, 1)],
     ]) {
       builder.clear();
       const vector0 = vectors[0];

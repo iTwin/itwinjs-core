@@ -68,10 +68,10 @@ export abstract class IndexedXYCollection {
    * @param result optional caller - allocated vector.
    * @returns return true if indexA, indexB both valid
    */
-    public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
+  public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
 
-    /**
-     * read-only property for number of XYZ in the collection.
-     */
+  /**
+   * read-only property for number of XYZ in the collection.
+   */
   public abstract get length(): number;
 }

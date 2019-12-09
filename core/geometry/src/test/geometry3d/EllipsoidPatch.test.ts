@@ -214,12 +214,12 @@ describe("Ellipsoid", () => {
         const ray = Ray3d.createXYZUVW(-199314280.53012377, -146422125.0993345, -35134968.98020558,
           7946521.137480825, 8906977.42125833, -677213.3181646094,
         );
-      */
+     */
     for (const ray of
       [Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
         0.09684505394456912, 0.9848250824825425, 0.1440159450884755),
-      Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
-        0.09684505394456912, 0.9848250824825425, 0.1440159450884755)]) {
+        Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
+          0.09684505394456912, 0.9848250824825425, 0.1440159450884755)]) {
       const builder = PolyfaceBuilder.create();
       const patch = EllipsoidPatch.createCapture(Ellipsoid.createCenterMatrixRadii(center, matrix, 1.0, 1.0, 1.0), AngleSweep.create360(), AngleSweep.createFullLatitude());
       builder.addUVGridBody(patch, 32, 32);
@@ -392,7 +392,7 @@ describe("Ellipsoid", () => {
     const degrees = [0, 10, 45, 80, -85, -60]; // use one set of angle samples -- double it for theta to go all the way around
 
     for (const matrix of [Matrix3d.createIdentity(),
-    Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+      Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
       for (const e of [1.0, 2.0, 0.5]) {
         const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
           matrix,
@@ -422,7 +422,7 @@ describe("Ellipsoid", () => {
     const fractions = [-0.3, 0.2, 0.8, 1.1];
     const frame0 = Transform.createIdentity();
     for (const matrix of [Matrix3d.createIdentity(),
-    Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+      Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
       for (const e of [1.0, 2.0, 0.5]) {
         const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
           matrix,
@@ -531,8 +531,8 @@ describe("Ellipsoid", () => {
     const dy = 20.0;
     const center = Point3d.create(0, 0, 0);
     const anglePoints = [LongitudeLatitudeNumber.createDegrees(10, 20),
-    LongitudeLatitudeNumber.createDegrees(90, -30),
-    LongitudeLatitudeNumber.createDegrees(45, 85)];
+      LongitudeLatitudeNumber.createDegrees(90, -30),
+      LongitudeLatitudeNumber.createDegrees(45, 85)];
     const optionalResultEllipsoid = Ellipsoid.create(Transform.createIdentity());
 
     const fullCircle = AngleSweep.createStartEndDegrees(-180, 180);

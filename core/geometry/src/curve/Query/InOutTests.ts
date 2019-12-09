@@ -99,9 +99,9 @@ export class PointInOnOutContext {
   }
   public static testPointInOnOutUnionRegionXY(parent: UnionRegion, x: number, y: number): number {
     for (const loop of parent.children) {
-        const classify = this.testPointInOnOutRegionXY(loop, x, y);
-        if (classify >= 0)
-          return classify;
+      const classify = this.testPointInOnOutRegionXY(loop, x, y);
+      if (classify >= 0)
+        return classify;
     }
     return -1;
   }

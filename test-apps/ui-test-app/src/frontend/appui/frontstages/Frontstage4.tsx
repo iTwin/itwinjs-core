@@ -122,7 +122,7 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+                AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
               itemsInColumn={4}
             />
@@ -141,7 +141,7 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.anotherGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+                AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Right}
             />
             <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
@@ -217,8 +217,8 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
-              AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
-              this._spinnerTestDialogItem,
+                AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
+                this._spinnerTestDialogItem,
               ]}
               direction={Direction.Left}
               itemsInColumn={7}

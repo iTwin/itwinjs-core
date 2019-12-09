@@ -20,7 +20,7 @@ import { UiFramework } from "../UiFramework";
 // istanbul ignore next
 export function getSelectionContextSyncEventIds(): string[] {
   return [SyncUiEventId.SelectionSetChanged, SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged,
-  SessionStateActionId.SetNumItemsSelected];
+    SessionStateActionId.SetNumItemsSelected];
 }
 
 /** return state with isVisible set to true is SectionSet is active.

@@ -1372,7 +1372,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (params && params.length < numPointsToUse)
       params = undefined;
     if (colors && colors.length < numPointsToUse)
-    colors = undefined;
+      colors = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
         index = this.findOrAddPointInGrowableXYZArray(points, i)!;

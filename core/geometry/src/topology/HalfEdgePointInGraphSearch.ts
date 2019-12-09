@@ -75,7 +75,7 @@ export class PointSearchContext {
         // target is beyond the edge -- move towards it.
         if (dataA.u > dataB.u)
           result = edgeHit.resetAsVertex(dataA.node);
-          else
+        else
           result = edgeHit.resetAsVertex(dataB.node);
       } else {
         // This shouldn't happen -- maybe as if the initial edge point was not within the edge???

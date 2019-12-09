@@ -117,22 +117,22 @@ describe("Arc3d", () => {
     const origin = Point3d.create();
     const factorRange = Range1d.createNull();
     for (const sweep of [AngleSweep.create360(),
-    AngleSweep.createStartEndDegrees(0, 40),
-    AngleSweep.createStartEndDegrees(0, 2),
-    AngleSweep.createStartEndDegrees(-1, 3),
-    AngleSweep.createStartEndDegrees(88, 91),
-    AngleSweep.createStartEndDegrees(0, 18),
-    AngleSweep.createStartEndDegrees(-10, 10),
-    AngleSweep.createStartEndDegrees(80, 100),
-    AngleSweep.createStartEndDegrees(90, 108),
-    AngleSweep.createStartEndDegrees(30, 45),
-    AngleSweep.createStartEndDegrees(80, 110),
-    AngleSweep.createStartEndDegrees(-10, 110),
-    AngleSweep.createStartEndDegrees(-10, 320),
-    AngleSweep.createStartEndDegrees(0, 88),
-    AngleSweep.createStartEndDegrees(45, 132),
-    AngleSweep.createStartEndDegrees(-10, 278),
-    AngleSweep.createStartEndDegrees(30, 80)]) {
+      AngleSweep.createStartEndDegrees(0, 40),
+      AngleSweep.createStartEndDegrees(0, 2),
+      AngleSweep.createStartEndDegrees(-1, 3),
+      AngleSweep.createStartEndDegrees(88, 91),
+      AngleSweep.createStartEndDegrees(0, 18),
+      AngleSweep.createStartEndDegrees(-10, 10),
+      AngleSweep.createStartEndDegrees(80, 100),
+      AngleSweep.createStartEndDegrees(90, 108),
+      AngleSweep.createStartEndDegrees(30, 45),
+      AngleSweep.createStartEndDegrees(80, 110),
+      AngleSweep.createStartEndDegrees(-10, 110),
+      AngleSweep.createStartEndDegrees(-10, 320),
+      AngleSweep.createStartEndDegrees(0, 88),
+      AngleSweep.createStartEndDegrees(45, 132),
+      AngleSweep.createStartEndDegrees(-10, 278),
+      AngleSweep.createStartEndDegrees(30, 80)]) {
       const factorRange1 = Range1d.createNull();
       for (const arc of [
         Arc3d.createXY(origin, 4.0, sweep),

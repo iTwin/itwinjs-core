@@ -360,11 +360,12 @@ describe("PascalCoefficients", () => {
         allData.push(ls);
       const y1 = y0 + 1;
       const tic = 0.04;
-      allData.push(LineString3d.createXY(
-        [Point2d.create(-tic, y1),
+      allData.push(LineString3d.createXY([
+        Point2d.create(-tic, y1),
         Point2d.create(0, y1), Point2d.create(0, y0),
         Point2d.create(1, y0), Point2d.create(1, y1),
-        Point2d.create(1 + tic, y1)],
+        Point2d.create(1 + tic, y1),
+      ],
         0.0));
       y0 += dy;
     }

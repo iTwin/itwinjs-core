@@ -37,17 +37,17 @@ export interface ReviewToolWidgetProps {
 export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any> {
 
   private _horizontalToolbarItems = this.props.showCategoryAndModelsContextTools ?
-    new ItemList([CoreTools.clearSelectionItemDef,
+  new ItemList([CoreTools.clearSelectionItemDef,
     SelectionContextToolDefinitions.hideSectionToolGroup,
     SelectionContextToolDefinitions.isolateSelectionToolGroup,
     SelectionContextToolDefinitions.emphasizeElementsItemDef,
-    ])
-    :
-    new ItemList([CoreTools.clearSelectionItemDef,
+  ])
+  :
+  new ItemList([CoreTools.clearSelectionItemDef,
     SelectionContextToolDefinitions.hideElementsItemDef,
     SelectionContextToolDefinitions.isolateElementsItemDef,
     SelectionContextToolDefinitions.emphasizeElementsItemDef,
-    ]);
+  ]);
 
   private _verticalToolbarItems = new ItemList([
     CoreTools.selectElementCommand,
