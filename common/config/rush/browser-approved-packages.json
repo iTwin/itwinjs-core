@@ -319,10 +319,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "electron-rebuild",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "enzyme",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -483,10 +479,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "keytar",
-      "allowedCategories": [ "backend", "common" ]
-    },
-    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
@@ -539,10 +531,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "nan",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "nock",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -581,10 +569,6 @@
     {
       "name": "oidc-client",
       "allowedCategories": [ "common", "frontend" ]
-    },
-    {
-      "name": "opener",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "openid-client",
@@ -892,7 +876,7 @@
     },
     {
       "name": "username",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "uuid",
