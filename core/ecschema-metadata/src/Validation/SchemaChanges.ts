@@ -277,7 +277,8 @@ export abstract class BaseSchemaChanges implements ISchemaChanges {
  */
 export class SchemaChanges extends BaseSchemaChanges {
   private _diagnostics: AnyDiagnostic[] = [];
-  private _schemaReferenceChanges: SchemaReferenceChange[] = [];
+  private _missingSchemaReferences: SchemaReferenceMissing[] = [];
+  private _schemaReferenceDeltas: SchemaReferenceDelta[] = [];
   private _customAttributeChanges: Map<string, CustomAttributeContainerChanges> = new Map();
   private _classChanges: Map<string, ClassChanges> = new Map();
   private _schemaItemChanges: Map<string, SchemaItemChanges> = new Map();
@@ -293,8 +294,11 @@ export class SchemaChanges extends BaseSchemaChanges {
     super(schema as Schema, schema.name);
   }
 
+  /** Gets the MissingSchemaReferences collection. */
+  public get missingSchemaReferences(): SchemaReferenceMissing[] { return this._missingSchemaReferences; }
+
   /** Gets the SchemaReferenceChange collection. */
-  public get schemaReferenceChanges(): SchemaReferenceChange[] { return this._schemaReferenceChanges; }
+  public get schemaReferenceDeltas(): SchemaReferenceDelta[] { return this._schemaReferenceDeltas; }
 
   /** Gets the CustomAttributeContainerChanges Map. */
   public get customAttributeChanges(): Map<string, CustomAttributeContainerChanges> { return this._customAttributeChanges; }
@@ -343,7 +347,12 @@ export class SchemaChanges extends BaseSchemaChanges {
     // If change is at the schema level, record change and return
     if (schemaName) {
       if (change.diagnostic.code === SchemaCompareCodes.SchemaReferenceMissing) {
-        this.schemaReferenceChanges.push(change as SchemaReferenceChange);
+        this.missingSchemaReferences.push(change as SchemaReferenceMissing);
+        return;
+      }
+
+      if (change.diagnostic.code === SchemaCompareCodes.SchemaReferenceDelta) {
+        this.schemaReferenceDeltas.push(change as SchemaReferenceDelta);
         return;
       }
 
@@ -400,7 +409,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   private createChangeFromDiagnostic(diagnostic: AnyDiagnostic): ISchemaChange {
     switch (diagnostic.code) {
       case SchemaCompareCodes.SchemaReferenceMissing:
-        return new SchemaReferenceChange(diagnostic);
+        return new SchemaReferenceMissing(diagnostic);
+      case SchemaCompareCodes.SchemaReferenceDelta:
+        return new SchemaReferenceDelta(diagnostic);
       case SchemaCompareCodes.SchemaDelta:
       case SchemaCompareCodes.SchemaItemDelta:
       case SchemaCompareCodes.ClassDelta:
@@ -963,7 +974,7 @@ export abstract class SchemaItemChange extends BaseSchemaChange {
  * An ISchemaChange implementation for Schema reference changes.
  * @alpha
  */
-export class SchemaReferenceChange extends BaseSchemaChange {
+export class SchemaReferenceMissing extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
   public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
 
@@ -974,6 +985,26 @@ export class SchemaReferenceChange extends BaseSchemaChange {
   public toString(): string {
     const refSchema = this.getNameFromArgument(0, Schema, false, true);
     return `Schema(${refSchema})`;
+  }
+}
+
+/**
+ * An ISchemaChange implementation differences of baseClasses between two ECClasses.
+ * @alpha
+ */
+export class SchemaReferenceDelta extends BaseSchemaChange {
+  /** Gets the default ChangeType (Delta or Missing) for this change */
+  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+
+  /** Gets the SchemaItem or Schema (if a schema change) that this change ultimately belongs to. */
+  public get topLevelSchemaItem(): Schema | SchemaItem { return this.diagnostic.ecDefinition as Schema; }
+
+  /** Gets a string representation of the change. */
+  public toString(): string {
+    const refSchema = this.getNameFromArgument(0, Schema, false, true);
+    const versionA = this.getStringFromArgument(1);
+    const versionB = this.getStringFromArgument(2);
+    return `Schema(${refSchema}): ${versionA} -> ${versionB}`;
   }
 }
 

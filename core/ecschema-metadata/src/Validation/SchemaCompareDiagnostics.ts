@@ -58,6 +58,7 @@ export const SchemaCompareCodes = {
   InvertedUnitDelta: "SC-125",
   PhenomenonDelta: "SC-126",
   ConstantDelta: "SC-127",
+  SchemaReferenceDelta: "SC-128",
 };
 
 /**
@@ -71,6 +72,9 @@ export const SchemaCompareDiagnostics = {
 
   /** Required message parameters: reference schema name */
   SchemaReferenceMissing: createSchemaDiagnosticClass<[Schema]>(SchemaCompareCodes.SchemaReferenceMissing, ""),
+
+  /** Required message parameters: schema name, version A, version B */
+  SchemaReferenceDelta: createSchemaDiagnosticClass<[Schema, string, string]>(SchemaCompareCodes.SchemaReferenceDelta, ""),
 
   /** Required message parameters: property name, property A value, property B value */
   SchemaItemDelta: createSchemaItemDiagnosticClass<SchemaItem, [string, any, any]>(SchemaCompareCodes.SchemaItemDelta, ""),

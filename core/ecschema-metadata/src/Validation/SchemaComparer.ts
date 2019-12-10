@@ -115,8 +115,10 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
     for (const ref of schemaA.references) {
       const refB = await schemaB.getReference(ref.fullName);
-      if (!refB || !refB.schemaKey.matches(ref.schemaKey))
+      if (!refB)
         promises.push(this._reporter.reportSchemaReferenceMissing(schemaA, ref, this._compareDirection));
+      else if (!refB.schemaKey.matches(ref.schemaKey))
+        promises.push(this._reporter.reportSchemaReferenceDelta(schemaA, ref, ref.schemaKey.version.toString(), refB.schemaKey.version.toString(), this._compareDirection));
     }
 
     if (this._compareDirection === SchemaCompareDirection.Backward)

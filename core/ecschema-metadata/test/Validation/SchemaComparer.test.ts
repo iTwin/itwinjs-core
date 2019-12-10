@@ -225,8 +225,8 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaA, [refSchemaA], schemaA);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaB, [refSchemaA2], schemaB);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [refSchemaA, "01.00.00", "02.00.00"], schemaA);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [refSchemaA2, "02.00.00", "01.00.00"], schemaB);
     });
 
     it("Reference missing from Schema B, diagnostic reported", async () => {

@@ -2247,8 +2247,9 @@ export class SchemaChanges extends BaseSchemaChanges {
     readonly enumerationChanges: Map<string, EnumerationChanges>;
     readonly formatChanges: Map<string, FormatChanges>;
     readonly kindOfQuantityChanges: Map<string, KindOfQuantityChanges>;
+    readonly missingSchemaReferences: SchemaReferenceMissing[];
     readonly schemaItemChanges: Map<string, SchemaItemChanges>;
-    readonly schemaReferenceChanges: SchemaReferenceChange[];
+    readonly schemaReferenceDeltas: SchemaReferenceDelta[];
     }
 
 // @beta
@@ -2281,6 +2282,7 @@ export const SchemaCompareCodes: {
     InvertedUnitDelta: string;
     PhenomenonDelta: string;
     ConstantDelta: string;
+    SchemaReferenceDelta: string;
 };
 
 // @beta
@@ -2289,7 +2291,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, any, any] | undefined;
@@ -2301,10 +2303,22 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [Schema], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [Schema] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    SchemaReferenceDelta: {
+        new (schema: Schema, messageArgs: [Schema, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [Schema, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -2890,7 +2904,14 @@ export class SchemaPartVisitorDelegate {
 }
 
 // @alpha
-export class SchemaReferenceChange extends BaseSchemaChange {
+export class SchemaReferenceDelta extends BaseSchemaChange {
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class SchemaReferenceMissing extends BaseSchemaChange {
     readonly defaultChangeType: ChangeType;
     readonly topLevelSchemaItem: Schema | SchemaItem;
     toString(): string;

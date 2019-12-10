@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "Adding SchemaReferenceDelta to allow reporting of schema reference version differences during schema comparison.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Chris.Lawson@bentley.com"
+}

@@ -38,12 +38,27 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.schemaReferenceChanges.length).to.equal(1, "Expected 1 differences.");
-      expect(changes.schemaReferenceChanges[0].topLevelSchemaItem).to.equal(schema);
-      expect(changes.schemaReferenceChanges[0].diagnostic).to.equal(diag);
-      expect(changes.schemaReferenceChanges[0].changeType).to.equal(ChangeType.Missing);
-      const text = changes.schemaReferenceChanges[0].toString();
+      expect(changes.missingSchemaReferences.length).to.equal(1, "Expected 1 differences.");
+      expect(changes.missingSchemaReferences[0].topLevelSchemaItem).to.equal(schema);
+      expect(changes.missingSchemaReferences[0].diagnostic).to.equal(diag);
+      expect(changes.missingSchemaReferences[0].changeType).to.equal(ChangeType.Missing);
+      const text = changes.missingSchemaReferences[0].toString();
       expect(text).to.equal(`Schema(${refSchema.name})`);
+    });
+
+    it("SchemaReferenceDelta, correct change created", async () => {
+      const refSchema = new Schema(new SchemaContext(), "ReferenceSchema", "ref", 2, 0, 0);
+      const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schema, [refSchema, "01.00.00", "02.00.00"]);
+      const changes = new SchemaChanges(schema);
+
+      changes.addDiagnostic(diag);
+
+      expect(changes.schemaReferenceDeltas.length).to.equal(1, "Expected 1 differences.");
+      expect(changes.schemaReferenceDeltas[0].topLevelSchemaItem).to.equal(schema);
+      expect(changes.schemaReferenceDeltas[0].diagnostic).to.equal(diag);
+      expect(changes.schemaReferenceDeltas[0].changeType).to.equal(ChangeType.Delta);
+      const text = changes.schemaReferenceDeltas[0].toString();
+      expect(text).to.equal(`Schema(${refSchema.name}): 01.00.00 -> 02.00.00`);
     });
   });
 

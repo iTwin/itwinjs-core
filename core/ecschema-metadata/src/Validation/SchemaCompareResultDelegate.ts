@@ -84,6 +84,16 @@ export class SchemaCompareResultDelegate {
   }
 
   /**
+   * Reports differences in the schema reference collection of two schemas where the reference version differs.
+   * @param schemaA The first Schema supplied for comparison.
+   * @param referenceSchema The missing schema reference.
+   */
+  public async reportSchemaReferenceDelta(schemaA: Schema, referenceSchema: Schema, versionA: string, versionB: string, _compareDirection: SchemaCompareDirection): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [referenceSchema, versionA, versionB]);
+    await this.reportDiagnostic(diag);
+  }
+
+  /**
    * Reports that a given SchemaItem could not be found in the second Schema.
    * @param schemaItemA The SchemaItem from the first Schema.
    */
