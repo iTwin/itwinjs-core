@@ -96,7 +96,7 @@
 .pnlm-controls {
     margin-top: 4px;
     background-color: #fff;
-    border: 1px solid #999;
+    border: 1px solid;
     border-color: rgba(0,0,0,0.4);
     border-radius: 3px;
     cursor: pointer;
@@ -139,6 +139,75 @@
     border-top: 1px solid #ddd;
     border-top-color: rgba(0,0,0,0.10);
     border-radius: 0 0 3px 3px;
+}
+
+.pnlm-next-button {
+    right: 0;
+    margin-right: 0;
+    background-image: url('img/caret-right.svg');
+}
+
+.pnlm-previous-button {
+    left: 0;
+    margin-left: 0;
+    background-image: url('img/caret-left.svg');
+}
+
+.pnlm-adjacent-button {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    bottom: 52%;
+    opacity: 0.65;
+    filter: drop-shadow(2px 2px 2px black)
+}
+
+.pnlm-adjacent-button:hover {
+    opacity: 1.0;
+}
+
+.pnlm-reversed-button {
+    right: 5px;
+    margin-right: 0px;
+    background-image: url('img/reversed.svg');
+}
+
+.pnlm-fromtrack-button {
+    right: 35px;
+    margin-right: 0px;
+    background-image: url('img/fromtrack.svg');
+}
+
+.pnlm-frompath-button {
+    right: 65px;
+    margin-right: 0px;
+    border-radius: 0px 3px 3px 0px;
+    background-image: url('img/frompath.svg');
+}
+
+.pnlm-showmarkers-button {
+    right: 95px;
+    margin-right: 0px;
+    border-radius: 3px 0px 0px 3px;
+    background-image: url('img/markers.svg');
+}
+
+.pnlm-markercontrol-button {
+    display: "block";
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    top: 5px;
+    background-color: #fff;
+    border: 1px solid;
+    border-color: rgba(0,0,0,0.4);
+    opacity: 1.0;
+}
+
+.pnlm-markercontrol-button:hover {
+    opacity: 1.0;
 }
 
 .pnlm-fullscreen-toggle-button, .pnlm-orientation-button, .pnlm-hot-spot-debug-indicator {

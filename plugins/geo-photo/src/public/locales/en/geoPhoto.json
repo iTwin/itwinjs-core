@@ -25,7 +25,13 @@
     "noPanoramaError": "No panorama image was specified.",
     "genericWebGLError": "Your browser does not have the necessary WebGL support to display this panorama.",
     "textureSizeError": "This panorama is too big for your device! It's {{panWidth}} wide, but your but your device only supports images up to {{deviceWidth}} wide. Try another device or scale down the image.",
-    "unknownError": "Unknown error. Check developer console."
+    "unknownError": "Unknown error. Check developer console.",
+    "showMarkers": "Show markers for nearby photos",
+    "fromTrack": "Get camera direction from GPS Track",
+    "fromPath": "Get camera direction path to from next photo",
+    "reversed": "Camera direction is reversed",
+    "nextPanorama": "Next panorama ({{name}})",
+    "previousPanorama": "Previous panorama ({{name}})"
   },
   "LoadDialog": {
     "LoadTitle": "GeoPhoto Load Progress",

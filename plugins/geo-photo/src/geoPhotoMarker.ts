@@ -2,31 +2,50 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ, Vector3d, Matrix3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, Cluster, Decorator, DecorateContext, GraphicType, imageElementFromUrl,
   IModelApp, Marker, MarkerImage, MarkerSet,
 } from "@bentley/imodeljs-frontend";
 import { PhotoFile, PhotoTraverseFunction } from "./PhotoTree";
-import { GeoPhotos, GeoPhotoPlugin } from "./geoPhoto";
+import { GeoPhotos, GeoPhotoPlugin, GeoPhotoSettings } from "./geoPhoto";
 import { PannellumModalFrontstage } from "./PannellumFrontStage";
-import { PannellumHotSpot, PannellumViewerConfig, PannellumViewer } from "./pannellum/pannellumViewer";
 import { FrontstageManager } from "@bentley/ui-framework";
+import { PannellumHotSpot, PannellumViewerConfig, PannellumViewer, MarkerDisplaySettings } from "./pannellum/pannellumViewer";
 
 // cSpell:ignore pano pnlm geotagged
-
-interface Bearing {
+interface Neighbor {
   file: PhotoFile;
+  delta: Vector3d;
   distance: number;
-  pitch: number;
-  yaw: number;
+  initialYaw: number;
 }
 
 interface ViewerData {
   photoFile: PhotoFile;
   panoBlob: Blob;
   config: PannellumViewerConfig;
+}
+
+// stores the settings controlling the marker display and camera direction source.
+class MarkerSettings {
+  constructor(public gpsTrack: number, public pathOrientation: number) {
+  }
+
+  // gets camera direction from marker settings.
+  public getCameraDirection(plugin: GeoPhotoPlugin): number {
+    let direction = 0;
+    if (plugin.settings.directionFromPath) {
+      direction = plugin.settings.reversed ? this.pathOrientation + 180.0 : this.pathOrientation;
+    } else {
+      direction = plugin.settings.reversed ? this.gpsTrack + 180.0 : this.gpsTrack;
+    }
+    if (direction > 360.0)
+      direction -= 360.0;
+
+    return direction;
+  }
 }
 
 /** Marker positioned where there is a geotagged photograph. */
@@ -37,62 +56,48 @@ class GeoPhotoMarker extends Marker {
   private static _amber = new ColorDef(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private static _tooCloseYaw: number = 3.0;
-  private static _tooClosePitch: number = 1.0;
+  private static _tooCloseDistance: number = 5.0;  // meters
   private _manager: GeoPhotoMarkerManager;
   private _color: ColorDef;
   public photoFile: PhotoFile;
+  private _markerSettings: MarkerSettings | undefined;
 
-  private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Bearing[] {
-    const eyeHeight = this._manager.plugin.settings.eyeHeight;
-    const bearings: Bearing[] = [];
-    // get the bearings to each file.
-    for (const file of closeFiles) {
-      const delta = centerFile.spatial!.vectorTo(file.spatial!);
-      const yaw = Math.atan2(delta.x, delta.y) * 180.0 / Math.PI;
-      const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-      const pitch = Math.atan2(eyeHeight, distance) * -180.0 / Math.PI;
-      bearings.push({ file, distance, pitch, yaw });
-      // console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
-    }
+  /** Create a new GeoPhotoMarker */
+  constructor(location: XYAndZ, photoFile: PhotoFile, icon: HTMLImageElement, manager: GeoPhotoMarkerManager) {
+    super(location, GeoPhotoMarker._size);
+    this._color = GeoPhotoMarker._amber;
+    this.setImage(icon); // save icon
+    this.imageOffset = GeoPhotoMarker._imageOffset; // move icon up by 30 pixels
+    this.imageSize = GeoPhotoMarker._imageSize; // 40x40
+    this.photoFile = photoFile;
+    // set the tooltip when promise resolves. We won't need it for a while anyway.
+    this.photoFile.getToolTip().then((toolTip) => { this.title = toolTip; }).catch((_err) => { });
+    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+    this._manager = manager;
 
-    // eliminate any have closer neighbors within tooCloseYaw and tooClosePitch.
-    for (let iFile = 1; iFile < bearings.length;) {
-      let iTest = 0;
-      for (; iTest < iFile; ++iTest) {
-        let angle1 = bearings[iFile].yaw;
-        let angle2 = bearings[iTest].yaw;
-        if ((angle1 < 0) || (angle2 < 0)) {
-          angle1 = angle1 + 180;
-          angle2 = angle2 + 180;
-        }
-        if ((Math.abs(angle1 - angle2) < GeoPhotoMarker._tooCloseYaw) && (Math.abs(bearings[iFile].pitch - bearings[iTest].pitch) < GeoPhotoMarker._tooClosePitch))
-          break;
-      }
-      if (iTest < iFile)
-        bearings.splice(iFile, 1);
-      else
-        ++iFile;
-    }
-    return bearings;
+    // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
+    this.htmlElement = document.createElement("div");
+    this.htmlElement.innerHTML = photoFile.name; // put the name of the photoFile.
   }
 
-  private async hotSpotClicked(_event: MouseEvent, args: any[]) {
-    const viewer: PannellumViewer = (args[0] as PannellumViewer);
-    const photoFile: PhotoFile = (args[1] as Bearing).file;
-    const manager: GeoPhotoMarkerManager = (args[2] as GeoPhotoMarkerManager);
-    photoFile.visited = true;
-    const visitedImage = await manager.visitedImage;
-    if (visitedImage) {
-      for (const gpMarker of manager.markerSet!.markers) {
-        if (gpMarker.photoFile === photoFile) {
-          gpMarker.setImage(visitedImage);
+  private async setMarkerVisited(visitedFile: PhotoFile) {
+    visitedFile.visited = true;
+    const visitedSvg = await this._manager.visitedSvg;
+    if (visitedSvg) {
+      for (const gpMarker of this._manager.markerSet!.markers) {
+        if (gpMarker.photoFile === visitedFile) {
+          gpMarker.setImage(visitedSvg);
           break;
         }
       }
     }
+  }
+
+  private async hotSpotClicked(clickedFile: PhotoFile, _event: MouseEvent, viewer: PannellumViewer) {
+    await this.setMarkerVisited(clickedFile);
 
     try {
-      const viewerData = await this.getViewerData(photoFile, manager);
+      const viewerData = await this.getViewerData(clickedFile);
       if (viewerData) {
         viewer.newPanorama(viewerData.panoBlob, viewerData.config);
       }
@@ -101,8 +106,8 @@ class GeoPhotoMarker extends Marker {
     }
   }
 
-  private static hotSpotTooltip(topDiv: HTMLElement, args: any[]) {
-    const photoToolTip = (args[0] as Bearing).file.getToolTip();
+  private hotSpotTooltip(file: PhotoFile, topDiv: HTMLElement) {
+    const photoToolTip = file.getToolTip();
     topDiv.classList.add("pnlm-tooltip");
     photoToolTip.then((ttSpan: HTMLElement | string | undefined) => {
       const span = ttSpan as HTMLSpanElement;
@@ -110,14 +115,12 @@ class GeoPhotoMarker extends Marker {
       span.style.width = span.scrollWidth + "px";
       span.style.marginLeft = "0px"; // -(span.scrollWidth - topDiv.offsetWidth) / 2 + "px";
       span.style.marginTop = "28px"; // -span.scrollHeight - 12 + "px";
-    }).catch((_err) => { });
+    }).catch((_err: any) => { });
   }
 
-  private hotSpotSetStyle(hs: PannellumHotSpot, args: any) {
+  private hotSpotSetStyle(distance: number, hs: PannellumHotSpot) {
     const minDistance = this._manager.plugin.settings.minDistance;
     const maxDistance = this._manager.plugin.settings.maxDistance;
-    const hsBearing: Bearing = args[0] as Bearing;
-    let distance = hsBearing.distance;
     if (distance < minDistance)
       distance = minDistance;
     let hsSize: number = 80 - (60 * (distance - minDistance) / (maxDistance - minDistance));
@@ -130,47 +133,264 @@ class GeoPhotoMarker extends Marker {
 
   private static escapeKey() {
     FrontstageManager.closeModalFrontstage();
+    IModelApp.requestNextAnimation();
   }
 
-  private async getViewerData(photoFile: PhotoFile, manager: GeoPhotoMarkerManager): Promise<ViewerData | undefined> {
+  // tslint:disable:no-console
+  private saveCorrections(correctedFile: PhotoFile, correctionMatrix: Matrix3d | undefined) {
+    if (undefined === correctionMatrix)
+      return;
+    const result = YawPitchRollAngles.createFromMatrix3d(correctionMatrix);
+    if (result) {
+      correctedFile.correctionYaw = result.yaw.degrees;
+      correctedFile.correctionPitch = result.pitch.degrees;
+      correctedFile.correctionRoll = result.roll.degrees;
+      correctedFile.correctionDir = this._markerSettings!.getCameraDirection(this._manager.plugin);
+      correctedFile.saveFileInfo().then(() => { }).catch((_err) => { console.log("Error saving correction "); });
+    }
+  }
+
+  // do some preliminary calculations, eliminate any that are too close in horizontal angle from the eyepoint.
+  private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Neighbor[] {
+    let neighbors: Neighbor[] = [];
+    // get the bearings to each file.
+    for (const file of closeFiles) {
+      const delta = centerFile.spatial!.vectorTo(file.spatial!);
+      const initialYaw = 90.0 - (Math.atan2(delta.y, delta.x) * 180 / Math.PI);
+      const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+      neighbors.push({ file, delta, distance, initialYaw });
+      // console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
+    }
+
+    // eliminate any have closer neighbors within tooCloseYaw and tooClosePitch.
+    for (let iFile = 1; iFile < neighbors.length;) {
+      let iTest = 0;
+      for (; iTest < iFile; ++iTest) {
+        let angle1 = neighbors[iFile].initialYaw;
+        let angle2 = neighbors[iTest].initialYaw;
+        if ((angle1 < 0) || (angle2 < 0)) {
+          angle1 = angle1 + 180;
+          angle2 = angle2 + 180;
+        }
+        if ((Math.abs(angle1 - angle2) < GeoPhotoMarker._tooCloseYaw) && (Math.abs(neighbors[iFile].distance - neighbors[iTest].distance) < GeoPhotoMarker._tooCloseDistance))
+          break;
+      }
+      if (iTest < iFile)
+        neighbors.splice(iFile, 1);
+      else
+        ++iFile;
+    }
+    // sort by distance so the markers from closer panoramas are in front
+    if (neighbors.length > 1)
+      neighbors = neighbors.sort((a: Neighbor, b: Neighbor) => b.distance - a.distance);
+    return neighbors;
+  }
+
+  // calculate the hot spots to be displayed in the pannellum viewer for this marker.
+  private calculateHotSpotsFromMatrix(closeNeighbors: Neighbor[], cameraDirection: number, correctionMatrix: Matrix3d, hotSpots: PannellumHotSpot[] | undefined): PannellumHotSpot[] {
+    let newHotSpots: boolean = false;
+    if (undefined === hotSpots) {
+      hotSpots = [];
+      newHotSpots = true;
+    }
+
+    // The origin is the center of the photo.
+    const eyeHeight = this._manager.plugin.settings.eyeHeight;
+
+    for (let iHotSpot = 0; iHotSpot < closeNeighbors.length; ++iHotSpot) {
+      const neighbor = closeNeighbors[iHotSpot];
+      // get the vector from the file position to the origin.
+      const posVector: Vector3d = neighbor.delta;
+      // but set z to 0.
+      posVector.z = 0.0;
+      // rotate it by the rotation matrix.
+      const rotatedVector: Vector3d = correctionMatrix.multiplyVector(posVector);
+      let yaw = (Math.atan2(rotatedVector.x, rotatedVector.y) * 180.0 / Math.PI) - cameraDirection;
+      if (yaw < -180.0)
+        yaw += 360.0;
+      if (yaw > 180.0)
+        yaw -= 360.0;
+      const pitch = Math.atan2(eyeHeight + rotatedVector.z, neighbor.distance) * -180.0 / Math.PI;
+      if (newHotSpots) {
+        hotSpots.push({
+          yaw,
+          pitch,
+          cssClassName: neighbor.file.visited ? "pnlm-visited-marker" : "pnlm-pin-marker",
+          createTooltipFunc: this.hotSpotTooltip.bind(this, neighbor.file),
+          clickHandlerFunc: this.hotSpotClicked.bind(this, neighbor.file),
+          styleFunc: this.hotSpotSetStyle.bind(this, neighbor.distance),
+        });
+      } else {
+        if (iHotSpot > hotSpots.length) {
+          // tslint:disable-next-line:no-debugger
+          debugger;
+        }
+        hotSpots[iHotSpot].yaw = yaw;
+        hotSpots[iHotSpot].pitch = pitch;
+      }
+    }
+
+    return hotSpots;
+  }
+
+  private calculateHotSpotChanges(closeNeighbors: Neighbor[], baseRotation: Matrix3d, existingHotSpots: PannellumHotSpot[], _centerYaw: number, yawChange: number, pitchChange: number): Matrix3d | undefined {
+    const cameraDirection = this._markerSettings!.getCameraDirection(this._manager.plugin);
+
+    // from the existing normal and yawChange, pitchChange, calculate a new normal.
+    const ypr = YawPitchRollAngles.createDegrees(yawChange, pitchChange, 0.0);
+    const changeMatrix = ypr.toMatrix3d();
+    if (undefined === changeMatrix)
+      return undefined;
+    const newMatrix = changeMatrix.multiplyMatrixMatrix(baseRotation);
+    this.calculateHotSpotsFromMatrix(closeNeighbors, cameraDirection, newMatrix, existingHotSpots);
+    return newMatrix;
+  }
+
+  private async openAdjacentPanorama(adjacentFile: PhotoFile, viewer: PannellumViewer) {
+    await this.setMarkerVisited(adjacentFile);
+    try {
+      const viewerData = await this.getViewerData(adjacentFile);
+      if (viewerData) {
+        viewer.newPanorama(viewerData.panoBlob, viewerData.config);
+      }
+    } catch (_error) {
+      // do nothing.
+    }
+  }
+
+  private getMarkerDisplaySettings(_photoFile: PhotoFile): MarkerDisplaySettings {
+    const settings: GeoPhotoSettings = this._manager.plugin.settings!;
+    return { showMarkers: settings.showMarkers, fromTrack: !settings.directionFromPath, fromPath: settings.directionFromPath, reversed: settings.reversed };
+  }
+
+  private setMarkerDisplaySettings(_photoFile: PhotoFile, whichButton: number): boolean {
+    const settings: GeoPhotoSettings = this._manager.plugin.settings;
+    let change: boolean = false;
+    switch (whichButton) {
+      case 1:
+        // show markers button
+        // toggle it.
+        settings.showMarkers = !settings.showMarkers;
+        break;
+      case 2:
+        // fromTrack button;
+        // ignore if markers off.
+        if (settings.showMarkers) {
+          if (settings.directionFromPath) {
+            settings.directionFromPath = false;
+            change = true;
+          }
+        }
+        break;
+      case 3:
+        // fromPath button
+        if (settings.showMarkers) {
+          if (!settings.directionFromPath) {
+            settings.directionFromPath = true;
+            change = true;
+          }
+        }
+        break;
+      case 4:
+        // reverse button
+        if (settings.showMarkers) {
+          // toggle reversed.
+          settings.reversed = !settings.reversed;
+          change = true;
+        }
+        break;
+    }
+    return change;
+  }
+
+  // get the basis for correcting the yaw.
+  private getMarkerSettings(photoFile: PhotoFile, nextFile: PhotoFile | undefined, previousFile: PhotoFile | undefined): MarkerSettings {
+    const gpsTrack: number = (undefined === photoFile.gpsTrack) ? 0.0 : photoFile.gpsTrack;
+    let pathDirection: number = gpsTrack;
+    if ((nextFile !== undefined) || (previousFile !== undefined)) {
+      // get the direction from the path of the photos.
+      let nextPosition: Point3d;
+      let thisPosition: Point3d;
+      if (nextFile) {
+        nextPosition = nextFile.spatial!;
+        thisPosition = photoFile.spatial!;
+      } else {
+        nextPosition = photoFile.spatial!;
+        thisPosition = previousFile!.spatial!;
+      }
+      // relative to north.
+      const delta = thisPosition.vectorTo(nextPosition);
+      pathDirection = 90.0 - (Math.atan2(delta.y, delta.x) * 180 / Math.PI);
+    }
+
+    const settings = this._manager.plugin.settings;
+    if (photoFile.correctionDir !== undefined) {
+      const gpsTrackDelta: number = Math.abs(photoFile.correctionDir - gpsTrack);
+      const pathDelta: number = Math.abs(photoFile.correctionDir - pathDirection);
+      if (gpsTrackDelta < 0.01) {
+        settings.directionFromPath = false;
+        settings.reversed = false;
+      } else if (Math.abs(gpsTrackDelta - 180.0) < 0.01) {
+        settings.directionFromPath = false;
+        settings.reversed = true;
+      } else if (pathDelta < 0.01) {
+        settings.directionFromPath = true;
+        settings.reversed = false;
+      } else if (Math.abs(pathDelta - 180.0) < 0.01) {
+        settings.directionFromPath = true;
+        settings.reversed = true;
+      }
+    }
+
+    return new MarkerSettings(gpsTrack, pathDirection);
+  }
+
+  private async getViewerData(photoFile: PhotoFile): Promise<ViewerData | undefined> {
     const maxDistance = this._manager.plugin.settings.maxDistance;
     const title = photoFile.name;
     const config: PannellumViewerConfig = { title, escapeKeyFunc: GeoPhotoMarker.escapeKey };
     const fileContentsPromise: Promise<ArrayBuffer> = photoFile.getFileContents();
     const closestNeighborPromise: Promise<PhotoFile[]> = photoFile.getClosestNeighbors(true, maxDistance);
-    const baseYaw = (undefined === photoFile.track) ? 0.0 : photoFile.track;
+    const nextPanoramaPromise: Promise<PhotoFile | undefined> = photoFile.getNextPanorama(true);
+    const previousPanoramaPromise: Promise<PhotoFile | undefined> = photoFile.getPreviousPanorama(true);
+    const correctionYaw: number = (undefined === photoFile.correctionYaw) ? 0.0 : photoFile.correctionYaw;
+    const correctionPitch: number = (undefined === photoFile.correctionPitch) ? 0.0 : photoFile.correctionPitch;
+    const correctionRoll: number = (undefined === photoFile.correctionRoll) ? 0.0 : photoFile.correctionRoll;
+    console.log("correction yaw: ", correctionYaw, "pitch:", correctionPitch, "roll:", correctionRoll);
+    const baseYPR = YawPitchRollAngles.createDegrees(correctionYaw, correctionPitch, correctionRoll);
+    const baseRotation = baseYPR.toMatrix3d();
     try {
-      const values: any[] = await Promise.all([fileContentsPromise, closestNeighborPromise]);
+      const values: any[] = await Promise.all([fileContentsPromise, closestNeighborPromise, nextPanoramaPromise, previousPanoramaPromise]);
       const panoBlob: Blob = new Blob([values[0]], { type: "image/jpeg" });
       const closeFiles: PhotoFile[] = values[1];
+      const closeNeighbors: Neighbor[] = this.chooseNeighborsToDisplay(photoFile, closeFiles);
+      const nextPanorama: PhotoFile | undefined = values[2];
+      const previousPanorama: PhotoFile | undefined = values[3];
+
+      // save the marker settings.
+      this._markerSettings = this.getMarkerSettings(photoFile, nextPanorama, previousPanorama);
+
       // console.log(`thisFile:  ${photoFile.name}, x: ${photoFile.spatial!.x}, y: ${photoFile.spatial!.y}`);
-      if (closeFiles.length > 0) {
-        const displayedNeighbors: Bearing[] = this.chooseNeighborsToDisplay(photoFile, closeFiles);
-        const hotSpots: PannellumHotSpot[] = [];
-        for (const neighbor of displayedNeighbors) {
-          const funcArgs = [neighbor, manager];
-          // make sure yaw between -180 and +180.
-          let yaw = neighbor.yaw - baseYaw;
-          if (yaw < -180.0)
-            yaw += 360.0;
-          if (yaw > 180.0)
-            yaw -= 360.0;
-          const pitch = neighbor.pitch;
-          hotSpots.push({
-            yaw,
-            pitch,
-            cssClassName: neighbor.file.visited ? "pnlm-visited-marker" : "pnlm-pin-marker",
-            createTooltipFunc: GeoPhotoMarker.hotSpotTooltip,
-            createTooltipArgs: funcArgs,
-            clickHandlerFunc: this.hotSpotClicked.bind(this),
-            clickHandlerArgs: funcArgs,
-            styleFunc: this.hotSpotSetStyle.bind(this),
-            styleArgs: funcArgs,
-          });
-        }
+
+      if ((baseRotation !== undefined) && closeFiles.length > 0) {
+        const cameraDirection = this._markerSettings.getCameraDirection(this._manager.plugin);
+        const hotSpots: PannellumHotSpot[] = this.calculateHotSpotsFromMatrix(closeNeighbors, cameraDirection, baseRotation, undefined);
         if (hotSpots.length > 0) {
           config.hotSpots = hotSpots;
+          config.saveCorrectionFunc = this.saveCorrections.bind(this, photoFile);
+          config.hotSpotCalculationFunc = this.calculateHotSpotChanges.bind(this, closeNeighbors);
+          config.baseRotation = baseRotation;
+          config.nextPanoramaFunc = nextPanorama ? this.openAdjacentPanorama.bind(this, nextPanorama) : undefined;
+          config.nextPanoramaName = nextPanorama ? nextPanorama.name : undefined;
+          config.previousPanoramaFunc = previousPanorama ? this.openAdjacentPanorama.bind(this, previousPanorama) : undefined;
+          config.previousPanoramaName = previousPanorama ? previousPanorama.name : undefined;
+          config.getMarkerDisplayFunc = this.getMarkerDisplaySettings.bind(this, photoFile);
+          config.setMarkerFunc = this.setMarkerDisplaySettings.bind(this, photoFile);
           // config.hotSpotDebug = true;
+        } else {
+          config.hotSpots = [];
+          config.saveCorrectionFunc = undefined;
+          config.hotSpotCalculationFunc = undefined;
         }
       }
       return { panoBlob, photoFile, config };
@@ -191,9 +411,9 @@ class GeoPhotoMarker extends Marker {
       if (ev.isDown) {
         if (this.photoFile.isPanorama) {
           this.photoFile.visited = true;
-          const newImage = await this._manager.visitedImage!;
-          if (newImage)
-            this.setImage(newImage);
+          const visitedSvg = await this._manager.visitedSvg!;
+          if (visitedSvg)
+            this.setImage(visitedSvg);
           if (0 !== (ev.keyModifiers & (BeModifierKeys.Shift | BeModifierKeys.Control))) {
             // this opens the pannellum viewer in a separate tab (on Chrome)
             const title = this.photoFile.name;
@@ -203,7 +423,7 @@ class GeoPhotoMarker extends Marker {
           } else {
             try {
               // open the Pannellum frontstage.
-              const viewerData = await this.getViewerData(this.photoFile, this._manager);
+              const viewerData = await this.getViewerData(this.photoFile);
               if (viewerData) {
                 await PannellumModalFrontstage.open(viewerData.panoBlob, viewerData.photoFile, viewerData.config, this._manager.plugin);
               }
@@ -230,24 +450,6 @@ class GeoPhotoMarker extends Marker {
   }
 
   public static get amber() { return GeoPhotoMarker._amber; }
-
-  /** Create a new GeoPhotoMarker */
-  constructor(location: XYAndZ, photoFile: PhotoFile, icon: HTMLImageElement, manager: GeoPhotoMarkerManager) {
-    super(location, GeoPhotoMarker._size);
-    this._color = GeoPhotoMarker._amber;
-    this.setImage(icon); // save icon
-    this.imageOffset = GeoPhotoMarker._imageOffset; // move icon up by 30 pixels
-    this.imageSize = GeoPhotoMarker._imageSize; // 40x40
-    this.photoFile = photoFile;
-    // set the tooltip when promise resolves. We won't need it for a while anyway.
-    this.photoFile.getToolTip().then((toolTip) => { this.title = toolTip; }).catch((_err) => { });
-    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
-    this._manager = manager;
-
-    // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
-    this.htmlElement = document.createElement("div");
-    this.htmlElement.innerHTML = photoFile.name; // put the name of the photoFile.
-  }
 
   public addMarker(context: DecorateContext) {
     super.addMarker(context);
@@ -337,16 +539,16 @@ class GeoPhotoMarkerSet extends MarkerSet<GeoPhotoMarker> {
 
 // class that holds the markers from the GeoPhotos tree.
 export class GeoPhotoMarkerManager implements Decorator {
-  private _jpgImage: Promise<HTMLImageElement | undefined>;
-  private _panoImage: Promise<HTMLImageElement | undefined>;
-  public visitedImage: Promise<HTMLImageElement | undefined>;
+  private _jpgSvg: Promise<HTMLImageElement | undefined>;
+  private _panoSvg: Promise<HTMLImageElement | undefined>;
+  public visitedSvg: Promise<HTMLImageElement | undefined>;
   public markerSet: GeoPhotoMarkerSet | undefined;
   private _decorating: boolean;
 
   constructor(public plugin: GeoPhotoPlugin, private _geoPhotos: GeoPhotos) {
-    this._jpgImage = imageElementFromUrl(this.plugin.resolveResourceUrl("jpeg_pin.svg"));
-    this._panoImage = imageElementFromUrl(this.plugin.resolveResourceUrl("pano_pin.svg"));
-    this.visitedImage = imageElementFromUrl(this.plugin.resolveResourceUrl("visited_pin.svg"));
+    this._jpgSvg = imageElementFromUrl(this.plugin.resolveResourceUrl("jpeg_pin.svg"));
+    this._panoSvg = imageElementFromUrl(this.plugin.resolveResourceUrl("pano_pin.svg"));
+    this.visitedSvg = imageElementFromUrl(this.plugin.resolveResourceUrl("visited_pin.svg"));
     this.markerSet = undefined;
     this._decorating = false;
   }
@@ -360,14 +562,14 @@ export class GeoPhotoMarkerManager implements Decorator {
 
   public async getMarkerImage(isVisited: boolean, isPanorama: boolean): Promise<HTMLImageElement | undefined> {
     if (isVisited)
-      return this.visitedImage;
-    return isPanorama ? this._panoImage : this._jpgImage;
+      return this.visitedSvg;
+    return isPanorama ? this._panoSvg : this._jpgSvg;
   }
 
   /** Creates and starts displaying the GeoPhoto markers */
   public async startDecorating() {
     // do not start making markers until the image is.
-    await Promise.all([this._jpgImage, this._panoImage, this.visitedImage]);
+    await Promise.all([this._jpgSvg, this._panoSvg, this.visitedSvg]);
     if (undefined === this.markerSet) {
       this.markerSet = new GeoPhotoMarkerSet(this);
       IModelApp.viewManager.addDecorator(this);

@@ -27,7 +27,7 @@ export class GeoPhotoTest {
     this._currentCount++;
 
     const psFile = file as PSPhotoFile;
-    await this._treeHandler.deleteTags(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
+    await this._treeHandler.deleteCustomInfo(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
   }
 
   public async deleteTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
@@ -41,14 +41,14 @@ export class GeoPhotoTest {
 
     const psFile = file as PSPhotoFile;
 
-    const tags = this._treeHandler.readTags(psFile);
+    const tags = this._treeHandler.readCustomInfo(psFile);
     chai.assert.isDefined(tags, `Tags were not defined for file ${file.name} in folder ${folder.name}`);
-    chai.assert.isDefined(tags!.geoLocation);
+    chai.assert.isDefined(tags!.geoLoc);
     chai.assert.isDefined(tags!.track);
     chai.assert.isDefined(tags!.time);
-    chai.assert.isDefined(tags!.probablyPano);
+    chai.assert.isDefined(tags!.isPano);
 
-    const isValid = this._treeHandler.validateTags(psFile, tags!);
+    const isValid = this._treeHandler.validateCustomInfo(psFile, tags!);
     chai.assert.isTrue(isValid, `Tags were not valid for file ${file.name} in folder ${folder.name}`);
   }
 
@@ -62,7 +62,7 @@ export class GeoPhotoTest {
     this._currentCount++;
 
     const psFile = file as PSPhotoFile;
-    const tags = this._treeHandler.readTags(psFile);
+    const tags = this._treeHandler.readCustomInfo(psFile);
     chai.assert.isUndefined(tags, `Tags were not deleted for file ${file.name} in folder ${folder.name}`);
   }
 
@@ -76,7 +76,7 @@ export class GeoPhotoTest {
     this._currentCount++;
 
     const psFile = file as PSPhotoFile;
-    await this._treeHandler.updateTags(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
+    await this._treeHandler.updateCustomInfo(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
   }
 
   public async updateTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {

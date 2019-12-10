@@ -7,7 +7,7 @@ import { Logger, GuidString, BeDuration, StopWatch } from "@bentley/bentleyjs-co
 import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { loggerCategory, GeoPhotoTags, GPLoadTracker, PhotoTreeHandler, PhotoFolder, PhotoFile, PhotoTree, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
+import { loggerCategory, GeoPhotoInfo, GPLoadTracker, PhotoTreeHandler, PhotoFolder, PhotoFile, PhotoTree, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
 
 // ------------------------ Project Share TreeHandler implementation ---------------------
 
@@ -71,14 +71,14 @@ export class PSPhotoFile extends PhotoFile {
     return this.psFile.accessUrl!;
   }
 
-  public findCustomProperty(propertyName: string): FoundProperty | undefined {
-    for (let iProperty = 0; iProperty < this.psFile.customProperties.length; ++iProperty) {
-      const thisProperty = this.psFile.customProperties[iProperty];
-      if (thisProperty.Name === propertyName) {
-        return new FoundProperty(iProperty, thisProperty.Value);
-      }
-    }
-    return undefined;
+  public async saveFileInfo(): Promise<void> {
+    // this should never happen.
+    if (!this.geoLocation)
+      return;
+
+    const auxFileInfo: GeoPhotoInfo = new GeoPhotoInfo ("1", this.geoLocation, this.gpsTrack ? this.gpsTrack : 0.0, this.takenTime ? this.takenTime : 0, (undefined === this.isPano) ? false : this.isPano,
+      this.thumbnail, this.correctionYaw, this.correctionPitch, this.correctionRoll, this.correctionDir);
+    return this._treeHandler.saveFileInfo(this, auxFileInfo);
   }
 }
 
@@ -125,45 +125,56 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
   }
 
   /**
-   * Saves tags as custom properties in Project Share for the specified file
+   * Saves information regarding Photo as custom properties in Project Share for the specified file
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Connect context Id (e.g., projectId or assetId)
    * @param file
-   * @param tags
-   * @returns Updated ProjectShareFile
+   * @param auxInfo
    */
-  private async saveTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, tags: GeoPhotoTags): Promise<void> {
-    const tagsStr = JSON.stringify(tags);
-    const customProperties = [{ Name: ProjectShareHandler._customPropertyName, Value: tagsStr }]; // Create or update
+  private async saveCustomInfo(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile, auxInfo: GeoPhotoInfo): Promise<void> {
+    const auxInfoStr = JSON.stringify(auxInfo);
+    const customProperties = [{ Name: ProjectShareHandler._customPropertyName, Value: auxInfoStr }]; // Create or update
     psFile.psFile = await this._projectShareClient.updateCustomProperties(requestContext, contextId, psFile.psFile, customProperties);
   }
 
   /**
-   * Reads tags (stored as custom properties in Project Share) for the specified file
+   * Saves information regarding Photo as custom properties in Project Share for the specified file
+   * @returns Updated ProjectShareFile
+   */
+  public async saveFileInfo (file: PSPhotoFile, auxInfo: GeoPhotoInfo): Promise<void> {
+    return this.saveCustomInfo (this._context, this._iModel.iModelToken.contextId!, file, auxInfo);
+  }
+
+  /**
+   * Reads information (stored as custom properties in Project Share) for the specified file
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param file File in project share
    */
-  public readTags(psFile: PSPhotoFile): GeoPhotoTags | undefined {
+  public readCustomInfo(psFile: PSPhotoFile): GeoPhotoInfo | undefined {
     const prop = this.findCustomProperty(psFile.psFile);
     if (prop === undefined)
       return undefined;
 
-    const tags: any = JSON.parse(prop.value);
-    // require all the values to be defined, or read the tag value from the file again.
-    if (tags.geoLocation === undefined || tags.geoLocation.latitude === undefined || tags.geoLocation.longitude === undefined)
+    const auxInfo: any = JSON.parse(prop.value);
+    // some values are required, or we will read the tag value from the file again.
+    if (auxInfo.geoLoc === undefined || auxInfo.geoLoc.latitude === undefined || auxInfo.geoLoc.longitude === undefined)
       return undefined;
 
-    const geoLocation = new Cartographic(tags.geoLocation.longitude, tags.geoLocation.latitude, tags.geoLocation.height || 0.0);
-    return new GeoPhotoTags(geoLocation, tags.track, tags.time, tags.probablyPano, tags.thumbnail);
+    // if there is no version in the custom data, set it to 0 so it will be rejected.
+    if (auxInfo.vrsn === undefined)
+      auxInfo.vrsn = "0";
+
+    const geoLocation = new Cartographic(auxInfo.geoLoc.longitude, auxInfo.geoLoc.latitude, auxInfo.geoLoc.height || 0.0);
+    return new GeoPhotoInfo(auxInfo.vrsn, geoLocation, auxInfo.track, auxInfo.time, auxInfo.isPano, auxInfo.thmbnl, auxInfo.cxnYaw, auxInfo.cxnPitch, auxInfo.cxnRoll, auxInfo.cxnDir);
   }
 
   /**
-   * Delete tags (stored as custom properties in Project Share) for the specified file
+   * Delete customInfo (stored as custom properties in Project Share) for the specified file
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Connect context Id (e.g., projectId or assetId)
    * @param file
    */
-  public async deleteTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<void> {
+  public async deleteCustomInfo(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<void> {
     const prop = this.findCustomProperty(psFile.psFile);
     if (!prop)
       return;
@@ -174,29 +185,29 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
   }
 
   /** Validates the tags retrieved from the ProjectShare image */
-  public validateTags(_psFile: PSPhotoFile, _tags: GeoPhotoTags): boolean {
+  public validateCustomInfo(_psFile: PSPhotoFile, auxInfo: GeoPhotoInfo): boolean {
     // TODO: This currently just returns true. We experimented with modifiedTime - that doesn't work because it changes when
     // you change the custom properties. We experimented with checksum - that is too slow. So we simply observe that the way
     // pictures are taken, the camera gives them a new name every time, and they never really change. If necessary, we can
     // figure out something in the future.
-    return true;
+    return (auxInfo.vrsn !== undefined) && (typeof auxInfo.vrsn === "string") && (auxInfo.vrsn === "1");
   }
 
   /**
-   * Updates tags (stored as custom properties in Project Share) for the specified file by (re-)reading the image
+   * Updates custom info (stored as custom properties in Project Share) for the specified file by (re-)reading the image
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param file File in project share
-   * @returns The tags that have been read from the image
+   * @returns The GeoPhotoInfo that has been read from the image
    */
-  public async updateTags(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<GeoPhotoTags | undefined> {
+  public async updateCustomInfo(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<GeoPhotoInfo | undefined> {
     try {
-      const tags = await psFile.readTagsFromJpeg();
-      if (tags === undefined) {
+      const auxInfo = await psFile.readTagsFromJpeg();
+      if (auxInfo === undefined) {
         Logger.logWarning(loggerCategory, "Jpeg does not have any geographic location", () => ({ ...psFile.psFile }));
         return undefined;
       }
-      await this.saveTags(requestContext, contextId, psFile, tags);
-      return tags;
+      await this.saveCustomInfo(requestContext, contextId, psFile, auxInfo);
+      return auxInfo;
     } catch (error) {
       // tslint:disable-next-line:no-console
       console.log(`Error ${error} attempting to read tags of ${psFile.name}`);
@@ -218,25 +229,30 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
       this._loadTracker.nextFile(false);
     }
 
-    let tags = this.readTags(psFile);
+    let auxInfo = this.readCustomInfo(psFile);
     await BeDuration.wait(5);
-    if (tags === undefined || !this.validateTags(psFile, tags))
-      tags = await this.updateTags(this._context, this._iModel.iModelToken.contextId!, psFile);
+    if (auxInfo === undefined || !this.validateCustomInfo(psFile, auxInfo))
+      auxInfo = await this.updateCustomInfo(this._context, this._iModel.iModelToken.contextId!, psFile);
 
-    if (!tags) {
+    if (!auxInfo) {
       // tslint:disable-next-line:no-console
       console.log(`File ${file.name} does not have any geographic location`);
       return;
     }
 
-    psFile.geoLocation = tags.geoLocation;
-    psFile.track = tags.track;
-    psFile.takenTime = tags.time;
-    psFile.probablyPano = tags.probablyPano;
+    psFile.geoLocation = auxInfo.geoLoc;
+    psFile.gpsTrack = auxInfo.track;
+    psFile.takenTime = auxInfo.time;
+    psFile.isPano = auxInfo.isPano;
+    psFile.thumbnail = auxInfo.thmbnl;
+    psFile.correctionYaw = auxInfo.cxnYaw;
+    psFile.correctionPitch = auxInfo.cxnPitch;
+    psFile.correctionRoll = auxInfo.cxnRoll;
+    psFile.correctionDir = auxInfo.cxnDir;
 
     // inform UI that we have found either a panorama or a standard photo.
     if (this._loadTracker) {
-      if (psFile.probablyPano) {
+      if (psFile.isPano) {
         this._loadTracker.foundPanorama(false);
       } else {
         this._loadTracker.foundPhoto(false);

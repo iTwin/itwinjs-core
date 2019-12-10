@@ -44,7 +44,7 @@ class PannellumContent extends React.Component<PannellumContentProps, PannellumC
 
   public render(): React.ReactNode {
     return (
-      <div ref={(div) => this._containerDiv = div} className={"pannellum-container"}>
+      <div ref={(div) => this._containerDiv = div} className={"pnlm-container"}>
       </div>
     );
   }

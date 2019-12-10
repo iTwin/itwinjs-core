@@ -138,13 +138,19 @@ const enum Operation {
 
 // settings for the plugin.
 // We don't currently provide a way to change minDistance, maxDistance, or eyeHeight.
-class GeoPhotoSettings {
+export class GeoPhotoSettings {
   // In the pannellum viewer, the minimum distance that a nearby marker is drawn from the center.
   public minDistance: number = 10;
   // In the pannellum viewer, the maximum distance for nearby markers. Beyond that distance, they are not drawn.
   public maxDistance: number = 100.0;
   // In the pannellum viewer, the assumed height above the ground of the panoramic camera.
-  public eyeHeight: number = 7.0;
+  public eyeHeight: number = 5.0;
+  // Show markers in the pannellum viewer.
+  public showMarkers: boolean = true;
+  // Use the path of the camera (i.e., the vector from the current photo's position to the next photo's position) rather than the gps track from the camera.
+  public directionFromPath: boolean = true;
+  // use reverse of the camera orientation
+  public reversed: boolean = false;
 }
 
 class GeoPhotoFullSettings extends GeoPhotoSettings {

@@ -37,6 +37,9 @@ export interface PhotoTreeHandler {
   // gets the spatial positions for each photo file from the Cartographic positions.
   getSpatialPositions(folder: PhotoFolder, subFolders: boolean): Promise<void>;
 
+  // saves the auxiliary file information to the repository.
+  saveFileInfo(file: PhotoFile, auxInfo: GeoPhotoInfo): Promise<void>;
+
   getIModel(): IModelConnection;
 }
 
@@ -106,6 +109,8 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
   private _sortedByXWithChildren: DistanceSorter | undefined;
   private _sortedByYNoChildren: DistanceSorter | undefined;
   private _sortedByYWithChildren: DistanceSorter | undefined;
+  private _sortedByTimeNoChildren: TimeSorter | undefined;
+  private _sortedByTimeWithChildren: TimeSorter | undefined;
   // public isCheckboxVisible?: boolean = true;
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder | undefined) {
@@ -220,11 +225,31 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
     return sorter;
   }
 
+  public async getSortedByTime(subFolders: boolean): Promise<TimeSorter> {
+    if (subFolders && this._sortedByTimeWithChildren)
+      return this._sortedByTimeWithChildren;
+    else if (this._sortedByTimeNoChildren)
+      return this._sortedByTimeNoChildren;
+    const sorter: TimeSorter = new TimeSorter();
+    await this.traversePhotos(sorter.insert.bind(sorter), undefined, subFolders, true);
+    if (subFolders)
+      this._sortedByTimeWithChildren = sorter;
+    else
+      this._sortedByTimeNoChildren = sorter;
+
+    return sorter;
+  }
+
   public clearDistanceSort() {
     this._sortedByXNoChildren = undefined;
     this._sortedByXWithChildren = undefined;
     this._sortedByYNoChildren = undefined;
     this._sortedByYWithChildren = undefined;
+  }
+
+  public clearTimeSort() {
+    this._sortedByTimeNoChildren = undefined;
+    this._sortedByTimeWithChildren = undefined;
   }
 
   /** traverse each photo in this folder, calling func. Recurses into subFolders if desired. */
@@ -337,13 +362,15 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
   }
 
   // traverse callback to clear the distance sort results for an individual folder
-  private _clearFolderDistanceSort (folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+  private _clearFolderDistanceSort(folder: PhotoFolder, _parent: PhotoFolder | undefined) {
     folder.clearDistanceSort();
+    folder.clearTimeSort();
   }
 
   /** Called when different folders are chosen to be visible. We have to reset the distance sorter to calculate the new set of visible photos. */
   public clearCloseNeighborData() {
     this.clearDistanceSort();
+    this.clearTimeSort();
     this.traverseFolders(this._clearFolderDistanceSort.bind(this), true, false);
   }
 
@@ -356,30 +383,47 @@ export class GeoPhotoThumbnail {
 }
 
 /**
- * Subset of Jpeg Tags that are of interest to the geo-photo plugin.
+ * Information that is used by the geo-photo plugin, and stored in the metadata of the panorama jpg files.
+ * track, time, isPano, and thmbnl are extracted from the JPEG exif data (which is slow).
+ * geoLoc is calculated (also can be slow).
+ * the correction data - cxnYaw, cxnPitch, cxnRoll, cxnDir are input by the user.
+ * There is a version, which allows us to ignore the current data and replace it when we have to.
+ * The variable names are intentionally terse since they are stored in the metadata for every jpeg file.
  */
-export class GeoPhotoTags {
-  constructor(public geoLocation: Cartographic, public track: number, public time: number, public probablyPano: boolean, public thumbnail?: GeoPhotoThumbnail) {
+export class GeoPhotoInfo {
+  constructor(public vrsn: string, public geoLoc: Cartographic, public track: number, public time: number, public isPano: boolean,
+    public thmbnl?: GeoPhotoThumbnail, public cxnYaw?: number, public cxnPitch?: number, public cxnRoll?: number, public cxnDir?: number) {
   }
 }
 
 /** Abstract base class for Files in the GeoPhotos tree. */
 export abstract class PhotoFile extends FolderEntry {
   public geoLocation: Cartographic | undefined;
-  public track: number | undefined;
+  public gpsTrack: number | undefined;
   public spatial: Point3d | undefined;
-  public probablyPano: boolean | undefined;
+  public isPano: boolean | undefined;
   public takenTime: number | undefined;
+  public correctionDir: number | undefined;
+  public correctionYaw: number | undefined;
+  public correctionPitch: number | undefined;
+  public correctionRoll: number | undefined;
+  public thumbnail: GeoPhotoThumbnail | undefined;
   public visited: boolean;
 
-  constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder, protected _i18n: I18N, geoLocation?: Cartographic, track?: number, spatial?: Point3d, probablyPano?: boolean, takenTime?: number) {
+  constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder, protected _i18n: I18N, geoLocation?: Cartographic, gpsTrack?: number, spatial?: Point3d,
+    isPano?: boolean, takenTime?: number, thumbnail?: GeoPhotoThumbnail, correctionYaw?: number, correctionPitch?: number, correctionRoll?: number, correctionDir?: number) {
     super(treeHandler, parent);
     this.geoLocation = geoLocation;
     this.spatial = spatial;
-    this.track = track;
-    this.probablyPano = probablyPano;
-    this.visited = false;
+    this.gpsTrack = gpsTrack;
+    this.isPano = isPano;
     this.takenTime = takenTime;
+    this.thumbnail = thumbnail;
+    this.correctionYaw = correctionYaw;
+    this.correctionPitch = correctionPitch;
+    this.correctionRoll = correctionRoll;
+    this.correctionDir = correctionDir;
+    this.visited = false;
   }
 
   /** Gets the contents of the file. */
@@ -387,6 +431,8 @@ export abstract class PhotoFile extends FolderEntry {
 
   /** Gets an Url that corresponds to the photo file. */
   public abstract get accessUrl(): string;
+
+  public abstract async saveFileInfo(): Promise<void>;
 
   public get visible(): boolean {
     return this.parent!.visible && this._visible;
@@ -401,7 +447,7 @@ export abstract class PhotoFile extends FolderEntry {
   }
 
   public get isPanorama(): boolean {
-    return this.probablyPano ? this.probablyPano : false;
+    return this.isPano ? this.isPano : false;
   }
 
   public async getClosestNeighbors(allFolders: boolean, maxDistance?: number): Promise<PhotoFile[]> {
@@ -418,6 +464,18 @@ export abstract class PhotoFile extends FolderEntry {
     const closeList: PhotoFile[] = xList.filter(distanceFilter.filter.bind(distanceFilter));
     closeList.sort(distanceFilter.sortFunc.bind(distanceFilter));
     return Promise.resolve(closeList);
+  }
+
+  public async getNextPanorama(allFolders: boolean): Promise<PhotoFile | undefined> {
+    const parentFolder: PhotoFolder = allFolders ? this.photoTree : this._parent!;
+    const timeSorted: TimeSorter = await parentFolder.getSortedByTime(allFolders);
+    return timeSorted.getNextPhoto(this);
+  }
+
+  public async getPreviousPanorama(allFolders: boolean): Promise<PhotoFile | undefined> {
+    const parentFolder: PhotoFolder = allFolders ? this.photoTree : this._parent!;
+    const timeSorted: TimeSorter = await parentFolder.getSortedByTime(allFolders);
+    return timeSorted.getPreviousPhoto(this);
   }
 
   public async getToolTip(): Promise<string | HTMLElement | undefined> {
@@ -440,7 +498,7 @@ export abstract class PhotoFile extends FolderEntry {
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = IModelApp.quantityFormatter.formatQuantity(zAdjusted, coordFormatterSpec);
-        const formattedTrack = this.track ? this.track.toFixed(2) : "";
+        const formattedTrack = this.gpsTrack ? this.gpsTrack.toFixed(2) : "";
         const latDir = cartographic.latitude < 0 ? "S" : "N";
         const longDir = cartographic.longitude < 0 ? "W" : "E";
         toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight, formattedTrack });
@@ -477,12 +535,12 @@ export abstract class PhotoFile extends FolderEntry {
   private static getProbablyPano(tagSet: ImageTags): boolean {
     const pixelX = tagSet.get("PixelXDimension");
     const pixelY = tagSet.get("PixelYDimension");
-    // err on the side of calling it a pano.
+    // err on the side of not calling it a pano.
     if ((undefined === pixelX) || (undefined === pixelY)) {
-      return true;
+      return false;
     }
     if ((typeof pixelX !== "number") || (typeof pixelY !== "number"))
-      return true;
+      return false;
 
     return pixelX === 2 * pixelY;
   }
@@ -494,7 +552,7 @@ export abstract class PhotoFile extends FolderEntry {
     return gpsElevation;
   }
 
-  private static getTrack(tagSet: ImageTags): number {
+  private static getGpsTrack(tagSet: ImageTags): number {
     const gpsTrack = tagSet.get("GPSTrack");
     if ((undefined === gpsTrack) || (typeof gpsTrack !== "number"))
       return 0;
@@ -502,10 +560,21 @@ export abstract class PhotoFile extends FolderEntry {
   }
 
   private static getTime(tagSet: ImageTags): number {
-    const gpsTime = tagSet.get("GPSDateStamp");
-    if ((undefined === gpsTime) || (typeof gpsTime !== "string"))
-      return 0;
-    const parsedTime = Date.parse(gpsTime);
+    let timeString = tagSet.get("GPSDateStamp");
+    if ((undefined === timeString) || (typeof timeString !== "string")) {
+      timeString = tagSet.get("DateTimeOriginal");
+      if ((undefined === timeString) || (typeof timeString !== "string"))
+        return 0;
+      // the timestring from DateTimeOriginal isn't directly parseable by Date.parse. It looks like 2019:11:21 14:05:14, but what we want is something lik 2018-07-04T09:55:03
+      // replace the first two :'s with -
+      timeString = timeString.replace(":", "-");
+      timeString = timeString.replace(":", "-");
+      // replace the first space with "T"
+      timeString = timeString.replace(" ", "T");
+    }
+
+    const parsedTime = Date.parse(timeString);
+    // console.log ("name:", name, "timeString: ", timeString, "parsedTime:", parsedTime, "Date:", new Date(parsedTime));
     return (Number.isNaN(parsedTime)) ? 0 : parsedTime;
   }
 
@@ -538,7 +607,7 @@ export abstract class PhotoFile extends FolderEntry {
   }
 
   /** Read tags from a JPEG image */
-  public async readTagsFromJpeg(): Promise<GeoPhotoTags> {
+  public async readTagsFromJpeg(): Promise<GeoPhotoInfo> {
     const byteCount = 60000; // 60 KB should be sufficient to read the GPS headers and Thumbnails
     const byteArray: Uint8Array = await this.getFileContents(byteCount);
 
@@ -547,17 +616,17 @@ export abstract class PhotoFile extends FolderEntry {
     const longitude = PhotoFile.getDegreeMinSec(tagSet, "GPSLongitude", "E");
     const latitude = PhotoFile.getDegreeMinSec(tagSet, "GPSLatitude", "N");
     const elevation = PhotoFile.getElevation(tagSet);
-    const track = PhotoFile.getTrack(tagSet);
+    const gpsTrack = PhotoFile.getGpsTrack(tagSet);
     const time = PhotoFile.getTime(tagSet);
-    const probablyPano = PhotoFile.getProbablyPano(tagSet);
+    const isPano = PhotoFile.getProbablyPano(tagSet);
     const thumbnail = PhotoFile.getThumbnailInfo(tagSet);
     if (longitude === undefined || latitude === undefined)
       throw new BentleyError(BentleyStatus.ERROR, "There is no geographic tag in the jpeg file", Logger.logError, loggerCategory, () => ({ ...this }));
 
     const cartographic = new Cartographic(longitude, latitude, elevation);
 
-    const tags = new GeoPhotoTags(cartographic, track, time, probablyPano, thumbnail);
-    return tags;
+    const auxInfo = new GeoPhotoInfo("1", cartographic, gpsTrack, time, isPano, thumbnail);
+    return auxInfo;
   }
 }
 
@@ -731,5 +800,51 @@ class DistanceFilter {
     const lhsDistance = this.disSquared(lhs);
     const rhsDistance = this.disSquared(rhs);
     return lhsDistance - rhsDistance;
+  }
+}
+
+class TimeSorter {
+  public sortedArray: SortedArray<PhotoFile>;
+
+  constructor() {
+    this.sortedArray = new SortedArray<PhotoFile>(this.sortOnTime, true);
+  }
+
+  // compare function.
+  private sortOnTime(lhs: PhotoFile, rhs: PhotoFile): number {
+    return lhs.takenTime! - rhs.takenTime!;
+  }
+
+  // gets the photo with the next highest taken time.
+  public getNextPhoto(photoFile: PhotoFile): PhotoFile | undefined {
+    const thisIndex: number = this.sortedArray.indexOf(photoFile);
+    // if we don't find it in the array, return undefined.
+    if (thisIndex < 0)
+      return undefined;
+
+    // if it's the last one, return undefined.
+    if (thisIndex > (this.sortedArray.length - 1))
+      return undefined;
+
+    return this.sortedArray.get(thisIndex + 1);
+  }
+
+  // gets the photo with the next lowest taken time.
+  public getPreviousPhoto(photoFile: PhotoFile): PhotoFile | undefined {
+    const thisIndex: number = this.sortedArray.indexOf(photoFile);
+    // if we don't find it in the array, or it's the first one, return undefined.
+    if (thisIndex <= 0)
+      return undefined;
+
+    return this.sortedArray.get(thisIndex - 1);
+  }
+
+  // traverse callback function
+  public async insert(photoFile: PhotoFile): Promise<void> {
+    // insert only files that have a time and that are panoramas.
+    if ((undefined === photoFile.takenTime) || (0 === photoFile.takenTime) || !photoFile.isPano)
+      return;
+    this.sortedArray.insert(photoFile);
+    return Promise.resolve();
   }
 }

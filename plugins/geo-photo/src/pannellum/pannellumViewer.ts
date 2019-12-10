@@ -28,6 +28,7 @@
 // tslint:disable:no-console
 
 import { PannellumRenderer } from "./pannellumRender";
+import { Matrix3d } from "@bentley/geometry-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 
 import "./css/pannellum.css";
@@ -56,7 +57,24 @@ interface PointerCoordinates {
   clientY: number;
 }
 
+export interface MarkerDisplaySettings {
+  showMarkers: boolean;
+  fromPath: boolean;
+  fromTrack: boolean;
+  reversed: boolean;
+}
+
 type EscapeFunc = () => void;
+
+type SaveCorrectionFunc = (correctionMatrix: Matrix3d | undefined) => void;
+
+type HotSpotCalculationFunc = (baseRotation: Matrix3d, existingHotSpots: PannellumHotSpot[], centerYaw: number, yawChange: number, pitchChange: number) => Matrix3d | undefined;
+
+type AdjacentPanoramaFunc = (viewer: PannellumViewer) => void;
+
+type GetMarkerDisplayFunc = () => MarkerDisplaySettings;
+
+type SetMarkerFunc = (buttonId: number) => boolean;
 
 export interface PannellumHotSpot {
   yaw: number;
@@ -69,12 +87,9 @@ export interface PannellumHotSpot {
   width?: number;
   scale?: boolean;
   attributes?: string[];
-  clickHandlerFunc?: (ev: MouseEvent, args: any) => void;
-  clickHandlerArgs?: any;
-  createTooltipFunc?: (div: HTMLDivElement, args: any) => void;
-  createTooltipArgs?: any;
-  styleFunc?: (hs: PannellumHotSpot, args: any) => void;
-  styleArgs?: any;
+  clickHandlerFunc?: (ev: MouseEvent, viewer: PannellumViewer) => void;
+  createTooltipFunc?: (div: HTMLDivElement) => void;
+  styleFunc?: (hs: PannellumHotSpot) => void;
   div?: HTMLDivElement | null;
 }
 
@@ -123,6 +138,15 @@ export interface PannellumViewerConfig {
   authorURL?: string;
   hotSpots?: PannellumHotSpot[];
   escapeKeyFunc?: EscapeFunc;
+  hotSpotCalculationFunc?: HotSpotCalculationFunc;
+  baseRotation?: Matrix3d;
+  saveCorrectionFunc?: SaveCorrectionFunc;
+  nextPanoramaName?: string;
+  previousPanoramaName?: string;
+  nextPanoramaFunc?: AdjacentPanoramaFunc;
+  previousPanoramaFunc?: AdjacentPanoramaFunc;
+  getMarkerDisplayFunc?: GetMarkerDisplayFunc;
+  setMarkerFunc?: SetMarkerFunc;
 }
 
 interface PannellumViewerParameters {
@@ -170,6 +194,15 @@ interface PannellumViewerParameters {
   authorURL: string | undefined;
   hotSpots: PannellumHotSpot[] | undefined;
   escapeKeyFunc: EscapeFunc | undefined;
+  hotSpotCalculationFunc?: HotSpotCalculationFunc;
+  baseRotation?: Matrix3d;
+  saveCorrectionFunc?: SaveCorrectionFunc;
+  nextPanoramaName?: string;
+  previousPanoramaName?: string;
+  nextPanoramaFunc?: AdjacentPanoramaFunc;
+  previousPanoramaFunc?: AdjacentPanoramaFunc;
+  getMarkerDisplayFunc?: GetMarkerDisplayFunc;
+  setMarkerFunc?: SetMarkerFunc;
 }
 
 export class PannellumViewer {
@@ -184,6 +217,9 @@ export class PannellumViewer {
   private _onPointerDownPointerDist: number = -1;
   private _onPointerDownYaw: number = 0;
   private _onPointerDownPitch: number = 0;
+  private _onPointerDownCtrlKey: boolean = false;
+  private _baseCorrectionMatrix: Matrix3d | undefined = undefined;
+  private _correctionMatrix: Matrix3d | undefined = undefined;
   private _keysDown: boolean[] = new Array(10);
   private _fullscreenActive: boolean = false;
   private _loaded: boolean | undefined;
@@ -208,6 +244,8 @@ export class PannellumViewer {
   private _destroyed = false;
   private _container: HTMLElement;
   private _uiContainer: HTMLDivElement;
+  private _nextTooltip: HTMLSpanElement | undefined;
+  private _previousTooltip: HTMLSpanElement | undefined;
   private _dragFix: HTMLDivElement;
   private _renderContainer: HTMLDivElement;
   private _aboutMsg: HTMLSpanElement;
@@ -274,7 +312,7 @@ export class PannellumViewer {
    * @param {HTMLElement|string} container - The container (div) element for the
    *      viewer, or its ID.
    * @param {I18n} i18n - the internationalization provider.
-   * @param {Object} initialConfig - Inital configuration for viewer.
+   * @param {Object} initialConfig - Initial configuration for viewer.
    */
   constructor(container: HTMLElement | string | null, i18n: I18N, initialConfig?: PannellumViewerConfig) {
 
@@ -401,6 +439,70 @@ export class PannellumViewer {
     if (document.fullscreenEnabled)
       this._controls.container.appendChild(this._controls.fullscreen);
 
+    // previous and next
+    this._controls.next = document.createElement("div");
+    this._controls.next.addEventListener("click", this.toNextPanorama.bind(this));
+    this._controls.next.className = "pnlm-next-button pnlm-adjacent-button pnlm-tooltip";
+    this._uiContainer.appendChild(this._controls.next);
+    this._nextTooltip = document.createElement("span");
+    this._controls.next.appendChild(this._nextTooltip);
+
+    this._controls.previous = document.createElement("div");
+    this._controls.previous.addEventListener("click", this.toPreviousPanorama.bind(this));
+    this._controls.previous.className = "pnlm-previous-button pnlm-adjacent-button pnlm-tooltip";
+    this._uiContainer.appendChild(this._controls.previous);
+    this._previousTooltip = document.createElement("span");
+    this._controls.previous.appendChild(this._previousTooltip);
+
+    // marker control
+    let ctrlDiv = document.createElement("div");
+    this._controls.showMarkers = ctrlDiv;
+    ctrlDiv.addEventListener("click", this.doShowMarkers.bind(this));
+    ctrlDiv.className = "pnlm-showmarkers-button pnlm-markercontrol-button pnlm-tooltip";
+    this._uiContainer.appendChild(ctrlDiv);
+    let ttSpan = document.createElement("span");
+    ctrlDiv.appendChild(ttSpan);
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.showMarkers");
+    ttSpan.style.width = `${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginLeft = `-${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginTop = "32px";
+
+    ctrlDiv = document.createElement("div");
+    this._controls.fromPath = ctrlDiv;
+    ctrlDiv.addEventListener("click", this.setDirectionFromPath.bind(this));
+    ctrlDiv.className = "pnlm-frompath-button pnlm-markercontrol-button pnlm-tooltip";
+    this._uiContainer.appendChild(ctrlDiv);
+    ttSpan = document.createElement("span");
+    ctrlDiv.appendChild(ttSpan);
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.fromPath");
+    ttSpan.style.width = `${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginLeft = `-${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginTop = "32px";
+
+    ctrlDiv = document.createElement("div");
+    this._controls.fromTrack = ctrlDiv;
+    ctrlDiv.addEventListener("click", this.setDirectionFromTrack.bind(this));
+    ctrlDiv.className = "pnlm-fromtrack-button pnlm-markercontrol-button pnlm-tooltip";
+    this._uiContainer.appendChild(ctrlDiv);
+    ttSpan = document.createElement("span");
+    ctrlDiv.appendChild(ttSpan);
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.fromTrack");
+    ttSpan.style.width = `${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginLeft = `-${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginTop = "32px";
+
+    ctrlDiv = document.createElement("div");
+    this._controls.reversed = ctrlDiv;
+    ctrlDiv.addEventListener("click", this.setDirectionReversed.bind(this));
+    ctrlDiv.className = "pnlm-reversed-button pnlm-markercontrol-button pnlm-tooltip";
+    this._uiContainer.appendChild(ctrlDiv);
+    ttSpan = document.createElement("span");
+    ctrlDiv.appendChild(ttSpan);
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.reversed");
+    ttSpan.style.width = `${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginLeft = `-${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginTop = "32px";
+
     // Device orientation toggle
     this._controls.orientation = document.createElement("div");
     this._controls.orientation.addEventListener("click", () => {
@@ -431,6 +533,11 @@ export class PannellumViewer {
     // Load and process configuration
     this.mergeConfig();
     this.processOptions();
+    this.setNextPanoTooltip();
+    this.setPreviousPanoTooltip();
+
+    // get the baseCorrectionMatrix from the merged config.
+    this._baseCorrectionMatrix = this._config.baseRotation ? this._config.baseRotation.clone() : undefined;
   }
 
   /* uses event to test for orientationSupport */
@@ -466,13 +573,44 @@ export class PannellumViewer {
     // leave yaw alone, but
     this._animationStoppedForNewPanorama = true;
     this.stopMovement();
-    this.destroyHotSpots();
+    this.destroyHotSpots(true);
     this._config.hotSpots = config.hotSpots;
+    this._config.hotSpotCalculationFunc = config.hotSpotCalculationFunc;
+    this._config.saveCorrectionFunc = config.saveCorrectionFunc;
+    this._baseCorrectionMatrix = config.baseRotation ? config.baseRotation.clone() : undefined;
+    this._config.nextPanoramaFunc = config.nextPanoramaFunc;
+    this._config.nextPanoramaName = config.nextPanoramaName;
+    this._config.previousPanoramaFunc = config.previousPanoramaFunc;
+    this._config.previousPanoramaName = config.previousPanoramaName;
+    this._config.setMarkerFunc = config.setMarkerFunc;
+    this._config.getMarkerDisplayFunc = config.getMarkerDisplayFunc;
     this.createHotSpots();
     this._config.title = config.title;
     this.processDisplayedOptions();
     this.parseGPanoXMP(panoBlob);
+    this.setNextPanoTooltip();
+    this.setPreviousPanoTooltip();
     this._animationStoppedForNewPanorama = false;
+  }
+
+  private setNextPanoTooltip() {
+    const ttSpan: HTMLSpanElement | undefined = this._nextTooltip;
+    if (!ttSpan || !this._config.nextPanoramaName)
+      return;
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.nextPanorama", { name: this._config.nextPanoramaName });
+    ttSpan.style.width = `${ttSpan.scrollWidth - 20}px`;
+    ttSpan.style.marginLeft = `-${ttSpan.scrollWidth}px`;
+    ttSpan.style.marginTop = "32px";
+  }
+
+  private setPreviousPanoTooltip() {
+    const ttSpan: HTMLSpanElement | undefined = this._previousTooltip;
+    if (!ttSpan || !this._config.previousPanoramaName)
+      return;
+    ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.previousPanorama", { name: this._config.previousPanoramaName });
+    ttSpan.style.width = `${ttSpan.scrollWidth - 19}px`;
+    ttSpan.style.marginLeft = "20px";
+    ttSpan.style.marginTop = "32px";
   }
 
   /**
@@ -631,22 +769,6 @@ export class PannellumViewer {
   }
 
   /**
-   * Hides error message display.
-   * @private
-   */
-  private clearError() {
-    if (this._error) {
-      /* ----- load not used -----
-      this._infoDisplay.load.box.style.display = "none";
-      ---------------------------- */
-      this._infoDisplay.errorMsg.style.display = "none";
-      this._error = false;
-      this._renderContainer.style.display = "block";
-      this.fireEvent("errorcleared");
-    }
-  }
-
-  /**
    * Displays about message.
    * @private
    * @param {MouseEvent} event - Right click location
@@ -722,6 +844,14 @@ export class PannellumViewer {
 
     this._onPointerDownYaw = this._config.yaw;
     this._onPointerDownPitch = this._config.pitch;
+    this._onPointerDownCtrlKey = false;
+    if (event.ctrlKey && this.displayHotSpots() && this._config.hotSpots && this._config.hotSpotCalculationFunc) {
+      this._onPointerDownCtrlKey = true;
+      this._correctionMatrix = undefined;
+      if (undefined === this._baseCorrectionMatrix) {
+        this._baseCorrectionMatrix = Matrix3d.createIdentity();
+      }
+    }
 
     this._uiContainer.classList.add("pnlm-grabbing");
     this._uiContainer.classList.remove("pnlm-grab");
@@ -793,6 +923,14 @@ export class PannellumViewer {
       const pitch = ((Math.atan(pos.y / canvasHeight * 2 - 1) - Math.atan(this._onPointerDownPointerY / canvasHeight * 2 - 1)) * 180 / Math.PI * vfov / 90) + this._onPointerDownPitch;
       this._speed.pitch = (pitch - this._config.pitch) * 0.2;
       this._config.pitch = pitch;
+
+      // if ctrl was down on mouseDown, then we want to keep the hot spots in the same position, so reverse the yaw and pitch changes.
+      if (this._onPointerDownCtrlKey && this.displayHotSpots() && this._config.hotSpots && this._config.hotSpotCalculationFunc && this._baseCorrectionMatrix) {
+        // correct each hot spot
+        const yawCorrection: number = this._onPointerDownYaw - yaw;
+        const pitchCorrection: number = this._onPointerDownPitch - pitch;
+        this._correctionMatrix = this._config.hotSpotCalculationFunc(this._baseCorrectionMatrix, this._config.hotSpots, this._config.yaw, yawCorrection, pitchCorrection);
+      }
     }
   }
 
@@ -813,6 +951,11 @@ export class PannellumViewer {
     this._uiContainer.classList.add("pnlm-grab");
     this._uiContainer.classList.remove("pnlm-grabbing");
     this._latestInteraction = Date.now();
+    if (this._onPointerDownCtrlKey && this._config.saveCorrectionFunc) {
+      this._config.saveCorrectionFunc(this._correctionMatrix);
+      this._baseCorrectionMatrix = this._correctionMatrix ? this._correctionMatrix.clone() : undefined;
+    }
+    this._onPointerDownCtrlKey = false;
 
     this.fireEvent("mouseup", event);
   }
@@ -1006,7 +1149,6 @@ export class PannellumViewer {
     this._latestInteraction = Date.now();
 
     if (event.deltaY) {
-      console.log("wheel event deltay = " + event.deltaY);
       this.setHfovInternal(this._config.hfov + event.deltaY * 0.05);
       this._speed.hfov = event.deltaY < 0 ? -1 : 1;
     }
@@ -1617,6 +1759,7 @@ export class PannellumViewer {
 
     // Show hotspots
     this.createHotSpots();
+    this.renderHotSpots();
 
     // Hide loading display
     /* --------- load not used -----------
@@ -1691,7 +1834,7 @@ export class PannellumViewer {
     }
 
     if (hs.createTooltipFunc) {
-      hs.createTooltipFunc(div, hs.createTooltipArgs);
+      hs.createTooltipFunc(div);
     } else if (hs.text || hs.video || hs.image) {
       div.classList.add("pnlm-tooltip");
       div.appendChild(span);
@@ -1700,7 +1843,7 @@ export class PannellumViewer {
       span.style.marginTop = -span.scrollHeight - 12 + "px";
     }
     if (hs.clickHandlerFunc) {
-      div.addEventListener("click", ((e) => { hs.clickHandlerFunc!(e, [this, ...hs.clickHandlerArgs]); }), false);
+      div.addEventListener("click", ((e) => { hs.clickHandlerFunc!(e, this); }), false);
       div.className += " pnlm-pointer";
       span.className += " pnlm-pointer";
     }
@@ -1712,6 +1855,9 @@ export class PannellumViewer {
    * @private
    */
   private createHotSpots() {
+    if (!this.displayHotSpots())
+      return;
+
     if (this._hotSpotsCreated)
       return;
 
@@ -1719,20 +1865,25 @@ export class PannellumViewer {
       this._config.hotSpots = [];
     } else {
       // Sort by pitch so tooltip is never obscured by another hot spot
-      this._config.hotSpots = this._config.hotSpots.sort((a: PannellumHotSpot, b: PannellumHotSpot) => a.pitch - b.pitch);
       this._config.hotSpots.forEach(this.createHotSpot.bind(this));
     }
     this._hotSpotsCreated = true;
   }
 
   /**
-   * Destroys currently created hot spot elements.
+   * Destroys currently created hot spot DOM elements.
+   * If discard is true, also discards the hot spots so a subsequent createHotSpots does nothing.
    * @private
    */
-  private destroyHotSpots() {
+  private destroyHotSpots(discard: boolean) {
+    if (!this._hotSpotsCreated)
+      return;
+
     const hotSpots = this._config.hotSpots;
     this._hotSpotsCreated = false;
-    delete this._config.hotSpots;
+    if (discard)
+      this._config.hotSpots = undefined;
+
     if (hotSpots) {
       for (const hs of hotSpots) {
         let current: Node | undefined | null = hs.div;
@@ -1742,7 +1893,7 @@ export class PannellumViewer {
           }
           this._renderContainer.removeChild(current!);
         }
-        delete hs.div;
+        hs.div = undefined;
       }
     }
   }
@@ -1790,7 +1941,7 @@ export class PannellumViewer {
       hs.div!.style.transform = transform;
       // allow callback to affect style.
       if (hs.styleFunc)
-        hs.styleFunc(hs, hs.styleArgs);
+        hs.styleFunc(hs);
     }
   }
 
@@ -1799,7 +1950,7 @@ export class PannellumViewer {
    * @private
    */
   private renderHotSpots() {
-    if (this._config.hotSpots) {
+    if (this.displayHotSpots() && this._config.hotSpots) {
       for (const hs of this._config.hotSpots) {
         this.renderHotSpot(hs);
       }
@@ -1857,6 +2008,34 @@ export class PannellumViewer {
 
     if ((undefined === this._config.title) && (undefined === this._config.author))
       this._infoDisplay.container.style.display = "none";
+
+    if (this._config.nextPanoramaFunc)
+      this._controls.next.style.display = "block";
+    else
+      this._controls.next.style.display = "none";
+
+    if (this._config.previousPanoramaFunc)
+      this._controls.previous.style.display = "block";
+    else
+      this._controls.previous.style.display = "none";
+
+    this.setHotSpotControlsDisplay();
+  }
+
+  private setHotSpotControlsDisplay() {
+    if (this._config.getMarkerDisplayFunc) {
+      const markerDisplay = this._config.getMarkerDisplayFunc();
+      const enabled = markerDisplay.showMarkers;
+      this._controls.showMarkers.style.backgroundColor = markerDisplay.showMarkers ? "#fff" : "#aaa";
+      this._controls.fromPath.style.backgroundColor = enabled && markerDisplay.fromPath ? "#fff" : "#aaa";
+      this._controls.fromTrack.style.backgroundColor = enabled && markerDisplay.fromTrack ? "#fff" : "#aaa";
+      this._controls.reversed.style.backgroundColor = enabled && markerDisplay.reversed ? "#fff" : "#aaa";
+    } else {
+      this._controls.showMarkers.style.display = "none";
+      this._controls.fromPath.style.display = "none";
+      this._controls.fromTrack.style.display = "none";
+      this._controls.reversed.style.display = "none";
+    }
   }
 
   /**
@@ -1973,6 +2152,72 @@ export class PannellumViewer {
     }
   }
 
+  private toNextPanorama() {
+    if (this._config.nextPanoramaFunc)
+      this._config.nextPanoramaFunc(this);
+  }
+
+  private toPreviousPanorama() {
+    if (this._config.previousPanoramaFunc)
+      this._config.previousPanoramaFunc(this);
+  }
+
+  private displayHotSpots(): boolean {
+    if (this._config.getMarkerDisplayFunc === undefined)
+      return true;
+    const markerDisplay = this._config.getMarkerDisplayFunc();
+    return markerDisplay.showMarkers;
+  }
+
+  private resetHotSpotCorrections() {
+    if (this._config.hotSpotCalculationFunc && this._config.hotSpots) {        // reset the baseCorrectionMatrix.
+      this._baseCorrectionMatrix = Matrix3d.createIdentity();
+      this._config.hotSpotCalculationFunc(this._baseCorrectionMatrix, this._config.hotSpots, this._config.yaw, 0.0, 0.0);
+      this.render();
+    }
+  }
+
+  private setDirectionFromTrack() {
+    if (this._config.setMarkerFunc) {
+      const correctionChange: boolean = this._config.setMarkerFunc(2);
+      this.setHotSpotControlsDisplay();
+      if (correctionChange)
+        this.resetHotSpotCorrections();
+    }
+  }
+
+  private setDirectionFromPath() {
+    if (this._config.setMarkerFunc) {
+      const correctionChange: boolean = this._config.setMarkerFunc(3);
+      this.setHotSpotControlsDisplay();
+      if (correctionChange)
+        this.resetHotSpotCorrections();
+    }
+  }
+
+  private setDirectionReversed() {
+    if (this._config.setMarkerFunc) {
+      const correctionChange: boolean = this._config.setMarkerFunc(4);
+      this.setHotSpotControlsDisplay();
+      if (correctionChange)
+        this.resetHotSpotCorrections();
+    }
+  }
+
+  private doShowMarkers() {
+    if (this._config.setMarkerFunc)
+      this._config.setMarkerFunc(1);
+
+    if (this.displayHotSpots()) {
+      this.createHotSpots();
+      this.render();
+    } else {
+      this.destroyHotSpots(false);
+    }
+
+    this.setHotSpotControlsDisplay();
+  }
+
   /**
    * Clamps horizontal field of view to viewer's limits.
    * @private
@@ -2026,107 +2271,6 @@ export class PannellumViewer {
     this._animatedMove = this.noMove();
     this._autoRotateSpeed = this._config.autoRotate ? this._config.autoRotate : this._autoRotateSpeed;
     this._config.autoRotate = 0;
-  }
-
-  /**
-   * Loads panorama.
-   * @private
-   */
-  private load(newPanoBlob: Blob) {
-    // Since WebGL error handling is very general, first we clear any error box
-    // since it is a new scene and the error from previous maybe because of lacking
-    // memory etc and not because of a lack of WebGL support etc
-    this.clearError();
-    this._loaded = false;
-
-    /* ------------- Load control not used
-    this._controls.load.style.display = "none";
-    this._infoDisplay.load.box.style.display = "inline";
-    -------------------------------------- */
-    this.initialView(newPanoBlob);
-  }
-
-  /**
-   * Loads scene.
-   * @param {string} sceneId - Identifier of scene configuration to merge in.
-   * @param {number} targetPitch - Pitch viewer should be centered on once scene loads.
-   * @param {number} targetYaw - Yaw viewer should be centered on once scene loads.
-   * @param {number} targetYaw - Yaw viewer should be centered on once scene loads.
-   * @param {number} targetHfov - HFOV viewer should use once scene loads.
-   * @param {boolean} [fadeDone] - If `true`, fade setup is skipped.
-   */
-  private loadSceneInternal(newPanoBlob: Blob, newConfig: PannellumViewerConfig | undefined, targetPitch: string | number, targetYaw: string | number, targetHfov: string | number, fadeDone: boolean) {
-    if (!this._loaded)
-      fadeDone = true;    // Don't try to fade when there isn't a scene loaded
-    this._loaded = false;
-    this._animatedMove = this.noMove();
-
-    // Set up fade if specified
-    let fadeImg: HTMLImageElement;
-    if (this._config.sceneFadeDuration && !fadeDone) {
-      const data = this._renderer!.render(this._config.pitch * Math.PI / 180, this._config.yaw * Math.PI / 180, this._config.hfov * Math.PI / 180, { returnImage: true });
-      if (data !== undefined) {
-        fadeImg = new Image();
-        fadeImg.className = "pnlm-fade-img";
-        fadeImg.style.transition = "opacity " + (this._config.sceneFadeDuration / 1000) + "s";
-        fadeImg.style.width = "100%";
-        fadeImg.style.height = "100%";
-        fadeImg.onload = () => {
-          this.loadSceneInternal(newPanoBlob, newConfig, targetPitch, targetYaw, targetHfov, true);
-        };
-        fadeImg.src = data;
-        this._renderContainer.appendChild(fadeImg);
-        this._renderer!.fadeImg = fadeImg;
-        return;
-      }
-    }
-
-    // Set new pointing
-    let workingPitch: number | undefined;
-    if (targetPitch === "same") {
-      workingPitch = this._config.pitch;
-    } else if (typeof targetPitch === "number") {
-      workingPitch = targetPitch;
-    }
-
-    let workingYaw: number | undefined;
-    if (targetYaw === "same") {
-      workingYaw = this._config.yaw;
-    } else if (targetYaw === "sameAzimuth") {
-      workingYaw = this._config.yaw + this._config.northOffset;
-    } else if (typeof targetYaw === "number") {
-      workingYaw = targetYaw;
-    }
-
-    let workingHfov: number | undefined;
-    if (targetHfov === "same") {
-      workingHfov = this._config.hfov;
-    } else if (typeof targetHfov === "number") {
-      workingHfov = targetHfov;
-    }
-
-    // Destroy hot spots from previous scene
-    this.destroyHotSpots();
-
-    // Create the new this._config for the scene
-    this.mergeConfig(newConfig);
-
-    // Stop motion
-    this._speed.yaw = this._speed.pitch = this._speed.hfov = 0;
-
-    // Reload scene
-    this.processOptions();
-    if (workingPitch !== undefined) {
-      this._config.pitch = workingPitch;
-    }
-    if (workingYaw !== undefined) {
-      this._config.yaw = workingYaw;
-    }
-    if (workingHfov !== undefined) {
-      this._config.hfov = workingHfov;
-    }
-    this.fireEvent("scenechange");
-    this.load(newPanoBlob);
   }
 
   /**
