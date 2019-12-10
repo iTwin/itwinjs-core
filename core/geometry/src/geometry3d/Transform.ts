@@ -135,7 +135,9 @@ export class Transform implements BeJSONFunctions {
     return new Transform(this.origin.cloneAsPoint3d(), axes0);
   }
   /** Create a copy with the given origin and matrix captured as the Transform origin and Matrix3d. */
-  public static createRefs(origin: XYZ, matrix: Matrix3d, result?: Transform): Transform {
+  public static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
+    if (!origin)
+      origin = Point3d.createZero();
     if (result) {
       result._origin = origin;
       result._matrix = matrix;
@@ -210,6 +212,11 @@ export class Transform implements BeJSONFunctions {
    * Note there is a closely related createFixedPointAndMatrix whose point input is the fixed point of the global-to-global transformation.
    */
   public static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform {
+    if (result) {
+      result._origin.setFromPoint3d(origin);
+      result._matrix.setFrom(matrix);
+      return result;
+    }
     return Transform.createRefs(
       origin ? origin.cloneAsPoint3d() : Point3d.createZero(),
       matrix === undefined ? Matrix3d.createIdentity() : matrix.clone(), result);
@@ -223,6 +230,25 @@ export class Transform implements BeJSONFunctions {
       result = Transform.createRefs(Vector3d.createFrom(origin), Matrix3d.createColumns(vectorX, vectorY, vectorZ));
     return result;
   }
+  /** Create by with matrix from Matrix3d.createRigidFromColumns.
+   * * Has careful logic for building up optional result without allocations.
+   */
+  public static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined {
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder,
+      result ? result._matrix : undefined);
+    if (!matrix)
+      return undefined;
+    if (result) {
+      // The matrix was already defined !!!
+      result._origin.setFrom(origin);
+      return result;
+    }
+    // cleanly capture the matrix and then the point ..
+    result = Transform.createRefs(undefined, matrix);
+    result._origin.setFromPoint3d(origin);
+    return result;
+  }
+
   /** Reinitialize by directly installing origin and columns of the matrix
    */
   public setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined) {

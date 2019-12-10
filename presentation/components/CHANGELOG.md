@@ -1,6 +1,22 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Exposed UnifiedSelectionTreeEventHandler and made it more customizable
+- Handle newly introduced multi-ECInstance nodes
+- Added a favorite property data provider.
+- Make `rulesetId` for PropertyGridDataProvider optional
+- Avoid duplicate `PropertyRecord` names when content has multiple `Field`s with the same name nested under different parent fields.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Update sinon version.
+- Changed ControlledTree specific hooks and HOCs release tags to beta
+- Adjusted UnifiedSelectionTreeEventHandler according changes to ControlledTree events
+- Added useRulesetRegistration hook and refactores usePresentationNodeLoader hook
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

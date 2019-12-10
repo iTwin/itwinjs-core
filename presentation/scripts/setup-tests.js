@@ -32,7 +32,6 @@ beforeEach(function () {
   faker.seed(seed);
 
   // set up snapshot name
-  const testFilePath = currentTest.file;
   const sourceFilePath = currentTest.file.replace("lib\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);

@@ -194,6 +194,9 @@ export class Formatter {
 
     if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
 
+    const precisionScale = Math.pow(10, spec.format.precision + 1);
+    posMagnitude = Math.floor(posMagnitude * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
@@ -304,6 +307,8 @@ export class Formatter {
       }
     } else /* if (usesStops)*/ {
       // we assume that stopping value is always positive
+      posMagnitude = Math.floor(posMagnitude * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+
       const denominator = (Math.pow(10, spec.format.stationOffsetSize!));
       const tVal = Math.floor(posMagnitude); // this is the integer part only
       const hiPart = Math.floor(tVal / denominator);

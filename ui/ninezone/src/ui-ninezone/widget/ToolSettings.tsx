@@ -91,13 +91,11 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
               {this.props.buttons}
             </TitleBar>
           </DragHandle>
-          <div className="nz-content-container">
-            <div
-              className="nz-content"
-              ref={this.props.contentRef}
-            >
-              {this.props.children}
-            </div>
+          <div
+            className="nz-content"
+            ref={this.props.contentRef}
+          >
+            {this.props.children}
           </div>
           {this.props.onResize && (<>
             <ResizeGrip

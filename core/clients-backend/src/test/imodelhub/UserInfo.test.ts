@@ -88,7 +88,7 @@ describe("iModelHubClient UserInfoHandler", () => {
 
     const query = new UserInfoQuery().byIds(
       [requestContexts[0].accessToken.getUserInfo()!.id,
-      requestContexts[1].accessToken.getUserInfo()!.id]);
+        requestContexts[1].accessToken.getUserInfo()!.id]);
     const userInfo = (await imodelHubClient.users.get(requestContexts[0], imodelId, query));
     userInfo.sort((a: HubUserInfo, b: HubUserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);

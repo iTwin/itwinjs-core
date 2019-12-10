@@ -339,11 +339,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
       items.splice(index, 1, entry);
     });
 
-    this.setState((_prevState) => {
-      return {
-        items,
-      };
-    });
+    this.setState({ items });
   }
 
   /**
@@ -401,11 +397,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
       items.splice(index, 1, entry);
     }
 
-    this.setState((_prevState) => {
-      return {
-        items,
-      };
-    });
+    this.setState({ items });
   }
 
   /**
@@ -568,7 +560,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
     event.stopPropagation();
 
     if (this._isMounted)
-      this.setState({ isOptionsOpened: !this.state.isOptionsOpened });
+      this.setState((prevState) => ({ isOptionsOpened: !prevState.isOptionsOpened }));
   }
 
   private _onCloseContextMenu() {
@@ -578,7 +570,9 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
 
   private _onToggleSearchBox = () => {
     if (this._isMounted)
-      this.setState({ showSearchBox: !this.state.showSearchBox }, () => { this._searchBox!.focus(); });
+      this.setState(
+        (prevState) => ({ showSearchBox: !prevState.showSearchBox }),
+        () => { this._searchBox!.focus(); });
   }
 
   private _getMapOnly = () => {
@@ -628,11 +622,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
 
   private _handleSearchValueChanged = (value: string): void => {
     if (this._isMounted)
-      this.setState((_prevState) => {
-        return {
-          filter: value,
-        };
-      });
+      this.setState({ filter: value });
   }
 
   private _onShowMapTypes = (event: any) => {

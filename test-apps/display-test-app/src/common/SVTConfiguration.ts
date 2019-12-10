@@ -14,7 +14,8 @@ export interface SVTConfiguration {
   signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
-  disableInstancing?: boolean;
+  disableInstancing?: boolean; // default false
+  enableImprovedElision?: boolean; // default false
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean;
@@ -23,4 +24,5 @@ export interface SVTConfiguration {
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
+  dpiAwareViewports?: boolean; // default ON
 }

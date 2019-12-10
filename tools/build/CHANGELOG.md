@@ -1,6 +1,17 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Upgrade to @microsoft/api-extractor 7.6.2
+- Code analysis related cleanup
+- Add lint rule to enforce two-space indentation.
+- Added TSLint rules for React setState calls
+- Replaced the noUnusedLocals tsc option with no-unused-variable lint rule.
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

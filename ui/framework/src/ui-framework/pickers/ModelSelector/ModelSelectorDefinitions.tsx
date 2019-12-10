@@ -74,7 +74,6 @@ export interface ModelSelectorWidgetProps {
  * @internal
  */
 export interface ModelSelectorWidgetState {
-  expand: boolean;
   activeGroup?: ModelGroup;
   activeRuleset?: RegisteredRuleset;
   activeView?: Viewport;

@@ -65,8 +65,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 export abstract class CurvePrimitive extends GeometryQuery {
   /** String name for schema properties */
   public readonly geometryCategory = "curvePrimitive";
-    /** String name for schema properties */
-public abstract readonly curvePrimitiveType: CurvePrimitiveType;
+  /** String name for schema properties */
+  public abstract readonly curvePrimitiveType: CurvePrimitiveType;
 
   protected constructor() { super(); }
   /**
@@ -702,7 +702,6 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
     if (this._numThisCurve++ > 0) this.searchInterval();
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
-    this._fractionA = this._fractionB;
   }
 }
 
@@ -912,7 +911,6 @@ class ClosestPointStrokeHandler extends NewtonRotRStrokeHandler implements IStro
     this.evaluateB(fraction, data);
     if (this._numThisCurve++ > 0) this.searchInterval();
     this._functionA = this._functionB;
-    this._fractionA = this._fractionB;
     this._fractionA = this._fractionB;
   }
   public announcePointTangent(point: Point3d, fraction: number, tangent: Vector3d) {

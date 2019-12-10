@@ -12,7 +12,7 @@ import { ControlledTreeWithModelSourceProps } from "./WithModelSource";
 
 /**
  * Props that are injected to the ControlledTreeWithUnifiedSelection HOC component.
- * @alpha
+ * @beta
  */
 export interface ControlledTreeWithUnifiedSelectionProps {
   /** Node loader used to load nodes for tree. */
@@ -26,7 +26,7 @@ export interface ControlledTreeWithUnifiedSelectionProps {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
  * wrap supplied tree component in [[controlledTreeWithModelSource]] HOC
  *
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>) {

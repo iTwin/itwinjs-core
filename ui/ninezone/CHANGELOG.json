@@ -2,6 +2,51 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-ninezone_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Invoke onTargetChanged when component unmounts."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Added support for NotifyMessageDetails.displayTime for Toast messages"
+          },
+          {
+            "comment": "Ability to determine available tool settings width."
+          },
+          {
+            "comment": "Fix code analysis report issues."
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Expandable group touch support."
+          },
+          {
+            "comment": "Use typescript as webpack configuration language."
+          },
+          {
+            "comment": "Ability to set zone width from zones manager."
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Added ConditionalField and FooterModeField components. StatusBar responsive changes."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/ui-ninezone_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

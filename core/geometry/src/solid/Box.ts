@@ -199,14 +199,16 @@ export class Box extends SolidPrimitive {
     const ay = this._baseY;
     const bx = this._topX;
     const by = this._topY;
-    return [transform.multiplyXYZ(0, 0, 0),
-    transform.multiplyXYZ(ax, 0, 0),
-    transform.multiplyXYZ(0, ay, 0),
-    transform.multiplyXYZ(ax, ay, 0),
-    transform.multiplyXYZ(0, 0, 1),
-    transform.multiplyXYZ(bx, 0, 1),
-    transform.multiplyXYZ(0, by, 1),
-    transform.multiplyXYZ(bx, by, 1)];
+    return [
+      transform.multiplyXYZ(0, 0, 0),
+      transform.multiplyXYZ(ax, 0, 0),
+      transform.multiplyXYZ(0, ay, 0),
+      transform.multiplyXYZ(ax, ay, 0),
+      transform.multiplyXYZ(0, 0, 1),
+      transform.multiplyXYZ(bx, 0, 1),
+      transform.multiplyXYZ(0, by, 1),
+      transform.multiplyXYZ(bx, by, 1),
+    ];
   }
 
   /**

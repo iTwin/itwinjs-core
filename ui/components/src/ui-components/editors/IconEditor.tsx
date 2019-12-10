@@ -6,8 +6,10 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, IconListEditorParams,
-         PropertyEditorParams, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
+import {
+  PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, IconListEditorParams,
+  PropertyEditorParams, PropertyEditorParamTypes,
+} from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
@@ -49,7 +51,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
         if (iconParams.numColumns)
           numColumns = iconParams.numColumns;
         if (iconParams.iconValues)
-          iconParams.iconValues.forEach((i: string) => icons.push(i) );
+          iconParams.iconValues.forEach((i: string) => icons.push(i));
       }
     }
 
@@ -148,7 +150,8 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
           icon={icon}
           icons={icons}
           numColumns={numColumns}
-          disabled={this.state.isDisabled ? true : false}
+          disabled={this.state.isDisabled}
+          readonly={this.state.readonly}
           onIconChange={this._onIconChange}
           data-testid="components-icon-editor" />
       </div>

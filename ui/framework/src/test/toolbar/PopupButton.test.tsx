@@ -117,7 +117,7 @@ describe("<PopupButton />", async () => {
       {() => <div />}
     </PopupButton>);
     sut.setState({ isPressed: true });
-    sut.should.matchSnapshot();
+    sut.dive().should.matchSnapshot();
   });
 
   it("should close panel with render prop arg", () => {
@@ -137,7 +137,7 @@ describe("<PopupButton />", async () => {
       <div />
     </PopupButton>);
     sut.setState({ isPressed: true });
-    sut.should.matchSnapshot();
+    sut.dive().should.matchSnapshot();
   });
 
   it("should minimize on outside click", () => {

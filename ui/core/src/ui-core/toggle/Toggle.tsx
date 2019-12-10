@@ -79,7 +79,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
 
   public componentDidUpdate(prevProps: ToggleProps) {
     if (this.props.isOn !== prevProps.isOn) {
-      this.setState({ checked: this.props.isOn ? true : false });
+      this.setState((_, props) => ({ checked: props.isOn ? true : false }));
       return;
     }
     if (this.props.disabled !== prevProps.disabled)
@@ -88,7 +88,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
 
   private _handleChange = () => {
     this.setState(
-      { checked: !this.state.checked },
+      (prevState) => ({ checked: !prevState.checked }),
       () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }
 

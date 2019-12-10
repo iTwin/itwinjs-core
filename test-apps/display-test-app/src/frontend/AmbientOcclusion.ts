@@ -228,6 +228,6 @@ export class AmbientOcclusionEditor {
   }
 
   private sync(): void {
-    this._vp.synchWithView(true);
+    this._vp.synchWithView(false);
   }
 }

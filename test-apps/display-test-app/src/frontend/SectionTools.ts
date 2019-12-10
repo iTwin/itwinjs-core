@@ -25,13 +25,12 @@ function setFocusToHome(): void {
 export class SectionsPanel extends ToolBarDropDown {
   private readonly _vp: ScreenViewport;
   private readonly _element: HTMLElement;
-  private _toolName: string = "ViewClip.ByPlane";
+  private _toolName = "ViewClip.ByPlane";
 
   public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
     this._vp = vp;
-    this._element = document.createElement("div");
-    this._element.className = "toolMenu";
+    this._element = IModelApp.makeHTMLElement("div", { className: "toolMenu", parent });
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
 
@@ -49,7 +48,7 @@ export class SectionsPanel extends ToolBarDropDown {
       ],
     });
 
-    const div = document.createElement("div");
+    const div = IModelApp.makeHTMLElement("div", { parent: this._element });
     div.style.textAlign = "center";
     createButton({
       value: "Define",
@@ -73,8 +72,6 @@ export class SectionsPanel extends ToolBarDropDown {
       tooltip: "Clear clips",
     });
 
-    this._element.appendChild(div);
-    parent.appendChild(this._element);
   }
 
   protected _open(): void { this._element.style.display = "block"; }

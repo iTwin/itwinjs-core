@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-
+import { useTargeted } from "../../../../../base/useTargeted";
 import "./Tool.scss";
 
 /** Properties of [[GroupTool]] component.
@@ -34,50 +34,46 @@ export interface GroupToolProps extends CommonProps {
   badge?: React.ReactNode;
 }
 
+function GroupToolComponent(props: GroupToolProps) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const targeted = useTargeted(ref);
+  const itemClassName = classnames(
+    "nz-toolbar-item-expandable-group-tool-item",
+    props.isActive && "nz-active",
+    props.isFocused && "nz-focused",
+    props.isDisabled && "nz-disabled",
+    props.onPointerUp && "nz-pointer-up",
+    targeted && "nz-targeted",
+    props.className);
+  return (
+    <div
+      className={itemClassName}
+      onClick={props.isDisabled ? undefined : props.onClick}
+      onPointerUp={props.isDisabled ? undefined : props.onPointerUp}
+      ref={ref}
+      style={props.style}
+    >
+      <div className="nz-icon">
+        {props.icon}
+        {props.badge &&
+          <div className="nz-badge">
+            {props.badge}
+          </div>
+        }
+      </div>
+      <div className="nz-label">
+        {props.label}
+      </div>
+      {props.children}
+    </div>
+  );
+}
+
 /** Tool entry of tool group panel. Used in [[GroupColumn]].
  * @alpha
  */
 export class GroupTool extends React.PureComponent<GroupToolProps> {
   public render() {
-    const itemClassName = classnames(
-      "nz-toolbar-item-expandable-group-tool-item",
-      this.props.isActive && "nz-active",
-      this.props.isFocused && "nz-focused",
-      this.props.isDisabled && "nz-disabled",
-      this.props.onPointerUp && "nz-pointer-up",
-      this.props.className);
-
-    return (
-      <div
-        className={itemClassName}
-        style={this.props.style}
-        onClick={this._handleClick}
-        onPointerUp={this._handlePointerUp}
-      >
-        <div className="nz-icon">
-          {this.props.icon}
-          {this.props.badge &&
-            <div className="nz-badge">
-              {this.props.badge}
-            </div>
-          }
-        </div>
-        <div className="nz-label">
-          {this.props.label}
-        </div>
-        {this.props.children}
-      </div>
-    );
-  }
-
-  private _handleClick = () => {
-    if (this.props.isDisabled)
-      return;
-
-    this.props.onClick && this.props.onClick();
-  }
-
-  private _handlePointerUp = () => {
-    !this.props.isDisabled && this.props.onPointerUp && this.props.onPointerUp();
+    return <GroupToolComponent {...this.props} />;
   }
 }

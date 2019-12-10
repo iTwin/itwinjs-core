@@ -7,26 +7,10 @@
 .nz-toolbar-item-expandable-group-nested {
   position: relative;
 
-  .nz-back-arrow-container {
-    width: 15px;
-    height: 20px;
+  .nz-back {
     position: absolute;
     left: 10px;
     top: 8px;
-
-    &:hover {
-      cursor: pointer;
-
-      > * {
-        color: $buic-foreground-primary;
-      }
-    }
-
-    > * {
-      position: relative;
-      left: 3px;
-      top: 3px;
-    }
   }
 
   > .nz-toolbar-item-expandable-group-title {

@@ -189,7 +189,10 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={250}
             widgets={[
               <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
                 syncEventIds={[SampleAppUiActionId.setTestProperty]}
@@ -208,21 +211,27 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories] }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true }} fillZone={true} />,
               <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
           />
         }
         bottomLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={450}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
@@ -294,7 +303,7 @@ class AdditionalTools {
     labelKey: "SampleApp:buttons.toolGroup",
     iconSpec: "icon-placeholder",
     items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-    AppTools.item6, AppTools.item7, AppTools.item8],
+      AppTools.item6, AppTools.item7, AppTools.item8],
     // direction: Direction.Bottom,
     itemsInColumn: 7,
   });

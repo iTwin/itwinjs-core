@@ -167,7 +167,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
       if (validateResult.encounteredError) {
-        this.setState({ isInvalid: validateResult.encounteredError });
+        // this.setState({ isInvalid: validateResult.encounteredError });
         // TODO - display InputField
         return !validateResult.encounteredError;
       }

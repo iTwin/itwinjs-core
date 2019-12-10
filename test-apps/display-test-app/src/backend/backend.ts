@@ -43,6 +43,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
+  if (undefined !== process.env.SVT_IMPROVED_ELISION)
+    configuration.enableImprovedElision = true;
+
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
@@ -66,6 +69,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
     configuration.preserveShaderSourceCode = true;
+
+  if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
+    configuration.dpiAwareViewports = false;
 
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)

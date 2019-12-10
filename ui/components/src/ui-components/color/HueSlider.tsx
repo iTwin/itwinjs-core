@@ -188,9 +188,9 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
       left: `${(this.props.hsv.h * 100) / 360}%`,
     } : {
-        left: `0px`,
-        top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
-      };
+      left: `0px`,
+      top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
+    };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="hue-container">

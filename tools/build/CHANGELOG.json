@@ -2,6 +2,30 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/build-tools_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to @microsoft/api-extractor 7.6.2"
+          },
+          {
+            "comment": "Code analysis related cleanup"
+          },
+          {
+            "comment": "Add lint rule to enforce two-space indentation."
+          },
+          {
+            "comment": "Added TSLint rules for React setState calls"
+          },
+          {
+            "comment": "Replaced the noUnusedLocals tsc option with no-unused-variable lint rule."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/build-tools_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

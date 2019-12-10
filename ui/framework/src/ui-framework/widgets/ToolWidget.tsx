@@ -91,7 +91,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 
   public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) {
     if (this.props !== prevProps) {
-      this.setState({ toolWidgetDef: new ToolWidgetDef(this.props) });
+      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) }));
     }
   }
 

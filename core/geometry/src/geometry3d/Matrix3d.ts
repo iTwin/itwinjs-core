@@ -371,10 +371,14 @@ export class Matrix3d implements BeJSONFunctions {
   /** Set the matrix to all zeros. */
   public setZero() { this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0); this.inverseState = InverseMatrixState.singular; }
   /** copy contents from another matrix. */
-  public setFrom(other: Matrix3d) {
-    for (let i = 0; i < 9; i++)
-      this.coffs[i] = other.coffs[i];
-    this.inverseState = InverseMatrixState.unknown; // we don't trust the other .. . .
+  public setFrom(other: Matrix3d | undefined) {
+    if (other === undefined) {
+      this.setIdentity();
+    } else {
+      for (let i = 0; i < 9; i++)
+        this.coffs[i] = other.coffs[i];
+      this.inverseState = InverseMatrixState.unknown; // we don't trust the other .. . .}
+    }
   }
 
   /** return a clone of this matrix.
@@ -1642,8 +1646,8 @@ export class Matrix3d implements BeJSONFunctions {
     const coffs = this.coffs;
     this.inverseState = InverseMatrixState.inverseStored;
     this.inverseCoffs = Float64Array.from([coffs[0], coffs[3], coffs[6],
-    coffs[1], coffs[4], coffs[7],
-    coffs[2], coffs[5], coffs[8]]);
+      coffs[1], coffs[4], coffs[7],
+      coffs[2], coffs[5], coffs[8]]);
   }
 
   /* Alternate implementation of computedCachedInverse - more direct addressing of arrays.

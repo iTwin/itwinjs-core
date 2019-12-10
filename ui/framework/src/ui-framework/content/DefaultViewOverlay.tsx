@@ -47,7 +47,9 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     setImmediate(() => {
       // reset to beginning of animation
       if (this.state.dataProvider) {
-        this.state.dataProvider.animationFraction = 0;
+        if (this.state.dataProvider.onAnimationFractionChanged)
+          this.state.dataProvider.onAnimationFractionChanged(0);
+
         if (this.props.viewport)
           this.props.viewport.animationFraction = 0;
       }

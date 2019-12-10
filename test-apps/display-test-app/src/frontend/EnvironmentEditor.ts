@@ -266,10 +266,9 @@ export class EnvironmentEditor {
 
   private resetEnvironmentEditor(): void {
     const skyEnvironment = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky;
-    (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
-      {
-        sky: { display: (skyEnvironment as SkyBox).display },
-      });
+    (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment({
+      sky: { display: (skyEnvironment as SkyBox).display },
+    });
     this.sync();
     this.updateEnvironmentEditorUI(this._vp.view);
   }
@@ -300,7 +299,7 @@ export class EnvironmentEditor {
   }
 
   private sync(): void {
-    this._vp.synchWithView(true);
+    this._vp.synchWithView(false);
   }
 
   private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent: HTMLElement, id: string): CheckBox {

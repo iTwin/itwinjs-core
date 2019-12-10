@@ -5,11 +5,11 @@ Returns content for instances related to the selected (input) instances.
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
--|-|-|-|-|-
+-|-|-|-|-
 *Filtering* |
-`relationships` | No* | `MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[]` | `[]` | List of ECRelationship specifications to follow when looking for related instances. Optional if `relatedClasses` is specified.
-`relatedClasses` | No* | `MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[]` | `[]` | List of related instance ECClass specifications. Optional if `relationships` is specified.
-`requiredDirection` | No | `"Forward" | "Backward" | "Both"` | `"Both"` | Relationship direction to follow when walking from the selected (input) instance.
+`relationships` | No* | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | List of ECRelationship specifications to follow when looking for related instances. Optional if `relatedClasses` is specified.
+`relatedClasses` | No* | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | List of related instance ECClass specifications. Optional if `relationships` is specified.
+`requiredDirection` | No | `"Forward" \| "Backward" \| "Both"` | `"Both"` | Relationship direction to follow when walking from the selected (input) instance.
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
 `skipRelatedLevel` | No | `number` | `0` | Skips defined level of related items and shows next level related items.
 `isRecursive` | No | `boolean` | `false` | Walks the specified relationships recursively to find related instances. **Note:** Can't be used together with `skipRelatedLevel`. **Warning:** Using this specification has significant negative performance impact.

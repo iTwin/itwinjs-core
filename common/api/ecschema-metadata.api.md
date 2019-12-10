@@ -2289,7 +2289,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, any, any] | undefined;
@@ -2301,7 +2301,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [Schema], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [Schema] | undefined;
@@ -2945,6 +2945,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     registerRuleSet(ruleSet: IRuleSet): void;
     registerRuleSuppressionSet(suppressionSet: IRuleSuppressionSet): void;
     readonly ruleSets: RuleSetArray;
+    // (undocumented)
+    readonly suppressionSet: IRuleSuppressionSet | undefined;
     visitClass(ecClass: AnyClass): Promise<void>;
     visitConstant(constant: Constant): Promise<void>;
     visitCustomAttributeClass(customAttribute: CustomAttributeClass): Promise<void>;

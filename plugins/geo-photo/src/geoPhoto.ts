@@ -175,18 +175,20 @@ export class GeoPhotoPlugin extends Plugin {
       return;
     }
 
+    if (this.uiProvider)
+      this.uiProvider.showGeoPhotoDialog();
+
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
     let photoTree: PhotoTree | undefined;
     if (undefined === geoPhotos) {
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoPlugin", "Settings", false, iModel.iModelToken.contextId, iModel.iModelToken.iModelId);
 
-      if (this.uiProvider)
-        this.uiProvider.showGeoPhotoDialog();
-
+      /* ------------- Not needed now that we have the dialog box to show progress
       let message: string = this.i18n.translate("geoPhoto:messages.GatheringPhotos");
       let msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
       IModelApp.notifications.outputMessage(msgDetails);
+      ------------------------------------------------------------------------------- */
 
       const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel, this.uiProvider);
       geoPhotos = new GeoPhotos(this, treeHandler!, iModel, this.uiProvider);
@@ -201,16 +203,21 @@ export class GeoPhotoPlugin extends Plugin {
         }
       }
 
+      /* ------------- Not needed now that we have the dialog box to show progress
       const photoCount: number = geoPhotos.getPhotoCount();
       message = this.i18n.translate("geoPhoto:messages.GeneratingMarkers", { photoCount });
       msgDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
       IModelApp.notifications.outputMessage(msgDetails);
+      ------------------------------------------------------------------------------- */
     }
+
     await geoPhotos.showMarkers();
+
     if (photoTree && this.uiProvider) {
       this.uiProvider.setLoadPhase(2);
       this.uiProvider.syncTreeData(photoTree);
       this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
+      this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
     }
   }
 
@@ -229,6 +236,12 @@ export class GeoPhotoPlugin extends Plugin {
     const geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
     if (undefined !== geoPhotos)
       geoPhotos.removeMarkers();
+  }
+
+  public clearCloseNeighborData(iModel: IModelConnection): void {
+    const geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
+    if ((undefined !== geoPhotos) && (undefined !== geoPhotos.photoTree))
+      geoPhotos.photoTree.clearCloseNeighborData();
   }
 
   // interprets the argument
@@ -273,6 +286,7 @@ export class GeoPhotoPlugin extends Plugin {
     if (this.showingMarkers(view)) {
       this.hideGeoPhotoMarkers(view.iModel);
       this.showGeoPhotoMarkers(view.iModel).catch((_err) => { });
+      this.clearCloseNeighborData(view.iModel);
     }
     this.saveSettings().catch((_err) => { });
   }

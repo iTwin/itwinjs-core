@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
 public;AuthorizedBackendRequestContext 
@@ -36,6 +37,7 @@ beta;ChangeSummaryManager
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
+internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 beta;ComparisonOption

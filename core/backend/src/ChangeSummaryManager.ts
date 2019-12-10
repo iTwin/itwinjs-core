@@ -416,22 +416,22 @@ export class ChangeSummaryManager {
 
     // query instance changes
     const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
-            ic.OpCode, ic.IsIndirect FROM ecchange.change.InstanceChange ic JOIN main.meta.ECClassDef c ON c.ECInstanceId = ic.ChangedInstance.ClassId
-          JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `, (stmt: ECSqlStatement) => {
-        stmt.bindId(1, instanceChangeId);
-        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
+      ic.OpCode, ic.IsIndirect FROM ecchange.change.InstanceChange ic JOIN main.meta.ECClassDef c ON c.ECInstanceId = ic.ChangedInstance.ClassId
+      JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `, (stmt: ECSqlStatement) => {
+      stmt.bindId(1, instanceChangeId);
+      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+        throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
 
-        const row = stmt.getRow();
-        const changedInstanceId: Id64String = row.changedInstanceId;
-        const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
-        const op: ChangeOpCode = row.opCode as ChangeOpCode;
+      const row = stmt.getRow();
+      const changedInstanceId: Id64String = row.changedInstanceId;
+      const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
+      const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
-        return {
-          id: instanceChangeId, summaryId: row.summaryId, changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect,
-        };
-      });
+      return {
+        id: instanceChangeId, summaryId: row.summaryId, changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+        opCode: op, isIndirect: row.isIndirect,
+      };
+    });
 
     return instanceChange;
   }

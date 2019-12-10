@@ -62,8 +62,7 @@ export class SelectionScopesManager {
    * @param scope Selection scope to apply
    */
   public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet> {
-    // get scope id
-    const scopeId = (typeof scope === "string") ? scope : scope.id;
+    const scopeId = getScopeId(scope);
 
     // convert ids input to array
     if (typeof ids === "string")
@@ -86,4 +85,17 @@ export class SelectionScopesManager {
     batchKeys.forEach((bk) => keys.add(bk));
     return keys;
   }
+}
+
+/**
+ * Determines the scope id
+ * @param scope Selection scope
+ * @public
+ */
+export function getScopeId(scope: SelectionScope | string | undefined): string {
+  if (!scope)
+    return "element";
+  if (typeof scope === "string")
+    return scope;
+  return scope.id;
 }

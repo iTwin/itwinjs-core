@@ -22,13 +22,14 @@
     }
   </style>
   <link rel="stylesheet" type="text/css" href="index.css">
-  
+
   <!-- check the browser to verify it is supported. -->
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
 
   <!-- get the IModelJs loader to load the system -->
   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
-  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
+    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 
 <body>
@@ -53,13 +54,6 @@
       <div class="bim-spinner"></div>
     </div>
     <div class="app-surface" id="app-surface">
-      <!-- form>
-        <textarea class="console-output" id="console-output" readonly="true">
-This is the text area where console commands go.
-Multi-line
-Need bottom of text aligned to bottom of parent.
-        </textarea>
-      </form -->
     </div>
     <div class="bottomdiv">
       <span class="statusspan" id="showstatus"></span>

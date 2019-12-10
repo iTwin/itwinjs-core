@@ -47,7 +47,7 @@ describe("Viewport", () => {
 
   it("Viewport", async () => {
     const vpView = spatialView.clone();
-    const vp = ScreenViewport.create(viewDiv!, vpView);
+    const vp = ScreenViewport.create(viewDiv, vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn, "camera is off");
@@ -1084,8 +1084,8 @@ describe("Per-model category visibility overrides", () => {
     expect(nIterations).to.equal(3);
 
     nIterations = 0;
-    const cats1c = [ new Set<string>(), new Set<string>() ];
-    const cats1d = [ new Set<string>(), new Set<string>() ];
+    const cats1c = [new Set<string>(), new Set<string>()];
+    const cats1d = [new Set<string>(), new Set<string>()];
 
     completed = pmcv.forEachOverride((modelId, catId, vis) => {
       expect(modelId === "0x1c" || modelId === "0x1d").to.be.true;

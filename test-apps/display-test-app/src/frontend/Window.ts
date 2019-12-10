@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Surface } from "./Surface";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 class DragState {
   private _newX = 0;
@@ -137,24 +138,16 @@ class WindowHeader {
 
   public constructor(window: Window, parent: HTMLElement, title?: string) {
     this.window = window;
-    this.element = document.createElement("div");
-    this.element.className = "floating-window-header";
+    this.element = IModelApp.makeHTMLElement("div", { className: "floating-window-header", parent });
 
-    this._titleElement = document.createElement("span");
-    this.element.appendChild(this._titleElement);
+    this._titleElement = IModelApp.makeHTMLElement("span", { parent: this.element });
     this.setTitle(title);
 
-    this._closeElement = document.createElement("div");
-    this._closeElement.className = "floating-window-header-close";
+    this._closeElement = IModelApp.makeHTMLElement("div", { className: "floating-window-header-close", parent: this.element });
     this._closeElement.onclick = () => this.window.surface.close(this.window);
-    this.element.appendChild(this._closeElement);
     this.hideCloseWidget(!this.window.isCloseable);
 
-    this._resizerElement = document.createElement("div");
-    this._resizerElement.className = "floating-window-header-resize";
-    this.element.appendChild(this._resizerElement);
-
-    parent.appendChild(this.element);
+    this._resizerElement = IModelApp.makeHTMLElement("div", { className: "floating-window-header-resize", parent: this.element });
 
     // Left-drag => move
     new DragState(window, this.element);
@@ -357,8 +350,7 @@ export abstract class Window {
 
   public constructor(surface: Surface, props?: WindowProps) {
     this.surface = surface;
-    this.container = document.createElement("div");
-    this.container.className = "floating-window-container";
+    this.container = IModelApp.makeHTMLElement("div", { className: "floating-window-container" });
 
     this.container.style.top = 0 + "px";
     this.container.style.left = 0 + "px";
@@ -376,10 +368,7 @@ export abstract class Window {
     }
 
     this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
-
-    this.contentDiv = document.createElement("div");
-    this.contentDiv.className = "floating-window";
-    this.container.appendChild(this.contentDiv);
+    this.contentDiv = IModelApp.makeHTMLElement("div", { className: "floating-window", parent: this.container });
   }
 
   // Do not set directly - use Surface.togglePin(window)

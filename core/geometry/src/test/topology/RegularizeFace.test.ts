@@ -564,10 +564,12 @@ function testStars(method: number, filename: string) {
   for (const degrees of [0, 15, 163.2132121]) {
     const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
     for (const numOuterStarPoint of [5, 7]) {
-      for (const loops of [Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 0, true),
-      Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 1, true),
-      Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 3, true),
-      Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 5, true)]) {
+      for (const loops of [
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 0, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 1, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 3, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 5, true),
+      ]) {
         // console.log([outputX0, outputY0]);
         transform.multiplyPoint3dArrayArrayInPlace(loops);
         for (const loop of loops)

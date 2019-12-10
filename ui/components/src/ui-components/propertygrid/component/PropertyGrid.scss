@@ -20,6 +20,10 @@
   grid-row-gap: 6px;
   user-select: none;
   color: $buic-foreground-body;
+
+  > div {
+    min-width: 100%;
+  }
 }
 
 .components-property-grid-wrapper {

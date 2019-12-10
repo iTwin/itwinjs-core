@@ -138,10 +138,14 @@ async function main() {
     logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
+    dpiAwareViewports: false !== configuration.dpiAwareViewports,
   };
 
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
+
+  if (configuration.enableImprovedElision)
+    DisplayTestApp.tileAdminProps.enableImprovedElision = true;
 
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
@@ -224,7 +228,13 @@ async function documentLoaded(): Promise<void> {
 async function initView(iModel: IModelConnection | undefined) {
   // open the specified view
   showStatus("opening View", configuration.viewName);
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!);
+
+  const fileSelector = undefined !== configuration.standalonePath ? {
+    directory: configuration.standalonePath,
+    input: document.getElementById("browserFileSelector") as HTMLInputElement,
+  } : undefined;
+
+  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...
@@ -234,7 +244,6 @@ async function initView(iModel: IModelConnection | undefined) {
     const viewer = await DisplayTestApp.surface.createViewer({
       iModel,
       defaultViewName: configuration.viewName,
-      fileDirectoryPath: configuration.standalonePath,
     });
 
     viewer.dock(Dock.Full);

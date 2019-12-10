@@ -52,7 +52,7 @@ export class RelatedElement implements RelatedElementProps {
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
   /** Used to *null out* an existing navigation relationship. */
-  public static readonly none = new RelatedElement({ id: Id64.invalid, relClassName: "" });
+  public static readonly none = new RelatedElement({ id: Id64.invalid });
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64String {

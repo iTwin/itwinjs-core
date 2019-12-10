@@ -65,6 +65,6 @@ describe("CoreToolDefinitions", () => {
   it("should render KeyInBrowser", () => {
     const sut = shallow<PopupButton>(CoreTools.keyinBrowserButtonItemDef.reactElement as React.ReactElement);
     sut.setState({ isPressed: true });
-    sut.should.matchSnapshot();
+    sut.dive().should.matchSnapshot();
   });
 });

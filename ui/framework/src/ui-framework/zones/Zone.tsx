@@ -48,6 +48,8 @@ export interface ZoneProps extends CommonProps {
   applicationData?: any;
   /** Indicates with which other zone to merge. */
   mergeWithZone?: ZoneLocation;
+  /** Describes preferred initial width of the zone. */
+  initialWidth?: number;
 
   /** Properties for the Widgets in this Zone. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
@@ -96,6 +98,7 @@ export class Zone extends React.Component<ZoneProps> {
       zoneDef.applicationData = props.applicationData;
     if (props.mergeWithZone !== undefined)
       zoneDef.mergeWithZone = props.mergeWithZone;
+    zoneDef.setInitialWidth(props.initialWidth);
 
     // istanbul ignore else
     if (props.widgets) {
@@ -218,7 +221,8 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (!this.props.runtimeProps)
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
       return;
 
     const widgetDef = args.widgetDef;
@@ -226,7 +230,7 @@ export class Zone extends React.Component<ZoneProps> {
     if (!id)
       return;
 
-    const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(id);
+    const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(id);
     // istanbul ignore else
     if (!zoneDef)
       return;
@@ -234,10 +238,16 @@ export class Zone extends React.Component<ZoneProps> {
     const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible || wd === widgetDef);
     for (let index = 0; index < visibleWidgets.length; index++) {
       const wDef = visibleWidgets[index];
-      if (wDef === widgetDef) {
-        this.props.runtimeProps.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
+      if (wDef !== widgetDef)
+        continue;
+
+      if (widgetDef.state === WidgetState.Hidden && index < runtimeProps.activeTabIndex) {
+        // Need to decrease active tab index, since removed tab was rendered before active tab and we want to maintain active tab.
+        runtimeProps.widgetChangeHandler.handleTabClick(id, runtimeProps.activeTabIndex - 1);
         break;
       }
+      runtimeProps.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
+      break;
     }
   }
 
@@ -245,17 +255,10 @@ export class Zone extends React.Component<ZoneProps> {
     if (!this.props.runtimeProps)
       return undefined;
 
-    // istanbul ignore else
-    if (this.props.runtimeProps.zone.widgets.length > 0) {
-      for (const wId of this.props.runtimeProps.zone.widgets) {
-        const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(wId);
-
-        // istanbul ignore else
-        if (zoneDef) {
-          if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
-            return wId;
-        }
-      }
+    for (const wId of this.props.runtimeProps.zone.widgets) {
+      const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(wId);
+      if (zoneDef && zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
+        return wId;
     }
 
     return undefined;

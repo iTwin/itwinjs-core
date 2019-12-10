@@ -13,6 +13,7 @@ export { IUnifiedSelectionComponent } from "./common/IUnifiedSelectionComponent"
 export { ContentBuilder } from "./common/ContentBuilder";
 export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProvidersFactory";
+export { useRulesetRegistration } from "./hooks/UseRulesetRegistration";
 
 /**
  * @module PropertyGrid
@@ -22,6 +23,14 @@ export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProviders
  */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
+
+/**
+ * @module FavoriteProperties
+ *
+ * @docs-group-description FavoriteProperties
+ * Types related to `FavoriteProperties` component in `@bentley/ui-components` package.
+ */
+export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./favorite-properties/DataProvider";
 
 /**
  * @module Table
@@ -42,12 +51,12 @@ export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
 export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
-export { useControlledTreeUnifiedSelection } from "./tree/controlled/UseUnifiedSelection";
+export { useControlledTreeUnifiedSelection, UnifiedSelectionTreeEventHandler } from "./tree/controlled/UseUnifiedSelection";
 export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
 export { controlledTreeWithModelSource, ControlledTreeWithModelSourceProps } from "./tree/controlled/WithModelSource";
-export { usePresentationNodeLoader } from "./tree/controlled/TreeHooks";
+export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./tree/controlled/TreeHooks";
 
 /**
  * @module Viewport

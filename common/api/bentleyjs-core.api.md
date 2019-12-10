@@ -34,6 +34,7 @@ export function base64StringToUint8Array(base64: string): Uint8Array;
 
 // @public
 export class BeDuration {
+    executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T>;
     static fromMilliseconds(milliseconds: number): BeDuration;
     static fromSeconds(seconds: number): BeDuration;
     readonly isTowardsFuture: boolean;
@@ -42,9 +43,11 @@ export class BeDuration {
     readonly milliseconds: number;
     minus(other: BeDuration): BeDuration;
     plus(other: BeDuration): BeDuration;
+    static race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void>;
     // (undocumented)
     readonly seconds: number;
     static wait(ms: number): Promise<void>;
+    wait(): Promise<void>;
 }
 
 // @public
@@ -422,6 +425,9 @@ export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
 export type DisposeFunc = () => void;
+
+// @internal
+export const electronRenderer: any;
 
 // @public
 export class Entry<K, V> {
@@ -854,6 +860,9 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
 }
 
+// @internal
+export const isElectronRenderer: boolean;
+
 // @public
 export namespace JsonUtils {
     export function asArray(json: any): any;
@@ -1052,6 +1061,9 @@ export enum RepositoryStatus {
     Success = 0,
     SyncError = 86019
 }
+
+// @internal
+export function requireInElectronRenderer(moduleName: string): any;
 
 // @beta
 export enum RpcInterfaceStatus {

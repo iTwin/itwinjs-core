@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;FavoriteProperties
 beta;FavoritePropertiesManager
+public;getScopeId(scope: SelectionScope | string | undefined): string
 alpha;HiliteSet
 alpha;HiliteSetProvider
 internal;IFavoritePropertiesStorage
@@ -18,6 +19,7 @@ public;SelectionChangeEventArgs
 public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
 public;SelectionChangeType
 public;SelectionHandler 
+internal;SelectionHelper
 public;SelectionManager 
 public;SelectionManagerProps
 public;SelectionScopesManager

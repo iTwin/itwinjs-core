@@ -4,13 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, treeWithUnifiedSelection } from "@bentley/presentation-components";
-import { Tree } from "@bentley/ui-components";
+import { usePresentationNodeLoader, useControlledTreeUnifiedSelection } from "@bentley/presentation-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
-
-// create a HOC tree component that supports unified selection
-// tslint:disable-next-line:variable-name
-const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
+import { ControlledTree, SelectionMode, useModelSource, TreeEventHandler, useVisibleTreeNodes } from "@bentley/ui-components";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -86,10 +82,37 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
 
   public render(): React.ReactNode {
     if (this.props.iModelConnection && this.props.rulesetId)
-      return <UnifiedSelectionTree dataProvider={new PresentationTreeDataProvider(this.props.iModelConnection, this.props.rulesetId)} />;
+      return <NavigationTree iModelConnection={this.props.iModelConnection} rulesetId={this.props.rulesetId} />;
     else
       return this.renderVariousControls();
   }
 }
+
+interface NavigationTreeProps {
+  iModelConnection: IModelConnection;
+  rulesetId: string;
+}
+
+// tslint:disable-next-line: variable-name
+const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProps) => {
+  const nodeLoader = usePresentationNodeLoader({
+    imodel: props.iModelConnection,
+    rulesetId: props.rulesetId,
+    pageSize: 20,
+  });
+  const modelSource = useModelSource(nodeLoader)!;
+  const eventHandler = React.useMemo(() => new TreeEventHandler({ modelSource, nodeLoader, collapsedChildrenDisposalEnabled: true }), [modelSource, nodeLoader]);
+  const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(modelSource, eventHandler, nodeLoader.getDataProvider());
+  const visibleNodes = useVisibleTreeNodes(modelSource);
+
+  return (
+    <ControlledTree
+      visibleNodes={visibleNodes}
+      nodeLoader={nodeLoader}
+      selectionMode={SelectionMode.Single}
+      treeEvents={unifiedSelectionEventHandler}
+    />
+  );
+};
 
 ConfigurableUiManager.registerControl("NavigationTreeWidget", NavigationTreeWidgetControl);

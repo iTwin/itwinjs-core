@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Updated to addon 9.1.3
+- Added AliCloud tile cache service
+- Added framework to run imodeljs-backend test on ios using appcenter
+- Setup OidcDesktopClient for Electron use cases. 
+- fix warnings from static analysis
+- Enabling testing code for updating LR aspects after fix in native side.
+- Addressing typo in a couple of members, making them match the schema properly.
+- Avoid concurrent tile uploads
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

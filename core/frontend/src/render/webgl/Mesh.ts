@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
@@ -27,9 +27,10 @@ import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
-export class MeshData implements IDisposable {
+export class MeshData implements WebGlDisposable {
   public readonly edgeWidth: number;
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
@@ -69,6 +70,8 @@ export class MeshData implements IDisposable {
     const lut = VertexLUT.createFromVertexTable(params.vertices, params.auxChannels);
     return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
+
+  public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
 
   public dispose() {
     dispose(this.lut);
@@ -132,6 +135,8 @@ export class MeshGraphic extends Graphic {
     if (undefined !== edges.polylines)
       this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!), instances);
   }
+
+  public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
 
   public dispose() {
     dispose(this.meshData);
@@ -222,6 +227,12 @@ export class EdgeGeometry extends MeshGeometry {
     return undefined !== indexBuffer && undefined !== endPointBuffer ? new EdgeGeometry(indexBuffer, endPointBuffer, edges.indices.length, mesh) : undefined;
   }
 
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this._indices.isDisposed
+      && this._endPointAndQuadIndices.isDisposed;
+  }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this._indices);
@@ -275,9 +286,11 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     return undefined !== indexBuffer && undefined !== endPointBuffer && undefined !== normalsBuffer ? new SilhouetteEdgeGeometry(indexBuffer, endPointBuffer, normalsBuffer, params.indices.length, mesh) : undefined;
   }
 
+  public get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
+
   public dispose() {
-    dispose(this._normalPairs);
     super.dispose();
+    dispose(this._normalPairs);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -307,6 +320,8 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     const buffers = PolylineBuffers.create(polyline);
     return undefined !== buffers ? new PolylineEdgeGeometry(polyline.indices.length, buffers, mesh) : undefined;
   }
+
+  public get isDisposed(): boolean { return this._buffers.isDisposed; }
 
   public dispose() {
     dispose(this._buffers);
@@ -354,6 +369,11 @@ export class SurfaceGeometry extends MeshGeometry {
   public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
+  }
+
+  public get isDisposed(): boolean {
+    return this._buffers.isDisposed
+      && this._indices.isDisposed;
   }
 
   public dispose() {

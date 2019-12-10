@@ -12,6 +12,7 @@ import {
   OffScreenViewport,
   ViewRect,
   IModelApp,
+  cssPixelsToDevicePixels,
 } from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
 
@@ -109,8 +110,14 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
     if (undefined === pixels)
       return;
 
-    for (let x = rect.left; x < rect.right; x++)
-      for (let y = rect.top; y < rect.bottom; y++)
+    const sRect = rect.clone();
+    sRect.left = cssPixelsToDevicePixels(sRect.left);
+    sRect.right = cssPixelsToDevicePixels(sRect.right);
+    sRect.bottom = cssPixelsToDevicePixels(sRect.bottom);
+    sRect.top = cssPixelsToDevicePixels(sRect.top);
+
+    for (let x = sRect.left; x < sRect.right; x++)
+      for (let y = sRect.top; y < sRect.bottom; y++)
         set.insert(pixels.getPixel(x, y));
   }, excludeNonLocatable);
 
@@ -128,16 +135,6 @@ function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
     colors.insert(Color.from(rgba));
 
   return colors;
-}
-
-function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable = false): Pixel.Data {
-  let pixel = new Pixel.Data();
-  vp.readPixels(new ViewRect(x, y, x + 1, y + 1), Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-    if (undefined !== pixels)
-      pixel = pixels.getPixel(x, y);
-  }, excludeNonLocatable);
-
-  return pixel;
 }
 
 function readColor(vp: Viewport, x: number, y: number): Color {
@@ -160,8 +157,6 @@ export interface TestableViewport {
   readUniquePixelData(readRect?: ViewRect, excludeNonLocatable?: boolean): PixelDataSet;
   // Read pixel colors within rectangular region and return unique colors.
   readUniqueColors(readRect?: ViewRect): ColorSet;
-  // Return the data associated with the pixel at (x, y).
-  readPixel(x: number, y: number): Pixel.Data;
   // Return the color of the pixel at (x, y).
   readColor(x: number, y: number): Color;
   // True if all tiles appropriate for rendering the current view have been loaded.
@@ -171,7 +166,6 @@ export interface TestableViewport {
 class OffScreenTestViewport extends OffScreenViewport implements TestableViewport {
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
-  public readPixel(x: number, y: number): Pixel.Data { return readPixel(this, x, y); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
   public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
 
@@ -210,7 +204,6 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
 
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
-  public readPixel(x: number, y: number): Pixel.Data { return readPixel(this, x, y); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
   public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
 

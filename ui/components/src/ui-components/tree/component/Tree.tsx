@@ -62,7 +62,7 @@ export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
 /** Properties for the [[Tree]] component
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface TreeProps extends CommonProps {
   /** Nodes provider */
@@ -205,7 +205,7 @@ export interface TreeProps extends CommonProps {
 }
 
 /** State for the Tree component
- * @internal
+ * @internal @deprecated
  */
 interface TreeState {
   prev: {
@@ -236,7 +236,7 @@ interface TreeState {
 /**
  * A Tree React component that uses the core of BeInspireTree
  * but renders with TreeBase and TreeNodeBase from ui-core.
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export class Tree extends React.Component<TreeProps, TreeState> {
 

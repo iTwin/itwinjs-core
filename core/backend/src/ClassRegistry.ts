@@ -71,12 +71,10 @@ export class ClassRegistry {
    * @param schema The schema for all found classes
    */
   public static registerModule(moduleObj: any, schema: typeof Schema) {
-    for (const thisMember in moduleObj) {
-      if (undefined !== thisMember) {
-        const thisClass = moduleObj[thisMember];
-        if (thisClass.prototype instanceof Entity)
-          this.register(thisClass, schema);
-      }
+    for (const thisMember in moduleObj) {// tslint:disable-line: forin
+      const thisClass = moduleObj[thisMember];
+      if (thisClass.prototype instanceof Entity)
+        this.register(thisClass, schema);
     }
   }
 
@@ -90,7 +88,7 @@ export class ClassRegistry {
       throw this.makeMetaDataNotFoundError(classFullName);
 
     // Make sure we have all base classes registered.
-    if (metadata!.baseClasses && (0 !== metadata.baseClasses.length))
+    if (metadata.baseClasses && (0 !== metadata.baseClasses.length))
       this.getClass(metadata.baseClasses[0], iModel);
 
     // Now we can generate the class from the classDef.

@@ -207,16 +207,13 @@ describe("Render mirukuru", () => {
       const backgroundPixel = new Pixel.Data(undefined, 0, Pixel.GeometryType.None, Pixel.Planarity.None);
       expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
 
-      // Can read a single pixel
-      const pixel = vp.readPixel(rect.width / 2, rect.height / 2);
-      expect(comparePixelData(backgroundPixel, pixel)).to.equal(0);
-
-      // Out-of-bounds pixels are in "unknown" state
-      const unknownPixel = new Pixel.Data();
-      const coords = [[-1, -1], [0, -1], [rect.width, 0], [rect.width - 1, rect.height * 2]];
+      // Ensure reading out-of-bounds rects returns empty pixel array
+      const coords = [[-1, -1, -2, -2], [rect.width + 1, rect.height + 1, rect.width + 2, rect.height + 2]];
       for (const coord of coords) {
-        const oob = vp.readPixel(coord[0], coord[1]);
-        expect(comparePixelData(unknownPixel, oob)).to.equal(0);
+        const readRect = new ViewRect(coord[0], coord[1], coord[2], coord[3]);
+        const oob = vp.readUniquePixelData(readRect);
+        expect(oob).to.not.be.undefined;
+        expect(oob.array.length).to.equal(0);
       }
     });
   });

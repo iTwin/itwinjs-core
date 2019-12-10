@@ -88,7 +88,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
           displayValue: items.length.toString(),
         },
         {
-          displayLabel: UiComponents.translate("general.length"),
+          displayLabel: UiComponents.translate("property.arrayLength"),
           name: "array_length",
           typename: "int",
         }),
@@ -96,7 +96,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
     const modifiedProperties: PropertyRecord[] = items.map((item, index): PropertyRecord => {
       const newProperty = { ...item.property };
-      newProperty.displayLabel = `[${index}]`;
+      newProperty.displayLabel = `[${index + 1}]`;
       newProperty.name = `${newProperty.name}_${index}`;
       return new PropertyRecord(item.value, newProperty);
     });

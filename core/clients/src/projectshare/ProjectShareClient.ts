@@ -421,7 +421,7 @@ export class ProjectShareClient extends WsgClient {
       }));
     }
 
-    if (customProperties === undefined)
+    if (customProperties.length === 0)
       throw new BentleyError(BentleyStatus.ERROR, "No updates or deletes specified", Logger.logError, loggerCategory, () => ({ ...file }));
 
     const updateInstance = new ProjectShareFile();

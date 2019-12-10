@@ -50,75 +50,75 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
   }
 
   private _toggleTopLeft = () => {
-    this.setState((_prevState) => ({ showTopLeft: !this.state.showTopLeft }));
+    this.setState((prevState) => ({ showTopLeft: !prevState.showTopLeft }));
   }
 
   private _closeTopLeft = () => {
-    this.setState((_prevState) => ({ showTopLeft: false }));
+    this.setState({ showTopLeft: false });
   }
 
   private _toggleTop = () => {
-    this.setState((_prevState) => ({ showTop: !this.state.showTop }));
+    this.setState((prevState) => ({ showTop: !prevState.showTop }));
   }
 
   private _closeTop = () => {
-    this.setState((_prevState) => ({ showTop: false }));
+    this.setState({ showTop: false });
   }
 
   private _toggleTopRight = () => {
-    this.setState((_prevState) => ({ showTopRight: !this.state.showTopRight }));
+    this.setState((prevState) => ({ showTopRight: !prevState.showTopRight }));
   }
 
   private _onCloseTopRight = () => {
-    this.setState((_prevState) => ({ showTopRight: false }));
+    this.setState({ showTopRight: false });
   }
 
   private _toggleBottomLeft = () => {
-    this.setState((_prevState) => ({ showBottomLeft: !this.state.showBottomLeft }));
+    this.setState((prevState) => ({ showBottomLeft: !prevState.showBottomLeft }));
   }
 
   private _onCloseBottomLeft = () => {
-    this.setState((_prevState) => ({ showBottomLeft: false }));
+    this.setState({ showBottomLeft: false });
   }
 
   private _toggleBottom = () => {
-    this.setState((_prevState) => ({ showBottom: !this.state.showBottom }));
+    this.setState((prevState) => ({ showBottom: !prevState.showBottom }));
   }
 
   private _onCloseBottom = () => {
-    this.setState((_prevState) => ({ showBottom: false }));
+    this.setState({ showBottom: false });
   }
 
   private _toggleBottomRight = () => {
-    this.setState((_prevState) => ({ showBottomRight: !this.state.showBottomRight }));
+    this.setState((prevState) => ({ showBottomRight: !prevState.showBottomRight }));
   }
 
   private _onCloseBottomRight = () => {
-    this.setState((_prevState) => ({ showBottomRight: false }));
+    this.setState({ showBottomRight: false });
   }
 
   private _toggleLeft = () => {
-    this.setState((_prevState) => ({ showLeft: !this.state.showLeft }));
+    this.setState((prevState) => ({ showLeft: !prevState.showLeft }));
   }
 
   private _onCloseLeft = () => {
-    this.setState((_prevState) => ({ showLeft: false }));
+    this.setState({ showLeft: false });
   }
 
   private _toggleRight = () => {
-    this.setState((_prevState) => ({ showRight: !this.state.showRight }));
+    this.setState((prevState) => ({ showRight: !prevState.showRight }));
   }
 
   private _onCloseRight = () => {
-    this.setState((_prevState) => ({ showRight: false }));
+    this.setState({ showRight: false });
   }
 
   private _onArrowChange = () => {
-    this.setState((_prevState) => ({ showArrow: !this.state.showArrow }));
+    this.setState((prevState) => ({ showArrow: !prevState.showArrow }));
   }
 
   private _onShadowChange = () => {
-    this.setState((_prevState) => ({ showShadow: !this.state.showShadow }));
+    this.setState((prevState) => ({ showShadow: !prevState.showShadow }));
   }
 
   private _handleOK = () => {

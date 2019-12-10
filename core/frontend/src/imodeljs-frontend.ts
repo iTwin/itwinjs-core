@@ -67,6 +67,7 @@ export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";
+export * from "./render/DevicePixelRatio";
 export * from "./render/webgl/Target";
 export * from "./RenderCompatibility";
 export * from "./oidc/OidcBrowserClient";

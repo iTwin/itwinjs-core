@@ -233,7 +233,7 @@ describe("ListPicker", () => {
           items={listItems}
           setEnabled={setEnabled}
         />,
-      ).should.matchSnapshot();
+      ).dive().should.matchSnapshot();
     });
 
     it("should minimize", () => {

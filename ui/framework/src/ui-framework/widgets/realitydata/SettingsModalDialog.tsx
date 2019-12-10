@@ -152,12 +152,12 @@ export class SettingsModalDialog extends React.Component<SettingsModalDialogProp
   }
 
   private _closeDialog = (followUp: () => void) => {
-    this.setState((_prevState) => ({
-      opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeDialog();
-      followUp();
-    });
+    this.setState(
+      { opened: false },
+      () => {
+        if (!this.state.opened)
+          ModalDialogManager.closeDialog();
+        followUp();
+      });
   }
 }

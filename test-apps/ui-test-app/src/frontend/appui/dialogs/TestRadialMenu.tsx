@@ -64,9 +64,9 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
     });
   }
 
-  public componentDidUpdate(oldProps: TestRadialMenuProps) {
-    if (oldProps.opened !== this.props.opened) {
-      this.setState({ opened: this.props.opened });
+  public componentDidUpdate(prevProps: TestRadialMenuProps) {
+    if (prevProps.opened !== this.props.opened) {
+      this.setState((_, props) => ({ opened: props.opened }));
     }
   }
 }

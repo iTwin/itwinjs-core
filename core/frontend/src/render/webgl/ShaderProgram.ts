@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { UniformHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
@@ -14,6 +14,7 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
 import { AttributeDetails } from "./AttributeMap";
+import { WebGlDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -115,7 +116,7 @@ export const enum CompileStatus {
 }
 
 /** @internal */
-export class ShaderProgram implements IDisposable {
+export class ShaderProgram implements WebGlDisposable {
   private _description: string; // for debugging purposes...
   public vertSource: string;
   public fragSource: string;
@@ -298,10 +299,14 @@ export class ShaderProgramExecutor {
     this._params = undefined;
   }
 
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() {
     this.changeProgram(undefined);
     ShaderProgramExecutor.freeParams();
+    this._isDisposed = true;
   }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }

@@ -2,6 +2,33 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/geometry-core_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc"
+          },
+          {
+            "comment": "Great Circle extraction on Ellipsoid"
+          },
+          {
+            "comment": "Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector"
+          },
+          {
+            "comment": "BUG#220063 linearSystem3d z term"
+          },
+          {
+            "comment": "Code cleanup from codeQL hits"
+          },
+          {
+            "comment": "Ellipsoid and EllipsoidPatch classes with range and intersectRay support"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/geometry-core_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

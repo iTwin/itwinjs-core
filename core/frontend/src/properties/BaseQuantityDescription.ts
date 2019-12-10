@@ -29,12 +29,11 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     this.typename = "number";
     this.editor = {
       name: "number-custom",
-      params: [
-        {
-          type: PropertyEditorParamTypes.CustomFormattedNumber,
-          formatFunction: this.format,
-          parseFunction: this.parse,
-        } as CustomFormattedNumberParams,
+      params: [{
+        type: PropertyEditorParamTypes.CustomFormattedNumber,
+        formatFunction: this.format,
+        parseFunction: this.parse,
+      } as CustomFormattedNumberParams,
       ],
     };
 

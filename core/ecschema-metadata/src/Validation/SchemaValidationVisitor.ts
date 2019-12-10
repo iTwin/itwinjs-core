@@ -49,6 +49,10 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     return this._ruleSets;
   }
 
+  public get suppressionSet(): IRuleSuppressionSet | undefined {
+    return this._ruleSuppressionSet;
+  }
+
   /** Gets the IDiagnosticReporter objects registered with the visitor. */
   public get diagnosticReporters(): IDiagnosticReporter[] {
     return this._reporters;
@@ -282,7 +286,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(schema);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.schemaRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, schema, suppressions);
+        await this.reportDiagnostics(diagnostic, schema, suppressions);
       }
     }
   }
@@ -295,7 +299,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(schemaItem);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.schemaItemRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, schemaItem, suppressions);
+        await this.reportDiagnostics(diagnostic, schemaItem, suppressions);
       }
     }
   }
@@ -308,7 +312,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(ecClass);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.classRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, ecClass, suppressions);
+        await this.reportDiagnostics(diagnostic, ecClass, suppressions);
       }
     }
   }
@@ -321,7 +325,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(property);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.propertyRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, property, suppressions);
+        await this.reportDiagnostics(diagnostic, property, suppressions);
       }
     }
   }
@@ -334,7 +338,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(entityClass);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.entityRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, entityClass, suppressions);
+        await this.reportDiagnostics(diagnostic, entityClass, suppressions);
       }
     }
   }
@@ -347,7 +351,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(structClass);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.structRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, structClass, suppressions);
+        await this.reportDiagnostics(diagnostic, structClass, suppressions);
       }
     }
   }
@@ -360,7 +364,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(mixin);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.mixinRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, mixin, suppressions);
+        await this.reportDiagnostics(diagnostic, mixin, suppressions);
       }
     }
   }
@@ -373,7 +377,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(relationship);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.relationshipRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, relationship, suppressions);
+        await this.reportDiagnostics(diagnostic, relationship, suppressions);
       }
     }
   }
@@ -386,7 +390,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(constraint);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.relationshipConstraintRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, constraint, suppressions);
+        await this.reportDiagnostics(diagnostic, constraint, suppressions);
       }
     }
   }
@@ -399,7 +403,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(customAttribute);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, customAttribute, suppressions);
+        await this.reportDiagnostics(diagnostic, customAttribute, suppressions);
       }
     }
   }
@@ -412,7 +416,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(container);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeContainerSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, container, suppressions);
+        await this.reportDiagnostics(diagnostic, container, suppressions);
       }
     }
   }
@@ -425,7 +429,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(container, customAttribute);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.customAttributeInstanceSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, container, suppressions);
+        await this.reportDiagnostics(diagnostic, container, suppressions);
       }
     }
   }
@@ -438,7 +442,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(enumeration);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.enumerationRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, enumeration, suppressions);
+        await this.reportDiagnostics(diagnostic, enumeration, suppressions);
       }
     }
   }
@@ -451,7 +455,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(kindOfQuantity);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.koqRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, kindOfQuantity, suppressions);
+        await this.reportDiagnostics(diagnostic, kindOfQuantity, suppressions);
       }
     }
   }
@@ -464,7 +468,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(propertyCategory);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.propertyCategoryRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, propertyCategory, suppressions);
+        await this.reportDiagnostics(diagnostic, propertyCategory, suppressions);
       }
     }
   }
@@ -477,7 +481,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(format);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.formatRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, format, suppressions);
+        await this.reportDiagnostics(diagnostic, format, suppressions);
       }
     }
   }
@@ -490,7 +494,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(unit);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.unitRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, unit, suppressions);
+        await this.reportDiagnostics(diagnostic, unit, suppressions);
       }
     }
   }
@@ -503,7 +507,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(invertedUnit);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.invertedUnitRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, invertedUnit, suppressions);
+        await this.reportDiagnostics(diagnostic, invertedUnit, suppressions);
       }
     }
   }
@@ -516,7 +520,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(unitSystem);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.unitSystemRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, unitSystem, suppressions);
+        await this.reportDiagnostics(diagnostic, unitSystem, suppressions);
       }
     }
   }
@@ -529,7 +533,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(phenomenon);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.phenomenonRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, phenomenon, suppressions);
+        await this.reportDiagnostics(diagnostic, phenomenon, suppressions);
       }
     }
   }
@@ -542,7 +546,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       const result = rule(constant);
       for await (const diagnostic of result) {
         const suppressions = this._ruleSuppressionSet ? this._ruleSuppressionSet.constantRuleSuppressions : undefined;
-        this.reportDiagnostics(diagnostic, constant, suppressions);
+        await this.reportDiagnostics(diagnostic, constant, suppressions);
       }
     }
   }
@@ -567,14 +571,14 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     return ruleSet.schemaExclusionSet.includes(schema.name);
   }
 
-  private reportDiagnostics<T extends AnyECType, U = {}>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
+  private async reportDiagnostics<T extends AnyECType, U = {}>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
     if (!diagnostic)
       return;
 
     if (suppressionMap) {
       const suppressRule = this.findSuppressionRule(suppressionMap, diagnostic.code);
       if (suppressRule) {
-        const ecSuppression = suppressRule(ecType);
+        const ecSuppression = await suppressRule(ecType);
         if (ecSuppression) {
           diagnostic.category = DiagnosticCategory.Warning;
         }

@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { assert, BeDuration, ClientRequestContext, Id64Array, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps, RpcInvocation } from "@bentley/imodeljs-common";
+import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, IModelToken, IModelTokenProps, RpcInterface, RpcInvocation, RpcPendingResponse, TileTreeProps, RpcManager } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { CloudStorageUploadOptions } from "../CloudStorageBackend";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -59,9 +58,8 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     this.log("received", props);
 
     const tileQP = this.memoize(props);
-    const waitPromise = BeDuration.wait(this._timeoutMilliseconds);
 
-    await Promise.race([tileQP.promise, waitPromise]).catch(() => Promise.resolve());
+    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(() => { });
     // Note: Rejections must be caught so that the memoization entry can be deleted
 
     props.requestContext.enter();
@@ -173,7 +171,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const content = await RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
 
     // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
-    this.cacheTile(tokenProps, treeId, contentId, content, guid);
+    if (IModelHost.usingExternalTileCache)
+      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, content, guid);
+
     return content;
   }
 
@@ -187,31 +187,5 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
-  }
-
-  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
-    if (!IModelHost.usingExternalTileCache) {
-      return;
-    }
-
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
-
-    setTimeout(async () => {
-      try {
-        const cache = CloudStorageTileCache.getCache();
-
-        const options: CloudStorageUploadOptions = {};
-        if (IModelHost.compressCachedTiles) {
-          options.contentEncoding = "gzip";
-        }
-        const perfInfo = { ...iModelToken, treeId, contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
-        const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), content, options);
-        perfLogger.dispose();
-      } catch (err) {
-        Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
-      }
-    });
   }
 }

@@ -37,8 +37,7 @@ export class TestMemoizer extends PromiseMemoizer<string> {
 
     const testQP = memoizeTestFn(param, waitTime);
 
-    const waitPromise = BeDuration.wait(this._pendingWaitTime);
-    await Promise.race([testQP.promise, waitPromise]); // This resolves as soon as either the fn is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
+    await BeDuration.race(this._pendingWaitTime, testQP.promise); // This resolves as soon as either the fn is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
     if (testQP.isPending)
       return "Pending";
 

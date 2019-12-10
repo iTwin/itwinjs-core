@@ -556,6 +556,7 @@ export namespace Pixel {
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
+   * The contents of the pixel buffer will be specified using device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
    * @see [[Viewport.readPixels]].
    */
   export interface Buffer {
@@ -827,7 +828,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier): void { }
+  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -1285,18 +1286,25 @@ export namespace RenderSystem {
      * Default value: false
      *
      * @internal
-     *
      */
-
     filterMapTextures?: boolean;
+
     /** If true anisotropic filtering is not applied to draped map tile textures.
      *
      * Default value: true
      *
      * @internal
-     *
      */
     filterMapDrapeTextures?: boolean;
+
+    /** If true viewports will respect the DPI of the display.  See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
+     *
+     * Default value: true
+     *
+     * @alpha
+     */
+    dpiAwareViewports?: boolean;
+
     /** @internal
      * @deprecated This setting no longer has any effect.
      */

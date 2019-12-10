@@ -12,6 +12,7 @@ import { Point3d, Range1d, Range3d, Transform, Angle, ClipVector, ClipShape } fr
 import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
 import { GraphicBuilder } from "../render/GraphicBuilder";
+import { IModelApp } from "../IModelApp";
 
 /**
  * A specialization of Tile for terrain and map imagery.  Holds the corners (possibly reprojected) as well as the height range.
@@ -75,13 +76,18 @@ export class MapTile extends Tile {
         if (mapTree.reprojectionRequired(this.depth + 1)) {
           mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
             this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+            IModelApp.viewManager.onNewTilesReady();
           }).catch((_err) => {
             assert(false);
+            IModelApp.viewManager.onNewTilesReady();
             this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
           });
+        } else {
+          this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         }
+
       }
-      this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+
     }
     return this._childrenLoadStatus;
   }
@@ -101,7 +107,6 @@ export class MapTile extends Tile {
         this._children.push(child);
       }
     }
-    this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
   }
 
   public getBoundaryShape(z?: number) {

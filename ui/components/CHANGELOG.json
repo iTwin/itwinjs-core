@@ -2,6 +2,75 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-components_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update sunrise/sunset calculation"
+          },
+          {
+            "comment": "Update solar timeline test"
+          },
+          {
+            "comment": "Made detecting links have stricter rules. Links have to start with a schema or `www.`."
+          },
+          {
+            "comment": "Fix solar timeline timezone bug."
+          },
+          {
+            "comment": "Added a tooltip component."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component."
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Added documentation to ControlledTree API and changes release tags to beta"
+          },
+          {
+            "comment": "Added node editing support in ControlledTree"
+          },
+          {
+            "comment": "Changes ControlledTree events to pass TreeNodeItem instead of nodeId"
+          },
+          {
+            "comment": "Added 'removeChild', 'insertChild', 'getChildOffset' methods to MutableTreeModel"
+          },
+          {
+            "comment": "Moved ControlledTree node highlighting to TreeRenderer"
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Truncate property grid group title."
+          },
+          {
+            "comment": "Rename array length property label to be less ambiguous"
+          },
+          {
+            "comment": "Solar timeline date/time offset fix."
+          },
+          {
+            "comment": "Start arrays at `1` when rendering array property items"
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Code cleanup based on code analysis report from lgtm."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/ui-components_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

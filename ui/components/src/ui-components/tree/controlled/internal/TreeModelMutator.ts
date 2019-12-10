@@ -8,9 +8,16 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { Observable } from "../Observable";
 import { CheckboxStateChange } from "../TreeEvents";
 import { TreeModelSource } from "../TreeModelSource";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
+import { ITreeNodeLoader, LoadedNodeHierarchy } from "../TreeNodeLoader";
+import { TreeNodeItem } from "../../TreeDataProvider";
+import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 
-/** @internal */
+/**
+ * Provides basic tree manipulation implementation for various cases like
+ * expand/collapse node, modify/replace/clear selection. It is used by default
+ * tree event handler to modify model when events occur.
+ * @internal
+ */
 export class TreeModelMutator {
   private _modelSource: TreeModelSource;
   private _nodeLoader: ITreeNodeLoader;
@@ -22,7 +29,7 @@ export class TreeModelMutator {
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
 
-  public expandNode(nodeId: string): Observable<string[]> {
+  public expandNode(nodeId: string): Observable<LoadedNodeHierarchy> {
     let needToLoadChildren = false;
     this._modelSource.modifyModel((model) => {
       const node = model.getNode(nodeId);
@@ -56,17 +63,17 @@ export class TreeModelMutator {
     });
   }
 
-  public modifySelection(nodesToSelect: string[], nodesToDeselect: string[]) {
+  public modifySelection(nodesToSelect: TreeNodeItem[], nodesToDeselect: TreeNodeItem[]) {
     this._modelSource.modifyModel((model) => {
-      for (const nodeId of nodesToSelect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToSelect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = true;
         }
       }
 
-      for (const nodeId of nodesToDeselect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToDeselect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = false;
         }
@@ -74,14 +81,14 @@ export class TreeModelMutator {
     });
   }
 
-  public replaceSelection(nodesToSelect: string[]) {
+  public replaceSelection(nodesToSelect: TreeNodeItem[]) {
     this._modelSource.modifyModel((model) => {
       for (const node of model.iterateTreeModelNodes()) {
         node.isSelected = false;
       }
 
-      for (const nodeId of nodesToSelect) {
-        const node = model.getNode(nodeId);
+      for (const nodeItem of nodesToSelect) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.isSelected = true;
         }
@@ -99,12 +106,43 @@ export class TreeModelMutator {
 
   public setCheckboxStates(stateChanges: CheckboxStateChange[]) {
     this._modelSource.modifyModel((model) => {
-      for (const { nodeId, newState } of stateChanges) {
-        const node = model.getNode(nodeId);
+      for (const { nodeItem, newState } of stateChanges) {
+        const node = model.getNode(nodeItem.id);
         if (node !== undefined) {
           node.checkbox.state = newState;
         }
       }
     });
+  }
+
+  public activateEditing(nodeId: string, onCommit: (node: TreeModelNode, newValue: string) => void) {
+    this._modelSource.modifyModel((model) => {
+      const node = model.getNode(nodeId);
+      if (!node)
+        return;
+
+      if (node.item.isEditable) {
+        node.editingInfo = this.createNodeEditingInfo(nodeId, onCommit);
+      }
+    });
+  }
+
+  private createNodeEditingInfo(nodeId: string, onCommit: (node: TreeModelNode, newValue: string) => void): TreeModelNodeEditingInfo {
+    const closeEditing = () => {
+      this._modelSource.modifyModel((model) => {
+        const node = model.getNode(nodeId);
+        // istanbul ignore if
+        if (!node)
+          return;
+        node.editingInfo = undefined;
+      });
+    };
+
+    const onEditCommitted = (node: TreeModelNode, newValue: string) => {
+      onCommit(node, newValue);
+      closeEditing();
+    };
+
+    return { onCommit: onEditCommitted, onCancel: closeEditing };
   }
 }

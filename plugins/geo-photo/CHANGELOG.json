@@ -2,6 +2,27 @@
   "name": "@bentley/geo-photo-plugin",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/geo-photo-plugin_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix bug finding close neighbors when changing displayed folders"
+          },
+          {
+            "comment": "Bug in finding close neighbors. Track added to tool tip"
+          },
+          {
+            "comment": "Disallow plugins from adding tools anywhere but the end of a toolbar."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/geo-photo-plugin_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

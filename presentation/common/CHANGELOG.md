@@ -1,6 +1,17 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Fix double quotes not being properly escaped when creating 'find similar' ruleset.
+- Add support for multi-ECInstance nodes
+- Add a way to group same-label ECInstance nodes at post-processing stage
+- Add `NestedContentField.getFieldByName`
+- Update sinon version.
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

@@ -121,6 +121,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       context.addPlanarClassifier(classifier, classifierTree, classifiedTree);
     else {
       context.setActiveVolumeClassifierProps(classifier);
+      context.setActiveVolumeClassifierModelId(classifiedTree.modelId);
       classifierTree.drawScene(context);
     }
   }

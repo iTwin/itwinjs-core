@@ -269,6 +269,15 @@ export class NestedContentField extends Field {
     this.autoExpand = autoExpand;
   }
 
+  /**
+   * Get field by its name
+   * @param name Name of the field to find
+   * @param recurse Recurse into nested fields
+   */
+  public getFieldByName(name: string, recurse?: boolean): Field | undefined {
+    return getFieldByName(this.nestedFields, name, recurse);
+  }
+
   /** @internal */
   public toJSON(): NestedContentFieldJSON {
     return {
@@ -315,3 +324,18 @@ export class NestedContentField extends Field {
       nestedField.rebuildParentship(this);
   }
 }
+
+/** @internal */
+export const getFieldByName = (fields: Field[], name: string, recurse?: boolean): Field | undefined => {
+  for (const field of fields) {
+    if (field.name === name)
+      return field;
+
+    if (recurse && field.isNestedContentField()) {
+      const nested = getFieldByName(field.nestedFields, name, recurse);
+      if (nested)
+        return nested;
+    }
+  }
+  return undefined;
+};

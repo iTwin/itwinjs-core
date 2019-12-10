@@ -110,6 +110,12 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
 export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
   public static diagnosticType = DiagnosticType.SchemaItem;
 
+  /**
+   * Initializes a new SchemaDiagnostic.
+   * @param ecDefinition The EC object to associate with the diagnostic.
+   * @param messageArgs The arguments used when formatting the diagnostic message.
+   * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.
+   */
   constructor(schema: Schema, messageArgs: ARGS, category: DiagnosticCategory = DiagnosticCategory.Error) {
     super(schema, messageArgs, category);
   }
@@ -128,7 +134,7 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
   public static diagnosticType = DiagnosticType.SchemaItem;
   /**
-   * Initializes a new BaseDiagnostic.
+   * Initializes a new SchemaItemDiagnostic.
    * @param ecDefinition The EC object to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.
@@ -150,7 +156,7 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
  */
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
   /**
-   * Initializes a new BaseDiagnostic.
+   * Initializes a new ClassDiagnostic.
    * @param ecClass The class to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.
@@ -169,7 +175,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
  */
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
   /**
-   * Initializes a new BaseDiagnostic.
+   * Initializes a new PropertyDiagnostic.
    * @param property The property to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.
@@ -191,7 +197,7 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
  */
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
   /**
-   * Initializes a new BaseDiagnostic.
+   * Initializes a new RelationshipConstraintDiagnostic.
    * @param constraint The Relationship Constraint to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.
@@ -213,7 +219,7 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
  */
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
   /**
-   * Initializes a new BaseDiagnostic.
+   * Initializes a new CustomAttributeContainerDiagnostic.
    * @param constraint The Custom Attribute Container to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    * @param category The [[DiagnosticCategory]] to associate with the diagnostic, Error by default.

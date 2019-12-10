@@ -129,6 +129,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * The default behavior is to start from 0, use step of 1 and display
    * integers
    */
+  // istanbul ignore next
   public static defaultProps = {
     step: 1,
     min: Number.MIN_SAFE_INTEGER || -9007199254740991,

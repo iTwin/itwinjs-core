@@ -13,7 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology,
+  FeatureOverrideProvider, FeatureSymbology, cssPixelsToDevicePixels, queryDevicePixelRatio,
 } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -101,6 +101,7 @@ class DisplayPerfTestApp {
     opts = opts ? opts : {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
     IModelApp.startup(opts);
+    IModelApp.animationInterval = undefined;
   }
 }
 
@@ -365,9 +366,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const w = configs.view!.width * devicePixelRatio;
-  const h = configs.view!.height * devicePixelRatio;
+  const w = cssPixelsToDevicePixels(configs.view!.width);
+  const h = cssPixelsToDevicePixels(configs.view!.height);
   rowData.set("Screen Size", w + "X" + h);
   rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
@@ -741,11 +741,10 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
-    const devicePixelRatio = window.devicePixelRatio || 1;
-
     // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
-    viewSize.width /= devicePixelRatio;
-    viewSize.height /= devicePixelRatio;
+    const pixelRatio = queryDevicePixelRatio();
+    viewSize.width /= pixelRatio;
+    viewSize.height /= pixelRatio;
 
     vpDiv.style.width = String(viewSize.width) + "px";
     vpDiv.style.height = String(viewSize.height) + "px";
@@ -965,24 +964,28 @@ function restartIModelApp(testConfig: DefaultConfigs) {
 }
 
 async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
-  const width = testConfig.view!.width;
-  const height = testConfig.view!.height;
-  const viewRect = new ViewRect(0, 0, width, height);
   const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
-      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
-      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+      const cssWidth = testConfig.view!.width;
+      const cssHeight = testConfig.view!.height;
+      const cssRect = new ViewRect(0, 0, cssWidth, cssHeight);
 
-      theViewport!.readPixels(viewRect, pix, (pixels: any) => {
+      const imgWidth = cssPixelsToDevicePixels(cssWidth);
+      const imgHeight = cssPixelsToDevicePixels(cssHeight);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+
+      theViewport!.readPixels(cssRect, pix, (pixels: any) => {
         if (undefined === pixels)
           return;
-        for (let y = viewRect.top; y < viewRect.bottom; ++y) {
-          for (let x = viewRect.left; x < viewRect.right; ++x) {
-            const index = (x * 4) + (y * 4 * viewRect.right);
+        for (let y = 0; y < imgHeight; ++y) {
+          for (let x = 0; x < imgWidth; ++x) {
+            const index = (x * 4) + (y * 4 * imgWidth);
             const pixel = pixels.getPixel(x, y);
             // // RGB for element ID
             if (elemIdImgData !== undefined) {

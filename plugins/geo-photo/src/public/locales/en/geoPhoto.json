@@ -14,7 +14,7 @@
     "PanoramaFile": "<b>File:</b> {{fileName}} (Panorama)",
     "PhotoFile": "<b>File:</b> {{fileName}} (Jpeg)",
     "TakenTime": " <b>Time:</b> {{date}}<br>",
-    "ToolTipGeo": "<b>GPS Latitude, Longitude:</b> {{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}<br><b>Altitude:</b> {{formattedHeight}}<br>",
+    "ToolTipGeo": "<b>GPS Latitude, Longitude:</b> {{formattedLat}}{{latDir}}, {{formattedLong}}{{longDir}}<br><b>Altitude:</b> {{formattedHeight}} <b>Track: {{formattedTrack}}</b><br>",
     "ToolTipXY": "<b>Model Coordinate:</b> {{formattedX}}, {{formattedY}}, {{formattedHeight}}<br>",
     "Viewer": "Panorama Viewer"
   },

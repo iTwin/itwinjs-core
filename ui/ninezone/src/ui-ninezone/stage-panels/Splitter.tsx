@@ -139,7 +139,7 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
   }
 
   private _handleDocumentPointerMove = (e: PointerEvent) => {
-    this.setState((prevState) => {
+    this.setState((prevState, props) => {
       const gripRef = this._draggedGrip === undefined ? undefined : this.getGripRef(this._draggedGrip);
       if (this._draggedGrip === undefined ||
         !this._splitterRef.current ||
@@ -148,11 +148,11 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
 
       const gripId = this._draggedGrip;
       const splitterBounds = this._splitterRef.current.getBoundingClientRect();
-      const splitterSize = this.props.isVertical ? splitterBounds.height : splitterBounds.width;
+      const splitterSize = props.isVertical ? splitterBounds.height : splitterBounds.width;
 
       const gripBounds = gripRef.current.getBoundingClientRect();
-      const gripCenterPosition = this.props.isVertical ? gripBounds.top + gripBounds.height / 2 : gripBounds.left + gripBounds.width / 2;
-      const pointerPosition = this.props.isVertical ? e.clientY : e.clientX;
+      const gripCenterPosition = props.isVertical ? gripBounds.top + gripBounds.height / 2 : gripBounds.left + gripBounds.width / 2;
+      const pointerPosition = props.isVertical ? e.clientY : e.clientX;
       const resizeByPx = pointerPosition - gripCenterPosition;
 
       const resizeBy = resizeByPx / splitterSize * 100;

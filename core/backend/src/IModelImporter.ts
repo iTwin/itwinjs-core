@@ -85,9 +85,10 @@ export class IModelImporter {
   /** Create a new Model from the specified ModelProps and insert it into the target iModel.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertModel`.
    */
-  protected onInsertModel(modelProps: ModelProps): void {
-    this.targetDb.models.insertModel(modelProps);
+  protected onInsertModel(modelProps: ModelProps): Id64String {
+    const modelId: Id64String = this.targetDb.models.insertModel(modelProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
+    return modelId;
   }
 
   /** Update an existing Model in the target iModel from the specified ModelProps.
@@ -343,6 +344,17 @@ export class IModelImporter {
     }
     this.targetDb.relationships.updateInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatRelationshipForLogger(relationshipProps)}`);
+  }
+
+  /** Delete the specified Relationship from the target iModel. */
+  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+    this.targetDb.relationships.deleteInstance(relationshipProps);
+    Logger.logInfo(loggerCategory, `Deleted relationship ${this.formatRelationshipForLogger(relationshipProps)}`);
+  }
+
+  /** Delete the specified Relationship from the target iModel. */
+  public deleteRelationship(relationshipProps: RelationshipProps): void {
+    this.onDeleteRelationship(relationshipProps);
   }
 
   /** Format a Relationship for the Logger. */

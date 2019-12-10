@@ -5,6 +5,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
+import { KeyChainStoreMain } from "./KeyChainStoreMain";
 
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
@@ -18,7 +19,7 @@ export abstract class StandardElectronManager {
   private openMainWindow(options: BrowserWindowConstructorOptions) {
     this._mainWindow = new BrowserWindow({ ...this._defaultWindowOptions, ...options });
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
-    this._mainWindow.loadURL(this.frontendURL);
+    this._mainWindow.loadURL(this.frontendURL); // tslint:disable-line:no-floating-promises
   }
 
   /** The URL the main BrowserWindow should load on application initialization. */
@@ -87,7 +88,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
       assetPath = "index.html";
     assetPath = assetPath.replace(/(#|\?).*$/, "");
 
-    // FIXME: Should this really be hard-coded?
+    // NEEDS_WORK: Remove this after migration to OidcDesktopClient
     assetPath = assetPath.replace("signin-callback", "index.html");
     assetPath = path.normalize(`${this._webResourcesPath}/${assetPath}`);
 
@@ -110,11 +111,17 @@ export class IModelJsElectronManager extends StandardElectronManager {
   }
 
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    protocol.registerStandardSchemes(["electron"], {});
+    protocol.registerSchemesAsPrivileged([
+      { scheme: "electron", privileges: { standard: true, secure: true } },
+    ]);
+
     await new Promise((resolve) => app.on("ready", resolve));
 
     // Also handle any "electron://" requests and redirect them to "file://" URLs
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
+
+    // Setup handlers for IPC calls to support key chain
+    KeyChainStoreMain.initialize();
 
     await super.initialize(windowOptions);
   }

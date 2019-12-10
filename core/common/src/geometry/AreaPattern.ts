@@ -229,11 +229,11 @@ export namespace AreaPattern {
         this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
         this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
         const scale = Params.getTransformPatternScale(transform);
-        this.scale = this.scale ? this.scale *= scale : scale;
+        this.scale = this.scale ? this.scale * scale : scale;
       } else if (this.defLines) {
         const scale = Params.getTransformPatternScale(transform);
         if (!Geometry.isSameCoordinate(scale, 1.0)) {
-          this.scale = this.scale ? this.scale *= scale : scale;
+          this.scale = this.scale ? this.scale * scale : scale;
           for (const line of this.defLines) {
             if (line.through) {
               line.through.x *= scale;

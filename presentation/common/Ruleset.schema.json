@@ -2258,6 +2258,14 @@
       "additionalProperties": false,
       "description": "Allows grouping multiple instances with the same label into one ECInstance node.\nIt can be used in cases when these instances represent the same object for the user.\n\nWhen multiple instances are grouped, an ECInstance node is created instead of a\ngrouping node and the ECInstance key for the node is assigned to key of one of grouped\ninstances.",
       "properties": {
+        "applicationStage": {
+          "description": "Stage of hierarchy creation at which the rule is applied.\nDefaults to `SameLabelInstanceGroupApplicationStage.Query`.",
+          "enum": [
+            "PostProcess",
+            "Query"
+          ],
+          "type": "string"
+        },
         "specType": {
           "description": "Used for serializing to JSON.",
           "enum": [

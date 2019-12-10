@@ -80,7 +80,7 @@ export class FocusTrap extends React.Component<Props, State> {
   // We must wait until we have the HTMLElementRefs populate before we can attempt to set focus
   public componentDidUpdate(prevProps: Props, prevState: State): void {
     let newActiveState = !!this.props.active;
-    let initialFocusElement: HTMLElement | null = this.state.initialFocusElement ? this.state.initialFocusElement : null;
+    let initialFocusElement: HTMLElement | null;
 
     // istanbul ignore else
     if ((newActiveState !== prevState.active) || (this.props.initialFocusElement !== prevProps.initialFocusElement) || !this._initialFocusElementProcessed) {
@@ -135,8 +135,6 @@ export class FocusTrap extends React.Component<Props, State> {
       default:
         return false;
     }
-
-    return true;
   }
 
   private attemptFocus(element: HTMLElement): boolean {

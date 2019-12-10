@@ -220,6 +220,13 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
     return sorter;
   }
 
+  public clearDistanceSort() {
+    this._sortedByXNoChildren = undefined;
+    this._sortedByXWithChildren = undefined;
+    this._sortedByYNoChildren = undefined;
+    this._sortedByYWithChildren = undefined;
+  }
+
   /** traverse each photo in this folder, calling func. Recurses into subFolders if desired. */
   public async traversePhotos(func: PhotoTraverseFunction, folderFunc: FolderTraverseFunction | undefined, subFolders: boolean, visibleOnly: boolean) {
     if (!this.entries)
@@ -301,6 +308,7 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     return this._i18n.translate("geoPhoto:messages.RootFolderName");
   }
 
+  // implementation of ITreeDataProvider.getNodesCount
   public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
     // return count of the folder nodes.
     if (!parent)
@@ -316,6 +324,7 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     return count;
   }
 
+  // implementation of ITreeDataProvider.getNodes
   public async getNodes(parent?: TreeNodeItem, _page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
     // return only the folder nodes.
     if (!parent)
@@ -326,12 +335,26 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
 
     return parent.getSubFolders();
   }
+
+  // traverse callback to clear the distance sort results for an individual folder
+  private _clearFolderDistanceSort (folder: PhotoFolder, _parent: PhotoFolder | undefined) {
+    folder.clearDistanceSort();
+  }
+
+  /** Called when different folders are chosen to be visible. We have to reset the distance sorter to calculate the new set of visible photos. */
+  public clearCloseNeighborData() {
+    this.clearDistanceSort();
+    this.traverseFolders(this._clearFolderDistanceSort.bind(this), true, false);
+  }
+
 }
 
+// not actually used yet.
 export class GeoPhotoThumbnail {
   constructor(public comp: number, public xRes: number, public yRes: number, public resUnit: number, public offset: number, public byteCount: number) {
   }
 }
+
 /**
  * Subset of Jpeg Tags that are of interest to the geo-photo plugin.
  */
@@ -365,7 +388,7 @@ export abstract class PhotoFile extends FolderEntry {
   /** Gets an Url that corresponds to the photo file. */
   public abstract get accessUrl(): string;
 
-  public get visible() {
+  public get visible(): boolean {
     return this.parent!.visible && this._visible;
   }
 
@@ -417,9 +440,10 @@ export abstract class PhotoFile extends FolderEntry {
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = IModelApp.quantityFormatter.formatQuantity(zAdjusted, coordFormatterSpec);
+        const formattedTrack = this.track ? this.track.toFixed(2) : "";
         const latDir = cartographic.latitude < 0 ? "S" : "N";
         const longDir = cartographic.longitude < 0 ? "W" : "E";
-        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight });
+        toolTipHtml += this._i18n.translate("geoPhoto:messages.ToolTipGeo", { formattedLat, latDir, formattedLong, longDir, formattedHeight, formattedTrack });
         if (this.spatial) {
           const xAdjusted = this.spatial.x - globalOrigin.x;
           const yAdjusted = this.spatial.y - globalOrigin.y;
@@ -632,7 +656,7 @@ class DistanceSorter {
   public sortedArray: SortedArray<PhotoFile>;
 
   constructor(private _axis: number) {
-    const sortFunc = this._axis ? this.sortOnX : this.sortOnY;
+    const sortFunc = this._axis ? this.sortOnY : this.sortOnX;
     this.sortedArray = new SortedArray<PhotoFile>(sortFunc, true);
   }
 
@@ -663,14 +687,11 @@ class DistanceSorter {
     const maxIndex = this.sortedArray.length;
     let highIndex = thisIndex + 1;
     for (; highIndex < maxIndex; ++highIndex) {
-      const thisVal = (this.sortedArray.get(lowIndex)!.spatial as any)[selector];
+      const thisVal = (this.sortedArray.get(highIndex)!.spatial as any)[selector];
       if ((thisVal - photoVal) > maxDistance)
         break;
     }
-
-    // highIndex points to the first beyond the acceptable range, so decrement it.
-    if (highIndex <= lowIndex)
-      return [];
+    // don't decrement highIndex, because slice does not include highIndex.
 
     // this is not good practice, but SortedArray has no slice.
     return (this.sortedArray as any)._array.slice(lowIndex, highIndex);

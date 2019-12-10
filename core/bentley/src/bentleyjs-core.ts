@@ -23,6 +23,7 @@ export * from "./OneAtATimeAction";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";
+export * from "./ElectronUtils";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

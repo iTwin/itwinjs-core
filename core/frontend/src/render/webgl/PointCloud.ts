@@ -24,6 +24,8 @@ export class PointCloudGeometry extends CachedGeometry {
   private readonly _colorHandle: BufferHandle | undefined = undefined;
   private readonly _hasFeatures: boolean;
 
+  public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this._vertices);

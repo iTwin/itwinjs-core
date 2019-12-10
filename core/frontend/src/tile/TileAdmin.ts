@@ -40,8 +40,22 @@ export abstract class TileAdmin {
   public abstract set maxActiveRequests(max: number);
   public abstract get maxActiveRequests(): number;
 
+  /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
+   * Individual Viewports can override this multiplier if desired.
+   * A value greater than 1.0 causes lower-resolution tiles to be selected; a value < 1.0 selects higher-resolution tiles.
+   * This can allow an application to sacrifice quality for performance or vice-versa.
+   * This property is initialized from the value supplied by the [[TileAdmin.Props.defaultTileSizeModifier]] used to initialize the TileAdmin at startup.
+   * Changing it after startup will change it for all Viewports that do not explicitly override it with their own multiplier.
+   * This value must be greater than zero.
+   * @alpha
+   */
+  public abstract get defaultTileSizeModifier(): number;
+  public abstract set defaultTileSizeModifier(modifier: number);
+
   /** @internal */
   public abstract get enableInstancing(): boolean;
+  /** @internal */
+  public abstract get enableImprovedElision(): boolean;
   /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
@@ -183,11 +197,28 @@ export namespace TileAdmin {
      */
     maxActiveRequests?: number;
 
+    /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
+     * Individual Viewports can override this multiplier if desired.
+     * A value greater than 1.0 causes lower-resolution tiles to be selected; a value < 1.0 selects higher-resolution tiles.
+     * This value must be greater than zero.
+     * This can allow an application to sacrifice quality for performance or vice-versa.
+     *
+     * Default value: 1.0
+     */
+    defaultTileSizeModifier?: number;
+
     /** If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance.
      *
      * Default value: true
      */
     enableInstancing?: boolean;
+
+    /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
+     * This can reduce the number of tiles requested and the number of tile requests that return no content.
+     *
+     * Default value: false
+     */
+    enableImprovedElision?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
@@ -407,8 +438,10 @@ class Admin extends TileAdmin {
   private readonly _requestsPerViewport = new RequestsPerViewport();
   private readonly _uniqueViewportSets = new UniqueViewportSets();
   private _maxActiveRequests: number;
+  private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _enableImprovedElision: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
@@ -460,8 +493,10 @@ class Admin extends TileAdmin {
       options = {};
 
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
+    this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
-    this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
+    this._enableInstancing = false !== options.enableInstancing;
+    this._enableImprovedElision = true === options.enableImprovedElision;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
     this._useProjectExtents = true === options.useProjectExtents;
@@ -492,6 +527,7 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableImprovedElision() { return this._enableImprovedElision; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
@@ -521,6 +557,14 @@ class Admin extends TileAdmin {
   public set maxActiveRequests(max: number) {
     if (max > 0)
       this._maxActiveRequests = max;
+  }
+
+  public get defaultTileSizeModifier() { return this._defaultTileSizeModifier; }
+  public set defaultTileSizeModifier(modifier: number) {
+    if (modifier !== this._defaultTileSizeModifier && modifier > 0 && !Number.isNaN(modifier)) {
+      this._defaultTileSizeModifier = modifier;
+      IModelApp.viewManager.invalidateScenes();
+    }
   }
 
   public process(): void {

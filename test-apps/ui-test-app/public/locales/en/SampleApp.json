@@ -34,7 +34,9 @@
     "themeTitle": "Theme",
     "themeDescription": "Toggle the theme between light and dark",
     "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity"
+    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+    "dragInteractionTitle": "Drag Interaction",
+    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag"
   },
   "backstage": {
     "command": "Command",

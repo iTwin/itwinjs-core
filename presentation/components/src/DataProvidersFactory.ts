@@ -12,6 +12,7 @@ import {
   IPresentationTableDataProvider, PresentationTableDataProvider,
   PresentationTableDataProviderProps,
 } from "./table/DataProvider";
+import { findField } from "./common/Utils";
 
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]
@@ -65,7 +66,7 @@ export class DataProvidersFactory {
     if (!content || content.contentSet.length === 0)
       throw new Error("Properties provider has no content. Where did record come from?");
 
-    const field = content.descriptor.getFieldByName(record.property.name, true);
+    const field = findField(content.descriptor, record.property.name);
     if (!field)
       throw new Error("Properties provider doesn't have a property with provided record. Where did record come from?");
 

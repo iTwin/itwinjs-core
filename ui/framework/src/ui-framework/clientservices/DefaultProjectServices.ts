@@ -53,15 +53,14 @@ export class DefaultProjectServices implements ProjectServices {
     try {
       if (projectScope === ProjectScope.Invited) {
         projectList = await this._connectClient.getInvitedProjects(requestContext, queryOptions);
+      } else {
+        if (projectScope === ProjectScope.Favorites) {
+          queryOptions.isFavorite = true;
+        } else if (projectScope === ProjectScope.MostRecentlyUsed) {
+          queryOptions.isMRU = true;
+        }
+        projectList = await this._connectClient.getProjects(requestContext, queryOptions);
       }
-
-      if (projectScope === ProjectScope.Favorites) {
-        queryOptions.isFavorite = true;
-      } else if (projectScope === ProjectScope.MostRecentlyUsed) {
-        queryOptions.isMRU = true;
-      }
-
-      projectList = await this._connectClient.getProjects(requestContext, queryOptions);
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);

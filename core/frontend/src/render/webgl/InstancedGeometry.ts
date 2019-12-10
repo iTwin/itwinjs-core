@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
@@ -14,9 +14,10 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
 import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
+import { WebGlDisposable } from "./Disposable";
 
 /** @internal */
-export class InstanceBuffers implements IDisposable {
+export class InstanceBuffers implements WebGlDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
@@ -107,6 +108,12 @@ export class InstanceBuffers implements IDisposable {
   }
   public getRtcOnlyTransform(): Transform {
     return this._rtcOnlyTransform;
+  }
+
+  public get isDisposed(): boolean {
+    return this.transforms.isDisposed
+      && (undefined === this.featureIds || this.featureIds.isDisposed)
+      && (undefined === this.symbology || this.symbology.isDisposed);
   }
 
   public dispose() {
@@ -229,6 +236,13 @@ export class InstancedGeometry extends CachedGeometry {
       assert(attrFeatureId !== undefined);
       this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
+  }
+
+  public get isDisposed(): boolean {
+    let isReprDisposed = true;
+    if (this._ownsRepr)
+      isReprDisposed = this._repr.isDisposed;
+    return this._buffers.isDisposed && isReprDisposed;
   }
 
   public dispose() {

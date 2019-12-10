@@ -2,7 +2,7 @@
 
 exports[`<PopupButton /> should invoke children as render prop 1`] = `
 <ExpandableItem
-  hideIndicator={true}
+  hideIndicator={false}
   panel={
     <WithOnOutsideClick
       className="nz-toolbar-item-expandable-group-panel"
@@ -29,7 +29,7 @@ exports[`<PopupButton /> should invoke children as render prop 1`] = `
 
 exports[`<PopupButton /> should render with no padding 1`] = `
 <ExpandableItem
-  hideIndicator={true}
+  hideIndicator={false}
   noPadding={true}
   panel={
     <WithOnOutsideClick

@@ -60,7 +60,7 @@ describe("SnapModeField", () => {
 
   it("Status Bar with SnapModes Field should mount", () => {
     const modes = [SnapMode.NearestKeypoint as number, SnapMode.Intersection as number, SnapMode.Center as number,
-    SnapMode.Nearest as number, SnapMode.Origin as number, SnapMode.MidPoint as number, SnapMode.Bisector as number];
+      SnapMode.Nearest as number, SnapMode.Origin as number, SnapMode.MidPoint as number, SnapMode.Bisector as number];
 
     const icons = ["icon-snaps", "icon-snaps-intersection", "icon-snaps-center", "icon-snaps-nearest",
       "icon-snaps-origin", "icon-snaps-midpoint", "icon-snaps-bisector"];

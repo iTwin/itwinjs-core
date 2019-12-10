@@ -39,6 +39,7 @@
       false
     ],
     "no-consecutive-blank-lines": true,
+    // NOTE: This does not enforce that the correct number of spaces are used. See ter-indent.
     "indent": [
       true,
       "spaces",
@@ -65,6 +66,7 @@
     "object-literal-sort-keys": false,
     "no-bitwise": false,
     "no-unused-expression": false,
+    "no-unused-variable": true,
     "no-namespace": false,
     "one-variable-per-declaration": false,
     "no-empty": false,
@@ -133,6 +135,15 @@
       ],
       "severity": "error"
     },
+    // Rules from tslint-eslint-rules ======================================
+    // tslint's indent rule only enforces/fixes tabs vs spaces, not number of spaces.
+    "ter-indent": [
+      true,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
     // Custom rules ========================================================
     "prefer-get": true,
     "no-direct-imports": true,
@@ -140,10 +151,16 @@
     "require-basic-rpc-values": true,
     "deprecation": {
       "severity": "warning"
-    }
+    },
+    "tslint-react-set-state-usage": [
+      true,
+      "allow-object"
+    ]
   },
   "rulesDirectory": [
     "./tslint-rules/tslint-consistent-codestyle/rules",
+    "./tslint-rules/tslint-react-set-state-usage/src/rules",
+    "./tslint-rules/tslint-eslint-rules/dist/rules",
     "./tslint-rules"
   ]
 }

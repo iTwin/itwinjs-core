@@ -25,6 +25,8 @@ describe("Plane3dByOriginAndVectors", () => {
       pointA.x, pointA.y, pointA.z,
       vectorU.x, vectorU.y, vectorU.z,
       vectorV.x, vectorV.y, vectorV.z);
+    const planeX1 = planeX.clone();
+    ck.testTrue(planeX1.normalizeInPlace(), "normalizeVectors");
     const planeXR = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
       pointA.x, pointA.y, pointA.z,
       vectorU.x, vectorU.y, vectorU.z,
@@ -104,4 +106,20 @@ describe("Plane3dByOriginAndVectors", () => {
     expect(ck.getNumErrors()).equals(0);
 
   });
+  it("Orthogonalize", () => {
+    const ck = new Checker();
+    const planeA = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(3, 2, 4, 1, 5, 0.4, 0.2, 3, 5);
+    const normal = planeA.unitNormal()!;
+    const frame = planeA.toRigidFrame()!;
+    ck.testParallel(normal, frame.matrix.columnZ());
+    ck.testPerpendicular(planeA.vectorU, normal);
+    ck.testPerpendicular(planeA.vectorV, normal);
+    ck.testParallel(planeA.vectorU, frame.matrix.columnX());
+
+    const singularPlane = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(3, 2, 4, 1, 2, 3, 1, 2, 3);
+    ck.testUndefined(singularPlane.unitNormalRay(), "Singular plane unit normal fails");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });

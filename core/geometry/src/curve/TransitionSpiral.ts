@@ -487,7 +487,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
    * @param options StrokeOptions that determine count
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
-    let numStroke = 1;
+    let numStroke;
     if (options) {
       const rMin = Math.min(Math.abs(this.radius01.x0), Math.abs(this.radius01.x1));
       numStroke = options.applyTolerancesToArc(rMin, this.bearing01.sweepRadians);

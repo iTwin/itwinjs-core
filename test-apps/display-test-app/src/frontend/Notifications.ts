@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  NotifyMessageDetails,
+  NotifyMessageDetails, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import {
   Window,
@@ -33,21 +33,15 @@ export class NotificationsWindow extends Window {
 
   public addMessage(message: NotifyMessageDetails): void {
     const toHtml = (msg: HTMLElement | string) => {
-      if ("string" !== typeof msg)
-        return msg;
-
-      const div = document.createElement("div");
-      div.innerText = msg;
-      return div;
+      return ("string" !== typeof msg) ? msg : IModelApp.makeHTMLElement("div", { innerText: msg });
     };
 
-    const msgDiv = document.createElement("div");
+    const msgDiv = IModelApp.makeHTMLElement("div", { parent: this.contentDiv });
     msgDiv.appendChild(toHtml(message.briefMessage));
     if (undefined !== message.detailedMessage)
       msgDiv.appendChild(toHtml(message.detailedMessage));
 
-    msgDiv.appendChild(document.createElement("hr"));
-    this.contentDiv.appendChild(msgDiv);
+    IModelApp.makeHTMLElement("hr", { parent: msgDiv });
 
     while (this.contentDiv.childElementCount > this._maxMessages)
       this.contentDiv.removeChild(this.contentDiv.firstChild!);

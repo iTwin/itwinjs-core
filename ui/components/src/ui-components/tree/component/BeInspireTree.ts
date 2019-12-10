@@ -15,7 +15,7 @@ import { UiComponents } from "../../UiComponents";
 
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export enum BeInspireTreeEvent {
   ChangesApplied = "changes.applied",
@@ -41,7 +41,7 @@ export enum BeInspireTreeEvent {
 }
 
 /** Be alias for Inspire.NodeConfig
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeNodeConfig {
   children?: BeInspireTreeNodeConfig[] | true;
@@ -51,7 +51,7 @@ export interface BeInspireTreeNodeConfig {
 }
 
 /** Be alias for Inspire.NodeConfig.ITree
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeNodeITree {
   icon?: string;
@@ -73,7 +73,7 @@ export interface BeInspireTreeNodeITree {
 }
 
 /** Data structure for [[BeInspireTreeNodeConfig]] with our injected props
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeNodeConfig {
   /** Node's data. May be `undefined` if this is placeholder node. */
@@ -85,7 +85,7 @@ export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeN
 }
 
 /** Type definition for all BeInspireTree nodes
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeNode<TPayload> extends Inspire.TreeNode, BeInspireTreeNodePayloadConfig<TPayload> {
   isDirty(): boolean;
@@ -96,7 +96,7 @@ export interface BeInspireTreeNode<TPayload> extends Inspire.TreeNode, BeInspire
 
 /**
  * Definition of a list of [[BeInspireTreeNode]] with some additional filtering methods
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TPayload>> {
   node(id: string): BeInspireTreeNode<TPayload> | undefined;
@@ -110,26 +110,26 @@ export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TP
 }
 
 /** Array of tree node data elements
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type BeInspireTreeDataProviderRaw<TPayload> = TPayload[];
 /** A Promise for DataProviderRaw
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type BeInspireTreeDataProviderPromise<TPayload> = Promise<BeInspireTreeDataProviderRaw<TPayload>>;
 /** Signature for BeInspireTree data provider
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type BeInspireTreeDataProviderMethod<TPayload> = (parent?: TPayload) => BeInspireTreeDataProviderPromise<TPayload>;
 /** Signature for BeInspireTree data provider
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeDataProviderInterface<TPayload> {
   getNodesCount(parent?: TPayload): Promise<number>;
   getNodes(parent?: TPayload, page?: PageOptions): BeInspireTreeDataProviderPromise<TPayload>;
 }
 /** Type definition for all BeInspireTree data providers
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<TPayload>
   | BeInspireTreeDataProviderPromise<TPayload>
@@ -137,7 +137,7 @@ export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<T
   | BeInspireTreeDataProviderInterface<TPayload>;
 
 /** Type definition for a BeInspireTree renderer
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
@@ -153,7 +153,7 @@ type BeInspireTreeData<TPayload> = Array<BeInspireTreeNodePayloadConfig<TPayload
 /**
  * A context which keeps [[BeInspireTree]] events muted until
  * it gets disposed.
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export class EventsMuteContext implements IDisposable {
 
@@ -206,7 +206,7 @@ export class EventsMuteContext implements IDisposable {
 }
 
 /** Prototype for BeInspireTreeProps.mapPayloadToInspireNodeConfig
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
@@ -217,7 +217,7 @@ interface DeferredLoadingHandler<TPayload> {
 
 /**
  * Configuration properties for [[BeInspireTree]]
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
@@ -228,7 +228,7 @@ export interface BeInspireTreeProps<TNodePayload> {
 
 /**
  * Bentley wrapper for 'inspire-tree'
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export class BeInspireTree<TNodePayload> {
 
@@ -885,8 +885,6 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
   public constructor(props: WrappedInterfaceProviderProps<TPayload>) {
     super("inspireLoad");
-    this.inspireLoad;
-
     this._tree = props.tree;
     this._provider = props.provider;
     this._nodesRemapper = props.nodesRemapper;
@@ -1005,7 +1003,8 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     return resolvedNodes;
   }
 
-  /** Called by inspire-tree */
+  /** Called by inspire-tree through CallableInstance */
+  // tslint:disable-next-line:no-unused-variable
   private inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
     if (!this._paginationHelper) {
       // pagination is disabled - just load all nodes for the parent

@@ -20,7 +20,7 @@ import { UiFramework } from "../UiFramework";
 // istanbul ignore next
 export function getSelectionContextSyncEventIds(): string[] {
   return [SyncUiEventId.SelectionSetChanged, SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged,
-  SessionStateActionId.SetNumItemsSelected];
+    SessionStateActionId.SetNumItemsSelected];
 }
 
 /** return state with isVisible set to true is SectionSet is active.
@@ -99,7 +99,6 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-isolate",
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
-      betaBadge: true,
       items: [this.isolateElementsItemDef, this.isolateCategoriesInSelectionItemDef, this.isolateModelsInSelectionItemDef],
       itemsInColumn: 3,
     });
@@ -159,7 +158,6 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-visibility-hide-2",
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
-      betaBadge: true,
       items: [this.hideElementsItemDef, this.hideCategoriesInSelectionItemDef, this.hideModelsInSelectionItemDef],
       itemsInColumn: 3,
     });

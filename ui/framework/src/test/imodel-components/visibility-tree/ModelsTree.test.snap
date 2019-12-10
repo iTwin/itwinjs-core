@@ -1,0 +1,163 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ModelsTree <ModelsTree /> renders using controlled tree implementation 1`] = `
+<body>
+  <div>
+    <div
+      class="fw-visibility-tree"
+    >
+      <div
+        class="core-tree components-tree"
+      >
+        <div
+          style="overflow: visible; height: 0px; width: 0px;"
+        >
+          <div
+            class="ReactWindow__VariableSizeList"
+            style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
+          >
+            <div
+              style="height: 25px; width: 100%;"
+            >
+              <div
+                class="node-wrapper"
+                style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
+              >
+                <div
+                  class="core-tree-node"
+                  data-testid="tree-node"
+                >
+                  <div
+                    class="contents"
+                    data-testid="tree-node-contents"
+                    style="margin-left: 24px;"
+                  >
+                    <label
+                      class="core-image-checkbox"
+                    >
+                      <input
+                        type="checkbox"
+                      />
+                      <span
+                        class="image icon icon-visibility-hide-2"
+                      />
+                    </label>
+                    <div
+                      class="core-tree-node-icon"
+                    />
+                    <div
+                      class="components-tree-node-content"
+                    >
+                      <span>
+                        test-node
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="resize-triggers"
+        >
+          <div
+            class="expand-trigger"
+          >
+            <div
+              style="width: 201px; height: 201px;"
+            />
+          </div>
+          <div
+            class="contract-trigger"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ModelsTree <ModelsTree /> renders using old tree implementation 1`] = `
+<body>
+  <div>
+    <div
+      class="fw-visibility-tree"
+    >
+      <div
+        class="core-tree components-tree"
+      >
+        <div
+          style="overflow: visible; height: 0px; width: 0px;"
+        >
+          <div
+            aria-label="grid"
+            aria-readonly="true"
+            class="ReactVirtualized__Grid ReactVirtualized__List"
+            role="grid"
+            style="box-sizing: border-box; direction: ltr; height: 200px; position: relative; width: 200px; will-change: transform; overflow-x: hidden; overflow-y: hidden;"
+            tabindex="0"
+          >
+            <div
+              class="ReactVirtualized__Grid__innerScrollContainer"
+              role="rowgroup"
+              style="width: auto; height: 25px; max-width: 200px; max-height: 25px; overflow: hidden; position: relative;"
+            >
+              <div
+                class="node-wrapper"
+                style="height: 25px; left: 0px; position: absolute; top: 0px; width: 100%;"
+              >
+                <div
+                  class="core-tree-node"
+                  data-testid="tree-node"
+                >
+                  <div
+                    class="contents"
+                    data-testid="tree-node-contents"
+                    style="margin-left: 24px;"
+                  >
+                    <label
+                      class="core-image-checkbox"
+                    >
+                      <input
+                        type="checkbox"
+                      />
+                      <span
+                        class="image icon icon-visibility-hide-2"
+                      />
+                    </label>
+                    <div
+                      class="core-tree-node-icon"
+                    />
+                    <div
+                      class="components-tree-node-content"
+                    >
+                      <span>
+                        test-node
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="resize-triggers"
+        >
+          <div
+            class="expand-trigger"
+          >
+            <div
+              style="width: 201px; height: 201px;"
+            />
+          </div>
+          <div
+            class="contract-trigger"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;

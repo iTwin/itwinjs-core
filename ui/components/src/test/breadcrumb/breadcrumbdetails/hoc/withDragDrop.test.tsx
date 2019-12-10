@@ -11,7 +11,6 @@ import { BreadcrumbDetails, BreadcrumbPath } from "../../../../ui-components";
 import { withBreadcrumbDetailsDragDrop } from "../../../../ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../../ui-components/dragdrop/DragDropDef";
-import { TreeDataProvider } from "../../../../ui-components/tree/TreeDataProvider";
 
 describe("Breadcrumb Details withDragDrop HOC", () => {
 
@@ -73,7 +72,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     it("should add current parentId to dataObject and parentObject to args and pass them on when dataObject is defined", () => {
       const onDragSourceBegin = sinon.spy((a: DragSourceArguments) => a);
       const onDragSourceEnd = sinon.spy();
-      const objectType = sinon.spy((_data: { parentId: string | TreeDataProvider }) => "testType");
+      const objectType = sinon.spy(() => "testType");
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       path.setCurrentNode(tree[0]);
@@ -108,7 +107,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       expect(ret).to.equal("test");
     });
     it("should pass object data through with parentId for functional objectType", () => {
-      const objectType = sinon.spy((_data: { parentId: string | TreeDataProvider }) => "testType");
+      const objectType = sinon.spy(() => "testType");
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ objectType }} />) as any;
@@ -117,7 +116,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       expect(objectType).to.be.calledWithMatch({ parentId: tree });
     });
     it("should pass non-object data through unmodified for functional objectType", () => {
-      const objectType = sinon.spy((_data: { parentId: string | TreeDataProvider }) => "testType");
+      const objectType = sinon.spy(() => "testType");
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ objectType }} />) as any;

@@ -5,170 +5,106 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import * as classnames from "classnames";
+// tslint:disable-next-line: no-duplicate-imports
+import { useState, useRef, useEffect } from "react";
 
+import * as classnames from "classnames";
 import { Button, ButtonType, Toggle } from "@bentley/ui-core";
 import { TitleBar, Dialog, FooterPopup } from "@bentley/ui-ninezone";
 import { ViewClipDecorationProvider, IModelApp, ViewClipDecoration, ViewClipClearTool, Viewport, ClipEventType } from "@bentley/imodeljs-frontend";
 
 import { Indicator } from "./Indicator";
 import { StatusFieldProps } from "./StatusFieldProps";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
+import { useActiveViewport } from "../hooks/useActiveViewport";
 
 import "./SectionsField.scss";
 
-interface SectionsStatusFieldState {
-  manipulatorsShown: boolean;
-  toggleDisabled: boolean;
-  target: HTMLElement | null;
-}
-
-/** Widget for showing section extra tools for clearing and showing manipulators
+/** Sections Status Field Props
  * @beta
  */
-export class SectionsStatusField extends React.Component<StatusFieldProps, SectionsStatusFieldState> {
-  private _className: string;
-  private _title = UiFramework.translate("tools.sectionTools");
+export interface SectionsStatusFieldProps extends StatusFieldProps {
+  hideWhenUnused?: boolean;
+}
 
-  constructor(props: StatusFieldProps) {
-    super(props);
+/** Status Field for showing section extra tools for clearing and showing manipulators
+ * @beta
+ */
+// tslint:disable-next-line: variable-name
+export const SectionsStatusField: React.FC<SectionsStatusFieldProps> = (props) => {
+  const [toolTip] = useState(UiFramework.translate("tools.sectionTools"));
+  const [clearLabel] = useState(UiFramework.translate("tools.sectionClear"));
+  const [showHandlesLabel] = useState(UiFramework.translate("tools.sectionShowHandles"));
+  const activeViewport = useActiveViewport();
+  const [showIndicator, setShowIndicator] = useState(false);
+  const [isPopupOpen, setPopupOpen] = useState(false);
+  const targetDiv = useRef<HTMLDivElement>(null);
+  const classes = (showIndicator) ? "uifw-indicator-fade-in" : "uifw-indicator-fade-out";
+  const [hasManipulatorsShown, setHasManipulatorsShown] = useState(false);
 
-    this.state = {
-      manipulatorsShown: false,
-      target: null,
-      toggleDisabled: true,
+  useEffect(() => {
+    // istanbul ignore next
+    const onClipChanged = (viewport: Viewport, _eventType: ClipEventType, _provider: ViewClipDecorationProvider) => {
+      if (viewport !== activeViewport)
+        return;
+
+      setHasManipulatorsShown(!!ViewClipDecoration.get(activeViewport));
+      const isClipActive = !!activeViewport.view.getViewClip();
+      setShowIndicator(isClipActive || !props.hideWhenUnused);
     };
 
-    this._className = this.constructor.name;
-  }
+    const clipActive = !!activeViewport && !!activeViewport.view.getViewClip();
+    setShowIndicator(clipActive || !props.hideWhenUnused);
+    setHasManipulatorsShown(clipActive && !!activeViewport && !!ViewClipDecoration.get(activeViewport));
 
-  /** Listen for view clip creation */
-  public componentDidMount() {
-    ViewClipDecorationProvider.create().onActiveClipChanged.addListener(this._handleClipChanged);
+    ViewClipDecorationProvider.create().onActiveClipChanged.addListener(onClipChanged);
+    return () => {
+      // Get or create static ViewClipDecorationProvider
+      ViewClipDecorationProvider.create().onActiveClipChanged.removeListener(onClipChanged);
+    };
+  }, [activeViewport, props.hideWhenUnused, isPopupOpen]);
 
-    // istanbul ignore next
-    if (IModelApp.viewManager.selectedView) {
-      const toggleDisabled = undefined === IModelApp.viewManager.selectedView.view.getViewClip();
-      this.setState({
-        toggleDisabled,
-      });
-    }
-  }
-
-  /** Clean-up */
-  public componentWillUnmount() {
-    ViewClipDecorationProvider.create().onActiveClipChanged.removeListener(this._handleClipChanged);
-  }
-
-  /** Handle clip creation to enable/disable the toggle */
   // istanbul ignore next
-  private _handleClipChanged = (_viewport: Viewport, eventType: ClipEventType, _provider: ViewClipDecorationProvider) => {
-    if (IModelApp.viewManager.selectedView) {
-      const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
-
-      this.setState({
-        manipulatorsShown,
-        toggleDisabled: eventType === ClipEventType.Clear,
-      });
+  const toggleManipulators = (checked: boolean) => {
+    if (activeViewport) {
+      setHasManipulatorsShown(checked);
+      ViewClipDecorationProvider.create().toggleDecoration(activeViewport);
     }
-  }
+  };
 
-  /** Handle opening/closing the dialog */
-  private _handleIndicatorClick = () => {
-    // istanbul ignore next
-    if (IModelApp.viewManager.selectedView) {
-      const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
-      const toggleDisabled = undefined === IModelApp.viewManager.selectedView.view.getViewClip();
-
-      this.setState({
-        manipulatorsShown,
-        toggleDisabled,
-      });
-    }
-
-    const isOpen = this.props.openWidget === this._className;
-    if (isOpen)
-      this.setOpenWidget(null);
-    else
-      this.setOpenWidget(this._className);
-  }
-
-  /** Clears sections */
   // istanbul ignore next
-  private _handleClear = () => {
+  const handleClear = () => {
     IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
+    setPopupOpen(false);
+  };
 
-    if (IModelApp.viewManager.selectedView) {
-      const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
-      const toggleDisabled = undefined === IModelApp.viewManager.selectedView.view.getViewClip();
-      this.setState({ manipulatorsShown, toggleDisabled });
-    }
-  }
-
-  /** Shows/hides the section manipulators */
-  // istanbul ignore next
-  private _handleShowHideManipulators = (_checked: boolean) => {
-    if (IModelApp.viewManager.selectedView) {
-      ViewClipDecorationProvider.create().toggleDecoration(IModelApp.viewManager.selectedView);
-      const manipulatorsShown: boolean = ViewClipDecoration.get(IModelApp.viewManager.selectedView) !== undefined;
-      this.setState({ manipulatorsShown });
-    }
-  }
-
-  /** Render buttons for clear and show/hide manipulators */
-  private renderContents() {
-    return (
-      <div className="uifw-sections-footer-contents">
-        <Button buttonType={ButtonType.Hollow} onClick={this._handleClear}>{IModelApp.i18n.translate("UiFramework:tools.sectionClear")}</Button>
-        <div className="uifw-uifw-sections-toggle-container">
-          <div className={classnames("uifw-sections-label", this.state.toggleDisabled && "disabled")}>{IModelApp.i18n.translate("UiFramework:tools.sectionShowHandles")}</div>
-          <Toggle className="uifw-sections-toggle" disabled={this.state.toggleDisabled} onChange={this._handleShowHideManipulators.bind(this)} isOn={!this.state.toggleDisabled && this.state.manipulatorsShown} showCheckmark={false} />
-        </div>
+  return (
+    <>
+      <div ref={targetDiv} title={toolTip}>
+        <Indicator className={classes}
+          iconName="icon-section-tool"
+          onClick={() => setPopupOpen(!isPopupOpen)}
+          opened={isPopupOpen}
+          isInFooterMode={props.isInFooterMode}
+        />
       </div>
-    );
-  }
-
-  public render() {
-    const isOpen = this.props.openWidget === this._className;
-
-    return (
-      <>
-        <div ref={this._handleTargetRef} title={this._title}>
-          <Indicator
-            iconName="icon-section-tool"
-            onClick={this._handleIndicatorClick}
-            opened={isOpen}
-            isInFooterMode={this.props.isInFooterMode}
-          />
-        </div>
-        <FooterPopup
-          target={this.state.target}
-          onClose={this._handleClose}
-          isOpen={isOpen}>
-          <Dialog
-            titleBar={
-              <TitleBar title={this._title} />
-            }>
-            {this.renderContents()}
-          </Dialog>
-        </FooterPopup>
-      </>
-    );
-  }
-
-  private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
-  }
-
-  private _handleClose = () => {
-    this.setOpenWidget(null);
-  }
-
-  /** Opens the pop-up window. */
-  private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-  }
-}
+      <FooterPopup
+        target={targetDiv.current}
+        onClose={() => setPopupOpen(false)}
+        isOpen={isPopupOpen}>
+        <Dialog
+          titleBar={
+            <TitleBar title={toolTip} />
+          }>
+          <div className="uifw-sections-footer-contents">
+            <Button buttonType={ButtonType.Hollow} onClick={handleClear}>{clearLabel}</Button>
+            <div className="uifw-uifw-sections-toggle-container">
+              <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
+              <Toggle className="uifw-sections-toggle" onChange={toggleManipulators} isOn={hasManipulatorsShown} showCheckmark={false} />
+            </div>
+          </div>
+        </Dialog>
+      </FooterPopup>
+    </>
+  );
+};

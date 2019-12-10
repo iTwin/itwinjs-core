@@ -106,7 +106,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       expect(ret).to.equal("test");
     });
     it("should pass data through for functional objectType", () => {
-      const objectType = sinon.spy((data: { testType: string }) => data.testType);
+      const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
       const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testType: "function-test" } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ objectType }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;

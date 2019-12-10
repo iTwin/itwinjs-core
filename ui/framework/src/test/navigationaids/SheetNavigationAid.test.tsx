@@ -13,7 +13,6 @@ import {
   AnyWidgetProps,
   NavigationWidgetDef,
   ConfigurableUiManager,
-  WidgetDefFactory,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
@@ -57,7 +56,7 @@ describe("SheetNavigationAid", () => {
 
     it("SheetNavigationAidControl creates SheetNavigationAid", () => {
 
-      const widgetDef = WidgetDefFactory.create(widgetProps);
+      const widgetDef = new NavigationWidgetDef(widgetProps);
       expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
 
       const navigationWidgetDef = widgetDef as NavigationWidgetDef;

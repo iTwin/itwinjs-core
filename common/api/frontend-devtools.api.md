@@ -6,6 +6,7 @@
 
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { BeDuration } from '@bentley/bentleyjs-core';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
@@ -29,6 +30,20 @@ import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+
+// @beta
+export class AnimationIntervalTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(interval?: BeDuration): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha (undocumented)
 export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): void;
@@ -329,6 +344,20 @@ export interface DataListProps {
     name?: string;
     // (undocumented)
     parent?: HTMLElement;
+}
+
+// @alpha
+export class DefaultTileSizeModifierTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(modifier?: number): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -976,6 +1005,34 @@ export class ToolSettingsTracker {
     // (undocumented)
     dispose(): void;
     }
+
+// @alpha
+export class ViewportAddRealityModel extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(url: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ViewportTileSizeModifierTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(modifier?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 
 // (No @packageDocumentation comment for this package)

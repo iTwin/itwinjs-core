@@ -10,7 +10,6 @@ import TestUtils from "../TestUtils";
 import {
   AnyWidgetProps,
   WidgetState,
-  WidgetDefFactory,
   NavigationWidgetDef,
   ToolButton,
   NavigationWidget,
@@ -49,7 +48,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidgetDef from WidgetProps", () => {
 
-    const widgetDef = WidgetDefFactory.create(widgetProps);
+    const widgetDef = new NavigationWidgetDef(widgetProps);
     expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
 
     const navigationWidgetDef = widgetDef as NavigationWidgetDef;

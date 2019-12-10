@@ -16,7 +16,8 @@ const accessToken: AccessToken = new MockAccessToken();
 const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
 const imodelId: GuidString = Guid.createValue();
 
-async () => {
+// enclosing function avoids compile errors and code analysis report.
+export async function test1() {
   // __PUBLISH_EXTRACT_START__ VersionHandler.create.example-code
   // Query all ChangeSets
   const changeSets: ChangeSet[] = await imodelHubClient.changeSets.get(authorizedRequestContext, imodelId);
@@ -27,9 +28,10 @@ async () => {
   // __PUBLISH_EXTRACT_END__
   if (!createdVersion)
     return;
-};
+}
 
-async () => {
+// enclosing function avoids compile errors and code analysis report.
+export async function test2() {
   // __PUBLISH_EXTRACT_START__ VersionHandler.get.example-code
   // Query all Named Versions
   const allVersions: Version[] = await imodelHubClient.versions.get(authorizedRequestContext, imodelId);
@@ -40,9 +42,10 @@ async () => {
 
   if (!allVersions || !versionByName)
     return;
-};
+}
 
-async () => {
+// enclosing function avoids compile errors and code analysis report.
+export async function test3() {
   // __PUBLISH_EXTRACT_START__ VersionHandler.thumbnail.example-code
   // Query Named Version with its Thumbnail Id
   const thumbnailIdQuery: VersionQuery = new VersionQuery().byName("Version name").selectThumbnailId("Small");
@@ -54,4 +57,4 @@ async () => {
   // __PUBLISH_EXTRACT_END__
   if (!thumbnailContents)
     return;
-};
+}

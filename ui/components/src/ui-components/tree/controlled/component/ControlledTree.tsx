@@ -17,43 +17,57 @@ import { UiComponents } from "../../../UiComponents";
 import { TreeEvents } from "../TreeEvents";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
-import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
+import { HighlightableTreeProps } from "../../HighlightingEngine";
 import { TreeImageLoader } from "../../ImageLoader";
 
 /**
  * Properties for [[ControlledTree]]
- * @alpha
+ * @beta
  */
 export interface ControlledTreeProps extends CommonProps {
+  /** Flat list of nodes to be rendered in tree. */
   visibleNodes: VisibleTreeNodes;
+  /** Node loader used to load root nodes and placeholder nodes. */
   nodeLoader: ITreeNodeLoader;
+  /** Tree events handler. */
   treeEvents: TreeEvents;
+  /** Mode of nodes' selection in tree. */
   selectionMode: SelectionMode;
+  /** Specifies whether to show node description or not. It is used in default node renderer and to determine node height.
+   * If custom node renderer and node height callbacks are used it does nothing.
+   */
   descriptionsEnabled?: boolean;
+  /** Specifies whether to show node icon or not. It is used in default node renderer.
+   * If custom node renderer is used it does nothing.
+   */
   iconsEnabled?: boolean;
+  /** Used to highlight matches when filtering tree.
+   * It is passed to treeRenderer.
+   */
   nodeHighlightingProps?: HighlightableTreeProps;
+  /** Custom renderer to be used to render a tree. */
   treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
+  /** Custom renderer to be used while root nodes is loading. */
   spinnerRenderer?: () => React.ReactElement;
+  /** Custom renderer to be used when there is no data to show in tree. */
   noDataRenderer?: () => React.ReactElement;
 }
 
 /**
  * React tree component which rendering is fully controlled from outside.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
-  const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
   const imageLoader = useMemo(() => new TreeImageLoader(), []);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
     <TreeNodeRenderer
       {...nodeProps}
       descriptionEnabled={props.descriptionsEnabled}
-      nodeHighlightProps={highlightingEngine ? highlightingEngine.createRenderProps(nodeProps.node) : undefined}
       imageLoader={props.iconsEnabled ? imageLoader : undefined}
     />
-  ), [props.descriptionsEnabled, props.iconsEnabled, imageLoader, highlightingEngine]);
+  ), [props.descriptionsEnabled, props.iconsEnabled, imageLoader]);
 
   const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
 

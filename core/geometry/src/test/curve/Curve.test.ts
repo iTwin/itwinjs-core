@@ -972,7 +972,7 @@ describe("CylindricalRange", () => {
     for (const c of curves) {
       const strokes = c.cloneStroked();
       for (const ray of [Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
-      Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5)]) {
+        Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5)]) {
         const vector1 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, c);
         ck.testPointer(vector1);
         const vector2 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, strokes);

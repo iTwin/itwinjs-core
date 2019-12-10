@@ -301,7 +301,7 @@ export abstract class Client {
 // @beta
 export enum ClientsLoggerCategory {
     Clients = "imodeljs-clients.Clients",
-    ECJson = "ECJson",
+    ECJson = "imodeljs-clients.ECJson",
     // @internal (undocumented)
     IModelBank = "imodeljs-clients.iModelBank",
     IModelHub = "imodeljs-clients.imodelhub",
@@ -310,7 +310,7 @@ export enum ClientsLoggerCategory {
     // (undocumented)
     Request = "imodeljs-clients.Request",
     // @internal (undocumented)
-    UlasClient = "ulasclient"
+    UlasClient = "imodeljs-clients.ulasclient"
 }
 
 // @beta
@@ -615,33 +615,33 @@ export class EventSubscriptionHandler {
 }
 
 // @beta
-export type EventType = 
+export type EventType =
 /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
  * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
-"LockEvent" | 
+"LockEvent" |
 /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
  * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
-"AllLocksDeletedEvent" | 
+"AllLocksDeletedEvent" |
 /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
-"ChangeSetPostPushEvent" | 
+"ChangeSetPostPushEvent" |
 /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
-"ChangeSetPrePushEvent" | 
+"ChangeSetPrePushEvent" |
 /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
-"CodeEvent" | 
+"CodeEvent" |
 /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
-"AllCodesDeletedEvent" | 
+"AllCodesDeletedEvent" |
 /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
  * @internal
  */
-"BriefcaseDeletedEvent" | 
+"BriefcaseDeletedEvent" |
 /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
-"iModelDeletedEvent" | 
+"iModelDeletedEvent" |
 /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
 "VersionEvent";
 
@@ -763,21 +763,21 @@ export class GlobalEventSubscriptionHandler {
 }
 
 // @beta
-export type GlobalEventType = 
+export type GlobalEventType =
 /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
  * @beta Rename to SoftIModelDeleteEvent
  */
-"SoftiModelDeleteEvent" | 
+"SoftiModelDeleteEvent" |
 /** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]].
  * @beta Rename to HardIModelDeleteEvent
  */
-"HardiModelDeleteEvent" | 
+"HardiModelDeleteEvent" |
 /** Sent when an iModel is created. See [[IModelCreatedEvent]].
  * @beta Rename to IModelCreatedEvent
  */
-"iModelCreatedEvent" | 
+"iModelCreatedEvent" |
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
-"ChangeSetCreatedEvent" | 
+"ChangeSetCreatedEvent" |
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent";
 
@@ -1261,6 +1261,10 @@ export interface OidcFrontendClientConfiguration {
     clockSkew?: number;
     // @internal
     metadata?: any;
+    // @internal
+    postSigninErrorUri?: string;
+    // @internal
+    postSigninSuccessUri?: string;
     postSignoutRedirectUri?: string;
     redirectUri: string;
     // @internal
@@ -1908,21 +1912,21 @@ export enum UsageType {
 // @beta
 export class UserInfo {
     constructor(
-    id: string, 
+    id: string,
     email?: {
         id: string;
         isVerified?: boolean | undefined;
-    } | undefined, 
+    } | undefined,
     profile?: {
         firstName: string;
         lastName: string;
         name?: string | undefined;
         preferredUserName?: string | undefined;
-    } | undefined, 
+    } | undefined,
     organization?: {
         id: string;
         name: string;
-    } | undefined, 
+    } | undefined,
     featureTracking?: {
         ultimateSite: string;
         usageCountryIso: string;

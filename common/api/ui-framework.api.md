@@ -82,7 +82,6 @@ import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
-import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -304,6 +303,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     componentDidUpdate(prevProps: BackstageProps): void;
     // (undocumented)
     componentWillUnmount(): void;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): CommandItemDef;
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
@@ -627,32 +627,23 @@ export interface CardSelectedEventArgs {
 }
 
 // @alpha
-export class CategoryTree extends React.Component<CategoryTreeProps, CategoryTreeState> {
-    constructor(props: CategoryTreeProps);
-    // @internal (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: CategoryTreeProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
+export const CategoryTree: React.FC<CategoryTreeProps>;
 
 // @alpha
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
     clearAll?: boolean;
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     iModel: IModelConnection;
     selectAll?: boolean;
     showSearchBox?: boolean;
+    useControlledTree?: boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface CategoryTreeState {
     // (undocumented)
     activeView?: Viewport;
@@ -661,11 +652,9 @@ export interface CategoryTreeState {
     // (undocumented)
     checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
     // (undocumented)
-    dataProvider?: PresentationTreeDataProvider;
+    dataProvider?: IPresentationTreeDataProvider;
     // (undocumented)
     filterInfo?: FilterInfo;
-    // (undocumented)
-    isLoading: boolean;
     // (undocumented)
     selectedNodes: string[];
 }
@@ -689,21 +678,7 @@ export interface ChangeSetInfo {
 }
 
 // @beta
-export class ClearEmphasisStatusField extends React.Component<ClearEmphasisStatusFieldProps, any> {
-    constructor(props: ClearEmphasisStatusFieldProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta
-export interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
-    // (undocumented)
-    hideWhenUnused?: boolean;
-}
+export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps>;
 
 // @beta
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -782,6 +757,25 @@ export interface CommonBackstageItem {
     readonly subtitle?: string;
     readonly tooltip?: string;
     readonly type: BackstageItemType;
+}
+
+// @public
+export class ConditionalField extends React.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
+    constructor(props: ConditionalFieldProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: ConditionalFieldProps): void;
+    // (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: ConditionalFieldState;
+}
+
+// @public
+export interface ConditionalFieldProps extends StatusFieldProps {
+    boolFunc: (props: StatusFieldProps) => boolean;
+    defaultValue?: boolean;
 }
 
 // @beta
@@ -1030,7 +1024,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ContentLayoutState>;
-    }
+}
 
 // @public
 export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> {
@@ -1774,7 +1768,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
     vector: Vector3d;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface FilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
@@ -1784,6 +1778,12 @@ export interface FilterInfo {
     filtering?: boolean;
     // (undocumented)
     matchesCount?: number;
+}
+
+// @public
+export class FooterModeField extends React.PureComponent<StatusFieldProps> {
+    // (undocumented)
+    render(): React.ReactNode;
 }
 
 // @beta
@@ -2319,6 +2319,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     // @internal (undocumented)
     static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef;
     // (undocumented)
+    defaultActiveItemId?: string;
+    // (undocumented)
     direction: Direction;
     // (undocumented)
     directionExplicit: boolean;
@@ -2412,6 +2414,9 @@ export const IModelConnectedCategoryTree: any;
 // @beta
 export const IModelConnectedCubeNavigationAid: any;
 
+// @alpha
+export const IModelConnectedModelsTree: any;
+
 // @beta
 export const IModelConnectedNavigationWidget: any;
 
@@ -2424,7 +2429,7 @@ export const IModelConnectedViewSelector: any;
 // @beta
 export const IModelConnectedVisibilityComponent: any;
 
-// @beta
+// @beta @deprecated
 export const IModelConnectedVisibilityTree: any;
 
 // @internal
@@ -3143,6 +3148,23 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
 
+// @alpha
+export const ModelsTree: React.FC<ModelsTreeProps>;
+
+// @alpha
+export interface ModelsTreeProps {
+    activeView?: Viewport;
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
+    enablePreloading?: boolean;
+    imodel: IModelConnection;
+    rootElementRef?: React.Ref<HTMLDivElement>;
+    selectionMode?: SelectionMode;
+    useControlledTree?: boolean;
+    // @internal
+    visibilityHandler?: VisibilityHandler;
+}
+
 // @public
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
 }
@@ -3548,6 +3570,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
 // @beta
 export interface ReviewToolWidgetProps {
+    iconSpec?: IconSpec_2;
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
     showCategoryAndModelsContextTools?: boolean;
@@ -3623,13 +3646,13 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export class SectionsStatusField extends React.Component<StatusFieldProps, SectionsStatusFieldState> {
-    constructor(props: StatusFieldProps);
-    componentDidMount(): void;
-    componentWillUnmount(): void;
+export const SectionsStatusField: React.FC<SectionsStatusFieldProps>;
+
+// @beta
+export interface SectionsStatusFieldProps extends StatusFieldProps {
     // (undocumented)
-    render(): JSX.Element;
-    }
+    hideWhenUnused?: boolean;
+}
 
 // @beta
 export function selectionContextStateFunc(state: Readonly<BaseItemState_2>): BaseItemState_2;
@@ -3659,7 +3682,7 @@ export class SelectionContextToolDefinitions {
 // @alpha
 export class SelectionContextUtilities {
     static areFeatureOverridesActive(vp: Viewport): boolean;
-    static clearEmphasize(vp: Viewport): void;
+    static clearEmphasize(vp: Viewport | undefined): void;
     // (undocumented)
     static emphasizeElementsChanged: BeEvent<() => void>;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
@@ -3884,7 +3907,7 @@ export interface SignInProps extends CommonProps {
     oidcClient?: IOidcFrontendClient;
     onOffline?: () => void;
     onRegister?: () => void;
-    onSignedIn: () => void;
+    onSignedIn?: () => void;
     // @internal (undocumented)
     onStartSignIn?: () => void;
 }
@@ -3915,31 +3938,22 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @alpha
-export class SpatialContainmentTree extends React.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
-    constructor(props: SpatialContainmentTreeProps);
-    // @internal (undocumented)
-    componentDidMount(): Promise<void>;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
+export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
 
 // @alpha
 export interface SpatialContainmentTreeProps {
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
+    useControlledTree?: boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface SpatialContainmentTreeState {
     // (undocumented)
     dataProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
-    initialized: false;
 }
 
 // @public
@@ -4565,6 +4579,9 @@ export class ToolbarButtonHelper {
     static searchVerticalToolbarsByTitle(title: string): HTMLButtonElement | null;
 }
 
+// @beta
+export const ToolbarDragInteractionContext: React.Context<boolean>;
+
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
@@ -4586,7 +4603,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     protected createCachedHorizontalItemList(toolbarId: string): void;
     // (undocumented)
     protected createCachedVerticalItemList(toolbarId: string): void;
-    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]): ItemList;
+    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart?: boolean): ItemList;
     // (undocumented)
     generateMergedItemLists(): void;
     protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;
@@ -4911,6 +4928,12 @@ export interface UiVisibilityEventArgs {
 export const useActiveFrontstageId: () => string;
 
 // @beta
+export function useActiveIModelConnection(): IModelConnection | undefined;
+
+// @beta
+export function useActiveViewport(): ScreenViewport | undefined;
+
+// @beta
 export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
@@ -5006,7 +5029,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
-    render(): JSX.Element;
+    render(): JSX.Element | null;
     static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
@@ -5087,6 +5110,7 @@ export interface VisibilityComponentProps {
     activeViewport?: Viewport;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
+    useControlledTree?: boolean;
 }
 
 // @internal (undocumented)
@@ -5122,7 +5146,7 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// @public
+// @public @deprecated
 export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
     constructor(props: VisibilityTreeProps);
     // (undocumented)
@@ -5137,7 +5161,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     static readonly RULESET: Ruleset;
     }
 
-// @public
+// @public @deprecated
 export interface VisibilityTreeProps {
     activeView?: Viewport;
     // @internal
@@ -5268,11 +5292,6 @@ export class WidgetDef {
     readonly widgetControl: WidgetControl | undefined;
     // (undocumented)
     widgetType: WidgetType;
-}
-
-// @internal
-export class WidgetDefFactory {
-    static create(widgetProps: WidgetProps): WidgetDef;
 }
 
 // @public
@@ -5664,9 +5683,12 @@ export class ZoneDef extends WidgetHost {
     constructor();
     allowsMerging: boolean;
     applicationData?: any;
+    readonly initialWidth: number | undefined;
     readonly isStatusBar: boolean;
     readonly isToolSettings: boolean;
     mergeWithZone?: ZoneLocation;
+    // @internal (undocumented)
+    setInitialWidth(width: number | undefined): void;
     readonly shouldFillZone: boolean;
     zoneState: ZoneState;
 }
@@ -5702,6 +5724,7 @@ export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
     defaultState?: ZoneState;
+    initialWidth?: number;
     mergeWithZone?: ZoneLocation;
     // @internal (undocumented)
     runtimeProps?: ZoneRuntimeProps;

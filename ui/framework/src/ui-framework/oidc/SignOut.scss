@@ -6,7 +6,7 @@
 
 $user-profile-circle-size: 60px;
 
-.user-profile {
+.uifw-user-profile {
   background: white;
   width: auto;
   height: auto;
@@ -75,7 +75,7 @@ $user-profile-circle-size: 60px;
     }
 
     > button {
-      @include uicore-buttons-primary;
+      @include uicore-buttons-primary-large;
       width: 75%;
       margin: auto 0 0 0;
      }

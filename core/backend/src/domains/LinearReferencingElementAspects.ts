@@ -15,14 +15,14 @@ import { LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPos
  */
 export class DistanceExpression implements DistanceExpressionProps {
   public distanceAlongFromStart: number;
-  public lateralOffsetFromLinearElement?: number;
-  public verticalOffsetFromLinearElement?: number;
+  public lateralOffsetFromILinearElement?: number;
+  public verticalOffsetFromILinearElement?: number;
   public distanceAlongFromReferent?: number;
 
   constructor(props: DistanceExpressionProps) {
     this.distanceAlongFromStart = JsonUtils.asDouble(props.distanceAlongFromStart);
-    this.lateralOffsetFromLinearElement = JsonUtils.asDouble(props.lateralOffsetFromLinearElement);
-    this.verticalOffsetFromLinearElement = JsonUtils.asDouble(props.verticalOffsetFromLinearElement);
+    this.lateralOffsetFromILinearElement = JsonUtils.asDouble(props.lateralOffsetFromILinearElement);
+    this.verticalOffsetFromILinearElement = JsonUtils.asDouble(props.verticalOffsetFromILinearElement);
     this.distanceAlongFromReferent = JsonUtils.asDouble(props.distanceAlongFromReferent);
   }
 

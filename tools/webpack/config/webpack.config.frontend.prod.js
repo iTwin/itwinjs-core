@@ -6,13 +6,11 @@
 
 const autoprefixer = require("autoprefixer");
 const path = require("path");
-const webpack = require("webpack");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ManifestPlugin = require("webpack-manifest-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
-const plugins = require("../scripts/utils/webpackPlugins");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.

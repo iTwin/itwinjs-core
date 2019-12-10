@@ -173,10 +173,15 @@ export class PropertyMetaData implements PropertyMetaDataProps {
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }
-    if (this.direction !== undefined)  // the presence of this means it is a navigation property
+    if (this.isNavigation)
       return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
 
     return jsonObj;
+  }
+
+  /** Return `true` if this property is a NavigationProperty. */
+  public get isNavigation(): boolean {
+    return (this.direction !== undefined); // the presence of `direction` means it is a navigation property
   }
 }
 
@@ -218,9 +223,9 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.baseClasses = jsonObj.baseClasses;
     this.customAttributes = jsonObj.customAttributes;
     this.properties = {};
-    for (const propName in jsonObj.properties) {
-      if (propName)
-        this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+
+    for (const propName in jsonObj.properties) { // tslint:disable-line: forin
+      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }
 }

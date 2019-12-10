@@ -6,8 +6,16 @@
 import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown, createToolButton } from "./ToolBar";
 
-// Indexed by StandardViewId enum
-const entries = ["top", "bottom", "left", "right", "front", "back", "isoleft", "isoright"];
+const entries = [
+  "\ue916", // top
+  "\ue910", // bottom
+  "\ue914", // left
+  "\ue915", // right
+  "\ue911", // front
+  "\ue90f", // back
+  "\ue912", // isoLeft
+  "\ue913", // isoRight
+];
 
 export class StandardRotations extends ToolBarDropDown {
   private readonly _element: HTMLElement;
@@ -18,7 +26,6 @@ export class StandardRotations extends ToolBarDropDown {
     super();
     this._parent = parent;
     this._vp = vp;
-
     this._element = document.createElement("div");
     this._element.className = "toolMenu";
     this._element.style.display = "block";
@@ -35,7 +42,7 @@ export class StandardRotations extends ToolBarDropDown {
       }
 
       div.appendChild(createToolButton({
-        className: "bim-icon-view" + entries[i],
+        iconUnicode: entries[i],
         click: () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
       }));
     }

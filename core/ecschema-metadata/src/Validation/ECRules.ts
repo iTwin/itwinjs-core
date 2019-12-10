@@ -342,7 +342,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
       return;
 
     return new Diagnostics.IncompatibleUnitPropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName,
-    baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
+      baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {

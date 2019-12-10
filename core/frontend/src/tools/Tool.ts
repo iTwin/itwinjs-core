@@ -6,7 +6,7 @@
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, IModelError, Easing } from "@bentley/imodeljs-common";
 import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
@@ -20,16 +20,27 @@ import { ScreenViewport, Viewport } from "../Viewport";
  * @public
  */
 export class ToolSettings {
-  /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(260);
+  /** @deprecated */
+  public static get animationTime() { return ToolSettings.viewAnimate.time.normal; }
+  /** @deprecated */
+  public static set animationTime(val: BeDuration) { ToolSettings.viewAnimate.time.normal = val; }
+
+  /** @beta */
+  public static viewAnimate = {
+    easing: Easing.Cubic.InOut,
+    /** Duration of animations of viewing operations. */
+    time: {
+      fast: BeDuration.fromSeconds(.75),
+      normal: BeDuration.fromSeconds(1.5),
+      slow: BeDuration.fromSeconds(3.0),
+    },
+  };
   /** Two tap must be within this period to be a double tap. */
   public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
   /** Two clicks must be within this period to be a double click. */
   public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
-  /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */
@@ -58,18 +69,18 @@ export class ToolSettings {
   public static wheelZoomBumpDistance = Constant.oneCentimeter;
   /** the speed to scroll for the "scroll view" tool (distance per second). */
   public static scrollSpeed = .75;
-  /** the speed to zoom for the "zoom view" tool (ratio per second). */
-  public static zoomSpeed = 2;
+  /** the speed to zoom for the "zoom view" tool. */
+  public static zoomSpeed = 10;
   /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.75;
+  public static wheelZoomRatio = 1.5;
   /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
   public static viewingInertia = {
     /** Flag to enable inertia. */
     enabled: true,
     /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
-    damping: .9,
+    damping: .96,
     /** Maximum duration of the inertia operation. Important when frame rates are low. */
-    duration: BeDuration.fromMilliseconds(450),
+    duration: BeDuration.fromMilliseconds(500),
   };
 }
 
@@ -578,12 +589,6 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked when the cursor is moving */
   public async onMouseMotion(_ev: BeButtonEvent): Promise<void> { }
 
-  /** Invoked when the cursor is not moving */
-  public async onMouseNoMotion(_ev: BeButtonEvent): Promise<void> { }
-
-  /** Invoked when the cursor was previously moving, and has stopped moving. */
-  public async onMouseMotionStopped(_ev: BeButtonEvent): Promise<void> { }
-
   /** Invoked when the cursor begins moving while a button is depressed.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
@@ -804,10 +809,7 @@ export class ToolRegistry {
    * @param modelObj the module to search for subclasses of Tool.
    */
   public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
-    for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
+    for (const thisMember in moduleObj) {  // tslint:disable-line: forin
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
         this.register(thisTool, namespace, i18n);

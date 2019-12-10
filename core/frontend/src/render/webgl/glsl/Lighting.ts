@@ -92,9 +92,9 @@ export function addLighting(builder: ProgramBuilder) {
         scratch3Floats[2] = -scratchDirection.z;
       } else {
         // use current hardcoded direction for first light
-        scratch3Floats[0] = 0.2;
-        scratch3Floats[1] = 0.5;
-        scratch3Floats[2] = 0.5;
+        scratch3Floats[0] = 0.272166;
+        scratch3Floats[1] = 0.680414;
+        scratch3Floats[2] = 0.680414;
       }
       uniform.setUniform3fv(scratch3Floats);
     });

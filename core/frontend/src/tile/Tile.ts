@@ -29,6 +29,7 @@ import {
   ElementAlignedBox3d,
   Frustum,
   FrustumPlanes,
+  LinePixels,
   TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -197,18 +198,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         child.collectStatistics(stats);
   }
 
-  /* ###TODO
-  public cancelAllLoads(): void {
-    if (this.isLoading) {
-      this.loadStatus = Tile.LoadStatus.NotLoaded;
-      if (this._children !== undefined) {
-        for (const child of this._children)
-          child.cancelAllLoads();
-      }
-    }
-  }
-  */
-
   public get loadStatus(): Tile.LoadStatus {
     switch (this._state) {
       case TileState.NotReady: {
@@ -336,7 +325,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         const ranges = computeChildRanges(this);
         for (const range of ranges) {
           const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
-          builder.setSymbology(color, color, 1);
+          const pixels = !range.isEmpty ? LinePixels.HiddenLine : LinePixels.Solid;
+          const width = !range.isEmpty ? 2 : 1;
+          builder.setSymbology(color, color, width, pixels);
           addRangeGraphic(builder, range.range, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.Sphere === type) {
@@ -424,6 +415,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
       this._childrenLastUsed = args.now;
+      return;
     }
 
     if (undefined !== this.children) {
@@ -868,7 +860,11 @@ export namespace Tile {
       this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     }
 
-    public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
+    /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
+     * @see [[Viewport.tileSizeModifier]].
+     */
+    public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
+
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
     private static _scratchRange = new Range3d();

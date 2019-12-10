@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "presentation-components/DefaultPropertyGridContent",
+  "rules": [
+    {
+      "ruleType": "Content",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    }
+  ]
+}

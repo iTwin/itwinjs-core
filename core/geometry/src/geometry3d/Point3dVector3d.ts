@@ -230,7 +230,6 @@ export class XYZ implements XYAndZ {
     b = Math.abs(this.z);
     if (b > a) {
       index = 2;
-      a = b;
     }
     return index;
   }
@@ -592,6 +591,7 @@ export class Vector3d extends XYZ {
   public static createPolar(r: number, theta: Angle, z?: number): Vector3d {
     return Vector3d.create(r * theta.cos(), r * theta.sin(), z);
   }
+
   /**
    * Return a vector defined in spherical coordinates.
    * @param r sphere radius
@@ -600,7 +600,7 @@ export class Vector3d extends XYZ {
    */
   public static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d {
     const cosPhi = phi.cos();
-    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), phi.sin());
+    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), r * phi.sin());
   }
   /**
    * Convert json to Vector3d.  Accepted forms are:

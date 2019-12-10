@@ -81,6 +81,19 @@
           "items": {
             "isSubject": "true"
           }
+        },
+        {
+          "ruleType": "Grouping",
+          "class": {
+            "schemaName": "BisCore",
+            "className": "Subject"
+          },
+          "groups": [
+            {
+              "specType": "SameLabelInstance",
+              "applicationStage": "PostProcess"
+            }
+          ]
         }
       ]
     },

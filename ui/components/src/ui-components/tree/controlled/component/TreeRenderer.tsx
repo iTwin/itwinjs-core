@@ -15,7 +15,6 @@ import { timer } from "rxjs/internal/observable/timer";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { CellEditingEngine } from "./CellEditingEngine";
 import { TreeActions } from "../TreeActions";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
@@ -30,15 +29,18 @@ const NODE_LOAD_DELAY = 500;
 
 /**
  * Properties for [[TreeRenderer]] component.
- * @alpha
+ * @beta
  */
 export interface TreeRendererProps {
-  cellEditing?: CellEditingEngine;
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+  /** Callback that is used to determine node height. */
   nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
+  /** Callback to render custom node.  */
   nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+  /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
 }
 
@@ -50,30 +52,50 @@ function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
   return `${node.parentId || ""}-${node.childIndex}`;
 }
 
-interface TreeRendererContext {
+/**
+ * Context of [[TreeRenderer]] component.
+ * @beta
+ */
+export interface TreeRendererContext {
+  /** Callback to render custom node. */
   nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
+  /** Engine used to created node highlighting properties. */
+  highlightingEngine?: HighlightingEngine;
+  /** Callback used detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+   * @internal
+   */
   onLabelRendered?: (node: TreeModelNode) => void;
 }
 
+/** [[TreeRenderer]] context provider, consumer and custom hook.
+ * @beta
+ */
 export const [
-  /** @alpha */
+  /** Context of [[TreeRenderer]] provider.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextProvider,
 
-  /** @alpha */
+  /** Context of [[TreeRenderer]] consumer.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextConsumer,
 
-  /** @alpha */
+  /** Custom hook to use [[TreeRenderer]] context.
+   * @beta
+   */
   useTreeRendererContext,
 ] = createContextWithMandatoryProvider<TreeRendererContext>("TreeRendererContext");
 
 /**
  * Default component for rendering tree.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
@@ -88,6 +110,7 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
   }
 
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
+  const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
 
   const rendererContext = useMemo<TreeRendererContext>(() => ({
     nodeRenderer: props.nodeRenderer ? props.nodeRenderer : (nodeProps) => (<TreeNodeRenderer {...nodeProps} />),
@@ -95,32 +118,35 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
     nodeLoader: props.nodeLoader,
     visibleNodes: props.visibleNodes,
     onLabelRendered,
-  }), [props.nodeRenderer, props.treeActions, props.visibleNodes, onLabelRendered]);
+    highlightingEngine,
+  }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
 
   const itemKey = useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
     [props.visibleNodes],
   );
 
+  const { nodeHeight, visibleNodes } = props;
   const itemSize = useCallback(
-    (index: number) => props.nodeHeight(props.visibleNodes.getAtIndex(index)!, index),
-    [props.nodeHeight, props.visibleNodes],
+    (index: number) => nodeHeight(visibleNodes.getAtIndex(index)!, index),
+    [nodeHeight, visibleNodes],
   );
 
+  const { nodeHighlightingProps } = props;
   useEffect(() => {
-    const highlightedNodeId = getHighlightedNodeId(props.nodeHighlightingProps);
+    const highlightedNodeId = getHighlightedNodeId(nodeHighlightingProps);
     if (!highlightedNodeId || !variableSizeListRef.current)
       return;
 
     let index = 0;
-    for (const node of props.visibleNodes) {
+    for (const node of visibleNodes) {
       if (isTreeModelNode(node) && node.id === highlightedNodeId)
         break;
 
       index++;
     }
     variableSizeListRef.current!.scrollToItem(index);
-  }, [props.nodeHighlightingProps]);
+  }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <TreeRendererContextProvider value={rendererContext}>
@@ -153,7 +179,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
     const { index, style } = props;
 
     const context = useTreeRendererContext(Node);
-    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered } = context;
+    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine } = context;
     const node = visibleNodes!.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
@@ -177,17 +203,18 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
       }
 
       return () => { };
-    }, [node, nodeLoader]);
+    }, [node, nodeLoader]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
       <div className={className} style={style}>
         {useMemo(() => {
           if (isTreeModelNode(node)) {
-            return nodeRenderer({ node, treeActions, onLabelRendered });
+            const nodeHighlightProps = highlightingEngine ? highlightingEngine.createRenderProps(node) : undefined;
+            return nodeRenderer({ node, treeActions, onLabelRendered, nodeHighlightProps });
           }
 
           return <TreeNodePlaceholder level={node.depth} />;
-        }, [node, treeActions, nodeRenderer, onLabelRendered])}
+        }, [node, treeActions, nodeRenderer, onLabelRendered, highlightingEngine])}
       </div>
     );
   },
@@ -226,7 +253,7 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
       const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
       if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
         scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
-    }, [highlightableTreeProps]);
+    }, [highlightableTreeProps, treeRef]);
 
   return onLabelRendered;
 }

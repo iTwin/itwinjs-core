@@ -86,6 +86,7 @@ import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelToken } from '@bentley/imodeljs-common';
+import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -155,6 +156,19 @@ import { ViewStateProps } from '@bentley/imodeljs-common';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
+
+// @beta (undocumented)
+export class AliCloudStorageService extends CloudStorageService {
+    constructor(credentials: CloudStorageServiceCredentials);
+    // (undocumented)
+    id: CloudStorageProvider;
+    // (undocumented)
+    listContainer(name: string, marker: string, count: number): Promise<string[]>;
+    // (undocumented)
+    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
+    // (undocumented)
+    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
 
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
@@ -491,15 +505,15 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
-    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
-    getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
-    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
+    getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
+    getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
+    getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
     readonly isOpen: boolean;
-    isProcessed(changesetId: string): boolean;
+    isProcessed(changesetId: GuidString): boolean;
     // (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult>;
 }
 
 // @public
@@ -617,8 +631,16 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
-    service: "azure" | "external";
+    service: "azure" | "alicloud" | "external";
 }
+
+// @internal (undocumented)
+export class CloudStorageTileUploader {
+    // (undocumented)
+    readonly activeUploads: Iterable<Promise<void>>;
+    // (undocumented)
+    cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
+    }
 
 // @beta (undocumented)
 export interface CloudStorageUploadOptions {
@@ -911,9 +933,9 @@ export class DistanceExpression implements DistanceExpressionProps {
     // (undocumented)
     static fromJSON(json: DistanceExpressionProps): DistanceExpression;
     // (undocumented)
-    lateralOffsetFromLinearElement?: number;
+    lateralOffsetFromILinearElement?: number;
     // (undocumented)
-    verticalOffsetFromLinearElement?: number;
+    verticalOffsetFromILinearElement?: number;
 }
 
 // @public
@@ -1557,9 +1579,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    jsonProperties: {
-        [key: string]: any;
-    };
+    jsonProperties?: string;
     kind: string;
     scope: RelatedElement;
     // @internal (undocumented)
@@ -1571,7 +1591,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 export namespace ExternalSourceAspect {
     export enum Kind {
         // (undocumented)
-        Element = "Element"
+        Element = "Element",
+        // (undocumented)
+        Relationship = "Relationship"
     }
 }
 
@@ -2122,6 +2144,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): void;
+    exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
     exportChildElements(elementId: Id64String): void;
     exportCodeSpecById(codeSpecId: Id64String): void;
     exportCodeSpecByName(codeSpecName: string): void;
@@ -2137,19 +2160,22 @@ export class IModelExporter {
     protected readonly handler: IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
-}
+    }
 
 // @alpha
 export abstract class IModelExportHandler {
     // @internal
     readonly callProtected: any;
-    protected onExportCodeSpec(_codeSpec: CodeSpec): void;
-    protected onExportElement(_element: Element): void;
+    protected onDeleteElement(_elementId: Id64String): void;
+    protected onDeleteModel(_modelId: Id64String): void;
+    protected onDeleteRelationship(_relInstanceId: Id64String): void;
+    protected onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
+    protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
     protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect): void;
+    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
     protected onExportFont(_font: FontProps): void;
-    protected onExportModel(_model: Model): void;
-    protected onExportRelationship(_relationship: Relationship): void;
+    protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
+    protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2192,6 +2218,8 @@ export class IModelHost {
     static readonly tileContentRequestTimeout: number;
     // @internal
     static readonly tileTreeRequestTimeout: number;
+    // @internal (undocumented)
+    static tileUploader: CloudStorageTileUploader;
     // @internal
     static readonly usingExternalTileCache: boolean;
     }
@@ -2233,6 +2261,7 @@ export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     readonly autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
+    deleteRelationship(relationshipProps: RelationshipProps): void;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
@@ -2240,9 +2269,10 @@ export class IModelImporter {
     importRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
-    protected onInsertModel(modelProps: ModelProps): void;
+    protected onInsertModel(modelProps: ModelProps): Id64String;
     protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onUpdateElement(elementProps: ElementProps): void;
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
@@ -2299,11 +2329,15 @@ export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
     detectElementDeletes(): void;
+    detectRelationshipDeletes(): void;
     dispose(): void;
     readonly exporter: IModelExporter;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
+    protected onDeleteElement(sourceElementId: Id64String): void;
+    protected onDeleteModel(_sourceModelId: Id64String): void;
+    protected onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     protected onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
     protected onExportElement(sourceElement: Element): void;
     protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
@@ -2316,6 +2350,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): void;
+    processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
     processChildElements(sourceElementId: Id64String): void;
     processCodeSpec(codeSpecName: string): void;
     processCodeSpecs(): void;
@@ -2900,8 +2935,8 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 // @public
 export class OpenParams {
     constructor(
-    openMode: OpenMode, 
-    syncMode?: SyncMode | undefined, 
+    openMode: OpenMode,
+    syncMode?: SyncMode | undefined,
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;

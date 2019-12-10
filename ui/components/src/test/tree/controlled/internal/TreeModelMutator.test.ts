@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
+import sinon from "sinon";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeModelMutator } from "../../../../ui-components/tree/controlled/internal/TreeModelMutator";
@@ -112,10 +113,10 @@ describe("TreeModelMutator", () => {
     const nodeToDeselect: MutableTreeModelNode = { ...createRandomMutableTreeModelNode(), isSelected: true };
 
     it("selects and deselects nodes", () => {
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToDeselect.id)).returns(() => nodeToDeselect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToDeselect.item.id)).returns(() => nodeToDeselect).verifiable(moq.Times.once());
 
-      modelMutator.modifySelection([nodeToSelect.id], [nodeToDeselect.id]);
+      modelMutator.modifySelection([nodeToSelect.item], [nodeToDeselect.item]);
       treeModelMock.verifyAll();
       treeModelSourceMock.verifyAll();
 
@@ -124,10 +125,10 @@ describe("TreeModelMutator", () => {
     });
 
     it("tries to select and deselect nodes even if they were removed", () => {
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => undefined).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToDeselect.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToDeselect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
 
-      modelMutator.modifySelection([nodeToSelect.id], [nodeToDeselect.id]);
+      modelMutator.modifySelection([nodeToSelect.item], [nodeToDeselect.item]);
       treeModelMock.verifyAll();
       treeModelSourceMock.verifyAll();
     });
@@ -142,9 +143,9 @@ describe("TreeModelMutator", () => {
     it("replaces selection", () => {
       const nodes: MutableTreeModelNode[] = [selectedNode, nodeToSelect];
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]()).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => nodeToSelect).verifiable(moq.Times.once());
 
-      modelMutator.replaceSelection([nodeToSelect.id]);
+      modelMutator.replaceSelection([nodeToSelect.item]);
       treeModelMock.verifyAll();
       expect(selectedNode.isSelected).to.be.false;
       expect(nodeToSelect.isSelected).to.be.true;
@@ -153,9 +154,9 @@ describe("TreeModelMutator", () => {
     it("tries to replace selection even if nodes were removed", () => {
       const nodes: MutableTreeModelNode[] = [];
       treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]()).verifiable(moq.Times.once());
-      treeModelMock.setup((x) => x.getNode(nodeToSelect.id)).returns(() => undefined).verifiable(moq.Times.once());
+      treeModelMock.setup((x) => x.getNode(nodeToSelect.item.id)).returns(() => undefined).verifiable(moq.Times.once());
 
-      modelMutator.replaceSelection([nodeToSelect.id]);
+      modelMutator.replaceSelection([nodeToSelect.item]);
       treeModelMock.verifyAll();
     });
 
@@ -178,7 +179,7 @@ describe("TreeModelMutator", () => {
 
     it("sets checkbox state", () => {
       const checkboxStateChange: CheckboxStateChange = {
-        nodeId: node.id,
+        nodeItem: node.item,
         newState: CheckBoxState.On,
       };
 
@@ -190,13 +191,67 @@ describe("TreeModelMutator", () => {
 
     it("tries to set checkbox state even if node was removed", () => {
       const checkboxStateChange: CheckboxStateChange = {
-        nodeId: node.id,
+        nodeItem: node.item,
         newState: CheckBoxState.On,
       };
 
       treeModelMock.setup((x) => x.getNode(node.id)).returns(() => undefined).verifiable(moq.Times.once());
       modelMutator.setCheckboxStates([checkboxStateChange]);
       treeModelMock.verifyAll();
+    });
+
+  });
+
+  describe("activateEditor", () => {
+
+    beforeEach(() => {
+      node.isSelected = true;
+      node.item.isEditable = true;
+    });
+
+    it("sets editing info for selected node", () => {
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+      expect(node.editingInfo).to.not.be.undefined;
+    });
+
+    it("does not set editing info if node is not editable", () => {
+      node.item.isEditable = false;
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+      expect(node.editingInfo).to.be.undefined;
+    });
+
+    it("tries to set editing info even if node was removed", () => {
+      node.isSelected = false;
+
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => undefined).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+    });
+
+    describe("nodeEditingInfo callbacks", () => {
+      let onNodeUpdatedSpy: sinon.SinonSpy;
+
+      beforeEach(() => {
+        onNodeUpdatedSpy = sinon.spy();
+        treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
+        modelMutator.activateEditing(node.id, onNodeUpdatedSpy);
+      });
+
+      it("closes node editing", () => {
+        node.editingInfo!.onCancel();
+        expect(node.editingInfo).to.be.undefined;
+      });
+
+      it("closes editing and calls onNodeUpdated when changes are committed", () => {
+        node.editingInfo!.onCommit(node, "newValue");
+        expect(onNodeUpdatedSpy).to.be.calledOnceWith(node, "newValue");
+        expect(node.editingInfo).to.be.undefined;
+      });
+
     });
 
   });

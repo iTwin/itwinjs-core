@@ -322,10 +322,12 @@ export class IModelDb extends IModel {
         if (typeof openParams.timeout === "undefined")
           await briefcaseEntry.isPending;
         else {
-          const waitPromise = BeDuration.wait(openParams.timeout).then(() => {
-            timedOut = true;
-          });
-          await Promise.race([briefcaseEntry.isPending, waitPromise]);
+          timedOut = true;
+          const waitForOpen = async () => {
+            await briefcaseEntry.isPending;
+            timedOut = false;
+          };
+          await BeDuration.race(openParams.timeout, waitForOpen());
         }
       }
     } catch (error) {
@@ -1106,12 +1108,10 @@ export class IModelDb extends IModel {
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = iModel.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) {
-      if (propName) {
-        const propMeta = meta.properties[propName];
-        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
-          func(propName, propMeta);
-      }
+    for (const propName in meta.properties) {    // tslint:disable-line: forin
+      const propMeta = meta.properties[propName];
+      if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+        func(propName, propMeta);
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
@@ -1887,18 +1887,22 @@ export namespace IModelDb {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result as IModelJsNative.TileContent;
-        const iModelGuid = this._iModel.getGuid();
+        let iModelId = this._iModel.iModelToken.iModelId;
+        if (undefined === iModelId) {
+          // iModel not in hub - therefore we're almost certainly not logging to SEQ so don't much care...
+          iModelId = "";
+        }
 
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;
         const tileSize = res.content.length;
         if (tileSize > tileSizeThreshold) {
-          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelId }));
         }
 
         const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
         const loadTime = res.elapsedSeconds;
         if (loadTime > loadTimeThreshold) {
-          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelId }));
         }
 
         resolve(res.content);

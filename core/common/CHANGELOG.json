@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-common_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tween.js code"
+          },
+          {
+            "comment": "Added AliCloud tile cache service"
+          },
+          {
+            "comment": "Code quality report fixes"
+          },
+          {
+            "comment": "fix warnings from static analysis"
+          },
+          {
+            "comment": "Add PropertyMetaData.isNavigation"
+          },
+          {
+            "comment": "Addressing typo in a couple of members, making them match the schema properly."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/imodeljs-common_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

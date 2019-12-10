@@ -37,7 +37,8 @@ function processGlobalEvent(event: IModelHubGlobalEvent): void {
 }
 // __PUBLISH_EXTRACT_END__
 
-async () => {
+// enclosing function avoids compile and code analysis errors.
+export async function testit() {
   const accessToken = new MockAccessToken();
   const requestContext = new ClientRequestContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
@@ -81,4 +82,4 @@ async () => {
   // Delete callback when events should be no longer received
   deleteCallback();
   // __PUBLISH_EXTRACT_END__
-};
+}

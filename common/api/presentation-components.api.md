@@ -16,12 +16,14 @@ import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IElementPropertyDataProvider } from '@bentley/ui-components';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
 import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
+import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -37,16 +39,22 @@ import * as React from 'react';
 import { RowItem } from '@bentley/ui-components';
 import { Ruleset } from '@bentley/presentation-common';
 import { RulesetsFactory } from '@bentley/presentation-common';
+import { SelectionChangeType } from '@bentley/presentation-frontend';
 import { SelectionHandler } from '@bentley/presentation-frontend';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SortDirection } from '@bentley/ui-core';
+import { Subscription } from '@bentley/ui-components';
 import { TableDataChangeEvent } from '@bentley/ui-components';
 import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
+import { TreeCheckboxStateChangeEvent } from '@bentley/ui-components';
 import { TreeEvents } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
+import { TreeNodeEvent } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeProps } from '@bentley/ui-components';
+import { TreeSelectionModificationEvent } from '@bentley/ui-components';
+import { TreeSelectionReplacementEvent } from '@bentley/ui-components';
 import { ViewportProps } from '@bentley/ui-components';
 
 // @public
@@ -59,8 +67,8 @@ export interface CacheInvalidationProps {
 
 // @internal
 export class ContentBuilder {
-    static createPropertyDescription(field: Field): PropertyDescription;
-    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps): PropertyRecord;
+    static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription;
+    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord;
 }
 
 // @public
@@ -86,10 +94,10 @@ export class ContentDataProvider implements IContentDataProvider {
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithFilteringSupportProps {
     activeMatchIndex?: number;
     filter?: string;
@@ -99,18 +107,18 @@ export interface ControlledTreeWithFilteringSupportProps {
     onNodeLoaderChanged?: (nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
     modelSource: TreeModelSource;
 }
 
-// @alpha
+// @beta
 export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
 
-// @alpha
+// @beta
 export interface ControlledTreeWithUnifiedSelectionProps {
     nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
@@ -126,6 +134,21 @@ export class DataProvidersFactory {
 // @public
 export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
+}
+
+// @beta
+export class FavoritePropertiesDataProvider implements IElementPropertyDataProvider {
+    constructor(props?: FavoritePropertiesDataProviderProps);
+    customRulesetId: string | undefined;
+    getData(imodel: IModelConnection, elementId: string): Promise<PropertyData>;
+    includeFieldsWithCompositeValues: boolean;
+    includeFieldsWithNoValues: boolean;
+    }
+
+// @beta (undocumented)
+export interface FavoritePropertiesDataProviderProps {
+    // @internal (undocumented)
+    propertyDataProviderFactory?: (imodel: IModelConnection, rulesetId?: string) => PresentationPropertyDataProvider;
 }
 
 // @public
@@ -182,13 +205,28 @@ export class LabelsProvider implements IPresentationLabelsProvider {
     readonly imodel: IModelConnection;
 }
 
+// @beta
+export interface PresentationNodeLoaderProps {
+    // @internal
+    dataProvider?: IPresentationTreeDataProvider;
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    pageSize: number;
+    // (undocumented)
+    preloadingEnabled?: boolean;
+    // (undocumented)
+    rulesetId: string;
+}
+
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
-    constructor(imodel: IModelConnection, rulesetId: string);
+    constructor(imodel: IModelConnection, rulesetId?: string);
     dispose(): void;
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
+    includeFieldsWithCompositeValues: boolean;
     includeFieldsWithNoValues: boolean;
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldFavorite: (field: Field) => boolean;
@@ -198,7 +236,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
     protected sortFields(_category: CategoryDescription, fields: Field[]): void;
-}
+    }
 
 // @public
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
@@ -291,7 +329,36 @@ export interface TreeWithUnifiedSelectionProps {
     selectionHandler?: SelectionHandler;
 }
 
-// @alpha
+// @beta
+export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
+    constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource, selectionHandler: SelectionHandler, dataProvider: IPresentationTreeDataProvider);
+    protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    protected getKeys(nodes: TreeNodeItem[]): Keys;
+    // (undocumented)
+    protected getModel(): import("@bentley/ui-components").TreeModel;
+    // (undocumented)
+    protected getNodeKey(node: TreeNodeItem): NodeKey;
+    // (undocumented)
+    onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    // (undocumented)
+    onDelayedNodeClick(event: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeCollapsed(event: TreeNodeEvent): void;
+    // (undocumented)
+    onNodeExpanded(event: TreeNodeEvent): void;
+    // (undocumented)
+    onSelectionModified(event: TreeSelectionModificationEvent): Subscription;
+    // (undocumented)
+    onSelectionReplaced(event: TreeSelectionReplacementEvent): Subscription;
+    // (undocumented)
+    selectNodes(): void;
+    protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>): boolean;
+    }
+
+// @beta
 export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
     filteredNodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
@@ -300,11 +367,14 @@ export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvid
     matchesCount: number | undefined;
 };
 
-// @alpha
+// @beta
 export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
 
+// @beta
+export function usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+
 // @alpha
-export function usePresentationNodeLoader(imodel: IModelConnection, rulesetId: string, pageSize: number): import("@bentley/ui-components").PagedTreeNodeLoader<PresentationTreeDataProvider>;
+export function useRulesetRegistration(ruleset: Ruleset): void;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;

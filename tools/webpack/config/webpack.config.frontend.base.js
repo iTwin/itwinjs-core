@@ -10,7 +10,6 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
-const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const getClientEnvironment = require("./env");
 const plugins = require("../scripts/utils/webpackPlugins");

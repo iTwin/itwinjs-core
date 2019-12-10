@@ -38,25 +38,23 @@ interface GeoPhotoDialogState {
 export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhotoDialogState> {
   public readonly state: Readonly<GeoPhotoDialogState>;
   public static readonly id = "GPDialog";
-  private _initialDialogTitle: string;
   private _i18n: I18N;
 
   constructor(props: GeoPhotoDialogProps) {
     super(props);
     this._i18n = this.props.dataProvider.plugin.i18n;
-    this._initialDialogTitle = this._i18n.translate("geoPhoto:LoadDialog.LoadTitle");
 
     this.state = {
-      dialogTitle: this._initialDialogTitle,
-      loadPhase: 0,
-      folderCount: 0,
-      folderName: "",
-      fileCount: 0,
-      currentFolder: 0,
-      currentFile: 0,
-      geoPanoramaCount: 0,
-      geoPhotoCount: 0,
-      treeDataProvider: undefined,
+      dialogTitle: props.dataProvider.title,
+      loadPhase: props.dataProvider.loadPhase,
+      folderCount: props.dataProvider.folderCount,
+      folderName: " ",
+      fileCount: props.dataProvider.fileCount,
+      currentFolder: props.dataProvider.currentFolder,
+      currentFile: props.dataProvider.currentFile,
+      geoPanoramaCount: props.dataProvider.panoramaCount,
+      geoPhotoCount: props.dataProvider.photoCount,
+      treeDataProvider: props.dataProvider.treeDataProvider,
     };
   }
 
@@ -64,35 +62,35 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
     if (args.properties && args.properties.length) {
       for (const prop of args.properties) {
         if (prop.propertyName === this.props.dataProvider.loadPhasePropertyName) {
-          this.setState({ loadPhase: this.props.dataProvider.loadPhase });
+          this.setState((_, props) => ({ loadPhase: props.dataProvider.loadPhase }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.folderNamePropertyName) {
-          this.setState({ folderName: this.props.dataProvider.folderName });
+          this.setState((_, props) => ({ folderName: props.dataProvider.folderName }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.folderCountPropertyName) {
-          this.setState({ folderCount: this.props.dataProvider.folderCount });
+          this.setState((_, props) => ({ folderCount: props.dataProvider.folderCount }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.fileCountPropertyName) {
-          this.setState({ fileCount: this.props.dataProvider.fileCount });
+          this.setState((_, props) => ({ fileCount: props.dataProvider.fileCount }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.currentFolderPropertyName) {
-          this.setState({ currentFolder: this.props.dataProvider.currentFolder });
+          this.setState((_, props) => ({ currentFolder: props.dataProvider.currentFolder }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.currentFilePropertyName) {
-          this.setState({ currentFile: this.props.dataProvider.currentFile });
+          this.setState((_, props) => ({ currentFile: props.dataProvider.currentFile }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.panoramaCountPropertyName) {
-          this.setState({ geoPanoramaCount: this.props.dataProvider.panoramaCount });
+          this.setState((_, props) => ({ geoPanoramaCount: props.dataProvider.panoramaCount }));
           continue;
         }
         if (prop.propertyName === this.props.dataProvider.photoCountPropertyName) {
-          this.setState({ geoPhotoCount: this.props.dataProvider.photoCount });
+          this.setState((_, props) => ({ geoPhotoCount: props.dataProvider.photoCount }));
           continue;
         }
       }
@@ -134,7 +132,7 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
       <div className="gp-load-div-phase0">
         <div className=" gp-banner">{this._i18n.translate("geoPhoto:LoadDialog.Finding")}</div>
         <div className="gp-spinner">
-          <Spinner size={SpinnerSize.Large}/>
+          <Spinner size={SpinnerSize.Large} />
         </div>
         <div className="gp-current-folder">{this._i18n.translate("geoPhoto:LoadDialog.FolderName", { folderName: this.state.folderName })}</div>
         <div className="gp-folder-count">{this._i18n.translate("geoPhoto:LoadDialog.FolderCount", { count: this.state.folderCount })}</div>
@@ -207,9 +205,9 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
 
     return (
       <div className="gp-load-dialog">
-          {loadPhase === 0 && this.renderGathering()}
-          {loadPhase === 1 && this.renderProcessing()}
-          {loadPhase === 2 && this.renderSettings()}
+        {loadPhase === 0 && this.renderGathering()}
+        {loadPhase === 1 && this.renderProcessing()}
+        {loadPhase === 2 && this.renderSettings()}
       </div>
     );
   }

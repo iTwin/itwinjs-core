@@ -38,7 +38,9 @@ export class Panel extends React.PureComponent<PanelProps> {
     );
   }
 
-  /** Determines if an expandable group panel is open. */
+  /** Determines if an expandable group panel is open.
+   * @deprecated
+   */
   public static get isPanelOpen(): boolean {
     return (document.getElementsByClassName(Panel._groupPanelClassName).length > 0);
   }

@@ -72,6 +72,8 @@ public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DistanceExpressionProps
 beta;DPoint2dProps = number[]
+beta;Easing:
+beta;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
@@ -172,6 +174,8 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 internal;interop: any
+beta;Interpolation:
+beta;InterpolationFunction = (v: any, k: number) => number
 beta;IReferentProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
@@ -370,8 +374,12 @@ alpha;ThumbnailProps
 beta;TileContentIdentifier
 internal;TileProps
 internal;TileTreeProps
+beta;Tween
+beta;TweenCallback = (obj: any) => void
+beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+beta;UpdateCallback = (obj: any, t: number) => void
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 
 public;ViewDefinition2dProps 

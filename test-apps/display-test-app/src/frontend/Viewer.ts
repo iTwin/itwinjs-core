@@ -8,7 +8,9 @@ import {
   imageBufferToPngDataUrl,
   IModelApp,
   IModelConnection,
+  NotifyMessageDetails,
   openImageDataUrlInNewWindow,
+  OutputMessagePriority,
   ScreenViewport,
   Tool,
   Viewport,
@@ -26,7 +28,6 @@ import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
 import { ClassificationsPanel } from "./ClassificationsPanel";
-import { selectFileName } from "./FileOpen";
 import { setTitle } from "./Title";
 import { Window } from "./Window";
 import { Surface } from "./Surface";
@@ -106,7 +107,6 @@ export class MarkupTool extends Tool {
 
 export interface ViewerProps {
   iModel: IModelConnection;
-  fileDirectoryPath?: string;
   defaultViewName?: string;
 }
 
@@ -115,7 +115,6 @@ export class Viewer extends Window {
   public readonly viewport: ScreenViewport;
   public readonly toolBar: ToolBar;
   private _imodel: IModelConnection;
-  private readonly _fileDirectoryPath?: string;
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
   private _isSavedView = false;
@@ -131,7 +130,6 @@ export class Viewer extends Window {
     const view = this.viewport.view.clone();
     const viewer = new Viewer(Surface.instance, view, this.views, {
       iModel: view.iModel,
-      fileDirectoryPath: this._fileDirectoryPath,
     });
 
     if (!this.isDocked) {
@@ -156,20 +154,17 @@ export class Viewer extends Window {
     this._imodel = props.iModel;
     this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
-    this._fileDirectoryPath = props.fileDirectoryPath;
 
-    const toolbarDiv = document.createElement("div");
-    toolbarDiv.className = "topdiv";
-    this.toolBar = new ToolBar(toolbarDiv);
+    this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-properties",
+      iconUnicode: "\ue90c", // properties
       tooltip: "Debug info",
       createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
     });
 
     this.toolBar.addItem(createToolButton({
-      className: "bim-icon-briefcases",
+      iconUnicode: "\ue9cc",
       tooltip: "Open iModel from disk",
       click: () => {
         this.selectIModel(); // tslint:disable-line:no-floating-promises
@@ -181,7 +176,7 @@ export class Viewer extends Window {
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
 
     this.toolBar.addDropDown({
-      className: "bim-icon-model",
+      iconUnicode: "\ue90b", // "model"
       tooltip: "Models",
       only3d: true,
       createDropDown: async (container: HTMLElement) => {
@@ -192,7 +187,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-categories",
+      iconUnicode: "\ue901", // "categories"
       tooltip: "Categories",
       createDropDown: async (container: HTMLElement) => {
         const picker = new CategoryPicker(this.viewport, container);
@@ -202,7 +197,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-savedview",
+      iconUnicode: "\ue90d", // "savedview"
       tooltip: "External saved views",
       createDropDown: async (container: HTMLElement) => {
         const picker = new SavedViewPicker(this.viewport, container, this);
@@ -218,13 +213,14 @@ export class Viewer extends Window {
     }));
 
     this.toolBar.addItem(createToolButton({
-      className: "rd-icon-measure-distance",
+      iconUnicode: "\ueb08",
       click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
       tooltip: "Measure distance",
     }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-settings",
+      iconUnicode: "\ue90e",
+      tooltip: "View settings",
       createDropDown: async (container: HTMLElement) => {
         const panel = new ViewAttributesPanel(this.viewport, container);
         await panel.populate();
@@ -251,7 +247,7 @@ export class Viewer extends Window {
     }));
 
     this.toolBar.addDropDown({
-      className: "bim-icon-gyroscope",
+      iconUnicode: "\ue909", // "gyroscope"
       createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
       tooltip: "Standard rotations",
       only3d: true,
@@ -266,31 +262,31 @@ export class Viewer extends Window {
     this.toolBar.addItem(walk);
 
     this.toolBar.addItem(createToolButton({
-      className: "bim-icon-undo",
+      iconUnicode: "\ue982", // "undo"
       click: () => IModelApp.tools.run("View.Undo", this.viewport),
-      tooltip: "View redo",
-    }));
-
-    this.toolBar.addItem(createToolButton({
-      className: "bim-icon-redo",
-      click: () => IModelApp.tools.run("View.Redo", this.viewport),
       tooltip: "View undo",
     }));
 
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue983", // "redo"
+      click: () => IModelApp.tools.run("View.Redo", this.viewport),
+      tooltip: "View redo",
+    }));
+
     this.toolBar.addDropDown({
-      className: "bim-icon-animation",
+      iconUnicode: "\ue931", // "animation"
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
       tooltip: "Animation / solar time",
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-viewtop",
+      iconUnicode: "\ue916", // "viewtop"
       tooltip: "Sectioning tools",
       createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-property-data",
+      iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Spatial Classification",
       only3d: true,
       createDropDown: async (container: HTMLElement) => {
@@ -301,22 +297,10 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-isolate",
+      iconUnicode: "\ue90a", // "isolate"
       createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
     });
-
-    const fileSelector = document.getElementById("browserFileSelector") as HTMLInputElement;
-    fileSelector.onchange = async () => {
-      const files = fileSelector.files;
-      if (files && files.length > 0) {
-        try {
-          await this.resetIModel(this._fileDirectoryPath! + "/" + files[0].name);
-        } catch {
-          alert("Error Opening iModel - Make sure you are selecting files from the following directory: " + this._fileDirectoryPath!);
-        }
-      }
-    };
 
     this.updateTitle();
   }
@@ -365,19 +349,26 @@ export class Viewer extends Window {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    let newIModel;
-    try {
-      newIModel = await IModelConnection.openSnapshot(filename);
-    } catch (err) {
-      alert(err.toString());
-      return;
+    let newIModel: IModelConnection;
+    const sameFile = filename === this._imodel.iModelToken.key;
+    if (!sameFile) {
+      try {
+        newIModel = await IModelConnection.openSnapshot(filename);
+      } catch (err) {
+        alert(err.toString());
+        return;
+      }
     }
 
     Surface.instance.onResetIModel(this);
     IModelApp.viewManager.dropViewport(this.viewport, false);
 
     await this.clearViews();
-    this._imodel = newIModel;
+
+    if (sameFile)
+      newIModel = await IModelConnection.openSnapshot(filename);
+
+    this._imodel = newIModel!;
     await this.buildViewList();
     const view = await this.views.getDefaultView(this._imodel);
     await this.openView(view);
@@ -385,15 +376,21 @@ export class Viewer extends Window {
     this.updateTitle();
   }
 
+  public async openFile(filename?: string): Promise<void> {
+    return undefined !== filename ? this.openIModel(filename) : this.selectIModel();
+  }
+
   private async selectIModel(): Promise<void> {
-    const filename = selectFileName();
-    if (undefined !== filename) {
-      try {
-        await this.resetIModel(filename);
-        setTitle(filename);
-      } catch (_) {
-        alert("Error - could not open file.");
-      }
+    const filename = await this.surface.selectFileName();
+    return undefined !== filename ? this.openIModel(filename) : Promise.resolve();
+  }
+
+  private async openIModel(filename: string): Promise<void> {
+    try {
+      await this.resetIModel(filename);
+      setTitle(filename);
+    } catch (_) {
+      alert("Error - could not open file.");
     }
   }
 
@@ -423,7 +420,9 @@ export class Viewer extends Window {
   }
 
   public onClosed(): void {
-    if (undefined === IModelApp.viewManager.selectedView)
-      this._imodel.closeSnapshot(); // tslint:disable-line:no-floating-promises
+    if (undefined === IModelApp.viewManager.selectedView) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
+      this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
+    }
   }
 }

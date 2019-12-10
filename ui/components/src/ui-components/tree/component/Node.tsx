@@ -22,7 +22,7 @@ import { ImageRenderer } from "../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
   onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
@@ -30,7 +30,7 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
 
 /**
  * Properties for [[TreeNode]] React component
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface TreeNodeProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -73,7 +73,7 @@ export interface TreeNodeProps extends CommonProps {
 
 /**
  * Default component for rendering a node for the [Tree]($ui-components)
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
 
@@ -157,7 +157,7 @@ function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
 }
 
 /** Properties for [[TreeNodeIcon]] React component
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export interface TreeNodeIconProps extends React.Attributes {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -165,7 +165,7 @@ export interface TreeNodeIconProps extends React.Attributes {
 }
 
 /** React component that renders tree node icons
- * @public
+ * @public @deprecated Use [[ControlledTree]] instead
  */
 export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
   let image: Image | undefined;

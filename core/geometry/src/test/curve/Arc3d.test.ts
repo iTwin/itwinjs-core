@@ -117,22 +117,22 @@ describe("Arc3d", () => {
     const origin = Point3d.create();
     const factorRange = Range1d.createNull();
     for (const sweep of [AngleSweep.create360(),
-    AngleSweep.createStartEndDegrees(0, 40),
-    AngleSweep.createStartEndDegrees(0, 2),
-    AngleSweep.createStartEndDegrees(-1, 3),
-    AngleSweep.createStartEndDegrees(88, 91),
-    AngleSweep.createStartEndDegrees(0, 18),
-    AngleSweep.createStartEndDegrees(-10, 10),
-    AngleSweep.createStartEndDegrees(80, 100),
-    AngleSweep.createStartEndDegrees(90, 108),
-    AngleSweep.createStartEndDegrees(30, 45),
-    AngleSweep.createStartEndDegrees(80, 110),
-    AngleSweep.createStartEndDegrees(-10, 110),
-    AngleSweep.createStartEndDegrees(-10, 320),
-    AngleSweep.createStartEndDegrees(0, 88),
-    AngleSweep.createStartEndDegrees(45, 132),
-    AngleSweep.createStartEndDegrees(-10, 278),
-    AngleSweep.createStartEndDegrees(30, 80)]) {
+      AngleSweep.createStartEndDegrees(0, 40),
+      AngleSweep.createStartEndDegrees(0, 2),
+      AngleSweep.createStartEndDegrees(-1, 3),
+      AngleSweep.createStartEndDegrees(88, 91),
+      AngleSweep.createStartEndDegrees(0, 18),
+      AngleSweep.createStartEndDegrees(-10, 10),
+      AngleSweep.createStartEndDegrees(80, 100),
+      AngleSweep.createStartEndDegrees(90, 108),
+      AngleSweep.createStartEndDegrees(30, 45),
+      AngleSweep.createStartEndDegrees(80, 110),
+      AngleSweep.createStartEndDegrees(-10, 110),
+      AngleSweep.createStartEndDegrees(-10, 320),
+      AngleSweep.createStartEndDegrees(0, 88),
+      AngleSweep.createStartEndDegrees(45, 132),
+      AngleSweep.createStartEndDegrees(-10, 278),
+      AngleSweep.createStartEndDegrees(30, 80)]) {
       const factorRange1 = Range1d.createNull();
       for (const arc of [
         Arc3d.createXY(origin, 4.0, sweep),
@@ -295,5 +295,28 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "FilletArc");
     expect(ck.getNumErrors()).equals(0);
   });
+  // cspell:word Arnoldas
+  it("ArnoldasFailureLinearSys3d", () => {
+    const ck = new Checker();
 
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const point0 = Point3d.create(0, 0, 0);
+    const point1 = Point3d.create(0, 0, 1);
+    const point2 = Point3d.create(1, 0, 1);
+    GeometryCoreTestIO.captureGeometry(allGeometry,
+      LineString3d.create(point0, point1, point2),
+      x0, y0);
+    const arc = Arc3d.createCircularStartMiddleEnd(point0, point1, point2) as Arc3d;
+    GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ArnoldasFailureLinearSys3d");
+    const r = arc.circularRadius();
+    if (ck.testDefined(r) && r !== undefined) {
+      ck.testCoordinate(r, point0.distance(arc.center));
+      ck.testCoordinate(r, point1.distance(arc.center));
+      ck.testCoordinate(r, point2.distance(arc.center));
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

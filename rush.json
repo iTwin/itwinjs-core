@@ -236,6 +236,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/oidc-signin-tool",
+      "projectFolder": "tools/oidc-signin-tool",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/geo-photo-plugin",
       "projectFolder": "plugins/geo-photo",
       "reviewCategory": "plugins",

@@ -118,7 +118,7 @@ export class AuxChannel {
  */
 export class PolyfaceAuxData {
   /** Array with one or more channels of auxilliary data for the associated polyface. */
-   public channels: AuxChannel[];
+  public channels: AuxChannel[];
   /** indices The indices (shared by all data in all channels) mapping the data to the mesh facets. */
   public indices: number[];
 

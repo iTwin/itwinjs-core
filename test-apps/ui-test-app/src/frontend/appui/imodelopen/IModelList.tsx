@@ -66,9 +66,11 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
   }
 
   public componentDidMount() {
-    if (this.props.iModels && 1 === this.props.iModels.length) {
-      this.setState({ currentIModel: this.props.iModels[0] });
-    }
+    this.setState((_, props) => {
+      if (props.iModels && 1 === props.iModels.length)
+        return { currentIModel: props.iModels[0] };
+      return {};
+    });
   }
 
   private getFilteredIModels(): IModelInfo[] {

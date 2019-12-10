@@ -54,9 +54,9 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         <p>Cu novum viris detraxit eam. Erat inimicus necessitatibus vim in, noster placerat pro an, modus homero percipitur duo no. Ius voluptatum reprehendunt id, nulla nemore ut his. Mei ei quis qualisque consetetur, illud possim id vel.</p>
         <p>Quando verear regione ius ei. Eum tractatos ullamcorper ei, vidisse repudiare ea his. Possim intellegam ne duo, solet malorum nostrum eum ut, ei alterum corrumpit eum. Has ad utroque eloquentiam. Qui case forensibus eloquentiam ne. Usu no nominati principes, primis luptatum mea ex. No dicit nullam qui.</p>
         <p>
-          movable: <input type="checkbox" checked={this.state.movable} onChange={(_) => { this.setState({ movable: !this.state.movable }); }} />
-          resizable: <input type="checkbox" checked={this.state.resizable} onChange={(_) => { this.setState({ resizable: !this.state.resizable }); }} />
-          overlay: <input type="checkbox" checked={this.state.overlay} onChange={(_) => { this.setState({ overlay: !this.state.overlay }); }} />
+          movable: <input type="checkbox" checked={this.state.movable} onChange={(_) => { this.setState((prevState) => ({ movable: !prevState.movable })); }} />
+          resizable: <input type="checkbox" checked={this.state.resizable} onChange={(_) => { this.setState((prevState) => ({ resizable: !prevState.resizable })); }} />
+          overlay: <input type="checkbox" checked={this.state.overlay} onChange={(_) => { this.setState((prevState) => ({ overlay: !prevState.overlay })); }} />
         </p>
       </Dialog>
     );

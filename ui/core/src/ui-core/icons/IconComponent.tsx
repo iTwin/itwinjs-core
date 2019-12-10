@@ -26,8 +26,9 @@ export interface IconProps {
 /** Icon Functional component
  * @public
  */
-export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:disable-line:variable-name
-  if (!props.iconSpec) return null;
+export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => {  // tslint:disable-line:variable-name
+  if (!props.iconSpec)
+    return null;
 
   if (typeof props.iconSpec === "string") {
     const svgSource = IconSpecUtilities.getSvgSource(props.iconSpec);
@@ -42,6 +43,7 @@ export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:
     const className = "icon " + props.iconSpec;
     return (<i className={className} />);
   }
+
   return (
     <i className="icon core-svg-icon">
       {props.iconSpec}

@@ -39,10 +39,13 @@ import {
 import {
   ChangeEmphasisSettingsTool,
   ChangeHiliteSettingsTool,
+  DefaultTileSizeModifierTool,
   FadeOutTool,
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
+  ViewportTileSizeModifierTool,
+  ViewportAddRealityModel,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
@@ -50,6 +53,7 @@ import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
+import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -108,12 +112,16 @@ export class FrontendDevTools {
     ChangeHiliteSettingsTool.register(i18n);
     ChangeEmphasisSettingsTool.register(i18n);
     FadeOutTool.register(i18n);
+    DefaultTileSizeModifierTool.register(i18n);
+    ViewportTileSizeModifierTool.register(i18n);
+    ViewportAddRealityModel.register(i18n);
 
     RealityTransitionTool.register(i18n);
     ChangeUnitsTool.register(i18n);
     ToggleTileRequestDecorationTool.register(i18n);
     MeasureTileLoadTimeTool.register(i18n);
     SelectElementsByIdTool.register(i18n);
+    AnimationIntervalTool.register(i18n);
 
     SetVolClassIntersectOn.register(i18n);
     SetVolClassIntersectOff.register(i18n);

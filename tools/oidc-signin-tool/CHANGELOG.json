@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/oidc-signin-tool",
+  "entries": [
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/oidc-signin-tool_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial publish"
+          }
+        ]
+      }
+    }
+  ]
+}

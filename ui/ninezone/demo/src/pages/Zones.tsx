@@ -6,6 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import ReactResizeDetector from "react-resize-detector";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import { withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
@@ -961,25 +962,11 @@ interface ToolSettingsWidgetProps {
   onTabClick: () => void;
 }
 
-interface ToolSettingsWidgetState {
-  isNestedPopupOpen: boolean;
-  isPopupOpen: boolean;
-  nestedToggle: HTMLElement | null;
-  toggle: HTMLElement | null;
-}
-
-class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps, ToolSettingsWidgetState> {
+class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
   private _widget = React.createRef<ToolSettings>();
 
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
-  };
-
-  public readonly state: ToolSettingsWidgetState = {
-    isNestedPopupOpen: false,
-    isPopupOpen: false,
-    nestedToggle: null,
-    toggle: null,
   };
 
   public render() {
@@ -1085,9 +1072,9 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   }
 
   private updateTooltipPosition() {
-    this.setState((prevState) => {
+    this.setState((prevState, props) => {
       const tooltipBounds = Rectangle.createFromSize(this._tooltipSize).offset(this._mousePosition);
-      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, this.props.getContainerSize());
+      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, props.getContainerSize());
       if (tooltipPosition.equals(prevState.tooltipPosition))
         return null;
       return {
@@ -1406,6 +1393,8 @@ interface WidgetContentExampleProps extends Widget6Tab1ContentProps, Widget7Tab1
 class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps> {
   private _content = document.createElement("span");
   private _widgetContent = React.createRef<WidgetContent>();
+  private _container = React.createRef<HTMLDivElement>();
+  private _measurer = React.createRef<HTMLDivElement>();
 
   public componentDidMount() {
     if (!this.props.renderTo)
@@ -1430,7 +1419,14 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     switch (this.props.widgetId) {
       case 2: {
         content = (
-          <Widget2Tab1Content />
+          <>
+            <Widget2Tab1Content />
+            <div className="nzdemo-measurer" ref={this._measurer} />
+            <div className="nzdemo-zone-measurer">
+              <ReactResizeDetector handleWidth onResize={this._handleResize} />
+            </div>
+            <div className="nzdemo-expander" />
+          </>
         );
         className = classnames(
           "nzdemo-tool-settings-content",
@@ -1485,10 +1481,25 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     return ReactDOM.createPortal(<WidgetContent
       anchor={this.props.anchor}
       className={className}
+      containerRef={this._container}
       content={content}
       ref={this._widgetContent}
       style={this.props.isDisplayed ? undefined : displayNone}
     />, this._content);
+  }
+
+  private _handleResize = () => {
+    const container = this._container.current;
+    const measurer = this._measurer.current;
+    if (!container || !measurer)
+      return;
+
+    container.classList.add("nzdemo-measure");
+    const measurerBounds = measurer.getBoundingClientRect();
+    container.classList.remove("nzdemo-measure");
+
+    // tslint:disable-next-line: no-console
+    console.log("ToolSettings content width: ", measurerBounds.width);
   }
 }
 
@@ -1846,7 +1857,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -2928,6 +2939,23 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
     });
   }
 
+  public componentDidMount() {
+    this.setState((prevState) => ({
+      nineZone: this._nineZone.showWidget(2, prevState.nineZone),
+    }));
+    this.setState((prevState) => {
+      const manager = this._nineZone.getZonesManager();
+      let zones = manager.setZoneWidth(4, 100, prevState.nineZone.zones);
+      zones = manager.setZoneWidth(6, 100, zones);
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
+  }
+
   public componentDidUpdate() {
     if (!this._zonesMeasurer.current)
       return;
@@ -2995,13 +3023,13 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           zonesMeasurerRef={this._zonesMeasurer}
         />
         {tabs.map((tab) => {
-          const toolSettingsWidgetProps = tab.widget.id === 2 ? tab.widget as ToolSettingsWidgetManagerProps : undefined;
+          const toolSettingsMode = tab.widget.id === 2 ? (tab.widget as ToolSettingsWidgetManagerProps).mode : ToolSettingsWidgetMode.Tab;
           return (
             <WidgetContentExample
               anchor={tab.widget.horizontalAnchor}
               isDisplayed={tab.widget.tabIndex === tab.id}
               key={`${tab.widget.id}_${tab.id}`}
-              toolSettingsMode={toolSettingsWidgetProps ? toolSettingsWidgetProps.mode : ToolSettingsWidgetMode.Tab}
+              toolSettingsMode={toolSettingsMode}
               onChangeTheme={this._handleChangeTheme}
               onOpenActivityMessage={this._handleOpenActivityMessage}
               onOpenToastMessage={this._handleOpenToastMessage}

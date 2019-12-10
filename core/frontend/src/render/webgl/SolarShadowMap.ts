@@ -21,6 +21,7 @@ import { RenderCommands } from "./DrawCommand";
 import { RenderPass, TextureUnit } from "./RenderFlags";
 import { EVSMGeometry } from "./CachedGeometry";
 import { getDrawParams } from "./ScratchDrawParams";
+import { WebGlDisposable } from "./Disposable";
 
 class SolarShadowMapDrawArgs extends Tile.DrawArgs {
   private _useViewportMap?: boolean;
@@ -78,7 +79,7 @@ const evsmHeight = shadowMapHeight / 2;
 const postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
 // Bundles up the disposable, create-once-and-reuse members of a SolarShadowMap.
-class Bundle {
+class Bundle implements WebGlDisposable {
   private constructor(
     public readonly depthTexture: Texture,
     public readonly shadowMapTexture: Texture,
@@ -131,6 +132,14 @@ class Bundle {
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
 
+  public get isDisposed(): boolean {
+    return this.depthTexture.isDisposed
+      && this.shadowMapTexture.isDisposed
+      && this.fbo.isDisposed
+      && this.fboSM.isDisposed
+      && this.evsmGeom.isDisposed;
+  }
+
   public dispose(): void {
     dispose(this.depthTexture);
     dispose(this.shadowMapTexture);
@@ -161,7 +170,7 @@ class ShadowMapParams {
 
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
 
-export class SolarShadowMap implements RenderMemory.Consumer {
+export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
   private _bundle?: Bundle;
   private _projectionMatrix = Matrix4d.createIdentity();
   private _graphics: RenderGraphic[] = [];
@@ -227,6 +236,8 @@ export class SolarShadowMap implements RenderMemory.Consumer {
     if (undefined !== bundle)
       stats.addShadowMap(bundle.depthTexture.bytesUsed + bundle.shadowMapTexture.bytesUsed);
   }
+
+  public get isDisposed(): boolean { return undefined === this._bundle && 0 === this._graphics.length; }
 
   public dispose() {
     this._bundle = dispose(this._bundle);

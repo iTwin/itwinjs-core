@@ -25,9 +25,11 @@ function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined
   const y0 = range.low.y;
   const x1 = range.high.x;
   const y1 = range.high.y;
-  const points = [Point3d.create(x0, y0), Point3d.create(x1, y0),
-  Point3d.create(x1, y1), Point3d.create(x0, y1),
-  Point3d.create(x0, y0)];
+  const points = [
+    Point3d.create(x0, y0), Point3d.create(x1, y0),
+    Point3d.create(x1, y1), Point3d.create(x0, y1),
+    Point3d.create(x0, y0),
+  ];
 
   if (ticFraction !== undefined && ticFraction > 0) {
     const allLines = BagOfCurves.create();

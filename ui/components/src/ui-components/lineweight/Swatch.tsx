@@ -61,15 +61,15 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
       ...this.props.style,
       color: rgbaString,
     } : {
-        ...this.props.style,
-      };
+      ...this.props.style,
+    };
 
     const svgStyle: React.CSSProperties = colorDef ? {
       height: `${weight}px`,
       background: rgbaString,
     } : {
-        height: `${weight}px`,
-      };
+      height: `${weight}px`,
+    };
 
     const handleClick = (_e: React.MouseEvent) => {
       if (onClick)

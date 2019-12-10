@@ -89,9 +89,9 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   onEscape?: () => void;
   /** triggered when a click is triggered outside of this dialog. */
   onOutsideClick?: (event: MouseEvent) => any;
-  /** minimum width that the dialog may be resized to. Default: 400 */
+  /** minimum width that the dialog may be resized to. Default: 300 */
   minWidth?: number;
-  /** minimum height that the dialog may be resized to. Default: 400 */
+  /** minimum height that the dialog may be resized to. Default: 100 */
   minHeight?: number;
   /** maximum width that the dialog may be resized to. */
   maxWidth?: number;
@@ -154,8 +154,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
   public static defaultProps: Partial<DialogProps> = {
     alignment: DialogAlignment.Center,
-    minWidth: 400,
-    minHeight: 400,
+    minWidth: 300,
+    minHeight: 100,
     width: "50%",
     hideHeader: false,
     resizable: false,
@@ -216,9 +216,12 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         containerStyle.height = this.state.height;
     }
 
-    if (maxHeight) {
+    containerStyle.minWidth = minWidth + "px";
+    containerStyle.minHeight = minHeight + "px";
+    if (maxWidth)
+      containerStyle.maxWidth = maxWidth + "px";
+    if (maxHeight)
       containerStyle.maxHeight = maxHeight + "px";
-    }
 
     const buttons = this.getFooterButtons(this.props);
 
@@ -280,22 +283,22 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                     {footerElement}
                   </div>
                 }
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-right"
+                  onPointerDown={this._handleStartResizeRight}
+                />
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-bottom"
+                  onPointerDown={this._handleStartResizeDown}
+                />
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-bottom-right"
+                  onPointerDown={this._handleStartResizeDownRight}
+                />
               </div>
-              <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
-                data-testid="core-dialog-drag-right"
-                onPointerDown={this._handleStartResizeRight}
-              ></div>
-              <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
-                data-testid="core-dialog-drag-bottom"
-                onPointerDown={this._handleStartResizeDown}
-              > </div>
-              <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
-                data-testid="core-dialog-drag-bottom-right"
-                onPointerDown={this._handleStartResizeDownRight}
-              ></div>
             </div>
           </DivWithOutsideClick>
         }
@@ -456,28 +459,31 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const { minWidth, maxWidth, minHeight, maxHeight, movable } = this.props;
     let { x, y, width, height } = this.state;
+
     // istanbul ignore else
     if (x === undefined) { // if x is undefined, so is y, width, and height
       const rect = this._containerRef.current.getBoundingClientRect();
       width = rect.width, height = rect.height, x = rect.left, y = rect.top;
     }
+
     if (this.props.resizable) {
       if (this.state.rightResizing) {
-        const centerX = event.clientX;
-        width = movable ? (centerX - x) : ((centerX - window.innerWidth / 2) * 2);
+        const pointerX = event.clientX;
+        width = pointerX - x;
         width = Math.max(width, minWidth!);
         if (maxWidth !== undefined)
           width = Math.min(width, maxWidth);
       }
+
       if (this.state.downResizing) {
-        const centerY = event.clientY;
-        height = movable ? (centerY - y!) : ((centerY - window.innerHeight / 2) * 2);
+        const pointerY = event.clientY;
+        height = pointerY - y!;
         height = Math.max(height, minHeight!);
         if (maxHeight !== undefined)
           height = Math.min(height, maxHeight);
       }
-
     }
+
     if (movable && this.state.moving) {
       x = event.clientX - this.state.grabOffsetX;
       y = event.clientY - this.state.grabOffsetY;

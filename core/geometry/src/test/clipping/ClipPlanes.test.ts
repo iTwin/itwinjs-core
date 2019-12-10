@@ -14,7 +14,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { PolygonOps, Point3dArrayPolygonOps, IndexedXYZCollectionPolygonOps } from "../../geometry3d/PolygonOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -208,7 +208,7 @@ describe("ClipPlane", () => {
 
         lastSign = z;
         array.push(Point3d.create(x, 0, z));
-        clip.polygonCrossings (array, crossings);
+        clip.polygonCrossings(array, crossings);
         // Point3dArrayPolygonOps.polygonPlaneCrossings(clip, array, crossings);
         if (Checker.noisy.clipPlane) {
           console.log("Points:");
@@ -925,7 +925,7 @@ describe("CurveClips", () => {
   it("ClipConvexSetToRange", () => {
     const ck = new Checker();
     const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 4.5);
-    const rangeB = Range3d.createXYZXYZ(0, 0, 0, 6, 1, 2);
+    const rangeB = Range3d.createXYZXYZ(0, 0, 0, 6, 2, 3);
     const allGeometry: GeometryQuery[] = [];
     let dy = 0.0;
     // obviously inside ...
@@ -946,7 +946,7 @@ describe("CurveClips", () => {
         GeometryCoreTestIO.captureGeometry(allGeometry, linestring.clone(), 0, dy, 0);
         const clippedPoints = linestring.packedPoints.clone();
         clippedPoints.pop(); // get rid of closure
-        ClipPlane.intersectRangeConvexPolygonInPlace(range, clippedPoints);
+        IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, clippedPoints);
         if (clippedPoints && clippedPoints.length > 0)
           GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(clippedPoints), 0, dy, 0);
       }
@@ -991,4 +991,39 @@ describe("CurveClips", () => {
 
   });
 
+  it("ClipConvexPolygonToRangeCoverage", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // a largish range . .
+    const range = Range3d.createXYZXYZ(-20, -10, -30, 40, 50, 45);
+    // fractional positions to left, inside, and right of 01 interval . ..
+    const fractions = [-0.5, 0.5, 1.5];
+    // a smallish polygon ...
+    const polygon = GrowableXYZArray.create([[0, 0, 0], [1, 0, 1], [0.5, 1, 0]]);
+    const area0 = PolygonOps.sumTriangleAreas(polygon);
+    for (const u of fractions) {
+      for (const v of fractions) {
+        for (const w of fractions) {
+          // place the polygon.
+          // all except the 000 position are OUT, and all the exit branches of the clipper get hit
+          const center = range.fractionToPoint(u, v, w);
+          const transform = Transform.createTranslation(center);
+          const polygon1 = polygon.clone();
+          polygon1.multiplyTransformInPlace(transform);
+          const clip = IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, polygon1);
+          if (!range.containsPoint(center))
+            ck.testUndefined(clip);
+          else {
+            ck.testTrue(clip === polygon1, "clip happens in place");
+            ck.testCoordinate(area0, PolygonOps.sumTriangleAreas(clip!), "internal polygon not clipped");
+          }
+        }
+      }
+    }
+    // empty range quick out . . .
+    ck.testUndefined(IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(Range3d.createNull(), polygon), "null range clips to nothing");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexPolygonToRangeCoverage");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
 });

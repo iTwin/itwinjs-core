@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Setup OidcDesktopClient for Electron use cases. "
+          },
+          {
+            "comment": "Switched to electron version 6.1.5 from 7.1.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/imodeljs-clients-backend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

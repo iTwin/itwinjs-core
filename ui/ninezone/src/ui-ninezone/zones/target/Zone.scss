@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/z-index";
 @import "../../geometry";
+@import "../../target";
 @import "../../prefix";
-@import "variables";
 
 .nz-zones-target-zone {
   $size: 100px;

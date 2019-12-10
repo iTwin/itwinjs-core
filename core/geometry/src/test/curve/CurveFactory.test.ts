@@ -77,7 +77,7 @@ describe("CurveFactory", () => {
       const data = Arc3d.createFilletArc(point0, point1, point2, radius);
       ck.testDefined (data, "Degenerated arc data");
       ck.testUndefined(data.arc, "Degenerate arc -- expect no arc in data");
-      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
   it("appendToArcInPlace", () => {

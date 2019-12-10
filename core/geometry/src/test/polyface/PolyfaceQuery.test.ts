@@ -210,7 +210,7 @@ it("PartitionFacetsByConnectivity", () => {
     const polyface = builder.claimPolyface();
     polyface.twoSided = true;
     const partitionArray = [PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface),
-    PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
+      PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
     const expectedComponentCountArray = [numVertexConnectedComponents, numEdgeConnectedComponents];
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
     y0 = - 2 * numVertexConnectedComponents * a;

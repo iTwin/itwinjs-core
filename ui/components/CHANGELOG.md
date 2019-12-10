@@ -1,6 +1,32 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Update sunrise/sunset calculation
+- Update solar timeline test
+- Made detecting links have stricter rules. Links have to start with a schema or `www.`.
+- Fix solar timeline timezone bug.
+- Added a tooltip component.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component.
+- Update sinon version.
+- Added documentation to ControlledTree API and changes release tags to beta
+- Added node editing support in ControlledTree
+- Changes ControlledTree events to pass TreeNodeItem instead of nodeId
+- Added 'removeChild', 'insertChild', 'getChildOffset' methods to MutableTreeModel
+- Moved ControlledTree node highlighting to TreeRenderer
+- Use exhaustive-deps linter rule.
+- Truncate property grid group title.
+- Rename array length property label to be less ambiguous
+- Solar timeline date/time offset fix.
+- Start arrays at `1` when rendering array property items
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Code cleanup based on code analysis report from lgtm.
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

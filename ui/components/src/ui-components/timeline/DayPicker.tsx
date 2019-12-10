@@ -25,7 +25,6 @@ interface DayPickerProps {
 }
 
 interface DayPickerState {
-  date: number;
   month: number;
   year: number;
   today: Date;
@@ -82,7 +81,6 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     }
 
     this.state = {
-      date: now.getDate(),
       month: now.getMonth(),
       today: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
       year: now.getFullYear(),

@@ -190,7 +190,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       this.props.onViewsInitialized(_viewDefProps3d);
 
     // Set new state with JSX Elements and the view definition props
-    this.setState({ ...this.state, viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selectedViews: [] });
+    this.setState({ viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selectedViews: [] });
   }
 
   /** Handle selecting views by changing it in the selected viewport */
@@ -223,7 +223,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
 
   private async _setFilter(_value: string) {
     if (_value === "") {
-      this.setState({ ...this.state, filter: _value, filteredViewDefinitions: [] });
+      this.setState({ filter: _value, filteredViewDefinitions: [] });
     } else {
       // Filter the definitions by user label
       const filteredDefinitions = this.state.viewDefinitions.filter((viewProps: ViewDefinitionProps) => {
@@ -235,7 +235,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
         return false;
       });
 
-      this.setState({ ...this.state, filter: _value, filteredViewDefinitions: filteredDefinitions });
+      this.setState({ filter: _value, filteredViewDefinitions: filteredDefinitions });
     }
   }
 

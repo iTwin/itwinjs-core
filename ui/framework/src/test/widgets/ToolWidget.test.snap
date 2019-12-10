@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ToolWidget ToolWidget should render correctly 1`] = `
+exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`] = `
 <ToolWidgetWithDef
   horizontalToolbar={
     <Toolbar

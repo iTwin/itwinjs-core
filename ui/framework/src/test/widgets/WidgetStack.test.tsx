@@ -379,8 +379,7 @@ describe("WidgetStackTabGroup", () => {
       }}
       tabs={[{
         title: "Tab1",
-      },
-      {
+      }, {
         title: "Tab2",
       }]}
       widgetId={6}

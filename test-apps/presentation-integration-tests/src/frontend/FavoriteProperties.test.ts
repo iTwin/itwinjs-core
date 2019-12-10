@@ -125,6 +125,26 @@ describe("Favorite Properties", () => {
     expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq("Model");
   });
 
+  it("favorites nested content property with the same name as a property on primary instance", async () => {
+    propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+    let propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.be.eq(5);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.false;
+
+    // find the property record to make the property favorite
+    const sourceFileInfoCategory = propertyData.categories.find((c) => c.name === "source_file_information")!;
+    const sourceFileNameRecord = propertyData.records[sourceFileInfoCategory.name][0];
+    const field = await propertiesDataProvider.getFieldByPropertyRecord(sourceFileNameRecord);
+    await Presentation.favoriteProperties.add(field!);
+
+    // verify the property is now in favorites group
+    propertyData = await propertiesDataProvider.getData();
+    expect(propertyData.categories.length).to.eq(6);
+    expect(propertyData.categories.some((category) => category.name === favoritesCategoryName)).to.be.true;
+    expect(propertyData.records[favoritesCategoryName].length).to.eq(1);
+    expect(propertyData.records[favoritesCategoryName][0].property.displayLabel).to.eq(sourceFileNameRecord.property.displayLabel);
+  });
+
   it("favorite properties survive Presentation re-initialization", async () => {
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     let propertyData = await propertiesDataProvider.getData();

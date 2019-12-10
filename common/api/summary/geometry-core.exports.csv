@@ -92,6 +92,8 @@ internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
+internal;Ellipsoid
+internal;EllipsoidPatch 
 public;FacetFaceData
 public;FacetProjectedVolumeSums
 public;FrameBuilder
@@ -129,6 +131,7 @@ public;LinearSweep
 public;LineSegment3d 
 public;LineString3d 
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
+public;LongitudeLatitudeNumber 
 public;Loop 
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly

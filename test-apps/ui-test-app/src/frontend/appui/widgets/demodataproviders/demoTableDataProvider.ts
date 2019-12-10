@@ -207,10 +207,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: label,
             }, {
-            name: "label",
-            displayLabel: "label",
-            typename: "text",
-          }),
+              name: "label",
+              displayLabel: "label",
+              typename: "text",
+            }),
         },
         {
           key: "type", record: new PropertyRecord(
@@ -219,18 +219,17 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: type,
             }, {
-            name: "type",
-            displayLabel: "type",
-            typename: "text",
-          }),
+              name: "type",
+              displayLabel: "type",
+              typename: "text",
+            }),
         },
         {
-          key: "description", record: new PropertyRecord(
-            {
-              value: description,
-              valueFormat: PropertyValueFormat.Primitive,
-              displayValue: description,
-            }, {
+          key: "description", record: new PropertyRecord({
+            value: description,
+            valueFormat: PropertyValueFormat.Primitive,
+            displayValue: description,
+          }, {
             name: "description",
             displayLabel: "description",
             typename: "text",

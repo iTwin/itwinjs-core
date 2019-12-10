@@ -7,7 +7,6 @@ const path = require("path");
 const paths = require("../../config/paths");
 const webpack = require("webpack");
 const WebpackDevServer = require("webpack-dev-server");
-const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
 const { printFrontendInstructions, createCompiler } = require("./createCompiler");
 const isInteractive = process.stdout.isTTY;
 const { prepareProxy, prepareUrls } = require("react-dev-utils/WebpackDevServerUtils");
@@ -46,7 +45,6 @@ async function startFrontendDevServer(config, host, port) {
 
   const devServerInfo = { urls };
   return await new Promise((resolve) => {
-    let instance;
     const compiler = createCompiler(webpack, config, " FRONTEND ", "Starting the webpack development server...", (count) => {
       if (isInteractive || count === 1) {
         printFrontendInstructions(appName, urls);
@@ -97,4 +95,4 @@ module.exports = {
   watchBackend,
   startFrontendDevServer,
   saveJsonStats,
-}
+};

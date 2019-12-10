@@ -295,7 +295,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
             if (stopWatch!.elapsed.milliseconds > nextET) {
               await BeDuration.wait(0);
               nextET += 200;
-              }
+            }
             this._loadTracker.foundFile(false);
           }
         }

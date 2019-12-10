@@ -136,7 +136,7 @@ export class PannellumRenderer {
     // Store horizon pitch and roll if applicable
     if ((this._params.horizonPitch !== undefined || this._params.horizonRoll !== undefined))
       this._pose = [this._params.horizonPitch === undefined ? 0 : this._params.horizonPitch,
-      this._params.horizonRoll === undefined ? 0 : this._params.horizonRoll];
+        this._params.horizonRoll === undefined ? 0 : this._params.horizonRoll];
 
     // Set 2d texture binding
     const glBindType = gl.TEXTURE_2D;
@@ -375,8 +375,8 @@ export class PannellumRenderer {
 
       // Calculate roll
       const v = [Math.cos(origPitch) * (Math.sin(horizonRoll) * Math.sin(horizonPitch) * Math.cos(origYaw) - Math.cos(horizonPitch) * Math.sin(origYaw)),
-      Math.cos(origPitch) * Math.cos(horizonRoll) * Math.cos(origYaw),
-      Math.cos(origPitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(origYaw) + Math.sin(origYaw) * Math.sin(horizonPitch))];
+        Math.cos(origPitch) * Math.cos(horizonRoll) * Math.cos(origYaw),
+        Math.cos(origPitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(origYaw) + Math.sin(origYaw) * Math.sin(horizonPitch))];
       const w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw)];
       let rollAdj = Math.acos(Math.max(Math.min((v[0] * w[0] + v[1] * w[1]) /
         (Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) *

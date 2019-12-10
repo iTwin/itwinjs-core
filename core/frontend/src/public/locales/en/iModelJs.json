@@ -68,6 +68,6 @@
     "UnableToParseLength": "Unable to parse length value"
   },
   "Notices": {
-    "PoweredBy": "Powered by: "
+    "PoweredBy": "Powered by"
   }
 }

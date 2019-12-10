@@ -51,10 +51,12 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     this._inwardNormal = normal;
     this._distanceFromOrigin = distance;
   }
-  private safeSetXYZDistance(nx: number, ny: number, nz: number, d: number) {
-    this._inwardNormal.set(nx, ny, nz);
-    this._distanceFromOrigin = d;
-  }
+  /*
+    private safeSetXYZDistance(nx: number, ny: number, nz: number, d: number) {
+      this._inwardNormal.set(nx, ny, nz);
+      this._distanceFromOrigin = d;
+    }
+  */
   /**
    * Return true if all members are almostEqual to corresponding members of other.
    * @param other clip plane to compare
@@ -500,8 +502,8 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
    * * Crossing points between adjacent points that are (strictly) on opposite sides.
    * @deprecated ClipPlane method `clipPlane.polygonCrossings(polygonPoints, crossings)` is deprecated.  Use Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
    */
-  public polygonCrossings( xyz: Point3d[], crossings: Point3d[]) {
-    return Point3dArrayPolygonOps.polygonPlaneCrossings (this, xyz, crossings);
+  public polygonCrossings(xyz: Point3d[], crossings: Point3d[]) {
+    return Point3dArrayPolygonOps.polygonPlaneCrossings(this, xyz, crossings);
   }
 
   /** announce the interval (if any) where a line is within the clip plane half space. */
@@ -561,7 +563,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     xyzOut.pushXYZ(localRange.high.x, localRange.high.y, 0);
     xyzOut.pushXYZ(localRange.low.x, localRange.high.y, 0);
     xyzOut.multiplyTransformInPlace(frameOnPlane);
-    ClipPlane.intersectRangeConvexPolygonInPlace(range, xyzOut);
+    IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, xyzOut);
     if (xyzOut.length === 0)
       return undefined;
     if (addClosurePoint)
@@ -570,43 +572,11 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
   }
   /**
    * Return the intersection of the plane with a range cube.
+   * @deprecated `ClipPlane.intersectRangeConvexPolygonInPlace` is deprecated. Use `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
    * @param range
    * @param xyzOut intersection polygon.  This is convex.
    */
   public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray) {
-    if (range.isNull)
-      return undefined;
-    const work = new GrowableXYZArray();
-    // clip the polygon to each plane of the cubic ...
-    const clipper = ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, range.high.y, range.high.z)!;
-    clipper.clipConvexPolygonInPlace(xyz, work);
-    if (xyz.length === 0)
-      return undefined;
-    clipper.safeSetXYZDistance(0, -1, 0, -range.high.y);
-    clipper.clipConvexPolygonInPlace(xyz, work);
-
-    if (xyz.length === 0)
-      return undefined;
-    clipper.safeSetXYZDistance(0, 0, -1, -range.high.z);
-    clipper.clipConvexPolygonInPlace(xyz, work);
-
-    if (xyz.length === 0)
-      return undefined;
-    clipper.safeSetXYZDistance(1, 0, 0, range.low.x);
-    clipper.clipConvexPolygonInPlace(xyz, work);
-
-    if (xyz.length === 0)
-      return undefined;
-    clipper.safeSetXYZDistance(0, 1, 0, range.low.y);
-    clipper.clipConvexPolygonInPlace(xyz, work);
-
-    if (xyz.length === 0)
-      return undefined;
-    clipper.safeSetXYZDistance(0, 0, 1, range.low.z);
-    clipper.clipConvexPolygonInPlace(xyz, work);
-    if (xyz.length === 0)
-      return undefined;
-
-    return xyz;
+    return IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, xyz);
   }
 }

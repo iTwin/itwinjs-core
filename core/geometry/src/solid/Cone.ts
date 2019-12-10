@@ -241,7 +241,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
  * * v = 1 is the top plane
  * * u = 0 to u = 1 wraps the angular range.
  */
-public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const drdv = this._radiusB - this._radiusA;

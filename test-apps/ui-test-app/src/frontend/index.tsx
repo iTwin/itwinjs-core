@@ -5,20 +5,19 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, Store } from "redux";
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
+import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
-  ElectronRpcConfiguration, BentleyCloudRpcManager,
+  BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, FrontendRequestContext, OidcBrowserClient,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration, IOidcFrontendClient } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
@@ -30,8 +29,8 @@ import {
   FrontstageDef,
   SafeAreaContext,
   SyncUiEventArgs,
+  ToolbarDragInteractionContext,
 } from "@bentley/ui-framework";
-import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
@@ -56,7 +55,7 @@ import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 RpcConfiguration.developmentMode = true;
 let rpcConfiguration: RpcConfiguration;
 const rpcInterfaces = getSupportedRpcs();
-if (ElectronRpcConfiguration.isElectron)
+if (isElectronRenderer)
   rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
   rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
@@ -73,17 +72,20 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
+  toggleDragInteraction = "sampleapp:toggledraginteraction",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
+  dragInteraction: boolean;
   isIModelLocal: boolean;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
+  dragInteraction: true,
   isIModelLocal: false,
 };
 
@@ -93,6 +95,7 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
+  toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -127,6 +130,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
     }
+    case SampleAppUiActionId.toggleDragInteraction: {
+      return { ...state, dragInteraction: !state.dragInteraction };
+    }
   }
 
   return state;
@@ -150,7 +156,6 @@ export class SampleAppIModelApp {
   public static store: Store<RootState>;
   public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
-  public static oidcClient: IOidcFrontendClient;
 
   public static startup(opts?: IModelAppOptions): void {
     opts = opts ? opts : {};
@@ -188,9 +193,8 @@ export class SampleAppIModelApp {
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
-    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, undefined, "frameworkState");
-
-    await this.initializeOidc();
+    const oidcConfiguration = this.getOidcConfiguration();
+    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
 
     // initialize Presentation
     Presentation.initialize({
@@ -212,14 +216,13 @@ export class SampleAppIModelApp {
     await MarkupApp.initialize();
   }
 
-  private static async initializeOidc() {
-    // cSpell:disable
+  private static getOidcConfiguration(): OidcFrontendClientConfiguration {
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
-    if (ElectronRpcConfiguration.isElectron) {
+    if (isElectronRenderer) {
       const clientId = "imodeljs-electron-test";
-      const redirectUri = "electron://frontend/signin-callback";
-      const postSignoutRedirectUri = "electron://frontend/";
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const postSignoutRedirectUri = "http://localhost:3000/";
       oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " offline_access", responseType: "code" };
     } else {
       const clientId = "imodeljs-spa-test";
@@ -227,16 +230,10 @@ export class SampleAppIModelApp {
       const postSignoutRedirectUri = "http://localhost:3000/";
       oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
     }
-    // cSpell:enable
-
-    // Create an OIDC client that helps with the sign-in / sign-out process
-    const requestContext = new FrontendRequestContext();
-    this.oidcClient = new OidcBrowserClient(oidcConfiguration);
-    await this.oidcClient.initialize(requestContext);
-
-    IModelApp.authorizationClient = this.oidcClient;
-    UiFramework.oidcClient = this.oidcClient;
+    return oidcConfiguration;
   }
+
+  // cSpell:enable
 
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
@@ -355,12 +352,12 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
-  public static async showSignIn() {
+  public static async showSignedOut() {
     await SampleAppIModelApp.showFrontstage("SignIn");
   }
 
   // called after the user has signed in (or access token is still valid)
-  public static async onSignedIn() {
+  public static async showSignedIn() {
     // get the default IModel (from imodejs-config)
     let defaultImodel: IModelInfo | undefined;
 
@@ -463,6 +460,21 @@ export class SampleAppIModelApp {
   }
 }
 
+function AppDragInteractionComponent(props: { dragInteraction: boolean, children: React.ReactNode }) {
+  return (
+    <ToolbarDragInteractionContext.Provider value={props.dragInteraction}>
+      {props.children}
+    </ToolbarDragInteractionContext.Provider>
+  );
+}
+
+function mapStateToProps(state: RootState) {
+  return { dragInteraction: state.sampleAppState.dragInteraction };
+}
+
+// tslint:disable-next-line:variable-name
+const AppDragInteraction = connect(mapStateToProps)(AppDragInteractionComponent);
+
 export class SampleAppViewer extends React.Component<any> {
   private _backstageItemProvider = new AppBackstageItemProvider();
 
@@ -470,17 +482,22 @@ export class SampleAppViewer extends React.Component<any> {
     super(props);
 
     AppUi.initialize();
+    this._initializeSignin(!!UiFramework.oidcClient && UiFramework.oidcClient.isAuthorized); // tslint:disable-line:no-floating-promises
+  }
 
-    if (SampleAppIModelApp.oidcClient.hasSignedIn) {
-      SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
-    } else {
-      SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
-    }
+  private _initializeSignin = async (isAuthorized: boolean): Promise<void> => {
+    return isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
+  }
+
+  private _onUserStateChanged = (accessToken: AccessToken | undefined) => {
+    this._initializeSignin(accessToken !== undefined); // tslint:disable-line:no-floating-promises
   }
 
   public componentDidMount() {
     UiFramework.backstageManager.itemsManager.add(this._backstageItemProvider.backstageItems);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
@@ -488,6 +505,8 @@ export class SampleAppViewer extends React.Component<any> {
     UiFramework.backstageManager.itemsManager.remove(backstageItems);
 
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   public render(): JSX.Element {
@@ -496,9 +515,11 @@ export class SampleAppViewer extends React.Component<any> {
         <ThemeManager>
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <ConfigurableUiContent
-                appBackstage={<AppBackstageComposer />}
-              />
+              <AppDragInteraction>
+                <ConfigurableUiContent
+                  appBackstage={<AppBackstageComposer />}
+                />
+              </AppDragInteraction>
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>
@@ -556,7 +577,7 @@ async function retrieveConfiguration(): Promise<void> {
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
-  if (!ElectronRpcConfiguration.isElectron) {
+  if (!isElectronRenderer) {
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
   }

@@ -65,7 +65,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
     const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
 
-    let t = alpha;
+    let t = 0;
 
     if (!isHorizontal) {
       // istanbul ignore next
@@ -167,9 +167,9 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
       left: `${(this.props.alpha * 100)}%`,
     } : {
-        left: `0px`,
-        top: `${-(this.props.alpha * 100) + 100}%`,
-      };
+      left: `0px`,
+      top: `${-(this.props.alpha * 100) + 100}%`,
+    };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="alpha-container">

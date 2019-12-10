@@ -14,6 +14,7 @@ import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -120,6 +121,10 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
     this.state = { expanded: !!this.props.expanded };
   }
 
+  private _onClick = () => {
+    this.setState((prevState) => ({ expanded: !prevState.expanded }));
+  }
+
   /** Renders ExpandableSection */
   public render() {
     const className = classnames(
@@ -127,15 +132,11 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
       this.props.className,
     );
 
-    const onClick = () => {
-      this.setState(Object.assign({}, this.state, { expanded: !this.state.expanded }));
-    };
-
     const icon = this.state.expanded ? <i className="icon icon-chevron-down" /> : <i className="icon icon-chevron-right" />;
 
     return (
       <Panel className={className} style={this.props.style} key={this.props.title}>
-        <div onClick={onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
+        <div onClick={this._onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
           <div className="ListPickerInnerContainer-header-content">
             <div className="ListPickerInnerContainer-expander">{icon}</div>
             <div className="ListPickerInnerContainer-title">{this.props.title}</div>
@@ -201,20 +202,26 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
 
     return (
-      <ExpandableItem
-        {...this.props}
-        hideIndicator
-        panel={this.getExpandedContent()}
-      >
-        <div ref={this._ref}>
-          <Item
-            icon={icon}
-            onClick={this._handleClick}
-            onSizeKnown={this.props.onSizeKnown}
-            title={this.props.title}
-          />
-        </div>
-      </ExpandableItem>
+      <ToolbarDragInteractionContext.Consumer>
+        {(isEnabled) => {
+          return (
+            <ExpandableItem
+              {...this.props}
+              hideIndicator={isEnabled}
+              panel={this.getExpandedContent()}
+            >
+              <div ref={this._ref}>
+                <Item
+                  icon={icon}
+                  onClick={this._handleClick}
+                  onSizeKnown={this.props.onSizeKnown}
+                  title={this.props.title}
+                />
+              </div>
+            </ExpandableItem>
+          );
+        }}
+      </ToolbarDragInteractionContext.Consumer>
     );
   }
 
@@ -348,9 +355,6 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
   /** Creates a ListPicker */
   constructor(props: ListPickerPropsExtended) {
     super(props);
-    this.state = {
-      items: this.createItems(props.items),
-    };
   }
 
   // Creates an array of items containing the separator and special requests (all, none, invert)

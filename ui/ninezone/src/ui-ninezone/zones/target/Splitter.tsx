@@ -38,9 +38,9 @@ export class SplitterTarget extends React.PureComponent<SplitterTargetProps> {
             top: `${offset}%`,
             height: `${size}%`,
           } : {
-              left: `${offset}%`,
-              width: `${size}%`,
-            },
+            left: `${offset}%`,
+            width: `${size}%`,
+          },
           ...style,
         }}
         {...props}

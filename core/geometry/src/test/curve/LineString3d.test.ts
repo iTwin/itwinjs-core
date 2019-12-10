@@ -87,10 +87,12 @@ describe("LineString3d", () => {
 
   it("createXY", () => {
     const ck = new Checker();
-    const xyArray = [Point2d.create(1, 1),
-    Point2d.create(4, 1),
-    Point2d.create(4, 2),
-    Point2d.create(0, 2)];
+    const xyArray = [
+      Point2d.create(1, 1),
+      Point2d.create(4, 1),
+      Point2d.create(4, 2),
+      Point2d.create(0, 2),
+    ];
     const jsArrayXY = [];
     const jsArrayXYZ = [];
     const dz = 10.0;

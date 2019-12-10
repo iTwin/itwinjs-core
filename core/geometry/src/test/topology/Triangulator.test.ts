@@ -55,11 +55,12 @@ describe("Triangulation", () => {
         Point3d.create(5, 5, 0),
         Point3d.create(4, 2, 0),
         Point3d.create(1, 3, 0)],
-      [
-        // Hole
-        Point3d.create(1, 1, 0),
-        Point3d.create(2, 2, 0),
-        Point3d.create(3, 1, 0)]],
+        [
+          // Hole
+          Point3d.create(1, 1, 0),
+          Point3d.create(2, 2, 0),
+          Point3d.create(3, 1, 0),
+        ]],
       // triangle with one hole
       [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
       [Point3d.create(2, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)]],

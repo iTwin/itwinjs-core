@@ -307,7 +307,7 @@ class PolylineVertex {
     if (joint)
       return PolylineParam.kJointBase;
 
-    let param: PolylineParam = PolylineParam.kNone;
+    let param: PolylineParam;
     if (noDisplacement)
       param = PolylineParam.kNoneAdjustWeight; // prevent getting tossed before width adjustment
     else if (adjacentToJoint)

@@ -1,11 +1,3 @@
 {
-  "extends": [
-    "@bentley/build-tools/tslint-docs.json",
-    "tslint-react-hooks"
-  ],
-  "rules": {
-    "react-hooks-nesting": {
-      "severity": "error"
-    }
-  }
+  "extends": "@bentley/build-tools/tslint-docs.json"
 }

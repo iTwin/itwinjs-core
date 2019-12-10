@@ -13,7 +13,6 @@ import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeMode
 import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { TreeDataProviderRaw, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 
-// tslint:disable: react-hooks-nesting
 describe("useVisibleTreeNodes", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const onModelChangeMock = moq.Mock.ofType<BeUiEvent<TreeModel>>();

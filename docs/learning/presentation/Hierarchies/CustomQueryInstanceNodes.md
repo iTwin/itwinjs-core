@@ -17,7 +17,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 `groupByClass` | No | `boolean` | `true` | Group instances by ECClass
 `groupByLabel` | No | `boolean` | `true` | Group instances by label | Expensive
 *Misc.* |
-`hasChildren` | No | `"Always" | "Never" | "Unknown"` | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves
+`hasChildren` | No | `"Always" \| "Never" \| "Unknown"` | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves
 `relatedInstances` | No | `RelatedInstanceSpecification[]` | `[]` | Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used in nodes' creation.
 `nestedRules` | No | [`ChildNodeRule[]`](./ChildNodeRule.md) | `[]` | Specifications of [nested child node rules](./Terminology.md#nested-rules).
 

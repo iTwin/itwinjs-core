@@ -10,26 +10,26 @@ import * as path from "path";
 export class ECDbTestHelper {
 
   public static createECDb(outDir: string, fileName: string, schemaXml?: string): ECDb {
-  if (!IModelJsFs.existsSync(outDir))
-    IModelJsFs.mkdirSync(outDir);
+    if (!IModelJsFs.existsSync(outDir))
+      IModelJsFs.mkdirSync(outDir);
 
-  const outpath = path.join(outDir, fileName);
-  if (IModelJsFs.existsSync(outpath))
-    IModelJsFs.unlinkSync(outpath);
+    const outpath = path.join(outDir, fileName);
+    if (IModelJsFs.existsSync(outpath))
+      IModelJsFs.unlinkSync(outpath);
 
-  const ecdb = new ECDb();
-  ecdb.createDb(outpath);
+    const ecdb = new ECDb();
+    ecdb.createDb(outpath);
 
-  if (!schemaXml)
+    if (!schemaXml)
+      return ecdb;
+
+    const schemaPath = path.join(outDir, Guid.createValue() + ".ecschema.xml");
+    if (IModelJsFs.existsSync(schemaPath))
+      IModelJsFs.unlinkSync(schemaPath);
+
+    IModelJsFs.writeFileSync(schemaPath, schemaXml);
+
+    ecdb.importSchema(schemaPath);
     return ecdb;
-
-  const schemaPath = path.join(outDir, Guid.createValue() + ".ecschema.xml");
-  if (IModelJsFs.existsSync(schemaPath))
-    IModelJsFs.unlinkSync(schemaPath);
-
-  IModelJsFs.writeFileSync(schemaPath, schemaXml);
-
-  ecdb.importSchema(schemaPath);
-  return ecdb;
   }
 }

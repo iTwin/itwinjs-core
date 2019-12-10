@@ -17,7 +17,7 @@ export function useLifecycleLogging(name: string, props: Record<string, any>, co
       // tslint:disable-next-line: no-console
       console.log(`[useLifecycleLogging]: '${name}' Component unmounted.`);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevProps = useRef(props);
   const prevContext = useRef(context);

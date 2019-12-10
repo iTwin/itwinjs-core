@@ -36,7 +36,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -89,6 +89,10 @@
     {
       "name": "@bentley/logger-config",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/oidc-signin-tool",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -160,6 +164,10 @@
     },
     {
       "name": "@testing-library/react-hooks",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -295,6 +303,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "display-test-app",
+      "allowedCategories": [ "internal", "plugins" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },
@@ -305,6 +317,10 @@
     {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "electron-rebuild",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "enzyme",
@@ -321,6 +337,18 @@
     {
       "name": "escape-string-regexp",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "eslint-plugin-react-hooks",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "event-stream",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "eventemitter2",
@@ -455,6 +483,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "keytar",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
@@ -507,6 +539,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "nan",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "nock",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -528,7 +564,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "plugins", "tools" ]
     },
     {
       "name": "nyc",
@@ -547,8 +583,12 @@
       "allowedCategories": [ "common", "frontend" ]
     },
     {
+      "name": "opener",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "openid-client",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "popper.js",
@@ -695,10 +735,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "resize-observer-polyfill",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -803,16 +839,16 @@
       "allowedCategories": [ "common", "tools" ]
     },
     {
+      "name": "tslint-eslint-rules",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "tslint-etc",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "tslint-loader",
       "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
-      "name": "tslint-react-hooks",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "tsutils",
@@ -847,8 +883,16 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "ui-test-app",
+      "allowedCategories": [ "internal", "plugins" ]
+    },
+    {
       "name": "url-loader",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "username",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "uuid",

@@ -69,16 +69,15 @@ describe("ECDb", () => {
         <ECProperty propertyName="Age" typeName="int"/>
       </ECEntityClass>
       </ECSchema>`), (testECDb: ECDb) => {
-        assert.isTrue(testECDb.isOpen);
-
-        id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
-          const res: ECSqlInsertResult = stmt.stepForInsert();
-          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-          assert.isDefined(res.id);
-          assert.isTrue(Id64.isValidId64(res.id!));
-          return res.id!;
-        });
+      assert.isTrue(testECDb.isOpen);
+      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        assert.isTrue(Id64.isValidId64(res.id!));
+        return res.id!;
       });
+    });
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
