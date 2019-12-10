@@ -26,6 +26,7 @@ import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 import { UrlFileHandler } from "../../UrlFileHandler";
+import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -47,10 +48,66 @@ export function createFileHanlder(useDownloadBuffer?: boolean) {
   if (MobileRpcConfiguration.isMobileBackend) {
     return new IOSAzureFileHandler();
   } else if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
-    return new UrlFileHandler();
+    return createIModelBankFileHandler(useDownloadBuffer);
   }
   return new AzureFileHandler(useDownloadBuffer);
 }
+
+export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
+  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  switch (handler.toLowerCase()) {
+    case "azure":
+      return new AzureFileHandler(useDownloadBuffer);
+    case "localhost":
+      return new LocalhostHandler();
+    case "url":
+      return new UrlFileHandler();
+    default:
+      throw new Error(`File handler '${handler}' is not supported.`);
+  }
+}
+
+export function getExpectedFileHandlerUrlSchemes(): string[] {
+  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  switch (handler.toLowerCase()) {
+    case "localhost":
+      return ["file://"];
+    default:
+      return ["https://", "http://"];
+  }
+}
+
+export function doesMatchExpectedUrlScheme(url?: string) {
+  if (!url)
+    return false;
+
+  const expectedSchemes = getExpectedFileHandlerUrlSchemes();
+  for (const scheme of expectedSchemes)
+    if (url!.startsWith(scheme))
+      return true;
+
+  return false;
+}
+
+export function removeFileUrlExpirationTimes(changesets: ChangeSet[]) {
+  for (const cs of changesets) {
+    cs.downloadUrl = removeFileUrlExpirationTime(cs.downloadUrl);
+    cs.uploadUrl = removeFileUrlExpirationTime(cs.uploadUrl);
+  }
+  return changesets;
+}
+
+function removeFileUrlExpirationTime(url?: string) {
+  if (!url)
+    return url;
+  if (url.toLowerCase().startsWith("http")) {
+    const index = url.indexOf("?");
+    if (index > 0)
+      return url.substring(0, index);
+  }
+  return url;
+}
+
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() {

@@ -11,9 +11,9 @@ import * as https from "https";
 import { IModelClient, IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
-import { UrlFileHandler } from "../../UrlFileHandler";
+
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { workDir } from "./TestUtils";
+import { workDir, createIModelBankFileHandler } from "./TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
 
 // To run tests with imodel-bank integration:
@@ -33,7 +33,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
-  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
@@ -143,7 +143,7 @@ function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
-  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
