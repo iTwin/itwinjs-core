@@ -34,6 +34,17 @@ export class SortableEdge extends Float64Array {
   public static areUndirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
     return (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) || ((edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]));
   }
+  /** Return numeric relationship of edgeA and edgeB:
+   * * 1 if they share start and end in the same order
+   * * -1 if they share start and end in reversed order
+   * * 0 otherwise.
+   */
+  public static relativeOrientation(edgeA: SortableEdge, edgeB: SortableEdge): number {
+    if (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) return 1;
+    if (edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]) return -1;
+    return 0;
+  }
+
   public get isNullEdge(): boolean { return this[0] === this[1]; }
   /**
    * lexical comparison of two edges.

@@ -113,6 +113,10 @@ export class IndexedPolyface extends Polyface {
     }
     return false;
   }
+  /** Reverse indices for a single facet. */
+  public reverseSingleFacet(facetId: number) {
+    this.data.reverseIndicesSingleFacet(facetId, this._facetStart);
+  }
   /** Return a deep clone. */
   public clone(): IndexedPolyface {
     const result = new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());

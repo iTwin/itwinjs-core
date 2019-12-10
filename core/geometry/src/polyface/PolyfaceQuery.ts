@@ -32,6 +32,7 @@ import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Range3d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
+import { FacetOrientationFixup } from "./FacetOrientation";
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -228,9 +229,17 @@ export class PolyfaceQuery {
 
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
-   * @param source
    */
   public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+    return this.isPolyfaceManifold(source, false);
+  }
+  /** Test edges pairing in `source` mesh.
+   * * for `allowSimpleBoundaries === false` true return means this is a closed 2-manifold surface
+   * * for `allowSimpleBoundaries === true` true means this is a 2-manifold surface which may have boundary, but is still properly matched internally.
+   * * Any edge with 3 ore more incident facets triggers `false` return.
+   * * Any edge with 2 incident facets in the same direction triggers a `false` return.
+  */
+  public static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries: boolean = false): boolean {
     const edges = new IndexedEdgeMatcher();
     const visitor = source.createVisitor(1) as PolyfaceVisitor;
     visitor.reset();
@@ -241,9 +250,10 @@ export class PolyfaceQuery {
       }
     }
     const badClusters: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, badClusters, undefined, badClusters);
+    edges.sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
+
   /**
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
@@ -580,7 +590,8 @@ export class PolyfaceQuery {
           polyface.data.point.getPoint3dAtUncheckedPointIndex(index, spacePoint);
           const detail = segment.closestPoint(spacePoint, false);
           if (undefined !== detail) {
-            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)) {
+            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)
+              && spacePoint.isAlmostEqual(detail.point)) {
               if (detailArray === undefined)
                 detailArray = [];
               detail.a = index;
@@ -680,7 +691,18 @@ export class PolyfaceQuery {
       if (data.pointIndex[i] === vertexIndex)
         data.edgeVisible[i] = value;
   }
-
+  /** Load all half edges from a mesh to an IndexedEdgeMatcher */
+  public static createIndexedEdges(visitor: PolyfaceVisitor): IndexedEdgeMatcher {
+    const edges = new IndexedEdgeMatcher();
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    return edges;
+  }
   /**
   * * Find mated pairs among facet edges.
   * * Mated pairs have the same vertex indices appearing in opposite order.
@@ -691,15 +713,9 @@ export class PolyfaceQuery {
   * @param mesh mesh to be marked
   */
   public static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle) {
-    const edges = new IndexedEdgeMatcher();
     const visitor = mesh.createVisitor(1) as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      const numEdges = visitor.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
-      }
-    }
+    const edges = this.createIndexedEdges(visitor);
+
     const pairedEdges: SortableEdgeCluster[] = [];
     const boundaryEdges: SortableEdgeCluster[] = [];
     edges.sortAndCollectClusters(pairedEdges, boundaryEdges, boundaryEdges, boundaryEdges);
@@ -747,7 +763,14 @@ export class PolyfaceQuery {
     for (let i = 0; i < data.edgeVisible.length; i++)
       data.edgeVisible[i] = value;
   }
-
+  /**
+   * * Examine adjacent facet orientations throughout the mesh
+   * * If possible, reverse a subset to achieve proper pairing.
+   * @param mesh
+   */
+  public static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean {
+    return FacetOrientationFixup.doFixup(mesh);
+  }
 }
 
 /** Announce the points on a drape panel.

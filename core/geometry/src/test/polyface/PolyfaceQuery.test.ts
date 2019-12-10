@@ -17,6 +17,10 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { Geometry } from "../../Geometry";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { TorusImplicit } from "../../numerics/Polynomials";
+import { Angle } from "../../geometry3d/Angle";
 
 /* tslint:disable:no-console */
 /** Functions useful for modifying test data. */
@@ -350,4 +354,155 @@ describe("MarkVisibility", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+});
+describe("ReOrientFacets", () => {
+  it("TwoFacets", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const dy = 5.0;
+    const pointA0 = Point3d.create(0, 0);
+    const pointA1 = Point3d.create(0, 1);
+
+    const pointB0 = Point3d.create(1, 0);
+    const pointB1 = Point3d.create(1, 1);
+
+    const pointC0 = Point3d.create(2, 0);
+    const pointC1 = Point3d.create(2, 1);
+
+    const builderA = PolyfaceBuilder.create();
+    builderA.addPolygon([pointA0, pointB0, pointB1, pointA1]);
+    builderA.addPolygon([pointB0, pointC0, pointC1, pointB1]);   // consistent
+    const meshA = builderA.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0, 0);
+    PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(meshA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0 + dy, 0);
+    x0 += 10;
+    const builderB = PolyfaceBuilder.create();
+    builderB.addPolygon([pointA0, pointB0, pointB1, pointA1]);
+    builderB.addPolygon([pointB0, pointB1, pointC1, pointC0]);   // consistent
+    const meshB = builderB.claimPolyface(true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0, 0);
+    PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(meshB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 + dy, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "TwoFacets");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ManyFlips", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    let x0 = 0;
+    const y0 = 0;
+    const dy = 5.0;
+    const dx = 12.0;
+    const facetsToFlip = [3, 4, 5, 12, 13, 14];
+    for (let numFlip = 0; numFlip < facetsToFlip.length; numFlip++) {
+      const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.create(1.0324, 0, 0.1), Vector3d.create(0, 1.123, 0.5), 3, 7);
+      for (let i = 0; i < numFlip; i++)
+        mesh.reverseSingleFacet(facetsToFlip[i]);
+      ck.testBoolean(numFlip === 0, PolyfaceQuery.isPolyfaceManifold(mesh, true), "initial mesh pairing state");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+      PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(mesh);
+      ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh, true), "corrected mesh pairing state");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + dy, 0);
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "ManyFlips");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MoebiusStrip", () => {
+
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const meshDataA = {
+      indexedMesh: {
+        point: [
+          [0, 0, 0],
+          [0, 1, 0],
+          [1, 0, 0],
+          [1, 1, 0],
+          [1, 0, 1],
+          [1, 1, 1],
+          [0.5, 0.5, 0.5],
+          [0, 0.5, 0.5],
+        ],
+        pointIndex: [
+          1, 2, 4, 3, 0,
+          3, 4, 6, 5, 0,
+          5, 6, 8, 0,
+          5, 8, 7, 0,
+          7, 8, 1, 0,
+          1, 7, 2, 0,
+        ],
+      },
+    };
+    const a = 8.0;
+    const b = 0.5;
+    const meshDataB = {
+      indexedMesh: {
+        point: [
+          [0, 0, 0],
+          [0, 0, 2],
+          [a - b, b, 1],
+          [a + b, -b, 1],
+          [a, a, 2],
+          [a, a, 0],
+          [1, a - b, 1],
+          [-1, a + b, 1],
+        ],
+        pointIndex: [
+          1, 2, 3, 0,
+          1, 3, 4, 0,
+
+          4, 3, 6, 0,
+          6, 5, 4, 0,
+
+          5, 6, 7, 0,
+          5, 7, 8, 0,
+
+          8, 7, 1, 0,
+          8, 1, 2, 0,
+        ],
+      },
+    };
+    const builderC = PolyfaceBuilder.create();
+    const torus = new TorusImplicit(8.0, 1.0);
+    let thetaDegrees = 0.0;
+    const thetaDegreeStep = 45.0;
+    let phiDegrees = 90.0;
+    const phiDegreeStep = thetaDegreeStep / 2;
+    for (; thetaDegrees < 360; thetaDegrees += thetaDegreeStep, phiDegrees += phiDegreeStep) {
+      const theta0 = Angle.degreesToRadians(thetaDegrees);
+      const phi0 = Angle.degreesToRadians(phiDegrees);
+      const xyzA = torus.evaluateThetaPhi(theta0, phi0);
+      const xyzB = torus.evaluateThetaPhi(theta0, phi0 + Math.PI);
+      const theta1 = Angle.degreesToRadians(thetaDegrees + thetaDegreeStep);
+      const phi1 = Angle.degreesToRadians(phiDegrees + phiDegreeStep);
+      const xyzC = torus.evaluateThetaPhi(theta1, phi1);
+      const xyzD = torus.evaluateThetaPhi(theta1, phi1 + Math.PI);
+      builderC.addPolygon([xyzA, xyzB, xyzC]);
+      builderC.addPolygon([xyzC, xyzB, xyzD]);
+    }
+    const meshC = builderC.claimPolyface() as IndexedPolyface;
+    const meshA = IModelJson.Reader.parse(meshDataA) as IndexedPolyface;
+    const meshB = IModelJson.Reader.parse(meshDataB) as IndexedPolyface;
+    for (const mesh of [meshA.clone(), meshB.clone(), meshC.clone()]) {
+      if (mesh instanceof IndexedPolyface) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+        ck.testFalse(PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(mesh));
+      }
+      x0 += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MoebiusStrip");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

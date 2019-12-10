@@ -321,12 +321,33 @@ export class PolyfaceData {
   public reverseIndices(facetStartIndex?: number[]) {
     if (facetStartIndex && PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)) {
       PolyfaceData.reverseIndices(facetStartIndex, this.pointIndex, true);
-      PolyfaceData.reverseIndices(facetStartIndex, this.normalIndex, true);
-      PolyfaceData.reverseIndices(facetStartIndex, this.paramIndex, true);
-      PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
+      if (this.normalIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.normalIndex, true);
+      if (this.paramIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.paramIndex, true);
+      if (this.colorIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
       PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
     }
   }
+  /** reverse indices facet-by-facet, with the given facetStartIndex array delimiting faces.
+   *
+   * * facetStartIndex[0] == 0 always -- start of facet zero.
+   * * facet k has indices from facetStartIndex[k] <= i < facetStartIndex[k+1]
+   * * hence for "internal" k, facetStartIndex[k] is both the upper limit of facet k-1 and the start of facet k.
+   * *
+   */
+  public reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]) {
+    PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.pointIndex, true);
+    if (this.normalIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.normalIndex, true);
+    if (this.paramIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.paramIndex, true);
+    if (this.colorIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.colorIndex, true);
+    PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.edgeVisible, false);
+  }
+
   /** Scale all the normals by -1 */
   public reverseNormals() {
     if (this.normal)
@@ -374,7 +395,7 @@ export class PolyfaceData {
         return false;
     return true;
   }
-  /** Reverse data in facet indexing arrays.
+  /** Reverse data in entire facet indexing arrays.
    * * parameterized over type T so non-number data -- e.g. boolean visibility flags -- can be reversed.
    */
   public static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
@@ -410,4 +431,38 @@ export class PolyfaceData {
     return false;
   }
 
+  /** Reverse data in entire facet indexing arrays.
+   * * parameterized over type T so non-number data -- e.g. boolean visibility flags -- can be reversed.
+   */
+  public static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
+    if (!indices || indices.length === 0)
+      return true;  // empty case
+    if (indices.length > 0) {
+      if (facetStartIndex[facetStartIndex.length - 1] === indices.length
+        && facetId >= 0 && facetId + 1 < facetStartIndex.length) {
+        let index0 = facetStartIndex[facetId];
+        let index1 = facetStartIndex[facetId + 1];
+        if (preserveStart) {
+          // leave [index0] as is so reversed facet starts at same vertex
+          while (index1 > index0 + 2) {
+            index1--; index0++;
+            const a = indices[index0];
+            indices[index0] = indices[index1];
+            indices[index1] = a;
+          }
+        } else {
+          // reverse all
+          while (index1 > index0 + 1) {
+            index1--;
+            const a = indices[index0];
+            indices[index0] = indices[index1];
+            indices[index1] = a;
+            index0++;
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
 }

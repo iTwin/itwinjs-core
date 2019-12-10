@@ -2394,6 +2394,7 @@ export class IndexedPolyface extends Polyface {
     range(transform?: Transform, result?: Range3d): Range3d;
     reverseIndices(): void;
     reverseNormals(): void;
+    reverseSingleFacet(facetId: number): void;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): any;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -3781,6 +3782,8 @@ export class PolyfaceData {
     resizeAllDataArrays(length: number): void;
     reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]): void;
+    static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
     reverseNormals(): void;
     trimAllIndexArrays(length: number): void;
     tryTransformInPlace(transform: Transform): boolean;
@@ -3798,13 +3801,16 @@ export class PolyfaceQuery {
     static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
+    static createIndexedEdges(visitor: PolyfaceVisitor): IndexedEdgeMatcher;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
+    static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
     static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle): void;
     static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][];
+    static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean;
     static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
