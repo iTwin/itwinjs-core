@@ -138,8 +138,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
 
-      const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
+      chai.assert(utils.doesMatchExpectedUrlScheme(changeSet.downloadUrl), "Returned URL scheme does not match any of the expected ones.");
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
@@ -210,13 +209,13 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get latest ChangeSets (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(2));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets.length).to.be.equal(2);
     chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(parseInt(changeSets[1].index!, 10));
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
 
-    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
   });
@@ -224,19 +223,19 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get all ChangeSets in chunks (#iModelBank)", async () => {
     const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
     utils.mockGetChangeSet(imodelId, false, "?$top=1", ...mockedChangeSets);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(1));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(1)));
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=3", ...mockedChangeSets);
-    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(3));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(3)));
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=7", ...mockedChangeSets);
-    const changeSets3: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(7));
+    const changeSets3: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(7)));
     chai.expect(changeSets).to.be.deep.equal(changeSets3);
 
     utils.mockGetChangeSet(imodelId, true, "&$top=2", ...mockedChangeSets);
-    const changeSets4: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2));
+    const changeSets4: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2)));
     chai.expect(changeSets.length).to.be.equal(changeSets4.length);
 
     let i = 0;
@@ -246,8 +245,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
 
-      const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
+      chai.assert(utils.doesMatchExpectedUrlScheme(changeSet.downloadUrl), "Returned URL scheme does not match any of the expected ones.");
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
