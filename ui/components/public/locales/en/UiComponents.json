@@ -30,7 +30,8 @@
     "title": "Show/Hide"
   },
   "property": {
-    "varies": "*** Varies ***"
+    "varies": "*** Varies ***",
+    "arrayLength": "Number of Items"
   },
   "signIn": {
     "prompt": "Please sign in to access your Bentley services.",
