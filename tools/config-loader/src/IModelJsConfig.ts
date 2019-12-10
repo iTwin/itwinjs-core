@@ -81,11 +81,11 @@ export class IModelJsConfig {
    *  1. `default.json5`
    *  1. `${imjs_config_env}.json5`
    *
-   * If the "{overrideConfigName}.json5" file exists, the configuration is merged with the default configuration using `Object.assign`.  Meaning if there are
-   * any configurations with the same key, the one specified in the "{overrideConfigName}.json5" will win.
+   * If the "{imjs_config_env}.json5" file exists, the configuration is merged with the default configuration using `Object.assign`.  Meaning if there are
+   * any configurations with the same key, the one specified in the "{imjs_config_env}.json5" will win.
    *
    * > If the `default.json5` is found and parsed successfully, the path to the config file will be added to the configuration with the key, `imjs_config_file_default`.
-   * > If the `{overrideConfigName}.json5` is found, the path will be added with the key, `imjs_config_file_override`.
+   * > If the `{imjs_config_env}.json5` is found, the path will be added with the key, `imjs_config_file_override`.
    *
    * @param suppressException whether or not an exception should be suppressed.  If true, no exception will be thrown.
    * @param suppressErrorMessage whether or not an error message will be printed to the console during an exception.  The `suppressException` parameter has no effect on the error message.
