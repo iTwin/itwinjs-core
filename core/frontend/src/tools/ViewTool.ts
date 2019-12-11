@@ -1520,7 +1520,9 @@ class NavigateMotion {
 
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
     const vp = this.viewport;
-    const view = vp.view as ViewState3d;
+    const view = vp.view;
+    if (!view.is3d() || !vp.isCameraOn)
+      return Transform.createIdentity();
     const viewRot = vp.rotation;
     const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this._seconds));
