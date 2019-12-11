@@ -55,6 +55,7 @@ import { EnvironmentProps } from '@bentley/imodeljs-common';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
+import { FeatureLogEntry } from '@bentley/imodeljs-clients';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
@@ -182,9 +183,11 @@ import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
 import { UiAdmin } from '@bentley/ui-abstract';
+import { UlasClient } from '@bentley/imodeljs-clients';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { UsageType } from '@bentley/imodeljs-clients';
 import { User } from 'oidc-client';
 import { UserManagerSettings } from 'oidc-client';
 import { Vector3d } from '@bentley/geometry-core';
@@ -3403,6 +3406,7 @@ export class IModelApp {
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    static readonly features: FeatureTrackingManager;
     // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
     static readonly i18n: I18N;
@@ -3472,6 +3476,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
+    features?: FeatureTrackingManager;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)

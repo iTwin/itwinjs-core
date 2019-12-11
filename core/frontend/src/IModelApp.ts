@@ -32,6 +32,7 @@ import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { FeatureTrackingManager } from "./FeatureTrackingManager";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -103,6 +104,8 @@ export interface IModelAppOptions {
   pluginAdmin?: PluginAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** if present, supplies the [[FeatureTrackingManager]] for this session */
+  features?: FeatureTrackingManager;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -164,6 +167,7 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _tileTreePurgeTime?: BeTimePoint;
   private static _tileTreePurgeInterval?: BeDuration;
+  private static _features: FeatureTrackingManager;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -220,6 +224,8 @@ export class IModelApp {
   public static get pluginAdmin() { return this._pluginAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** The [[FeatureTrackingManager]] for this session */
+  public static get features() { return this._features; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -332,6 +338,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
+    this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
 
     [
       this.renderSystem,

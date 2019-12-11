@@ -172,3 +172,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SpatialClassification
  * Classes for spatial classification.
  */
+/**
+ * @docs-group-description Features
+ * Classes for Feature Tracking classification.
+ */
