@@ -12,7 +12,7 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
     "test": "npm run test:chrome && npm run test:http2 && npm run test:direct",
     "test:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome -b ./lib/backend/http.js",
-    "test:http2": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome -b ./lib/backend/http2.js --invert --grep \"#FIXME-http2\"",
+    "test:http2": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome -b ./lib/backend/http2.js",
     "test:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron -b ./lib/backend/electron.js",
     "test:direct": "node ./node_modules/@bentley/certa/bin/certa.js -r node -b ./lib/backend/direct.js --invert --grep \"#FIXME-direct\""
   },
@@ -26,7 +26,8 @@
     "chai": "^4.1.2",
     "electron": "^6.1.5",
     "express": "^4.16.3",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "spdy": "^4.0.1"
   },
   "devDependencies": {
     "@bentley/certa": "1.10.0-dev.1",
@@ -37,6 +38,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
+    "@types/spdy": "^3.4.4",
     "@types/webpack": "^4.41.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",

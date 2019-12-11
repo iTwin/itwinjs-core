@@ -755,6 +755,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "spdy",
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
       "name": "ssri",
       "allowedCategories": [ "tools" ]
     },

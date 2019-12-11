@@ -119,6 +119,7 @@ dependencies:
   '@types/sinon': 7.5.1
   '@types/sinon-chai': 3.2.3
   '@types/source-map-support': 0.4.2
+  '@types/spdy': 3.4.4
   '@types/superagent': 3.8.7
   '@types/tar': 4.0.3
   '@types/testing-library__react-hooks': 3.1.0
@@ -273,6 +274,7 @@ dependencies:
   sinon-chai: 3.3.0_chai@4.2.0+sinon@7.5.0
   source-map-loader: 0.2.4
   source-map-support: 0.5.16
+  spdy: 4.0.1
   ssri: 6.0.1
   style-loader: 0.21.0
   superagent: 3.8.3
@@ -1200,6 +1202,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-GbGWx39O8NdUHSChdrU0XeigBAgu1Teg3llwE0slSVcH2qISaQT70ftAiH+h4HIt3VIObFU34PSpXIKJuXCybQ==
+  /@types/spdy/3.4.4:
+    dependencies:
+      '@types/node': 10.14.1
+    dev: false
+    resolution:
+      integrity: sha512-N9LBlbVRRYq6HgYpPkqQc3a9HJ/iEtVZToW6xlTtJiMhmRJ7jJdV7TaZQJw/Ve/1ePUsQiCTDc4JMuzzag94GA==
   /@types/superagent/3.8.7:
     dependencies:
       '@types/cookiejar': 2.1.1
@@ -15771,6 +15779,7 @@ packages:
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
+      '@types/spdy': 3.4.4
       '@types/webpack': 4.41.0
       chai: 4.2.0
       cpx: 1.5.0
@@ -15781,6 +15790,7 @@ packages:
       rimraf: 2.7.1
       semver: 5.7.1
       source-map-loader: 0.2.4
+      spdy: 4.0.1
       tslint: 5.20.1_typescript@3.6.4
       tslint-etc: 1.10.0_tslint@5.20.1+typescript@3.6.4
       typescript: 3.6.4
@@ -15788,7 +15798,7 @@ packages:
     dev: false
     name: '@rush-temp/rpc-integration-tests'
     resolution:
-      integrity: sha512-0uUqyg9qgpstwdlF6KPLdf6PN2iBzxVuC2hK1KpnQq0R1IOQHMSa04g6JPTRQFBYUdWsD2DPbk9PMWb0yXcNTw==
+      integrity: sha512-SZHYHWrGujqJoRjmsOelE5/JwliPgP7dtBTOpUs1lYJLxC6HOIeXG03RSitTyqxV6AwBU2EBwusJ6Sg8azjDZQ==
       tarball: 'file:projects/rpc-integration-tests.tgz'
     version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
@@ -16337,6 +16347,7 @@ packages:
       integrity: sha512-m2ssg0bWqvZ2BthtWFDe2sF0Wk92CPOXOQHmj964TZ5e8RShBGqgwcoobVUBqehzkCX4RVvd2ztUxljXV9y4Eg==
       tarball: 'file:projects/wms-plugin-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@bentley/icons-generic': ^0.0.43
@@ -16458,6 +16469,7 @@ specifiers:
   '@types/sinon': ^7.5.1
   '@types/sinon-chai': ^3.2.0
   '@types/source-map-support': ^0.4.0
+  '@types/spdy': ^3.4.4
   '@types/superagent': ^3.5.6
   '@types/tar': ^4.0.0
   '@types/testing-library__react-hooks': ^3.1.0
@@ -16612,6 +16624,7 @@ specifiers:
   sinon-chai: ^3.2.0
   source-map-loader: ^0.2.3
   source-map-support: ^0.5.6
+  spdy: ^4.0.1
   ssri: ^6.0.1
   style-loader: ^0.21.0
   superagent: ^3.7.0

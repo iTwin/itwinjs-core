@@ -378,7 +378,7 @@ describe("RpcInterface", () => {
     await (test(decPatchZ.format(), true, clientZ));
   });
 
-  it("should validate transport method #FIXME-http2", async () => {
+  it("should validate transport method", async () => {
     function compareBytes(x: Uint8Array, y: Uint8Array) {
       if (x.byteLength !== y.byteLength) {
         return false;
