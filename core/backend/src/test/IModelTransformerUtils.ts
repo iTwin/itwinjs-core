@@ -700,14 +700,17 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(contextSubjectId));
     const definitionModelId = DefinitionModel.insert(teamDb, IModel.rootSubjectId, `Definition${teamName}`);
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const spatialCategoryId = insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
-    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const teamSpatialCategoryId = insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+    assert.isTrue(Id64.isValidId64(teamSpatialCategoryId));
+    const sharedSpatialCategoryId = insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
+    assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const physicalModelId = PhysicalModel.insert(teamDb, IModel.rootSubjectId, `Physical${teamName}`);
     assert.isTrue(Id64.isValidId64(physicalModelId));
+    // insert PhysicalObject-team1 using team SpatialCategory
     const physicalObjectProps1: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
-      category: spatialCategoryId,
+      category: teamSpatialCategoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject${teamName}1`,
       geom: createBox(Point3d.create(1, 1, 1)),
@@ -718,6 +721,21 @@ export namespace IModelTransformerUtils {
     };
     const physicalObjectId1: Id64String = teamDb.elements.insertElement(physicalObjectProps1);
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    // insert PhysicalObject2 using "shared" SpatialCategory
+    const physicalObjectProps2: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sharedSpatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: `PhysicalObject${teamName}2`,
+      geom: createBox(Point3d.create(2, 2, 2)),
+      placement: {
+        origin: teamOrigin,
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId2: Id64String = teamDb.elements.insertElement(physicalObjectProps2);
+    assert.isTrue(Id64.isValidId64(physicalObjectId2));
   }
 
   export function createSharedIModel(outputDir: string, teamNames: string[]): IModelDb {
@@ -737,26 +755,42 @@ export namespace IModelTransformerUtils {
 
   export function assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
     const definitionPartitionId: Id64String = queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const spatialCategoryId = querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const teamSpatialCategoryId = querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const sharedSpatialCategoryId = querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
     const physicalPartitionId: Id64String = queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const physicalElementId: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, `${teamName}1`);
-    const physicalElement: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalElementId);
-    assert.equal(physicalElement.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
-    assert.equal(physicalElement.code.scope, IModel.rootSubjectId);
-    assert.isTrue(physicalElement.code.getValue() === "");
+    const physicalObjectId1: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+    const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
+    assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
+    assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
+    assert.isTrue(physicalObject1.code.getValue() === "");
+    assert.equal(physicalObject1.category, teamSpatialCategoryId);
+    const physicalObjectId2: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+    const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
+    assert.equal(physicalObject2.category, sharedSpatialCategoryId);
   }
 
   export function assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
+    const sharedSpatialCategoryId = querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
+    assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
+    const aspects: ExternalSourceAspect[] = iModelDb.elements.getAspects(sharedSpatialCategoryId, ExternalSourceAspect.classFullName) as ExternalSourceAspect[];
+    assert.isAtLeast(teamNames.length, aspects.length, "Should have an ExternalSourceAspect from each source");
     teamNames.forEach((teamName: string) => {
       const subjectId: Id64String = querySubjectId(iModelDb, teamName);
       const definitionPartitionId: Id64String = queryDefinitionPartitionId(iModelDb, subjectId, teamName);
-      const spatialCategoryId = querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+      const teamSpatialCategoryId = querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
       const physicalPartitionId: Id64String = queryPhysicalPartitionId(iModelDb, subjectId, teamName);
-      const physicalElementId: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, `${teamName}1`);
-      const physicalElement: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalElementId);
-      assert.equal(physicalElement.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
-      assert.equal(physicalElement.code.scope, IModel.rootSubjectId);
-      assert.isTrue(physicalElement.code.getValue() === "");
+      const physicalObjectId1: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+      const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
+      assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
+      assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
+      assert.isTrue(physicalObject1.code.getValue() === "");
+      assert.equal(physicalObject1.category, teamSpatialCategoryId);
+      assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
+      assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
+      const physicalObjectId2: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+      const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
+      assert.equal(physicalObject2.category, sharedSpatialCategoryId);
+      assert.equal(1, iModelDb.elements.getAspects(physicalObjectId2, ExternalSourceAspect.classFullName).length);
     });
   }
 

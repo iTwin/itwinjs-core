@@ -332,7 +332,6 @@ describe("IModelTransformer", () => {
       IModelTransformerUtils.assertTeamIModelContents(iModelA, "A");
       const iModelExporterA = new IModelExporter(iModelA);
       iModelExporterA.excludeElement(iModelA.elements.queryElementIdByCode(Subject.createCode(iModelA, IModel.rootSubjectId, "Context"))!);
-      iModelExporterA.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelExporterA, iModelShared, { targetScopeElementId: subjectId });
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
@@ -348,7 +347,6 @@ describe("IModelTransformer", () => {
       IModelTransformerUtils.assertTeamIModelContents(iModelB, "B");
       const iModelExporterB = new IModelExporter(iModelB);
       iModelExporterB.excludeElement(iModelB.elements.queryElementIdByCode(Subject.createCode(iModelB, IModel.rootSubjectId, "Context"))!);
-      iModelExporterB.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelExporterB, iModelShared, { targetScopeElementId: subjectId });
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
@@ -356,7 +354,7 @@ describe("IModelTransformer", () => {
       transformerB2S.dispose();
       iModelB.closeSnapshot();
       iModelShared.saveChanges("Imported B");
-      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["B"]);
+      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A", "B"]);
     }
 
     if (true) {
