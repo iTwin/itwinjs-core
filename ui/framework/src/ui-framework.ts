@@ -10,9 +10,12 @@ export * from "./ui-framework/UiFramework";  // Please ensure that this line com
 export * from "./ui-framework/CoreToolDefinitions";
 export * from "./ui-framework/MarkupToolDefinitions";
 
+export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
+export * from "./ui-framework/accudraw/CalculatorPopup";
 export * from "./ui-framework/accudraw/MenuButton";
+export * from "./ui-framework/accudraw/MenuButtonPopup";
 
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/BackstageComposer";
@@ -104,8 +107,10 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/popup/InputEditorPopup";
 export * from "./ui-framework/popup/PopupManager";
 export * from "./ui-framework/popup/PositionPopup";
+export * from "./ui-framework/popup/ToolbarPopup";
 
 export * from "./ui-framework/redux/SessionState";
 export * from "./ui-framework/redux/FrameworkState";

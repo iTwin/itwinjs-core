@@ -22,7 +22,7 @@ interface StatusBarComposerState {
   statusBarItems: ReadonlyArray<StatusBarItem>;
 }
 
-/** StatusBar component composed from [[StatusBarItem]].
+/** StatusBar component composed from [[StatusBarItem]]s.
  * @beta
  */
 export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {

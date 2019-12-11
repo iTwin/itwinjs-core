@@ -62,14 +62,14 @@ export interface ItemProps extends Omit<AbstractItemProps, "iconSpec">, IconProp
   betaBadge?: boolean;
 }
 
-/** Definition for a Tool item with a tool id.
+/** Properties for a Tool item with a tool id.
  * @public
  */
 export interface ToolItemProps extends ItemProps, CommandHandler {
   toolId: string;
 }
 
-/** Definition for a Command item.
+/** Properties for a Command item.
  * @public
  */
 export interface CommandItemProps extends ItemProps, CommandHandler {

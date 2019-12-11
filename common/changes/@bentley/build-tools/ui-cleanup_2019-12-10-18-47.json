@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "Added tslint-react-set-state-usage to ThirdPartyNotices.md in tools/build",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "dan.east@bentley.com"
+}

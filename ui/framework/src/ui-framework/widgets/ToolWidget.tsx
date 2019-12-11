@@ -16,7 +16,7 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
-/** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
+/** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {

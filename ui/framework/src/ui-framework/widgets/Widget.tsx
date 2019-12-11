@@ -12,7 +12,7 @@ import { IconProps } from "@bentley/ui-core";
 import { WidgetState } from "./WidgetDef";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($ui-framework). component.
+/** Properties for a [Widget]($ui-framework) component.
  * @public
  */
 export interface WidgetProps extends IconProps {

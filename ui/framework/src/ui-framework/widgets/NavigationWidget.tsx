@@ -23,7 +23,7 @@ import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 
-/** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
+/** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {

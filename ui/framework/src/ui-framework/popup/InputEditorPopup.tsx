@@ -14,7 +14,7 @@ import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
-/** @internal */
+/** @alpha */
 export class InputEditorCommitHandler {
   constructor(
     public readonly onCommit: OnNumberCommitFunc,

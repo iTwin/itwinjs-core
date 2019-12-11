@@ -31,7 +31,7 @@ describe("PromptField", () => {
       if (openWidget) { }
       return (
         <>
-          <PromptField isInFooterMode={isInFooterMode} />
+          <PromptField isInFooterMode={isInFooterMode} />   {/* tslint:disable-line: deprecation */}
         </>
       );
     }

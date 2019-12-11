@@ -83,6 +83,8 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
+import { PropertyRecord } from '@bentley/imodeljs-frontend';
+import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { RectangleProps } from '@bentley/ui-core';
@@ -139,6 +141,24 @@ import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @alpha
+export class AccuDrawPopupManager {
+    // (undocumented)
+    static hideCalculator(): boolean;
+    // (undocumented)
+    static hideMenuButton(id: string): boolean;
+    // (undocumented)
+    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
 
 // @public
 export interface Action<T extends string> {
@@ -568,6 +588,28 @@ export enum CalculatorOperator {
     None = 0,
     // (undocumented)
     Subtract = 5
+}
+
+// @alpha
+export class CalculatorPopup extends React.PureComponent<CalculatorPopupProps, CalculatorPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface CalculatorPopupProps extends PopupPropsBase {
+    // (undocumented)
+    initialValue: number;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    onOk: OnNumberCommitFunc;
+    // (undocumented)
+    resultIcon: string;
 }
 
 // @alpha (undocumented)
@@ -2520,6 +2562,35 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
+// @alpha (undocumented)
+export class InputEditorCommitHandler {
+    constructor(onCommit: OnNumberCommitFunc);
+    // (undocumented)
+    handleCommit: (args: PropertyUpdatedArgs) => void;
+    // (undocumented)
+    readonly onCommit: OnNumberCommitFunc;
+}
+
+// @alpha
+export class InputEditorPopup extends React.PureComponent<InputEditorPopupProps, InputEditorPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface InputEditorPopupProps extends PopupPropsBase {
+    // (undocumented)
+    commitHandler: InputEditorCommitHandler;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    record: PropertyRecord;
+}
+
 // @public
 export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
     // (undocumented)
@@ -2940,6 +3011,22 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @alpha
+export class MenuButtonPopup extends React.PureComponent<MenuButtonPopupProps, MenuButtonPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface MenuButtonPopupProps extends PopupPropsBase {
+    // (undocumented)
+    content: React.ReactNode;
+}
 
 // @alpha (undocumented)
 export interface MenuButtonProps extends SquareButtonProps {
@@ -3368,51 +3455,40 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
     onSizeKnown?: (size: SizeProps) => void;
 }
 
-// @internal
-export class PopupInfo {
-    constructor(id: string);
+// @alpha
+export interface PopupInfo {
     // (undocumented)
     component: React.ReactNode;
     // (undocumented)
-    readonly id: string;
+    id: string;
     // (undocumented)
     pt: XAndY;
 }
 
 // @alpha
 export class PopupManager {
+    // (undocumented)
+    static addOrUpdatePopup(popupInfo: PopupInfo): void;
     // @internal (undocumented)
     static clearPopups(): void;
     // (undocumented)
     static defaultOffset: XAndY;
     // (undocumented)
     static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
-    // @internal (undocumented)
+    // (undocumented)
+    static hideInputEditor(): boolean;
+    // (undocumented)
+    static hideToolbar(): boolean;
+    // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
-    // @internal (undocumented)
+    // (undocumented)
     static readonly popupCount: number;
     // @internal (undocumented)
-    static readonly popups: PopupInfo[];
+    static popups: ReadonlyArray<PopupInfo>;
     // (undocumented)
-    static removeCalculator(): boolean;
-    // (undocumented)
-    static removeInputEditor(): boolean;
-    // (undocumented)
-    static removeMenuButton(id: string): boolean;
-    // (undocumented)
-    static removeToolbar(): boolean;
-    // (undocumented)
-    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    static removePopup(id: string): boolean;
     // (undocumented)
     static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
@@ -3430,17 +3506,25 @@ export interface PopupPropsBase {
 }
 
 // @alpha
-export class PopupRenderer extends React.Component<CommonProps> {
+export class PopupRenderer extends React.Component<{}, PopupRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: PopupRendererState;
 }
 
-// @internal
-export class PopupsChangedEvent extends UiEvent<{}> {
+// @alpha
+export class PopupsChangedEvent extends UiEvent<PopupsChangedEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface PopupsChangedEventArgs {
+    // (undocumented)
+    popups: ReadonlyArray<PopupInfo>;
 }
 
 // @alpha (undocumented)
@@ -3506,7 +3590,7 @@ export interface ProjectServices {
     getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
-// @public
+// @public @deprecated
 export const PromptField: any;
 
 // @alpha
@@ -4221,7 +4305,13 @@ export interface StatusBarItem {
 export type StatusBarItemId = StatusBarItem["id"];
 
 // @beta
-export class StatusBarItemsChangedEvent extends UiEvent<{}> {
+export class StatusBarItemsChangedEvent extends UiEvent<StatusBarItemsChangedEventArgs> {
+}
+
+// @beta
+export interface StatusBarItemsChangedEventArgs {
+    // (undocumented)
+    items: ReadonlyArray<StatusBarItem>;
 }
 
 // @beta
@@ -4499,7 +4589,7 @@ export interface TaskPropsList {
 // @beta
 export const ThemeManager: any;
 
-// @internal
+// @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
     constructor(props: StatusFieldProps);
     // (undocumented)
@@ -4581,6 +4671,28 @@ export class ToolbarButtonHelper {
 
 // @beta
 export const ToolbarDragInteractionContext: React.Context<boolean>;
+
+// @alpha
+export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface ToolbarPopupProps extends PopupPropsBase {
+    // (undocumented)
+    items: ItemList;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    orientation: Orientation;
+    // (undocumented)
+    relativePosition: RelativePosition;
+}
 
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {

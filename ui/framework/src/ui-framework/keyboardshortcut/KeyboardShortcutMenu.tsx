@@ -23,7 +23,7 @@ export interface KeyboardShortcutMenuState {
  */
 export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState> { }
 
-/** Widget State Changed Event class.
+/** React component that displays a context menu at the cursor containing keyboard shortcuts.
  * @public
  */
 export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, KeyboardShortcutMenuState> {

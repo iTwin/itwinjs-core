@@ -15,6 +15,7 @@ import { UiFramework } from "../UiFramework";
 import { CursorMenuData } from "../redux/SessionState";
 import { PopupManager } from "../popup/PopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -89,7 +90,7 @@ export class FrameworkUiAdmin extends UiAdmin {
 
   /** Hides the toolbar. */
   public hideToolbar(): boolean {
-    return PopupManager.removeToolbar();
+    return PopupManager.hideToolbar();
   }
 
   /** Show a menu button at a particular location. A menu button opens a context menu.
@@ -102,7 +103,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   public showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
-    return PopupManager.showMenuButton(id, el, position, menuItemsProps);
+    return AccuDrawPopupManager.showMenuButton(id, el, position, menuItemsProps);
   }
 
   /** Hides a menu button.
@@ -110,7 +111,7 @@ export class FrameworkUiAdmin extends UiAdmin {
    * @return true if the menu was hidden, false if the menu could not be hidden.
    */
   public hideMenuButton(id: string): boolean {
-    return PopupManager.removeMenuButton(id);
+    return AccuDrawPopupManager.hideMenuButton(id);
   }
 
   /** Show a calculator at a particular location.
@@ -125,12 +126,12 @@ export class FrameworkUiAdmin extends UiAdmin {
   public showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
-    return PopupManager.showCalculator(el, position, initialValue, resultIcon, onOk, onCancel);
+    return AccuDrawPopupManager.showCalculator(el, position, initialValue, resultIcon, onOk, onCancel);
   }
 
   /** Hides the calculator. */
   public hideCalculator(): boolean {
-    return PopupManager.removeCalculator();
+    return AccuDrawPopupManager.hideCalculator();
   }
 
   /** Show an input editor for an angle value at a particular location.
@@ -144,7 +145,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   public showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
-    return PopupManager.showAngleEditor(el, position, initialValue, onCommit, onCancel);
+    return AccuDrawPopupManager.showAngleEditor(el, position, initialValue, onCommit, onCancel);
   }
 
   /** Show an input editor for a length value at a particular location.
@@ -158,7 +159,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   public showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
-    return PopupManager.showLengthEditor(el, position, initialValue, onCommit, onCancel);
+    return AccuDrawPopupManager.showLengthEditor(el, position, initialValue, onCommit, onCancel);
   }
 
   /** Show an input editor for a height value at a particular location.
@@ -172,12 +173,12 @@ export class FrameworkUiAdmin extends UiAdmin {
   public showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
-    return PopupManager.showHeightEditor(el, position, initialValue, onCommit, onCancel);
+    return AccuDrawPopupManager.showHeightEditor(el, position, initialValue, onCommit, onCancel);
   }
 
   /** Hides the input editor. */
   public hideInputEditor(): boolean {
-    return PopupManager.removeInputEditor();
+    return PopupManager.hideInputEditor();
   }
 
 }

@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+alpha;AccuDrawPopupManager
 public;Action
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
@@ -48,6 +49,8 @@ alpha;Calculator
 internal;CalculatorEngine
 internal;CalculatorKeyType
 internal;CalculatorOperator
+alpha;CalculatorPopup 
+alpha;CalculatorPopupProps 
 alpha;CalculatorProps 
 internal;CalculatorPropsProps = Pick
 alpha;CardContainer 
@@ -230,6 +233,9 @@ beta;IModelViewportControl
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
+alpha;InputEditorCommitHandler
+alpha;InputEditorPopup 
+alpha;InputEditorPopupProps 
 public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
@@ -269,6 +275,8 @@ beta;ListPickerPropsExtended
 alpha;MapMode
 public;MarkupTools
 alpha;MenuButton 
+alpha;MenuButtonPopup 
+alpha;MenuButtonPopupProps 
 alpha;MenuButtonProps 
 alpha;MenuItem 
 alpha;MenuItemHelpers
@@ -319,11 +327,12 @@ public;PopupButton
 public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
 public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
-internal;PopupInfo
+alpha;PopupInfo
 alpha;PopupManager
 alpha;PopupPropsBase
 alpha;PopupRenderer 
-internal;PopupsChangedEvent 
+alpha;PopupsChangedEvent 
+alpha;PopupsChangedEventArgs
 alpha;PositionPopup 
 alpha;PositionPopupContent: React.FunctionComponent
 alpha;PositionPopupProps 
@@ -408,6 +417,7 @@ public;StatusBarFieldId = string | null
 beta;StatusBarItem
 beta;StatusBarItemId = StatusBarItem["id"]
 beta;StatusBarItemsChangedEvent 
+beta;StatusBarItemsChangedEventArgs
 beta;StatusBarItemsManager
 beta;StatusBarItemUtilities
 beta;StatusBarLeftSection: React.FunctionComponent
@@ -442,7 +452,7 @@ public;TaskManager
 public;TaskProps 
 public;TaskPropsList
 beta;ThemeManager: any
-internal;TileLoadingIndicator 
+beta;TileLoadingIndicator 
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
 alpha;ToolAssistanceChangedEvent 
@@ -453,6 +463,8 @@ beta;ToolAssistanceFieldProps
 internal;Toolbar 
 beta;ToolbarButtonHelper
 beta;ToolbarDragInteractionContext: React.Context
+alpha;ToolbarPopup 
+alpha;ToolbarPopupProps 
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 

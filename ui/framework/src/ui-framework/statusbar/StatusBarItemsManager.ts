@@ -7,10 +7,17 @@
 import { UiEvent } from "@bentley/ui-core";
 import { StatusBarItem, StatusBarItemId } from "./StatusBarItem";
 
+/** StatusBar Items Changed Event arguments.
+ * @beta
+ */
+export interface StatusBarItemsChangedEventArgs {
+  items: ReadonlyArray<StatusBarItem>;
+}
+
 /** StatusBar Items Changed Event class.
  * @beta
  */
-export class StatusBarItemsChangedEvent extends UiEvent<{}> { }
+export class StatusBarItemsChangedEvent extends UiEvent<StatusBarItemsChangedEventArgs> { }
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
