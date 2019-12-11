@@ -12,7 +12,7 @@ import {
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuthorizedBackendRequestContext, AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, ChangeSummaryExtractOptions,
+  AuthorizedBackendRequestContext, AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector,
   DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
@@ -1182,9 +1182,9 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this._shouldIndent = true;
     this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void> {
     this._shouldIndent = false;
-    return this.exporter.exportChanges(requestContext, options);
+    return this.exporter.exportChanges(requestContext, startChangeSetId);
   }
   private writeLine(line: string, indentLevel: number = 0): void {
     if (this._shouldIndent) {

@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  AuthorizedBackendRequestContext, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
-  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, OpenParams,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
+  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, NativeLoggerCategory, OpenParams,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -19,6 +19,18 @@ import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
+
+  before(async () => {
+    // initialize logging
+    if (false) {
+      Logger.initializeToConsole();
+      Logger.setLevelDefault(LogLevel.Error);
+      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
+    }
+  });
 
   it("Transform source iModel to target iModel", async () => {
     const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
@@ -72,28 +84,28 @@ describe("IModelTransformerHub (#integration)", () => {
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
-        await sourceExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        await sourceExporter.exportChanges(requestContext);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
         // expect inserts and 1 update from populateSourceDb
-        assert.isAtLeast(sourceDbChanges.codeSpecs.insertedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.elements.insertedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.elementAspects.insertedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.models.insertedIds.size, 1);
-        assert.equal(sourceDbChanges.models.updatedIds.size, 1, "Expect the RepositoryModel to be updated");
-        assert.isTrue(sourceDbChanges.models.updatedIds.has(IModel.repositoryModelId));
-        assert.isAtLeast(sourceDbChanges.relationships.insertedIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.codeSpec.insertIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.element.insertIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.aspect.insertIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.model.insertIds.size, 1);
+        assert.equal(sourceDbChanges.model.updateIds.size, 1, "Expect the RepositoryModel to be updated");
+        assert.isTrue(sourceDbChanges.model.updateIds.has(IModel.repositoryModelId));
+        assert.isAtLeast(sourceDbChanges.relationship.insertIds.size, 1);
         // expect no other updates nor deletes from populateSourceDb
-        assert.equal(sourceDbChanges.codeSpecs.updatedIds.size, 0);
-        assert.equal(sourceDbChanges.codeSpecs.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.elements.updatedIds.size, 0);
-        assert.equal(sourceDbChanges.elements.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.elementAspects.updatedIds.size, 0);
-        assert.equal(sourceDbChanges.elementAspects.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.models.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.relationships.updatedIds.size, 0);
-        assert.equal(sourceDbChanges.relationships.deletedIds.size, 0);
+        assert.equal(sourceDbChanges.codeSpec.updateIds.size, 0);
+        assert.equal(sourceDbChanges.codeSpec.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.element.updateIds.size, 0);
+        assert.equal(sourceDbChanges.element.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.aspect.updateIds.size, 0);
+        assert.equal(sourceDbChanges.aspect.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.model.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.relationship.updateIds.size, 0);
+        assert.equal(sourceDbChanges.relationship.deleteIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
         transformer.processAll();
@@ -107,28 +119,28 @@ describe("IModelTransformerHub (#integration)", () => {
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
-        await targetExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        await targetExporter.exportChanges(requestContext);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
         // expect inserts and a few updates from transforming the result of populateSourceDb
-        assert.isAtLeast(targetDbChanges.codeSpecs.insertedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.elements.insertedIds.size, 1);
-        assert.equal(targetDbChanges.elements.updatedIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
-        assert.isAtLeast(targetDbChanges.elementAspects.insertedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.models.insertedIds.size, 1);
-        assert.equal(targetDbChanges.models.updatedIds.size, 1, "Expect the RepositoryModel to be updated");
-        assert.isTrue(targetDbChanges.models.updatedIds.has(IModel.repositoryModelId));
-        assert.isAtLeast(targetDbChanges.relationships.insertedIds.size, 1);
+        assert.isAtLeast(targetDbChanges.codeSpec.insertIds.size, 1);
+        assert.isAtLeast(targetDbChanges.element.insertIds.size, 1);
+        assert.equal(targetDbChanges.element.updateIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
+        assert.isAtLeast(targetDbChanges.aspect.insertIds.size, 1);
+        assert.isAtLeast(targetDbChanges.model.insertIds.size, 1);
+        assert.equal(targetDbChanges.model.updateIds.size, 1, "Expect the RepositoryModel to be updated");
+        assert.isTrue(targetDbChanges.model.updateIds.has(IModel.repositoryModelId));
+        assert.isAtLeast(targetDbChanges.relationship.insertIds.size, 1);
         // expect no other changes from transforming the result of populateSourceDb
-        assert.equal(targetDbChanges.codeSpecs.updatedIds.size, 0);
-        assert.equal(targetDbChanges.codeSpecs.deletedIds.size, 0);
-        assert.equal(targetDbChanges.elements.deletedIds.size, 0);
-        assert.equal(targetDbChanges.elementAspects.updatedIds.size, 0);
-        assert.equal(targetDbChanges.elementAspects.deletedIds.size, 0);
-        assert.equal(targetDbChanges.models.deletedIds.size, 0);
-        assert.equal(targetDbChanges.relationships.updatedIds.size, 0);
-        assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
+        assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
+        assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
+        assert.equal(targetDbChanges.element.deleteIds.size, 0);
+        assert.equal(targetDbChanges.aspect.updateIds.size, 0);
+        assert.equal(targetDbChanges.aspect.deleteIds.size, 0);
+        assert.equal(targetDbChanges.model.deleteIds.size, 0);
+        assert.equal(targetDbChanges.relationship.updateIds.size, 0);
+        assert.equal(targetDbChanges.relationship.deleteIds.size, 0);
       }
 
       if (true) { // second import with no changes to source, should be a no-op
@@ -137,7 +149,7 @@ describe("IModelTransformerHub (#integration)", () => {
         const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
         const targetImporter = new CountingIModelImporter(targetDb);
         const transformer = new TestIModelTransformer(sourceDb, targetImporter);
-        await transformer.processChanges(requestContext, { currentVersionOnly: true });
+        await transformer.processChanges(requestContext);
         assert.equal(targetImporter.numModelsInserted, 0);
         assert.equal(targetImporter.numModelsUpdated, 0);
         assert.equal(targetImporter.numElementsInserted, 0);
@@ -167,32 +179,32 @@ describe("IModelTransformerHub (#integration)", () => {
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
-        await sourceExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        await sourceExporter.exportChanges(requestContext);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
         // expect no inserts from updateSourceDb
-        assert.equal(sourceDbChanges.codeSpecs.insertedIds.size, 0);
-        assert.equal(sourceDbChanges.elements.insertedIds.size, 0);
-        assert.equal(sourceDbChanges.elementAspects.insertedIds.size, 0);
-        assert.equal(sourceDbChanges.models.insertedIds.size, 0);
-        assert.equal(sourceDbChanges.relationships.insertedIds.size, 0);
+        assert.equal(sourceDbChanges.codeSpec.insertIds.size, 0);
+        assert.equal(sourceDbChanges.element.insertIds.size, 0);
+        assert.equal(sourceDbChanges.aspect.insertIds.size, 0);
+        assert.equal(sourceDbChanges.model.insertIds.size, 0);
+        assert.equal(sourceDbChanges.relationship.insertIds.size, 0);
         // expect some updates from updateSourceDb
-        assert.isAtLeast(sourceDbChanges.elements.updatedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.elementAspects.updatedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.models.updatedIds.size, 1);
-        assert.isAtLeast(sourceDbChanges.relationships.updatedIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.element.updateIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.aspect.updateIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.model.updateIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.relationship.updateIds.size, 1);
         // expect some deletes from updateSourceDb
-        assert.isAtLeast(sourceDbChanges.elements.deletedIds.size, 1);
-        assert.equal(sourceDbChanges.relationships.deletedIds.size, 1);
+        assert.isAtLeast(sourceDbChanges.element.deleteIds.size, 1);
+        assert.equal(sourceDbChanges.relationship.deleteIds.size, 1);
         // don't expect other changes from updateSourceDb
-        assert.equal(sourceDbChanges.codeSpecs.updatedIds.size, 0);
-        assert.equal(sourceDbChanges.codeSpecs.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.elementAspects.deletedIds.size, 0);
-        assert.equal(sourceDbChanges.models.deletedIds.size, 0);
+        assert.equal(sourceDbChanges.codeSpec.updateIds.size, 0);
+        assert.equal(sourceDbChanges.codeSpec.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.aspect.deleteIds.size, 0);
+        assert.equal(sourceDbChanges.model.deleteIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        await transformer.processChanges(requestContext, { currentVersionOnly: true });
+        await transformer.processChanges(requestContext);
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
@@ -203,29 +215,29 @@ describe("IModelTransformerHub (#integration)", () => {
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
-        await targetExporter.exportChanges(requestContext, { currentVersionOnly: true });
+        await targetExporter.exportChanges(requestContext);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
         // expect no inserts from transforming the result of updateSourceDb
-        assert.equal(targetDbChanges.codeSpecs.insertedIds.size, 0);
-        assert.equal(targetDbChanges.elements.insertedIds.size, 0);
-        assert.equal(targetDbChanges.elementAspects.insertedIds.size, 0);
-        assert.equal(targetDbChanges.models.insertedIds.size, 0);
-        assert.equal(targetDbChanges.relationships.insertedIds.size, 0);
+        assert.equal(targetDbChanges.codeSpec.insertIds.size, 0);
+        assert.equal(targetDbChanges.element.insertIds.size, 0);
+        assert.equal(targetDbChanges.aspect.insertIds.size, 0);
+        assert.equal(targetDbChanges.model.insertIds.size, 0);
+        assert.equal(targetDbChanges.relationship.insertIds.size, 0);
         // expect some updates from transforming the result of updateSourceDb
-        assert.isAtLeast(targetDbChanges.elements.updatedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.elementAspects.updatedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.models.updatedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.relationships.updatedIds.size, 1);
+        assert.isAtLeast(targetDbChanges.element.updateIds.size, 1);
+        assert.isAtLeast(targetDbChanges.aspect.updateIds.size, 1);
+        assert.isAtLeast(targetDbChanges.model.updateIds.size, 1);
+        assert.isAtLeast(targetDbChanges.relationship.updateIds.size, 1);
         // expect some deletes from transforming the result of updateSourceDb
-        assert.isAtLeast(targetDbChanges.elements.deletedIds.size, 1);
-        assert.isAtLeast(targetDbChanges.elementAspects.deletedIds.size, 1);
-        assert.equal(targetDbChanges.relationships.deletedIds.size, 1);
+        assert.isAtLeast(targetDbChanges.element.deleteIds.size, 1);
+        assert.isAtLeast(targetDbChanges.aspect.deleteIds.size, 1);
+        assert.equal(targetDbChanges.relationship.deleteIds.size, 1);
         // don't expect other changes from transforming the result of updateSourceDb
-        assert.equal(targetDbChanges.codeSpecs.updatedIds.size, 0);
-        assert.equal(targetDbChanges.codeSpecs.deletedIds.size, 0);
-        assert.equal(targetDbChanges.models.deletedIds.size, 0);
+        assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
+        assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
+        assert.equal(targetDbChanges.model.deleteIds.size, 0);
       }
 
       await sourceDb.close(requestContext, KeepBriefcase.No);

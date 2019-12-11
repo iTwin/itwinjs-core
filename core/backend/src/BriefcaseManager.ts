@@ -1298,9 +1298,9 @@ export class BriefcaseManager {
     });
 
     /* Apply change sets
-     * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchrnously
+     * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchronously
      * to avoid blocking the main-thread/event-loop and keep the backend responsive. However, this will be an invasive
-     * operation that will force the Db to be closed and reopenend.
+     * operation that will force the Db to be closed and reopened.
      * If the change sets are processed synchronously, they are applied one-by-one to avoid blocking the main
      * thread and the event loop. Even so, if any single change set too long to process that will again cause the
      * cause the event loop to be blocked. Also if any of the change sets contain schema changes, that will cause

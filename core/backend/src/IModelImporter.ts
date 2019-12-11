@@ -123,7 +123,7 @@ export class IModelImporter {
         const targetExtents: AxisAlignedBox3d = targetElementPlacement.calculateRange();
         if (!targetExtents.isNull && !this.targetDb.projectExtents.containsRange(targetExtents)) {
           if (this.autoExtendProjectExtents) {
-            Logger.logTrace(loggerCategory, "[Target] Auto-extending projectExtents");
+            Logger.logTrace(loggerCategory, "Auto-extending projectExtents");
             targetExtents.extendRange(this.targetDb.projectExtents);
             this.targetDb.updateProjectExtents(targetExtents);
           } else {

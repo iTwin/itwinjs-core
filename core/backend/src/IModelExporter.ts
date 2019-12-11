@@ -2,15 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ChangeOpCode, CodeSpec, FontProps, IModel } from "@bentley/imodeljs-common";
+import { DbResult, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { ChangeSet } from "@bentley/imodeljs-clients";
+import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
-import { ChangeSummary, ChangeSummaryExtractOptions, ChangeSummaryManager, InstanceChange } from "./ChangeSummaryManager";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
@@ -108,7 +111,7 @@ export class IModelExporter {
   /** The read-only source iModel. */
   public readonly sourceDb: IModelDb;
   /** Optionally cached entity change information */
-  private _sourceDbChanges?: EntityChangeOps;
+  private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
@@ -185,27 +188,36 @@ export class IModelExporter {
     this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
-  /** Export changes between the specified versions of the source iModel. */
-  public async exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+  /** Export changes from the source iModel.
+   * @param requestContext The request context
+   * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
+   * If this parameter is not provided, then just the current changeset will be exported.
+   */
+  public async exportChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void> {
+    requestContext.enter();
     if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
       this.exportAll(); // no changesets, so revert to exportAll
       return Promise.resolve();
     }
-    this._sourceDbChanges = await EntityChangeOps.initialize(requestContext, this.sourceDb, options);
+    if (undefined === startChangeSetId) {
+      startChangeSetId = this.sourceDb.briefcase.currentChangeSetId;
+    }
+    this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
+    requestContext.enter();
     this.exportCodeSpecs();
     // WIP: handle font changes???
     this.exportElement(IModel.rootSubjectId);
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
-    for (const elementId of this._sourceDbChanges.elements.deletedIds) {
+    for (const elementId of this._sourceDbChanges.element.deleteIds) {
       this.handler.callProtected.onDeleteElement(elementId);
     }
     // WIP: handle ElementAspects?
-    for (const modelId of this._sourceDbChanges.models.deletedIds) {
+    for (const modelId of this._sourceDbChanges.model.deleteIds) {
       this.handler.callProtected.onDeleteModel(modelId);
     }
-    for (const relInstanceId of this._sourceDbChanges.relationships.deletedIds) {
+    for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
       this.handler.callProtected.onDeleteRelationship(relInstanceId);
     }
   }
@@ -227,9 +239,9 @@ export class IModelExporter {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(codeSpecName);
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (this._sourceDbChanges.codeSpecs.insertedIds.has(codeSpec.id)) {
+      if (this._sourceDbChanges.codeSpec.insertIds.has(codeSpec.id)) {
         isUpdate = false;
-      } else if (this._sourceDbChanges.codeSpecs.updatedIds.has(codeSpec.id)) {
+      } else if (this._sourceDbChanges.codeSpec.updateIds.has(codeSpec.id)) {
         isUpdate = true;
       } else {
         return; // not in changeSet, don't export
@@ -294,9 +306,9 @@ export class IModelExporter {
   private exportModelContainer(modeledElementId: Id64String): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (this._sourceDbChanges.models.insertedIds.has(modeledElementId)) {
+      if (this._sourceDbChanges.model.insertIds.has(modeledElementId)) {
         isUpdate = false;
-      } else if (this._sourceDbChanges.models.updatedIds.has(modeledElementId)) {
+      } else if (this._sourceDbChanges.model.updateIds.has(modeledElementId)) {
         isUpdate = true;
       } else {
         return; // not in changeSet, don't export
@@ -309,7 +321,7 @@ export class IModelExporter {
   /** Export the model contents. */
   public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (!this._sourceDbChanges.models.insertedIds.has(modelId) && !this._sourceDbChanges.models.updatedIds.has(modelId)) {
+      if (!this._sourceDbChanges.model.insertIds.has(modelId) && !this._sourceDbChanges.model.updateIds.has(modelId)) {
         return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
       }
     }
@@ -371,9 +383,9 @@ export class IModelExporter {
   public exportElement(elementId: Id64String): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (this._sourceDbChanges.elements.insertedIds.has(elementId)) {
+      if (this._sourceDbChanges.element.insertIds.has(elementId)) {
         isUpdate = false;
-      } else if (this._sourceDbChanges.elements.updatedIds.has(elementId)) {
+      } else if (this._sourceDbChanges.element.updateIds.has(elementId)) {
         isUpdate = true;
       } else {
         // NOTE: This optimization assumes that the Element will change (LastMod) if an owned ElementAspect changes
@@ -425,9 +437,9 @@ export class IModelExporter {
       if (uniqueAspects.length > 0) {
         uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-            if (this._sourceDbChanges.elementAspects.insertedIds.has(uniqueAspect.id)) {
+            if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
-            } else if (this._sourceDbChanges.elementAspects.updatedIds.has(uniqueAspect.id)) {
+            } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
             } else {
               // not in changeSet, don't export
@@ -464,9 +476,9 @@ export class IModelExporter {
   private exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (this._sourceDbChanges.relationships.insertedIds.has(relInstanceId)) {
+      if (this._sourceDbChanges.relationship.insertIds.has(relInstanceId)) {
         isUpdate = false;
-      } else if (this._sourceDbChanges.relationships.updatedIds.has(relInstanceId)) {
+      } else if (this._sourceDbChanges.relationship.updateIds.has(relInstanceId)) {
         isUpdate = true;
       } else {
         return; // not in changeSet, don't export
@@ -488,66 +500,48 @@ export class IModelExporter {
   }
 }
 
-class ChangeOpTracker {
-  public insertedIds: Id64Set = new Set<Id64String>();
-  public updatedIds: Id64Set = new Set<Id64String>();
-  public deletedIds: Id64Set = new Set<Id64String>();
-  public addChange(changeOpCode: ChangeOpCode, id: Id64String): void {
-    switch (changeOpCode) {
-      case ChangeOpCode.Insert: this.insertedIds.add(id); break;
-      case ChangeOpCode.Update: this.updatedIds.add(id); break;
-      case ChangeOpCode.Delete: this.deletedIds.add(id); break;
+class ChangedInstanceOps {
+  public insertIds = new Set<Id64String>();
+  public updateIds = new Set<Id64String>();
+  public deleteIds = new Set<Id64String>();
+  public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
+    if (undefined !== val) {
+      if ((undefined !== val.insert) && (Array.isArray(val.insert))) { val.insert.forEach((id: Id64String) => this.insertIds.add(id)); }
+      if ((undefined !== val.update) && (Array.isArray(val.update))) { val.update.forEach((id: Id64String) => this.updateIds.add(id)); }
+      if ((undefined !== val.delete) && (Array.isArray(val.delete))) { val.delete.forEach((id: Id64String) => this.deleteIds.add(id)); }
     }
   }
 }
 
-class EntityChangeOps {
-  public codeSpecs: ChangeOpTracker = new ChangeOpTracker();
-  public elements: ChangeOpTracker = new ChangeOpTracker();
-  public elementAspects: ChangeOpTracker = new ChangeOpTracker();
-  public models: ChangeOpTracker = new ChangeOpTracker();
-  public relationships: ChangeOpTracker = new ChangeOpTracker();
+class ChangedInstanceIds {
+  public codeSpec = new ChangedInstanceOps();
+  public model = new ChangedInstanceOps();
+  public element = new ChangedInstanceOps();
+  public aspect = new ChangedInstanceOps();
+  public relationship = new ChangedInstanceOps();
+  public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedBackendRequestContext, iModelDb: IModelDb, options: ChangeSummaryExtractOptions): Promise<EntityChangeOps> {
-    const entityChanges = new EntityChangeOps();
-    const changeSummaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModelDb, options);
-    ChangeSummaryManager.attachChangeCache(iModelDb);
-    changeSummaryIds.forEach((changeSummaryId: Id64String) => {
-      const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModelDb, changeSummaryId);
-      iModelDb.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=?", (statement) => {
-        statement.bindId(1, changeSummary.id);
-        while (statement.step() === DbResult.BE_SQLITE_ROW) {
-          const instanceId: Id64String = statement.getValue(0).getId();
-          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModelDb, instanceId);
-          const entityClassFullName: string = EntityChangeOps._toClassFullName(instanceChange.changedInstance.className);
-          try {
-            const entityType: typeof Entity = iModelDb.getJsClass<typeof Entity>(entityClassFullName);
-            if (entityType.prototype instanceof Element) {
-              // const propertyNames: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModelDb, instanceChange.id);
-              entityChanges.elements.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-            } else if (entityType.prototype instanceof ElementAspect) {
-              entityChanges.elementAspects.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-            } else if (entityType.prototype instanceof Model) {
-              entityChanges.models.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-            } else if (entityType.prototype instanceof Relationship) {
-              entityChanges.relationships.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-            }
-          } catch (error) {
-            if ("BisCore:CodeSpec" === entityClassFullName) {
-              // In TypeScript, CodeSpec is not a subclass of Entity (should it be?), so must be handled separately.
-              entityChanges.codeSpecs.addChange(instanceChange.opCode, instanceChange.changedInstance.id);
-            } else {
-              // Changes to *navigation* relationship are also tracked (should they be?), but can be ignored
-              // console.log(`Ignoring ${entityClassFullName}`); // tslint:disable-line
-            }
-          }
-        }
-      });
+  public static async initialize(requestContext: AuthorizedBackendRequestContext, iModelDb: IModelDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
+    requestContext.enter();
+    const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
+    // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
+    const changeSets: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.briefcase.currentChangeSetId);
+    requestContext.enter();
+    const changedInstanceIds = new ChangedInstanceIds();
+    changeSets.forEach((changeSet: ChangeSet): void => {
+      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelToken.iModelId!), changeSet.fileName!);
+      const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+      if (undefined !== statusOrResult.error) {
+        throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
+      }
+      const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+      changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
+      changedInstanceIds.model.addFromJson(result.model);
+      changedInstanceIds.element.addFromJson(result.element);
+      changedInstanceIds.aspect.addFromJson(result.aspect);
+      changedInstanceIds.relationship.addFromJson(result.relationship);
+      changedInstanceIds.font.addFromJson(result.font);
     });
-    return entityChanges;
-  }
-  /** Converts string from ChangedInstance format to classFullName format. For example: "[BisCore].[PhysicalElement]" --> "BisCore:PhysicalElement" */
-  private static _toClassFullName(changedInstanceClassName: string): string {
-    return changedInstanceClassName.replace(/\[|\]/g, "").replace(".", ":");
+    return changedInstanceIds;
   }
 }

@@ -2,13 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
-import { ChangeSummaryExtractOptions } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
@@ -618,11 +617,15 @@ export class IModelTransformer extends IModelExportHandler {
     this.detectRelationshipDeletes();
   }
 
-  /** Export changes from the source iModel and import the transformed entities into the target iModel. */
-  public async processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void> {
+  /** Export changes from the source iModel and import the transformed entities into the target iModel.
+   * @param requestContext The request context
+   * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
+   * If this parameter is not provided, then just the current changeset will be exported.
+   */
+  public async processChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
     this.initFromExternalSourceAspects();
-    await this.exporter.exportChanges(requestContext, options);
+    await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
     this.processSkippedElements();
   }

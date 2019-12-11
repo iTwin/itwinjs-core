@@ -2144,7 +2144,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): void;
-    exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
+    exportChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void>;
     exportChildElements(elementId: Id64String): void;
     exportCodeSpecById(codeSpecId: Id64String): void;
     exportCodeSpecByName(codeSpecName: string): void;
@@ -2350,7 +2350,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): void;
-    processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
+    processChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void>;
     processChildElements(sourceElementId: Id64String): void;
     processCodeSpec(codeSpecName: string): void;
     processCodeSpecs(): void;
