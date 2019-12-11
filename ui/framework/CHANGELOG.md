@@ -1,6 +1,39 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Add useActiveIModelConnection hook.
+- Allow setting App Iconspec.
+- Setup OidcDesktopClient for Electron use cases. 
+- Fix styling of footer Indicator to work with Themes.
+- Disallow plugins from adding tools anywhere but the end of a toolbar.
+- [ModelsTree] Merge same-label Subject nodes to avoid duplication
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component.
+- Update sinon version.
+- Added support for NotifyMessageDetails.displayTime for Toast messages
+- Reduce active tab index when tab is removed.
+- Ability to determine available tool settings width.
+- Fix code analysis report issues.
+- Adjusted Categories and Models trees according changes to ControlledTree events
+- Added VisibilityWigdet implementation using ControlledTree and ability to switch to it
+- Remove content node when WidgetContentRenderer unmounts.
+- Update overflow GroupItem click action to open the panel.
+- Prevent frontstage composer rerender on pointer events.
+- Use exhaustive-deps linter rule.
+- Ability to opt-in to toolbar drag interaction.
+- Prevent unnecessary resubscribe in useActiveViewport hook.
+- Visibility Widget: Treat dictionary model as never private in Categories tree. 
+- Ability to specify initialWidth for Zone component.
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation.
+- Update to allow Sections statusfield to hide/show depending on active view clip.
+- Added ConditionalField and FooterModeField components. StatusBar responsive changes.
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

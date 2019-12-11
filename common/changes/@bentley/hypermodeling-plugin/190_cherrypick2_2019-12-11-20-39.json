@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-plugin",
+  "email": "Colin.Kerr@bentley.com"
+}

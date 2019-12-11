@@ -2,6 +2,36 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-core_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component."
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Code cleanup based on code analysis report from lgtm."
+          },
+          {
+            "comment": "Added ConditionalField and FooterModeField components. StatusBar responsive changes."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/ui-core_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

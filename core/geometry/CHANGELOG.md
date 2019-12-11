@@ -1,6 +1,18 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc
+- Great Circle extraction on Ellipsoid
+- Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector
+- BUG#220063 linearSystem3d z term
+- Code cleanup from codeQL hits
+- Ellipsoid and EllipsoidPatch classes with range and intersectRay support
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

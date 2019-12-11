@@ -1,6 +1,35 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Logo dialog is now modal.
+- Animate mouse wheel zooms
+- Align cartesian coordinates when attaching reality models.
+- Animate applying saved views
+- Code quality report fixes
+- Make iModel.js viewports adhere to DPI of a host display.
+- code cleanup from codeQL hits
+- Setup OidcDesktopClient for Electron use cases. 
+- Don't execute our event loop if there is no need
+- Fix regression causing animation to be uneven.
+- fix warnings from static analysis
+- Don't use map tiles until reprojection is complete.
+- #34206 Volume Clasify reality data only
+- Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close.
+- Treat half-floats and full-floats the same.
+- added WebGLDisposable interface with defined 'isDisposed' member
+- Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden.
+- Prevent touch events from firing mouse events when modal dialog is up.
+- Fix unintentional darkening of views
+- Only align reality models if near same height.
+- Added ability to adjust tile size modifier for Viewports to trade quality for performance or vice-versa.
+- Add QuantityTypes LengthSurvey and LengthEngineering to provide more formatting options and support for Survey Feet.
+- Change zoom view handle to set zoom ratio based on y distance from anchor point.
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

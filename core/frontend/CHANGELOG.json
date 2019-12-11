@@ -2,6 +2,84 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-frontend_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Logo dialog is now modal."
+          },
+          {
+            "comment": "Animate mouse wheel zooms"
+          },
+          {
+            "comment": "Align cartesian coordinates when attaching reality models."
+          },
+          {
+            "comment": "Animate applying saved views"
+          },
+          {
+            "comment": "Code quality report fixes"
+          },
+          {
+            "comment": "Make iModel.js viewports adhere to DPI of a host display."
+          },
+          {
+            "comment": "code cleanup from codeQL hits"
+          },
+          {
+            "comment": "Setup OidcDesktopClient for Electron use cases. "
+          },
+          {
+            "comment": "Don't execute our event loop if there is no need"
+          },
+          {
+            "comment": "Fix regression causing animation to be uneven."
+          },
+          {
+            "comment": "fix warnings from static analysis"
+          },
+          {
+            "comment": "Don't use map tiles until reprojection is complete."
+          },
+          {
+            "comment": "#34206 Volume Clasify reality data only"
+          },
+          {
+            "comment": "Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close."
+          },
+          {
+            "comment": "Treat half-floats and full-floats the same."
+          },
+          {
+            "comment": "added WebGLDisposable interface with defined 'isDisposed' member"
+          },
+          {
+            "comment": "Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden."
+          },
+          {
+            "comment": "Prevent touch events from firing mouse events when modal dialog is up."
+          },
+          {
+            "comment": "Fix unintentional darkening of views"
+          },
+          {
+            "comment": "Only align reality models if near same height."
+          },
+          {
+            "comment": "Added ability to adjust tile size modifier for Viewports to trade quality for performance or vice-versa."
+          },
+          {
+            "comment": "Add QuantityTypes LengthSurvey and LengthEngineering to provide more formatting options and support for Survey Feet."
+          },
+          {
+            "comment": "Change zoom view handle to set zoom ratio based on y distance from anchor point."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/imodeljs-frontend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",

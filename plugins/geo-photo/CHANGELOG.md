@@ -1,6 +1,16 @@
 # Change Log - @bentley/geo-photo-plugin
 
-This log was last generated on Fri, 22 Nov 2019 14:03:34 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Fix bug finding close neighbors when changing displayed folders
+- Bug in finding close neighbors. Track added to tool tip
+- Disallow plugins from adding tools anywhere but the end of a toolbar.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
 
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT

@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "1.9.0",
+      "tag": "@bentley/presentation-frontend_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Handle newly introduced multi-ECInstance nodes"
+          },
+          {
+            "comment": "Ensure favoriting related property doesn't favorite primary instance property if it's the same property of different instances"
+          },
+          {
+            "comment": "Update sinon version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.8.0",
       "tag": "@bentley/presentation-frontend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",
