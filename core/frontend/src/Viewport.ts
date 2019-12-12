@@ -1460,8 +1460,9 @@ export abstract class Viewport implements IDisposable {
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
-  private invalidateSceneForCategoryChange(): void {
+  private invalidateShadows(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
+    // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
     if (this.sync.isValidScene && this.view.displayStyle.wantShadows)
       this.invalidateScene();
   }
@@ -1475,7 +1476,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
     this._changeFlags.setViewedCategories();
-    this.invalidateSceneForCategoryChange();
+    this.invalidateShadows();
 
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
@@ -1529,7 +1530,7 @@ export abstract class Viewport implements IDisposable {
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
-    this.invalidateSceneForCategoryChange();
+    this.invalidateShadows();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -1867,6 +1868,7 @@ export abstract class Viewport implements IDisposable {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
+    this.invalidateShadows();
   }
 
   /** @internal */
