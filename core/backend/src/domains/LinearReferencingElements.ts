@@ -23,7 +23,7 @@ import { ECSqlStatement } from "../ECSqlStatement";
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
  */
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "LinearlyLocatedAttribution"; }
 
@@ -33,17 +33,25 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
     super(props, iModel);
     this.attributedElement = RelatedElement.fromJSON(props.attributedElement);
   }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
+  }
 }
 
 /** Base class for Spatial Location Element implementations that are linearly located along a Linear-Element.
  * @beta
  */
-export abstract class LinearLocationElement extends SpatialLocationElement {
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "LinearLocationElement"; }
 
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
   }
 }
 
@@ -122,7 +130,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "ReferentElement"; }
 
@@ -131,6 +139,10 @@ export abstract class ReferentElement extends SpatialLocationElement implements 
   public constructor(props: ReferentElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.referencedElement = RelatedElement.fromJSON(props.referencedElement);
+  }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
   }
 }
 

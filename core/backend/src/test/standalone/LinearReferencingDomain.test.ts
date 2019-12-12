@@ -48,10 +48,6 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     return props;
   }
 
-  public getLinearElementId(): Id64String | undefined {
-    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
-  }
-
   public getFromToLocation(): LinearlyReferencedFromToLocation | undefined {
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
   }

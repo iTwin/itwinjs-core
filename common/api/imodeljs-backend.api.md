@@ -2509,10 +2509,12 @@ export class LinearLocation extends LinearLocationElement {
     }
 
 // @beta
-export abstract class LinearLocationElement extends SpatialLocationElement {
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
 }
 
 // @beta (undocumented)
@@ -2544,12 +2546,14 @@ export class LinearlyLocated {
 }
 
 // @beta
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
     constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
     // (undocumented)
     attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
 }
 
 // @beta
@@ -3077,10 +3081,12 @@ export class Referent extends ReferentElement {
     }
 
 // @beta
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
     // (undocumented)
     referencedElement?: IReferentReferencesElement;
 }
