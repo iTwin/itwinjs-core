@@ -3,20 +3,19 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizationToken } from "../Token";
-import { TestConfig } from "./TestConfig";
+import { TestConfig, TestUsers } from "./TestConfig";
 import { RealityDataServicesClient, RealityData, RealityDataRelationship } from "../RealityDataServicesClient";
 import { Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
 
-describe.skip("RealityDataServicesClient", () => {
+describe("RealityDataServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient();
-  const projectId: string = "fb1696c8-c074-4c76-a539-a5546e048cc6";
-  // const iModelId: string = "0c315eb1-d10c-4449-9c09-f36d54ad37f2";
-  // let versionId: string;
+  let projectId: GuidString;
+
   const tilesId: string = "593eff78-b757-4c07-84b2-a8fe31c19927";
   const tilesIdWithRootDocPath: string = "3317b4a0-0086-4f16-a979-6ceb496d785e";
 
@@ -26,9 +25,12 @@ describe.skip("RealityDataServicesClient", () => {
     const authToken: AuthorizationToken = await TestConfig.login();
     const accessToken = await realityDataServiceClient.getAccessToken(new ClientRequestContext(), authToken);
     requestContext = new AuthorizedClientRequestContext(accessToken);
+
+    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    chai.assert.isDefined(projectId);
   });
 
-  it("should be able to retrieve reality data properties  (#integration)", async () => {
+  it("should be able to retrieve reality data properties", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
     chai.assert(realityData);
     chai.assert(realityData.id === tilesId);
@@ -36,7 +38,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityData.projectId === projectId);
   });
 
-  it("should be able to retrieve reality data properties for every reality data associated to project (#integration)", async () => {
+  it("should be able to retrieve reality data properties for every reality data associated to project", async () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
 
     realityData.forEach((value) => {
@@ -49,10 +51,11 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityData);
   });
 
-  it("should be able to retrieve reality data properties for every reality data associated to project within an extent (#integration)", async () => {
-    const theRange = Range2d.createXYXY(-80 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pensylvania and should gather Shell project
+  it("should be able to retrieve reality data properties for every reality data associated to project within an extent", async () => {
+    const theRange = Range2d.createXYXY(-81 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pensylvania and should gather Shell project
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(requestContext, projectId, theRange);
 
+    chai.expect(realityData).that.is.not.empty;
     realityData.forEach((value) => {
       chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
       chai.assert(value.rootDocument && value.rootDocument !== ""); // All such type require a root document to work correctly
@@ -60,10 +63,9 @@ describe.skip("RealityDataServicesClient", () => {
       chai.assert(value.id);
     });
 
-    chai.assert(realityData);
   });
 
-  it("should be able to retrieve app data json blob url  (#integration)", async () => {
+  it("should be able to retrieve app data json blob url", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: string = await realityData.getRootDocumentJson(requestContext);
@@ -71,7 +73,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url  (#integration)", async () => {
+  it("should be able to retrieve the azure blob url", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext);
@@ -79,7 +81,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url (write access) (#integration)", async () => {
+  it("should be able to retrieve the azure blob url (write access)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext, true);
@@ -87,7 +89,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to get model data json  (#integration)", async () => {
+  it("should be able to get model data json", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -103,7 +105,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content  (#integration)", async () => {
+  it("should be able to get model data content", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -117,34 +119,6 @@ describe.skip("RealityDataServicesClient", () => {
     const modelData: any = await realityData.getModelData(requestContext, modelName);
 
     chai.assert(modelData);
-  });
-
-  it("should be able to parse a RDS URL and extract Reality Data Id", async () => {
-    const url1: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--Server/S3MX/RealityData/d629a312-1f8a-4c84-845f-87d0a27d6b9b";
-    const url2: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Folder/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
-    const url3: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--caa80cb6-b3bd-44be-9178-a3d7cacaad51/S3MX/Document/a8136337-c563-424a-b3c3-17c41a984a94~2FGraz~2FScene~2FGraz.3mx";
-
-    const realityDataId1 = realityDataServiceClient.getRealityDataIdFromUrl(url1);
-    chai.assert(realityDataId1 === "d629a312-1f8a-4c84-845f-87d0a27d6b9b");
-
-    const realityDataId2 = realityDataServiceClient.getRealityDataIdFromUrl(url2);
-    chai.assert(realityDataId2 === "09b676d1-f0ed-4eba-b47a-7991b05f280d");
-
-    const realityDataId3 = realityDataServiceClient.getRealityDataIdFromUrl(url3);
-    chai.assert(realityDataId3 === "a8136337-c563-424a-b3c3-17c41a984a94");
-
-    const invalidUrl1 = "http://myserver.com/v2.4/Reposi---es/S3MXECPlugin--Server/S3MX/RealityData/d629a312-1f8a-4c84-845f-87d0a27d6b9b";
-    const invalidUrl2 = "https://myserver.com/path1/path2/path3/v2.4/Repositories/S3MXECPlugin--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Folder/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
-    const invalidUrl3 = "https://myserver.com/path1/path2/path3/v2.4/Repositories/--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Apple/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
-
-    const invalidRealityDataId1 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl1);
-    chai.assert(invalidRealityDataId1 === undefined);
-
-    const invalidRealityDataId2 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl2);
-    chai.assert(invalidRealityDataId2 === undefined);
-
-    const invalidRealityDataId3 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl3);
-    chai.assert(invalidRealityDataId3 === undefined);
   });
 
   it("should be able to create a reality data (without specific identifier) and delete it", async () => {
@@ -166,6 +140,9 @@ describe.skip("RealityDataServicesClient", () => {
     realityData.visibility = "PERMISSION";
     realityData.listable = true;
     realityData.version = "1.1.1.1";
+    realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
@@ -185,6 +162,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded1.visibility === realityData.visibility);
     chai.assert(realityDataAdded1.listable === realityData.listable);
     chai.assert(realityDataAdded1.version === realityData.version);
+    chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
+    chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
     chai.assert(realityDataAdded1.creatorId && realityDataAdded1.creatorId.length === 36);
@@ -231,6 +211,9 @@ describe.skip("RealityDataServicesClient", () => {
     realityData.visibility = "PERMISSION";
     realityData.listable = true;
     realityData.version = "1.1.1.1";
+    realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
 
@@ -251,6 +234,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded1.visibility === realityData.visibility);
     chai.assert(realityDataAdded1.listable === realityData.listable);
     chai.assert(realityDataAdded1.version === realityData.version);
+    chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
+    chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
     chai.assert(realityDataAdded1.creatorId && realityDataAdded1.creatorId.length === 36);
@@ -297,6 +283,9 @@ describe.skip("RealityDataServicesClient", () => {
     realityData.visibility = "PERMISSION";
     realityData.listable = true;
     realityData.version = "1.1.1.1";
+    realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
 
@@ -317,6 +306,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded1.visibility === realityData.visibility);
     chai.assert(realityDataAdded1.listable === realityData.listable);
     chai.assert(realityDataAdded1.version === realityData.version);
+    chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
+    chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
     chai.assert(realityDataAdded1.creatorId && realityDataAdded1.creatorId.length === 36);
@@ -369,6 +361,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded2.visibility === realityDataAdded1.visibility);
     chai.assert(realityDataAdded2.listable === realityDataAdded1.listable);
     chai.assert(realityDataAdded2.version === realityDataAdded1.version);
+    chai.assert(realityDataAdded2.dataAcquirer === realityDataAdded1.dataAcquirer);
+    chai.assert(realityDataAdded2.dataAcquisitionDate === realityDataAdded1.dataAcquisitionDate);
+    chai.assert(realityDataAdded2.referenceElevation === realityDataAdded1.referenceElevation);
 
     chai.assert(realityDataAdded2.ultimateId && realityDataAdded2.ultimateId.length === 36);
     chai.assert(realityDataAdded2.creatorId && realityDataAdded2.creatorId.length === 36);
@@ -420,6 +415,9 @@ describe.skip("RealityDataServicesClient", () => {
     realityData.visibility = "PERMISSION";
     realityData.listable = true;
     realityData.version = "1.1.1.1";
+    realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
 
@@ -440,6 +438,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded1.visibility === realityData.visibility);
     chai.assert(realityDataAdded1.listable === realityData.listable);
     chai.assert(realityDataAdded1.version === realityData.version);
+    chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
+    chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
     chai.assert(realityDataAdded1.creatorId && realityDataAdded1.creatorId.length === 36);
@@ -470,6 +471,9 @@ describe.skip("RealityDataServicesClient", () => {
     realityDataAdded1.visibility = "ENTERPRISE";
     realityDataAdded1.listable = false;
     realityDataAdded1.version = "Named Version 1";
+    realityDataAdded1.dataAcquirer = "PIPO";
+    realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17.0000000Z";
+    realityDataAdded1.referenceElevation = 42.0;
 
     realityDataAdded1.organizationId = undefined;
     realityDataAdded1.sizeUpToDate = undefined;
@@ -495,6 +499,9 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityDataAdded2.visibility === realityDataAdded1.visibility);
     chai.assert(realityDataAdded2.listable === realityDataAdded1.listable);
     chai.assert(realityDataAdded2.version === realityDataAdded1.version);
+    chai.assert(realityDataAdded2.dataAcquirer === realityDataAdded1.dataAcquirer);
+    chai.assert(realityDataAdded2.dataAcquisitionDate === realityDataAdded1.dataAcquisitionDate);
+    chai.assert(realityDataAdded2.referenceElevation === realityDataAdded1.referenceElevation);
 
     chai.assert(realityDataAdded2.ultimateId === realityDataAdded1.ultimateId);
     chai.assert(realityDataAdded2.creatorId === realityDataAdded1.creatorId);
@@ -517,7 +524,7 @@ describe.skip("RealityDataServicesClient", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to get model data content with root doc not at blob root (root doc path) (#integration)", async () => {
+  it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
@@ -553,6 +560,86 @@ describe.skip("RealityDataServicesClient", () => {
     const data3: any = await realityData.getTileContent(requestContext, modelName, true);
 
     chai.assert(data3);
+  });
+
+});
+
+describe("RealityDataServicesClient Admin (#integration)", () => {
+  const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient();
+  let requestContext: AuthorizedClientRequestContext;
+
+  before(async () => {
+    const authToken: AuthorizationToken = await TestConfig.login(TestUsers.manager);
+    const accessToken = await realityDataServiceClient.getAccessToken(new ClientRequestContext(), authToken);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
+  });
+
+  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+    const realityData: RealityData = new RealityData();
+
+    // Generate a temporary GUID. Data will be generated using this GUID.
+    realityData.id = Guid.createValue();
+    realityData.name = "Test reality data 1";
+    realityData.dataSet = "Test Dataset for iModelJS";
+    realityData.group = "Test group";
+    realityData.description = "Dummy description for a test reality data";
+    realityData.rootDocument = "RootDocumentFile.txt";
+    realityData.classification = "Undefined";
+    realityData.streamed = false;
+    realityData.type = "Undefined";
+    realityData.approximateFootprint = true;
+    realityData.copyright = "Bentley Systems inc. (c) 2019";
+    realityData.termsOfUse = "Free for testing purposes only";
+    realityData.metadataUrl = "";
+    realityData.resolutionInMeters = "2.0x2.1";
+    realityData.accuracyInMeters = undefined;
+    realityData.visibility = "PERMISSION";
+    realityData.listable = true;
+    realityData.version = "1.1.1.1";
+    realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.referenceElevation = 234.3;
+
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, undefined, realityData);
+    chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
+    chai.assert(realityDataAdded1.name === realityData.name);
+    chai.assert(realityDataAdded1.group === realityData.group);
+    chai.assert(realityDataAdded1.dataSet === realityData.dataSet);
+    chai.assert(realityDataAdded1.description === realityData.description);
+    chai.assert(realityDataAdded1.rootDocument === realityData.rootDocument);
+    chai.assert(realityDataAdded1.classification === realityData.classification);
+    chai.assert(realityDataAdded1.streamed === realityData.streamed);
+    chai.assert(realityDataAdded1.type === realityData.type);
+    chai.assert(realityDataAdded1.copyright === realityData.copyright);
+    chai.assert(realityDataAdded1.termsOfUse === realityData.termsOfUse);
+    chai.assert(realityDataAdded1.metadataUrl === realityData.metadataUrl);
+    chai.assert(realityDataAdded1.resolutionInMeters === realityData.resolutionInMeters);
+    chai.assert(realityDataAdded1.accuracyInMeters === null);
+    chai.assert(realityDataAdded1.visibility === realityData.visibility);
+    chai.assert(realityDataAdded1.listable === realityData.listable);
+    chai.assert(realityDataAdded1.version === realityData.version);
+    chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
+    chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
+
+    chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
+    chai.assert(realityDataAdded1.creatorId && realityDataAdded1.creatorId.length === 36);
+    chai.assert(realityDataAdded1.ownerId && realityDataAdded1.ownerId.length === 36);
+    chai.assert(realityDataAdded1.ownedBy && realityDataAdded1.ownedBy.length > 0);
+    chai.assert(realityDataAdded1.dataLocationGuid && realityDataAdded1.dataLocationGuid.length === 36);
+    chai.assert(realityDataAdded1.containerName && realityDataAdded1.containerName.length === 36);
+    chai.assert(realityDataAdded1.modifiedTimestamp && Date.parse(realityDataAdded1.modifiedTimestamp) !== undefined);
+    chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
+    // At creation the last accessed time stamp remains null.
+    // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
+    chai.assert(realityDataAdded1.hidden === false);
+
+    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, "Server", realityDataAdded1.id as string);
+
+    // Check empty Array
+    chai.expect(relationships).that.is.empty;
+
+    await realityDataServiceClient.deleteRealityData(requestContext, undefined, realityDataAdded1.id as string);
   });
 
 });

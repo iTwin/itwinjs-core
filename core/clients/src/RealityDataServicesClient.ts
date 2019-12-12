@@ -7,7 +7,7 @@ import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClient } from "./WsgClient";
 import { URL } from "url";
-import { request, RequestOptions } from "./Request";
+import { request, RequestOptions, RequestQueryOptions } from "./Request";
 import { Config } from "./Config";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Angle, Range2d } from "@bentley/geometry-core";
@@ -318,6 +318,20 @@ export class RealityDataRelationship extends WsgInstance {
   public createdTimestamp?: string;
 }
 
+/** Query options for RealityDataServiceRequest
+ * @Internal
+ */
+export interface RealityDataServicesRequestQueryOptions extends RequestQueryOptions {
+  /** Set to limit result to a single project  */
+  project?: string;
+
+  /** Set a polygon string to query for overlap */
+  polygon?: string;
+
+  /** Set an action for the Query. Either ALL, USE or ASSIGN */
+  action?: string;
+}
+
 /**
  * Client wrapper to Reality Data Service.
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
@@ -370,9 +384,11 @@ export class RealityDataServicesClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
-  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string> {
+  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
     const serverUrl: string = await this.getUrl(requestContext);
 
+    if (!projectId || projectId === "")
+      projectId = "Server";
     return serverUrl + `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`;
   }
 
@@ -383,8 +399,12 @@ export class RealityDataServicesClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns The requested reality data.
    */
-  public async getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData> {
+  public async getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData> {
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
     const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
+
     if (realityDatas.length !== 1)
       return Promise.reject(new Error("Could not fetch reality data: " + tilesId));
 
@@ -399,9 +419,13 @@ export class RealityDataServicesClient extends WsgClient {
    * @param projectId id of associated connect project
    * @returns an array of RealityData that are associated to the project.
    */
-  public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]> {
-    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&$filter=Type+eq+'RealityMesh3DTiles'`);
-    realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
+  public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]> {
+    if (!type)
+      type = "RealityMesh3DTiles";
+
+    const newQueryOptions = { project: projectId } as RequestQueryOptions;
+    newQueryOptions.$filter = `Type+eq+'${type}'`;
+    const realityDatas: RealityData[] = await this.getRealityDatas(requestContext, projectId, newQueryOptions);
     return realityDatas;
   }
 
@@ -416,14 +440,35 @@ export class RealityDataServicesClient extends WsgClient {
    * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
    * @returns an array of RealityData
    */
-  public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]> {
+  public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d, type?: string): Promise<RealityData[]> {
     const minLongDeg = Angle.radiansToDegrees(range.low.x);
     const maxLongDeg = Angle.radiansToDegrees(range.high.x);
     const minLatDeg = Angle.radiansToDegrees(range.low.y);
     const maxLatDeg = Angle.radiansToDegrees(range.high.y);
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
-    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${polygonString}&$filter=Type+eq+'RealityMesh3DTiles'`);
+    if (!type)
+      type = "RealityMesh3DTiles";
+
+    const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
+    newQueryOptions.$filter = `Type+eq+'${type}'`;
+    const realityDatas: RealityData[] = await this.getRealityDatas(requestContext, projectId, newQueryOptions);
+    return realityDatas;
+  }
+
+  /**
+   * Gets reality datas with all of its properties
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project.
+   * @param queryOptions RealityDataServicesRequestQueryOptions of the request.
+   * @returns The requested reality data.
+   */
+  public async getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataServicesRequestQueryOptions): Promise<RealityData[]> {
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
+    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData`, queryOptions);
+
     realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
     return realityDatas;
   }
@@ -437,8 +482,12 @@ export class RealityDataServicesClient extends WsgClient {
    * realityDataInstance id, called tilesId when returned from tile generator job
    * @returns The new reality data with all read-only properties set.
    */
-  public async createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData> {
+  public async createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData> {
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
     const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData`, realityData);
+
     if (!resultRealityData)
       return Promise.reject(new Error("Could not create new reality data: " + (realityData.id ? realityData.id : realityData.name)));
 
@@ -456,8 +505,12 @@ export class RealityDataServicesClient extends WsgClient {
    * These are: organizationId, sizeUpToDate, ownedBy, ownerId
    * @returns The newly modified reality data.
    */
-  public async updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData> {
+  public async updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData> {
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
     const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityData.id}`, realityData);
+
     if (!resultRealityData)
       return Promise.reject(new Error("Could not update reality data: " + (realityData.id ? realityData.id : realityData.name)));
 
@@ -473,7 +526,10 @@ export class RealityDataServicesClient extends WsgClient {
    * @param realityDataId The identifier of the reality data to delete.
    * @returns a void Promise.
    */
-  public async deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<void> {
+  public async deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void> {
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
     return this.deleteInstance<RealityData>(requestContext, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityDataId}`);
   }
 
@@ -523,8 +579,11 @@ export class RealityDataServicesClient extends WsgClient {
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns a FileAccessKey object containing the Azure blob address.
    */
-  public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string, writeAccess: boolean = false): Promise<FileAccessKey[]> {
+  public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess: boolean = false): Promise<FileAccessKey[]> {
     const path = encodeURIComponent(tilesId);
+    if (!projectId || projectId === "")
+      projectId = "Server";
+
     if (writeAccess)
       return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Write%27`);
     else

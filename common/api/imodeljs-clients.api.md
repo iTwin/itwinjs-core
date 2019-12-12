@@ -1538,22 +1538,30 @@ export class RealityDataServicesClient extends WsgClient {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
-    createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData>;
+    createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
-    deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<void>;
+    deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void>;
     deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
-    getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
-    getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData>;
+    getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
+    getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
-    getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]>;
-    getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]>;
+    getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]>;
+    getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d, type?: string): Promise<RealityData[]>;
     getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
-    getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string>;
+    getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataServicesRequestQueryOptions): Promise<RealityData[]>;
+    getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string>;
     protected getRelyingPartyUrl(): string;
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;
-    updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData>;
+    updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+}
+
+// @internal
+export interface RealityDataServicesRequestQueryOptions extends RequestQueryOptions {
+    action?: string;
+    polygon?: string;
+    project?: string;
 }
 
 // @internal
