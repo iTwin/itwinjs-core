@@ -32,7 +32,9 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Range3d } from "../geometry3d/Range";
 import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { CoincidentGeometryQuery } from "../geometry3d/CoincidentGeometryOps";
 // cspell:word XYRR
+
 /**
  * * Private class for refining bezier-bezier intersections.
  * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
@@ -92,6 +94,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   private _results!: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
   private _worldToLocalAffine: Transform | undefined;
+  private _coincidentGeometryContext: CoincidentGeometryQuery;
   private reinitialize() {
     this._results = [];
   }
@@ -116,6 +119,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       if (!this._worldToLocalAffine)
         this._worldToLocalPerspective = worldToLocal.clone();
     }
+    this._coincidentGeometryContext = CoincidentGeometryQuery.create();
     this.reinitialize();
   }
   /** Reset the geometry flags, leaving all other parts unchanged (and preserving accumulated intersections) */
@@ -178,9 +182,19 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     fractionB0: number,
     fractionB1: number,
     reversed: boolean,
-  ) {
-    const globalFractionA = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
-    const globalFractionB = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
+    intervalDetails?: undefined | CurveLocationDetailPair) {
+    let globalFractionA, globalFractionB;
+    let globalFractionA1, globalFractionB1;
+    if (intervalDetails) {
+      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
+      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
+      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1!, fractionA1);
+      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1!, fractionB1);
+    } else {
+      globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
+      globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
+
+    }
     // ignore duplicate of most recent point .  ..
     const numPrevious = this._results.length;
     if (numPrevious > 0) {
@@ -196,14 +210,36 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     }
     const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
       globalFractionA, cpA.fractionToPoint(globalFractionA));
-    detailA.setIntervalRole(CurveIntervalRole.isolated);
     const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
       globalFractionB, cpB.fractionToPoint(globalFractionB));
-    detailB.setIntervalRole(CurveIntervalRole.isolated);
+
+    if (intervalDetails) {
+      detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
+      detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
+    } else {
+      detailA.setIntervalRole(CurveIntervalRole.isolated);
+      detailB.setIntervalRole(CurveIntervalRole.isolated);
+    }
     if (reversed) {
       this._results.push(new CurveLocationDetailPair(detailB, detailA));
     } else {
       this._results.push(new CurveLocationDetailPair(detailA, detailB));
+    }
+  }
+  /**
+   * emit recordPoint for multiple pairs (on full curve!)
+   * @param cpA first curve primitive.   (possibly different from curve in detailA, but fraction compatible)
+   * @param cpB second curve primitive.   (possibly different from curve in detailA, but fraction compatible)
+   * @param pairs array of pairs
+   * @param reversed true to have order reversed in final structures.
+   */
+  public recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive,
+    pairs: CurveLocationDetailPair[] | undefined, reversed: boolean) {
+    if (pairs !== undefined) {
+      for (const p of pairs) {
+        this.recordPointWithLocalFractions(p.detailA.fraction, cpA, 0, 1,
+          p.detailB.fraction, cpB, 0, 1, reversed, p);
+      }
     }
   }
   /** compute intersection of two line segments.
@@ -227,15 +263,21 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ) {
-
     const uv = CurveCurveIntersectXY._workVector2dA;
     if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
       pointA0, pointA1,
-      pointB0, pointB1, uv)
-      && this.acceptFraction(extendA0, uv.x, extendA1)
-      && this.acceptFraction(extendB0, uv.y, extendB1)
-    ) {
-      this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
+      pointB0, pointB1, uv)) {
+      if (this.acceptFraction(extendA0, uv.x, extendA1)
+        && this.acceptFraction(extendB0, uv.y, extendB1)) {
+        this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
+      }
+    } else {
+      const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1);
+      if (overlap) {
+        this.recordPointWithLocalFractions(
+          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
+          overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+      }
     }
   }
   private static _workPointA0H = Point4d.create();
@@ -463,6 +505,19 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcArcThisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
     else
       this.dispatchArcArcThisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
+
+    // overlap handling .. perspective is not handled . . .
+    if (!this._coincidentGeometryContext) {
+
+    } else if (this._worldToLocalPerspective) {
+
+    } else if (this._worldToLocalAffine) {
+
+    } else {
+      const pairs = this._coincidentGeometryContext.coincidentArcIntersectionXY(cpA, cpB, true);
+      if (pairs !== undefined)
+        this.recordPairs(cpA, cpB, pairs, reversed);
+    }
   }
   // Caller accesses data from two arcs.
   // Selects the best conditioned arc (in xy parts) as "circle after inversion"

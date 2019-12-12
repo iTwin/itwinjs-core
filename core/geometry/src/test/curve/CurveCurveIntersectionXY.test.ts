@@ -17,6 +17,7 @@ import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 
 function createSamplePerspectiveMaps(): Map4d[] {
   const origin = Point3d.create(-20, -20, -1);
@@ -46,31 +47,98 @@ function captureEyeStroke(allGeometry: GeometryQuery[], map: Map4d, pointA: Poin
 function testIntersectionsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
-  intersections: CurveLocationDetailArrayPair, minExpected: number, maxExpected: number,
+  intersections: CurveLocationDetailArrayPair | undefined, minExpected: number, maxExpected: number,
   testCoordinates: boolean = false): boolean {
   const baseErrorCount = ck.getNumErrors();
-  if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
-    const n = intersections.dataA.length;
+  if (!intersections) {
+    ck.testExactNumber(0, minExpected, "No intersections found but " + minExpected + " expected");
+
+  } else {
+    if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
+      const n = intersections.dataA.length;
+      if (n < minExpected || n > maxExpected) {
+        ck.announceError("intersection count out of range", n, minExpected, maxExpected);
+      }
+      if (testCoordinates) {
+        for (let i = 0; i < n; i++) {
+          if (worldToLocal) {
+            const pointA = worldToLocal.multiplyPoint3d(intersections.dataA[i].point, 1);
+            const pointB = worldToLocal.multiplyPoint3d(intersections.dataB[i].point, 1);
+            ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
+          } else {
+            ck.testPoint3dXY(intersections.dataA[i].point, intersections.dataB[i].point, "CLD coordinate match");
+          }
+          const fA = intersections.dataA[i].fraction;
+          const fB = intersections.dataB[i].fraction;
+          const cpA = intersections.dataA[i].curve;
+          const cpB = intersections.dataB[i].curve;
+          if (ck.testPointer(cpA) && cpA
+            && ck.testPointer(cpB) && cpB) {
+            ck.testPoint3d(cpA.fractionToPoint(fA), intersections.dataA[i].point);
+            ck.testPoint3d(cpB.fractionToPoint(fB), intersections.dataB[i].point);
+          }
+        }
+      }
+    }
+  }
+  return ck.getNumErrors() === baseErrorCount;
+}
+/** verify same defined-ness of valueA and valueB, useful for guarding references to possibly undefined values that should be "all or none"
+ * * both defined ==> return true.
+ * * both undefined ==> no error, return defaultUndefinedValue
+ * * mixed ==> ck.announceError and return false.
+ */
+function verifyTypedPair<T>(ck: Checker, valueA: T | undefined, valueB: T | undefined, defaultUndefinedValue: boolean = false): boolean {
+  if (valueA !== undefined && valueB !== undefined)
+    return true;
+  if (valueA === undefined && valueB === undefined)
+    return defaultUndefinedValue;
+  ck.announceError("verifyTypedPair mismatch", valueA, valueB);
+  return false;
+}
+function verifyLocalPointXY(ck: Checker, pointAWorld: Point3d | undefined, pointBWorld: Point3d | undefined, worldToLocal: Matrix4d | undefined) {
+  if (verifyTypedPair(ck, pointAWorld, pointBWorld) && pointAWorld && pointBWorld) {
+    if (worldToLocal) {
+      const pointA = worldToLocal.multiplyPoint3d(pointAWorld, 1);
+      const pointB = worldToLocal.multiplyPoint3d(pointBWorld, 1);
+      ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
+    } else {
+      ck.testPoint3dXY(pointAWorld, pointBWorld, "CLD coordinate match");
+    }
+  }
+}
+
+/* tslint:disable:no-console */
+function testIntersectionPairsXY(
+  ck: Checker,
+  worldToLocal: Matrix4d | undefined,
+  intersections: CurveLocationDetailPair[] | undefined, minExpected: number, maxExpected: number,
+  testCoordinates: boolean = false): boolean {
+  const baseErrorCount = ck.getNumErrors();
+  if (!intersections) {
+    ck.testExactNumber(0, minExpected, "No intersections found but " + minExpected + " expected");
+
+  } else {
+    const n = intersections.length;
     if (n < minExpected || n > maxExpected) {
       ck.announceError("intersection count out of range", n, minExpected, maxExpected);
     }
     if (testCoordinates) {
-      for (let i = 0; i < n; i++) {
-        if (worldToLocal) {
-          const pointA = worldToLocal.multiplyPoint3d(intersections.dataA[i].point, 1);
-          const pointB = worldToLocal.multiplyPoint3d(intersections.dataB[i].point, 1);
-          ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
-        } else {
-          ck.testPoint3dXY(intersections.dataA[i].point, intersections.dataB[i].point, "CLD coordinate match");
-        }
-        const fA = intersections.dataA[i].fraction;
-        const fB = intersections.dataB[i].fraction;
-        const cpA = intersections.dataA[i].curve;
-        const cpB = intersections.dataB[i].curve;
-        if (ck.testPointer(cpA) && cpA
-          && ck.testPointer(cpB) && cpB) {
-          ck.testPoint3d(cpA.fractionToPoint(fA), intersections.dataA[i].point);
-          ck.testPoint3d(cpB.fractionToPoint(fB), intersections.dataB[i].point);
+      for (const p of intersections) {
+        verifyLocalPointXY(ck, p.detailA.point, p.detailB.point, worldToLocal);
+        verifyLocalPointXY(ck, p.detailA.point1, p.detailB.point1, worldToLocal);
+        const fA = p.detailA.fraction;
+        const fB = p.detailB.fraction;
+        const cpA = p.detailA.curve;
+        const cpB = p.detailB.curve;
+        if (verifyTypedPair(ck, cpA, cpB) && cpA && cpB) {
+          ck.testPoint3d(cpA.fractionToPoint(fA), p.detailA.point);
+          ck.testPoint3d(cpB.fractionToPoint(fB), p.detailB.point);
+          if (verifyTypedPair(ck, p.detailA.fraction1, p.detailB.fraction1)) {
+            ck.testPoint3d(cpA.fractionToPoint(p.detailA.fraction1!), p.detailA.point1!);
+            ck.testPoint3d(cpB.fractionToPoint(p.detailB.fraction1!), p.detailB.point1!);
+
+          }
         }
       }
     }
@@ -94,6 +162,35 @@ describe("CurveCurveXY", () => {
 
     }
     ck.checkpoint("CurveCurve.LineLine");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LineLineCoincident", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
+    const segment1 = LineSegment3d.create(segment0.fractionToPoint(0.5), segment0.fractionToPoint(0.75));
+    const intersectionsAB = CurveCurve.intersectionXYPairs(segment0, false, segment1, false);
+    testIntersectionPairsXY(ck, undefined, intersectionsAB, 1, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment0, segment1], x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "LineLineCoincident");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ArcArcCoincident", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const arc0 = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0))!;
+    const arc1 = Arc3d.createCircularStartMiddleEnd(
+      arc0.fractionToPoint(0.25), arc0.fractionToPoint(0.5), arc0.fractionToPoint(1.5))!;
+    const intersectionsAB = CurveCurve.intersectionXYPairs(arc0, false, arc1, false);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc1], x0, y0);
+    testIntersectionPairsXY(ck, undefined, intersectionsAB, 1, 1);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "ArcArcCoincident");
     expect(ck.getNumErrors()).equals(0);
   });
 

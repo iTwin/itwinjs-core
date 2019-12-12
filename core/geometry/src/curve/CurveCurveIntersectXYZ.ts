@@ -157,7 +157,6 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ) {
-
     const uv = CurveCurveIntersectXYZ._workVector2dA;
     if (SmallSystem.lineSegment3dClosestApproachUnbounded(
       pointA0, pointA1,

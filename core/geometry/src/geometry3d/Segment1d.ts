@@ -85,6 +85,14 @@ export class Segment1d {
    */
   public reverseInPlace(): void { const x = this.x0; this.x0 = this.x1; this.x1 = x; }
   /**
+   * * if `x1<x0` multiplied by the scale factor is (strictly) negative, swap the x0 and x1 member values.
+   * * This makes the fractionToPoint evaluates reverse direction.
+   */
+  public reverseIfNeededForDeltaSign(sign: number = 1): void {
+    if (sign * (this.x1 - this.x0) < 0)
+      this.reverseInPlace();
+  }
+  /**
    * Near equality test, using Geometry.isSameCoordinate for tolerances.
    */
   public isAlmostEqual(other: Segment1d): boolean {
@@ -128,4 +136,28 @@ export class Segment1d {
     /** fA is on the cut.   fB determines the entire segment. */
     return fB > 0;
   }
+  /**
+   * * On input, (f0,f1) is a (directed) segment.
+   * * On output, it is restricted to (0,1) while maintaining direction
+   * * If the clip leaves nothing, leave this segment alone and return false.
+   * * If the clip leaves something, update this segment and return true.
+   */
+  public clampDirectedTo01(): boolean {
+    let x0 = this.x0;
+    let x1 = this.x1;
+    if (x1 > x0) {
+      if (x0 < 0) x0 = 0;
+      if (x1 > 1) x1 = 1;
+      if (x0 >= x1)
+        return false;
+    } else {
+      if (x0 > 1) x0 = 1;
+      if (x1 < 0) x1 = 0;
+      if (x0 <= x1)
+        return false;
+    }
+    this.set(x0, x1);
+    return true;
+  }
+
 }

@@ -1574,6 +1574,17 @@ export class Matrix3d implements BeJSONFunctions {
     PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, result.coffs);
     return result;
   }
+  /** Multiply the inverse of this matrix times other
+   *   @return the matrix result
+   */
+  public multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
+    if (!this.computeCachedInverse(true))
+      return undefined;
+    result = result ? result : new Matrix3d();
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, result.coffs);
+    return result;
+  }
+
   /** Matrix multiplication `this * otherTranspose`
    * @return the matrix result
    */

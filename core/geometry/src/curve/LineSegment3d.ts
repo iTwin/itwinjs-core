@@ -17,7 +17,7 @@ import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole} from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/

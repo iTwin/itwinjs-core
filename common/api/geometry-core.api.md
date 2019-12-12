@@ -244,6 +244,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     radiansToPointAndDerivative(radians: number, result?: Ray3d): Ray3d;
     radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     reverseInPlace(): void;
+    scaleAboutCenterInPlace(scaleFactor: number): void;
     set(center: Point3d, matrix: Matrix3d, sweep: AngleSweep | undefined): void;
     setFrom(other: Arc3d): void;
     setFromJSON(json?: any): void;
@@ -1351,6 +1352,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
     handleLineSegment3d(segmentA: LineSegment3d): any;
     handleLineString3d(lsA: LineString3d): any;
+    recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean): void;
     resetGeometry(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
     }
 
@@ -1402,21 +1404,26 @@ export enum CurveIntervalRole {
 export class CurveLocationDetail {
     constructor();
     a: number;
+    captureFraction1Point1(fraction1: number, point1: Point3d): void;
     childDetail?: CurveLocationDetail;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
     static create(curve: CurvePrimitive, result?: CurveLocationDetail): CurveLocationDetail;
     static createConditionalMoveSignedDistance(allowExtension: boolean, curve: CurvePrimitive, startFraction: number, endFraction: number, requestedSignedDistance: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFraction(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
-    static createCurveFractionPoint(curve: CurvePrimitive, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveEvaluatedFractionFraction(curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveFractionPoint(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number, result?: CurveLocationDetail): CurveLocationDetail;
-    static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
     static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     curve?: CurvePrimitive;
     curveSearchStatus?: CurveSearchStatus;
     fraction: number;
+    fraction1?: number;
     intervalRole?: CurveIntervalRole;
+    inverseInterpolateFraction(f: number, defaultFraction?: number): number;
     readonly isIsolated: boolean;
     point: Point3d;
+    point1?: Point3d;
     pointQ: Point3d;
     ray?: Ray3d;
     setCurve(curve: CurvePrimitive): void;
@@ -1424,6 +1431,7 @@ export class CurveLocationDetail {
     setFP(fraction: number, point: Point3d, vector?: Vector3d, a?: number): void;
     setFR(fraction: number, ray: Ray3d, a?: number): void;
     setIntervalRole(value: CurveIntervalRole): void;
+    swapFractionsAndPoints(): void;
     updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number): boolean;
     vectorInCurveLocationDetail?: Vector3d;
 }
@@ -2870,6 +2878,7 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyInverseTranspose(vector: Vector3d, result?: Vector3d): Vector3d | undefined;
     multiplyInverseXYZAsPoint3d(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
     multiplyInverseXYZAsVector3d(x: number, y: number, z: number, result?: Vector3d): Vector3d | undefined;
+    multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
     multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
     multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
@@ -4455,6 +4464,7 @@ export class Sample {
 
 // @public
 export class Segment1d {
+    clampDirectedTo01(): boolean;
     clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
     static create(x0?: number, x1?: number, result?: Segment1d): Segment1d;
@@ -4463,6 +4473,7 @@ export class Segment1d {
     readonly isExact01: boolean;
     readonly isExact01Reversed: boolean;
     readonly isIn01: boolean;
+    reverseIfNeededForDeltaSign(sign?: number): void;
     reverseInPlace(): void;
     set(x0: number, x1: number): void;
     setFrom(other: Segment1d): void;

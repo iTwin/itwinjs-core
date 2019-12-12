@@ -55,7 +55,7 @@ describe("YPR", () => {
 
       const matrixA = yprA.toMatrix3d();
 
-      ck.testMatrix3d (matrixA, product, "degrees ", degrees.toJSON ());
+      ck.testMatrix3d(matrixA, product, "degrees ", degrees.toJSON());
 
       const yprAI = YawPitchRollAngles.createFromMatrix3d(matrixA);
       if (ck.testPointer(yprAI, "matrix to YPR") && yprAI) {
@@ -72,7 +72,16 @@ describe("YPR", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("freeze", () => {
+    const ypr = YawPitchRollAngles.createDegrees(1, 2, 3);
+    ypr.freeze();
+    try {
+      ypr.yaw.setDegrees(20);
+    } catch {
+      console.log(" Yes! We caught the update to frozen angle.");
+    }
 
+  });
   it("json", () => {
     const ck = new bsiChecker.Checker();
     const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);
