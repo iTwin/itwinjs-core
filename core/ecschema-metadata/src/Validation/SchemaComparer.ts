@@ -224,7 +224,7 @@ export class SchemaComparer {
       return;
     }
 
-    if (this._compareDirection === SchemaCompareDirection.Backward && propertyB)
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     if (propertyA.label !== propertyB.label)

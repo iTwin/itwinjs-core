@@ -23,7 +23,7 @@ import { ECClass, StructClass } from "../Metadata/Class";
 import { Enumeration } from "../Metadata/Enumeration";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
-const ECXML_URI = "http://www.bentley.com/schemas/Bentley.ECXML";
+const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
 
 type PrimitiveArray = PrimitiveValue[];
 type PrimitiveValue = string | number | boolean | Date;
@@ -295,7 +295,7 @@ export class XmlParser extends AbstractParser<Element> {
 
     // TODO: This shouldn't be verified here.  It's for the deserialize method to handle.  The only reason it's currently done here so that the xml
     // value can be put in the correct type, number or string.
-    let tempBackingType: PrimitiveType = PrimitiveType.Integer;
+    let tempBackingType: PrimitiveType;
     if (/int/i.test(enumType))
       tempBackingType = PrimitiveType.Integer;
     else if (/string/i.test(enumType))
@@ -670,7 +670,7 @@ export class XmlParser extends AbstractParser<Element> {
     if ("*" === tagName)
       return children;
 
-    let result = new Array<Element>();
+    let result: Element[];
     if (typeof tagName === "string") {
       result = children.filter((child) => {
         return tagName.toLowerCase() === child.nodeName.toLowerCase();
@@ -1196,7 +1196,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
-    const regEx = new RegExp("^" + ECXML_URI + ".([0-9]+).([0-9]+)$");
+    const regEx = new RegExp("^" + ECXML_URI + "\\.([0-9]+)\\.([0-9]+)$");
     const match = xmlNamespace.match(regEx);
     if (!match)
       return;
