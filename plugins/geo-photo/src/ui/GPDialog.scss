@@ -77,4 +77,78 @@
   .gp-load-div-phase2 {
     height: 100%;
   }
+
+  .gp-phase2-div-tabcontents {
+    height: 75%;
+  }
+
+  .gp-phase2-settings {
+    height: 100%;
+    margin: 10px;
+  }
+
+  .gp-load-tabstrip {
+    position: relative;
+    color: $uicore-text-color;
+    font-size: $uicore-font-size;
+    padding-bottom: 1px;
+    border-bottom: 2px solid #ccc;
+  }
+
+  .gp-load-tabstrip nav {
+    text-align: center;
+  }
+
+  .gp-load-tabstrip nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .gp-load-tabstrip nav ul li {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .gp-load-tabstrip nav ul li.tab-active {
+    background: $uicore-white;
+    color: rgba($uicore-text-color, 1);
+    -webkit-transition: background .3s;
+    transition: background .3s;
+  }
+
+  .gp-load-tabstrip nav a {
+    position: relative;
+    display: block;
+    padding: 12px 0;
+    color: rgba($uicore-text-color, .85);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-transition: color 0.25s;
+    transition: color 0.25s;
+  }
+
+  .gp-load-tabstrip nav ul li.tab-active a {
+    color: rgba($uicore-text-color, 1);
+  }
+
+  .gp-load-tabstrip nav a:focus {
+    outline: none;
+  }
+
+  .gp-load-tabstrip nav ul li.tab-active::before,
+  .gp-load-tabstrip nav ul li.tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    background: $uicore-blue;
+    height: 2px;
+    transition: width 0.4s ease;
+  }
 }
+

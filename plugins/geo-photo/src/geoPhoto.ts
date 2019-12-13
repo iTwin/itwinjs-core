@@ -139,12 +139,12 @@ const enum Operation {
 // settings for the plugin.
 // We don't currently provide a way to change minDistance, maxDistance, or eyeHeight.
 export class GeoPhotoSettings {
-  // In the pannellum viewer, the minimum distance that a nearby marker is drawn from the center.
-  public minDistance: number = 10;
   // In the pannellum viewer, the maximum distance for nearby markers. Beyond that distance, they are not drawn.
   public maxDistance: number = 100.0;
+  // In the pannellum viewer, the maximum perpendicular distance between the path of the camera and displayed markers. Markers outside of that distance are not drawn.
+  public maxCrossDistance: number = 7.0;
   // In the pannellum viewer, the assumed height above the ground of the panoramic camera.
-  public eyeHeight: number = 5.0;
+  public eyeHeight: number = 3.0;
   // Show markers in the pannellum viewer.
   public showMarkers: boolean = true;
   // Use the path of the camera (i.e., the vector from the current photo's position to the next photo's position) rather than the gps track from the camera.
@@ -207,6 +207,19 @@ export class GeoPhotoPlugin extends Plugin {
         if ((settings.visiblePaths) && Array.isArray(settings.visiblePaths)) {
           geoPhotos.photoTree!.traverseFolders(this.checkFolderVisibility.bind(this, settings.visiblePaths), true, false);
         }
+        // get the other values out of the saved settings.
+        if (undefined !== settings.showMarkers) {
+          this.settings.showMarkers = settings.showMarkers;
+        }
+        if (undefined !== settings.maxDistance) {
+          this.settings.maxDistance = settings.maxDistance;
+        }
+        if (undefined !== settings.maxCrossDistance) {
+          this.settings.maxCrossDistance = settings.maxCrossDistance;
+        }
+        if (undefined !== settings.eyeHeight) {
+          this.settings.eyeHeight = settings.eyeHeight;
+        }
       }
 
       /* ------------- Not needed now that we have the dialog box to show progress
@@ -223,6 +236,7 @@ export class GeoPhotoPlugin extends Plugin {
       this.uiProvider.setLoadPhase(2);
       this.uiProvider.syncTreeData(photoTree);
       this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
+      this.uiProvider.syncSettings(this.settings);
       this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
     }
   }
@@ -297,7 +311,7 @@ export class GeoPhotoPlugin extends Plugin {
     this.saveSettings().catch((_err) => { });
   }
 
-  private async saveSettings(): Promise<void> {
+  public async saveSettings(): Promise<void> {
     const view = IModelApp.viewManager.selectedView;
     if (!view || !view.iModel)
       return;

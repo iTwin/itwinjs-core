@@ -13,7 +13,7 @@ import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";
 import geoPhotoButtonSvg from "./geoPhoto-button.svg";
-import { GeoPhotoPlugin } from "../geoPhoto";
+import { GeoPhotoPlugin, GeoPhotoSettings } from "../geoPhoto";
 import { GPLoadTracker } from "../PhotoTree";
 
 export interface SyncTreeDataEventArgs {
@@ -27,6 +27,8 @@ export interface SyncTitleEventArgs {
 export class SyncDataTreeChangeEvent extends UiEvent<SyncTreeDataEventArgs> { }
 
 export class SyncTitleEvent extends UiEvent<SyncTitleEventArgs> { }
+export class SyncShowMarkersEvent extends UiEvent<boolean> {}
+export class SyncSettingsEvent extends UiEvent<GeoPhotoSettings> {}
 
 export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvider, GPLoadTracker {
   // either 0 while finding the folder and file counts, or 1 if processing the folders/files.
@@ -64,6 +66,8 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
 
   public treeDataProvider: ITreeDataProvider | undefined = undefined;
   public onSyncDataTreeEvent = new SyncDataTreeChangeEvent();
+  public onSyncShowMarkersEvent = new SyncShowMarkersEvent();
+  public onSyncSettingsEvent = new SyncSettingsEvent();
 
   public title: string = this.plugin.i18n.translate("geoPhoto:LoadDialog.LoadTitle");
   public onSyncTitleEvent = new SyncTitleEvent();
@@ -127,6 +131,14 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
   public syncTreeData(treeData: ITreeDataProvider) {
     this.treeDataProvider = treeData;
     this.onSyncDataTreeEvent.emit({ treeData });
+  }
+
+  public syncShowMarkers() {
+    this.onSyncShowMarkersEvent.emit(this.plugin.settings.showMarkers);
+  }
+
+  public syncSettings(newSettings: GeoPhotoSettings) {
+    this.onSyncSettingsEvent.emit(newSettings);
   }
 
   public showGeoPhotoDialog = () => {

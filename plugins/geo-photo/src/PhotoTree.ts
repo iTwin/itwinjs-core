@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, BeEvent, BentleyError, BentleyStatus, SortedArray } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Point3d, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Vector3d, XYZProps } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection, GeoConverter, QuantityType } from "@bentley/imodeljs-frontend";
 import { Cartographic, IModelCoordinatesResponseProps, GeoCoordStatus } from "@bentley/imodeljs-common";
 import { JpegTagReader, ImageTags, ImageTagValue, ImageTagsMap } from "./JpegTagReader";
@@ -320,6 +320,7 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
 // This class represents the root folder of the tree.
 export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+  public static PHOTOINFO_VERSION: string = "2";
 
   constructor(treeHandler: PhotoTreeHandler, private _i18n: I18N) {
     super(treeHandler, undefined);
@@ -403,6 +404,7 @@ export abstract class PhotoFile extends FolderEntry {
   public spatial: Point3d | undefined;
   public isPano: boolean | undefined;
   public takenTime: number | undefined;
+  public pathOrientation: number | undefined;
   public correctionDir: number | undefined;
   public correctionYaw: number | undefined;
   public correctionPitch: number | undefined;
@@ -411,7 +413,7 @@ export abstract class PhotoFile extends FolderEntry {
   public visited: boolean;
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder, protected _i18n: I18N, geoLocation?: Cartographic, gpsTrack?: number, spatial?: Point3d,
-    isPano?: boolean, takenTime?: number, thumbnail?: GeoPhotoThumbnail, correctionYaw?: number, correctionPitch?: number, correctionRoll?: number, correctionDir?: number) {
+    isPano?: boolean, takenTime?: number, thumbnail?: GeoPhotoThumbnail, pathOrientation?: number, correctionYaw?: number, correctionPitch?: number, correctionRoll?: number, correctionDir?: number) {
     super(treeHandler, parent);
     this.geoLocation = geoLocation;
     this.spatial = spatial;
@@ -419,6 +421,7 @@ export abstract class PhotoFile extends FolderEntry {
     this.isPano = isPano;
     this.takenTime = takenTime;
     this.thumbnail = thumbnail;
+    this.pathOrientation = pathOrientation;
     this.correctionYaw = correctionYaw;
     this.correctionPitch = correctionPitch;
     this.correctionRoll = correctionRoll;
@@ -464,6 +467,31 @@ export abstract class PhotoFile extends FolderEntry {
     const closeList: PhotoFile[] = xList.filter(distanceFilter.filter.bind(distanceFilter));
     closeList.sort(distanceFilter.sortFunc.bind(distanceFilter));
     return Promise.resolve(closeList);
+  }
+
+  public getPathOrientation(nextFile: PhotoFile | undefined, previousFile: PhotoFile | undefined): number {
+    if (undefined !== this.pathOrientation)
+      return this.pathOrientation;
+
+    const gpsTrack: number = (undefined === this.gpsTrack) ? 0.0 : this.gpsTrack;
+    this.pathOrientation = gpsTrack;
+    if ((nextFile !== undefined) || (previousFile !== undefined)) {
+      // get the direction from the path of the photos.
+      let nextPosition: Point3d;
+      let thisPosition: Point3d;
+      if (nextFile) {
+        nextPosition = nextFile.spatial!;
+        thisPosition = this.spatial!;
+      } else {
+        nextPosition = this.spatial!;
+        thisPosition = previousFile!.spatial!;
+      }
+      // relative to north.
+      const delta = thisPosition.vectorTo(nextPosition);
+      this.pathOrientation = AngleUtils.deltaToCompassDegrees(delta);
+    }
+
+    return this.pathOrientation;
   }
 
   public async getNextPanorama(allFolders: boolean): Promise<PhotoFile | undefined> {
@@ -625,7 +653,7 @@ export abstract class PhotoFile extends FolderEntry {
 
     const cartographic = new Cartographic(longitude, latitude, elevation);
 
-    const auxInfo = new GeoPhotoInfo("1", cartographic, gpsTrack, time, isPano, thumbnail);
+    const auxInfo = new GeoPhotoInfo(PhotoTree.PHOTOINFO_VERSION, cartographic, gpsTrack, time, isPano, thumbnail);
     return auxInfo;
   }
 }
@@ -645,6 +673,23 @@ export class BasePhotoTreeHandler {
   public async getSpatialPositions(folder: PhotoFolder, subFolders: boolean): Promise<void> {
     const spatialPositionCollector = new SpatialPositionCollector(folder, subFolders, this._iModel);
     await spatialPositionCollector.getPositions();
+  }
+}
+
+export class AngleUtils {
+  public static deltaToCompassDegrees(delta: Vector3d): number {
+    // We are looking for an angle of 0 at North (Y up) clockwise to 360. (90 = east, 180 = south, 270 = west)
+    const degrees = Math.atan2(delta.y, delta.x) * 180 / Math.PI;
+    if (degrees > 90)
+      return 450 - degrees;
+    else
+      return 90 - degrees;
+  }
+
+  // returns absolute value of angle between two angles, assuming they are both between 0 and 360 degrees. Always between 0 and 180
+  public static absAngleDifference(angle1: number, angle2: number): number {
+    const diff = Math.abs(angle1 - angle2);
+    return (diff < 180) ? diff : Math.abs(diff - 360);
   }
 }
 
@@ -745,7 +790,7 @@ class DistanceSorter {
     const selector: string = (this._axis === 0) ? "x" : "y";
     const photoVal: number = (photoFile.spatial as any)[selector];
     let lowIndex: number = thisIndex - 1;
-    for (; lowIndex > 0; --lowIndex) {
+    for (; lowIndex >= 0; --lowIndex) {
       const thisVal = (this.sortedArray.get(lowIndex)!.spatial as any)[selector];
       if ((photoVal - thisVal) > maxDistance)
         break;

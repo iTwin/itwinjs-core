@@ -608,7 +608,7 @@ export class PannellumViewer {
     if (!ttSpan || !this._config.previousPanoramaName)
       return;
     ttSpan.innerHTML = this._i18n.translate("geoPhoto:pannellum.previousPanorama", { name: this._config.previousPanoramaName });
-    ttSpan.style.width = `${ttSpan.scrollWidth - 19}px`;
+    ttSpan.style.width = `${ttSpan.scrollWidth - 19}px`; // every time a new tool tip is created, it gets one pixel wider. But changing the "- 19" to "- 20", makes the tool tip take up two lines :(
     ttSpan.style.marginLeft = "20px";
     ttSpan.style.marginTop = "32px";
   }

@@ -8,7 +8,7 @@ import {
   BeButton, BeButtonEvent, BeModifierKeys, Cluster, Decorator, DecorateContext, GraphicType, imageElementFromUrl,
   IModelApp, Marker, MarkerImage, MarkerSet,
 } from "@bentley/imodeljs-frontend";
-import { PhotoFile, PhotoTraverseFunction } from "./PhotoTree";
+import { AngleUtils, PhotoFile, PhotoTraverseFunction } from "./PhotoTree";
 import { GeoPhotos, GeoPhotoPlugin, GeoPhotoSettings } from "./geoPhoto";
 import { PannellumModalFrontstage } from "./PannellumFrontStage";
 import { FrontstageManager } from "@bentley/ui-framework";
@@ -28,26 +28,6 @@ interface ViewerData {
   config: PannellumViewerConfig;
 }
 
-// stores the settings controlling the marker display and camera direction source.
-class MarkerSettings {
-  constructor(public gpsTrack: number, public pathOrientation: number) {
-  }
-
-  // gets camera direction from marker settings.
-  public getCameraDirection(plugin: GeoPhotoPlugin): number {
-    let direction = 0;
-    if (plugin.settings.directionFromPath) {
-      direction = plugin.settings.reversed ? this.pathOrientation + 180.0 : this.pathOrientation;
-    } else {
-      direction = plugin.settings.reversed ? this.gpsTrack + 180.0 : this.gpsTrack;
-    }
-    if (direction > 360.0)
-      direction -= 360.0;
-
-    return direction;
-  }
-}
-
 /** Marker positioned where there is a geotagged photograph. */
 class GeoPhotoMarker extends Marker {
   private static _size = Point2d.create(30, 30);
@@ -60,7 +40,6 @@ class GeoPhotoMarker extends Marker {
   private _manager: GeoPhotoMarkerManager;
   private _color: ColorDef;
   public photoFile: PhotoFile;
-  private _markerSettings: MarkerSettings | undefined;
 
   /** Create a new GeoPhotoMarker */
   constructor(location: XYAndZ, photoFile: PhotoFile, icon: HTMLImageElement, manager: GeoPhotoMarkerManager) {
@@ -119,12 +98,25 @@ class GeoPhotoMarker extends Marker {
   }
 
   private hotSpotSetStyle(distance: number, hs: PannellumHotSpot) {
-    const minDistance = this._manager.plugin.settings.minDistance;
-    const maxDistance = this._manager.plugin.settings.maxDistance;
+    let maxDistance = this._manager.plugin.settings.maxDistance;
+
+    // put reasonable limits on maxDistance or it doesn't look right.
+    if (maxDistance > 80)
+      maxDistance = 80;
+    if (maxDistance < 40)
+      maxDistance = 40;
+    const minDistance = maxDistance / 10;
+
     if (distance < minDistance)
       distance = minDistance;
-    let hsSize: number = 80 - (60 * (distance - minDistance) / (maxDistance - minDistance));
+    if (distance > maxDistance)
+      distance = maxDistance;
+
+    // hsSize can range from 80 to 20.
+    let hsSize: number = 80 - (70 * (distance - minDistance) / (maxDistance - minDistance));
     hsSize = Math.floor(hsSize);
+    if (hsSize < 20)
+      hsSize = 20;
     hs.div!.style.backgroundSize = `${hsSize}px ${hsSize}px`;
     const sizeString = `${hsSize}px`;
     hs.div!.style.width = sizeString;
@@ -133,6 +125,7 @@ class GeoPhotoMarker extends Marker {
 
   private static escapeKey() {
     FrontstageManager.closeModalFrontstage();
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     IModelApp.requestNextAnimation();
   }
 
@@ -145,34 +138,64 @@ class GeoPhotoMarker extends Marker {
       correctedFile.correctionYaw = result.yaw.degrees;
       correctedFile.correctionPitch = result.pitch.degrees;
       correctedFile.correctionRoll = result.roll.degrees;
-      correctedFile.correctionDir = this._markerSettings!.getCameraDirection(this._manager.plugin);
+      correctedFile.correctionDir = GeoPhotoMarker.getCameraDirection(correctedFile, this._manager.plugin);
       correctedFile.saveFileInfo().then(() => { }).catch((_err) => { console.log("Error saving correction "); });
     }
   }
 
-  // do some preliminary calculations, eliminate any that are too close in horizontal angle from the eyepoint.
-  private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[]): Neighbor[] {
+  // gets camera direction from marker settings.
+  public static getCameraDirection(file: PhotoFile, plugin: GeoPhotoPlugin): number {
+    let direction = 0;
+    if (plugin.settings.directionFromPath && file.pathOrientation) {
+      direction = plugin.settings.reversed ? file.pathOrientation + 180.0 : file.pathOrientation;
+    } else if (file.gpsTrack) {
+      direction = plugin.settings.reversed ? file.gpsTrack + 180.0 : file.gpsTrack;
+    }
+    if (direction > 360.0)
+      direction -= 360.0;
+    return direction;
+  }
+
+  // this method compares the distance between the path of the camera to the crossDistance criteria.
+  private closeEnoughToCameraPath(centerPoint: Point3d, nextPoint: Point3d | undefined, previousPoint: Point3d | undefined, thisPoint: Point3d): boolean {
+    const nextCalc = PointLineDistanceCalculator.create(centerPoint, nextPoint);
+    const previousCalc = PointLineDistanceCalculator.create(centerPoint, previousPoint);
+    if (!nextCalc && !previousCalc) {
+      return true;
+    }
+    const settings = this._manager.plugin.settings;
+    const nextDistance = nextCalc ? nextCalc.pointDistanceSq(thisPoint) : settings.maxDistance * settings.maxDistance * 100;
+    const previousDistance = previousCalc ? previousCalc.pointDistanceSq(thisPoint) : settings.maxDistance * settings.maxDistance * 100.0;
+
+    if ((nextDistance === 0.0) || (previousDistance === 0.0))
+      return true;
+
+    const crossDistance = (nextDistance <= previousDistance) ? nextCalc!.crossDistance(thisPoint) : previousCalc!.crossDistance(thisPoint);
+    return crossDistance < this._manager.plugin.settings.maxCrossDistance;
+  }
+
+  // do some preliminary calculations, eliminate any that are too far from the path of the camera, or too close in horizontal angle from the eyepoint.
+  private chooseNeighborsToDisplay(centerFile: PhotoFile, closeFiles: PhotoFile[], nextFile: PhotoFile | undefined, previousFile: PhotoFile | undefined): Neighbor[] {
     let neighbors: Neighbor[] = [];
     // get the bearings to each file.
     for (const file of closeFiles) {
-      const delta = centerFile.spatial!.vectorTo(file.spatial!);
-      const initialYaw = 90.0 - (Math.atan2(delta.y, delta.x) * 180 / Math.PI);
-      const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-      neighbors.push({ file, delta, distance, initialYaw });
-      // console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
+      if (this.closeEnoughToCameraPath(centerFile.spatial!, nextFile ? nextFile.spatial! : undefined, previousFile ? previousFile.spatial! : undefined, file.spatial!)) {
+        const delta = centerFile.spatial!.vectorTo(file.spatial!);
+        const distance = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+        const initialYaw = AngleUtils.deltaToCompassDegrees(delta);
+        neighbors.push({ file, delta, distance, initialYaw });
+        // console.log(`closeFile:  ${file.name}, dist: ${distance}, yaw: ${yaw}, pitch ${pitch}, x: ${file.spatial!.x}, y: ${file.spatial!.y}`);
+      }
     }
 
     // eliminate any have closer neighbors within tooCloseYaw and tooClosePitch.
     for (let iFile = 1; iFile < neighbors.length;) {
       let iTest = 0;
       for (; iTest < iFile; ++iTest) {
-        let angle1 = neighbors[iFile].initialYaw;
-        let angle2 = neighbors[iTest].initialYaw;
-        if ((angle1 < 0) || (angle2 < 0)) {
-          angle1 = angle1 + 180;
-          angle2 = angle2 + 180;
-        }
-        if ((Math.abs(angle1 - angle2) < GeoPhotoMarker._tooCloseYaw) && (Math.abs(neighbors[iFile].distance - neighbors[iTest].distance) < GeoPhotoMarker._tooCloseDistance))
+        const angle1 = neighbors[iFile].initialYaw;
+        const angle2 = neighbors[iTest].initialYaw;
+        const angleDifference = AngleUtils.absAngleDifference(angle1, angle2);
+        if ((angleDifference < GeoPhotoMarker._tooCloseYaw) && (Math.abs(neighbors[iFile].distance - neighbors[iTest].distance) < GeoPhotoMarker._tooCloseDistance))
           break;
       }
       if (iTest < iFile)
@@ -205,7 +228,7 @@ class GeoPhotoMarker extends Marker {
       posVector.z = 0.0;
       // rotate it by the rotation matrix.
       const rotatedVector: Vector3d = correctionMatrix.multiplyVector(posVector);
-      let yaw = (Math.atan2(rotatedVector.x, rotatedVector.y) * 180.0 / Math.PI) - cameraDirection;
+      let yaw = AngleUtils.deltaToCompassDegrees(rotatedVector) - cameraDirection;
       if (yaw < -180.0)
         yaw += 360.0;
       if (yaw > 180.0)
@@ -233,8 +256,8 @@ class GeoPhotoMarker extends Marker {
     return hotSpots;
   }
 
-  private calculateHotSpotChanges(closeNeighbors: Neighbor[], baseRotation: Matrix3d, existingHotSpots: PannellumHotSpot[], _centerYaw: number, yawChange: number, pitchChange: number): Matrix3d | undefined {
-    const cameraDirection = this._markerSettings!.getCameraDirection(this._manager.plugin);
+  private calculateHotSpotChanges(panoFile: PhotoFile, closeNeighbors: Neighbor[], baseRotation: Matrix3d, existingHotSpots: PannellumHotSpot[], _centerYaw: number, yawChange: number, pitchChange: number): Matrix3d | undefined {
+    const cameraDirection = GeoPhotoMarker.getCameraDirection(panoFile, this._manager.plugin);
 
     // from the existing normal and yawChange, pitchChange, calculate a new normal.
     const ypr = YawPitchRollAngles.createDegrees(yawChange, pitchChange, 0.0);
@@ -271,6 +294,8 @@ class GeoPhotoMarker extends Marker {
         // show markers button
         // toggle it.
         settings.showMarkers = !settings.showMarkers;
+        if (this._manager.plugin.uiProvider)
+          this._manager.plugin.uiProvider.syncShowMarkers();
         break;
       case 2:
         // fromTrack button;
@@ -303,30 +328,13 @@ class GeoPhotoMarker extends Marker {
     return change;
   }
 
-  // get the basis for correcting the yaw.
-  private getMarkerSettings(photoFile: PhotoFile, nextFile: PhotoFile | undefined, previousFile: PhotoFile | undefined): MarkerSettings {
-    const gpsTrack: number = (undefined === photoFile.gpsTrack) ? 0.0 : photoFile.gpsTrack;
-    let pathDirection: number = gpsTrack;
-    if ((nextFile !== undefined) || (previousFile !== undefined)) {
-      // get the direction from the path of the photos.
-      let nextPosition: Point3d;
-      let thisPosition: Point3d;
-      if (nextFile) {
-        nextPosition = nextFile.spatial!;
-        thisPosition = photoFile.spatial!;
-      } else {
-        nextPosition = photoFile.spatial!;
-        thisPosition = previousFile!.spatial!;
-      }
-      // relative to north.
-      const delta = thisPosition.vectorTo(nextPosition);
-      pathDirection = 90.0 - (Math.atan2(delta.y, delta.x) * 180 / Math.PI);
-    }
-
+  private synchSettings(photoFile: PhotoFile) {
+    const gpsTrack: number = (undefined === photoFile.gpsTrack) ? 0 : photoFile.gpsTrack;
+    const pathOrientation: number = (undefined === photoFile.pathOrientation) ? gpsTrack : photoFile.pathOrientation;
     const settings = this._manager.plugin.settings;
     if (photoFile.correctionDir !== undefined) {
       const gpsTrackDelta: number = Math.abs(photoFile.correctionDir - gpsTrack);
-      const pathDelta: number = Math.abs(photoFile.correctionDir - pathDirection);
+      const pathDelta: number = Math.abs(photoFile.correctionDir - pathOrientation);
       if (gpsTrackDelta < 0.01) {
         settings.directionFromPath = false;
         settings.reversed = false;
@@ -341,8 +349,6 @@ class GeoPhotoMarker extends Marker {
         settings.reversed = true;
       }
     }
-
-    return new MarkerSettings(gpsTrack, pathDirection);
   }
 
   private async getViewerData(photoFile: PhotoFile): Promise<ViewerData | undefined> {
@@ -356,29 +362,28 @@ class GeoPhotoMarker extends Marker {
     const correctionYaw: number = (undefined === photoFile.correctionYaw) ? 0.0 : photoFile.correctionYaw;
     const correctionPitch: number = (undefined === photoFile.correctionPitch) ? 0.0 : photoFile.correctionPitch;
     const correctionRoll: number = (undefined === photoFile.correctionRoll) ? 0.0 : photoFile.correctionRoll;
-    console.log("correction yaw: ", correctionYaw, "pitch:", correctionPitch, "roll:", correctionRoll);
+    // console.log("correction yaw: ", correctionYaw, "pitch:", correctionPitch, "roll:", correctionRoll);
     const baseYPR = YawPitchRollAngles.createDegrees(correctionYaw, correctionPitch, correctionRoll);
     const baseRotation = baseYPR.toMatrix3d();
     try {
       const values: any[] = await Promise.all([fileContentsPromise, closestNeighborPromise, nextPanoramaPromise, previousPanoramaPromise]);
       const panoBlob: Blob = new Blob([values[0]], { type: "image/jpeg" });
-      const closeFiles: PhotoFile[] = values[1];
-      const closeNeighbors: Neighbor[] = this.chooseNeighborsToDisplay(photoFile, closeFiles);
       const nextPanorama: PhotoFile | undefined = values[2];
       const previousPanorama: PhotoFile | undefined = values[3];
-
-      // save the marker settings.
-      this._markerSettings = this.getMarkerSettings(photoFile, nextPanorama, previousPanorama);
+      photoFile.getPathOrientation(nextPanorama, previousPanorama);
+      this.synchSettings(photoFile);
+      const closeFiles: PhotoFile[] = values[1];
+      const closeNeighbors: Neighbor[] = this.chooseNeighborsToDisplay(photoFile, closeFiles, nextPanorama, previousPanorama);
 
       // console.log(`thisFile:  ${photoFile.name}, x: ${photoFile.spatial!.x}, y: ${photoFile.spatial!.y}`);
 
       if ((baseRotation !== undefined) && closeFiles.length > 0) {
-        const cameraDirection = this._markerSettings.getCameraDirection(this._manager.plugin);
+        const cameraDirection = GeoPhotoMarker.getCameraDirection(photoFile, this._manager.plugin);
         const hotSpots: PannellumHotSpot[] = this.calculateHotSpotsFromMatrix(closeNeighbors, cameraDirection, baseRotation, undefined);
         if (hotSpots.length > 0) {
           config.hotSpots = hotSpots;
           config.saveCorrectionFunc = this.saveCorrections.bind(this, photoFile);
-          config.hotSpotCalculationFunc = this.calculateHotSpotChanges.bind(this, closeNeighbors);
+          config.hotSpotCalculationFunc = this.calculateHotSpotChanges.bind(this, photoFile, closeNeighbors);
           config.baseRotation = baseRotation;
           config.nextPanoramaFunc = nextPanorama ? this.openAdjacentPanorama.bind(this, nextPanorama) : undefined;
           config.nextPanoramaName = nextPanorama ? nextPanorama.name : undefined;
@@ -598,5 +603,38 @@ export class GeoPhotoMarkerManager implements Decorator {
 
     if (this.markerSet)
       this.markerSet.addDecoration(context);
+  }
+}
+
+// class that calculates distances from a point to a line specified by two points. (see https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line)
+class PointLineDistanceCalculator {
+  private _p2: Point3d;
+  private _distanceBetween: number;
+  private _delta: Vector3d;
+  private _factor: number;
+
+  private constructor(p1: Point3d, p2: Point3d) {
+    this._p2 = p2;
+    this._delta = p1.vectorTo(p2);
+    this._distanceBetween = Math.sqrt(this._delta.x * this._delta.x + this._delta.y * this._delta.y);
+    this._factor = p2.x * p1.y - p2.y * p1.x;
+  }
+
+  // creates the PointLineDistanceCalculator, return undefined if either point is undefined.
+  public static create(p1: Point3d | undefined, p2: Point3d | undefined): PointLineDistanceCalculator | undefined {
+    if ((p1 === undefined) || (p2 === undefined))
+      return undefined;
+    return new PointLineDistanceCalculator(p1, p2);
+  }
+
+  // return distance to second point, squared.
+  public pointDistanceSq(point: Point3d) {
+    const delta = this._p2.vectorTo(point);
+    return (delta.x * delta.x + delta.y * delta.y);
+  }
+
+  // returns the distance from point to the line p1, p2.
+  public crossDistance(point: Point3d): number {
+    return Math.abs(this._delta.y * point.x - this._delta.x * point.y + this._factor) / this._distanceBetween;
   }
 }

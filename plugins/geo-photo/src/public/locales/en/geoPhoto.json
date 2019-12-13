@@ -44,6 +44,12 @@
     "FolderProgress": "Folders {{folderNum}} / {{folderCount}}",
     "FileProgress": "Files {{fileNum}} / {{fileCount}}",
     "Panoramas": "Panoramas: {{panoramas}}",
-    "Photos": "Photos: {{photos}}"
+    "Photos": "Photos: {{photos}}",
+    "Folders": "Folders",
+    "Settings": "Settings",
+    "ShowMarkers": "Show Markers in Panorama Viewer",
+    "MaxDistance": "Maximum distance from Camera",
+    "MaxCrossDistance": "Maximum distance from Camera Path",
+    "CameraHeight": "Camera height above ground"
   }
 }

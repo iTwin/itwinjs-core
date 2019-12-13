@@ -76,7 +76,7 @@ export class PSPhotoFile extends PhotoFile {
     if (!this.geoLocation)
       return;
 
-    const auxFileInfo: GeoPhotoInfo = new GeoPhotoInfo ("1", this.geoLocation, this.gpsTrack ? this.gpsTrack : 0.0, this.takenTime ? this.takenTime : 0, (undefined === this.isPano) ? false : this.isPano,
+    const auxFileInfo: GeoPhotoInfo = new GeoPhotoInfo (PhotoTree.PHOTOINFO_VERSION, this.geoLocation, this.gpsTrack ? this.gpsTrack : 0.0, this.takenTime ? this.takenTime : 0, (undefined === this.isPano) ? false : this.isPano,
       this.thumbnail, this.correctionYaw, this.correctionPitch, this.correctionRoll, this.correctionDir);
     return this._treeHandler.saveFileInfo(this, auxFileInfo);
   }
@@ -190,7 +190,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     // you change the custom properties. We experimented with checksum - that is too slow. So we simply observe that the way
     // pictures are taken, the camera gives them a new name every time, and they never really change. If necessary, we can
     // figure out something in the future.
-    return (auxInfo.vrsn !== undefined) && (typeof auxInfo.vrsn === "string") && (auxInfo.vrsn === "1");
+    return (auxInfo.vrsn !== undefined) && (typeof auxInfo.vrsn === "string") && (auxInfo.vrsn === PhotoTree.PHOTOINFO_VERSION);
   }
 
   /**
