@@ -578,7 +578,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     if (suppressionMap) {
       const suppressRule = this.findSuppressionRule(suppressionMap, diagnostic.code);
       if (suppressRule) {
-        const ecSuppression = await suppressRule(ecType);
+        const ecSuppression = await suppressRule(diagnostic, ecType);
         if (ecSuppression) {
           diagnostic.category = DiagnosticCategory.Warning;
         }

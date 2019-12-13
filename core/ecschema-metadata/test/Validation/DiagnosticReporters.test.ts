@@ -64,7 +64,7 @@ describe("DiagnosticReporters tests", () => {
       const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
     });
@@ -76,7 +76,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new TestDiagnosticReporter(suppressions);
       const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
     });
@@ -88,7 +88,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new TestDiagnosticReporter(suppressions);
       const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(reportDiagnostic.notCalled).to.be.true;
     });
@@ -101,7 +101,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
@@ -126,7 +126,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
     });
@@ -142,7 +142,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
     });
@@ -152,7 +152,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Warning);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
@@ -171,7 +171,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Message);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
@@ -190,7 +190,7 @@ describe("DiagnosticReporters tests", () => {
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Suggestion);
 
-      await reporter.report(diag);
+      reporter.report(diag);
 
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];

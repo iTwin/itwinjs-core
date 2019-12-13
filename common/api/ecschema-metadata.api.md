@@ -1398,7 +1398,7 @@ export interface ISchemaPartVisitor {
 }
 
 // @beta
-export type ISuppressionRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => Promise<boolean>;
+export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
 // @beta
 export class KindOfQuantity extends SchemaItem {

@@ -22,13 +22,14 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { UnitSystem } from "../Metadata/UnitSystem";
 import { Phenomenon } from "../Metadata/Phenomenon";
 import { Constant } from "../Metadata/Constant";
+import { AnyDiagnostic } from "./Diagnostic";
 
 /**
  * Interface used for all rule suppressions used during schema validation.
  * Just telling us whether a rule is suppressed or not.
  * @beta
  */
-export type ISuppressionRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => Promise<boolean>;
+export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
 /** @beta */
 export type BaseSuppressionRule<T extends AnyECType, U extends AnyECType> = ISuppressionRule<T, U>;

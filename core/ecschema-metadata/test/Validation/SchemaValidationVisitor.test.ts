@@ -243,7 +243,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error)
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -559,7 +559,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitStructClass(struct);
 
-      const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"])
+      const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"]);
       diagnostic.category = DiagnosticCategory.Warning;
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
@@ -638,7 +638,7 @@ describe("SchemaValidationVisitor tests", () => {
       const reporter = new TestReporter();
       const reportSpy = sinon.spy(reporter, "report");
       visitor.registerReporter(reporter);
-      const mixin = new Mixin(schema, "TestClass")
+      const mixin = new Mixin(schema, "TestClass");
 
       await visitor.visitMixin(mixin);
 
@@ -655,7 +655,7 @@ describe("SchemaValidationVisitor tests", () => {
       const reporter = new TestReporter();
       const reportSpy = sinon.spy(reporter, "report");
       visitor.registerReporter(reporter);
-      const mixin = new Mixin(schema, "TestClass")
+      const mixin = new Mixin(schema, "TestClass");
 
       await visitor.visitMixin(mixin);
 
@@ -1544,7 +1544,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       const diagnostic = new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error)
+      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });
 
@@ -1765,7 +1765,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitConstant(constant);
 
-      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"])
+      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
       diagnostic.category = DiagnosticCategory.Warning;
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
@@ -1782,7 +1782,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitConstant(constant);
 
-      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"])
+      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });

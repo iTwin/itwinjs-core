@@ -56,7 +56,7 @@ export const TestDiagnosticCodes = {
   FailingUnitSystemDiagnostic: getCode(18),
   FailingPhenomenonDiagnostic: getCode(19),
   FailingConstantDiagnostic: getCode(20),
-}
+};
 
 // tslint:disable-next-line:variable-name
 export const TestDiagnostics = {
@@ -271,171 +271,171 @@ export async function* passingConstantRule(_constant: Constant): AsyncIterable<D
 }
 
 // Suppression Rules
-export async function ignoreSchemaSuppression(_schema: Schema): Promise<boolean> {
+export async function ignoreSchemaSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schema: Schema): Promise<boolean> {
   return false;
 }
 
-export async function applySchemaSuppression(_schema: Schema): Promise<boolean> {
+export async function applySchemaSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schema: Schema): Promise<boolean> {
   return true;
 }
 
-export async function ignoreSchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+export async function ignoreSchemaItemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schemaItem: SchemaItem): Promise<boolean> {
   return false;
 }
 
-export async function applySchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+export async function applySchemaItemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schemaItem: SchemaItem): Promise<boolean> {
   return true;
 }
 
-export async function ignoreClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+export async function ignoreClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _ecClass: AnyClass): Promise<boolean> {
   return false;
 }
 
-export async function applyClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+export async function applyClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _ecClass: AnyClass): Promise<boolean> {
   return true;
 }
 
-export async function ignorePropertySuppression(_property: AnyProperty): Promise<boolean> {
+export async function ignorePropertySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _property: AnyProperty): Promise<boolean> {
   return false;
 }
 
-export async function applyPropertySuppression(_property: AnyProperty): Promise<boolean> {
+export async function applyPropertySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _property: AnyProperty): Promise<boolean> {
   return true;
 }
 
-export async function ignoreEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+export async function ignoreEntityClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _entityClass: EntityClass): Promise<boolean> {
   return false;
 }
 
-export async function applyEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+export async function applyEntityClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _entityClass: EntityClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+export async function ignoreStructClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _structClass: StructClass): Promise<boolean> {
   return false;
 }
 
-export async function applyStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+export async function applyStructClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _structClass: StructClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreMixinSuppression(_mixin: Mixin): Promise<boolean> {
+export async function ignoreMixinSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _mixin: Mixin): Promise<boolean> {
   return false;
 }
 
-export async function applyMixinSuppression(_mixin: Mixin): Promise<boolean> {
+export async function applyMixinSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _mixin: Mixin): Promise<boolean> {
   return true;
 }
 
-export async function ignoreRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+export async function ignoreRelationshipClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _relationship: RelationshipClass): Promise<boolean> {
   return false;
 }
 
-export async function applyRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+export async function applyRelationshipClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _relationship: RelationshipClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+export async function ignoreRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
   return false;
 }
 
-export async function applyRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+export async function applyRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function ignoreCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function applyCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+export async function ignoreCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+export async function applyCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function ignoreCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function applyCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
   return true;
 }
 
-export async function ignoreEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+export async function ignoreEnumerationSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _enumeration: Enumeration): Promise<boolean> {
   return false;
 }
 
-export async function applyEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+export async function applyEnumerationSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _enumeration: Enumeration): Promise<boolean> {
   return true;
 }
 
-export async function ignoreKindofQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+export async function ignoreKindofQuantitySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _kindOfQuantity: KindOfQuantity): Promise<boolean> {
   return false;
 }
 
-export async function applyKindOfQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+export async function applyKindOfQuantitySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _kindOfQuantity: KindOfQuantity): Promise<boolean> {
   return true;
 }
 
-export async function ignorePropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+export async function ignorePropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
   return false;
 }
 
-export async function applyPropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+export async function applyPropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
   return true;
 }
 
-export async function ignoreFormatSuppression(_format: Format): Promise<boolean> {
+export async function ignoreFormatSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _format: Format): Promise<boolean> {
   return false;
 }
 
-export async function applyFormatSuppression(_format: Format): Promise<boolean> {
+export async function applyFormatSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _format: Format): Promise<boolean> {
   return true;
 }
 
-export async function ignoreUnitSuppression(_unit: Unit): Promise<boolean> {
+export async function ignoreUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unit: Unit): Promise<boolean> {
   return false;
 }
 
-export async function applyUnitSuppression(_unit: Unit): Promise<boolean> {
+export async function applyUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unit: Unit): Promise<boolean> {
   return true;
 }
 
-export async function ignoreInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+export async function ignoreInvertedUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _invertedUnit: InvertedUnit): Promise<boolean> {
   return false;
 }
 
-export async function applyInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+export async function applyInvertedUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _invertedUnit: InvertedUnit): Promise<boolean> {
   return true;
 }
 
-export async function ignoreUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+export async function ignoreUnitSystemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unitSystem: UnitSystem): Promise<boolean> {
   return false;
 }
 
-export async function applyUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+export async function applyUnitSystemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unitSystem: UnitSystem): Promise<boolean> {
   return true;
 }
 
-export async function ignorePhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+export async function ignorePhenomenonSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _phenomenon: Phenomenon): Promise<boolean> {
   return false;
 }
 
-export async function applyPhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+export async function applyPhenomenonSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _phenomenon: Phenomenon): Promise<boolean> {
   return true;
 }
 
-export async function ignoreConstantSuppression(_constant: Constant): Promise<boolean> {
+export async function ignoreConstantSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constant: Constant): Promise<boolean> {
   return false;
 }
 
-export async function applyConstantSuppression(_constant: Constant): Promise<boolean> {
+export async function applyConstantSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constant: Constant): Promise<boolean> {
   return true;
 }
 
