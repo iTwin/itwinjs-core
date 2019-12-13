@@ -1207,6 +1207,9 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
+// @alpha
+export const defaultOidcDesktopClientExpiryBuffer: number;
+
 // @public
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
@@ -3283,6 +3286,16 @@ export class OctEncodedNormalPair {
     first: OctEncodedNormal;
     // (undocumented)
     second: OctEncodedNormal;
+}
+
+// @alpha
+export interface OidcDesktopClientConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    postSigninErrorUri?: string;
+    postSigninSuccessUri?: string;
+    redirectUri: string;
+    scope: string;
 }
 
 // @internal

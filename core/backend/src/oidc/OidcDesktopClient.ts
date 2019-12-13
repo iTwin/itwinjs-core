@@ -5,28 +5,29 @@
 /** @module Authentication */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, OidcClient, IOidcFrontendClient, OidcFrontendClientConfiguration, request, RequestOptions } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, OidcClient, IOidcFrontendClient, request, RequestOptions } from "@bentley/imodeljs-clients";
+import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
 import {
-  GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, DefaultCrypto,
+  GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,
   AuthorizationNotifier, AuthorizationServiceConfiguration, BaseTokenRequestHandler, TokenRequestHandler,
   AuthorizationRequestJson, AuthorizationRequest, AuthorizationResponse, AuthorizationError,
   TokenRequestJson, TokenRequest, TokenResponse, RevokeTokenRequestJson, RevokeTokenRequest,
 } from "@openid/appauth";
-import { NodeRequestor } from "@openid/appauth/built/node_support";
+import { NodeRequestor, NodeCrypto } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
 import { ElectronTokenStore } from "./ElectronTokenStore";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
-const loggerCategory = ClientsBackendLoggerCategory.OidcDesktopClient;
+const loggerCategory = BackendLoggerCategory.Authorization;
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
 export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
-  private _clientConfiguration: OidcFrontendClientConfiguration;
+  private _clientConfiguration: OidcDesktopClientConfiguration;
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _requestContext?: ClientRequestContext;
@@ -36,7 +37,7 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
-  public constructor(clientConfiguration: OidcFrontendClientConfiguration) {
+  public constructor(clientConfiguration: OidcDesktopClientConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
     this._tokenStore = new ElectronTokenStore(this._clientConfiguration.clientId);
@@ -107,7 +108,7 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
       extras: { prompt: "consent", access_type: "offline" },
     };
 
-    const authRequest = new AuthorizationRequest(authReqJson, new DefaultCrypto(), true /* = usePkce */);
+    const authRequest = new AuthorizationRequest(authReqJson, new NodeCrypto(), true /* = usePkce */);
 
     this._requestContext = requestContext;
     await authorizationHandler.performAuthorizationRequest(this._configuration, authRequest);
@@ -167,6 +168,10 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
+  private isValidToken(tokenResponse: TokenResponse): boolean {
+    return tokenResponse.isValid(this._clientConfiguration.expiryBuffer || defaultOidcDesktopClientExpiryBuffer);
+  }
+
   private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {
     requestContext.enter();
 
@@ -181,6 +186,7 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user.
    * The token is refreshed as necessary.
+   * @note The token is ensured to be valid *atleast* for the buffer of time specified by the configuration.
    * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
@@ -191,29 +197,32 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
     // Refresh token if necessary
-    if (!this._tokenResponse.isValid()) {
+    if (!this.isValidToken(this._tokenResponse)) {
       await this.refreshAccessToken(requestContext || new ClientRequestContext(), this._tokenResponse.refreshToken);
     }
 
-    assert(this._tokenResponse.isValid() && !!this._accessToken);
+    assert(this.isValidToken(this._tokenResponse) && !!this._accessToken);
     return this._accessToken!;
   }
 
   /**
-   * Set to true if there's a current authorized user. i.e., the user has signed in,
-   * and the access token has not expired.
+   * Set to true if there's a current authorized user. i.e., the user has signed in, and the access token has not expired.
+   * @note Returns true only if the current time is within the configuration specified buffer of time short of the actual expiry.
    */
   public get isAuthorized(): boolean {
-    if (!!this._tokenResponse && this._tokenResponse.isValid()) {
+    if (!!this._tokenResponse && this.isValidToken(this._tokenResponse)) {
       assert(!!this._accessToken);
       return true;
     }
     return false;
   }
 
-  /** Set to true if the user has signed in, but the token has expired and requires a refresh */
+  /**
+   * Set to true if the user has signed in, but the token has expired and requires a refresh
+   * @note Returns true if the current time is beyond or within the configuration specified buffer of time short of the actual expiry.
+   */
   public get hasExpired(): boolean {
-    return !!this._tokenResponse && !this._tokenResponse.isValid();
+    return !!this._tokenResponse && !this.isValidToken(this._tokenResponse);
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

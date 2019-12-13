@@ -68,6 +68,7 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
+import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { Omit } from '@bentley/ui-core';
 import { OnCancelFunc } from '@bentley/ui-abstract';
@@ -4957,9 +4958,9 @@ export class UiFramework {
     static readonly i18nNamespace: string;
     // @internal (undocumented)
     static readonly iModelServices: IModelServices;
-    static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any>;
+    static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string): Promise<any>;
     // @internal
-    static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
     // @beta (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)

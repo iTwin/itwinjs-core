@@ -5,7 +5,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
-import { KeyChainStoreMain } from "./KeyChainStoreMain";
+import { OidcDesktopClientMain } from "./OidcDesktopClientMain";
 
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
@@ -120,10 +120,10 @@ export class IModelJsElectronManager extends StandardElectronManager {
     // Also handle any "electron://" requests and redirect them to "file://" URLs
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
 
-    // Setup handlers for IPC calls to support key chain
-    KeyChainStoreMain.initialize();
-
     await super.initialize(windowOptions);
+
+    // Setup handlers for IPC calls to support Authorization
+    OidcDesktopClientMain.initializeIpc(this.mainWindow!);
   }
 }
 

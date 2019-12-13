@@ -6,4 +6,3 @@ export * from "./OidcBackendClient";
 export * from "./OidcDelegationClient";
 export * from "./OidcAgentClient";
 export * from "./OidcAgentClientV1";
-export * from "./OidcDesktopClient";

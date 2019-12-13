@@ -1062,9 +1062,6 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
-// @internal
-export function requireInElectronRenderer(moduleName: string): any;
-
 // @beta
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,

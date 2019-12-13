@@ -8,8 +8,9 @@ import { Store } from "redux";
 
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { ClientRequestContext, isElectronRenderer, requireInElectronRenderer } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
+import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext, OidcDesktopClientRenderer } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -26,9 +27,6 @@ import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManage
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { StatusBarManager } from "./statusbar/StatusBarManager";
-
-const clientsBackend = requireInElectronRenderer("@bentley/imodeljs-clients-backend");
-const OidcDesktopClient = clientsBackend && clientsBackend.OidcDesktopClient; // tslint:disable-line:variable-name
 
 // cSpell:ignore Mobi
 
@@ -70,7 +68,7 @@ export class UiFramework {
    * @param oidcConfig Configuration for authenticating user.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
    */
-  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any> {
+  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string): Promise<any> {
     return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
   }
 
@@ -85,7 +83,7 @@ export class UiFramework {
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any> {
+  public static async initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any> {
     UiFramework._store = store;
     UiFramework._i18n = i18n;
     if (frameworkStateKey)
@@ -101,7 +99,7 @@ export class UiFramework {
 
     // istanbul ignore next
     if (oidcConfig) {
-      const oidcClient = isElectronRenderer ? new OidcDesktopClient(oidcConfig) : new OidcBrowserClient(oidcConfig);
+      const oidcClient = isElectronRenderer ? new OidcDesktopClientRenderer(oidcConfig as OidcDesktopClientConfiguration) : new OidcBrowserClient(oidcConfig as OidcFrontendClientConfiguration);
       UiFramework.oidcClient = oidcClient;
       const initOidcPromise = oidcClient.initialize(new ClientRequestContext());
       return Promise.all([readFinishedPromise, initOidcPromise]);

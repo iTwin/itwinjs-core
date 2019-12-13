@@ -571,6 +571,10 @@
       "allowedCategories": [ "common", "frontend" ]
     },
     {
+      "name": "open",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "openid-client",
       "allowedCategories": [ "backend", "tools" ]
     },

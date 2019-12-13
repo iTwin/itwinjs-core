@@ -180,7 +180,8 @@ beta;SchemaKey
 beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
-alpha;SchemaReferenceChange 
+alpha;SchemaReferenceDelta 
+alpha;SchemaReferenceMissing 
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
 internal;SchemaXmlFileLocater 

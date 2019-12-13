@@ -4,33 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
 
-import { electronRenderer, Logger } from "@bentley/bentleyjs-core";
-import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Logger } from "@bentley/bentleyjs-core";
 import {
   AuthorizationRequestResponse, AuthorizationError, AuthorizationResponse, AuthorizationRequestHandler, AuthorizationServiceConfiguration, AuthorizationRequest,
   BasicQueryStringUtils, DefaultCrypto, AuthorizationErrorJson, AuthorizationResponseJson,
 } from "@openid/appauth";
 import * as Http from "http";
 import * as Url from "url";
+import * as open from "open";
+import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
-const loggerCategory = ClientsBackendLoggerCategory.OidcDesktopClient;
+const loggerCategory = BackendLoggerCategory.Authorization;
 
 /**
  * Utility to setup a local web server that listens to authorization responses to the browser and make the necessary redirections
  * @internal
  */
 export class ElectronAuthorizationRequestHandler extends AuthorizationRequestHandler {
-  private _clientConfiguration: OidcFrontendClientConfiguration;
+  private _clientConfiguration: OidcDesktopClientConfiguration;
   private _httpServer?: Http.Server;
-  private _authorizationPromise: Promise<AuthorizationRequestResponse> | null;
+  private _authorizationPromise: Promise<AuthorizationRequestResponse> | null = null;
 
   /**
    * Constructor
    * @param clientConfiguration
    */
-  public constructor(clientConfiguration: OidcFrontendClientConfiguration) {
+  public constructor(clientConfiguration: OidcDesktopClientConfiguration) {
     super(new BasicQueryStringUtils(), new DefaultCrypto());
     this._clientConfiguration = clientConfiguration;
   }
@@ -66,7 +67,7 @@ export class ElectronAuthorizationRequestHandler extends AuthorizationRequestHan
 
     // Compose the request and invoke in the browser
     const authUrl = this.buildRequestUrl(serviceConfiguration, authRequest);
-    electronRenderer.shell.openItem(authUrl);
+    await open(authUrl);
   }
 
   /**

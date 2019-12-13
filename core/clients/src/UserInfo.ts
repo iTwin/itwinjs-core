@@ -26,6 +26,7 @@ export class UserInfo {
     public featureTracking?: { ultimateSite: string, usageCountryIso: string },
   ) { }
 
+  /** Creates UserInfo from JSON obtained from typical Oidc clients */
   public static fromJson(jsonObj: any): UserInfo | undefined {
     if (!jsonObj)
       return undefined;

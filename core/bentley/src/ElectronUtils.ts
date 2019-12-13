@@ -20,7 +20,7 @@ export const isElectronRenderer = isElectronRendererFn();
  * @param moduleName
  * @internal
  */
-export function requireInElectronRenderer(moduleName: string) {
+function requireInElectronRenderer(moduleName: string) {
   if (!isElectronRenderer)
     return undefined;
 

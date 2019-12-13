@@ -84,9 +84,7 @@
     "js-base64": "^2.4.5",
     "fs-write-stream-atomic": "^1.0.10",
     "semver": "^5.5.0",
-    "jsonwebtoken": "^8.5.0",
-    "@openid/appauth": "^1.2.6",
-    "username": "^5.1.0"
+    "jsonwebtoken": "^8.5.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

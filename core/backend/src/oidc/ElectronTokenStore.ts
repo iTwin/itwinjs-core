@@ -6,7 +6,7 @@
 
 import { TokenResponse, TokenResponseJson } from "@openid/appauth";
 import * as OperatingSystemUserName from "username";
-import { KeyChainStoreRenderer as KeyChainStore } from "./KeyChainStoreRenderer";
+import { IModelHost } from "../IModelHost";
 
 /**
  * Utility to store OIDC AppAuth in secure storage
@@ -14,6 +14,8 @@ import { KeyChainStoreRenderer as KeyChainStore } from "./KeyChainStoreRenderer"
  */
 export class ElectronTokenStore {
   private _appStorageKey: string;
+  private readonly _keyChainStore = IModelHost.platform.KeyTar;
+
   public constructor(clientId: string) {
     this._appStorageKey = `Bentley.iModelJs.OidcTokenStore.${clientId}`;
   }
@@ -31,7 +33,7 @@ export class ElectronTokenStore {
     if (!userName)
       return;
 
-    const tokenResponseStr = await KeyChainStore.getPassword(this._appStorageKey, userName);
+    const tokenResponseStr = await this._keyChainStore.getPassword(this._appStorageKey, userName);
     if (!tokenResponseStr) {
       return undefined;
     }
@@ -51,7 +53,7 @@ export class ElectronTokenStore {
     tokenResponseObj.idToken = "";
 
     const tokenResponseStr = JSON.stringify(tokenResponseObj.toJson());
-    await KeyChainStore.setPassword(this._appStorageKey, userName, tokenResponseStr);
+    await this._keyChainStore.setPassword(this._appStorageKey, userName, tokenResponseStr);
   }
 
   /** Delete token after signout */
@@ -60,6 +62,6 @@ export class ElectronTokenStore {
     if (!userName)
       return;
 
-    await KeyChainStore.deletePassword(this._appStorageKey, userName);
+    await this._keyChainStore.deletePassword(this._appStorageKey, userName);
   }
 }

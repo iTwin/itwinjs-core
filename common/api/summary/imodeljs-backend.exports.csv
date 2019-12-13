@@ -217,6 +217,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+alpha;OidcDesktopClient 
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 

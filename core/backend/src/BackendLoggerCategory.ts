@@ -10,6 +10,9 @@
  * @public
  */
 export enum BackendLoggerCategory {
+  /** The logger category used by API related to authorization */
+  Authorization = "imodeljs-backend.Authorization",
+
   /** The logger category used by the following classes:
    * - [[CodeSpecs]]
    */

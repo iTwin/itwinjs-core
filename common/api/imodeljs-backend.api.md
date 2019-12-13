@@ -89,6 +89,7 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
+import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
@@ -106,6 +107,8 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
+import { OidcClient } from '@bentley/imodeljs-clients';
+import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { Placement2d } from '@bentley/imodeljs-common';
@@ -310,6 +313,7 @@ export class BackendActivityMonitor implements AppActivityMonitor {
 
 // @public
 export enum BackendLoggerCategory {
+    Authorization = "imodeljs-backend.Authorization",
     CodeSpecs = "imodeljs-backend.CodeSpecs",
     ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
     // @internal
@@ -2935,6 +2939,20 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
 }
+
+// @alpha
+export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
+    constructor(clientConfiguration: OidcDesktopClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    readonly hasExpired: boolean;
+    readonly hasSignedIn: boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    readonly isAuthorized: boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+    }
 
 // @public
 export class OpenParams {

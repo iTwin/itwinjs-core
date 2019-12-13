@@ -18,9 +18,14 @@ export enum FrontendLoggerCategory {
   /** The logger category used by the [[IModelConnection]] class and other related classes. */
   IModelConnection = "imodeljs-frontend.IModelConnection",
 
-  /** The logger category used by OIDC-related functions in the browser. */
+  /** The logger category used by OIDC-related functions in the browser.
+   * @deprecated
+   */
   OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
 
   /** The logger category used by OIDC-related functions on iOS. */
   OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
+
+  /** The logger category used for general authorization purposes */
+  Authorization = "imodeljs-frontend.Authorization",
 }

@@ -13,5 +13,5 @@ export enum ElectronManagerLoggerCategory {
   /** The logger category used by the following classes:
    * - [[KeyChainStore]]
    */
-  Authentication = "electron-manager.Authentication",
+  Authorization = "electron-manager.Authorization",
 }

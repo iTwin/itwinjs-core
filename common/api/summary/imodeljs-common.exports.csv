@@ -60,6 +60,7 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 beta;CustomAttribute
 beta;DecorationGeometryProps
+alpha;defaultOidcDesktopClientExpiryBuffer: number
 public;DefinitionElementProps 
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
@@ -221,6 +222,7 @@ public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
 internal;OctEncodedNormal
 internal;OctEncodedNormalPair
+alpha;OidcDesktopClientConfiguration
 internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding

@@ -42,7 +42,7 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
 }
 
 /**
- * Client configuration to generate OIDC/OAuth tokens for browser, desktop and mobile applications
+ * Client configuration to generate OIDC/OAuth tokens for browser applications
  * @beta
  */
 export interface OidcFrontendClientConfiguration {
@@ -50,7 +50,6 @@ export interface OidcFrontendClientConfiguration {
   clientId: string;
   /**
    * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
-   * For mobile/desktop applications, must be `http://127.0.0.1:${redirectPort}`
    */
   redirectUri: string;
   /** List of space separated scopes to request access to various resources. */
@@ -90,18 +89,4 @@ export interface OidcFrontendClientConfiguration {
    * @internal
    */
   clockSkew?: number;
-  /**
-   * After sucessfully signing in with desktop applications, the browser is redirected to this URI.
-   * Typically includes a message to close the browser window, and use the desktop application.
-   * @note Only relevant for electron/desktop applications
-   * @internal
-   */
-  postSigninSuccessUri?: string;
-
-  /**
-   * If there's an error signing in with desktop applications, the browser is redirected to thsi URI.
-   * @note Only relevant for electron/desktop applications
-   * @internal
-   */
-  postSigninErrorUri?: string;
 }

@@ -117,6 +117,7 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcClient } from '@bentley/imodeljs-clients';
+import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { ParseResult } from '@bentley/imodeljs-quantity';
@@ -2816,8 +2817,10 @@ export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d)
 
 // @public
 export enum FrontendLoggerCategory {
+    Authorization = "imodeljs-frontend.Authorization",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
+    // @deprecated
     OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
     OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
     // (undocumented)
@@ -4831,6 +4834,20 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 // @internal
 export class OidcBrowserSamlClient extends OidcBrowserClient {
     getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+}
+
+// @alpha
+export class OidcDesktopClientRenderer implements IOidcFrontendClient {
+    constructor(clientConfiguration: OidcDesktopClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    readonly hasExpired: boolean;
+    readonly hasSignedIn: boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    readonly isAuthorized: boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
 // @internal

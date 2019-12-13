@@ -71,6 +71,7 @@ export * from "./render/DevicePixelRatio";
 export * from "./render/webgl/Target";
 export * from "./RenderCompatibility";
 export * from "./oidc/OidcBrowserClient";
+export * from "./oidc/OidcDesktopClientRenderer";
 export * from "./TerrainProvider";
 export * from "./properties/Description";
 export * from "./properties/EditorParams";

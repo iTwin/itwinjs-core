@@ -47,6 +47,7 @@ export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
+export * from "./oidc/OidcDesktopClient";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -136,4 +137,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description AliCloudStorageService
  * Classes for working with cloud storage using AliCloud.
+ */
+/**
+ * @docs-group-description Authentication
+ * Classes for working with Authentication.
  */

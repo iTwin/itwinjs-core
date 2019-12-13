@@ -10,7 +10,7 @@ import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@ben
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
-  BentleyCloudRpcManager,
+  BentleyCloudRpcManager, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
@@ -216,21 +216,20 @@ export class SampleAppIModelApp {
     await MarkupApp.initialize();
   }
 
-  private static getOidcConfiguration(): OidcFrontendClientConfiguration {
-    let oidcConfiguration: OidcFrontendClientConfiguration;
+  private static getOidcConfiguration(): OidcFrontendClientConfiguration | OidcDesktopClientConfiguration {
     const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
     if (isElectronRenderer) {
       const clientId = "imodeljs-electron-test";
       const redirectUri = "http://localhost:3000/signin-callback";
-      const postSignoutRedirectUri = "http://localhost:3000/";
-      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " offline_access", responseType: "code" };
+      const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+      return oidcConfiguration;
     } else {
       const clientId = "imodeljs-spa-test";
       const redirectUri = "http://localhost:3000/signin-callback";
       const postSignoutRedirectUri = "http://localhost:3000/";
-      oidcConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+      const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+      return oidcConfiguration;
     }
-    return oidcConfiguration;
   }
 
   // cSpell:enable

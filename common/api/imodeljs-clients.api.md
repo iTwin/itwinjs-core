@@ -1261,10 +1261,6 @@ export interface OidcFrontendClientConfiguration {
     clockSkew?: number;
     // @internal
     metadata?: any;
-    // @internal
-    postSigninErrorUri?: string;
-    // @internal
-    postSigninSuccessUri?: string;
     postSignoutRedirectUri?: string;
     redirectUri: string;
     // @internal
@@ -1947,7 +1943,6 @@ export class UserInfo {
         ultimateSite: string;
         usageCountryIso: string;
     } | undefined;
-    // (undocumented)
     static fromJson(jsonObj: any): UserInfo | undefined;
     id: string;
     organization?: {
