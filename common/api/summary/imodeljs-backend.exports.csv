@@ -160,22 +160,21 @@ beta;ILinearElementProvidedBySource
 beta;ILinearLocationLocatesElement 
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
-alpha;IModelCloneContext
+beta;IModelCloneContext
 public;IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
-alpha;IModelExporter
-alpha;class IModelExportHandler
-alpha;IModelExportOptions
+beta;IModelExporter
+beta;class IModelExportHandler
 public;IModelHost
 public;IModelHostConfiguration
-alpha;IModelImporter
-alpha;IModelImportOptions
+beta;IModelImporter
+beta;IModelImportOptions
 public;IModelJsFs
 public;IModelJsFsStats
-alpha;IModelTransformer 
-alpha;IModelTransformOptions
+beta;IModelTransformer 
+beta;IModelTransformOptions
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 

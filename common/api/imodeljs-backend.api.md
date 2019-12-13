@@ -321,14 +321,14 @@ export enum BackendLoggerCategory {
     ECDb = "imodeljs-backend.ECDb",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
-    // @alpha
+    // @beta
     IModelExporter = "imodeljs-backend.IModelExporter",
     IModelHost = "imodeljs-backend.IModelHost",
-    // @alpha
+    // @beta
     IModelImporter = "imodeljs-backend.IModelImporter",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     IModelTileUpload = "imodeljs-backend.IModelTileUpload",
-    // @alpha
+    // @beta
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
@@ -1926,7 +1926,7 @@ export class ILinearlyLocatedAttributesElement extends RelatedElement {
     static classFullName: string;
 }
 
-// @alpha
+// @beta
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
@@ -2138,9 +2138,9 @@ export namespace IModelDb {
     }
 }
 
-// @alpha
+// @beta
 export class IModelExporter {
-    constructor(sourceDb: IModelDb, options?: IModelExportOptions);
+    constructor(sourceDb: IModelDb);
     excludeCodeSpec(codeSpecName: string): void;
     excludeElement(elementId: Id64String): void;
     excludeElementAspectClass(classFullName: string): void;
@@ -2148,7 +2148,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): void;
-    exportChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
     exportChildElements(elementId: Id64String): void;
     exportCodeSpecById(codeSpecId: Id64String): void;
     exportCodeSpecByName(codeSpecName: string): void;
@@ -2166,7 +2166,7 @@ export class IModelExporter {
     readonly sourceDb: IModelDb;
     }
 
-// @alpha
+// @beta
 export abstract class IModelExportHandler {
     // @internal
     readonly callProtected: any;
@@ -2184,10 +2184,6 @@ export abstract class IModelExportHandler {
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
     protected shouldExportRelationship(_relationship: Relationship): boolean;
-}
-
-// @alpha
-export interface IModelExportOptions {
 }
 
 // @public
@@ -2260,7 +2256,7 @@ export class IModelHostConfiguration {
     tileTreeRequestTimeout: number;
 }
 
-// @alpha
+// @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     readonly autoExtendProjectExtents: boolean;
@@ -2285,7 +2281,7 @@ export class IModelImporter {
     readonly targetDb: IModelDb;
 }
 
-// @alpha
+// @beta
 export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean;
 }
@@ -2328,10 +2324,11 @@ export class IModelJsFsStats {
     size: number;
 }
 
-// @alpha
+// @beta
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
+    protected _deferredElementIds: Set<string>;
     detectElementDeletes(): void;
     detectRelationshipDeletes(): void;
     dispose(): void;
@@ -2354,30 +2351,29 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): void;
-    processChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
     processChildElements(sourceElementId: Id64String): void;
     processCodeSpec(codeSpecName: string): void;
     processCodeSpecs(): void;
+    processDeferredElements(numRetries?: number): void;
     processElement(sourceElementId: Id64String): void;
     processFonts(): void;
     processModel(sourceModeledElementId: Id64String): void;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
     processRelationships(baseRelClassFullName: string): void;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    processSkippedElements(numRetries?: number): void;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
-    protected _skippedElementIds: Set<string>;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     readonly targetScopeElementId: Id64String;
 }
 
-// @alpha
+// @beta
 export interface IModelTransformOptions {
     targetScopeElementId?: Id64String;
 }

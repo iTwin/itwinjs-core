@@ -58,17 +58,17 @@ export enum BackendLoggerCategory {
   IModelHost = "imodeljs-backend.IModelHost",
 
   /** The logger category used by the [IModelExporter]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelExporter = "imodeljs-backend.IModelExporter",
 
   /** The logger category used by the [IModelImporter]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelImporter = "imodeljs-backend.IModelImporter",
 
   /** The logger category used by the [IModelTransformer]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelTransformer = "imodeljs-backend.IModelTransformer",
 

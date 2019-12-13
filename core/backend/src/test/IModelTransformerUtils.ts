@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
@@ -12,9 +13,9 @@ import {
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuthorizedBackendRequestContext, AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector,
-  DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
   Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
@@ -1182,7 +1183,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this._shouldIndent = true;
     this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AuthorizedBackendRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     this._shouldIndent = false;
     return this.exporter.exportChanges(requestContext, startChangeSetId);
   }

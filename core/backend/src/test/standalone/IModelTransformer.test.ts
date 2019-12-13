@@ -376,7 +376,7 @@ describe("IModelTransformer", () => {
       transformerS2C.processModel(definitionB);
       transformerS2C.processModel(physicalA);
       transformerS2C.processModel(physicalB);
-      transformerS2C.processSkippedElements();
+      transformerS2C.processDeferredElements();
       transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
