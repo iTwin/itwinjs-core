@@ -760,7 +760,7 @@
     },
     {
       "name": "spdy",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "ssri",
