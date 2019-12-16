@@ -88,6 +88,7 @@ import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
+import { GLTimerResultCallback } from "./../System";
 import { WebGlDisposable } from "./Disposable";
 import { cssPixelsToDevicePixels, queryDevicePixelRatio } from "../DevicePixelRatio";
 
@@ -183,9 +184,19 @@ export class Clips {
   }
 }
 
+interface AllTimePoints {
+  begin: BeTimePoint;
+  end: BeTimePoint;
+  name: string;
+}
+
 /** @internal */
 export class PerformanceMetrics {
-  private _lastTimePoint = BeTimePoint.now();
+  private _beginTimePoints: BeTimePoint[] = []; // stack of time points
+  private _operationNames: string[] = []; // stack of operation names
+  private _allTimePoints1: AllTimePoints[] = []; // queue 1 of data needed to make frameTimings; use 2 copies for double buffering
+  private _allTimePoints2: AllTimePoints[] = []; // queue 2 of data needed to make frameTimings; use 2 copies for double buffering
+  private _updateallTimePoints1 = true; // determine which buffer to use for the frame timings; used for double buffering the frame timings
   public frameTimings = new Map<string, number>();
   public gatherGlFinish = false;
   public gatherCurPerformanceMetrics = false;
@@ -199,38 +210,55 @@ export class PerformanceMetrics {
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
 
-  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false) {
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
+    if (gpuResults) System.instance.debugControl.resultsCallback = gpuResults;
   }
 
-  public startNewFrame(sceneTime: number = 0) {
+  public beginFrame(sceneTime: number = 0) {
+    this._beginTimePoints = [];
+    this._operationNames = [];
     this.frameTimings = new Map<string, number>();
     this.frameTimings.set("Scene Time", sceneTime);
-    this._lastTimePoint = BeTimePoint.now();
+    this._operationNames.push("Total Time");
+    this._operationNames.push("CPU Total Time");
+    const now = BeTimePoint.now();
+    this._beginTimePoints.push(now); // this first time point used to calculate total time at the end
+    this._beginTimePoints.push(now); // this second time point used to calculate total cpu time at the end
   }
 
-  public recordTime(operationName: string) {
-    const newTimePoint = BeTimePoint.now();
-    this.frameTimings.set(operationName, (newTimePoint.milliseconds - this._lastTimePoint.milliseconds));
-    this._lastTimePoint = BeTimePoint.now();
+  public beginOperation(operationName: string) {
+    this._operationNames.push(operationName);
+    this._beginTimePoints.push(BeTimePoint.now());
   }
 
-  public endFrame(operationName?: string) {
-    const newTimePoint = BeTimePoint.now();
-    let sum = 0;
-    let prevGPUTime = 0;
-    this.frameTimings.forEach((value, key) => {
-      if (key === "Finish GPU Queue")
-        prevGPUTime = value;
+  public endOperation() {
+    const endTimePoint = BeTimePoint.now();
+    const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
+    const operationName = this._operationNames.pop();
+    if (operationName) { // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
+      if (this._updateallTimePoints1) // Push to currently active allTimePoints buffer
+        this._allTimePoints1.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
       else
-        sum += value;
-    });
-    this.frameTimings.set("Total Render Time", sum);
-    const lastTiming = (newTimePoint.milliseconds - this._lastTimePoint.milliseconds);
-    this.frameTimings.set(operationName ? operationName : "Finish GPU Queue", lastTiming);
-    this.frameTimings.set("Total Time", sum + prevGPUTime + lastTiming);
-    this._lastTimePoint = BeTimePoint.now();
+        this._allTimePoints2.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
+    }
+  }
+
+  public endFrame() {
+    this.endOperation();
+
+    // Use double buffering here to ensure that we grab a COMPLETE set of timings from a SINGLE run when grabbing timing data while continuously rendering
+    this._updateallTimePoints1 = !this._updateallTimePoints1; // Switch to other allTimePoints buffer
+    if (this._updateallTimePoints1) { // Get data from the old buffer that was just completed
+      this._allTimePoints2.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
+      this._allTimePoints2 = []; // Reset to empty
+    } else {
+      this._allTimePoints1.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
+      this._allTimePoints1 = []; // Reset to empty
+    }
+    this._beginTimePoints = []; // This should be back to [] at this point
+    this._operationNames = []; // This should be back to [] at this point
   }
 }
 
@@ -929,88 +957,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
-  public recordPerformanceMetric(operation: string): void {
+  public beginPerfMetricFrame(sceneMilSecElapsed?: number) {
+    if (System.instance.isGLTimerSupported)
+      System.instance.glTimer.beginFrame();
     if (this.performanceMetrics)
-      this.performanceMetrics.recordTime(operation);
+      this.performanceMetrics.beginFrame(sceneMilSecElapsed);
   }
 
-  private paintScene(sceneMilSecElapsed?: number): void {
-    if (!this._dcAssigned) {
-      return;
-    }
-
-    const glTimer = System.instance.glTimer;
-    glTimer.beginFrame();
-    if (this.performanceMetrics) this.performanceMetrics.startNewFrame(sceneMilSecElapsed);
-    this._beginPaint();
-
-    const gl = System.instance.context;
-    const rect = this.viewRect;
-    gl.viewport(0, 0, rect.width, rect.height);
-
-    // Set this to true to visualize the output of readPixels()...useful for debugging pick.
-    if (this.drawForReadPixels) {
-      this._isReadPixelsInProgress = true;
-      this._readPixelsSelector = Pixel.Selector.Feature;
-
-      this.recordPerformanceMetric("Begin Paint");
-      const vf = this.getViewFlagsForReadPixels();
-      const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
-      this.pushState(state);
-
-      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
-      this.recordPerformanceMetric("Init Commands");
-      this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
-      this._stack.pop();
-
-      this._isReadPixelsInProgress = false;
-    } else {
-      // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
-      // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
-      // SceneCompositor.draw() checks this, but solar shadow maps, planar classifiers, and texture drapes try to draw
-      // before then. So do it now.
-      this.compositor.preDraw();
-
-      this.recordPerformanceMetric("Begin Draw Planar Classifiers");
-      glTimer.beginOperation("Planar Classifiers");
-      this.drawPlanarClassifiers();
-      glTimer.endOperation();
-      this.recordPerformanceMetric("Begin Draw Shadow Maps");
-      glTimer.beginOperation("Shadow Maps");
-      this.drawSolarShadowMap();
-      glTimer.endOperation();
-      this.recordPerformanceMetric("Begin Draw Texture Drapes");
-      glTimer.beginOperation("Texture Drapes");
-      this.drawTextureDrapes();
-      glTimer.endOperation();
-      this.recordPerformanceMetric("Begin Paint");
-      glTimer.beginOperation("Init Commands");
-      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
-      glTimer.endOperation();
-
-      this.recordPerformanceMetric("Init Commands");
-      this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
-
-      this._stack.pushState(this.decorationState);
-      glTimer.beginOperation("World Overlays");
-      this.drawPass(RenderPass.WorldOverlay);
-      glTimer.endOperation();
-      glTimer.beginOperation("View Overlays");
-      this.drawPass(RenderPass.ViewOverlay);
-      glTimer.endOperation();
-      this._stack.pop();
-
-      this.recordPerformanceMetric("Overlay Draws");
-    }
-
-    // Reset the batch IDs in all batches drawn for this call.
-    this._batchState.reset();
-
-    this._endPaint();
-    this.recordPerformanceMetric("End Paint");
-    glTimer.endFrame();
+  public endPerfMetricFrame(sceneMilSecElapsed?: number) {
+    if (System.instance.isGLTimerSupported)
+      System.instance.glTimer.endFrame();
 
     if (this.performanceMetrics) {
+      this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {
         const perfMet = this.performanceMetrics;
         const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
@@ -1035,15 +994,110 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
         perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
       }
-      if (this.performanceMetrics.gatherGlFinish) {
+      if (this.performanceMetrics.gatherGlFinish && !System.instance.isGLTimerSupported) {
+        this.performanceMetrics.beginOperation("Finish GPU Queue");
         // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
         const bytes = new Uint8Array(4);
+        const gl = System.instance.context;
         System.instance.frameBufferStack.execute(this._fbo!, true, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
-        if (this.performanceMetrics) this.performanceMetrics.endFrame("Finish GPU Queue");
+        this.performanceMetrics.endOperation();
       }
+      this.performanceMetrics.endFrame();
     }
+  }
+
+  public beginPerfMetricRecord(operation: string): void {
+    if (System.instance.isGLTimerSupported)
+      System.instance.glTimer.beginOperation(operation);
+    if (this.performanceMetrics)
+      this.performanceMetrics.beginOperation(operation);
+  }
+
+  public endPerfMetricRecord(): void {
+    if (System.instance.isGLTimerSupported)
+      System.instance.glTimer.endOperation();
+    if (this.performanceMetrics)
+      this.performanceMetrics.endOperation();
+  }
+
+  private paintScene(sceneMilSecElapsed?: number): void {
+    if (!this._dcAssigned) {
+      return;
+    }
+
+    this.beginPerfMetricFrame(sceneMilSecElapsed);
+    this.beginPerfMetricRecord("Begin Paint");
+    this._beginPaint();
+    this.endPerfMetricRecord();
+
+    const gl = System.instance.context;
+    const rect = this.viewRect;
+    gl.viewport(0, 0, rect.width, rect.height);
+
+    // Set this to true to visualize the output of readPixels()...useful for debugging pick.
+    if (this.drawForReadPixels) {
+      this._isReadPixelsInProgress = true;
+      this._readPixelsSelector = Pixel.Selector.Feature;
+
+      const vf = this.getViewFlagsForReadPixels();
+      const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+      this.pushState(state);
+
+      this.beginPerfMetricRecord("Init Commands");
+      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
+      this.endPerfMetricRecord();
+      this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
+      this._stack.pop();
+
+      this._isReadPixelsInProgress = false;
+    } else {
+      // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
+      // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
+      // SceneCompositor.draw() checks this, but solar shadow maps, planar classifiers, and texture drapes try to draw
+      // before then. So do it now.
+      this.compositor.preDraw();
+      this.beginPerfMetricRecord("Planar Classifiers");
+      this.drawPlanarClassifiers();
+      this.endPerfMetricRecord();
+
+      this.beginPerfMetricRecord("Shadow Maps");
+      this.drawSolarShadowMap();
+      this.endPerfMetricRecord();
+
+      this.beginPerfMetricRecord("Texture Drapes");
+      this.drawTextureDrapes();
+      this.endPerfMetricRecord();
+
+      this.beginPerfMetricRecord("Init Commands");
+      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
+      this.endPerfMetricRecord();
+
+      this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+
+      this.beginPerfMetricRecord("Overlay Draws");
+      this._stack.pushState(this.decorationState);
+
+      this.beginPerfMetricRecord("World Overlays");
+      this.drawPass(RenderPass.WorldOverlay);
+      this.endPerfMetricRecord();
+
+      this.beginPerfMetricRecord("View Overlays");
+      this.drawPass(RenderPass.ViewOverlay);
+      this.endPerfMetricRecord();
+      this._stack.pop();
+
+      this.endPerfMetricRecord(); // End "Overlay Draws"
+    }
+
+    // Reset the batch IDs in all batches drawn for this call.
+    this._batchState.reset();
+
+    this.beginPerfMetricRecord("End Paint");
+    this._endPaint();
+    this.endPerfMetricRecord();
+    this.endPerfMetricFrame(sceneMilSecElapsed);
   }
 
   private drawPass(pass: RenderPass): void {
@@ -1067,7 +1121,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
-    if (this.performanceMetrics) this.performanceMetrics.startNewFrame();
+    this.beginPerfMetricFrame();
 
     rect.left = cssPixelsToDevicePixels(rect.left);
     rect.right = cssPixelsToDevicePixels(rect.right);
@@ -1121,6 +1175,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    this.beginPerfMetricRecord("Init Commands");
     this._isReadPixelsInProgress = true;
     this._readPixelsSelector = selector;
 
@@ -1168,26 +1223,33 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
-    this.recordPerformanceMetric("Init Commands");
+    this.endPerfMetricRecord(); // End "Init Commands"
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
-
-    if (this.performanceMetrics && this.performanceMetrics.gatherGlFinish) {
-      // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
-      const gl = System.instance.context;
-      const bytes = new Uint8Array(4);
-      System.instance.frameBufferStack.execute(this._fbo!, true, () => {
-        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-      });
-      this.recordPerformanceMetric("Finish GPU Queue");
+    if (this.performanceMetrics) {
+      this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
+      if (this.performanceMetrics.gatherGlFinish && !System.instance.isGLTimerSupported) {
+        // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
+        this.performanceMetrics.beginOperation("Finish GPU Queue");
+        const gl = System.instance.context;
+        const bytes = new Uint8Array(4);
+        System.instance.frameBufferStack.execute(this._fbo!, true, () => {
+          gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+        });
+        this.performanceMetrics.endOperation();
+      }
     }
 
     // Restore the state
     this._stack.pop();
 
+    this.beginPerfMetricRecord("Read Pixels");
     const result = this.compositor.readPixels(rect, selector);
-    if (this.performanceMetrics) this.performanceMetrics.endFrame("Read Pixels");
+    this.endPerfMetricRecord();
+    if (System.instance.isGLTimerSupported)
+      System.instance.glTimer.endFrame();
+    if (this.performanceMetrics) this.performanceMetrics.endFrame();
     this._isReadPixelsInProgress = false;
     return result;
   }

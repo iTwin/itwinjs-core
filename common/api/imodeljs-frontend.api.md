@@ -5004,11 +5004,17 @@ export interface ParseResults {
 
 // @internal (undocumented)
 export class PerformanceMetrics {
-    constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean);
+    constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean, gpuResults?: GLTimerResultCallback);
+    // (undocumented)
+    beginFrame(sceneTime?: number): void;
+    // (undocumented)
+    beginOperation(operationName: string): void;
     // (undocumented)
     curSpfTimeIndex: number;
     // (undocumented)
-    endFrame(operationName?: string): void;
+    endFrame(): void;
+    // (undocumented)
+    endOperation(): void;
     // (undocumented)
     fpsTimer: StopWatch;
     // (undocumented)
@@ -5024,8 +5030,6 @@ export class PerformanceMetrics {
     // (undocumented)
     loadTileTimes: number[];
     // (undocumented)
-    recordTime(operationName: string): void;
-    // (undocumented)
     renderSpfSum: number;
     // (undocumented)
     renderSpfTimes: number[];
@@ -5033,9 +5037,7 @@ export class PerformanceMetrics {
     spfSum: number;
     // (undocumented)
     spfTimes: number[];
-    // (undocumented)
-    startNewFrame(sceneTime?: number): void;
-}
+    }
 
 // @beta
 export namespace PerModelCategoryVisibility {
@@ -7129,6 +7131,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _beginPaint(): void;
     // (undocumented)
+    beginPerfMetricFrame(sceneMilSecElapsed?: number): void;
+    // (undocumented)
+    beginPerfMetricRecord(operation: string): void;
+    // (undocumented)
     readonly bgColor: FloatRgba;
     // (undocumented)
     readonly branchStack: BranchStack;
@@ -7226,6 +7232,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     emphasisSettings: Hilite.Settings;
     // (undocumented)
     protected abstract _endPaint(): void;
+    // (undocumented)
+    endPerfMetricFrame(sceneMilSecElapsed?: number): void;
+    // (undocumented)
+    endPerfMetricRecord(): void;
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
@@ -7326,8 +7336,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
     // (undocumented)
     readonly readPixelsSelector: Pixel.Selector;
-    // (undocumented)
-    recordPerformanceMetric(operation: string): void;
     // (undocumented)
     readonly renderRect: ViewRect;
     // (undocumented)

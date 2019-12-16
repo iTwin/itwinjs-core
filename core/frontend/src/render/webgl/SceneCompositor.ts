@@ -595,40 +595,36 @@ abstract class Compositor extends SceneCompositor {
   /** This function generates a texture that contains ambient occlusion information to be applied later. */
   protected renderAmbientOcclusion() {
     const system = System.instance;
-    const glTimer = system.glTimer;
 
     // Render unblurred ambient occlusion based on depth buffer
     let fbo = this._frameBuffers.occlusion!;
-    glTimer.beginOperation("Compute AO");
+    this.target.beginPerfMetricRecord("Compute AO");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusion!);
       this.target.techniques.draw(params);
     });
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Compute AO");
+    this.target.endPerfMetricRecord();
 
     // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
     fbo = this._frameBuffers.occlusionBlur!;
-    glTimer.beginOperation("Blur AO X");
+    this.target.beginPerfMetricRecord("Blur AO X");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusionXBlur!);
       this.target.techniques.draw(params);
     });
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Blur AO X");
+    this.target.endPerfMetricRecord();
 
     // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
     fbo = this._frameBuffers.occlusion!;
-    glTimer.beginOperation("Blur AO Y");
+    this.target.beginPerfMetricRecord("Blur AO Y");
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusionYBlur!);
       this.target.techniques.draw(params);
     });
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Blur AO Y");
+    this.target.endPerfMetricRecord();
   }
 
   protected constructor(target: Target, fbos: FrameBuffers, geometry: Geometry) {
@@ -729,64 +725,55 @@ abstract class Compositor extends SceneCompositor {
     const compositeFlags = commands.compositeFlags;
     const needComposite = CompositeFlags.None !== compositeFlags;
 
-    const glTimer = System.instance.glTimer;
-
     // Clear output targets
-    glTimer.beginOperation("Clear Opaque");
+    this.target.beginPerfMetricRecord("Clear Opaque");
     this.clearOpaque(needComposite);
-    glTimer.endOperation();
+    this.target.endPerfMetricRecord();
 
     // Render the background
-    glTimer.beginOperation("Render Background");
+    this.target.beginPerfMetricRecord("Render Background");
     this.renderBackground(commands, needComposite);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render Background");
+    this.target.endPerfMetricRecord();
 
     // Render the sky box
-    glTimer.beginOperation("Render Skybox");
+    this.target.beginPerfMetricRecord("Render Skybox");
     this.renderSkyBox(commands, needComposite);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render SkyBox");
+    this.target.endPerfMetricRecord();
 
     // Render the background map graphics
-    glTimer.beginOperation("Render Background Map");
+    this.target.beginPerfMetricRecord("Render Background Map");
     this.renderBackgroundMap(commands, needComposite);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render BackgroundMap (background map)");
+    this.target.endPerfMetricRecord();
 
     // Enable clipping
-    glTimer.beginOperation("Enabled Clipping");
+    this.target.beginPerfMetricRecord("Enable Clipping");
     this.target.pushActiveVolume();
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Enable Clipping");
+    this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
-    glTimer.beginOperation("Render VolumeClassification");
+    this.target.beginPerfMetricRecord("Render VolumeClassification");
     this.renderVolumeClassification(commands, compositeFlags, false);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render VolumeClassification");
+    this.target.endPerfMetricRecord();
 
     // Render opaque geometry
-    glTimer.beginOperation("Render Opaque");
+    this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
-    glTimer.endOperation();
-    this.target.recordPerformanceMetric("Render Opaque");
+    this.target.endPerfMetricRecord();
 
     if (needComposite) {
       this._geom.composite!.update(compositeFlags);
-      glTimer.beginOperation("Render Translucent");
+      this.target.beginPerfMetricRecord("Render Translucent");
       this.clearTranslucent();
       this.renderTranslucent(commands);
-      glTimer.endOperation();
-      this.target.recordPerformanceMetric("Render Translucent");
-      glTimer.beginOperation("Render Hilite");
+      this.target.endPerfMetricRecord();
+
+      this.target.beginPerfMetricRecord("Render Hilite");
       this.renderHilite(commands);
-      glTimer.endOperation();
-      this.target.recordPerformanceMetric("Render Hilite");
-      glTimer.beginOperation("Composite");
+      this.target.endPerfMetricRecord();
+
+      this.target.beginPerfMetricRecord("Composite");
       this.composite();
-      glTimer.endOperation();
-      this.target.recordPerformanceMetric("Composite");
+      this.target.endPerfMetricRecord();
     }
     this.target.popActiveVolume();
   }
@@ -794,24 +781,29 @@ abstract class Compositor extends SceneCompositor {
   public get fullHeight(): number { return this.target.viewRect.height; }
 
   public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
+    this.target.beginPerfMetricRecord("Render Background");
     if (!this.preDraw()) {
+      this.target.endPerfMetricRecord(); // End Render Background record if returning
       assert(false);
       return;
     }
 
     this.clearOpaque(false);
-    this.target.recordPerformanceMetric("Render Background");
+    this.target.endPerfMetricRecord();
 
     // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
+      this.target.beginPerfMetricRecord("Enable Clipping");
       this.target.pushActiveVolume();
-      this.target.recordPerformanceMetric("Enable Clipping");
+      this.target.endPerfMetricRecord();
+      this.target.beginPerfMetricRecord("Render VolumeClassification");
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
-      this.target.recordPerformanceMetric("Render VolumeClassification");
+      this.target.endPerfMetricRecord();
+      this.target.beginPerfMetricRecord("Render Opaque");
       this.renderOpaque(commands, CompositeFlags.None, true);
-      this.target.recordPerformanceMetric("Render Opaque");
+      this.target.endPerfMetricRecord();
       this.target.popActiveVolume();
     }
 
@@ -819,9 +811,12 @@ abstract class Compositor extends SceneCompositor {
       return;
 
     // Now populate the opaque passes with any pickable world overlays
+    this.target.beginPerfMetricRecord("Overlay Draws");
     commands.initForPickOverlays(overlays);
-    if (commands.isEmpty)
+    if (commands.isEmpty) {
+      this.target.endPerfMetricRecord(); // End Overlay Draws record if returning
       return;
+    }
 
     // Clear the depth buffer so that overlay decorations win the depth test.
     // (If *only* overlays exist, then clearOpaque() above already took care of this).
@@ -838,7 +833,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.decorationState.isReadPixelsInProgress = true;
     this.target.pushState(this.target.decorationState);
     this.renderOpaque(commands, CompositeFlags.None, true);
-    this.target.recordPerformanceMetric("Overlay Draws");
+    this.target.endPerfMetricRecord();
     this.target.popBranch();
     this.target.decorationState.isReadPixelsInProgress = false;
   }

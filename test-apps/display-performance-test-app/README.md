@@ -21,6 +21,7 @@ Performance tests on iOS have more restrictions than performance tests run on ot
 * Results (csv and png files) will be sent to the Documents directory of the iPad. Any path specified in the configuration file will be ignored.
 * The json configuration file used by the app must be present in the Documents directory of the iPad. It must be named MobilePerformanceConfig.json.
 * All bim files referenced by the json configuration file must be present in the Documents directory of the iPad.
+* We cannot gather any GPU data from iOS.
 
 ## Configuration json file
 The default configuration file allows you to specify the following:
@@ -28,11 +29,13 @@ The default configuration file allows you to specify the following:
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using the iModelHub)
 * if you want to force the test to sign in to the iModelHub when the tests first start (i.e. set "signIn" to true to force user to sign in)
+* if you want to save a minimized version of the timing data (the minimized version only contains timing data for the 'CPU Total Time', 'GPU Total Time', 'Bound By', 'Effective Total Time', 'Effective FPS', 'Actual Total TIme', & 'Actual FPS'); the 'minimize' flag defaults to false
+* if you want to use the original csv format (the one described in this README) or the new one; 'csvFormat' defaults to "original"
 * what size you want the view screen to be
 * how many times the scene should be rendered and skipped
 * how many times the scene should be be rendered and timings taken to later be averaged
 * what filename options you wish to ignore (i.e. items to exclude from the image naming format)
-* what type of test you wish to perform: timing, image, both, or readPixels (timing - take timing data from a renderFrame call; image - save an image of what has been rendered; both - take normal timing data from a renderFrame call and save an image; readPixels - take timing data from a readPixels call & save 6 images contining visual representations of the element Ids, type/order, and distance/depth and using each valid ReadPixels Selector option)
+* what type of test you wish to perform: timing, image, both, or readPixels; timing - take cpu and (if the EXT_disjoint_timer_query extension is available) gpu timing data from rendering continuously; image - save an image of what has been rendered; both - take the normal cpu and (if available) gpu timing data and save an image; readPixels - take timing data from a readPixels call & save 6 images contining visual representations of the element Ids, type/order, and distance/depth and using each valid ReadPixels Selector option)
 * what models to use for testing
 * what display style to use
 * what view flags to use
@@ -108,6 +111,8 @@ Below is an example json config file:
   "numRendersToSkip": 50,
   "numRendersToTime": 100,
   "filenameOptsToIgnore": "+inst +solShd +vsE +cullActVol",
+  "minimize": true,
+  "csvFormat": "original",
   "testSet": [
     {
       "iModelName": "Wraith.ibim",
@@ -233,32 +238,51 @@ The performance data file should always contain the following column headers:
 * iModel - the name of the imodel file
 * View - the name of the view used
 * Screen Size - the size of the view screen in width X height
+* Skip & Time Renders - the number of times to render without saving data & the number of times to render and save data
 * Display Style - the name of the display style used
 * Render Mode - the name of the render mode used
 * View Flags - a string representation of view flag specifications that differ from those defaults found in the ViewFlags class
 * Disabled Exts - a string representation of all the WebGL extensions that have been disabled
+* Render Options - a string representation of any render options that are used
+* Tile Props - a string representation of any tile properties that are used
+* Bkg Map Props - a string representation of what background map properties are used
 
-The performance data file may also contain any or all of the following column headers:
+ The performance data file may contain any or all of the below column headers. These columns will NOT appear if the 'minimize' flag has been set to true in the config json file. If the webgl extension EXT_disjoint_timer_query is available (and therefore GPU data is able to be gathered), there will be one column with the given name and a second column containing "GPU-" + the given name. If GPU data is not available, there will only be one column with the given name.
 * ReadPixels Selector - a string representation of the Pixel.Selector used in the readPixels call; this will be blank if readPixels is not called
 * Tile Loading Time - the time it takes to load all of the tiles for this model (in ms)
 * Scene Time - the time it takes to load the scene, i.e. the time it takes to do everything in the renderFrame() function except for the drawFrame() call (in ms)
 * Begin Paint - the time it takes to call the _beginPaint() function (in ms)
+* Planar Classifiers - the time it takes to call the drawPlanarClassifiers() function (in ms)
+* Shadow Maps - the time it takes to call the drawSolarShadowMap() function (in ms)
+* Texture Drapes - the time it takes to call the drawTextureDrapes() function (in ms)
 * Init Commands - the time it takes to call the _renderCommands.init() function (in ms)
-* Render Background - the time it takes to start the compositor.draw() function until you finish the this.renderBackground() function (in ms); this includes the Compositor's update() function, clearOpaque() function, and the aforementioned renderBackground() function
+* Clear Opaque - the time it takes to call the clearOpaque(needComposite) function (in ms)
+* Render Background - the time it takes to finish the this.renderBackground() function (in ms)
+* Enable Clipping - the time it takes to call the _target.pushActiveVolume() function (in ms)
+* Render VolumeClassification - the time it takes to call the renderVolumeClassification() function (in ms)
 * Render SkyBox - the time it takes to call the renderSkyBox() function (in ms)
 * Render Terrain - the time it takes to call the renderTerrain() function (in ms)
-* Enable Clipping - the time it takes to call the _target.pushActiveVolume() function (in ms)
 * Render Opaque - the time it takes to call the renderOpaque() function (in ms)
 * Render Stencils - the time it takes to call the renderStencilVolumes() function (in ms)
 * Render Translucent - the time it takes to call the _geom.composite!.update() function, clearTranslucent() function, and renderTranslucent() function (in ms)
 * Render Hilite - the time it takes to call the renderHilite() function (in ms)
 * Composite - the time it takes to call the composite() function (in ms)
-* Overlay Draws - the time it takes to finish the compositor.draw() function until you finish the decorations (in ms); this includes the Compositor's _target.popActiveVolume() function, the _stack.pushState() function, the drawPass() function for WorldOverlay and ViewOverlay, and the _stack.pop() function
+* World Overlays - the time it takes to call the drawPass(RenderPass.WorldOverlay) function (in ms)
+* View Overlays - the time it takes to call the drawPass(RenderPass.ViewOverlay) function (in ms)
+* Overlay Draws - the time it takes to render all overlay draws (includes the world and view overlays)
 * End Paint - the time it takes to call the _endPaint() function
-* Total Render Time - the time it takes to render everything (in ms); this is the sum of all of the previous times (excluding the Tile Loading Time); if you are running a 'timing' test, this value is the time it takes to call everything in the renderFrame() function; if you are running a 'readPixels' test, this value is the time it takes to render the stuff that you will then read when calling the SceneCompositor's readPixels() function
-* Finish GPU Queue - the time it takes to call the gl.readPixels() function (in ms); i.e. the time it takes the GPU to finish all of the tasks currently in its queue
-* Total Time - The sum of 'Total Render Time', 'Finish GPU Queue', and 'Read Pixels' (in ms); 'Read Pixels' will be 0 if you are running a 'timing' test, as it will not call the readPixels function
-* Effective FPS - the average effective FPS (frames per second) value based on the calculated 'total time w/ gpu'. Keep in mind that this is the FPS rate when forcing the GPU to finish all of its current tasks either before the CPU recieves the next frame to draw (if running a 'timing' test) or before the SceneCompositor's readPixels function is called (if running a 'readPixels' test). Therefore, the actual FPS value when running the program outside of this testing environment may be slightly different (it should generally be faster, as the CPU normally starts rendering the next frame while the GPU finishes up; however, it may be slower if the rendering system intentionally throttles back the fps to a set maximum--for example, 60fps)
+* Finish GPU Queue - the time it takes to call the gl.readPixels() function (in ms); i.e. the time it takes the GPU to finish all of the tasks currently in its queue; this column is ONLY calculated when the GPU data is not available
+
+The performance data file may also contain any or all of the below column headers. These columns WILL still appear if the 'minimize' flag has been set to true:
+* Total CPU Time - The total time it takes for the CPU to run the renderFrame function
+* Total GPU Time - The total time it takes to run all the GPU commands from one renderFrame function; this starts when the first command is given to the GPU and ends when the last command given to the GPU finished (i.e. it does not eliminate any down time in-between individual GPU commands); this column is ONLY available when GPU data IS gathered
+* Bound By - should output “gpu” if the gpu is the limiting time factor or “cpu *” if the cpu is the limiting time factor; it will output “gpu ?” if the effective fps value is >= 60 fps, as we cannot be totally sure that it is gpu bound in this scenario, because the fps is being throttled to 60; this column is ONLY available when GPU data IS gathered
+* Effective Total Time - this is the greater of the cpu and gpu total times; that is, the cpu total time if it’s determined to be cpu bound or the gpu total time if it’s determined to be gpu bound; this column is ONLY available when GPU data IS gathered
+* Effective FPS - the effective total time converted to fps (frames per second); this is an estimate of what the actual fps would be if it wasn’t throttled down to a maximum of 60 fps; this column is ONLY available when GPU data IS gathered
+* Non-Interactive Total Time - this is the sum of the 'CPU Total Time' and the 'Finish GPU Queue'; this column is ONLY available when GPU data is NOT gathered
+* Non-Interactive FPS - this is the 'Non-Interactive Total Time' converted into fps (frames per second); this column is ONLY available when GPU data is NOT gathered
+* Actual Total Time - the total time it takes to get from starting to render a frame to starting to render the next frame (i.e. the time it takes to get from point A until you hit point A again); this column is available regardless of whether or not GPU data is gathered
+* Actual FPS - the actual total time converted into fps (frames per second); this should be a fairly accurate reflection of the fps value gathered when running in display-test-app; this column is available regardless of whether or not GPU data is gathered
 
 The 'View Flags' column contains a string representation of view flag specifications that differ from those defaults found in the ViewFlags class. This string representation may consist of any or all of the following:
 * -dim  - dimensions are hidden

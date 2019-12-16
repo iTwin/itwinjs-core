@@ -65,10 +65,22 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       if (process.env.browser) {
         rowObject.browser = process.env.browser;
       }
-      const totalTime = rowObject["Total Time"] as number;
-      const fps = rowObject["Effective FPS"] as number;
-      this._reporter.addEntry("DisplayTests", testName, "Total time", totalTime, rowObject);
-      this._reporter.addEntry("DisplayTests", testName, "Effective FPS", fps, rowObject);
+      const niTotalTime = rowObject["Non-Interactive Total Time"] as number;
+      const nifps = rowObject["Non-Interactive FPS"] as number;
+      if (niTotalTime !== undefined && nifps !== undefined) {
+        this._reporter.addEntry("DisplayTests", testName, "Non-Interactive Total Time", niTotalTime, rowObject);
+        this._reporter.addEntry("DisplayTests", testName, "Non-Interactive FPS", nifps, rowObject);
+      }
+      const eTotalTime = rowObject["Effective Total Time"] as number;
+      const efps = rowObject["Effective FPS"] as number;
+      if (eTotalTime !== undefined && efps !== undefined) {
+        this._reporter.addEntry("DisplayTests", testName, "Effective Total Time", eTotalTime, rowObject);
+        this._reporter.addEntry("DisplayTests", testName, "Effective FPS", efps, rowObject);
+      }
+      const aTotalTime = rowObject["Actual Total Time"] as number;
+      const afps = rowObject["Actual FPS"] as number;
+      this._reporter.addEntry("DisplayTests", testName, "Actual Total Time", aTotalTime, rowObject);
+      this._reporter.addEntry("DisplayTests", testName, "Actual FPS", afps, rowObject);
     }
   }
 
