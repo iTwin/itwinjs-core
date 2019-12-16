@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { DbResult, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ChangeSet } from "@bentley/imodeljs-clients";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -40,9 +40,10 @@ export abstract class IModelExportHandler {
 
   /** Called when a font should be exported.
    * @param font The font to export
+   * @param isUpdate If defined, then `true` indicates an UPDATE operation while `false` indicates an INSERT operation. If not defined, then INSERT vs. UPDATE is not known.
    * @note This should be overridden to actually do the export.
    */
-  protected onExportFont(_font: FontProps): void { }
+  protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void { }
 
   /** Called when a model should be exported.
    * @param model The model to export
@@ -208,7 +209,7 @@ export class IModelExporter {
     this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
     requestContext.enter();
     this.exportCodeSpecs();
-    // WIP: handle font changes???
+    this.exportFonts();
     this.exportElement(IModel.rootSubjectId);
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
@@ -280,7 +281,7 @@ export class IModelExporter {
   public exportFonts(): void {
     Logger.logTrace(loggerCategory, `exportFonts()`);
     for (const font of this.sourceDb.fontMap.fonts.values()) {
-      this.handler.callProtected.onExportFont(font);
+      this.exportFontByNumber(font.id);
     }
   }
 
@@ -291,7 +292,7 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportFontByName(${fontName})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontName);
     if (undefined !== font) {
-      this.handler.callProtected.onExportFont(font);
+      this.exportFontByNumber(font.id);
     }
   }
 
@@ -299,10 +300,21 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportFontByNumber(fontNumber: number): void {
+    let isUpdate: boolean | undefined;
+    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+      const fontId: Id64String = Id64.fromUint32Pair(fontNumber, 0); // changeset information uses Id64String, not number
+      if (this._sourceDbChanges.font.insertIds.has(fontId)) {
+        isUpdate = false;
+      } else if (this._sourceDbChanges.font.updateIds.has(fontId)) {
+        isUpdate = true;
+      } else {
+        return; // not in changeSet, don't export
+      }
+    }
     Logger.logTrace(loggerCategory, `exportFontById(${fontNumber})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
-      this.handler.callProtected.onExportFont(font);
+      this.handler.callProtected.onExportFont(font, isUpdate);
     }
   }
 

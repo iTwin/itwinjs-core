@@ -1224,13 +1224,13 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
     super.onExportCodeSpec(codeSpec, isUpdate);
   }
-  protected onExportFont(font: FontProps): void {
+  protected onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
     if (this._firstFont) {
       this.writeSeparator();
       this._firstFont = false;
     }
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
-    super.onExportFont(font);
+    super.onExportFont(font, isUpdate);
   }
   protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.writeSeparator();

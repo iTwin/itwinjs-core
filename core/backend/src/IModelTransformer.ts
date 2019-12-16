@@ -574,7 +574,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onExportFont]($backend) that imports a font into the target iModel when it is exported from the source iModel. */
-  protected onExportFont(font: FontProps): void {
+  protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
     this.context.importFont(font.id);
   }
 

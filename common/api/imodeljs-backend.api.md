@@ -2177,7 +2177,7 @@ export abstract class IModelExportHandler {
     protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
     protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    protected onExportFont(_font: FontProps): void;
+    protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
@@ -2343,7 +2343,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportElement(sourceElement: Element): void;
     protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
-    protected onExportFont(font: FontProps): void;
+    protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
