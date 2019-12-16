@@ -2668,9 +2668,13 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
 // @public
 export interface SignInProps extends CommonProps {
+    // @internal
+    disableSignInOnClick?: boolean;
     onOffline?: () => void;
     onRegister?: () => void;
     onSignIn: () => void;
+    // @internal
+    signingInMessage?: string;
 }
 
 // @public

@@ -61,6 +61,11 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
     margin-top: auto;
   }
 
+  /* signing-in message */
+  .components-signingin-message {
+    margin-top: 3em;
+    text-align: center;
+  }
 
   /* "Register" container */
   .components-signin-register {

@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// Code based on the blog article @ https://authguidance.com
+
 /** @module Authentication */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
@@ -19,6 +21,7 @@ import { ElectronTokenStore } from "./ElectronTokenStore";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
+import { LoopbackWebServer } from "./LoopbackWebServer";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
 
@@ -30,7 +33,6 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
   private _clientConfiguration: OidcDesktopClientConfiguration;
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
-  private _requestContext?: ClientRequestContext;
   private _accessToken?: AccessToken;
   private _tokenStore: ElectronTokenStore;
 
@@ -94,12 +96,7 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     if (this._accessToken)
       return;
 
-    const authorizationHandler = new ElectronAuthorizationRequestHandler(this._clientConfiguration);
-
-    const notifier = new AuthorizationNotifier();
-    authorizationHandler.setAuthorizationNotifier(notifier);
-    notifier.setAuthorizationListener(this._authorizationListener);
-
+    // Create the authorization request
     const authReqJson: AuthorizationRequestJson = {
       client_id: this._clientConfiguration.clientId,
       redirect_uri: this._clientConfiguration.redirectUri,
@@ -107,11 +104,60 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
       extras: { prompt: "consent", access_type: "offline" },
     };
+    const authorizationRequest = new AuthorizationRequest(authReqJson, new NodeCrypto(), true /* = usePkce */);
+    await authorizationRequest.setupCodeVerifier();
 
-    const authRequest = new AuthorizationRequest(authReqJson, new NodeCrypto(), true /* = usePkce */);
+    // Create events for this signin attempt
+    const authorizationEvents = new ElectronAuthorizationEvents();
 
-    this._requestContext = requestContext;
-    await authorizationHandler.performAuthorizationRequest(this._configuration, authRequest);
+    // Ensure that completion callbacks are correlated to the correct authorization request
+    LoopbackWebServer.addCorrelationState(authorizationRequest.state, authorizationEvents);
+
+    // Start a web server to listen to the browser requests
+    LoopbackWebServer.start(this._clientConfiguration);
+
+    const authorizationHandler = new ElectronAuthorizationRequestHandler(authorizationEvents);
+
+    // Setup a notifier to obtain the result of authorization
+    const notifier = new AuthorizationNotifier();
+    authorizationHandler.setAuthorizationNotifier(notifier);
+    notifier.setAuthorizationListener(async (authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null) => {
+      requestContext.enter();
+      Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
+
+      const tokenResponse: TokenResponse | undefined = await this._onAuthorizationResponse(requestContext, authRequest, authResponse, authError);
+
+      authorizationEvents.onAuthorizationResponseCompleted.raiseEvent(authError ? authError : undefined);
+
+      await this.setTokenResponse(requestContext, tokenResponse);
+    });
+
+    // Start the signin
+    await authorizationHandler.performAuthorizationRequest(this._configuration, authorizationRequest);
+  }
+
+  private async _onAuthorizationResponse(requestContext: ClientRequestContext, authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null): Promise<TokenResponse | undefined> {
+    requestContext.enter();
+
+    // Phase 1 of login has completed to fetch the authorization code - check for errors
+    if (authError) {
+      Logger.logError(loggerCategory, "Authorization error. Unable to get authorization code.", () => authError);
+      return undefined;
+    }
+
+    if (!authResponse || authResponse.state !== authRequest.state) {
+      Logger.logError(loggerCategory, "Authorization error. Unable to get authorization code", () => ({
+        error: "invalid_state",
+        errorDescription: "The login response state did not match the login request state.",
+      }));
+      return undefined;
+    }
+
+    // Phase 2: Swap the authorization code for the access token
+    const tokenResponse = await this.swapAuthorizationCodeForTokens(requestContext, authResponse.code, authRequest.internal!.code_verifier);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Authorization completed, and issued access token");
+    return tokenResponse;
   }
 
   /**
@@ -232,34 +278,6 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
 
   /** Disposes the resources held by this client */
   public dispose(): void {
-  }
-
-  private _authorizationListener = async (authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null) => {
-    // Phase 1 of login has completed to fetch the authorization code - check for errors
-    assert(!!this._requestContext);
-    const requestContext: ClientRequestContext = this._requestContext!;
-    this._requestContext = undefined;
-    requestContext.enter();
-
-    let tokenResponse: TokenResponse | undefined;
-    Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
-    if (authError) {
-      Logger.logError(loggerCategory, "Authorization error. Unable to get authorization code.", () => authError);
-    } else if (!authResponse || authResponse.state !== authRequest.state) {
-      Logger.logError(loggerCategory, "Authorization error. Unable to get authorization code", () => ({
-        error: "invalid_state",
-        errorDescription: "The login response state did not match the login request state.",
-      }));
-    } else {
-      // Phase 2: Swap the authorization code for the access token
-      tokenResponse = await this.swapAuthorizationCodeForTokens(requestContext, authResponse.code, authRequest.internal!.code_verifier);
-      requestContext.enter();
-    }
-
-    ElectronAuthorizationEvents.onAuthorizationResponseCompleted.raiseEvent(authError ? authError : undefined);
-
-    Logger.logTrace(loggerCategory, "Authorization completed, and issued access token");
-    await this.setTokenResponse(requestContext, tokenResponse);
   }
 
   /** Swap the authorization code for a refresh token and access token */

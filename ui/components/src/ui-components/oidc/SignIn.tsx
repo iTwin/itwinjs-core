@@ -26,6 +26,14 @@ export interface SignInProps extends CommonProps {
   onRegister?: () => void;
   /** Handler for clicking the Offline link */
   onOffline?: () => void;
+  /** Disable the signin button after the sign-in process has started. If unspecified defaults to true.
+   * @internal
+   */
+  disableSignInOnClick?: boolean;
+  /** Show a message when signing in
+   * @internal
+   */
+  signingInMessage?: string;
 }
 
 /** @internal */
@@ -64,17 +72,21 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
   }
 
   public render() {
+    const disableSignInOnClick = this.props.disableSignInOnClick === undefined ? true : this.props.disableSignInOnClick; // disableSignInOnClick defaults to true!
     return (
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
           <span className="components-signin-prompt">{this.state.prompt}</span>
-          <button className="components-signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>{this.state.signInButton}</button>
+          <button className="components-signin-button" type="button" disabled={this.state.isSigningIn && disableSignInOnClick} onClick={this._onSignInClick}>{this.state.signInButton}</button>
           {this.props.onRegister !== undefined &&
             <span className="components-signin-register">{this.state.profilePrompt}<a onClick={this.props.onRegister}>{this.state.registerAnchor}</a></span>
           }
           {this.props.onOffline !== undefined &&
             <a className="components-signin-offline" onClick={this.props.onOffline}>{this.state.offlineButton}</a>
+          }
+          {this.state.isSigningIn && this.props.signingInMessage !== undefined &&
+            <span className="components-signingin-message">{this.props.signingInMessage}</span>
           }
         </div>
       </div>

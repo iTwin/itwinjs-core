@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// Code based on the blog article @ https://authguidance.com
+
 /** @module Authentication */
 
 import { TokenResponse, TokenResponseJson } from "@openid/appauth";

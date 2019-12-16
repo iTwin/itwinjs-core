@@ -129,6 +129,9 @@
     "signout": "Sign Out",
     "signoutprompt": "Do you want to sign out?"
   },
+  "signIn": {
+    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
+  },
   "buttons": {
     "yes": "Yes",
     "no": "No",

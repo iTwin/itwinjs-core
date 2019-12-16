@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// Code based on the blog article @ https://authguidance.com
+
 /** @module Authentication */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
@@ -19,8 +21,8 @@ export type AuthorizationResponseListener = (error: AuthorizationErrorJson | nul
  */
 export class ElectronAuthorizationEvents {
   /** Event raised when the authorization is completed */
-  public static readonly onAuthorizationResponseCompleted = new BeEvent<AuthorizationResponseCompletedListener>();
+  public readonly onAuthorizationResponseCompleted = new BeEvent<AuthorizationResponseCompletedListener>();
 
   /** Event raised when a response is received from the authorization server with the authorization code */
-  public static readonly onAuthorizationResponse = new BeEvent<AuthorizationResponseListener>();
+  public readonly onAuthorizationResponse = new BeEvent<AuthorizationResponseListener>();
 }
