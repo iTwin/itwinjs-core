@@ -55,7 +55,7 @@ export class CalculatorEngine {
   }
 
   public processValue(value: string): string {
-    let resultString = "0";
+    let resultString: string;
 
     if (
       this._displayValue === "0" ||

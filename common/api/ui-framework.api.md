@@ -698,8 +698,6 @@ export interface CategoryTreeState {
     dataProvider?: IPresentationTreeDataProvider;
     // (undocumented)
     filterInfo?: FilterInfo;
-    // (undocumented)
-    selectedNodes: string[];
 }
 
 // @internal

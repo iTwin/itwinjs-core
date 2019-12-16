@@ -75,7 +75,6 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
     this.state = {
       checkboxInfo: this.createCheckBoxInfoCallback(),
       filterInfo: {},
-      selectedNodes: [],
       categories: [],
       activeView: (this.props.activeView || IModelApp.viewManager.getFirstOpenView())!,
     };

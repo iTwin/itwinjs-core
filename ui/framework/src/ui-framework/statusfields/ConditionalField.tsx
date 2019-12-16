@@ -48,8 +48,7 @@ export class ConditionalField extends React.PureComponent<ConditionalFieldProps,
   }
 
   private _resolveBooleanValue = (): void => {
-    let boolValue = this.state.boolValue;
-    boolValue = this.props.boolFunc(this.props);
+    const boolValue = this.props.boolFunc(this.props);
     if (this.state.boolValue !== boolValue) {
       this.setState({ boolValue });
     }
