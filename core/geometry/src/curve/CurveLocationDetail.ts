@@ -165,7 +165,7 @@ export class CurveLocationDetail {
   /** create with a CurvePrimitive pointer but no coordinate data.
    */
   public static create(
-    curve: CurvePrimitive,
+    curve?: CurvePrimitive,
     result?: CurveLocationDetail): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;

@@ -1388,6 +1388,7 @@ export class CurveExtendOptions {
 // @public
 export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
+    static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge?: boolean): Path | undefined;
 }
 
@@ -1407,7 +1408,7 @@ export class CurveLocationDetail {
     captureFraction1Point1(fraction1: number, point1: Point3d): void;
     childDetail?: CurveLocationDetail;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
-    static create(curve: CurvePrimitive, result?: CurveLocationDetail): CurveLocationDetail;
+    static create(curve?: CurvePrimitive, result?: CurveLocationDetail): CurveLocationDetail;
     static createConditionalMoveSignedDistance(allowExtension: boolean, curve: CurvePrimitive, startFraction: number, endFraction: number, requestedSignedDistance: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFraction(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFractionFraction(curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail): CurveLocationDetail;
@@ -1600,17 +1601,22 @@ export class Degree4PowerPolynomial {
     static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4?: number): Degree4PowerPolynomial;
 }
 
-// @internal
+// @public
 export class Ellipsoid {
+    anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined;
     clone(): Ellipsoid;
     cloneTransformed(transform: Transform): Ellipsoid | undefined;
     constantLatitudeArc(longitudeSweep: AngleSweep, latitude: Angle, result?: Arc3d): Arc3d | undefined;
     constantLongitudeArc(longitude: Angle, latitudeSweep: AngleSweep, result?: Arc3d): Arc3d | undefined;
-    static create(transform: Transform): Ellipsoid;
+    static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid;
     static createCenterMatrixRadii(center: Point3d, axes: Matrix3d, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid;
+    createPlaneSection(plane: Plane3dByOriginAndUnitNormal): Arc3d | undefined;
+    createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d, result?: Arc3d): Arc3d | undefined;
     intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
     isAlmostEqual(other: Ellipsoid): boolean;
+    otherEllipsoidAnglesToThisEllipsoidAngles(otherEllipsoid: Ellipsoid | undefined, otherAngles: LongitudeLatitudeNumber, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber | undefined;
     patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
+    projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined;
     radiansPairToEquatorialEllipsoid(thetaARadians: number, phiARadians: number, thetaBRadians: number, phiBRadians: number, result?: Ellipsoid): Ellipsoid | undefined;
     radiansPairToGreatArc(thetaARadians: number, phiARadians: number, thetaBRadians: number, phiBRadians: number, result?: Arc3d): Arc3d | undefined;
     radiansToFrenetFrame(thetaRadians: number, phiRadians: number, result?: Transform): Transform | undefined;
@@ -1618,13 +1624,17 @@ export class Ellipsoid {
     radiansToPointAnd2Derivatives(thetaRadians: number, phiRadians: number, point: Point3d, d1Theta: Vector3d, d1Phi: Vector3d, d2ThetaTheta: Vector3d, d2PhiPhi: Vector3d, d2ThetaPhi: Vector3d): void;
     radiansToPointAndDerivatives(thetaRadians: number, phiRadians: number, applyCosPhiFactor?: boolean, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     radiansToUnitNormalRay(thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined;
+    static radiansToUnitNormalRay(ellipsoid: Ellipsoid | undefined, thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined;
+    sectionArcWithIntermediateNormal(angleA: LongitudeLatitudeNumber, intermediateNormalFraction: number, angleB: LongitudeLatitudeNumber): Arc3d;
+    surfaceNormalToAngles(normal: Vector3d, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
+    // @deprecated
     surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d;
     // (undocumented)
     readonly transformRef: Transform;
     tryTransformInPlace(transform: Transform): boolean;
     }
 
-// @internal
+// @public
 export class EllipsoidPatch implements UVSurface {
     anglesToUnitNormalRay(position: LongitudeLatitudeNumber, result?: Ray3d): Ray3d | undefined;
     containsAngles(position: LongitudeLatitudeNumber, allowPeriodicLongitude?: boolean): boolean;
@@ -1691,6 +1701,40 @@ export class GaussMapper {
     mapXAndW(xA: number, xB: number): number;
     mapXAndWFunction: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
 }
+
+// @public
+export class GeodesicPathPoint {
+    constructor();
+    // (undocumented)
+    d1Cross: Vector3d;
+    // (undocumented)
+    d2Phi: Vector3d;
+    // (undocumented)
+    d2Theta: Vector3d;
+    // (undocumented)
+    d2ThetaPhi: Vector3d;
+    // (undocumented)
+    dPhi: Vector3d;
+    // (undocumented)
+    dTheta: Vector3d;
+    evaluateDerivativesAtCurrentAngles(ellipsoid: Ellipsoid): void;
+    static evaluateNewtonFunction(pointA: GeodesicPathPoint, pointB: GeodesicPathPoint, pointC: GeodesicPathPoint, values: Float64Array): void;
+    phiRadians: number;
+    // (undocumented)
+    point: Point3d;
+    thetaRadians: number;
+    toAngles(): LongitudeLatitudeNumber;
+    }
+
+// @public
+export class GeodesicPathSolver {
+    static approximateMinimumLengthSectionArc(ellipsoid: Ellipsoid, angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, numSample: number, normalInterpolationFraction0: number, normalInterpolationFraction1: number): {
+        minLengthArc: Arc3d;
+        minLengthNormalInterpolationFraction: number;
+    } | undefined;
+    // (undocumented)
+    static createGeodesicPath(originalEllipsoid: Ellipsoid, startAngles: LongitudeLatitudeNumber, endAngles: LongitudeLatitudeNumber, density: number | Angle): GeodesicPathPoint[] | undefined;
+    }
 
 // @public
 export class Geometry {
@@ -3303,7 +3347,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     altitudeXYZ(x: number, y: number, z: number): number;
     altitudeXYZW(x: number, y: number, z: number, w: number): number;
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
-    cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined;
+    cloneTransformed(transform: Transform, inverse?: boolean): Plane3dByOriginAndUnitNormal | undefined;
     static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
     static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;

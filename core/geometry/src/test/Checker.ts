@@ -22,6 +22,7 @@ import { Complex } from "../numerics/Complex";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 import { MomentData } from "../geometry4d/MomentData";
+import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
 
 /* tslint:disable:variable-name no-console*/
 
@@ -69,6 +70,7 @@ export class Checker {
     ConvexSetCorners: false,
     PolygonOffset: false,
     UnionFind: false,
+    Ellipsoid: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
@@ -288,6 +290,12 @@ export class Checker {
     if (Geometry.isSameVector3d(dataA, dataB))
       return this.announceOK();
     return this.announceError(" expect same Vector3d", dataA, dataB, params);
+  }
+
+  public testLongitudeLatitudeNumber(dataA: LongitudeLatitudeNumber, dataB: LongitudeLatitudeNumber, ...params: any[]): boolean {
+    if (dataA.isAlmostEqual(dataB))
+      return this.announceOK();
+    return this.announceError(" expect same LongitudeLatitudeNumber", dataA, dataB, params);
   }
 
   public testVector2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {

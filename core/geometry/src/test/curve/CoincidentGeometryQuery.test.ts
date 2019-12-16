@@ -13,6 +13,7 @@ import { Range1d } from "../../geometry3d/Range";
 import { prettyPrint } from "../testFunctions";
 import { Arc3d } from "../../curve/Arc3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 describe("CoincidentGeometryQuery", () => {
 
   it("SegmentSegment", () => {
@@ -71,6 +72,23 @@ describe("CoincidentGeometryQuery", () => {
       x0 += xStep;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CoincidentGeometryQuery", "SegmentSegment");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DetailSwap", () => {
+    const ck = new Checker();
+    const detailA = CurveLocationDetail.create();
+    const detailB = CurveLocationDetail.create();
+    const f0 = 0.25;
+    const f1 = 0.90;
+    const pointA = Point3d.create(1, 2, 3);
+    const pointB = Point3d.create(5, 9, 7);
+    CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailA, f0, f1, pointA, pointB);
+    CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailB, f1, f0, pointA, pointB, true);
+    ck.testExactNumber(detailA.fraction, detailB.fraction);
+    ck.testExactNumber(detailA.fraction1!, detailB.fraction1!);
+    ck.testPoint3d(detailA.point, detailB.point);
+    ck.testPoint3d(detailA.point1!, detailB.point1!);
     expect(ck.getNumErrors()).equals(0);
   });
 

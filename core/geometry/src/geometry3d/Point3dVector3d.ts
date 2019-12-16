@@ -728,7 +728,7 @@ export class Vector3d extends XYZ {
    */
   public normalizeInPlace(): boolean {
     const a = Geometry.inverseMetricDistance(this.magnitude());
-    if (!a)
+    if (a === undefined)
       return false;
     this.x *= a;
     this.y *= a;

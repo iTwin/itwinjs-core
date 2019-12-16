@@ -15,6 +15,7 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Path } from "./Path";
 import { Geometry } from "../Geometry";
+import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -126,4 +127,23 @@ export class CurveFactory {
     }
     return false;
   }
+  /**
+   * Return a `Path` containing arcs are on the surface of an ellipsoid and pass through a sequence of points.
+   * * Each arc passes through the two given endpoints and in the plane containing the true surface normal at given `fractionForIntermediateNormal`
+   * @param ellipsoid
+   * @param pathPoints
+   * @param fractionForIntermediateNormal fractional position for surface normal used to create the section plane.
+   */
+  public static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal: number = 0.5): Path {
+    const arcPath = Path.create();
+    for (let i = 0; i + 1 < pathPoints.length; i++) {
+      const arc = ellipsoid.sectionArcWithIntermediateNormal(
+        pathPoints[i].toAngles(),
+        fractionForIntermediateNormal,
+        pathPoints[i + 1].toAngles());
+      arcPath.tryAddChild(arc);
+    }
+    return arcPath;
+  }
+
 }

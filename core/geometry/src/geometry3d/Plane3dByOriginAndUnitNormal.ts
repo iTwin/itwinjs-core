@@ -174,12 +174,19 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     return new Plane3dByOriginAndUnitNormal(this._origin.clone(), this._normal.clone());
   }
   /** Create a clone and return the transform of the clone. */
-  public cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined {
+  public cloneTransformed(transform: Transform, inverse: boolean = false): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
-    transform.multiplyPoint3d(result._origin, result._origin);
-    if (transform.matrix.multiplyInverseTranspose(result._normal, result._normal) !== undefined
-      && result._normal.normalizeInPlace())
-      return result;
+    if (inverse) {
+      transform.multiplyInversePoint3d(result._origin, result._origin);
+      if (transform.matrix.multiplyTransposeVector(result._normal, result._normal) !== undefined
+        && result._normal.normalizeInPlace())
+        return result;
+    } else {
+      transform.multiplyPoint3d(result._origin, result._origin);
+      if (transform.matrix.multiplyInverseTranspose(result._normal, result._normal) !== undefined
+        && result._normal.normalizeInPlace())
+        return result;
+    }
     return undefined;
   }
   /** Copy data from the given plane. */

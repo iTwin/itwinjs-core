@@ -24,6 +24,8 @@ import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
 import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
 import { Arc3d } from "../curve/Arc3d";
+import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -137,17 +139,29 @@ class EllipsoidComponentExtrema {
  *    * `v = sin(theta) * cos(phi)`
  *    * `w = sin(phi)`
  *  * The sphere (u,v,w) multiply the x,y,z columns of the Ellipsoid transform.
- * @internal
+ * @public
  */
 export class Ellipsoid {
   private _transform: Transform;
+  private _unitVectorA: Vector3d;
+  private _unitVectorB: Vector3d;
+
   private constructor(transform: Transform) {
     this._transform = transform;
+    this._unitVectorA = Vector3d.create();
+    this._unitVectorB = Vector3d.create();
+
   }
   /** Create with a clone (not capture) with given transform.
+   * * If transform is undefined, create a unit sphere.
    */
-  public static create(transform: Transform): Ellipsoid {
-    return new Ellipsoid(transform.clone());
+  public static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid {
+    if (matrixOrTransform instanceof Transform)
+      return new Ellipsoid(matrixOrTransform);
+    else if (matrixOrTransform instanceof Matrix3d)
+      return new Ellipsoid(Transform.createOriginAndMatrix(undefined, matrixOrTransform));
+    else
+      return new Ellipsoid(Transform.createIdentity());
   }
   /**
    * Create a transform with given center and directions, applying the radii as multipliers for the respective columns of the axes.
@@ -183,6 +197,14 @@ export class Ellipsoid {
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
+  }
+  /** Find the closest point of the (patch of the) ellipsoid.
+   * * In general there are multiple points where a space point projects onto an ellipse.
+   * * This searches for only one point, using heuristics which are reliable for points close to the surface but not for points distant from highly skewed ellipsoid
+   */
+  public projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined {
+    const searcher = new EllipsoidClosestPoint(this);
+    return searcher.searchClosestPoint(spacePoint);
   }
   /** Compute intersections with a ray.
    * * Return the number of intersections
@@ -275,8 +297,7 @@ export class Ellipsoid {
     const sinPhi = Math.sin(phiRadians);
     return this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
   }
-  private _unitVectorA?: Vector3d;
-  private _unitVectorB?: Vector3d;
+
   /**
    * * For a given pair of points on an ellipsoid, construct an arc (possibly elliptical) which
    *   * passes through both points
@@ -294,22 +315,84 @@ export class Ellipsoid {
     thetaARadians: number, phiARadians: number,
     thetaBRadians: number, phiBRadians: number,
     result?: Arc3d): Arc3d | undefined {
-    if (!this._unitVectorA)
-      this._unitVectorA = Vector3d.create();
-    if (!this._unitVectorB)
-      this._unitVectorB = Vector3d.create();
     SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
     const sweepAngle = this._unitVectorA.angleTo(this._unitVectorB);
-    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ);
-    if (matrix) {
-      const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
-      return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
-        AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    // the unit vectors (on unit sphere) are never 0, so this cannot fail.
+    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ)!;
+    const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
+    return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
+      AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+  }
+  /**
+   * See radiansPairToGreatArc, which does this computation with positions from `angleA` and `angleB` directly as radians
+   */
+  public anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined {
+    return this.radiansPairToGreatArc(
+      angleA.longitudeRadians, angleA.latitudeRadians, angleB.longitudeRadians, angleB.latitudeRadians, result);
+  }
+  /**
+   * Construct an arc for the section cut of a plane with the ellipsoid.
+   * * this is undefined if the plane does not intersect the ellipsoid.
+   */
+  public createPlaneSection(plane: Plane3dByOriginAndUnitNormal): Arc3d | undefined {
+    const localPlane = plane.cloneTransformed(this._transform, true);
+    if (localPlane !== undefined) {
+      // construct center and arc vectors in the local system --- later transform them out to global.
+      const center = localPlane.projectPointToPlane(Point3d.createZero());
+      const d = center.magnitude();
+      if (d < 1.0) {
+        const frame = Matrix3d.createRigidHeadsUp(localPlane.getNormalRef(), AxisOrder.ZYX);
+        const vector0 = frame.columnX();
+        const vector90 = frame.columnY();
+        const sectionRadius = Math.sqrt(1.0 - d * d);
+        vector0.scaleInPlace(sectionRadius);
+        vector90.scaleInPlace(sectionRadius);
+
+        this._transform.multiplyPoint3d(center, center);
+        this._transform.multiplyVector(vector0, vector0);
+        this._transform.multiplyVector(vector90, vector90);
+        return Arc3d.create(center, vector0, vector90, undefined);
+      }
     }
     return undefined;
   }
-
+  /**
+   * Construct an arc which
+   *  * start at pointA (defined by its angle position)
+   *  * ends at pointB (defined by its angle position)
+   *  * contains the 3rd vector as an in-plane point.
+   */
+  public createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d,
+    result?: Arc3d): Arc3d | undefined {
+    const xyzA = this.radiansToPoint(pointAnglesA.longitudeRadians, pointAnglesA.latitudeRadians);
+    const xyzB = this.radiansToPoint(pointAnglesB.longitudeRadians, pointAnglesB.latitudeRadians);
+    const localA = this._transform.multiplyInversePoint3d(xyzA);
+    const localB = this._transform.multiplyInversePoint3d(xyzB);
+    const a = this._transform.matrix.maxAbs();
+    const scaledInPlaneVector = inPlaneVector.scaleToLength(a);
+    if (scaledInPlaneVector === undefined)
+      return undefined;
+    const localInPlaneVector = this._transform.matrix.multiplyInverse(scaledInPlaneVector);
+    if (localA !== undefined && localB !== undefined && localInPlaneVector !== undefined) {
+      const localPlane = Plane3dByOriginAndUnitNormal.createPointPointVectorInPlane(localA, localB, localInPlaneVector);
+      if (localPlane !== undefined) {
+        // construct center and arc vectors in the local system --- later transform them out to global.
+        const center = localPlane.projectPointToPlane(Point3d.createZero());
+        const vector0 = Vector3d.createStartEnd(center, localA);
+        const vectorB = Vector3d.createStartEnd(center, localB);
+        const vector90 = Vector3d.createRotateVectorAroundVector(vector0, localPlane.getNormalRef(), undefined);
+        if (vector90 !== undefined) {
+          const sweepRadians = vector0.planarRadiansTo(vectorB, localPlane.getNormalRef());
+          this._transform.multiplyPoint3d(center, center);
+          this._transform.multiplyVector(vector0, vector0);
+          this._transform.multiplyVector(vector90, vector90);
+          return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0, sweepRadians), result);
+        }
+      }
+    }
+    return undefined;
+  }
   /**
    * * For a given pair of points on an ellipsoid, construct another ellipsoid
    *   * touches the same xyz points in space
@@ -325,10 +408,6 @@ export class Ellipsoid {
     thetaARadians: number, phiARadians: number,
     thetaBRadians: number, phiBRadians: number,
     result?: Ellipsoid): Ellipsoid | undefined {
-    if (!this._unitVectorA)
-      this._unitVectorA = Vector3d.create();
-    if (!this._unitVectorB)
-      this._unitVectorB = Vector3d.create();
     SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
 
@@ -376,6 +455,24 @@ export class Ellipsoid {
     const center = this._transform.multiplyXYZ(0, 0, sinPhi);
     return Arc3d.create(center, vector0, vector90, longitudeSweep, result);
   }
+  /**
+   * * create a section arc with and end at positions A and B, and in plane with the normal at a fractional
+   *    interpolation between.
+   * @param angleA start point of arc (given as angles on this ellipsoid)
+   * @param intermediateNormalFraction
+   * @param angleB end point of arc (given as angles on this ellipsoid)
+   */
+  public sectionArcWithIntermediateNormal(
+    angleA: LongitudeLatitudeNumber,
+    intermediateNormalFraction: number,
+    angleB: LongitudeLatitudeNumber): Arc3d {
+    const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians)!;
+    const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians)!;
+    const normal = normalA.direction.interpolate(intermediateNormalFraction, normalB.direction);
+    const arc = this.createSectionArcPointPointVectorInPlane(angleA, angleB, normal);
+    return arc!;
+  }
+
   /**
    * Evaluate a point and derivatives with respect to angle on the ellipsoid at angles give in radians.
    * * "u direction" vector of the returned plane is derivative with respect to longitude.
@@ -468,8 +565,16 @@ export class Ellipsoid {
   }
   /**
    * Find the (unique) extreme point for a given true surface perpendicular vector (outward)
+   * @deprecated Instead of using `Point2d` to carry radians, use `surfaceNormalToAngles` which carries radians in `LongitudeLatitudeNumber`.
    */
   public surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d {
+    const angles = this.surfaceNormalToAngles(normal);
+    return Point2d.create(angles.longitudeRadians, angles.latitudeRadians, result);
+  }
+  /**
+   * Find the (unique) extreme point for a given true surface perpendicular vector (outward)
+   */
+  public surfaceNormalToAngles(normal: Vector3d, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber {
     const matrix = this._transform.matrix;
     const conjugateVector = matrix.multiplyTransposeVector(normal);
     const thetaRadians = Math.atan2(conjugateVector.y, conjugateVector.x);
@@ -477,7 +582,34 @@ export class Ellipsoid {
     const axy = -(conjugateVector.x * Math.cos(thetaRadians) + conjugateVector.y * Math.sin(thetaRadians));
     const az = conjugateVector.z;
     const phiRadians = Math.atan2(az, -axy);
-    return Point2d.create(thetaRadians, phiRadians, result);
+    return LongitudeLatitudeNumber.createRadians(thetaRadians, phiRadians, 0.0, result);
+  }
+
+  /**
+   * * Evaluate the surface normal on `other` ellipsoid at given angles
+   *    * If `other` is undefined, default to unit sphere.
+   * * Find the angles for the same normal on `this` ellipsoid
+   */
+  public otherEllipsoidAnglesToThisEllipsoidAngles(otherEllipsoid: Ellipsoid | undefined, otherAngles: LongitudeLatitudeNumber, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber | undefined {
+    const normal = Ellipsoid.radiansToUnitNormalRay(otherEllipsoid, otherAngles.longitudeRadians, otherAngles.latitudeRadians);
+    if (normal !== undefined)
+      return this.surfaceNormalToAngles(normal.direction, result);
+    return undefined;
+  }
+  /**
+   * * if ellipsoid is given, return its surface point and unit normal as a Ray3d.
+   * * if not given, return surface point and unit normal for unit sphere.
+   */
+  public static radiansToUnitNormalRay(ellipsoid: Ellipsoid | undefined, thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined {
+    if (ellipsoid) {
+      return ellipsoid.radiansToUnitNormalRay(thetaRadians, phiRadians, result);
+    }
+    if (!result)
+      result = Ray3d.createZAxis();
+    // for unit sphere, the vector from center to surface point is identical to the unit normal.
+    SphereImplicit.radiansToUnitSphereXYZ(thetaRadians, phiRadians, result.origin);
+    result.direction.setFromPoint3d(result.origin);
+    return result;
   }
 }
 /**
@@ -486,7 +618,7 @@ export class Ellipsoid {
  *   * an angular range (`AngleSweep`) of longitudes around the equator
  *   * an angular range (`AngleSweep`) of latitudes, with 0 at the equator, +90 degrees at north pole.
  * * The `EllipsoidPatch` implements `UVSurface` methods, so a `PolyfaceBuilder` can generate facets in its method `addUVGridBody`
- * @internal
+ * @public
  */
 export class EllipsoidPatch implements UVSurface {
   public ellipsoid: Ellipsoid;
@@ -596,8 +728,7 @@ export class EllipsoidPatch implements UVSurface {
   }
   /** Find the closest point of the (patch of the) ellipsoid. */
   public projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined {
-    const searcher = new EllipsoidClosestPoint(this.ellipsoid);
-    return searcher.searchClosestPoint(spacePoint);
+    return this.ellipsoid.projectPointToSurface(spacePoint);
   }
 }
 /**
@@ -658,4 +789,247 @@ class EllipsoidClosestPoint extends NewtonEvaluatorRRtoRRD {
 
     return true;
   }
+}
+/**
+ * Detailed data for a point on a 2-angle parameter space.
+ * @public
+ */
+export class GeodesicPathPoint {
+  /** First angle, in radians */
+  public thetaRadians: number;
+  /** Second angle, in radians */
+  public phiRadians: number;
+  public point: Point3d;
+  public dTheta: Vector3d;
+  public dPhi: Vector3d;
+  public d2Theta: Vector3d;
+  public d2Phi: Vector3d;
+  public d2ThetaPhi: Vector3d;
+  public d1Cross: Vector3d;
+  public constructor() {
+    this.thetaRadians = 0;
+    this.phiRadians = 0;
+    this.point = Point3d.create();
+    this.dTheta = Vector3d.create();
+    this.dPhi = Vector3d.create();
+    this.d2Theta = Vector3d.create();
+    this.d2Phi = Vector3d.create();
+    this.d2ThetaPhi = Vector3d.create();
+    this.d1Cross = Vector3d.create();
+  }
+  /** Fill all evaluations at given theta and phi. */
+  public evaluateDerivativesAtCurrentAngles(ellipsoid: Ellipsoid) {
+    ellipsoid.radiansToPointAnd2Derivatives(this.thetaRadians, this.phiRadians, this.point, this.dTheta, this.dPhi, this.d2Theta, this.d2Phi, this.d2ThetaPhi);
+    this.dTheta.crossProduct(this.dPhi, this.d1Cross);
+  }
+  private static _vectorAB?: Vector3d;
+  private static _vectorCB?: Vector3d;
+  private static _vectorCross?: Vector3d;
+  /** Evaluate the newton function and derivatives:
+   *          `(UAB cross UCB) dot d1cross`
+   * with as the central data, UAB = vector from pointA to pointB, UCB = vector from pointC to pointA.
+   * * Return order is:
+   *   * values[0] = the function
+   *   * values[1] = derivative wrt pointA.phi
+   *   * values[2] = derivative wrt pointB.phi
+   *   * values[3] = derivative wrt pointC.phi
+   */
+  public static evaluateNewtonFunction(pointA: GeodesicPathPoint, pointB: GeodesicPathPoint, pointC: GeodesicPathPoint, values: Float64Array) {
+    this._vectorAB = Vector3d.createStartEnd(pointA.point, pointB.point, this._vectorAB);
+    this._vectorCB = Vector3d.createStartEnd(pointC.point, pointB.point, this._vectorCB);
+    this._vectorCross = this._vectorAB.crossProduct(this._vectorCB);
+    // this._vectorCross is the cross product of vectors from A to B and C to B
+    // it should be perpendicular to (have zero dot product with) the surface normal, which is sitting in pointB as d1Cross
+    values[0] = this._vectorCross.dotProduct(pointB.d1Cross);
+    // Derivatives wrt phi at A, B, C creates derivatives of values[0] wrt each.
+    // derivatives at neighbor appear only on their point-to-point vector, and with negative sign ..
+    values[1] = - pointA.dPhi.tripleProduct(this._vectorCB, pointB.d1Cross);
+    values[3] = - this._vectorAB.tripleProduct(pointC.dPhi, pointB.d1Cross);
+    // values from pointB appear with positive sign everywhere . ..
+    values[2] = pointB.dPhi.tripleProduct(this._vectorCB, pointB.d1Cross)
+      + this._vectorAB.tripleProduct(pointB.dPhi, pointB.d1Cross)
+      + this._vectorCross.tripleProduct(pointB.d2ThetaPhi, pointB.dPhi)
+      + this._vectorCross.tripleProduct(pointB.dTheta, pointB.d2Phi);
+    // CRUNCH CRUNCH CRUNCH
+  }
+  /**
+   * Extract the two angles form this structure to a LongitudeLatitudeNumber structure.
+   */
+  public toAngles(): LongitudeLatitudeNumber {
+    return LongitudeLatitudeNumber.createRadians(this.thetaRadians, this.phiRadians);
+  }
+}
+/**
+ * Algorithm implementation class for computing approximate optimal (shortest) path points.
+ * * Call the static method `createGeodesicPath` to compute path points.
+ * @public
+ */
+export class GeodesicPathSolver {
+  private _defaultArc: Arc3d;
+  private _pathPoints: GeodesicPathPoint[];
+  private _tridiagonalSolver!: TriDiagonalSystem;
+  private constructor(defaultArc: Arc3d) {
+    this._pathPoints = [];
+    this._defaultArc = defaultArc;
+  }
+  /**
+   *
+   * @param originalEllipsoid Given start and endpoints on an ellipsoid, compute points along a near-optimal shortest path.
+   * * The points are located so that at each point the local surface normal is contained in the plane of the point and its two neighbors.
+   * @param startAngles angles for the start of the path
+   * @param endAngles angles for the end of the path
+   * @param density If this is a number, it is the requested edge count.  If this is an angle, it ias an angular spacing measured in the great arc through the two points.
+   */
+  public static createGeodesicPath(originalEllipsoid: Ellipsoid,
+    startAngles: LongitudeLatitudeNumber, endAngles: LongitudeLatitudeNumber, density: number | Angle): GeodesicPathPoint[] | undefined {
+    const workEllipsoid1 = originalEllipsoid.radiansPairToEquatorialEllipsoid(startAngles.longitudeRadians, startAngles.latitudeRadians,
+      endAngles.longitudeRadians, endAngles.latitudeRadians);
+    const workArc = originalEllipsoid.radiansPairToGreatArc(startAngles.longitudeRadians, startAngles.latitudeRadians,
+      endAngles.longitudeRadians, endAngles.latitudeRadians);
+    if (workEllipsoid1 === undefined || workArc === undefined)
+      return undefined;
+    let numEdges = 4;
+    if (density instanceof Angle) {
+      numEdges = Geometry.stepCount(density.radians, workArc.sweep.sweepRadians, 4, 180);
+    } else if (Number.isFinite(density)) {
+      numEdges = Math.max(numEdges, density);
+    }
+    if (numEdges > 180)
+      numEdges = 180;
+    const scaledMatrix = workEllipsoid1.transformRef.matrix.clone();
+    const largestCoordinate = scaledMatrix.maxAbs();
+    const inverseLargestCoordinate = 1.0 / largestCoordinate;
+    scaledMatrix.scaleColumnsInPlace(inverseLargestCoordinate, inverseLargestCoordinate, inverseLargestCoordinate);
+    const workEllipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(undefined, scaledMatrix));
+
+    const solver = new GeodesicPathSolver(workArc);
+    solver.createInitialPointsAndTridiagonalSystem(numEdges);
+
+    let numConverged = 0;
+    let previousMaxDPhi = 10000.0;
+    let numStep = 0;
+    const dPhiTolerance = 1.0e-8;
+    solver.setupStep(workEllipsoid);
+    while (numStep < 15 && numConverged < 2) {
+      if (!solver.solve())
+        break;
+      previousMaxDPhi = solver.applyUpdate(0.1);
+      solver.setupStep(workEllipsoid);
+      if (previousMaxDPhi < dPhiTolerance)
+        numConverged++;
+      else
+        numConverged = 0;
+      numStep++;
+    }
+    if (numConverged > 0) {
+      const workAngles = LongitudeLatitudeNumber.createRadians(0, 0);
+      const originalAngles = LongitudeLatitudeNumber.createRadians(0, 0);
+      for (const p of solver._pathPoints) {
+        LongitudeLatitudeNumber.createRadians(p.thetaRadians, p.phiRadians, 0, workAngles);
+        originalEllipsoid.otherEllipsoidAnglesToThisEllipsoidAngles(workEllipsoid, workAngles, originalAngles);
+        p.thetaRadians = originalAngles.longitudeRadians;
+        p.phiRadians = originalAngles.latitudeRadians;
+        p.evaluateDerivativesAtCurrentAngles(originalEllipsoid);
+      }
+      return solver._pathPoints;
+    }
+    return numConverged > 0 ? solver._pathPoints : undefined;
+  }
+  private createInitialPointsAndTridiagonalSystem(numEdges: number) {
+    if (numEdges < 2)
+      numEdges = 2;
+    let f, thetaRadians;
+    for (let i = 0; i <= numEdges; i++) {
+      f = i / numEdges;
+      thetaRadians = this._defaultArc.sweep.fractionToRadians(f);
+      const p = new GeodesicPathPoint();
+      p.thetaRadians = thetaRadians;
+      p.phiRadians = 0.0;
+      this._pathPoints.push(p);
+    }
+    this._tridiagonalSolver = new TriDiagonalSystem(this._pathPoints.length);
+  }
+  private applyUpdate(maxDPhiRadians: number): number {
+    let dPhiMax = 0;
+    for (let i = 0; i < this._pathPoints.length; i++) {
+      const dPhi = Geometry.clampToStartEnd(this._tridiagonalSolver.getX(i), -maxDPhiRadians, maxDPhiRadians);
+      this._pathPoints[i].phiRadians -= dPhi;
+      dPhiMax = Geometry.maxAbsXY(dPhiMax, dPhi);
+    }
+    return dPhiMax;
+  }
+
+  /**
+   * Set up a step with specified ellipsoid.
+   * * ASSUME angles in _pathPoints are valid on given ellipsoid.
+   * @param ellipsoid
+   */
+  private setupStep(ellipsoid: Ellipsoid) {
+    for (const p of this._pathPoints) {
+      p.evaluateDerivativesAtCurrentAngles(ellipsoid);
+    }
+    const lastRow = this._pathPoints.length - 1;
+    // first and last points get trivial dPhi=0 equations:
+    this._tridiagonalSolver.reset();
+    this._tridiagonalSolver.addToRow(0, 0, 1, 0);
+    this._tridiagonalSolver.addToB(0, 0);
+    this._tridiagonalSolver.addToRow(lastRow, 0, 1, 0);
+    this._tridiagonalSolver.addToB(lastRow, 0);
+
+    // interior points get proper newton equations
+    const values = new Float64Array(4);
+    for (let i = 1; i < lastRow; i++) {
+      GeodesicPathPoint.evaluateNewtonFunction(this._pathPoints[i - 1], this._pathPoints[i], this._pathPoints[i + 1], values);
+      this._tridiagonalSolver.addToRow(i, values[1], values[2], values[3]);
+      this._tridiagonalSolver.addToB(i, values[0]);
+    }
+  }
+
+  private solve(): boolean {
+    return this._tridiagonalSolver.factorAndBackSubstitute();
+  }
+  /**
+   * Construct various section arcs (on the ellipsoid), using planes that (a) pass through the two given points and (b) have in-plane vector sampled between the normals of the two points.
+   * * Each candidate ellipse has is in a plane with ellipsoid normal at vector constructed "between" the endpoint normals.
+   * * The intermediate construction is by interpolation between stated fractions (which maybe outside 0 to 1)
+   * @param ellipsoid
+   * @param angleA start point of all candidates
+   * @param angleB end point of all candidates
+   * @param numSample number of ellipses to construct as candidates.
+   * @param normalInterpolationFraction0
+   * @param normalInterpolationFraction1
+   */
+  public static approximateMinimumLengthSectionArc(ellipsoid: Ellipsoid,
+    angleA: LongitudeLatitudeNumber,
+    angleB: LongitudeLatitudeNumber, numSample: number,
+    normalInterpolationFraction0: number,
+    normalInterpolationFraction1: number): { minLengthArc: Arc3d, minLengthNormalInterpolationFraction: number } | undefined {
+    numSample = Geometry.clampToStartEnd(numSample, 2, 200);
+    const normalA = ellipsoid.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians);
+    const normalB = ellipsoid.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians);
+    if (normalA !== undefined && normalB !== undefined) {
+      let normalC;
+      let resultArc;
+      let lengthC;
+      let fractionC;
+
+      for (let i = 1; i <= numSample; i++) {
+        const f = Geometry.interpolate(normalInterpolationFraction0, i / numSample, normalInterpolationFraction1);
+        normalC = normalA.direction.interpolate(f, normalB.direction, normalC);
+        const candidateArc = ellipsoid.createSectionArcPointPointVectorInPlane(angleA, angleB, normalC);
+        if (candidateArc !== undefined) {
+          const candidateLength = candidateArc.curveLength();
+          if (lengthC === undefined || candidateLength < lengthC) {
+            lengthC = candidateLength;
+            resultArc = candidateArc;
+            fractionC = f;
+          }
+        }
+      }
+      if (resultArc !== undefined && fractionC !== undefined)
+        return { minLengthArc: resultArc, minLengthNormalInterpolationFraction: fractionC };
+    }
+    return undefined;
+  }
+
 }
