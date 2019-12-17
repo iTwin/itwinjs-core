@@ -173,6 +173,50 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
+// @beta
+export abstract class AnalyticalElement extends GeometricElement3d {
+    // @internal
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalModel extends GeometricModel3d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalPartition extends InformationPartitionElement {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalSchema extends Schema {
+    // (undocumented)
+    static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
+    static readonly schemaName: string;
+}
+
+// @beta
+export class AnalyticalSimulatesSpatialElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalType extends TypeDefinitionElement {
+    // @internal
+    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
