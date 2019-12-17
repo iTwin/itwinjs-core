@@ -1163,6 +1163,14 @@ export enum CommonLoggerCategory {
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
 
+// @beta
+export enum ComparisonOption {
+    // (undocumented)
+    Exclusive = 1,
+    // (undocumented)
+    Inclusive = 0
+}
+
 // @public
 export interface ContextRealityModelProps {
     // @beta (undocumented)
@@ -2906,6 +2914,20 @@ export enum LightType {
 }
 
 // @beta
+export interface LinearLocationReference {
+    // (undocumented)
+    linearlyLocatedClassFullName: string;
+    // (undocumented)
+    linearlyLocatedId: Id64String;
+    // (undocumented)
+    locationAspectId: Id64String;
+    // (undocumented)
+    startDistanceAlong: number;
+    // (undocumented)
+    stopDistanceAlong: number;
+}
+
+// @beta
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
 }
 
@@ -2935,6 +2957,16 @@ export interface LinearlyReferencedFromToLocationProps {
     toPosition: DistanceExpressionProps;
     // (undocumented)
     toPositionFromReferent?: RelatedElementProps;
+}
+
+// @beta
+export enum LinearlyReferencedLocationType {
+    // (undocumented)
+    Any = 2,
+    // (undocumented)
+    At = 0,
+    // (undocumented)
+    FromTo = 1
 }
 
 // @public
@@ -3849,6 +3881,22 @@ export namespace Quantization {
 export interface QueryLimit {
     maxRowAllowed?: number;
     startRowOffset?: number;
+}
+
+// @beta
+export interface QueryParams {
+    // (undocumented)
+    fromComparisonOption?: ComparisonOption;
+    // (undocumented)
+    fromDistanceAlong?: number;
+    // (undocumented)
+    linearlyLocatedClassFullNames?: string[];
+    // (undocumented)
+    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType;
+    // (undocumented)
+    toComparisonOption?: ComparisonOption;
+    // (undocumented)
+    toDistanceAlong?: number;
 }
 
 // @public

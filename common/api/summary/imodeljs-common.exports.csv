@@ -54,6 +54,7 @@ public;ColorDef
 public;ColorDefProps = number | ColorDef
 internal;ColorIndex
 public;CommonLoggerCategory
+beta;ComparisonOption
 public;ContextRealityModelProps
 public;CreateIModelProps 
 internal;CURRENT_INVOCATION: unique symbol
@@ -186,11 +187,13 @@ internal;Light
 internal;LightLocationProps 
 internal;LightProps
 internal;LightType
+beta;LinearLocationReference
 beta;LinearlyLocatedAttributionProps 
 beta;LinearlyReferencedAtLocationAspectProps 
 beta;LinearlyReferencedAtLocationProps
 beta;LinearlyReferencedFromToLocationAspectProps 
 beta;LinearlyReferencedFromToLocationProps
+beta;LinearlyReferencedLocationType
 public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
@@ -260,6 +263,7 @@ internal;QPoint3d
 internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
+beta;QueryParams
 public;QueryPriority
 public;QueryQuota
 public;QueryResponse

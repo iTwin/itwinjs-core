@@ -46,7 +46,6 @@ beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComparisonOption
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;CrashReportingConfig
@@ -197,7 +196,6 @@ internal;LightLocation
 beta;LinearElement
 beta;LinearLocation 
 beta;class LinearLocationElement 
-beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
 beta;LinearlyLocatedBase
@@ -210,7 +208,6 @@ beta;LinearlyReferencedAtPositionRefersToReferent
 beta;LinearlyReferencedFromPositionRefersToReferent 
 beta;LinearlyReferencedFromToLocation 
 beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedLocationType
 beta;LinearlyReferencedToPositionRefersToReferent 
 beta;class LinearPhysicalElement 
 beta;LinearReferencingSchema 
@@ -235,7 +232,6 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
-beta;QueryParams
 internal;class RecipeDefinitionElement 
 beta;Referent 
 beta;class ReferentElement 

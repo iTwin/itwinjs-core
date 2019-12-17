@@ -91,6 +91,7 @@ import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
+import { LinearLocationReference } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
@@ -117,6 +118,7 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
+import { QueryParams } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
@@ -711,14 +713,6 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
-}
-
-// @beta
-export enum ComparisonOption {
-    // (undocumented)
-    Exclusive = 1,
-    // (undocumented)
-    Inclusive = 0
 }
 
 // @beta
@@ -2561,21 +2555,6 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
     getLinearElementId(): Id64String | undefined;
 }
 
-// @beta (undocumented)
-export class LinearLocationReference {
-    constructor(startDistanceAlong: number, stopDistanceAlong: number, linearlyLocatedId: Id64String, linearlyLocatedClassFullName: string, locationAspectId: Id64String);
-    // (undocumented)
-    readonly linearlyLocatedClassFullName: string;
-    // (undocumented)
-    readonly linearlyLocatedId: Id64String;
-    // (undocumented)
-    readonly locationAspectId: Id64String;
-    // (undocumented)
-    readonly startDistanceAlong: number;
-    // (undocumented)
-    readonly stopDistanceAlong: number;
-}
-
 // @beta
 export class LinearlyLocated {
     static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined;
@@ -2690,16 +2669,6 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
 export class LinearlyReferencedLocation extends ElementMultiAspect {
     // @internal (undocumented)
     static readonly className: string;
-}
-
-// @beta
-export enum LinearlyReferencedLocationType {
-    // (undocumented)
-    Any = 2,
-    // (undocumented)
-    At = 0,
-    // (undocumented)
-    FromTo = 1
 }
 
 // @beta
@@ -3099,23 +3068,6 @@ export class Platform {
     // @internal (undocumented)
     static load(dir?: string): typeof IModelJsNative;
     static readonly platformName: string;
-}
-
-// @beta (undocumented)
-export class QueryParams {
-    constructor(fromDistanceAlong?: number | undefined, fromComparisonOption?: ComparisonOption | undefined, toDistanceAlong?: number | undefined, toComparisonOption?: ComparisonOption | undefined, linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined, linearlyLocatedClassFullNames?: string[] | undefined);
-    // (undocumented)
-    fromComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    fromDistanceAlong?: number | undefined;
-    // (undocumented)
-    linearlyLocatedClassFullNames?: string[] | undefined;
-    // (undocumented)
-    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined;
-    // (undocumented)
-    toComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    toDistanceAlong?: number | undefined;
 }
 
 // @internal
