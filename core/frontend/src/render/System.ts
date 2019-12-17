@@ -18,7 +18,8 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
-import { ViewFrustum, Viewport, ViewRect } from "../Viewport";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
@@ -185,7 +186,6 @@ export namespace RenderMemory {
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
-  public readonly viewFrustum: ViewFrustum;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -196,37 +196,50 @@ export class RenderPlan {
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
   public readonly analysisTexture?: RenderTexture;
-  public classificationTextures?: Map<Id64String, RenderTexture>;
-  private _curFrustum: ViewFrustum;
-
-  public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
-  public get fraction(): number { return this._curFrustum.frustFraction; }
-
-  public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
+  public readonly classificationTextures?: Map<Id64String, RenderTexture>;
+  public readonly frustum: Frustum;
+  public readonly fraction: number;
 
   public static createFromViewport(vp: Viewport): RenderPlan {
     return new RenderPlan(vp);
   }
 
-  private constructor(vp: Viewport) {
-    const view = vp.view;
-    const style = view.displayStyle;
+  public static createEmpty(): RenderPlan {
+    return new RenderPlan();
+  }
 
-    this.is3d = view.is3d();
-    this.viewFlags = style.viewFlags;
-    this.bgColor = view.backgroundColor;
-    this.monoColor = style.monochromeColor;
-    this.hiliteSettings = vp.hilite;
-    this.emphasisSettings = vp.emphasisSettings;
-    this._curFrustum = this.viewFrustum = vp.viewFrustum;
-    this.isFadeOutActive = vp.isFadeOutActive;
-    this.activeVolume = view.getViewClip();
-    this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-    this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-    this.analysisStyle = style.analysisStyle;
+  private constructor(vp?: Viewport) {
+    if (undefined !== vp) {
+      const view = vp.view;
+      const style = view.displayStyle;
 
-    if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
-      this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
+      this.is3d = view.is3d();
+      this.frustum = vp.viewFrustum.getFrustum();
+      this.fraction = vp.viewFrustum.frustFraction;
+      this.viewFlags = style.viewFlags;
+      this.bgColor = view.backgroundColor;
+      this.monoColor = style.monochromeColor;
+      this.hiliteSettings = vp.hilite;
+      this.emphasisSettings = vp.emphasisSettings;
+      this.isFadeOutActive = vp.isFadeOutActive;
+      this.activeVolume = view.getViewClip();
+      this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+      this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
+      this.analysisStyle = style.analysisStyle;
+
+      if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
+        this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
+    } else {
+      this.is3d = true;
+      this.viewFlags = new ViewFlags();
+      this.bgColor = ColorDef.white.clone();
+      this.monoColor = ColorDef.white.clone();
+      this.hiliteSettings = new Hilite.Settings();
+      this.emphasisSettings = new Hilite.Settings();
+      this.frustum = new Frustum();
+      this.fraction = 0;
+      this.isFadeOutActive = false;
+    }
   }
 }
 
@@ -803,7 +816,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   public abstract get renderSystem(): RenderSystem;
-  public abstract get cameraFrustumNearScaleLimit(): number;
   public abstract get viewRect(): ViewRect;
   public abstract get wantInvertBlackBackground(): boolean;
 

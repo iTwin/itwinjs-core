@@ -8,7 +8,7 @@ import { VariableType, FragmentShaderComponent, ShaderType } from "../ShaderBuil
 import { ShaderProgram } from "../ShaderProgram";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { FrustumUniformType, fromSumOf } from "../Target";
+import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
 import { Npc } from "@bentley/imodeljs-common";
 import { Vector3d, Point3d, Angle } from "@bentley/geometry-core";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
@@ -77,7 +77,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
   vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_worldEye", (uniform, params) => {
       const frustum = params.target.planFrustum;
-      if (FrustumUniformType.Perspective === params.target.frustumUniforms.type) {
+      if (FrustumUniformType.Perspective === params.target.uniforms.frustum.type) {
         // compute eye point from frustum.
         const farLowerLeft = frustum.getCorner(Npc.LeftBottomRear);
         const nearLowerLeft = frustum.getCorner(Npc.LeftBottomFront);

@@ -8,7 +8,7 @@ import { IDisposable } from "@bentley/bentleyjs-core";
  * Resources are freed in the inherited `dispose` method.
  * @internal
  */
-export interface WebGlDisposable extends IDisposable {
+export interface WebGLDisposable extends IDisposable {
   /** Test whether the object currently holds any unreleased WebGL resources.
    * This property should *always* return false after `dispose` has been called.
    * @returns true if the object has released any and all WebGL resources it may have previously owned.

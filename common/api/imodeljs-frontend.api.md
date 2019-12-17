@@ -1079,7 +1079,8 @@ export namespace Attachments {
         tileRequiresLoading(_params: Tile.Params): boolean;
     }
     // (undocumented)
-    export class AttachmentViewport extends OffScreenViewport {
+    export class AttachmentViewport {
+        constructor(view: ViewState3d);
         // (undocumented)
         createScene(currentState: State): State;
         // (undocumented)
@@ -1096,6 +1097,8 @@ export namespace Attachments {
         readonly texture: RenderTexture | undefined;
         // (undocumented)
         toParent: Transform;
+        // (undocumented)
+        readonly vp: OffScreenViewport;
     }
     export const enum State {
         // (undocumented)
@@ -2812,9 +2815,6 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @internal (undocumented)
-export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d;
-
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
@@ -2830,39 +2830,6 @@ export enum FrontendLoggerCategory {
 // @public
 export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
-}
-
-// @internal
-export class FrustumUniforms {
-    constructor();
-    // (undocumented)
-    readonly farPlane: number;
-    // (undocumented)
-    readonly frustum: Float32Array;
-    // (undocumented)
-    readonly frustumPlanes: Float32Array;
-    // (undocumented)
-    readonly is2d: boolean;
-    // (undocumented)
-    readonly logZ: Float32Array | undefined;
-    // (undocumented)
-    readonly nearPlane: number;
-    // (undocumented)
-    setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType, useLogZ: boolean): void;
-    // (undocumented)
-    setPlanes(top: number, bottom: number, left: number, right: number): void;
-    // (undocumented)
-    readonly type: FrustumUniformType;
-    }
-
-// @internal (undocumented)
-export const enum FrustumUniformType {
-    // (undocumented)
-    Orthographic = 1,
-    // (undocumented)
-    Perspective = 2,
-    // (undocumented)
-    TwoDee = 0
 }
 
 // @public (undocumented)
@@ -4552,8 +4519,6 @@ export namespace MockRender {
         // (undocumented)
         animationFraction: number;
         // (undocumented)
-        readonly cameraFrustumNearScaleLimit: number;
-        // (undocumented)
         changeBackgroundMap(_backgroundMap: GraphicList): void;
         // (undocumented)
         changeDecorations(_decs: Decorations): void;
@@ -4735,8 +4700,6 @@ export class NullTarget extends RenderTarget {
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
     animationFraction: number;
-    // (undocumented)
-    readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
     changeBackgroundMap(): void;
     // (undocumented)
@@ -5009,6 +4972,8 @@ export class PerformanceMetrics {
     beginFrame(sceneTime?: number): void;
     // (undocumented)
     beginOperation(operationName: string): void;
+    // (undocumented)
+    completeFrameTimings(fbo: FrameBuffer, sceneMilSecElapsed?: number): void;
     // (undocumented)
     curSpfTimeIndex: number;
     // (undocumented)
@@ -5705,7 +5670,9 @@ export class RenderPlan {
     // (undocumented)
     readonly bgColor: ColorDef;
     // (undocumented)
-    classificationTextures?: Map<Id64String, RenderTexture>;
+    readonly classificationTextures?: Map<Id64String, RenderTexture>;
+    // (undocumented)
+    static createEmpty(): RenderPlan;
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
@@ -5725,11 +5692,7 @@ export class RenderPlan {
     // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
-    selectViewFrustum(): void;
-    // (undocumented)
     readonly viewFlags: ViewFlags;
-    // (undocumented)
-    readonly viewFrustum: ViewFrustum;
 }
 
 // @internal
@@ -5998,8 +5961,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
     abstract animationFraction: number;
-    // (undocumented)
-    abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
     changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void;
     // (undocumented)
@@ -7104,7 +7065,7 @@ export class SyncFlags {
 }
 
 // @internal (undocumented)
-export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGlDisposable {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
     protected constructor(rect?: ViewRect);
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
@@ -7127,19 +7088,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
-    readonly batchState: BatchState;
-    // (undocumented)
     protected abstract _beginPaint(): void;
     // (undocumented)
     beginPerfMetricFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
     beginPerfMetricRecord(operation: string): void;
-    // (undocumented)
-    readonly bgColor: FloatRgba;
-    // (undocumented)
-    readonly branchStack: BranchStack;
-    // (undocumented)
-    readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
     changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
     // (undocumented)
@@ -7177,13 +7130,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
     // (undocumented)
-    readonly currentBatchId: number;
-    // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
     // (undocumented)
     readonly currentlyDrawingClassifier: PlanarClassifier | undefined;
-    // (undocumented)
-    currentOverrides: FeatureOverrides | undefined;
     // (undocumented)
     readonly currentPlanarClassifier: PlanarClassifier | undefined;
     // (undocumented)
@@ -7227,10 +7176,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly edgeColor: ColorInfo;
     // (undocumented)
-    emphasisColor: FloatRgba;
-    // (undocumented)
-    emphasisSettings: Hilite.Settings;
-    // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
     endPerfMetricFrame(sceneMilSecElapsed?: number): void;
@@ -7246,8 +7191,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly flashedUpdateTime: BeTimePoint;
     // (undocumented)
     readonly flashIntensity: number;
-    // (undocumented)
-    readonly frustumUniforms: FrustumUniforms;
     // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
     // (undocumented)
@@ -7267,11 +7210,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly hiddenEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)
-    hiliteColor: FloatRgba;
-    // (undocumented)
     readonly hilites: Hilites;
-    // (undocumented)
-    hiliteSettings: Hilite.Settings;
     // (undocumented)
     readonly hiliteUpdateTime: BeTimePoint;
     // (undocumented)
@@ -7295,17 +7234,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly isReadPixelsInProgress: boolean;
     // (undocumented)
-    readonly monoColor: FloatRgba;
-    // (undocumented)
-    readonly nearPlaneCenter: Point3d;
-    // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
     // (undocumented)
-    plan?: RenderPlan;
+    plan: RenderPlan;
     // (undocumented)
     readonly planFraction: number;
     // (undocumented)
@@ -7318,8 +7253,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     popBranch(): void;
     // (undocumented)
     primitiveVisibility: PrimitiveVisibility;
-    // (undocumented)
-    readonly projectionMatrix: Matrix4d;
     // (undocumented)
     pushActiveVolume(): void;
     // (undocumented)
@@ -7339,7 +7272,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly renderRect: ViewRect;
     // (undocumented)
-    readonly renderSystem: RenderSystem;
+    readonly renderSystem: System;
     // (undocumented)
     reset(): void;
     // (undocumented)
@@ -7357,13 +7290,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly transparencyThreshold: number;
     // (undocumented)
+    readonly uniforms: TargetUniforms;
+    // (undocumented)
     updateSolarShadows(context: SceneContext | undefined): void;
     // (undocumented)
     useLogZ: boolean;
     // (undocumented)
     vcSupportIntersectingVolumes: boolean;
-    // (undocumented)
-    readonly viewMatrix: Transform;
     // (undocumented)
     readonly visibleEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)

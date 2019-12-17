@@ -35,7 +35,7 @@ export function addLogDepth(builder: ProgramBuilder): void {
   const frag = builder.frag;
   frag.addUniform("u_logZ", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_logZ", (uniform, params) => {
-      uniform.setUniform2fv(params.target.frustumUniforms.logZ!);
+      uniform.setUniform2fv(params.target.uniforms.frustum.logZ!);
     });
   });
 

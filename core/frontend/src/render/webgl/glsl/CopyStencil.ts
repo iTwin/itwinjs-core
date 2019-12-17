@@ -8,7 +8,7 @@ import { FragmentShaderComponent, VariableType, ShaderBuilder, VertexShaderCompo
 import { ShaderProgram } from "../ShaderProgram";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { FloatRgba } from "../FloatRGBA";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
@@ -56,7 +56,7 @@ function addBoundaryTypeConstants(builder: ShaderBuilder): void {
 }
 
 /** @internal */
-function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgba, hAlpha: number): void {
+function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgb, hAlpha: number): void {
   switch (display) {
     case SpatialClassificationProps.Display.Dimmed:
       scratchColor.set(0.0, 0.0, 0.0, 0.3);
@@ -83,7 +83,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const useLighting = params.geometry.getFlashMode(params);
       if (useLighting) {
-        const hiliteColor = params.target.hiliteColor;
+        const hiliteColor = params.target.uniforms.hilite.hiliteColor;
         scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
       } else
         scratchColor.set(1.0, 1.0, 1.0, 0.0);
@@ -174,8 +174,8 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext): S
   frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_blend_color", (uniform, params) => {
       const geom = params.geometry as VolumeClassifierGeometry;
-      const hiliteColor = params.target.hiliteColor;
-      const hiliteAlpha = params.target.hiliteSettings.visibleRatio;
+      const hiliteColor = params.target.uniforms.hilite.hiliteColor;
+      const hiliteAlpha = params.target.uniforms.hilite.hiliteSettings.visibleRatio;
       switch (geom.boundaryType) {
         case BoundaryType.Outside:
           setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);

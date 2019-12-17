@@ -15,7 +15,7 @@ import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodel
 import { Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
-import { RenderCommands } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
@@ -143,12 +143,14 @@ export class BackgroundMapDrape extends TextureDrape {
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
-    const prevBgColor = target.bgColor.tbgr;
 
-    target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
+    target.uniforms.style.changeBackgroundColor(ColorDef.black); // Avoid white on white reversal. Will be reset below in changeRenderPlan().
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
-    target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.pushState(stack.top);
+
+    const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
+    target.uniforms.frustum.changeProjectionMatrix(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
+
+    target.uniforms.branch.pushState(stack.top);
 
     const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics, RenderPass.OpaqueGeneral);
@@ -164,12 +166,10 @@ export class BackgroundMapDrape extends TextureDrape {
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
-    target.branchStack.pop();
+    target.uniforms.branch.pop();
 
     batchState.reset();   // Reset the batch Ids...
-    target.bgColor.setTbgr(prevBgColor);
-    if (prevPlan)
-      target.changeRenderPlan(prevPlan);
+    target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);
     gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport

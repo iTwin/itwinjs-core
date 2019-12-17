@@ -17,11 +17,11 @@ import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFl
 import { System, RenderType } from "./System";
 import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
-import { RenderCommands } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderPass, TextureUnit } from "./RenderFlags";
 import { EVSMGeometry } from "./CachedGeometry";
 import { getDrawParams } from "./ScratchDrawParams";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 class SolarShadowMapDrawArgs extends Tile.DrawArgs {
   private _useViewportMap?: boolean;
@@ -79,7 +79,7 @@ const evsmHeight = shadowMapHeight / 2;
 const postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
 // Bundles up the disposable, create-once-and-reuse members of a SolarShadowMap.
-class Bundle implements WebGlDisposable {
+class Bundle implements WebGLDisposable {
   private constructor(
     public readonly depthTexture: Texture,
     public readonly shadowMapTexture: Texture,
@@ -170,7 +170,7 @@ class ShadowMapParams {
 
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
 
-export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
+export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
   private _projectionMatrix = Matrix4d.createIdentity();
   private _graphics: RenderGraphic[] = [];
@@ -188,6 +188,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
   private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
   private _worldToViewMap = Map4d.createIdentity();
+  private readonly _target: Target;
 
   // This exists chiefly for debugging. See ToggleShadowMapTilesTool.
   public onGraphicsChanged?: (graphics: RenderGraphic[]) => void;
@@ -213,7 +214,8 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
   public get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
-  public constructor() {
+  public constructor(target: Target) {
+    this._target = target;
     this._renderState = new RenderState();
     this._renderState.flags.depthMask = true;
     this._renderState.flags.blend = false;
@@ -229,6 +231,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
     this._enabled = this._isReady = false;
     this._bundle = dispose(this._bundle);
     this.clearGraphics(true);
+    this._target.uniforms.shadow.update();
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -384,6 +387,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
       this._worldToViewMap = npcToView.multiplyMapMap(worldToNpcMap);
     }
 
+    this._target.uniforms.shadow.update();
     this.notifyGraphicsChanged();
   }
 
@@ -419,7 +423,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
     const prevPlan = target.plan;
 
     target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
-    target.branchStack.setViewFlags(viewFlags);
+    target.uniforms.branch.changeViewFlags(viewFlags);
 
     const renderCommands = bundle.renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);
@@ -457,8 +461,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGlDisposable {
     // target.recordPerformanceMetric("Compute EVSM");
 
     this._batchState.reset();   // Reset the batch Ids...
-    if (prevPlan)
-      target.changeRenderPlan(prevPlan);
+    target.changeRenderPlan(prevPlan);
 
     System.instance.applyRenderState(prevState);
     System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport

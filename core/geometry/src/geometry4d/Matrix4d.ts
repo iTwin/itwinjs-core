@@ -241,6 +241,8 @@ export class Matrix4d implements BeJSONFunctions {
   public isAlmostEqual(other: Matrix4d): boolean {
     return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }
+  /** Test for exact (bitwise) equality with other. */
+  public isExactEqual(other: Matrix4d): boolean { return this.maxDiff(other) === 0.0; }
   /**
    * Convert an Matrix4d to a Matrix4dProps.
    */

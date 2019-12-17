@@ -10,7 +10,8 @@ import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 
 /** The possible actions for which a locate filter can be called.

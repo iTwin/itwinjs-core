@@ -8,6 +8,8 @@ import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit, RenderPass } from "../RenderFlags";
+import { UniformHandle } from "../Handle";
+import { DrawParams } from "../DrawCommand";
 import { decodeUint16, decodeUint24 } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
@@ -41,8 +43,6 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 const computeLineWeight = "\nfloat computeLineWeight() { return g_lineWeight; }\n";
 const computeLineCode = "\nfloat computeLineCode() { return g_lineCode; }\n";
 
-const scratchMVPMatrix = new Matrix4();
-
 /** @internal */
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
@@ -53,9 +53,7 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   } else {
     vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
       prog.addGraphicUniform("u_mvp", (uniform, params) => {
-        const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
-        mvp.multiplyBy(params.modelViewMatrix);
-        uniform.setMatrix4(mvp);
+        params.target.uniforms.branch.bindModelViewProjectionMatrix(uniform, params.geometry, params.isViewCoords);
       });
     });
   }
@@ -65,7 +63,7 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
 export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   vert.addUniform("u_proj", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_proj", (uniform, params) => {
-      uniform.setMatrix4(params.projectionMatrix);
+      params.bindProjectionMatrix(uniform);
     });
   });
 }
@@ -93,11 +91,13 @@ export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
 
 /** @internal */
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
+  const bind = (uniform: UniformHandle, params: DrawParams) => {
+    params.target.uniforms.branch.bindModelViewMatrix(uniform, params.geometry, params.isViewCoords);
+  };
+
   if (vert.usesInstancedGeometry) {
     vert.addUniform("u_instanced_modelView", VariableType.Mat4, (prog) => {
-      prog.addGraphicUniform("u_instanced_modelView", (uniform, params) => {
-        uniform.setMatrix4(params.modelViewMatrix);
-      });
+      prog.addGraphicUniform("u_instanced_modelView", bind);
     });
 
     vert.addGlobal("g_mv", VariableType.Mat4);
@@ -105,9 +105,7 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   } else {
     vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
       // ###TODO: We only need 3 rows, not 4...
-      prog.addGraphicUniform("u_mv", (uniform, params) => {
-        uniform.setMatrix4(params.modelViewMatrix);
-      });
+      prog.addGraphicUniform("u_mv", bind);
     });
   }
 }

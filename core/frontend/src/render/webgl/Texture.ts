@@ -11,7 +11,7 @@ import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -122,7 +122,7 @@ interface TextureImageProperties {
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
-export class Texture extends RenderTexture implements WebGlDisposable {
+export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
@@ -270,7 +270,7 @@ class TextureCubeCreateParams {
 /** Wraps a WebGLTextureHandle
  * @internal
  */
-export abstract class TextureHandle implements WebGlDisposable {
+export abstract class TextureHandle implements WebGLDisposable {
   protected _glTexture?: WebGLTexture;
   protected _bytesUsed = 0;
 

@@ -11,12 +11,12 @@ import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
 import { VertexTable } from "../primitives/VertexTable";
 import { AuxChannelTable, AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 type ChannelPropName = "normals" | "displacements" | "params";
 
 /** @internal */
-export class AuxChannelLUT implements WebGlDisposable {
+export class AuxChannelLUT implements WebGLDisposable {
   public readonly texture: TextureHandle;
   public readonly numVertices: number;
   public readonly numBytesPerVertex: number;
@@ -66,7 +66,7 @@ export class AuxChannelLUT implements WebGlDisposable {
 /** Represents the finished lookup table ready for submittal to GPU.
  * @internal
  */
-export class VertexLUT implements WebGlDisposable {
+export class VertexLUT implements WebGLDisposable {
   public readonly texture: TextureHandle; // Texture containing vertex data
   public readonly numVertices: number;
   public readonly numRgbaPerVertex: number;

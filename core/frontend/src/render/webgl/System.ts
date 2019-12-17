@@ -38,7 +38,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
-import { ViewRect, Viewport } from "../../Viewport";
+import { Viewport } from "../../Viewport";
+import { ViewRect } from "../../ViewRect";
 import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "../../RenderCompatibility";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
@@ -62,7 +63,7 @@ import { TileTree } from "../../tile/TileTree";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -394,7 +395,7 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
-export class IdMap implements WebGlDisposable {
+export class IdMap implements WebGLDisposable {
   /** Mapping of materials by their key values. */
   public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -549,7 +550,7 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 }
 
 /** @internal */
-export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGlDisposable {
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;

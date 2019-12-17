@@ -2084,6 +2084,19 @@ export namespace Hilite {
       this.hiddenRatio = Settings.clamp(hiddenRatio);
     }
   }
+
+  /** Compare two Settings objects for equivalence. */
+  export function equalSettings(lhs: Settings, rhs: Settings): boolean {
+    return lhs.color.equals(rhs.color)
+      && lhs.visibleRatio === rhs.visibleRatio
+      && lhs.hiddenRatio === rhs.hiddenRatio
+      && lhs.silhouette === rhs.silhouette;
+  }
+
+  /** Create a copy of a Settings object. */
+  export function cloneSettings(settings: Settings): Settings {
+    return new Settings(settings.color.clone(), settings.visibleRatio, settings.hiddenRatio, settings.silhouette);
+  }
 }
 
 /** Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can

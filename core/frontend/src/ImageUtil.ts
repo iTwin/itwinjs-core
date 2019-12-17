@@ -12,7 +12,7 @@ import {
   ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
-import { ViewRect } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 interface Rgba {
   r: number;

@@ -14,7 +14,7 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
 import { AttributeDetails } from "./AttributeMap";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -116,7 +116,7 @@ export const enum CompileStatus {
 }
 
 /** @internal */
-export class ShaderProgram implements WebGlDisposable {
+export class ShaderProgram implements WebGLDisposable {
   private _description: string; // for debugging purposes...
   public vertSource: string;
   public fragSource: string;

@@ -17,6 +17,8 @@ const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
 const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
 const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
+const scratchRotMatrix = new Matrix3();
+
 /** @internal */
 export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
   const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -26,11 +28,11 @@ export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgr
   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.vert.addUniform("u_rot", VariableType.Mat3, (prg) => {
     prg.addGraphicUniform("u_rot", (uniform, params) => {
-      const rot = params.viewMatrix.getRotation();
-      const mat3 = new Matrix3();
-      mat3.m00 = -rot.m00; mat3.m01 = -rot.m01; mat3.m02 = -rot.m02;
-      mat3.m10 = -rot.m10; mat3.m11 = -rot.m11; mat3.m12 = -rot.m12;
-      mat3.m20 = rot.m20; mat3.m21 = rot.m21; mat3.m22 = rot.m22;
+      const rot = params.target.uniforms.frustum.viewMatrix.matrix;
+      const mat3 = scratchRotMatrix;
+      mat3.m00 = -rot.at(0, 0); mat3.m01 = -rot.at(0, 1); mat3.m02 = -rot.at(0, 2);
+      mat3.m10 = -rot.at(1, 0); mat3.m11 = -rot.at(1, 1); mat3.m12 = -rot.at(1, 2);
+      mat3.m20 = rot.at(2, 0); mat3.m21 = rot.at(2, 1); mat3.m22 = rot.at(2, 2);
       uniform.setMatrix3(mat3);
     });
   });

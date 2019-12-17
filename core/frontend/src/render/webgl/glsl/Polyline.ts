@@ -309,8 +309,8 @@ const computePosition = `
     }
 
     miterAdjust = dot(g_windowDir, delta) * dist; // Not actually used for hilite shader but meh.
-    pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.z;
-    pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.w;
+    pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.x;
+    pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.y;
   }
 
   return pos;

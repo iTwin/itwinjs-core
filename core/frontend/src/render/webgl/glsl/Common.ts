@@ -31,15 +31,6 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addFunction(isShaderBitSet);
 }
 
-/** @internal */
-export function addViewMatrix(vert: ShaderBuilder): void {
-  vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_viewMatrix", (uniform, params) => {
-      uniform.setMatrix4(params.viewMatrix);
-    });
-  });
-}
-
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   assert(params.geometry.asLUT !== undefined);
   const geom = params.geometry.asLUT!;
@@ -94,7 +85,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
 export function addFrustum(builder: ProgramBuilder) {
   builder.addUniform("u_frustum", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.frustumUniforms.frustum);
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum);
     });
   });
 

@@ -21,11 +21,12 @@ import { getDrawParams } from "./ScratchDrawParams";
 import { BatchState, BranchStack } from "./BranchState";
 import { Batch, Branch } from "./Graphic";
 import { RenderState } from "./RenderState";
-import { DrawCommands, RenderCommands } from "./DrawCommand";
+import { DrawCommands } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;
@@ -49,7 +50,7 @@ export class GraphicsCollectorDrawArgs extends Tile.DrawArgs {
   }
 }
 
-class Textures implements WebGlDisposable {
+class Textures implements WebGLDisposable {
   private constructor(
     public readonly color: Texture,
     public readonly feature: Texture,
@@ -98,7 +99,7 @@ class Textures implements WebGlDisposable {
   }
 }
 
-abstract class FrameBuffers implements WebGlDisposable {
+abstract class FrameBuffers implements WebGLDisposable {
   protected constructor(
     public readonly textures: Textures,
     private readonly _hilite: FrameBuffer,
@@ -254,7 +255,7 @@ const scratchPrevRenderState = new RenderState();
 const scratchViewFlags = new ViewFlags();
 
 /** @internal */
-export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGlDisposable {
+export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGLDisposable {
   private _buffers?: FrameBuffers;
   private _projectionMatrix = Matrix4d.createIdentity();
   private readonly _graphics: RenderGraphic[] = [];
@@ -421,12 +422,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
 
-    const prevBgColor = target.bgColor.tbgr;
-    target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
+    target.uniforms.style.changeBackgroundColor(ColorDef.black); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
 
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
-    target.projectionMatrix.setFrom(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.setViewFlags(vf);
+
+    const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
+    target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
+
+    target.uniforms.branch.changeViewFlags(vf);
 
     const renderCommands = this._renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);
@@ -461,9 +464,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     // Reset the Target's state.
     this._batchState.reset();
-    target.bgColor.setTbgr(prevBgColor);
-    if (prevPlan)
-      target.changeRenderPlan(prevPlan);
+    target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);

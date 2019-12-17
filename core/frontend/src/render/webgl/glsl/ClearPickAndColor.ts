@@ -23,7 +23,7 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext): 
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      params.target.bgColor.bind(uniform);
+      params.target.uniforms.style.bindBackgroundRgba(uniform);
     });
   });
 

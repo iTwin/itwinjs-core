@@ -7,37 +7,46 @@ import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "..
 import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
 
+class TestUniforms extends FrustumUniforms {
+  public constructor() {
+    super({ useLogZ: true } as any);
+  }
+
+  public testSetPlanes(top: number, bottom: number, left: number, right: number): void { this.setPlanes(top, bottom, left, right); }
+  public testSetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType, useLogZ: boolean): void { this.setFrustum(nearPlane, farPlane, type, useLogZ); }
+}
+
 describe("FrustumUniforms", () => {
   it("should create, store, and retrieve FrustumUniforms", () => {
-    const fu = new FrustumUniforms();
-    fu.setPlanes(1.0, 2.0, 3.0, 4.0);
-    fu.setFrustum(5.0, 6.0, FrustumUniformType.Perspective, false);
+    const fu = new TestUniforms();
+    fu.testSetPlanes(1.0, 2.0, 3.0, 4.0);
+    fu.testSetFrustum(5.0, 6.0, FrustumUniformType.Perspective, false);
 
     expect(fu.nearPlane).to.equal(5.0);
     expect(fu.farPlane).to.equal(6.0);
     expect(fu.type).to.equal(FrustumUniformType.Perspective);
     expect(fu.logZ).to.be.undefined;
 
-    const p: Float32Array = fu.frustumPlanes;
+    const p: Float32Array = fu.planes;
     let f: Float32Array = fu.frustum;
     assert.isTrue(1.0 === p[0] && 2.0 === p[1] && 3.0 === p[2] && 4.0 === p[3], "should be able to retrieve same values of planes after setting them");
     assert.isTrue(5.0 === f[0] && 6.0 === f[1] && FrustumUniformType.Perspective === f[2], "should be able to retrieve same values of Perspective frustum after setting them");
     expect(fu.is2d).to.be.false;
 
-    fu.setFrustum(7.0, 8.0, FrustumUniformType.Orthographic, false);
+    fu.testSetFrustum(7.0, 8.0, FrustumUniformType.Orthographic, false);
     f = fu.frustum;
     assert.isTrue(7.0 === f[0] && 8.0 === f[1] && FrustumUniformType.Orthographic === f[2], "should be able to retrieve same values of Orthographic frustum after setting them");
     expect(fu.is2d).to.be.false;
     expect(fu.logZ).to.be.undefined;
 
-    fu.setFrustum(0.0, 1.0, FrustumUniformType.TwoDee, false);
+    fu.testSetFrustum(0.0, 1.0, FrustumUniformType.TwoDee, false);
     f = fu.frustum;
     assert.isTrue(0.0 === f[0] && 1.0 === f[1] && FrustumUniformType.TwoDee === f[2], "should be able to retrieve same values of TwoDee frustum after setting them");
     expect(fu.is2d).to.be.true;
     expect(fu.logZ).to.be.undefined;
 
-    fu.setPlanes(1.0, 2.0, 3.0, 4.0);
-    fu.setFrustum(5.0, 6.0, FrustumUniformType.Perspective, true);
+    fu.testSetPlanes(1.0, 2.0, 3.0, 4.0);
+    fu.testSetFrustum(5.0, 6.0, FrustumUniformType.Perspective, true);
     expect(fu.logZ).not.to.be.undefined;
   });
 });

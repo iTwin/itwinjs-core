@@ -1096,7 +1096,7 @@ export class ColorDef {
     adjustForContrast(other: ColorDef, alpha?: number): ColorDef;
     static readonly black: ColorDef;
     static readonly blue: ColorDef;
-    clone(): ColorDef;
+    clone(result?: ColorDef): ColorDef;
     readonly colors: {
         b: number;
         g: number;
@@ -2415,6 +2415,8 @@ export namespace HiddenLine {
 
 // @public
 export namespace Hilite {
+    export function cloneSettings(settings: Settings): Settings;
+    export function equalSettings(lhs: Settings, rhs: Settings): boolean;
     export class Settings {
         constructor(color?: ColorDef, visibleRatio?: number, hiddenRatio?: number, silhouette?: Silhouette);
         readonly color: ColorDef;

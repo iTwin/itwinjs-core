@@ -140,11 +140,8 @@ alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelCon
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
-internal;fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
-internal;FrustumUniforms
-internal;enum FrustumUniformType
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults

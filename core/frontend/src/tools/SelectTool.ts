@@ -16,7 +16,7 @@ import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsV
 import { PrimitiveValue } from "../properties/Value";
 import { Pixel } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { ViewRect } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides, CoreTools } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";

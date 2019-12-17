@@ -23,7 +23,14 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
-import { AuthorizedFrontendRequestContext, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "../imodeljs-frontend";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
+import {
+  ToolAssistance,
+  ToolAssistanceInstruction,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceSection,
+} from "./ToolAssistance";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
 /** @alpha An object that can react to a view's clip being changed by tools or modify handles. */

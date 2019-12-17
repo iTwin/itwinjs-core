@@ -22,10 +22,7 @@ import { extractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { UniformHandle } from "../Handle";
-import { DrawParams } from "../DrawCommand";
 import { assert } from "@bentley/bentleyjs-core";
-import { Matrix3 } from "../Matrix";
 
 // tslint:disable:no-const-enum
 
@@ -197,15 +194,12 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
 
   vert.addUniform("u_featureLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_featureLUT", (uniform, params) => {
-      const ovr = params.target.currentOverrides;
-      assert(undefined !== ovr);
-      ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+      params.target.uniforms.batch.bindLUT(uniform);
     });
   });
   vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_featureParams", (uniform, params) => {
-      const ovr = params.target.currentOverrides!;
-      uniform.setUniform2fv([ovr.lut!.width, ovr.lut!.height]);
+      params.target.uniforms.batch.bindLUTParams(uniform);
     });
   });
 
@@ -249,27 +243,20 @@ function addEmphasisFlags(builder: ShaderBuilder): void {
   builder.addConstant("kEmphFlag_Flash", VariableType.Float, "4.0");
 }
 
-const scratchHiliteSettings = new Matrix3();
-
-/** @internal */
-export function addHiliteSettings(frag: FragmentShaderBuilder): void {
+function addHiliteSettings(frag: FragmentShaderBuilder, wantFlashMode: boolean): void {
   frag.addUniform("u_hilite_settings", VariableType.Mat3, (prog) => {
-    prog.addGraphicUniform("u_hilite_settings", (uniform, params) => {
-      const c = params.target.hiliteColor;
-      const e = params.target.emphasisColor;
-      const m = scratchHiliteSettings;
-      m.data[0] = c.red;
-      m.data[1] = c.green;
-      m.data[2] = c.blue;
-      m.data[3] = e.red;
-      m.data[4] = e.green;
-      m.data[5] = e.blue;
-      m.data[6] = params.target.hiliteSettings.visibleRatio;
-      m.data[7] = params.target.emphasisSettings.visibleRatio;
-      m.data[8] = params.geometry.getFlashMode(params);
-      uniform.setMatrix3(m);
+    prog.addProgramUniform("u_hilite_settings", (uniform, params) => {
+      params.target.uniforms.hilite.bindFeatureSettings(uniform);
     });
   });
+
+  if (wantFlashMode) {
+    frag.addUniform("u_flash_mode", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_flash_mode", (uniform, params) => {
+        uniform.setUniform1f(params.geometry.getFlashMode(params));
+      });
+    });
+  }
 }
 
 // If feature is not hilited, discard it.
@@ -432,54 +419,18 @@ export function addRenderOrder(builder: ShaderBuilder) {
   });
 }
 
-function setPixelWidthFactor(uniform: UniformHandle, params: DrawParams) {
-  const rect = params.target.viewRect;
-  const width = rect.width;
-  const height = rect.height;
-
-  const frustumPlanes = params.target.frustumUniforms.frustumPlanes;
-  const top = frustumPlanes[0];
-  const bottom = frustumPlanes[1];
-  const left = frustumPlanes[2];
-  const right = frustumPlanes[3];
-
-  let halfPixelWidth: number;
-  let halfPixelHeight: number;
-  const frustum = params.target.frustumUniforms.frustum;
-  if (2.0 === frustum[2]) { // perspective
-    const inverseNear = 1.0 / frustum[0];
-    const tanTheta = top * inverseNear;
-    halfPixelHeight = tanTheta / height;
-    halfPixelWidth = tanTheta / width;
-  } else {
-    halfPixelWidth = 0.5 * (right - left) / width;
-    halfPixelHeight = 0.5 * (top - bottom) / height;
-  }
-
-  const pixelWidthFactor = Math.sqrt(halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight);
-  uniform.setUniform1f(pixelWidthFactor);
-}
-
 function addPixelWidthFactor(builder: ShaderBuilder) {
   builder.addUniform("u_pixelWidthFactor", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_pixelWidthFactor", (uniform, params) => { setPixelWidthFactor(uniform, params); });
+    prog.addGraphicUniform("u_pixelWidthFactor", (uniform, params) => {
+      params.target.uniforms.bindPixelWidthFactor(uniform);
+    });
   });
 }
-
-const scratchBytes = new Uint8Array(4);
-const scratchBatchId = new Uint32Array(scratchBytes.buffer);
-const scratchBatchComponents = [0, 0, 0, 0];
 
 function addBatchId(builder: ShaderBuilder) {
   builder.addUniform("u_batch_id", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_batch_id", (uniform, params) => {
-      const batchId = params.target.currentBatchId;
-      scratchBatchId[0] = batchId;
-      scratchBatchComponents[0] = scratchBytes[0];
-      scratchBatchComponents[1] = scratchBytes[1];
-      scratchBatchComponents[2] = scratchBytes[2];
-      scratchBatchComponents[3] = scratchBytes[3];
-      uniform.setUniform4fv(scratchBatchComponents);
+      params.target.uniforms.batch.bindBatchId(uniform);
     });
   }, VariablePrecision.High);
 }
@@ -650,7 +601,7 @@ vec4 doApplyFlash(float flags, vec4 baseColor) {
   vec3 tweenRgb = baseColor.rgb * (1.0 - hiliteFraction);
   tweenRgb += u_hilite_settings[0] * hiliteFraction;
 
-  return vec4(mix(tweenRgb, brightRgb, u_hilite_settings[2][2]), baseColor.a);
+  return vec4(mix(tweenRgb, brightRgb, u_flash_mode), baseColor.a);
 }
 `;
 
@@ -666,7 +617,7 @@ const doClassifierFlash = `
 /** @internal */
 export function addClassifierFlash(frag: FragmentShaderBuilder): void {
   addFlashIntensity(frag);
-  addHiliteSettings(frag);
+  addHiliteSettings(frag, false);
   frag.addFunction(doClassifierFlash);
 }
 
@@ -679,7 +630,7 @@ function addFlashIntensity(frag: FragmentShaderBuilder): void {
 }
 
 function addApplyFlash(frag: FragmentShaderBuilder) {
-  addHiliteSettings(frag);
+  addHiliteSettings(frag, true);
   addEmphasisFlags(frag);
 
   frag.addFunction(extractNthBit);
@@ -730,20 +681,9 @@ export function addUniformHiliter(builder: ProgramBuilder): void {
 export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
   builder.vert.addGlobal("g_featureIndex", VariableType.Vec3, "vec3(0.0)", true);
 
-  // addFeatureSymbology()
   builder.frag.addUniform("v_feature_emphasis", VariableType.Float, (prog) => {
     prog.addGraphicUniform("v_feature_emphasis", (uniform, params) => {
-      let value = 0;
-      const ovr = params.target.currentOverrides;
-      if (undefined !== ovr) {
-        if (ovr.anyHilited) // any hilited implies all hilited.
-          value = 2;
-
-        if (ovr.isUniformFlashed)
-          value += 1;
-      }
-
-      uniform.setUniform1f(value);
+      params.target.uniforms.batch.bindUniformSymbologyFlags(uniform);
     });
   });
 

@@ -14,7 +14,8 @@ import { ToolTipOptions } from "./NotificationManager";
 import { CanvasDecoration } from "./render/System";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
  * @public

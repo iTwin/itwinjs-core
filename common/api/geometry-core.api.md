@@ -3018,6 +3018,7 @@ export class Matrix4d implements BeJSONFunctions {
     getSteppedPoint(i0: number, step: number, result?: Point4d): Point4d;
     readonly hasPerspective: boolean;
     isAlmostEqual(other: Matrix4d): boolean;
+    isExactEqual(other: Matrix4d): boolean;
     isIdentity(tol?: number): boolean;
     matrixPart(): Matrix3d;
     maxAbs(): number;
