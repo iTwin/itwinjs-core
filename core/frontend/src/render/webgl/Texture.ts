@@ -44,7 +44,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  System.instance.bindTexture2d(TextureUnit.Zero, tex);
+  System.instance.activateTexture2d(TextureUnit.Zero, tex);
 
   // send the texture data
   if (undefined !== element) {
@@ -89,7 +89,7 @@ function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCrea
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  System.instance.bindTextureCubeMap(TextureUnit.Zero, tex);
+  System.instance.activateTextureCubeMap(TextureUnit.Zero, tex);
 
   const cubeTargets: number[] = [GL.Texture.Target.CubeMapPositiveX, GL.Texture.Target.CubeMapNegativeX, GL.Texture.Target.CubeMapPositiveY, GL.Texture.Target.CubeMapNegativeY, GL.Texture.Target.CubeMapPositiveZ, GL.Texture.Target.CubeMapNegativeZ];
 
@@ -420,7 +420,7 @@ export class Texture2DHandle extends TextureHandle {
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
     // Go through System to ensure we don't interfere with currently-bound textures!
-    System.instance.bindTexture2d(TextureUnit.Zero, tex);
+    System.instance.activateTexture2d(TextureUnit.Zero, tex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, data);
     System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 

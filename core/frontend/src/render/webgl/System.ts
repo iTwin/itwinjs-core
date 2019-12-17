@@ -996,18 +996,28 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return sheetTileGraphics;
   }
 
-  private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding): void {
+  private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding, makeActive: boolean): void {
     const index = unit - TextureUnit.Zero;
-    if (this._textureBindings[index] === texture)
+    if (this._textureBindings[index] === texture) {
+      if (makeActive)
+        this.context.activeTexture(unit);
+
       return;
+    }
 
     this._textureBindings[index] = texture;
     this.context.activeTexture(unit);
     this.context.bindTexture(target, undefined !== texture ? texture : null);
   }
 
-  public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture); }
-  public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture); }
+  /** Bind the specified texture to the specified unit. This may *or may not* make the texture *active* */
+  public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, false); }
+  /** Bind the specified texture to the specified unit. This may *or may not* make the texture *active* */
+  public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, false); }
+  /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
+  public activateTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, true); }
+  /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
+  public activateTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, true); }
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
