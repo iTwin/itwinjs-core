@@ -86,18 +86,22 @@ class OidcPublicClient {
     await page.setRequestInterception(true);
     const onRedirectRequest = this.interceptRedirectUri(page);
     await page.goto(authorizationUrl, { waitUntil: "networkidle2" });
-    const errMsg = await this.handleLoginPage(page, username, password);
 
-    // Check to see if there was an error while logging in.  If so, throw the error
-    if (undefined !== errMsg) {
+    try {
+      await this.handleLoginPage(page, username, password);
+
+      // Handle federated sign-in
+      await this.handleFederatedSignin(page, username, password);
+    } catch (err) {
       await page.close();
       await browser.close();
-      throw new Error(`Failed OIDC signin for ${username}.\n${errMsg}`);
+      throw new Error(`Failed OIDC signin for ${username}.\n${err}`);
     }
 
     await this.handleConsentPage(page);
 
     const tokenSet = await client.callback(this._redirectUri, client.callbackParams(await onRedirectRequest), callbackChecks);
+    await page.close();
     await browser.close();
 
     // tslint:disable-next-line:no-console
@@ -143,7 +147,7 @@ class OidcPublicClient {
     });
   }
 
-  private async handleLoginPage(page: puppeteer.Page, userName: string, password: string): Promise<string | undefined> {
+  private async handleLoginPage(page: puppeteer.Page, userName: string, password: string): Promise<void> {
     const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
     if (page.url().startsWith(loginUrl)) {
       await page.type("#EmailAddress", userName);
@@ -158,22 +162,67 @@ class OidcPublicClient {
     }
 
     // Check if there were any errors when performing sign-in
-    const errMsgText = await page.evaluate(() => {
-      const errMsgElement = document.querySelector("#errormessage");
-      if (null === errMsgElement)
-        return undefined;
-      return errMsgElement.textContent;
-    });
+    await this.checkErrorOnPage(page, "#errormessage");
+  }
 
-    if (undefined === errMsgText || null === errMsgText)
-      return undefined;
+  // Bentley-specific federated login.  This will get called if a redirect to a url including "wsfed".
+  private async handleFederatedSignin(page: puppeteer.Page, userName: string, password: string): Promise<void> {
+    if (-1 === page.url().indexOf("wsfed"))
+      return;
 
-    return errMsgText;
+    await page.type("#i0116", userName);
+    await Promise.all([
+      page.waitForNavigation({
+        timeout: 60000,
+        waitUntil: "networkidle2",
+      }),
+      page.$eval("#idSIButton9", (button: any) => button.click()),
+    ]);
+
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+    // Checks for the error in username entered
+    await this.checkErrorOnPage(page, "#usernameError");
+
+    // After the load from the previous page the email address should already be filled in.
+    // await page.type("#userNameInput", userName);
+    await page.type("#passwordInput", password);
+
+    await Promise.all([
+      page.waitForNavigation({
+        timeout: 60000,
+        waitUntil: "networkidle2",
+      }),
+      page.$eval("#submitButton", (button: any) => button.click()),
+    ]);
+
+    // Chjecks for the error in username entered
+    await this.checkErrorOnPage(page, "#errorText");
+
+    await Promise.all([
+      page.waitForNavigation({
+        timeout: 60000,
+        waitUntil: "networkidle2",
+      }),
+      page.$eval("#idSIButton9", (button: any) => button.click()),
+    ]);
   }
 
   private async handleConsentPage(page: puppeteer.Page): Promise<void> {
     const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
     if (page.url().startsWith(consentUrl))
       await page.click("button[value=yes]");
+  }
+
+  private async checkErrorOnPage(page: puppeteer.Page, selector: string): Promise<void> {
+    const errMsgText = await page.evaluate((s) => {
+      const errMsgElement = document.querySelector(s);
+      if (null === errMsgElement)
+        return undefined;
+      return errMsgElement.textContent;
+    }, selector);
+
+    if (undefined !== errMsgText && null !== errMsgText)
+      throw new Error(errMsgText);
   }
 }
