@@ -8465,6 +8465,8 @@ export class TraversalChildrenDetails {
 // @internal (undocumented)
 export class TraversalDetails {
     // (undocumented)
+    childrenLoading: boolean;
+    // (undocumented)
     initialize(): void;
     // (undocumented)
     queuedChildren: Tile[];

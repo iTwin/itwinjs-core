@@ -116,9 +116,11 @@ function computeSubRangeContainingPoints(parentRange: Range3d, points: Point3d[]
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
+  public childrenLoading = false;
 
   public initialize() {
     this.queuedChildren.length = 0;
+    this.childrenLoading = false;
   }
 }
 
@@ -140,6 +142,7 @@ export class TraversalChildrenDetails {
   public combine(parentDetails: TraversalDetails) {
     parentDetails.queuedChildren.length = 0;
     for (const child of this._childDetails) {
+      parentDetails.childrenLoading = parentDetails.childrenLoading || child.childrenLoading;
       for (const queuedChild of child.queuedChildren)
         parentDetails.queuedChildren.push(queuedChild);
     }

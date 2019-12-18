@@ -415,6 +415,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
       this._childrenLastUsed = args.now;
+      traversalDetails.childrenLoading = true;
       return;
     }
 
@@ -480,10 +481,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       }
     } else {
       this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isDisplayable) {
-        if (0 !== traversalDetails.queuedChildren.length && this.isReady) {
-          context.selectOrQueue(this, traversalDetails);
-        }
+      if (this.isDisplayable && this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
+        context.selectOrQueue(this, traversalDetails);
       }
     }
   }
