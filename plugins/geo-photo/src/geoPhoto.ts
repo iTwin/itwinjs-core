@@ -12,7 +12,6 @@ import { SettingsStatus } from "@bentley/imodeljs-clients";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
 import { PhotoTreeHandler, PhotoFolder, PhotoTree, PhotoTraverseFunction } from "./PhotoTree";
 import { ProjectShareHandler } from "./ProjectSharePhotoTree";
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 import { GPDialogUiProvider } from "./ui/GPDialogUiProvider";
 
 /*-----------------------------------------------------------------------
@@ -102,7 +101,7 @@ export class GeoPhotos {
 
   public getPhotoCount(): number {
     if (!this.photoTree)
-      return SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
+      return 0;
     this._photoCount = 0;
     this.photoTree.traverseFolders(this.countFunc.bind(this), true, true);
     return this._photoCount;
@@ -185,7 +184,6 @@ export class GeoPhotoPlugin extends Plugin {
       this.uiProvider.showGeoPhotoDialog();
 
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
-    let photoTree: PhotoTree | undefined;
     if (undefined === geoPhotos) {
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoPlugin", "Settings", false, iModel.iModelToken.contextId, iModel.iModelToken.iModelId);
@@ -198,7 +196,7 @@ export class GeoPhotoPlugin extends Plugin {
 
       const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel, this.uiProvider);
       geoPhotos = new GeoPhotos(this, treeHandler!, iModel, this.uiProvider);
-      photoTree = await geoPhotos.readTreeContents();
+      await geoPhotos.readTreeContents();
 
       const settingsResult = await settingsPromise;
       if (SettingsStatus.Success === settingsResult.status) {
@@ -221,7 +219,6 @@ export class GeoPhotoPlugin extends Plugin {
           this.settings.eyeHeight = settings.eyeHeight;
         }
       }
-
       /* ------------- Not needed now that we have the dialog box to show progress
       const photoCount: number = geoPhotos.getPhotoCount();
       message = this.i18n.translate("geoPhoto:messages.GeneratingMarkers", { photoCount });
@@ -230,14 +227,21 @@ export class GeoPhotoPlugin extends Plugin {
       ------------------------------------------------------------------------------- */
     }
 
-    await geoPhotos.showMarkers();
-
-    if (photoTree && this.uiProvider) {
-      this.uiProvider.setLoadPhase(2);
-      this.uiProvider.syncTreeData(photoTree);
-      this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
-      this.uiProvider.syncSettings(this.settings);
-      this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
+    const hasPhotos: boolean = (0 !== geoPhotos.getPhotoCount());
+    if (!hasPhotos) {
+      if (this.uiProvider) {
+        this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.GeoPhotoTitle"));
+        this.uiProvider.setLoadPhase(3);
+      }
+    } else {
+      await geoPhotos.showMarkers();
+      if (this.uiProvider) {
+        this.uiProvider.setLoadPhase(2);
+        this.uiProvider.syncTreeData(geoPhotos.photoTree!);
+        this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
+        this.uiProvider.syncSettings(this.settings);
+        this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
+      }
     }
   }
 

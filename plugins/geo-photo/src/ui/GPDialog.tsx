@@ -222,7 +222,7 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
   }
 
   private _handleSyncSettingsEvent = (newSettings: GeoPhotoSettings) => {
-    this.setState({ showMarkers: newSettings.showMarkers, maxDistanceVal: `${newSettings.maxDistance}`,  maxCrossDistanceVal: `${newSettings.maxCrossDistance}`, cameraHeightVal: `${newSettings.eyeHeight}`  });
+    this.setState({ showMarkers: newSettings.showMarkers, maxDistanceVal: `${newSettings.maxDistance}`, maxCrossDistanceVal: `${newSettings.maxCrossDistance}`, cameraHeightVal: `${newSettings.eyeHeight}` });
   }
 
   private _onTabChange = (tabIndex: number) => {
@@ -282,7 +282,7 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
         <div></div>
         <div>
           <span className="gp-phase1-fraction">{this._i18n.translate("geoPhoto:LoadDialog.FileProgress", { fileNum: this.state.currentFile, fileCount: this.state.fileCount })}</span>
-          <LoadingBar showPercentage={true} barHeight={20} percent={Math.floor(0.5 + (100.0 * this.state.currentFile / this.state.fileCount))} />
+          <LoadingBar showPercentage={this.state.fileCount > 0} barHeight={20} percent={Math.floor(0.5 + (100.0 * this.state.currentFile / this.state.fileCount))} />
         </div>
         <div className="gp-phase1-count">{this._i18n.translate("geoPhoto:LoadDialog.Panoramas", { panoramas: this.state.geoPanoramaCount })}</div>
         <div>{this._i18n.translate("geoPhoto:LoadDialog.Photos", { photos: this.state.geoPhotoCount })}</div>
@@ -327,54 +327,54 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
     );
   }
 
-  private _onMaxDistChanged (e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({maxDistanceVal:  e.target.value});
+  private _onMaxDistChanged(e: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ maxDistanceVal: e.target.value });
   }
 
-  private _onMaxDistCommit (plugin: GeoPhotoPlugin) {
+  private _onMaxDistCommit(plugin: GeoPhotoPlugin) {
     const maxDistance = Number.parseFloat(this.state.maxDistanceVal);
     if (!Number.isNaN(maxDistance) && (maxDistance > 0.0) && (maxDistance < 2000.0)) {
       plugin.settings.maxDistance = maxDistance;
       plugin.saveSettings().catch((_err) => { });
     } else {
       // set it back to original value.
-      this.setState({ maxDistanceVal: `${plugin.settings.maxDistance}`});
+      this.setState({ maxDistanceVal: `${plugin.settings.maxDistance}` });
     }
   }
 
-  private _onMaxXDistChanged (e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({maxCrossDistanceVal:  e.target.value});
+  private _onMaxXDistChanged(e: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ maxCrossDistanceVal: e.target.value });
   }
 
-  private _onMaxXDistCommit (plugin: GeoPhotoPlugin) {
+  private _onMaxXDistCommit(plugin: GeoPhotoPlugin) {
     const maxCrossDistance = Number.parseFloat(this.state.maxCrossDistanceVal);
     if (!Number.isNaN(maxCrossDistance) && (maxCrossDistance > 0.0) && (maxCrossDistance < 200.0)) {
       plugin.settings.maxCrossDistance = maxCrossDistance;
       plugin.saveSettings().catch((_err) => { });
     } else {
       // set it back to original value.
-      this.setState({ maxCrossDistanceVal: `${plugin.settings.maxCrossDistance}`});
+      this.setState({ maxCrossDistanceVal: `${plugin.settings.maxCrossDistance}` });
     }
   }
 
-  private _onCameraHeightChanged (e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({cameraHeightVal: e.target.value});
+  private _onCameraHeightChanged(e: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ cameraHeightVal: e.target.value });
   }
 
-  private _onCameraHeightCommit (plugin: GeoPhotoPlugin) {
+  private _onCameraHeightCommit(plugin: GeoPhotoPlugin) {
     const cameraHeight = Number.parseFloat(this.state.cameraHeightVal);
     if (!Number.isNaN(cameraHeight) && (cameraHeight > 0.0) && (cameraHeight < 50.0)) {
       plugin.settings.eyeHeight = cameraHeight;
       plugin.saveSettings().catch((_err) => { });
     } else {
       // set it back to original value.
-      this.setState({cameraHeightVal: `${plugin.settings.eyeHeight}`});
+      this.setState({ cameraHeightVal: `${plugin.settings.eyeHeight}` });
     }
   }
 
-  private _onShowMarkersClicked (plugin: GeoPhotoPlugin, _e: React.MouseEvent) {
+  private _onShowMarkersClicked(plugin: GeoPhotoPlugin, _e: React.MouseEvent) {
     plugin.settings.showMarkers = !plugin.settings.showMarkers;
-    this.setState({showMarkers: plugin.settings.showMarkers});
+    this.setState({ showMarkers: plugin.settings.showMarkers });
     plugin.saveSettings().catch((_err) => { });
   }
 
@@ -407,6 +407,14 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
     );
   }
 
+  // When there are no photos.
+  private renderEmpty() {
+    return (
+      <div className="gp-load-div-phase2">
+        {this._i18n.translate("geoPhoto:LoadDialog.EmptyPhotoSet")}
+      </div>
+    );
+  }
   // renders the dialog content, according to the current phase.
   private renderContent() {
     const loadPhase = this.state.loadPhase;
@@ -416,6 +424,7 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
         {loadPhase === 0 && this.renderGathering()}
         {loadPhase === 1 && this.renderProcessing()}
         {loadPhase === 2 && this.renderSettings()}
+        {loadPhase === 3 && this.renderEmpty()}
       </div>
     );
   }

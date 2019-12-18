@@ -36,10 +36,12 @@
   "LoadDialog": {
     "LoadTitle": "GeoPhoto Load Progress",
     "FoldersTitle": "GeoPhoto Folders",
+    "GeoPhotoTitle": "GeoPhoto",
     "Finding": "Finding Files in Project Share",
     "FolderName": "Folder: {{folderName}}",
     "FolderCount": "Found {{count}} folders",
     "FileCount": "Found {{count}} files",
+    "EmptyPhotoSet": "No GeoLocated Photographs found in Project Share",
     "Processing": "Extracting File Locations",
     "FolderProgress": "Folders {{folderNum}} / {{folderCount}}",
     "FileProgress": "Files {{fileNum}} / {{fileCount}}",
