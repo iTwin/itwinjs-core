@@ -70,7 +70,7 @@ export class LoopbackWebServer {
   }
 
   /** Listen/Handle browser events */
-  private static onBrowserRequest(httpRequest: Http.IncomingMessage, httpResponse: Http.ServerResponse): void {
+  private static onBrowserRequest(httpRequest: Http.IncomingMessage, _httpResponse: Http.ServerResponse): void {
     if (!httpRequest.url)
       return;
 
@@ -104,18 +104,7 @@ export class LoopbackWebServer {
     authorizationEvents.onAuthorizationResponse.raiseEvent(authorizationError, authorizationResponse);
 
     // Handle the authorization completed event
-    authorizationEvents.onAuthorizationResponseCompleted.addOnce((authCompletedError?: AuthorizationErrorJson) => {
-
-      // Redirect to success or error page/message
-      const signinCompletePage = authCompletedError ? LoopbackWebServer._clientConfiguration.postSigninErrorUri : LoopbackWebServer._clientConfiguration.postSigninSuccessUri;
-      if (signinCompletePage) {
-        httpResponse.writeHead(301, { Location: signinCompletePage });
-        httpResponse.end();
-      } else {
-        const redirectMessage = authCompletedError ? "Error signing in. Close browser and retry from application" : "Successfully signed in. Close browser and use application";
-        httpResponse.end(redirectMessage);
-      }
-
+    authorizationEvents.onAuthorizationResponseCompleted.addOnce((_authCompletedError?: AuthorizationErrorJson) => {
       // Stop the web server now that the signin attempt has finished
       LoopbackWebServer.stop();
     });

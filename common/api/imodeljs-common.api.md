@@ -3326,8 +3326,6 @@ export class OctEncodedNormalPair {
 export interface OidcDesktopClientConfiguration {
     clientId: string;
     expiryBuffer?: number;
-    postSigninErrorUri?: string;
-    postSigninSuccessUri?: string;
     redirectUri: string;
     scope: string;
 }

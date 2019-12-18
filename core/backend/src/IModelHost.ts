@@ -179,7 +179,7 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
   public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
   public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
@@ -230,7 +230,7 @@ export class IModelHost {
 
   private static getApplicationVersion(): string { return require("../package.json").version; }
 
-  private static _setupRpcRequestContext() {
+  private static setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
       // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
       if (!serializedContext.authorization)
@@ -327,7 +327,7 @@ export class IModelHost {
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;
 
-    IModelHost._setupRpcRequestContext();
+    IModelHost.setupRpcRequestContext();
 
     IModelReadRpcImpl.register();
     IModelTileRpcImpl.register();
