@@ -6,11 +6,11 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run webpack:frontend && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json coverage",
-    "cover": "npm run test:chrome -- --cover",
+    "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
-    "test": "npm run test:chrome",
+    "test": "npm run test:chrome && npm run test:electron",
     "test:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\" --invert",
     "test:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run test:integration:chrome && npm run test:integration:electron",

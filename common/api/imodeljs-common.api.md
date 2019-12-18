@@ -1532,8 +1532,6 @@ export class ElectronRpcProtocol extends RpcProtocol {
     constructor(configuration: ElectronRpcConfiguration);
     // (undocumented)
     static instances: Map<string, ElectronRpcProtocol>;
-    // (undocumented)
-    static obtainInstance(request: SerializedRpcRequest): ElectronRpcProtocol;
     // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
     // @internal (undocumented)
@@ -1546,6 +1544,8 @@ export class ElectronRpcProtocol extends RpcProtocol {
     requests: Map<string, ElectronRpcRequest>;
     readonly requestType: typeof ElectronRpcRequest;
     transferChunkThreshold: number;
+    // @internal (undocumented)
+    readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
 }
 
 // @beta (undocumented)

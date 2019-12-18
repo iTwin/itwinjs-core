@@ -8,7 +8,6 @@ import { RpcRequest } from "../core/RpcRequest";
 import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { RpcProtocolEvent } from "../core/RpcConstants";
-import { ipcTransport } from "./ElectronIpcTransport";
 
 /** @beta */
 export class ElectronRpcRequest extends RpcRequest {
@@ -23,7 +22,7 @@ export class ElectronRpcRequest extends RpcRequest {
     try {
       this.protocol.requests.set(this.id, this);
       const request = await this.protocol.serialize(this);
-      ipcTransport!.sendRequest(request);
+      this.protocol.transport.sendRequest(request);
     } catch (e) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }

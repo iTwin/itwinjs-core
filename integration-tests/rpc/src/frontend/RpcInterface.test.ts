@@ -442,7 +442,7 @@ describe("RpcInterface", () => {
 
     RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedClientRequestContext> => {
       const serializedContext: SerializedClientRequestContext = {
-        id: "",
+        id: _request.id,
         applicationId: "",
         applicationVersion: "testbed1",
         sessionId: "",

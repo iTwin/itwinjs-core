@@ -49,7 +49,6 @@ export class ElectronTestRunner {
       event.returnValue = executeRegisteredCallback(msg.name, msg.args);
     });
 
-    await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
     rendererWindow.webContents.once("did-finish-load", async () => {
       const initScriptPath = require.resolve("./initElectronTests.js");
       const startTests = async () => rendererWindow.webContents.executeJavaScript(`
@@ -67,5 +66,6 @@ export class ElectronTestRunner {
 
       await startTests();
     });
+    await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
   }
 }
