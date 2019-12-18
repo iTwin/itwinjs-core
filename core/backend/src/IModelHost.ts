@@ -7,27 +7,27 @@
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { BackendRequestContext } from "./BackendRequestContext";
-import { BisCoreSchema } from "./BisCore";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { FunctionalSchema } from "./domains/Functional";
-import { GenericSchema } from "./domains/Generic";
-import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BackendRequestContext } from "./BackendRequestContext";
+import { BisCoreSchema } from "./BisCoreSchema";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
+import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
+import { FunctionalSchema } from "./domains/FunctionalSchema";
+import { GenericSchema } from "./domains/GenericSchema";
+import { IModelJsFs } from "./IModelJsFs";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage, CloudStorageTileUploader } from "./CloudStorageBackend";
-import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
-import { AliCloudStorageService } from "./AliCloudStorageService";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
