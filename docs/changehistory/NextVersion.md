@@ -10,6 +10,13 @@ See the [iModel Transformation and Data Exchange]($docs/learning/backend/IModelT
 
 ## Geometry
 
+### Matrix3d inverse state bug fix.
+ * BUG: matrix times matrix multipliers (multiplyMatrixMatrix, multiplyMatrixMatrixInverse, multiplyMatrixInverseMatrix, multiplyMatrixMatrixTranspose, multiplyMatrixTransposeMatrix) did not transfer inverse coefficient arrays into the product.
+ * When an existing result matrix marked "inverseStored" was supplied, the "inverseStored" marking persisted, but the product inverse coefficient matrix was not constructed
+ * When no result was supplied in the call, there were no problems.
+ * As corrected, all 5 multiplications construct inverse products when possible, and mark up appropriately.
+
+
 ### `CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry
 
   * `CurveLocationDetail` data carrier has new optional members
@@ -30,3 +37,4 @@ See the [iModel Transformation and Data Exchange]($docs/learning/backend/IModelT
     * return false if empty after clip.
   * New `Segment1d` method `segment.`reverseIfNeededForDeltaSign(sign?: number): void;`
     * maintain endpoints, but reverse so direction corresponds to request.
+

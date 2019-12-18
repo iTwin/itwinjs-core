@@ -284,6 +284,12 @@ describe("Matrix3d.directDots", () => {
   });
 });
 
+function testCacheUse(ck: bsiChecker.Checker, name: string, numCompute: number, numUse: number) {
+  ck.testExactNumber(numCompute, Matrix3d.numComputeCache, name + " numCompute");
+  ck.testExactNumber(numUse, Matrix3d.numUseCache, name + " numUse");
+  Matrix3d.numComputeCache = 0;
+  Matrix3d.numUseCache = 0;
+}
 describe("Matrix3d.cachedInverse", () => {
   it("cachedInverse", () => {
     const ck = new bsiChecker.Checker();
@@ -296,13 +302,13 @@ describe("Matrix3d.cachedInverse", () => {
     Matrix3d.useCachedInverse = true;
     // first inversion should do the calculation
     const inverseA1 = matrixA.inverse() as Matrix3d;
+    testCacheUse(ck, "first inverse", 1, 0);
     ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity, "first inverse");
     // second inversion should reuse.
     const inverseA2 = matrixA.inverse() as Matrix3d;
+    testCacheUse(ck, "second inverse", 0, 1);
     ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA2).isIdentity, "first inverse");
 
-    ck.testExactNumber(1, Matrix3d.numUseCache);
-    ck.testExactNumber(1, Matrix3d.numComputeCache);
     const matrixB = matrixA.clone();
     const inverseB = Matrix3d.createIdentity();
     Matrix3d.numUseCache = 0;
@@ -314,9 +320,8 @@ describe("Matrix3d.cachedInverse", () => {
       ck.testTrue(product.isIdentity);
     }
 
-    ck.testExactNumber(1, Matrix3d.numComputeCache);
-    ck.testExactNumber(numInvert - 1, Matrix3d.numUseCache);
-    ck.checkpoint("Matrix3d.cachedInverse");
+    ck.testExactNumber(0, Matrix3d.numComputeCache, "B numComputeCache");
+    ck.testExactNumber(numInvert, Matrix3d.numUseCache, "B numUseCache");
     expect(ck.getNumErrors()).equals(0);
   });
 });

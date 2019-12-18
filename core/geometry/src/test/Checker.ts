@@ -40,6 +40,7 @@ export class Checker {
     factorPerpendicularColumns: false,
     symmetricEigenvalues: false,
     momentData: false,
+    matrixMultiplyAliasing: false,
     checkpoint: false,
     flatbufferRoundTrip: false,
     bsplineEvaluation: false,

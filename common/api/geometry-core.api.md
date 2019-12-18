@@ -2901,6 +2901,7 @@ export class Matrix3d implements BeJSONFunctions {
     };
     getColumn(columnIndex: number, result?: Vector3d): Vector3d;
     getRow(columnIndex: number, result?: Vector3d): Vector3d;
+    readonly hasCachedInverse: boolean;
     static readonly identity: Matrix3d;
     indexedColumnWithWeight(index: number, weight: number, result?: Point4d): Point4d;
     inverse(result?: Matrix3d): Matrix3d | undefined;
@@ -3274,6 +3275,17 @@ export class OrderedRotationAngles {
     readonly zAngle: Angle;
     readonly zDegrees: number;
     readonly zRadians: number;
+}
+
+// @internal
+export class PackedMatrix3dOps {
+    static copy(a: Float64Array, dest: Float64Array): Float64Array;
+    static copyTransposed(a: Float64Array, dest?: Float64Array): Float64Array;
+    static loadMatrix(dest: Float64Array, a00: number, a01: number, a02: number, a10: number, a11: number, a12: number, a20: number, a21: number, a22: number): void;
+    static multiplyMatrixMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array;
+    static multiplyMatrixMatrixTranspose(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array;
+    static multiplyMatrixTransposeMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array;
+    static transposeInPlace(a: Float64Array): void;
 }
 
 // @public
