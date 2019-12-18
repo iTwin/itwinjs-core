@@ -170,17 +170,14 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public detectElementDeletes(): void {
-    const targetElementIds: Id64String[] = [];
+    const targetElementsToDelete: Id64String[] = [];
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
-      try {
-        this.sourceDb.elements.getElementProps(sourceElementId);
-      } catch (error) {
-        if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-          targetElementIds.push(targetElementId);
-        }
+      if (undefined === this.sourceDb.elements.tryGetElementProps(sourceElementId)) {
+        // if the sourceElement is not found, then it must have been deleted, so propagate the delete to the target iModel
+        targetElementsToDelete.push(targetElementId);
       }
     });
-    targetElementIds.forEach((targetElementId: Id64String) => {
+    targetElementsToDelete.forEach((targetElementId: Id64String) => {
       this.importer.deleteElement(targetElementId);
     });
   }

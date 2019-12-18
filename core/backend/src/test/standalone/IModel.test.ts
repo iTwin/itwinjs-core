@@ -29,7 +29,7 @@ import {
 } from "@bentley/geometry-core";
 import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
+  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
   TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
@@ -257,8 +257,6 @@ describe("iModel", () => {
     assert.exists(el);
     const el2ById = imodel1.elements.getElement("0x34");
     assert.exists(el2ById);
-    const el2ByString = imodel1.elements.getElement("0x34");
-    assert.exists(el2ByString);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
@@ -269,6 +267,19 @@ describe("iModel", () => {
       assert.instanceOf(error, IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
     }
+
+    const element1: Element | undefined = imodel1.elements.tryGetElement(code1);
+    const element2: Element | undefined = imodel1.elements.tryGetElement("0x34");
+    const element3: Element | undefined = imodel1.elements.tryGetElement(badCode);
+    assert.isDefined(element1);
+    assert.isDefined(element2);
+    assert.isUndefined(element3);
+    const elementProps1: ElementProps | undefined = imodel1.elements.tryGetElementProps(code1);
+    const elementProps2: ElementProps | undefined = imodel1.elements.tryGetElementProps("0x34");
+    const elementProps3: ElementProps | undefined = imodel1.elements.tryGetElementProps(badCode);
+    assert.isDefined(elementProps1);
+    assert.isDefined(elementProps2);
+    assert.isUndefined(elementProps3);
 
     const subCat = imodel1.elements.getElement("0x2e");
     assert.isTrue(subCat instanceof SubCategory);

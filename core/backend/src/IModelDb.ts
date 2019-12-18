@@ -1346,7 +1346,7 @@ export namespace IModelDb {
 
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @return a json string with the properties of the model.
+     * @returns a json string with the properties of the model.
      */
     public getModelJson(modelIdArg: string): string {
       const val = this._iModel.nativeDb.getModel(modelIdArg);
@@ -1437,9 +1437,12 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /** Read element data from iModel as a json string
+    /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @return a json string with the properties of the element.
+     * @returns The JSON properties of the element.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElementJson
+     * @internal
      */
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
       const val = this._iModel.nativeDb.getElement(elementIdArg);
@@ -1448,29 +1451,80 @@ export namespace IModelDb {
       return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
 
+    /** Read element data from the iModel as JSON
+     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @returns The JSON properties of the element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @see getElementJson
+     */
+    private tryGetElementJson<T extends ElementProps>(elementIdArg: string): T | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(elementIdArg);
+      if (undefined !== val.error) {
+        if (IModelStatus.NotFound === val.error.status) {
+          return undefined;
+        }
+        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+      }
+      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
+    }
+
     /** Get properties of an Element by Id, FederationGuid, or Code
-     * @throws [[IModelError]] if the element is not found.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string")
+      if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      else if (elementId instanceof Code)
+      } else if (elementId instanceof Code) {
         elementId = { code: elementId };
-
+      }
       return this.getElementJson<T>(JSON.stringify(elementId));
+    }
+
+    /** Get properties of an Element by Id, FederationGuid, or Code
+     * @returns The properties of the element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElementProps
+     */
+    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof elementId === "string") {
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      } else if (elementId instanceof Code) {
+        elementId = { code: elementId };
+      }
+      return this.tryGetElementJson<T>(JSON.stringify(elementId));
     }
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @throws [[IModelError]] if the element is not found.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string")
+      if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      else if (elementId instanceof Code)
+      } else if (elementId instanceof Code) {
         elementId = { code: elementId };
-
+      }
       return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
+    }
+
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @returns The element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElement
+     */
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof elementId === "string") {
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      } else if (elementId instanceof Code) {
+        elementId = { code: elementId };
+      }
+      const elementProps: T | undefined = this.tryGetElementJson(JSON.stringify(elementId));
+      return undefined !== elementProps ? this._iModel.constructEntity<T>(elementProps) : undefined;
     }
 
     /** Query for the Id of the element that has a specified code.
@@ -1750,7 +1804,7 @@ export namespace IModelDb {
     /** Iterate all ViewDefinitions matching the supplied query.
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
-     * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
      *
      * **Example: Finding all views of a specific DrawingModel**
      * ``` ts
@@ -1804,7 +1858,7 @@ export namespace IModelDb {
 
     /** Get the thumbnail for a view.
      * @param viewDefinitionId The Id of the view for thumbnail
-     * @return the ThumbnailProps, or undefined if no thumbnail exists.
+     * @returns the ThumbnailProps, or undefined if no thumbnail exists.
      */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
