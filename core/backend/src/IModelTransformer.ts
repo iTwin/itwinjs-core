@@ -469,17 +469,13 @@ export class IModelTransformer extends IModelExportHandler {
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceRelInstanceId: Id64String = Id64.fromJSON(statement.getValue(1).getString());
-        try {
-          this.sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId);
-        } catch (error) {
-          if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-            const json: any = JSON.parse(statement.getValue(2).getString());
-            if (undefined !== json.targetRelInstanceId) {
-              const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-              this.importer.deleteRelationship(targetRelationship);
-            }
-            aspectDeleteIds.push(statement.getValue(0).getId());
+        if (undefined === this.sourceDb.relationships.tryGetInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId)) {
+          const json: any = JSON.parse(statement.getValue(2).getString());
+          if (undefined !== json.targetRelInstanceId) {
+            const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+            this.importer.deleteRelationship(targetRelationship);
           }
+          aspectDeleteIds.push(statement.getValue(0).getId());
         }
       }
     });

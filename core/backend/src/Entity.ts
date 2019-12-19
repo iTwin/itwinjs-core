@@ -73,7 +73,7 @@ export class Entity implements EntityProps {
    */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
-  /**  Get the full BIS class name of this Entity in the form "schema:class"  */
+  /** Get the full BIS class name of this Entity in the form "schema:class" */
   public static get classFullName(): string { return this.schema.schemaName + ":" + this.className; }
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */

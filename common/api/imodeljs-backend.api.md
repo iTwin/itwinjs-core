@@ -3145,8 +3145,10 @@ export class Relationships {
     createInstance(props: RelationshipProps): Relationship;
     deleteInstance(props: RelationshipProps): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
-    getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
+    getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     insertInstance(props: RelationshipProps): Id64String;
+    tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
+    tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     updateInstance(props: RelationshipProps): void;
 }
 

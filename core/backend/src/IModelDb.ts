@@ -1378,10 +1378,11 @@ export namespace IModelDb {
      * @internal
      */
     public getModelJson(modelIdArg: string): string {
-      const val = this._iModel.nativeDb.getModel(modelIdArg);
-      if (val.error)
-        throw new IModelError(val.error.status, "Model=" + modelIdArg);
-      return val.result!;
+      const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
+      if (undefined === modelJson) {
+        throw new IModelError(IModelStatus.NotFound, "Model=" + modelIdArg);
+      }
+      return modelJson;
     }
 
     /** Read the properties for a Model as a json string.
@@ -1506,10 +1507,11 @@ export namespace IModelDb {
      * @internal
      */
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
-      const val = this._iModel.nativeDb.getElement(elementIdArg);
-      if (val.error)
-        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
-      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
+      const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
+      if (undefined === elementProps) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+      }
+      return elementProps;
     }
 
     /** Read element data from the iModel as JSON
@@ -1534,12 +1536,11 @@ export namespace IModelDb {
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string") {
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
-        elementId = { code: elementId };
+      const elementProps: T | undefined = this.tryGetElementProps(elementId);
+      if (undefined === elementProps) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
       }
-      return this.getElementJson<T>(JSON.stringify(elementId));
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1563,12 +1564,11 @@ export namespace IModelDb {
      * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string") {
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
-        elementId = { code: elementId };
+      const element: T | undefined = this.tryGetElement(elementId);
+      if (undefined === element) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
       }
-      return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
+      return element;
     }
 
     /** Get an element by Id, FederationGuid, or Code
