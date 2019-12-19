@@ -33,7 +33,7 @@ import {
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
   TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
-  SpatialViewDefinitionProps,
+  SpatialViewDefinitionProps, ModelProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -280,6 +280,21 @@ describe("iModel", () => {
     assert.isDefined(elementProps1);
     assert.isDefined(elementProps2);
     assert.isUndefined(elementProps3);
+
+    const model1: Model | undefined = imodel1.models.tryGetModel(IModel.dictionaryId);
+    const modelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(IModel.dictionaryId);
+    const subModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.dictionaryId);
+    assert.isDefined(model1);
+    assert.isDefined(modelProps1);
+    assert.isDefined(subModel1);
+    const badModel1: Model | undefined = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
+    const badModelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
+    const badSubModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
+    const badSubModel2: Model | undefined = imodel1.models.tryGetSubModel(badCode);
+    assert.isUndefined(badModel1);
+    assert.isUndefined(badModelProps1);
+    assert.isUndefined(badSubModel1);
+    assert.isUndefined(badSubModel2);
 
     const subCat = imodel1.elements.getElement("0x2e");
     assert.isTrue(subCat instanceof SubCategory);

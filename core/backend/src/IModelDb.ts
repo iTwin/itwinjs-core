@@ -1313,13 +1313,26 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /** Get the Model with the specified identifier.
+    /** Get the ModelProps with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModelProps
      */
     public getModelProps<T extends ModelProps>(modelId: Id64String): T {
       const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
       return JSON.parse(json) as T;
+    }
+
+    /** Get the ModelProps with the specified identifier.
+     * @param modelId The Model identifier.
+     * @returns The ModelProps or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
+     * @see getModelProps
+     */
+    public tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined {
+      const json: string | undefined = this.tryGetModelJson(JSON.stringify({ id: modelId.toString() }));
+      return undefined !== json ? JSON.parse(json) as T : undefined;
     }
 
     /** Query for the last modified time of the specified Model.
@@ -1338,15 +1351,31 @@ export namespace IModelDb {
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModel
      */
     public getModel<T extends Model>(modelId: Id64String): T {
       return this._iModel.constructEntity<T>(this.getModelProps(modelId));
     }
 
+    /** Get the Model with the specified identifier.
+     * @param modelId The Model identifier.
+     * @returns The Model or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
+     * @see getModel
+     */
+    public tryGetModel<T extends Model>(modelId: Id64String): T | undefined {
+      const modelProps: ModelProps | undefined = this.tryGetModelProps(modelId);
+      return undefined !== modelProps ? this._iModel.constructEntity<T>(modelProps) : undefined;
+    }
+
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @returns a json string with the properties of the model.
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModelJson
+     * @internal
      */
     public getModelJson(modelIdArg: string): string {
       const val = this._iModel.nativeDb.getModel(modelIdArg);
@@ -1355,17 +1384,49 @@ export namespace IModelDb {
       return val.result!;
     }
 
+    /** Read the properties for a Model as a json string.
+     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
+     * @returns a json string with the properties of the model or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model exists, but cannot be loaded.
+     * @see getModelJson
+     */
+    private tryGetModelJson(modelIdArg: string): string | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, string> = this._iModel.nativeDb.getModel(modelIdArg);
+      if (undefined !== val.error) {
+        if (IModelStatus.NotFound === val.error.status) {
+          return undefined;
+        }
+        throw new IModelError(val.error.status, "Model=" + modelIdArg);
+      }
+      return val.result!;
+    }
+
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the sub-model is not found or cannot be loaded.
+     * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
-      const modeledElement = this._iModel.elements.getElement(modeledElementId);
-      if (modeledElement.id === IModel.rootSubjectId)
+      const modeledElementProps: ElementProps = this._iModel.elements.getElementProps(modeledElementId);
+      if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
+      }
+      return this.getModel<T>(modeledElementProps.id!);
+    }
 
-      return this.getModel<T>(modeledElement.id);
+    /** Get the sub-model of the specified Element.
+     * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
+     * @param modeledElementId Identifies the modeled element.
+     * @returns The sub-model or `undefined` if the specified element does not have a sub-model.
+     * @see getSubModel
+     */
+    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined {
+      const modeledElementProps: ElementProps | undefined = this._iModel.elements.tryGetElementProps(modeledElementId);
+      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
+        return undefined;
+      }
+      return this.tryGetModel<T>(modeledElementProps.id!);
     }
 
     /** Create a new model in memory.

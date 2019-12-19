@@ -2140,12 +2140,16 @@ export namespace IModelDb {
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String): T;
+        // @internal
         getModelJson(modelIdArg: string): string;
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
         insertModel(props: ModelProps): Id64String;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
+        tryGetModel<T extends Model>(modelId: Id64String): T | undefined;
+        tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined;
+        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
