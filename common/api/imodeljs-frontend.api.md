@@ -2678,6 +2678,8 @@ export interface DepthRangeNpc {
 // @internal
 export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
+    echo(id: GuidString, message: string): Promise<string>;
+    readonly onEcho: BeEvent<(id: string, message: string) => void>;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
@@ -3187,6 +3189,12 @@ export enum EventHandled {
     Yes = 1
 }
 
+// @internal
+export interface EventSourceOptions {
+    pollInterval: number;
+    prefetchLimit: number;
+}
+
 // @public
 export interface ExtentLimits {
     max: number;
@@ -3423,6 +3431,7 @@ export class FlyViewTool extends ViewManip {
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
+    EventSource = "imodeljs-frontend.EventSource",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     // @deprecated
@@ -4130,6 +4139,8 @@ export class IModelApp {
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @internal
+    static eventSourceOptions: EventSourceOptions;
     static readonly features: FeatureTrackingManager;
     // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
@@ -4246,6 +4257,8 @@ export class IModelConnection extends IModel {
     // @internal
     readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
+    // @internal
+    readonly eventSource: EventSource | undefined;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal

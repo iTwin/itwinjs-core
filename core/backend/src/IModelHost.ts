@@ -26,6 +26,7 @@ import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
+import { EventSourceRpcImpl } from "./rpc-impl/EventSourceRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
@@ -62,7 +63,13 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
-
+/** Configuration for event sink
+ * @internal
+ */
+export interface EventSinkOptions {
+  maxQueueSize: number;
+  maxNamespace: number;
+}
 /** Configuration of imodeljs-backend.
  * @public
  */
@@ -134,7 +141,10 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-
+  /** Configuration for event sink
+   * @internal
+   */
+  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: (os.cpus().length - 1),
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -335,7 +345,7 @@ export class IModelHost {
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
-
+    EventSourceRpcImpl.register();
     BisCoreSchema.registerSchema();
     GenericSchema.registerSchema();
     FunctionalSchema.registerSchema();

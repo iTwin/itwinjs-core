@@ -106,6 +106,7 @@ beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
+internal;class EventSourceRpcInterface 
 public;ExternalSourceAspectProps 
 public;Feature
 internal;FeatureGates
@@ -299,6 +300,7 @@ public;QueryPriority
 public;QueryQuota
 public;QueryResponse
 public;QueryResponseStatus
+internal;QueuedEvent
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription

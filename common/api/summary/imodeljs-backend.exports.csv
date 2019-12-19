@@ -106,6 +106,7 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
+internal;EventSinkOptions
 public;ExportGraphics
 beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void

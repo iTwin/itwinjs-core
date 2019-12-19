@@ -122,6 +122,7 @@ import { QueryParams } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
+import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -365,6 +366,7 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
+    EventSink = "imodeljs-backend.EventSink",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
     // @beta
@@ -1489,6 +1491,14 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
+// @internal
+export interface EventSinkOptions {
+    // (undocumented)
+    maxNamespace: number;
+    // (undocumented)
+    maxQueueSize: number;
+}
+
 // @public
 export namespace ExportGraphics {
     // @beta @deprecated
@@ -2016,6 +2026,8 @@ export class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    readonly eventSink: EventSink | undefined;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
@@ -2285,6 +2297,8 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
+    // @internal
+    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;

@@ -36,6 +36,7 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
+import { EventSink, EventSinkManager } from "./rpc-impl/EventSourceRpcImpl";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -115,7 +116,6 @@ export class OpenParams {
     return other.openMode === this.openMode && other.syncMode === this.syncMode;
   }
 }
-
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
@@ -141,13 +141,17 @@ export class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
+  private _eventSink?: EventSink;
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
-
+  /** Return event sink for associated [[IModelDb]].
+   * @internal
+   */
+  public get eventSink(): EventSink | undefined { return this._eventSink; }
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
 
@@ -194,8 +198,18 @@ export class IModelDb extends IModel {
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
+    this.initalizeEventSink();
   }
-
+  private clearEventSink() {
+    if (this._eventSink) {
+      EventSinkManager.delete(this._eventSink.id);
+    }
+  }
+  private initalizeEventSink() {
+    if (this.iModelToken.key) {
+      this._eventSink = EventSinkManager.get(this.iModelToken.key);
+    }
+  }
   private initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
@@ -413,6 +427,7 @@ export class IModelDb extends IModel {
     } finally {
       requestContext.enter();
       this.clearBriefcaseEntry();
+      this.clearEventSink();
     }
   }
 

@@ -130,6 +130,7 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
+internal;EventSourceOptions
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider

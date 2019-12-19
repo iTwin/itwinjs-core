@@ -1319,6 +1319,8 @@ export interface DefinitionElementProps extends ElementProps {
 
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
+    // (undocumented)
+    echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void>;
     static getClient(): DevToolsRpcInterface;
     static readonly interfaceName = "DevToolsRpcInterface";
     static interfaceVersion: string;
@@ -1744,6 +1746,15 @@ export interface EnvironmentProps {
     ground?: GroundPlaneProps;
     // (undocumented)
     sky?: SkyBoxProps;
+}
+
+// @internal
+export abstract class EventSourceRpcInterface extends RpcInterface {
+    // (undocumented)
+    fetch(_iModelToken: IModelTokenProps, _limit: number): Promise<QueuedEvent[]>;
+    static getClient(): EventSourceRpcInterface;
+    static readonly interfaceName = "EventSourceRpcInterface";
+    static interfaceVersion: string;
 }
 
 // @public
@@ -4294,6 +4305,18 @@ export enum QueryResponseStatus {
     PostError = 6,
     // (undocumented)
     Timeout = 4
+}
+
+// @internal
+export interface QueuedEvent {
+    // (undocumented)
+    data: any;
+    // (undocumented)
+    eventId: number;
+    // (undocumented)
+    eventName: string;
+    // (undocumented)
+    namespace: string;
 }
 
 // @public
