@@ -51,6 +51,7 @@ import { SceneContext } from "../ViewContext";
 import { BackgroundMapTileTreeReference } from "../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
+// cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @internal
@@ -235,8 +236,8 @@ export class RenderPlan {
       const style = view.displayStyle;
 
       this.is3d = view.is3d();
-      this.frustum = vp.viewFrustum.getFrustum();
-      this.fraction = vp.viewFrustum.frustFraction;
+      this.frustum = vp.viewingSpace.getFrustum();
+      this.fraction = vp.viewingSpace.frustFraction;
       this.viewFlags = style.viewFlags;
       this.bgColor = view.backgroundColor;
       this.monoColor = style.monochromeColor;

@@ -341,8 +341,8 @@ async function waitForTilesToLoad(modelLocation?: string) {
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
   while (haveNewTiles) {
-    theViewport!.sync.setRedrawPending;
-    theViewport!.sync.invalidateScene();
+    theViewport!.setRedrawPending();
+    theViewport!.invalidateScene();
     theViewport!.renderFrame();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
@@ -799,7 +799,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     canvas.style.width = String(viewSize.width) + "px";
     canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
-    theViewport.sync.setRedrawPending;
+    theViewport.setRedrawPending();
     (theViewport!.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
@@ -1147,7 +1147,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
         debugControl.resultsCallback = undefined; // Turn off glTimer metrics
         resolve();
       } else {
-        vp.sync.setRedrawPending();
+        vp.setRedrawPending();
         timer.start();
       }
     });
@@ -1181,7 +1181,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
   // Throw away the first n renderFrame times, until it's more consistent
   for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
-    theViewport!.sync.setRedrawPending();
+    theViewport!.setRedrawPending();
     theViewport!.renderFrame();
   }
   testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;

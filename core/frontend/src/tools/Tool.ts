@@ -27,12 +27,12 @@ export class ToolSettings {
 
   /** @beta */
   public static viewAnimate = {
-    easing: Easing.Cubic.InOut,
+    easing: Easing.Cubic.Out,
     /** Duration of animations of viewing operations. */
     time: {
       fast: BeDuration.fromSeconds(.75),
-      normal: BeDuration.fromSeconds(1.5),
-      slow: BeDuration.fromSeconds(3.0),
+      normal: BeDuration.fromSeconds(1.25),
+      slow: BeDuration.fromSeconds(2.0),
     },
   };
   /** Two tap must be within this period to be a double tap. */
@@ -73,7 +73,7 @@ export class ToolSettings {
   public static zoomSpeed = 10;
   /** Scale factor for zooming with mouse wheel. */
   public static wheelZoomRatio = 1.5;
-  /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
+  /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a throwing action) */
   public static viewingInertia = {
     /** Flag to enable inertia. */
     enabled: true,

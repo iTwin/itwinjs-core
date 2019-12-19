@@ -21,7 +21,7 @@ describe("AnalysisAnimationTimelineDataProvider", () => {
     viewMock.setup((view) => view.analysisStyle).returns(() => analysisMock.object);
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
-    viewportMock.setup((viewport) => viewport.animationFraction).returns(() => 0.3);
+    viewportMock.setup((viewport) => viewport.scheduleScriptFraction).returns(() => 0.3);
   });
 
   it("AnalysisAnimationTimelineDataProvider can provide timeline data", async () => {

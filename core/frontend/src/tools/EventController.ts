@@ -8,7 +8,7 @@ import { ScreenViewport } from "../Viewport";
 import { ToolAdmin } from "./ToolAdmin";
 
 /**
- * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
+ * An EventController maps user input events from a Viewport to the ToolAdmin so that tools can process them.
  * Viewports are assigned an EventController when they are registered with ViewManager.addViewport and they are destroyed with ViewManager.dropViewport.
  * @public
  */
@@ -20,7 +20,6 @@ export class EventController {
     if (element === undefined)
       return;
 
-    // Note: we are using mouseover instead of mouseenter, and mouseout instead of mouseleave.
     // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 
@@ -46,7 +45,7 @@ export class EventController {
     };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
-      this._removals.push(() => { element.removeEventListener(type, listener, false); });
+      this._removals.push(() => element.removeEventListener(type, listener, false));
     });
   }
 }

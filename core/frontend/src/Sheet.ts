@@ -63,6 +63,8 @@ import { ChangeFlags, CoordSystem, OffScreenViewport, Viewport } from "./Viewpor
 import { ViewRect } from "./ViewRect";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
+// cSpell:ignore ovrs
+
 /** Describes the geometry and styling of a sheet border decoration.
  * The sheet border decoration mimics a sheet of paper with a drop shadow.
  * @internal
@@ -178,7 +180,7 @@ export namespace Attachments {
         this._changeFlags.clear();
       }
 
-      if (!this.vp.sync.isValidController)
+      if (!this.vp.controllerValid)
         this.vp.setupFromView();
 
       this._scene = [];
@@ -195,9 +197,9 @@ export namespace Attachments {
     }
 
     public renderImage(): ImageBuffer | undefined {
-      if (!this.vp.sync.isValidRenderPlan) {
+      if (!this.vp.renderPlanValid) {
         this.vp.target.changeRenderPlan(RenderPlan.createFromViewport(this.vp));
-        this.vp.sync.setValidRenderPlan();
+        this.vp.setRenderPlanValid();
       }
 
       this.vp.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
@@ -224,7 +226,7 @@ export namespace Attachments {
           tree.setState(this._sceneDepth, State.NotLoaded);
 
         // Discard any tiles/graphics used for previous level-of-detail - we'll generate them at the new LOD
-        this.vp.sync.invalidateScene();
+        this.vp.invalidateScene();
         // ###TODO this.view.cancelAllTileLoads();
 
         this._sceneDepth = depth;
@@ -546,7 +548,7 @@ export namespace Attachments {
             const frust = viewport.vp.getFrustum(CoordSystem.Npc);
             frust.initFromRange(this.range);  // use unclipped range of tile to change the frustum (this is what we're looking at)
 
-            const rootToNpc = viewport.vp.viewFrustum.worldToNpcMap;
+            const rootToNpc = viewport.vp.viewingSpace.worldToNpcMap;
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
             viewport.vp.setupViewFromFrustum(frust);
 
@@ -929,7 +931,7 @@ export namespace Attachments {
 
     public discloseTileTrees(trees: TileTreeSet): void {
       // ###TODO: An Attachment.Tree is *NOT* owned by a TileTree.Owner. It should be.
-      // We disclose it for purposese of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
+      // We disclose it for purpose of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
       if (undefined !== this._tree)
         trees.add(this._tree);
     }
@@ -1209,7 +1211,7 @@ export class SheetViewState extends ViewState2d {
    */
   public onRenderFrame(_viewport: Viewport) {
     if (!this._attachments.allReady || !this._all3dAttachmentTilesLoaded)
-      _viewport.sync.invalidateScene();
+      _viewport.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments.

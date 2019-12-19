@@ -1953,7 +1953,7 @@ export class Frustum {
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;
     transformBy(trans: Transform, result?: Frustum): Frustum;
-    translate(offset: Vector3d): void;
+    translate(offset: XYAndZ): void;
 }
 
 // @internal
@@ -5871,7 +5871,7 @@ export class Tween {
     // (undocumented)
     readonly isPlaying: boolean;
     // (undocumented)
-    onComplete(callback: TweenCallback): this;
+    onComplete(callback?: TweenCallback): this;
     // (undocumented)
     onRepeat(callback: TweenCallback): this;
     // (undocumented)
@@ -5913,6 +5913,7 @@ export class Tweens {
         to: any;
         duration: number;
         onUpdate: UpdateCallback;
+        onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
         easing?: EasingFunction;

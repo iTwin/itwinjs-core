@@ -225,7 +225,7 @@ export abstract class IoTAnimation {
       return undefined;
 
     // here we have a scheduleScript.
-    const animationFraction = this._selectedView.animationFraction;
+    const animationFraction = this._selectedView.scheduleScriptFraction;
     const scheduleMap: Map<Id64String, ColorTime[]> = this.scheduleMap;
     const elementTimeList = scheduleMap.get(hit.sourceId);
     if (undefined === elementTimeList)

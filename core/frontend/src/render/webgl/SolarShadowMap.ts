@@ -284,7 +284,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     }
 
     this._enabled = true;
-    const viewFrustum = context.viewFrustum.getFrustum();
+    const viewFrustum = context.viewingSpace.getFrustum();
     const settings = style.settings.solarShadowsSettings;
     if (undefined === this._params)
       this._params = new ShadowMapParams(viewFrustum, sunDirection, settings);

@@ -35,7 +35,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport, ViewFrustum } from "./Viewport";
+import { Viewport, ViewingSpace } from "./Viewport";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -100,27 +100,52 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** @internal */
-export abstract class ViewStateUndo {
-  public undoTime?: BeTimePoint;
+/** The "pose" for a view. This is either the volume or area, depending on whether the view is 3d or 2d,
+ * plus the camera position/angle, if it is enabled.
+ * @note a ViewPose is immutable.
+ * @public
+ */
+export abstract class ViewPose {
+  public undoTime?: BeTimePoint; // the time this pose was created, if it is saved in the view undo stack.
   public abstract equalState(view: ViewState): boolean;
+  public abstract equal(other: ViewPose): boolean;
+  public abstract origin: Point3d;
+  public abstract extents: Vector3d;
+  public abstract rotation: Matrix3d;
+  public get center() {
+    const delta = this.rotation.multiplyTransposeVector(this.extents);
+    return this.origin.plusScaled(delta, 0.5);
+  }
+  public get target() { return this.center; }
+  public get zVec() { return this.rotation.getRow(2); }
+  public constructor(public cameraOn: boolean) { }
 }
 
 /** @internal */
-class ViewState3dUndo extends ViewStateUndo {
-  public readonly cameraOn: boolean;
+export class ViewPose3d extends ViewPose {
   public readonly origin: Point3d;
   public readonly extents: Vector3d;
   public readonly rotation: Matrix3d;
   public readonly camera: Camera;
 
   public constructor(view: ViewState3d) {
-    super();
-    this.cameraOn = view.isCameraOn;
+    super(view.isCameraOn);
     this.origin = view.origin.clone();
     this.extents = view.extents.clone();
     this.rotation = view.rotation.clone();
     this.camera = view.camera.clone();
+  }
+
+  public get target() {
+    return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
+  }
+
+  public equal(other: ViewPose3d) {
+    return this.cameraOn === other.cameraOn &&
+      this.origin.isAlmostEqual(other.origin) &&
+      this.extents.isAlmostEqual(other.extents) &&
+      this.rotation.isAlmostEqual(other.rotation) &&
+      (!this.cameraOn || this.camera.equals(other.camera));
   }
 
   public equalState(view: ViewState3d): boolean {
@@ -133,22 +158,30 @@ class ViewState3dUndo extends ViewStateUndo {
 }
 
 /** @internal */
-class ViewState2dUndo extends ViewStateUndo {
-  public readonly origin: Point2d;
+export class ViewPose2d extends ViewPose {
+  public readonly origin2: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
   public constructor(view: ViewState2d) {
-    super();
-    this.origin = view.origin.clone();
+    super(false);
+    this.origin2 = view.origin.clone();
     this.delta = view.delta.clone();
     this.angle = view.angle.clone();
   }
+  public equal(other: ViewPose2d) {
+    return this.origin2.isAlmostEqual(other.origin) &&
+      this.delta.isAlmostEqual(other.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(other.angle);
+  }
 
   public equalState(view: ViewState2d): boolean {
-    return this.origin.isAlmostEqual(view.origin) &&
+    return this.origin2.isAlmostEqual(view.origin) &&
       this.delta.isAlmostEqual(view.delta) &&
       this.angle.isAlmostEqualNoPeriodShift(view.angle);
   }
+  public get origin() { return new Point3d(this.origin2.x, this.origin2.y); }
+  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
+  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
@@ -279,8 +312,8 @@ export abstract class ViewState extends ElementState {
     const ovr = this.getSubCategoryOverride(id);
     if (undefined === ovr || undefined === ovr.invisible)
       return !app.invisible;
-    else
-      return !ovr.invisible;
+
+    return !ovr.invisible;
   }
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
@@ -302,10 +335,6 @@ export abstract class ViewState extends ElementState {
    */
   public abstract computeFitRange(): Range3d;
 
-  /** Override this if you want to perform some logic on each iteration of the render loop.
-   * @internal
-   */
-  public abstract onRenderFrame(_viewport: Viewport): void;
   /** Returns true if this view displays the contents of a [[Model]] specified by Id. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
@@ -323,6 +352,12 @@ export abstract class ViewState extends ElementState {
 
   /** Set the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract setExtents(viewDelta: Vector3d): void;
+
+  /** set the center of this view to a new position. */
+  public setCenter(center: Point3d) {
+    const diff = center.minus(this.getCenter());
+    this.setOrigin(this.getOrigin().plus(diff));
+  }
 
   /** Change the rotation of the view.
    * @note viewRot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
@@ -355,10 +390,10 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public abstract saveForUndo(): ViewStateUndo;
+  public abstract savePose(): ViewPose;
 
   /** @internal */
-  public abstract setFromUndo(props: ViewStateUndo): void;
+  public abstract applyPose(props: ViewPose): this;
 
   /** @internal */
   public createScene(context: SceneContext): void {
@@ -420,8 +455,10 @@ export abstract class ViewState extends ElementState {
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
 
-    if (delta === undefined) delta = this.getExtents();
-    if (inOrigin === undefined) inOrigin = this.getOrigin();
+    if (delta === undefined)
+      delta = this.getExtents();
+    if (inOrigin === undefined)
+      inOrigin = this.getOrigin();
 
     let frustFraction = 1.0;
     let xExtent: Vector3d;
@@ -440,7 +477,7 @@ export abstract class ViewState extends ElementState {
       let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
-      const nearScale = IModelApp.renderSystem.supportsLogZBuffer ? ViewFrustum.nearScaleLog24 : ViewFrustum.nearScaleNonLog24;
+      const nearScale = IModelApp.renderSystem.supportsLogZBuffer ? ViewingSpace.nearScaleLog24 : ViewingSpace.nearScaleNonLog24;
       if (enforceFrontToBackRatio && zFront / zBack < nearScale) {
         // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
         // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
@@ -480,7 +517,7 @@ export abstract class ViewState extends ElementState {
       origin = inOrigin;
       xExtent = xVector.scale(delta.x);
       yExtent = yVector.scale(delta.y);
-      zExtent = zVector.scale(delta.z);
+      zExtent = zVector.scale(delta.z ? delta.z : 1.0);
     }
 
     // calculate the root-to-npc mapping (using expanded frustum)
@@ -499,6 +536,14 @@ export abstract class ViewState extends ElementState {
     const box = result ? result.initNpc() : new Frustum();
     val.map.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
     return box;
+  }
+
+  public calculateFocusCorners() {
+    const map = this.computeWorldToNpc()!.map!;
+    const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
+    const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
+    map.transform1.multiplyPoint3dArrayQuietNormalize(pts);
+    return pts;
   }
 
   /** Initialize the origin, extents, and rotation from an existing Frustum
@@ -607,7 +652,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  protected fixAspectRatio(windowAspect: number): void {
+  public fixAspectRatio(windowAspect: number): void {
     const extents = this.getExtents().clone();
     const origin = this.getOrigin().clone();
     this.adjustAspectRatio(origin, extents, windowAspect);
@@ -868,7 +913,7 @@ export abstract class ViewState extends ElementState {
 
     let origNewDelta = newDelta.clone();
 
-    const isCameraOn: boolean = this.is3d() && this.isCameraOn;
+    const isCameraOn = this.is3d() && this.isCameraOn;
     if (isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
@@ -973,12 +1018,21 @@ export abstract class ViewState extends ElementState {
     return refreshed;
   }
 
-  /** Determine whether it is possible to animate a frustum change from this ViewState to the supplied one.
-   * They must be from the same iModel, the same dimension (2d/3d), and for 2d, viewing the same model.
+  /** Determine whether this ViewState has the same coordinate system as another one.
+   * They must be from the same iModel, and view a model in common.
    * @internal
    */
-  public canAnimateTo(other: ViewState) {
-    return this.iModel === other.iModel && this.is2d() === other.is2d();
+  public hasSameCoordinates(other: ViewState): boolean {
+    if (this.iModel !== other.iModel)
+      return false;
+    if (this.isSpatialView() && other.isSpatialView())
+      return true;
+    let allowView = false;
+    this.forEachModel((model) => {
+      if (!allowView && other.viewsModel(model.id))
+        allowView = true;
+    });
+    return allowView; // Accept if this view shares a model in common with target.
   }
 }
 
@@ -1014,15 +1068,25 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** @internal */
-  public saveForUndo(): ViewStateUndo { return new ViewState3dUndo(this); }
+  public savePose(): ViewPose { return new ViewPose3d(this); }
 
   /** @internal */
-  public setFromUndo(val: ViewState3dUndo) {
+  public applyPose(val: ViewPose3d): this {
     this._cameraOn = val.cameraOn;
     this.origin.setFrom(val.origin);
     this.extents.setFrom(val.extents);
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
+    return this;
+  }
+
+  /** @internal */
+  public fixAspectRatio(windowAspect: number): void {
+    super.fixAspectRatio(windowAspect);
+    if (this._cameraOn) {
+      this.setLensAngle(this.calcLensAngle());
+      this.centerEyePoint();
+    }
   }
 
   public toJSON(): ViewDefinition3dProps {
@@ -1737,13 +1801,14 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public saveForUndo(): ViewStateUndo { return new ViewState2dUndo(this); }
+  public savePose(): ViewPose { return new ViewPose2d(this); }
 
   /** @internal */
-  public setFromUndo(val: ViewState2dUndo) {
+  public applyPose(val: ViewPose2d) {
     this.origin.setFrom(val.origin);
     this.delta.setFrom(val.delta);
     this.angle.setFrom(val.angle);
+    return this;
   }
 
   /** Return the model for this 2d view. */
@@ -1797,10 +1862,6 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
-  /** @internal */
-  public canAnimateTo(other: ViewState) {
-    return super.canAnimateTo(other) && this.baseModelId === (other as ViewState2d).baseModelId;
-  }
 }
 
 /** A view of a DrawingModel

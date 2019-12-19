@@ -11,7 +11,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, Animator, areViewportsCompatible, DepthPointSource } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, ToolSettings, CoreTools, BeModifierKeys } from "./Tool";
@@ -25,6 +25,8 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { LengthDescription } from "../properties/LengthDescription";
 import { PrimitiveValue } from "../properties/Value";
 import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
+
+// cSpell:ignore wasd arrowright arrowleft pagedown pageup arrowup arrowdown
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -739,7 +741,6 @@ export abstract class ViewManip extends ViewTool {
   public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
-    const before = viewport.getFrustum();
 
     const clip = (viewport.viewFlags.clipVolume ? viewport.view.getViewClip() : undefined);
     if (undefined !== clip) {
@@ -757,7 +758,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
 
     if (doAnimate)
-      viewport.animateToCurrent(before);
+      viewport.animateToCurrent();
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {
@@ -1709,7 +1710,6 @@ abstract class ViewNavigate extends AnimatedHandle {
     if (!view.allow3dManipulations())
       return;
 
-    const startFrust = vp.getWorldFrustum();
     const walkAngle = ToolSettings.walkCameraAngle;
     if (!tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(15.)) || !tool.isZUp) {
       //  This turns on the camera if its not already on. It also assures the camera is centered. Obviously this is required if
@@ -1722,10 +1722,7 @@ abstract class ViewNavigate extends AnimatedHandle {
     if (ToolSettings.walkEnforceZUp)
       tool.enforceZUp(view.getTargetPoint());
 
-    const endFrust = vp.getWorldFrustum();
-    if (!startFrust.equals(endFrust)) {
-      vp.animateToCurrent(startFrust);
-    }
+    vp.animateToCurrent();
   }
 
   public drawHandle(context: DecorateContext, hasFocus: boolean): void {
@@ -2434,12 +2431,11 @@ export class StandardViewTool extends ViewTool {
       if (undefined !== inverse) {
         const targetMatrix = inverse.multiplyMatrixMatrix(vp.rotation);
         const rotateTransform = Transform.createFixedPointAndMatrix(ViewManip.getDefaultTargetPointWorld(vp), targetMatrix);
-        const startFrustum = vp.getFrustum();
-        const newFrustum = startFrustum.clone();
+        const newFrustum = vp.getFrustum();
         newFrustum.multiply(rotateTransform);
         vp.view.setupFromFrustum(newFrustum);
         vp.synchWithView(true);
-        vp.animateToCurrent(startFrustum);
+        vp.animateToCurrent();
       }
     }
     this.exitTool();
@@ -2492,7 +2488,7 @@ export class WindowAreaTool extends ViewTool {
 
     if (undefined === this.viewport) {
       this.viewport = ev.viewport;
-    } else if (!areViewportsCompatible(ev.viewport, this.viewport)) {
+    } else if (!ev.viewport.view.hasSameCoordinates(this.viewport.view)) {
       if (this._haveFirstPoint)
         return EventHandled.Yes;
       this.viewport = ev.viewport;
@@ -2562,7 +2558,7 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    if (undefined === this.viewport || !areViewportsCompatible(context.viewport, this.viewport))
+    if (undefined === this.viewport || !context.viewport.view.hasSameCoordinates(this.viewport.view))
       return;
     const vp = this.viewport;
     const color = vp.getContrastToBackgroundColor();
@@ -2616,7 +2612,7 @@ export class WindowAreaTool extends ViewTool {
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
     this._secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
-      if (undefined !== this.viewport && undefined !== ev.viewport && !areViewportsCompatible(ev.viewport, this.viewport)) {
+      if (undefined !== this.viewport && undefined !== ev.viewport && !ev.viewport.view.hasSameCoordinates(this.viewport.view)) {
         this._lastPtView = undefined;
         return;
       }
@@ -2632,7 +2628,6 @@ export class WindowAreaTool extends ViewTool {
     let delta: Vector3d;
     const vp = this.viewport!;
     const view = vp.view;
-    const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
     if (view.is3d() && view.isCameraOn) {
@@ -2683,7 +2678,7 @@ export class WindowAreaTool extends ViewTool {
     }
 
     vp.synchWithView(true);
-    vp.animateToCurrent(startFrust);
+    vp.animateToCurrent();
   }
 }
 
@@ -2980,9 +2975,8 @@ export class ViewToggleCameraTool extends ViewTool {
       else
         vp.turnCameraOn();
 
-      const startFrustum = vp.getFrustum();
       vp.synchWithView(true);
-      vp.animateToCurrent(startFrustum);
+      vp.animateToCurrent();
     }
     this.exitTool();
   }
@@ -3173,12 +3167,11 @@ export class SetupCameraTool extends PrimitiveTool {
     const eyePtWorld = this.getAdjustedEyePoint();
     const targetPtWorld = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    const startFrust = vp.getWorldFrustum();
     if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
       return;
 
     vp.synchWithView(true);
-    vp.animateToCurrent(startFrust);
+    vp.animateToCurrent();
   }
 
   private _useCameraHeightValue = new ToolSettingsValue(false);
