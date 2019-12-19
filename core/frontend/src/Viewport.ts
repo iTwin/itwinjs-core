@@ -1928,7 +1928,7 @@ export abstract class Viewport implements IDisposable {
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
     // We use the depth of the center of the view for that.
     let depthRange = this.determineVisibleDepthRange();
-    if (!depthRange)
+    if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
       depthRange = { minimum: 0, maximum: 1 };
 
     const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
