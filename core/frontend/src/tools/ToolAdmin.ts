@@ -303,10 +303,8 @@ export class ToolAdmin {
   private _inputCollector?: InputCollector;
   private _saveCursor?: string;
   private _saveLocateCircle = false;
-  private _modifierKeyWentDown = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
-  private _modifierKey = BeModifierKeys.None;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @internal
@@ -508,6 +506,7 @@ export class ToolAdmin {
   }
 
   private async sendTapEvent(touchEv: BeTouchEvent): Promise<EventHandled> {
+    touchEv.viewport!.setAnimator();
     const overlayHit = this.pickCanvasDecoration(touchEv);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
       return EventHandled.Yes;
@@ -552,7 +551,6 @@ export class ToolAdmin {
     switch (touchEvent.type) {
       case "touchstart":
       case "touchend":
-        vp.setAnimator();
         current.setKeyQualifiers(touchEvent);
         break;
     }
@@ -1126,14 +1124,8 @@ export class ToolAdmin {
 
   /** Called when any *modifier* (Shift, Alt, or Control) key is pressed or released. */
   private async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<void> {
-    if (wentDown === this._modifierKeyWentDown && modifier === this._modifierKey)
-      return;
-
     const activeTool = this.activeTool;
     const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : EventHandled.No;
-
-    this._modifierKey = modifier;
-    this._modifierKeyWentDown = wentDown;
 
     if (changed === EventHandled.Yes) {
       IModelApp.viewManager.invalidateDecorationsAllViews();

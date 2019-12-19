@@ -3853,6 +3853,19 @@ export enum LockedStates {
     Y_BM = 2
 }
 
+// @beta
+export class LookAndMoveTool extends ViewManip {
+    constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    provideToolAssistance(mainInstrKey: string): void;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
@@ -9136,6 +9149,8 @@ export const enum ViewHandleType {
     // (undocumented)
     Look = 128,
     // (undocumented)
+    LookAndMove = 256,
+    // (undocumented)
     None = 0,
     // (undocumented)
     Pan = 4,
@@ -9179,7 +9194,25 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
     // (undocumented)
+    onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): boolean;
+    // (undocumented)
+    onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): boolean;
+    // (undocumented)
     onReinitialize(): void;
+    // (undocumented)
+    onTouchCancel(_ev: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchComplete(_ev: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchEnd(_ev: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchMove(_ev: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchStart(_ev: BeTouchEvent): boolean;
+    // (undocumented)
+    onTouchTap(_ev: BeTouchEvent): boolean;
     // (undocumented)
     onWheel(_ev: BeWheelEvent): void;
     // (undocumented)
@@ -9302,7 +9335,7 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): void;
     // @internal (undocumented)
-    protected _forcedHandle: ViewHandleType;
+    forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
     // (undocumented)
@@ -9337,6 +9370,10 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     oneShot: boolean;
     // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
@@ -9353,9 +9390,13 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     onTouchComplete(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
+    onTouchEnd(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
+    // (undocumented)
+    onTouchStart(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
     // @internal (undocumented)

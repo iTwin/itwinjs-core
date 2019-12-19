@@ -212,6 +212,7 @@ public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
+beta;LookAndMoveTool 
 public;LookViewTool 
 alpha;ManipulatorToolEvent
 internal;MapImageryTileTreeReference 
