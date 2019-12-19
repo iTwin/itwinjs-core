@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Range3d } from "@bentley/geometry-core";
-import { TileProps } from "@bentley/imodeljs-common";
+import { TileFormat, TileProps } from "@bentley/imodeljs-common";
 import { expect } from "chai";
-import { TileIO } from "../tile/TileIO";
 import { A3xTile } from "../tile/A3xTile";
 import { A3xTileIO } from "../tile/A3xTileIO";
 
@@ -69,7 +68,7 @@ describe("A3x tiles", () => {
     const header = new A3xTileIO.Header(stream);
     expect(header.isValid).to.be.true;
 
-    expect(header.format).to.equal(TileIO.Format.A3x);
+    expect(header.format).to.equal(TileFormat.A3x);
     expect(header.version).to.equal(7);
     expect(header.byteOrder).to.equal(A3xTileIO.ByteOrder.LittleEndian);
     expect(header.options.length).to.equal(0);
@@ -473,7 +472,7 @@ describe("A3x tiles", () => {
     const header = new A3xTileIO.Header(stream);
     expect(header.isValid).to.be.true;
 
-    expect(header.format).to.equal(TileIO.Format.A3x);
+    expect(header.format).to.equal(TileFormat.A3x);
     expect(header.version).to.equal(7);
     expect(header.byteOrder).to.equal(A3xTileIO.ByteOrder.LittleEndian);
     expect(header.options.length).to.equal(0);

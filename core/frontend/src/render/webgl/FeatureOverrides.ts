@@ -5,8 +5,8 @@
 /** @module WebGL */
 
 import { assert, BeTimePoint, dispose, Id64 } from "@bentley/bentleyjs-core";
+import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { PackedFeature, PackedFeatureTable } from "../System";
 import { DisplayParams } from "../primitives/DisplayParams";
 import { Hilites, Target } from "./Target";
 import { GL } from "./GL";

@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { CurrentImdlVersion } from "@bentley/imodeljs-common";
 import { TileTestData, TileTestCase } from "./TileIO.data";
-import { IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 
 type TestCaseName = "rectangle" | "triangles" | "lineString" | "lineStrings" | "cylinder";
 
@@ -41,7 +41,7 @@ function changeVersion(src: TileTestData, versionMajor?: number, versionMinor?: 
     cylinder: changeTestCaseVersion(src.cylinder, versionMajor, versionMinor),
   };
 
-  dst.unreadable = (dst.versionMajor > IModelTileIO.CurrentVersion.Major) ? true : undefined;
+  dst.unreadable = (dst.versionMajor > CurrentImdlVersion.Major) ? true : undefined;
 
   if (undefined !== versionMajor && versionMajor > 1 && 1 === src.versionMajor) {
     // Added 4 bytes in v02.00 for empty sub-range bitmask

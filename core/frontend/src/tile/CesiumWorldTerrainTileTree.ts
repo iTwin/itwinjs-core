@@ -1,18 +1,32 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { IModelConnection } from "../IModelConnection";
-import { assert, ClientRequestContext, JsonUtils, Id64String } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  ByteStream,
+  ClientRequestContext,
+  Id64String,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
 import { TerrainTileLoaderBase, MapTileGeometryAttributionProvider, QuadId, MapTileTreeReference } from "./WebMapTileTree";
 import { TileRequest } from "./TileRequest";
 import { Tile } from "./Tile";
-import { TileIO } from "./TileIO";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d, Transform } from "@bentley/geometry-core";
-import { QParams3d, QPoint3d, ColorDef, OctEncodedNormal, LinePixels, FillFlags, RenderMaterial, FeatureIndexType } from "@bentley/imodeljs-common";
+import {
+  ColorDef,
+  FeatureIndexType,
+  FillFlags,
+  LinePixels,
+  nextPoint3d64FromByteStream,
+  OctEncodedNormal,
+  QParams3d,
+  QPoint3d,
+  RenderMaterial,
+} from "@bentley/imodeljs-common";
 import { Triangle } from "../render/primitives/Primitives";
 import { IModelApp } from "../IModelApp";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -101,7 +115,7 @@ function zigZagDeltaDecode(uBuffer: Uint16Array, vBuffer: Uint16Array, heightBuf
   }
 }
 
-function getIndexArray(vertexCount: number, streamBuffer: TileIO.StreamBuffer, indexCount: number): Uint16Array | Uint32Array {
+function getIndexArray(vertexCount: number, streamBuffer: ByteStream, indexCount: number): Uint16Array | Uint32Array {
   const indicesAre32Bit = vertexCount > 64 * 1024;
   const indexArray = (indicesAre32Bit) ? new Uint32Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount) : new Uint16Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount);
   streamBuffer.advance(indexCount * (indicesAre32Bit ? Uint32Array.BYTES_PER_ELEMENT : Uint16Array.BYTES_PER_ELEMENT));
@@ -137,15 +151,15 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     assert(data instanceof Uint8Array);
     const system = IModelApp.renderSystem;
     const blob = data as Uint8Array;
-    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
-    const center = streamBuffer.nextPoint3d64;
+    const streamBuffer = new ByteStream(blob.buffer);
+    const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
     const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
     const minHeight = this._groundBias + streamBuffer.nextFloat32;
     const maxHeight = this._groundBias + streamBuffer.nextFloat32;
-    const boundCenter = streamBuffer.nextPoint3d64;
+    const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
     const boundRadius = streamBuffer.nextFloat64;
-    const horizonOcclusion = streamBuffer.nextPoint3d64;
+    const horizonOcclusion = nextPoint3d64FromByteStream(streamBuffer);
     const mapTile = tile as MapTile;
     if (undefined !== mapTile) mapTile.adjustHeights(minHeight, maxHeight);
 

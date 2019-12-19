@@ -5,11 +5,11 @@
 /** @module Rendering */
 
 import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d, Range3d } from "@bentley/geometry-core";
-import { GraphicParams, RenderTexture, Gradient, FeatureTable } from "@bentley/imodeljs-common";
+import { GraphicParams, PackedFeatureTable, RenderTexture, Gradient, FeatureTable } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../../System";
+import { RenderSystem, RenderGraphic } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";

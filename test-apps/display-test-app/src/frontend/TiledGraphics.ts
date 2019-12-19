@@ -9,17 +9,17 @@ import {
   SceneContext,
   SpatialModelState,
   TiledGraphicsProvider,
-  TileTree,
+  TileTreeReference,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
-class ExternalTreeRef extends TileTree.Reference {
-  private readonly _ref: TileTree.Reference;
+class ExternalTreeRef extends TileTreeReference {
+  private readonly _ref: TileTreeReference;
   private readonly _ovrs: FeatureSymbology.Overrides;
 
-  public constructor(ref: TileTree.Reference, ovrs: FeatureSymbology.Overrides) {
+  public constructor(ref: TileTreeReference, ovrs: FeatureSymbology.Overrides) {
     super();
     this._ref = ref;
     this._ovrs = ovrs;
@@ -43,7 +43,7 @@ class ExternalTreeRef extends TileTree.Reference {
 }
 
 class Provider implements TiledGraphicsProvider {
-  private readonly _refs: TileTree.Reference[] = [];
+  private readonly _refs: TileTreeReference[] = [];
   public readonly iModel: IModelConnection;
 
   private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
@@ -90,7 +90,7 @@ class Provider implements TiledGraphicsProvider {
     return new Provider(vp, iModel, ovrs);
   }
 
-  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     for (const ref of this._refs)
       func(ref);
   }

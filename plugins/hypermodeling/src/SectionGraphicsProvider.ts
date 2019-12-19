@@ -29,6 +29,7 @@ import {
   TileLoader,
   TileRequest,
   TileTree,
+  TileTreeReference,
   TileTreeSet,
   Viewport,
   ViewState,
@@ -77,7 +78,7 @@ class ProxyTreeSupplier implements TileTree.Supplier {
 const proxyTreeSupplier = new ProxyTreeSupplier();
 
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
-class ProxyTreeReference extends TileTree.Reference {
+class ProxyTreeReference extends TileTreeReference {
   private readonly _owner: TileTree.Owner;
 
   public constructor(props: SectionLocationProps, iModel: IModelConnection) {
@@ -87,7 +88,7 @@ class ProxyTreeReference extends TileTree.Reference {
 
   public get treeOwner() { return this._owner; }
 
-  private get _proxiedRef(): TileTree.Reference | undefined {
+  private get _proxiedRef(): TileTreeReference | undefined {
     const proxiedTree = this.treeOwner.tileTree as ProxyTree;
     return undefined !== proxiedTree ? proxiedTree.ref : undefined;
   }
@@ -130,10 +131,10 @@ class ProxyLoader extends TileLoader {
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
 class ProxyTree extends TileTree {
   public readonly tree: TileTree;
-  public readonly ref: TileTree.Reference;
+  public readonly ref: TileTreeReference;
   public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
-  public constructor(tree: TileTree, ref: TileTree.Reference, view: ViewState2d, props: SectionLocationProps) {
+  public constructor(tree: TileTree, ref: TileTreeReference, view: ViewState2d, props: SectionLocationProps) {
     const placement = Placement3d.fromJSON(props.placement);
     const location = placement.transform;
     const inverseLocation = location.inverse();
@@ -209,13 +210,13 @@ class ProxyTile extends Tile {
 
 /** Draws the 2d section graphics into the 3d view. */
 class SectionGraphicsProvider implements TiledGraphicsProvider {
-  private readonly _treeRef: TileTree.Reference;
+  private readonly _treeRef: TileTreeReference;
 
   public constructor(ref: ProxyTreeReference) {
     this._treeRef = ref;
   }
 
-  public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void): void {
     func(this._treeRef);
   }
 }

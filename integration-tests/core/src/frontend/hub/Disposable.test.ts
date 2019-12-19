@@ -3,7 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
+import { ByteStream } from "@bentley/bentleyjs-core";
 import {
+  ImdlReader,
   IModelApp,
   IModelConnection,
   PlanarClassifierMap,
@@ -21,7 +23,6 @@ import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodel
 import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
@@ -217,8 +218,8 @@ describe("Disposal of WebGL Resources", () => {
 
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
-    const stream = new TileIO.StreamBuffer(TILE_DATA_1_1.triangles.bytes.buffer);
-    const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
+    const stream = new ByteStream(TILE_DATA_1_1.triangles.bytes.buffer);
+    const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, system);
     expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.graphic!;

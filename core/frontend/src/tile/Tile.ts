@@ -26,6 +26,7 @@ import {
 import {
   BoundingSphere,
   ColorDef,
+  computeChildTileRanges,
   ElementAlignedBox3d,
   Frustum,
   FrustumPlanes,
@@ -62,58 +63,6 @@ function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean)
   pts[2].set(range.high.x, range.high.y);
   pts[3].set(range.low.x, range.high.y);
   builder.addLineString2d(pts, 0);
-}
-
-/** @internal */
-export function bisectRange3d(range: Range3d, takeUpper: boolean): void {
-  const diag = range.diagonal();
-  const pt = takeUpper ? range.high : range.low;
-  if (diag.x > diag.y && diag.x > diag.z)
-    pt.x = (range.low.x + range.high.x) / 2.0;
-  else if (diag.y > diag.z)
-    pt.y = (range.low.y + range.high.y) / 2.0;
-  else
-    pt.z = (range.low.z + range.high.z) / 2.0;
-}
-
-/** @internal */
-export function bisectRange2d(range: Range3d, takeUpper: boolean): void {
-  const diag = range.diagonal();
-  const pt = takeUpper ? range.high : range.low;
-  if (diag.x > diag.y)
-    pt.x = (range.low.x + range.high.x) / 2.0;
-  else
-    pt.y = (range.low.y + range.high.y) / 2.0;
-}
-
-/**
- * Given a Tile, compute the ranges which would result from sub-dividing its range a la IModelTile.getChildrenProps().
- * This function exists strictly for debugging purposes.
- */
-function computeChildRanges(tile: Tile): Array<{ range: Range3d, isEmpty: boolean }> {
-  const emptyMask = tile.emptySubRangeMask;
-  const is2d = tile.root.is2d;
-  const bisectRange = is2d ? bisectRange2d : bisectRange3d;
-
-  const ranges: Array<{ range: Range3d, isEmpty: boolean }> = [];
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 2; j++) {
-      for (let k = 0; k < (is2d ? 1 : 2); k++) {
-        const emptyBit = 1 << (i + j * 2 + k * 4);
-        const isEmpty = 0 !== (emptyMask & emptyBit);
-
-        const range = tile.range.clone();
-        bisectRange(range, 0 === i);
-        bisectRange(range, 0 === j);
-        if (!is2d)
-          bisectRange(range, 0 === k);
-
-        ranges.push({ range, isEmpty });
-      }
-    }
-  }
-
-  return ranges;
 }
 
 /** A 3d tile within a [[TileTree]].
@@ -322,7 +271,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           addRangeGraphic(builder, this.contentRange, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.ChildVolumes === type) {
-        const ranges = computeChildRanges(this);
+        const ranges = computeChildTileRanges(this, this.root);
         for (const range of ranges) {
           const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
           const pixels = !range.isEmpty ? LinePixels.HiddenLine : LinePixels.Solid;

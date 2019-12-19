@@ -10,7 +10,6 @@ import {
   GraphicBranch,
   GraphicBranchOptions,
   GraphicList,
-  PackedFeatureTable,
   Pixel,
   RenderGraphic,
   RenderMemory,
@@ -24,7 +23,7 @@ import { IModelConnection } from "../IModelConnection";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Id64String, dispose } from "@bentley/bentleyjs-core";
 

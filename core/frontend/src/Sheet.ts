@@ -4,12 +4,49 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, dispose, Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
-  Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, TileTreeProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
-  ViewFlags, ViewStateProps,
+  assert,
+  BeDuration,
+  dispose,
+  Id64,
+  Id64Array,
+  Id64String,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  ClipVector,
+  Constant,
+  IndexedPolyface,
+  IndexedPolyfaceVisitor,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Transform,
+} from "@bentley/geometry-core";
+import {
+  ColorDef,
+  ElementAlignedBox2d,
+  ElementAlignedBox3d,
+  Feature,
+  FeatureTable,
+  Gradient,
+  GraphicParams,
+  ImageBuffer,
+  PackedFeatureTable,
+  Placement2d,
+  RenderMode,
+  RenderTexture,
+  SheetProps,
+  TileProps,
+  TileTreeProps,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewFlag,
+  ViewFlags,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -17,9 +54,9 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
+import { GraphicList, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile } from "./tile/Tile";
-import { TileLoader, TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileLoader, TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { ChangeFlags, CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
@@ -961,7 +998,7 @@ export namespace Attachments {
 
   /** @internal */
   export class Attachment2d extends Attachment {
-    public treeRef?: TileTree.Reference;
+    public treeRef?: TileTreeReference;
 
     public discloseTileTrees(trees: TileTreeSet): void {
       super.discloseTileTrees(trees);

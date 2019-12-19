@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+internal;A3xTile
+internal;A3xTileIO
 internal;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
@@ -56,8 +58,6 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 internal;BingElevationProvider
-internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
-internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
 beta;BlankConnectionProps
 beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
@@ -89,7 +89,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 alpha;cssPixelsToDevicePixels(cssPixels: number): number
 internal;CurrentInputState
@@ -156,6 +156,9 @@ beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, m
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+internal;class GltfReader
+internal;GltfReaderProps
+internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
@@ -188,11 +191,13 @@ public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise
 internal;class ImageryProvider
 internal;class ImageryProviderEPSG3857 
+internal;ImdlReader 
 public;IModelApp
 public;IModelAppOptions
 public;IModelConnection 
 public;IModelConnection
 internal;Tiles
+internal;IModelTileLoader 
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
@@ -259,8 +264,6 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-internal;PackedFeature
-internal;PackedFeatureTable
 public;PanViewTool 
 beta;ParseResults
 internal;PerformanceMetrics
@@ -333,6 +336,7 @@ alpha;SetupCameraTool
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
+internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
 public;class SkyBox 
 public;SkyBox
 internal;SkyBoxParams = Promise
@@ -386,6 +390,7 @@ internal;TileRequest
 internal;TileTree 
 internal;TileTree
 internal;TileTreeDiscloser
+internal;class TileTreeReference 
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin

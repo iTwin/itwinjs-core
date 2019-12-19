@@ -26,7 +26,7 @@ import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/Tile";
-import { TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
@@ -49,15 +49,15 @@ export interface FeatureOverrideProvider {
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-/** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTree.Reference]]s capable of loading and drawing the graphics.
+/** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTreeReference]]s capable of loading and drawing the graphics.
  * Typical use cases involve drawing cartographic imagery like weather, traffic conditions, etc.
  * @see [[MapTileTreeReference]] and [[MapImageryTileTreeReference]] for examples of ways to create a TileTree reference.
  * @see [[Viewport.addTiledGraphicsProvider]] and [[Viewport.dropTiledGraphicsProvider]].
  * @internal
  */
 export interface TiledGraphicsProvider {
-  /** Apply the supplied function to each [[TileTree.Reference]] to be drawn in the specified Viewport. */
-  forEachTileTreeRef(viewport: Viewport, func: (ref: TileTree.Reference) => void): void;
+  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified Viewport. */
+  forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
 /** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
@@ -1728,13 +1728,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  protected forEachTiledGraphicsProviderTree(func: (ref: TileTree.Reference) => void): void {
+  protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
     for (const provider of this._tiledGraphicsProviders)
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
   /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
     this.forEachTiledGraphicsProviderTree(func);
   }

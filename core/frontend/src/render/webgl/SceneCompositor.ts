@@ -22,7 +22,7 @@ import {
 import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { PackedFeatureTable, Pixel, GraphicList, RenderMemory } from "../System";
+import { Pixel, GraphicList, RenderMemory } from "../System";
 import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, dispose } from "@bentley/bentleyjs-core";
@@ -36,7 +36,7 @@ import { RenderCommands } from "./RenderCommands";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder, TextureUnit } from "./RenderFlags";
 import { BatchState, BranchState } from "./BranchState";
-import { Feature, ViewFlags, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Feature, ViewFlags, PackedFeatureTable, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { FloatRgba } from "./FloatRGBA";
 import { Debug } from "./Diagnostics";
 import { getDrawParams } from "./ScratchDrawParams";

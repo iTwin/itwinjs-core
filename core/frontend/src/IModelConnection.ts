@@ -994,7 +994,7 @@ export namespace IModelConnection {
 
     /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
     public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
-      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTree.References exist pointing to a given Owner.
+      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
       for (const entry of this._treesBySupplier) {
         const dict = entry[1];
         dict.forEach((_treeId, owner) => {

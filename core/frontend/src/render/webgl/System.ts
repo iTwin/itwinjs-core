@@ -4,10 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import {
-  ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
+  ColorDef,
+  ElementAlignedBox3d,
+  Gradient,
+  IModelError,
+  ImageBuffer,
+  PackedFeatureTable,
+  QParams3d,
+  QPoint3d,
+  QPoint3dList,
+  RenderMaterial,
+  RenderTexture,
+} from "@bentley/imodeljs-common";
+import {
+  ClipUtilities,
+  ClipVector,
+  HalfEdge,
+  HalfEdgeGraph,
+  HalfEdgeMask,
+  IndexedPolyface,
+  IndexedPolyfaceVisitor,
+  Point2d,
+  Point3d,
+  PolyfaceBuilder,
+  Range3d,
+  StrokeOptions,
+  Transform,
+  Triangulator,
 } from "@bentley/geometry-core";
 import {
   GLTimerResultCallback,
@@ -15,7 +39,6 @@ import {
   GraphicBranchOptions,
   GraphicList,
   InstancedGraphicParams,
-  PackedFeatureTable,
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,

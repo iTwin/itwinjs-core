@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Added ByteStream class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Paul.Connelly@bentley.com"
+}

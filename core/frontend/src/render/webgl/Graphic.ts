@@ -5,11 +5,11 @@
 /** @module WebGL */
 
 import { dispose, assert } from "@bentley/bentleyjs-core";
-import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ViewFlags, ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { IModelConnection } from "../../IModelConnection";
-import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, PackedFeatureTable, RenderMemory } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, RenderMemory } from "../System";
 import { RenderCommands } from "./RenderCommands";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { FeatureOverrides } from "./FeatureOverrides";

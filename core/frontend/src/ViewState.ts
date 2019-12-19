@@ -33,7 +33,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport, ViewFrustum } from "./Viewport";
 
@@ -332,17 +332,17 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** Execute a function against the [[TileTree.Reference]] associated with each viewed model.
+  /** Execute a function against the [[TileTreeReference]] associated with each viewed model.
    * @internal
    */
-  public abstract forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void;
+  public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
-  /** Execute a function against each [[TileTree.Reference]] associated with this view.
+  /** Execute a function against each [[TileTreeReference]] associated with this view.
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @internal
    */
   /** @internal */
-  public forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     this.forEachModelTreeRef(func);
     this.displayStyle.forEachTileTreeRef(func);
   }
@@ -362,7 +362,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    this.forEachTileTreeRef((ref: TileTree.Reference) => ref.addToScene(context));
+    this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -1508,14 +1508,14 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
-/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a [[TileTree.Reference]].
+/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a [[TileTreeReference]].
  * @internal
  */
 export class SpatialModelTileTrees {
   protected _allLoaded = false;
   protected readonly _view: SpatialViewState;
-  protected _treeRefs = new Map<Id64String, TileTree.Reference>();
-  private _swapTreeRefs = new Map<Id64String, TileTree.Reference>();
+  protected _treeRefs = new Map<Id64String, TileTreeReference>();
+  private _swapTreeRefs = new Map<Id64String, TileTreeReference>();
 
   public constructor(view: SpatialViewState) {
     this._view = view;
@@ -1554,13 +1554,13 @@ export class SpatialModelTileTrees {
     }
   }
 
-  public forEach(func: (treeRef: TileTree.Reference) => void): void {
+  public forEach(func: (treeRef: TileTreeReference) => void): void {
     this.load();
     for (const value of this._treeRefs.values())
       func(value);
   }
 
-  protected createTileTreeReference(model: GeometricModel3dState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined {
     return model.createTileTreeReference(this._view);
   }
 
@@ -1670,7 +1670,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void {
+  public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     this._treeRefs.forEach(func);
   }
 
@@ -1706,10 +1706,10 @@ export abstract class ViewState2d extends ViewState {
   public readonly baseModelId: Id64String;
   private _viewedExtents?: AxisAlignedBox3d;
   /** @internal */
-  protected _treeRef?: TileTree.Reference;
+  protected _treeRef?: TileTreeReference;
 
   /** @internal */
-  protected get _tileTreeRef(): TileTree.Reference | undefined {
+  protected get _tileTreeRef(): TileTreeReference | undefined {
     if (undefined === this._treeRef) {
       const model = this.getViewedModel();
       if (undefined !== model)
@@ -1790,7 +1790,7 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public forEachModelTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
     const ref = this._tileTreeRef;
     if (undefined !== ref)
       func(ref);
