@@ -281,6 +281,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
+  private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -422,7 +423,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
 
-    target.uniforms.style.changeBackgroundColor(ColorDef.black); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
+    target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
 
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
 

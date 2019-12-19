@@ -41,6 +41,8 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustum?: Frustum;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
+  private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
+
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
@@ -144,7 +146,7 @@ export class BackgroundMapDrape extends TextureDrape {
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
 
-    target.uniforms.style.changeBackgroundColor(ColorDef.black); // Avoid white on white reversal. Will be reset below in changeRenderPlan().
+    target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset below in changeRenderPlan().
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
