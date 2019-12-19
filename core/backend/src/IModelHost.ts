@@ -70,6 +70,16 @@ export interface EventSinkOptions {
   maxQueueSize: number;
   maxNamespace: number;
 }
+
+/**
+ * Type of the backend application
+ * @alpha
+ */
+export enum ApplicationType {
+  WebAgent,
+  WebApplicationBackend,
+}
+
 /** Configuration of imodeljs-backend.
  * @public
  */
@@ -160,6 +170,12 @@ export class IModelHostConfiguration {
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
     },
   };
+
+  /**
+   * Application (host) type
+   * @alpha
+   */
+  public applicationType?: ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -310,13 +326,6 @@ export class IModelHost {
         throw error;
       }
     }
-
-    // if (configuration.crashReportingConfig === undefined) {
-    //   configuration.crashReportingConfig = {
-    //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     enableCrashDumps: false,
-    //   };
-    // }
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);

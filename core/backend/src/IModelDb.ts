@@ -34,7 +34,7 @@ import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, ApplicationType } from "./IModelHost";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { EventSink, EventSinkManager } from "./rpc-impl/EventSourceRpcImpl";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -355,21 +355,31 @@ export class IModelDb extends IModel {
       throw new RpcPendingResponse();
     }
 
-    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    try {
-      const client = new UlasClient();
-      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
-      await client.logUsage(requestContext, ulasEntry);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
-    }
-    imodelDb.setDefaultConcurrentControlAndPolicy();
-    IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
+    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    await this.logUsage(requestContext, contextId, iModelDb);
+    iModelDb.setDefaultConcurrentControlAndPolicy();
+    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
 
     perfLogger.dispose();
-    return imodelDb;
+    return iModelDb;
+  }
+
+  private static _ulasClient: UlasClient;
+  /** Log usage when opening the iModel */
+  private static async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb) {
+    requestContext.enter();
+    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
+      return; // We do not log usage for agents, since the usage logging service cannot handle them.
+
+    this._ulasClient = this._ulasClient || new UlasClient();
+    const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
+    try {
+      await this._ulasClient.logUsage(requestContext, ulasEntry);
+    } catch (error) {
+      // Note: We do not treat usage logging
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.iModelToken }));
+    }
   }
 
   /** Returns true if this is a standalone iModel

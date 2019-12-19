@@ -233,6 +233,14 @@ export interface AppActivityMonitor {
     isIdle: boolean;
 }
 
+// @alpha
+export enum ApplicationType {
+    // (undocumented)
+    WebAgent = 0,
+    // (undocumented)
+    WebApplicationBackend = 1
+}
+
 // @public
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -2284,6 +2292,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
+    // @alpha
+    applicationType?: ApplicationType;
     briefcaseCacheDir: string;
     // @beta
     compressCachedTiles?: boolean;
