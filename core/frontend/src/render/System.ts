@@ -1313,7 +1313,7 @@ export namespace RenderSystem {
      *
      * Default value: true
      *
-     * @alpha
+     * @beta
      */
     dpiAwareViewports?: boolean;
 
