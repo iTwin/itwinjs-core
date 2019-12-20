@@ -17,3 +17,15 @@
   flex: 1 0;
   min-height: 0;
 }
+
+.favorite-action-button {
+  width: fit-content;
+  height: 20px;
+}
+
+.copy-action-button {
+  width: fit-content * 2;
+  height: 15px;
+  padding: 2px;
+  background: lightskyblue;
+}

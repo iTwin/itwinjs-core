@@ -623,6 +623,10 @@
       "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "react-async-hook",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
     },

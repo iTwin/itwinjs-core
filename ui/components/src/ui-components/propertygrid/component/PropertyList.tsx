@@ -11,6 +11,7 @@ import { Orientation, CommonProps } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
@@ -38,6 +39,8 @@ export interface PropertyListProps extends CommonProps {
   isPropertySelectionEnabled?: boolean;
   /** Enables/disables property right click selection */
   isPropertyRightClickSelectionEnabled?: boolean;
+  /** Array of action button renderers */
+  actionButtonRenderers?: ActionButtonRenderer[];
 }
 
 /**
@@ -122,6 +125,7 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
               onEditCommit={this._onEditCommit}
               onEditCancel={this.props.onEditCancel}
               width={this.state.width}
+              actionButtonRenderers={this.props.actionButtonRenderers}
             />);
         })}
       </div>

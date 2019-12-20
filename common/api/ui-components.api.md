@@ -60,6 +60,29 @@ import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
 // @beta
+export class ActionButtonList extends React.PureComponent<ActionButtonListProps> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface ActionButtonListProps {
+    actionButtonRenderers: ActionButtonRenderer[];
+    isPropertyHovered?: boolean;
+    orientation: Orientation;
+    property: PropertyRecord;
+}
+
+// @beta
+export type ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode;
+
+// @beta
+export interface ActionButtonRendererProps {
+    isPropertyHovered?: boolean;
+    property: PropertyRecord;
+}
+
+// @beta
 export interface ActiveMatchInfo {
     // (undocumented)
     matchIndex: number;
@@ -2314,6 +2337,8 @@ export interface PropertyGridContextMenuArgs {
 
 // @public
 export interface PropertyGridProps extends CommonProps {
+    // @beta
+    actionButtonRenderers?: ActionButtonRenderer[];
     dataProvider: IPropertyDataProvider;
     // @beta
     horizontalOrientationMinWidth?: number;
@@ -2427,7 +2452,7 @@ export class PropertyValueRendererManager {
 }
 
 // @public
-export class PropertyView extends React.Component<PropertyViewProps> {
+export class PropertyView extends React.Component<PropertyViewProps, PropertyViewState> {
     constructor(props: PropertyViewProps);
     // @internal (undocumented)
     render(): JSX.Element;
@@ -2582,6 +2607,8 @@ export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<Tr
 
 // @public
 export interface SharedRendererProps {
+    // @beta
+    actionButtonRenderers?: ActionButtonRenderer[];
     columnRatio?: number;
     isHoverable?: boolean;
     isSelectable?: boolean;
