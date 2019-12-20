@@ -3,17 +3,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
-import { HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
+import { Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { HubIModel, OidcFrontendClientConfiguration, Project, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps,
+  SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, cssPixelsToDevicePixels, queryDevicePixelRatio,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, cssPixelsToDevicePixels, queryDevicePixelRatio, OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -805,44 +805,48 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function initializeOidc(requestContext: FrontendRequestContext) {
-  assert(!!activeViewState);
-  if (activeViewState.oidcClient)
-    return;
-
-  let oidcConfiguration: OidcFrontendClientConfiguration;
+function createOidcClient(): IOidcFrontendClient {
+  let oidcClient: IOidcFrontendClient;
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
-    const redirectUri = "electron://frontend/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+    const redirectUri = "http://localhost:3000/signin-callback";
+    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    oidcClient = new OidcBrowserClient(oidcConfiguration);
   }
-
-  const oidcClient = new OidcBrowserClient(oidcConfiguration);
-  await oidcClient.initialize(requestContext);
-  activeViewState.oidcClient = oidcClient;
-  IModelApp.authorizationClient = oidcClient;
+  return oidcClient;
 }
 
 // Wraps the signIn process
+// In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
 // - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
 // - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// In the case of use in electron applications:
+// - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
+  const oidcClient: IOidcFrontendClient = createOidcClient();
+
   const requestContext = new FrontendRequestContext();
-  await initializeOidc(requestContext);
+  await oidcClient.initialize(requestContext);
+  IModelApp.authorizationClient = oidcClient;
+  if (oidcClient.isAuthorized)
+    return true;
 
-  if (!activeViewState.oidcClient!.hasSignedIn) {
-    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
-    return false;
-  }
+  const retPromise = new Promise<boolean>((resolve, _reject) => {
+    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+      resolve(token !== undefined);
+    });
+  });
 
-  return true;
+  await oidcClient.signIn(requestContext);
+  return retPromise;
 }
 
 async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
