@@ -532,8 +532,6 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
-    if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
-      this.viewHandles.focusHitHandle();
     const focusHandle = this.viewHandles.focusHandle;
     if (undefined !== focusHandle && focusHandle.onTouchTap(ev))
       return EventHandled.Yes;
@@ -1296,6 +1294,7 @@ abstract class AnimatedHandle extends ViewingToolHandle {
       this._anchorPtView.setFrom(ev.viewPoint);
     }
     this._lastPtView.setFrom(this._anchorPtView);
+    this._lastMotionTime = Date.now();
     tool.viewport!.setAnimator(this);
     return true;
   }
@@ -1771,8 +1770,11 @@ class ViewLookAndMove extends ViewNavigate {
 
   public onReinitialize(): void {
     super.onReinitialize();
+    this._speedChange = undefined;
     this._touchStartL = this._touchStartR = this._touchLast = undefined;
     this._touchElevate = false;
+    if (this.viewTool.viewHandles.testHit(Point3d.createZero(), ViewHandleType.LookAndMove))
+      this.viewTool.viewHandles.focusHitHandle(); // Ensure key events go to this handle by default w/o requiring motion...
   }
 
   public firstPoint(ev: BeButtonEvent): boolean {
@@ -1795,8 +1797,8 @@ class ViewLookAndMove extends ViewNavigate {
     return maxLinearVelocity;
   }
 
-  public getMaxAngularVelocityX() { return 2 * this.getMaxAngularVelocity(); } // Allow turning to be faster than looking up/down...
-  public getMaxAngularVelocityY() { return this.getMaxAngularVelocity(); }
+  protected getMaxAngularVelocityX() { return 2 * this.getMaxAngularVelocity(); } // Allow turning to be faster than looking up/down...
+  protected getMaxAngularVelocityY() { return this.getMaxAngularVelocity(); }
 
   protected getLinearVelocity(): Vector3d {
     const positionInput = Vector3d.create();
@@ -1875,7 +1877,7 @@ class ViewLookAndMove extends ViewNavigate {
     return motion;
   }
 
-  public enableDynamicUpdate(vp: ScreenViewport): void {
+  protected enableDynamicUpdate(vp: ScreenViewport): void {
     const tool = this.viewTool;
     if (tool.inDynamicUpdate)
       return;
@@ -1883,6 +1885,7 @@ class ViewLookAndMove extends ViewNavigate {
     tool.changeViewport(vp);
     tool.viewport!.setAnimator(this);
     tool.inDynamicUpdate = true;
+    tool.inHandleModify = true;
 
     vp.npcToView(NpcCenter, this._anchorPtView);
     this._lastPtView.setFrom(this._anchorPtView); // Display indicator in the middle of the view...
@@ -1899,8 +1902,10 @@ class ViewLookAndMove extends ViewNavigate {
   }
 
   public onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): boolean {
-    if (!this.viewTool.inDynamicUpdate)
+    if (!this.viewTool.inDynamicUpdate) {
+      this._positionInput.setZero(); // clear input from a previous dynamic update...
       return false;
+    }
 
     switch (keyEvent.key.toLowerCase()) {
       case "arrowright":
@@ -1932,7 +1937,7 @@ class ViewLookAndMove extends ViewNavigate {
     }
   }
 
-  public getTouchControlRadius(vp: Viewport): number {
+  protected getTouchControlRadius(vp: Viewport): number {
     const viewRect = vp.viewRect;
     const radius = Math.floor(Math.min(viewRect.width, viewRect.height) / 15.0) + 0.5;
     const minRadius = vp.pixelsFromInches(0.1);
@@ -1940,13 +1945,31 @@ class ViewLookAndMove extends ViewNavigate {
     return Geometry.clamp(radius, minRadius, maxRadius);
   }
 
-  public getTouchStartPosition(touchStart: BeTouchEvent | undefined): Point2d | undefined {
+  protected getTouchZoneLowerLeft(vp: Viewport): ViewRect {
+    const viewRect = vp.viewRect;
+    const rectLL = viewRect.clone();
+    rectLL.top += viewRect.height * 0.6;
+    rectLL.right -= viewRect.width * 0.6;
+    rectLL.insetByPercent(0.05);
+    return rectLL;
+  }
+
+  protected getTouchZoneLowerRight(vp: Viewport): ViewRect {
+    const viewRect = vp.viewRect;
+    const rectLR = viewRect.clone();
+    rectLR.top += viewRect.height * 0.6;
+    rectLR.left += viewRect.width * 0.6;
+    rectLR.insetByPercent(0.05);
+    return rectLR;
+  }
+
+  protected getTouchStartPosition(touchStart: BeTouchEvent | undefined): Point2d | undefined {
     if (undefined === touchStart || undefined === touchStart.viewport)
       return undefined;
     return BeTouchEvent.getTouchPosition(touchStart.touchEvent.changedTouches[0], touchStart.viewport);
   }
 
-  public getTouchOffset(touchStart: BeTouchEvent | undefined, radius: number): Vector2d {
+  protected getTouchOffset(touchStart: BeTouchEvent | undefined, radius: number): Vector2d {
     const offset = Vector2d.create();
     if (undefined === this._touchLast)
       return offset;
@@ -1980,9 +2003,8 @@ class ViewLookAndMove extends ViewNavigate {
     if (undefined === startPos)
       return false;
 
-    const viewRect = ev.viewport.viewRect;
-    const rectLL = viewRect.clone(); rectLL.top += viewRect.height * 0.6; rectLL.right -= viewRect.width * 0.6; rectLL.insetByPercent(0.05);
-    const rectLR = viewRect.clone(); rectLR.top += viewRect.height * 0.6; rectLR.left += viewRect.width * 0.6; rectLR.insetByPercent(0.05);
+    const rectLL = this.getTouchZoneLowerLeft(ev.viewport);
+    const rectLR = this.getTouchZoneLowerRight(ev.viewport);
 
     if (undefined === this._touchStartL && rectLL.containsPoint(startPos)) {
       this._touchStartL = this._touchLast = ev;
@@ -2019,7 +2041,7 @@ class ViewLookAndMove extends ViewNavigate {
   }
 
   public onTouchComplete(_ev: BeTouchEvent): boolean {
-    if (undefined === this._touchLast)
+    if (!this.viewTool.inDynamicUpdate || undefined === this._touchLast)
       return false;
     this.viewTool.onReinitialize();
     return true;
@@ -2030,7 +2052,7 @@ class ViewLookAndMove extends ViewNavigate {
   }
 
   public onTouchMove(ev: BeTouchEvent): boolean {
-    if (undefined === ev.viewport || (undefined === this._touchStartL && undefined === this._touchStartR))
+    if (undefined === ev.viewport || !this.viewTool.inDynamicUpdate || (undefined === this._touchStartL && undefined === this._touchStartR))
       return true;
 
     let changed = false;
@@ -2042,7 +2064,6 @@ class ViewLookAndMove extends ViewNavigate {
       changed = true;
 
     if (changed) {
-      this.enableDynamicUpdate(ev.viewport);
       this._touchLast = ev;
       ev.viewport.invalidateDecorations();
     }
@@ -2050,19 +2071,32 @@ class ViewLookAndMove extends ViewNavigate {
     return true;
   }
 
-  public onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): boolean {
+  public onTouchMoveStart(ev: BeTouchEvent, _startEv: BeTouchEvent): boolean {
+    if (undefined === ev.viewport)
+      return false;
+
     if (undefined === this._touchStartL && undefined === this._touchStartR) {
       if (this.viewTool.viewHandles.hasHandle(ViewHandleType.Look)) {
         this.viewTool.forcedHandle = ViewHandleType.Look;
         return false;
       }
     }
+    this.enableDynamicUpdate(ev.viewport);
     return true;
   }
 
   public onTouchTap(ev: BeTouchEvent): boolean {
-    if (ev.isSingleTap)
+    if (undefined === ev.viewport || this.viewTool.inDynamicUpdate || !ev.isSingleTap)
+      return false;
+
+    const rectLL = this.getTouchZoneLowerLeft(ev.viewport);
+    if (rectLL.containsPoint(ev.viewPoint))
       this._touchElevate = !this._touchElevate; // Toggle elevate mode for left control until next touch complete...
+
+    const rectLR = this.getTouchZoneLowerRight(ev.viewport);
+    if (rectLR.containsPoint(ev.viewPoint))
+      this._speedChange = (undefined === this._speedChange ? true : undefined); // Toggle speed increate for left control until next touch complete...
+
     return false;
   }
 
@@ -2297,7 +2331,8 @@ export class LookAndMoveTool extends ViewManip {
 
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, ViewTool.translate("LookAndMove.Inputs.TouchZoneLL"), false, ToolAssistanceInputMethod.Touch));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, ViewTool.translate("LookAndMove.Inputs.TouchZoneLR"), false, ToolAssistanceInputMethod.Touch));
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, ViewTool.translate("LookAndMove.Inputs.TouchTap"), false, ToolAssistanceInputMethod.Touch));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, ViewTool.translate("LookAndMove.Inputs.TouchTapLL"), false, ToolAssistanceInputMethod.Touch));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, ViewTool.translate("LookAndMove.Inputs.TouchTapLR"), false, ToolAssistanceInputMethod.Touch));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
 

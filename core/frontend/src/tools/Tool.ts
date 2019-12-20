@@ -48,7 +48,7 @@ export class ToolSettings {
   /** Delay with the mouse down before a drag operation begins. */
   public static startDragDelay = BeDuration.fromMilliseconds(110);
   /** Distance in screen inches a touch point must move before being considered motion. */
-  public static touchMoveDistanceInches = 0.15;
+  public static touchMoveDistanceInches = 0.1;
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
   /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
