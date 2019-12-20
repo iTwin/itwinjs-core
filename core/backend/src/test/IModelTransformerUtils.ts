@@ -7,7 +7,7 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
   Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -18,7 +18,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -94,6 +94,8 @@ export namespace IModelTransformerUtils {
     };
     const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
+    assert.isTrue(Id64.isValidId64(renderMaterialId));
     // Insert InformationRecords
     const informationRecordProps1: any = {
       classFullName: "TestTransformerSource:SourceInformationRecord",
@@ -129,7 +131,7 @@ export namespace IModelTransformerUtils {
       category: spatialCategoryId,
       code: Code.createEmpty(),
       userLabel: "PhysicalObject1",
-      geom: createBox(Point3d.create(1, 1, 1)),
+      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, renderMaterialId),
       placement: {
         origin: Point3d.create(1, 1, 1),
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -474,6 +476,9 @@ export namespace IModelTransformerUtils {
     assertTargetElement(sourceDb, targetDb, modelSelectorId);
     const modelSelectorProps = targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
     assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
+    // RenderMaterial
+    const renderMaterialId = targetDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(targetDb, definitionModelId, "RenderMaterial"))!;
+    assert.isTrue(Id64.isValidId64(renderMaterialId));
     // PhysicalElement
     const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = queryByUserLabel(targetDb, "PhysicalObject2");
@@ -487,13 +492,20 @@ export namespace IModelTransformerUtils {
     assertTargetElement(sourceDb, targetDb, physicalElementId1);
     assertTargetElement(sourceDb, targetDb, childObjectId1A);
     assertTargetElement(sourceDb, targetDb, childObjectId1B);
-    const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
+    const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true });
     const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
     const physicalObject3: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId3);
     const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
     const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
     const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
+    assert.isDefined(physicalObject1.geom);
+    const it = new GeometryStreamIterator(physicalObject1.geom!);
+    for (const entry of it) {
+      assert.isDefined(entry.geometryQuery);
+      assert.equal(entry.primitive.type, "geometryQuery");
+      assert.equal(entry.geomParams.materialId, renderMaterialId);
+    }
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
@@ -872,8 +884,13 @@ export namespace IModelTransformerUtils {
     return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
   }
 
-  export function createBox(size: Point3d): GeometryStreamProps {
+  export function createBox(size: Point3d, categoryId?: Id64String, renderMaterialId?: Id64String): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
+    if ((undefined !== categoryId) && (undefined !== renderMaterialId)) {
+      const geometryParams = new GeometryParams(categoryId);
+      geometryParams.materialId = renderMaterialId;
+      geometryStreamBuilder.appendGeometryParamsChange(geometryParams);
+    }
     geometryStreamBuilder.appendGeometry(Box.createDgnBox(
       Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, size.z),
       size.x, size.y, size.x, size.y, true,
