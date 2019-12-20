@@ -5727,7 +5727,7 @@ export class PerformanceMetrics {
     // (undocumented)
     beginOperation(operationName: string): void;
     // (undocumented)
-    completeFrameTimings(fbo: FrameBuffer, sceneMilSecElapsed?: number): void;
+    completeFrameTimings(fbo: FrameBuffer): void;
     // (undocumented)
     curSpfTimeIndex: number;
     // (undocumented)
@@ -5744,14 +5744,6 @@ export class PerformanceMetrics {
     gatherCurPerformanceMetrics: boolean;
     // (undocumented)
     gatherGlFinish: boolean;
-    // (undocumented)
-    loadTileSum: number;
-    // (undocumented)
-    loadTileTimes: number[];
-    // (undocumented)
-    renderSpfSum: number;
-    // (undocumented)
-    renderSpfTimes: number[];
     // (undocumented)
     spfSum: number;
     // (undocumented)
@@ -7894,7 +7886,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
-    endPerfMetricFrame(sceneMilSecElapsed?: number): void;
+    endPerfMetricFrame(): void;
     // (undocumented)
     endPerfMetricRecord(): void;
     // (undocumented)
