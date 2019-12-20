@@ -418,9 +418,9 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
       const surfGeom = params.geometry.asSurface!;
       const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        const texture = (params.target.analysisTexture ? params.target.analysisTexture : surfGeom.texture) as Texture;
+        const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
-        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+        texture!.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
         System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);
       }
