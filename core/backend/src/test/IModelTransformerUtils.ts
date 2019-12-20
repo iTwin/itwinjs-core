@@ -131,7 +131,7 @@ export namespace IModelTransformerUtils {
       category: spatialCategoryId,
       code: Code.createEmpty(),
       userLabel: "PhysicalObject1",
-      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, renderMaterialId),
+      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, subCategoryId, renderMaterialId),
       placement: {
         origin: Point3d.create(1, 1, 1),
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -504,6 +504,7 @@ export namespace IModelTransformerUtils {
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
+      assert.equal(entry.geomParams.subCategoryId, subCategoryId);
       assert.equal(entry.geomParams.materialId, renderMaterialId);
     }
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
@@ -884,12 +885,15 @@ export namespace IModelTransformerUtils {
     return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
   }
 
-  export function createBox(size: Point3d, categoryId?: Id64String, renderMaterialId?: Id64String): GeometryStreamProps {
+  export function createBox(size: Point3d, categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
-    if ((undefined !== categoryId) && (undefined !== renderMaterialId)) {
-      const geometryParams = new GeometryParams(categoryId);
-      geometryParams.materialId = renderMaterialId;
-      geometryStreamBuilder.appendGeometryParamsChange(geometryParams);
+    if ((undefined !== categoryId) && (undefined !== subCategoryId)) {
+      geometryStreamBuilder.appendSubCategoryChange(subCategoryId);
+      if (undefined !== renderMaterialId) {
+        const geometryParams = new GeometryParams(categoryId, subCategoryId);
+        geometryParams.materialId = renderMaterialId;
+        geometryStreamBuilder.appendGeometryParamsChange(geometryParams);
+      }
     }
     geometryStreamBuilder.appendGeometry(Box.createDgnBox(
       Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, size.z),
