@@ -23,6 +23,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "@bentley/ecschema-metadata",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal" ]
     },
@@ -924,7 +928,7 @@
     },
     {
       "name": "xmldom",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "xmlhttprequest",

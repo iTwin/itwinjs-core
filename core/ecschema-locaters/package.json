@@ -1,0 +1,62 @@
+{
+  "name": "@bentley/ecschema-locaters",
+  "version": "1.10.0-dev.9",
+  "description": "EC Schema file locaters",
+  "license": "MIT",
+  "main": "lib/ecschema-locaters.js",
+  "typings": "lib/ecschema-locaters",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib .rush package-deps.json",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-locaters",
+    "lint": "tslint --project . 1>&2",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson %TYPEDOC_THEME%",
+    "cover": "nyc npm test",
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel",
+    "iModel.js",
+    "EC"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "1.10.0-dev.9",
+    "@bentley/ecschema-metadata": "1.10.0-dev.9",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/glob": "^5.0.35",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/sinon": "^7.5.1",
+    "@types/xmldom": "^0.1.29",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^2.6.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.6.2",
+    "xmldom": "^0.1.27"
+  },
+  "dependencies": {
+    "glob": "^7.1.2"
+  },
+  "peerDependencies": {
+    "@bentley/ecschema-metadata": "1.10.0-dev.8"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "sourceMap": false
+  }
+}

@@ -194,6 +194,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ecschema-locaters",
+      "projectFolder": "core/ecschema-locaters",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/webpack-tools",
       "projectFolder": "tools/webpack",
       "reviewCategory": "tools",

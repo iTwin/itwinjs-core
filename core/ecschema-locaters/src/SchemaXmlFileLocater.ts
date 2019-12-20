@@ -4,21 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
-import { SchemaContext, ISchemaLocater } from "./../Context";
-import { SchemaMatchType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { Schema } from "./../Metadata/Schema";
-import { SchemaKey, ECVersion } from "./../SchemaKey";
 import * as path from "path";
-// TODO: This will not currently work runtime...
 import { DOMParser } from "xmldom";
-import { SchemaReadHelper } from "./Helper";
-import { XmlParser } from "./XmlParser";
+import { SchemaKey, ISchemaLocater, Schema, SchemaMatchType, SchemaContext, SchemaReadHelper, XmlParser, ECObjectsError, ECObjectsStatus, ECVersion } from "@bentley/ecschema-metadata";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths.
- * @alpha @deprecated class moved to ecschema-locaters package
+ * @alpha This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
@@ -43,7 +36,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     const schemaText = await this.readUtf8FileToString(schemaPath);
     if (undefined === schemaText)
-      return schemaText;
+      return undefined;
 
     const parser = new DOMParser();
     const document = parser.parseFromString(schemaText);
