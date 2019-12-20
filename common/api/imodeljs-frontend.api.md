@@ -8257,7 +8257,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     setNotFound(): void;
     // (undocumented)
-    readonly sizeMultiplier: number;
+    readonly sizeMultiplier: number | undefined;
     // (undocumented)
     protected _sizeMultiplier?: number;
     // (undocumented)

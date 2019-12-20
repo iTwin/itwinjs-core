@@ -225,7 +225,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._state = TileState.Abandoned;
   }
 
-  public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
+  public get maximumSize(): number {
+    return undefined !== this.sizeMultiplier ? this._maximumSize * this.sizeMultiplier : this._maximumSize;
+  }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
   public get hasChildren(): boolean { return !this.isLeaf; }
   public get contentRange(): ElementAlignedBox3d {
@@ -245,7 +247,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
-  public get sizeMultiplier(): number { return undefined !== this._sizeMultiplier ? this._sizeMultiplier : 1.0; }
+  public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier(): boolean { return undefined !== this._sizeMultiplier; }
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
