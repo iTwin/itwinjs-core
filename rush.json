@@ -201,6 +201,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ecschema2ts",
+      "projectFolder": "tools/ecschema2ts",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/webpack-tools",
       "projectFolder": "tools/webpack",
       "reviewCategory": "tools",

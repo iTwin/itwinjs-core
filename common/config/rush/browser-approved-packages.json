@@ -23,8 +23,16 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "@bentley/ecschema-locaters",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema2ts",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -228,7 +236,7 @@
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "chalk",
@@ -928,7 +936,7 @@
     },
     {
       "name": "xmldom",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",
