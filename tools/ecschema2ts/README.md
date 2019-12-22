@@ -1,6 +1,6 @@
 ﻿# ecschema2ts
 
-ecschema2ts is a command-line tool that takes an EC3.1 BIS ECSchema xml file and outputs a valid Typescript module that uses iModelJs.
+ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml file and outputs a valid Typescript module that uses iModelJs.
 
 ## Quick Overview
 ```sh
