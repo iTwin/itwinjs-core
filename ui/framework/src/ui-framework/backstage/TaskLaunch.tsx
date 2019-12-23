@@ -12,7 +12,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { Backstage } from "./Backstage";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 

@@ -4,6 +4,7 @@
 
 ```ts
 
+import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -57,6 +58,45 @@ export interface AbstractMenuItemProps extends AbstractItemProps {
 }
 
 // @beta
+export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
+    readonly execute: () => void;
+    readonly icon?: string;
+    readonly label?: string;
+    readonly tooltip?: string;
+    readonly type: StatusBarItemType.ActionItem;
+}
+
+// @beta
+export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem {
+    // (undocumented)
+    readonly type: StatusBarItemType.CustomItem;
+}
+
+// @beta
+export interface AbstractStatusBarItem {
+    readonly badge?: BadgeType;
+    readonly id: string;
+    readonly isVisible: boolean;
+    readonly itemPriority: number;
+    readonly section: StatusBarSection;
+    readonly type: StatusBarItemType;
+}
+
+// @beta
+export class AbstractStatusBarItemUtilities {
+    static createActionItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string, tooltip: string, execute: () => void) => AbstractStatusBarActionItem;
+    static createLabelItem: (id: string, section: StatusBarSection, itemPriority: number, icon: string, label: string, labelSide?: StatusbarLabelSide) => AbstractStatusBarLabelItem;
+}
+
+// @beta
+export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
+    readonly icon?: string;
+    readonly label: string;
+    readonly labelSide?: StatusbarLabelSide;
+    readonly type: StatusBarItemType.Label;
+}
+
+// @beta
 export interface AbstractToolbarProps extends AbstractItemProps {
     items: AnyToolbarItemProps[];
     toolbarId?: string;
@@ -80,6 +120,59 @@ export type AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | Ab
 
 // @beta
 export type AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps;
+
+// @beta
+export interface BackstageActionItem extends CommonBackstageItem {
+    // (undocumented)
+    readonly execute: () => void;
+    // (undocumented)
+    readonly itemType: BackstageItemType.ActionItem;
+}
+
+// @beta
+export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
+
+// @internal
+export interface BackstageItemsChangedArgs {
+    // (undocumented)
+    readonly items: ReadonlyArray<BackstageItem>;
+}
+
+// @beta
+export class BackstageItemsManager {
+    // (undocumented)
+    add(itemOrItems: BackstageItem | ReadonlyArray<BackstageItem>): void;
+    // @internal (undocumented)
+    items: ReadonlyArray<BackstageItem>;
+    // @internal
+    readonly onChanged: BeEvent<(args: BackstageItemsChangedArgs) => void>;
+    // (undocumented)
+    remove(itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>): void;
+    // (undocumented)
+    setIsEnabled(id: BackstageItem["id"], isEnabled: boolean): void;
+    // (undocumented)
+    setIsVisible(id: BackstageItem["id"], isVisible: boolean): void;
+}
+
+// @beta
+export enum BackstageItemType {
+    ActionItem = 1,
+    StageLauncher = 2
+}
+
+// @beta
+export class BackstageItemUtilities {
+    static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined) => BackstageActionItem;
+    static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined) => BackstageStageLauncher;
+}
+
+// @beta
+export interface BackstageStageLauncher extends CommonBackstageItem {
+    // (undocumented)
+    readonly itemType: BackstageItemType.StageLauncher;
+    // (undocumented)
+    readonly stageId: string;
+}
 
 // @beta
 export enum BadgeType {
@@ -106,6 +199,24 @@ export interface CommandHandler {
     getCommandArgs?: () => any[];
     parameters?: any;
 }
+
+// @beta
+export interface CommonBackstageItem {
+    readonly badge?: BadgeType;
+    readonly groupPriority: number;
+    readonly icon?: string;
+    readonly id: string;
+    readonly isEnabled: boolean;
+    readonly isVisible: boolean;
+    readonly itemPriority: number;
+    readonly itemType: BackstageItemType;
+    readonly label: string;
+    readonly subtitle?: string;
+    readonly tooltip?: string;
+}
+
+// @beta
+export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem;
 
 // @alpha
 export interface ConditionalDisplaySpecification {
@@ -171,6 +282,21 @@ export interface InsertSpec {
 }
 
 // @beta
+export const isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem;
+
+// @beta
+export const isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem;
+
+// @beta
+export const isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem;
+
+// @beta
+export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
+
+// @beta
+export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher;
+
+// @beta
 export interface LabelProps {
     label?: string | StringGetter;
     labelKey?: string;
@@ -184,6 +310,49 @@ export type OnItemExecutedFunc = (item: any) => void;
 
 // @beta
 export type OnNumberCommitFunc = (value: number) => void;
+
+// @internal
+export interface PluginStatusbarItemsChangedArgs {
+    // (undocumented)
+    readonly items: ReadonlyArray<CommonStatusBarItem>;
+}
+
+// @beta
+export class PluginStatusBarItemsManager {
+    // (undocumented)
+    add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
+    // @internal (undocumented)
+    items: ReadonlyArray<CommonStatusBarItem>;
+    // @internal
+    loadItems(items: ReadonlyArray<CommonStatusBarItem>): void;
+    // @internal
+    readonly onItemsChanged: BeEvent<(args: PluginStatusbarItemsChangedArgs) => void>;
+    // (undocumented)
+    remove(itemIdOrItemIds: CommonStatusBarItem["id"] | ReadonlyArray<CommonStatusBarItem["id"]>): void;
+    // (undocumented)
+    setIsVisible(id: CommonStatusBarItem["id"], isVisible: boolean): void;
+    setLabel(id: CommonStatusBarItem["id"], label: string): void;
+    setTooltip(id: CommonStatusBarItem["id"], tooltip: string): void;
+}
+
+// @alpha
+export class PluginUiManager {
+    static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
+    static getStatusbarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[];
+    static getToolbarItems(toolBarId: string): ToolbarItemInsertSpec[];
+    static readonly hasRegisteredProviders: boolean;
+    static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
+    static register(uiProvider: PluginUiProvider): void;
+    static readonly registeredProviderIds: string[];
+    static unregister(uiProviderId: string): void;
+}
+
+// @alpha
+export interface PluginUiProvider {
+    readonly id: string;
+    provideStatusbarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
+    provideToolbarItems?: (toolBarId: string) => ToolbarItemInsertSpec[];
+}
 
 // @public
 export enum RelativePosition {
@@ -203,6 +372,43 @@ export enum RelativePosition {
     TopLeft = 4,
     // (undocumented)
     TopRight = 5
+}
+
+// @alpha
+export enum StageUsage {
+    // (undocumented)
+    General = "General",
+    // (undocumented)
+    Private = "Private",
+    // (undocumented)
+    Redline = "Redline"
+}
+
+// @beta
+export type StatusBarItemId = CommonStatusBarItem["id"];
+
+// @beta
+export enum StatusBarItemType {
+    ActionItem = 1,
+    CustomItem = 3,
+    Label = 2
+}
+
+// @beta
+export enum StatusbarLabelSide {
+    Left = 0,
+    Right = 1
+}
+
+// @beta
+export enum StatusBarSection {
+    Center = 1,
+    Context = 3,
+    Left = 0,
+    Message = 0,
+    Right = 2,
+    Selection = 2,
+    Stage = 1
 }
 
 // @beta
@@ -270,6 +476,12 @@ export class UiAdmin {
 // @public
 export class UiError extends BentleyError {
     constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+}
+
+// @alpha
+export interface UiProviderRegisteredEventArgs {
+    // (undocumented)
+    providerId: string;
 }
 
 

@@ -8,14 +8,14 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Icon } from "@bentley/ui-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { useActiveFrontstageId } from "../frontstage/Frontstage";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import {
   BackstageActionItem,
   BackstageStageLauncher,
   isStageLauncher,
   BackstageItem,
-} from "./BackstageItemsManager";
+} from "@bentley/ui-abstract";
+import { useActiveFrontstageId } from "../frontstage/Frontstage";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { useBackstageManager } from "./BackstageManager";
 
 /** @internal */

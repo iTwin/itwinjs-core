@@ -31,10 +31,7 @@ internal;BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncher
 internal;BackstageComposerStageLauncherProps
 public;BackstageEvent 
 public;BackstageEventArgs
-beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
 public;BackstageItemProps 
-beta;BackstageItemsChangedArgs
-beta;BackstageItemsManager
 public;BackstageItemState
 beta;BackstageItemType
 beta;BackstageItemUtilities
@@ -73,7 +70,6 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
-beta;CommonBackstageItem
 public;ConditionalField 
 public;ConditionalFieldProps 
 beta;ConditionalItemDef 
@@ -241,9 +237,8 @@ public;InputFieldMessageAddedEvent
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
-beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
-beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
 public;ItemList 
@@ -410,12 +405,11 @@ alpha;StandardRotationNavigationAidControl
 public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection: React.FunctionComponent
-beta;StatusBarComposer 
+beta;StatusBarComposer: React.FC
 beta;StatusBarComposerProps
 internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
-beta;StatusBarItem
-beta;StatusBarItemId = StatusBarItem["id"]
+beta;StatusBarItem 
 beta;StatusBarItemsChangedEvent 
 beta;StatusBarItemsChangedEventArgs
 beta;StatusBarItemsManager
@@ -424,7 +418,6 @@ beta;StatusBarLeftSection: React.FunctionComponent
 beta;StatusBarManager
 public;StatusBarProps 
 beta;StatusBarRightSection: React.FunctionComponent
-beta;StatusBarSection
 beta;StatusBarSpaceBetween: React.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
@@ -493,12 +486,15 @@ beta;UiVisibilityEventArgs
 beta;useActiveFrontstageId: () => string
 beta;useActiveIModelConnection(): IModelConnection | undefined
 beta;useActiveViewport(): ScreenViewport | undefined
-beta;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
+internal;useAvailablePluginUiProviders(): readonly string[]
+internal;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useBackstageManager: () => BackstageManager
 internal;useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[]
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
+beta;usePluginStatusBarItems: (manager: PluginStatusBarItemsManager | undefined) => readonly CommonStatusBarItem[]
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
+beta;useStageStatusBarItems: (manager: StatusBarItemsManager) => readonly CommonStatusBarItem[]
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 

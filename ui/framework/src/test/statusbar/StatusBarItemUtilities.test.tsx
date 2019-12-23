@@ -5,8 +5,8 @@
 import * as React from "react";
 import { expect } from "chai";
 
+import { StatusBarSection } from "@bentley/ui-abstract";
 import { StatusBarItemUtilities } from "../../ui-framework";
-import { StatusBarSection } from "../../ui-framework/statusbar/StatusBarItem";
 
 describe("StatusBarItemUtilities", () => {
 

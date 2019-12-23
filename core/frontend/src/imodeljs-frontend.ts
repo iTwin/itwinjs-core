@@ -47,7 +47,6 @@ export * from "./Viewport";
 export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcDesktopClientRenderer";
 export * from "./plugin/Plugin";
-export * from "./plugin/PluginUiManager";
 export * from "./properties/AngleDescription";
 export * from "./properties/BaseQuantityDescription";
 export * from "./properties/Description";

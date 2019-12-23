@@ -12,10 +12,10 @@ import {
   RenderScheduleState,
   ToolTipProvider,
   ScreenViewport,
-  PluginUiManager,
 } from "@bentley/imodeljs-frontend";
 import { Gradient, ColorDef } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { PluginUiManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 

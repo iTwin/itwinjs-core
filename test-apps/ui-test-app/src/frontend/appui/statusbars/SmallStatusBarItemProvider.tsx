@@ -5,9 +5,10 @@
 import * as React from "react";
 
 import { FooterSeparator } from "@bentley/ui-ninezone";
+import { StatusBarSection } from "@bentley/ui-abstract";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
-  SnapModeField, StatusBarItem, StatusBarSection, StatusBarItemUtilities,
+  SnapModeField, StatusBarItem, StatusBarItemUtilities,
   withStatusFieldProps, withMessageCenterFieldProps, BooleanSyncUiListener, FooterModeField,
 } from "@bentley/ui-framework";
 import { SampleAppUiActionId, SampleAppIModelApp } from "../..";

@@ -134,6 +134,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     this.setState((prevState) => {
       if (!this._element)
         return null;
+      // istanbul ignore next
       if (!this._position)
         return null;
 

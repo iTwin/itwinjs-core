@@ -6,14 +6,28 @@ beta;AbstractGroupItemProps
 beta;AbstractIconProps
 beta;AbstractItemProps 
 beta;AbstractMenuItemProps 
+beta;AbstractStatusBarActionItem 
+beta;AbstractStatusBarCustomItem 
+beta;AbstractStatusBarItem
+beta;AbstractStatusBarItemUtilities
+beta;AbstractStatusBarLabelItem 
 beta;AbstractToolbarProps 
 beta;AbstractToolItemProps 
 alpha;ActionItemInsertSpec 
 beta;AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | AbstractGroupItemProps
 beta;AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps
+beta;BackstageActionItem 
+beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
+internal;BackstageItemsChangedArgs
+beta;BackstageItemsManager
+beta;BackstageItemType
+beta;BackstageItemUtilities
+beta;BackstageStageLauncher 
 beta;BadgeType
 beta;BaseItemState
 beta;CommandHandler
+beta;CommonBackstageItem
+beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
 alpha;ConditionalDisplaySpecification
 beta;ConditionalDisplayType
 beta;DescriptionProps
@@ -22,11 +36,25 @@ beta;GroupButtonDirection
 alpha;GroupItemInsertSpec 
 beta;IconSpecUtilities
 alpha;InsertSpec
+beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 beta;LabelProps
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
+internal;PluginStatusbarItemsChangedArgs
+beta;PluginStatusBarItemsManager
+alpha;PluginUiManager
+alpha;PluginUiProvider
 public;RelativePosition
+alpha;StageUsage
+beta;StatusBarItemId = CommonStatusBarItem["id"]
+beta;StatusBarItemType
+beta;StatusbarLabelSide
+beta;StatusBarSection
 beta;StringGetter = () => string
 beta;SyncUiProps
 alpha;ToolbarItemInsertSpec 
@@ -35,3 +63,4 @@ beta;TooltipProps
 public;UiAbstract
 beta;UiAdmin
 public;UiError 
+alpha;UiProviderRegisteredEventArgs

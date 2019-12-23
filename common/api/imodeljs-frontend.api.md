@@ -186,7 +186,6 @@ import { TileHeader } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
-import { ToolbarItemInsertSpec } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -5884,22 +5883,6 @@ export class PluginAdmin {
 // @beta
 export type PluginLoadResults = Plugin | undefined | string | string[];
 
-// @alpha
-export class PluginUiManager {
-    static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
-    static getToolbarItems(toolBarId: string, itemIds: UiItemNode): ToolbarItemInsertSpec[];
-    static readonly hasRegisteredProviders: boolean;
-    static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: PluginUiProvider): void;
-    static unregister(uiProviderId: string): void;
-}
-
-// @alpha
-export interface PluginUiProvider {
-    readonly id: string;
-    provideToolbarItems?: (toolBarId: string, itemIds: UiItemNode) => ToolbarItemInsertSpec[];
-}
-
 // @beta
 export namespace Primitives {
     // (undocumented)
@@ -9208,21 +9191,6 @@ export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
     }
-
-// @alpha
-export class UiItemNode {
-    constructor(id?: string);
-    // (undocumented)
-    children: UiItemNode[];
-    // (undocumented)
-    id: string;
-}
-
-// @alpha
-export interface UiProviderRegisteredEventArgs {
-    // (undocumented)
-    providerId: string;
-}
 
 // @internal
 export enum UsesDragSelect {

@@ -9,9 +9,10 @@ import {
   OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
+import { BackstageItem, StatusBarSection } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, UiFramework, Backstage, BackstageItem, BackstageItemUtilities, StatusBarItemUtilities, StatusBarSection, withStatusFieldProps,
+  SyncUiEventId, UiFramework, Backstage, BackstageItemUtilities, StatusBarItemUtilities, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";

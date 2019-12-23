@@ -20,8 +20,7 @@ export * from "./ui-framework/accudraw/MenuButtonPopup";
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/BackstageComposer";
 export * from "./ui-framework/backstage/BackstageComposerItem";
-export * from "./ui-framework/backstage/BackstageItem";
-export * from "./ui-framework/backstage/BackstageItemsManager";
+export * from "./ui-framework/backstage/BackstageItemProps";
 export * from "./ui-framework/backstage/BackstageItemUtilities";
 export * from "./ui-framework/backstage/BackstageManager";
 export * from "./ui-framework/backstage/CommandLaunch";
@@ -78,6 +77,8 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
+export * from "./ui-framework/hooks/useAvailablePluginUiProviders";
+export * from "./ui-framework/backstage/useBackstageItems";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -148,8 +149,11 @@ export * from "./ui-framework/statusbar/StatusBarComposer";
 export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
+export * from "./ui-framework/statusbar/StatusBarComposer";
 export * from "./ui-framework/statusbar/StatusBarManager";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
+export * from "./ui-framework/statusbar/usePluginStatusBarItems";
+export * from "./ui-framework/statusbar/useStageStatusBarItems";
 export * from "./ui-framework/statusbar/withStatusFieldProps";
 
 export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-plugin",
+      "comment": "Update package location of PluginUiManager.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "bill.steinbock@bentley.com"
+}
