@@ -890,7 +890,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
-   * @param volume The new volume, in view-coordinates, for the view. The resulting view will show all of volume.
+   * @param volume The new volume, in view-aligned coordinates. The resulting view will show all of the volume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
    * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
@@ -903,15 +903,13 @@ export abstract class ViewState extends ElementState {
 
     const viewRot = this.getRotation();
     const newOrigin = volume.low.clone();
-    let newDelta = Vector3d.createStartEnd(volume.low, volume.high);
+    const newDelta = volume.diagonal();
 
     const minimumDepth = Constant.oneMillimeter;
     if (newDelta.z < minimumDepth) {
       newOrigin.z -= (minimumDepth - newDelta.z) / 2.0;
       newDelta.z = minimumDepth;
     }
-
-    let origNewDelta = newDelta.clone();
 
     const isCameraOn = this.is3d() && this.isCameraOn;
     if (isCameraOn) {
@@ -935,43 +933,30 @@ export abstract class ViewState extends ElementState {
       newOrigin.y -= marginBottom;
       newDelta.x += marginHorizontal;
       newDelta.y += marginVert;
-
-      // don't fix the origin due to changes in delta here
-      origNewDelta = newDelta.clone();
     } else {
+      const origDelta = newDelta.clone();
       newDelta.scale(1.04, newDelta); // default "dilation"
-    }
-
-    if (isCameraOn) {
-      // make sure that the zDelta is large enough so that entire model will be visible from any rotation
-      const diag = newDelta.magnitudeXY();
-      if (diag > newDelta.z)
-        newDelta.z = diag;
+      newOrigin.addScaledInPlace(origDelta.minus(newDelta, origDelta), .5);
     }
 
     if (ViewStatus.Success !== this.validateViewDelta(newDelta, true))
       return;
 
-    this.setExtents(newDelta);
-    if (aspect)
-      this.fixAspectRatio(aspect);
-
-    newDelta = this.getExtents();
-
-    newOrigin.x -= (newDelta.x - origNewDelta.x) / 2.0;
-    newOrigin.y -= (newDelta.y - origNewDelta.y) / 2.0;
-    newOrigin.z -= (newDelta.z - origNewDelta.z) / 2.0;
-
     viewRot.multiplyTransposeVectorInPlace(newOrigin);
+
+    if (aspect)
+      this.adjustAspectRatio(newOrigin, newDelta, aspect);
+
+    this.setExtents(newDelta);
     this.setOrigin(newOrigin);
 
     if (!this.is3d())
       return;
 
-    const cameraDef: Camera = this.camera;
+    const cameraDef = this.camera;
     cameraDef.validateLens();
     // move the camera back so the entire x,y range is visible at front plane
-    const frontDist = Math.max(newDelta.x, newDelta.y) / (2.0 * Math.tan(cameraDef.getLensAngle().radians / 2.0));
+    const frontDist = newDelta.x / (2.0 * Math.tan(cameraDef.getLensAngle().radians / 2.0));
     const backDist = frontDist + newDelta.z;
 
     cameraDef.setFocusDistance(frontDist); // do this even if the camera isn't currently on.
@@ -1179,8 +1164,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Calculate the lens angle formed by the current delta and focus distance */
   public calcLensAngle(): Angle {
-    const maxDelta = Math.max(this.extents.x, this.extents.y);
-    return Angle.createRadians(2.0 * Math.atan2(maxDelta * 0.5, this.camera.getFocusDistance()));
+    return Angle.createRadians(2.0 * Math.atan2(this.extents.x * 0.5, this.camera.getFocusDistance()));
   }
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
@@ -1188,8 +1172,7 @@ export abstract class ViewState3d extends ViewState {
     if (!this._cameraOn)
       return super.getTargetPoint(result);
 
-    const viewZ = this.getRotation().getRow(2);
-    return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
+    return this.getEyePoint().plusScaled(this.getZVector(), -1.0 * this.getFocusDistance(), result);
   }
 
   /** Position the camera for this view and point it at a new target point.
@@ -1289,8 +1272,7 @@ export abstract class ViewState3d extends ViewState {
 
     const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
     const delta = Vector2d.create(this.extents.x, this.extents.y);
-    const longAxis = Math.max(delta.x, delta.y);
-    delta.scale(extent / longAxis, delta);
+    delta.scale(extent / delta.x, delta);
 
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
   }

@@ -86,6 +86,7 @@ export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
 export * from "./tools/Tool";
+export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";

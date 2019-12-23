@@ -14,7 +14,8 @@ import { DecorateContext } from "../ViewContext";
 import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, ToolSettings, CoreTools, BeModifierKeys } from "./Tool";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys } from "./Tool";
+import { ToolSettings } from "./ToolSettings";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -596,7 +597,7 @@ export abstract class ViewManip extends ViewTool {
       vp.synchWithView(true);
 
       if (restorePrevious)
-        vp.doUndo(ToolSettings.viewAnimate.time.normal);
+        vp.doUndo(ScreenViewport.animation.time.normal);
 
       vp.invalidateDecorations();
     }
@@ -2095,7 +2096,7 @@ class ViewLookAndMove extends ViewNavigate {
 
     const rectLR = this.getTouchZoneLowerRight(ev.viewport);
     if (rectLR.containsPoint(ev.viewPoint))
-      this._speedChange = (undefined === this._speedChange ? true : undefined); // Toggle speed increate for left control until next touch complete...
+      this._speedChange = (undefined === this._speedChange ? true : undefined); // Toggle speed increase for left control until next touch complete...
 
     return false;
   }
@@ -2767,7 +2768,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport!;
     vp.getWorldFrustum(this._frustum);
 
-    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint);
     if (undefined !== visiblePoint) {
       this._startPtWorld.setFrom(visiblePoint);
       vp.worldToView(this._startPtWorld, this._startPtView);
@@ -2974,7 +2975,7 @@ export class ViewUndoTool extends ViewTool {
 
   public onPostInstall() {
     if (this.viewport)
-      this.viewport.doUndo(ToolSettings.viewAnimate.time.normal);
+      this.viewport.doUndo(ScreenViewport.animation.time.normal);
     this.exitTool();
   }
 }
@@ -2988,7 +2989,7 @@ export class ViewRedoTool extends ViewTool {
 
   public onPostInstall() {
     if (this.viewport)
-      this.viewport.doRedo(ToolSettings.viewAnimate.time.normal);
+      this.viewport.doRedo(ScreenViewport.animation.time.normal);
     this.exitTool();
   }
 }

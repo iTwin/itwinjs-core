@@ -16,13 +16,14 @@ import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";
-import { ViewState3d, ViewStatus } from "../ViewState";
+import { ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
   BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled,
-  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings,
+  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides,
 } from "./Tool";
+import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -144,7 +145,7 @@ export class CurrentInputState {
 
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public onInstallTool() { this.clearKeyQualifiers(); if (undefined !== this.lastWheelEvent) this.lastWheelEvent.invalidate(); this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
+  public onInstallTool() { this.clearKeyQualifiers(); this.lastWheelEvent = undefined; this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
   public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
   private isAnyDragging() { return this.button.some((button) => button.isDragging); }
@@ -737,7 +738,7 @@ export class ToolAdmin {
   public get idleTool(): IdleTool { return this._idleTool!; }
 
   /** Return true to filter (ignore) events to the given viewport */
-  protected filterViewport(vp: Viewport) {
+  protected filterViewport(vp: ScreenViewport) {
     if (undefined === vp || vp.isDisposed)
       return true;
 
@@ -1580,52 +1581,48 @@ export class WheelEventProcessor {
       easingFunction: Easing.Cubic.Out,
     };
 
+    const view = vp.view;
+    const currentInputState = IModelApp.toolAdmin.currentInputState;
     let status: ViewStatus;
-    if (vp.view.is3d() && vp.isCameraOn) {
-      let lastEventWasValid: boolean = false;
+    const now = Date.now();
+    if (view.is3d() && view.isCameraOn) {
       if (!isSnapOrPrecision) {
-        const targetNpc = vp.worldToNpc(target);
-        const newTarget = new Point3d();
-        const lastEvent = IModelApp.toolAdmin.currentInputState.lastWheelEvent;
-        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
-          vp.worldToNpc(lastEvent.point, newTarget);
-          targetNpc.z = newTarget.z;
-          lastEventWasValid = true;
-        } else if (undefined !== vp.pickNearestVisibleGeometry(target, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches), true, newTarget)) {
-          vp.worldToNpc(newTarget, newTarget);
-          targetNpc.z = newTarget.z;
+        let lastEvent = currentInputState.lastWheelEvent;
+        if (undefined !== lastEvent && lastEvent.viewport &&
+          now - lastEvent.time < ToolSettings.doubleClickTimeout.milliseconds &&
+          lastEvent.viewport.view.equals(view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
+          target.setFrom(lastEvent.point);
+          lastEvent.time = now;
         } else {
-          vp.view.getTargetPoint(newTarget);
-          vp.worldToNpc(newTarget, newTarget);
-          targetNpc.z = newTarget.z;
+          const newTarget = vp.pickNearestVisibleGeometry(target);
+          if (undefined !== newTarget)
+            target.setFrom(newTarget);
+          else
+            view.getTargetPoint(target);
+
+          currentInputState.lastWheelEvent = lastEvent = ev.clone();
+          lastEvent.point.setFrom(target);
         }
-        vp.npcToWorld(targetNpc, target);
       }
 
-      const cameraView = vp.view;
       const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
-      const oldCameraPos = cameraView.getEyePoint();
-      const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
-      const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
+      const eye = view.getEyePoint();
+      const newEye = transform.multiplyPoint3d(eye);
+      const offset = eye.vectorTo(newEye);
 
       // when you're too close to an object, the wheel zoom operation will stop. We set a "bump distance" so you can blast through obstacles.
-      if (!isSnapOrPrecision && offset.magnitude() < ToolSettings.wheelZoomBumpDistance) {
-        offset.scaleToLength(ToolSettings.wheelZoomBumpDistance / 3.0, offset); // move 1/3 of the bump distance, just to get to the other side.
-        lastEventWasValid = false;
+      const bumpDist = Math.max(ToolSettings.wheelZoomBumpDistance, view.minimumFrontDistance());
+      if (offset.magnitude() < bumpDist) {
+        offset.scaleToLength(bumpDist, offset); // move bump distance, just to get to the other side.
         target.addInPlace(offset);
+        newEye.setFrom(eye.plus(offset));
+        currentInputState.lastWheelEvent = undefined; // we need to search on the "other side"
       }
 
-      const viewTarget = cameraView.getTargetPoint().clone();
-      viewTarget.addInPlace(offset);
-      newCameraPos.setFrom(oldCameraPos.plus(offset));
+      const zDir = view.getZVector();
+      target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (!lastEventWasValid) {
-        const thisEvent = ev.clone();
-        thisEvent.point.setFrom(target);
-        IModelApp.toolAdmin.currentInputState.lastWheelEvent = thisEvent;
-      }
-
-      status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
+      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens);
       vp.synchWithView(true);
       vp.animateToCurrent(animationOptions);
     } else {
