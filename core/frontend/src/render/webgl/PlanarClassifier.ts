@@ -349,10 +349,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree) {
     this._graphics.length = 0;
-    if (undefined === context.viewFrustum)
+    if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewFrustum!.view as ViewState3d;
+    const viewState = context.viewingSpace!.view as ViewState3d;
     if (undefined === viewState)
       return;
 
@@ -366,7 +366,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, tileTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedTree, tileTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -385,7 +385,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       const builder = context.createSceneGraphicBuilder();
 
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
-      builder.addFrustum(context.viewFrustum.getFrustum());
+      builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);

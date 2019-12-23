@@ -265,7 +265,7 @@ export namespace EditManipulator {
         return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);
-      const scale = vp.viewFrustum.getPixelSizeAtPoint(base) * pixelSize;
+      const scale = vp.viewingSpace.getPixelSizeAtPoint(base) * pixelSize;
       const matrix = Matrix3d.createRigidFromColumns(direction, boresite.direction, AxisOrder.XZY);
       if (undefined === matrix)
         return undefined;

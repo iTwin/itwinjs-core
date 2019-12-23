@@ -186,6 +186,7 @@ export class TraversalChildrenDetails {
 
   public combine(parentDetails: TraversalDetails) {
     parentDetails.queuedChildren.length = 0;
+    parentDetails.childrenLoading = false;
     for (const child of this._childDetails) {
       parentDetails.childrenLoading = parentDetails.childrenLoading || child.childrenLoading;
       for (const queuedChild of child.queuedChildren)
@@ -205,6 +206,7 @@ export class TraversalSelectionContext {
       this.selected.push(tile);
       this.displayedDescendants.push(traversalDetails.queuedChildren.slice());
       traversalDetails.queuedChildren.length = 0;
+      traversalDetails.childrenLoading = false;
     } else if (!tile.isNotFound) {
       traversalDetails.queuedChildren.push(tile);
       this.missing.push(tile);

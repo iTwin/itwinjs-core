@@ -2,10 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel, Guid } from "@bentley/bentleyjs-core";
 import { IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
+import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
 
 describe("DevTools", () => {
   let devTools: DevTools;
@@ -16,6 +17,7 @@ describe("DevTools", () => {
     const iModelToken: IModelToken = {
       iModelId: "test",
       changeSetId: "test",
+      key: EventSourceManager.GLOBAL,
       toJSON() { return this; },
     }; // Supply a real token in an integration test
     devTools = DevTools.connectToBackendInstance(iModelToken);
@@ -37,7 +39,19 @@ describe("DevTools", () => {
     assert.isTrue((formattedStats.os.cpus[0].speed as string).endsWith("MHz"));
     assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
   });
-
+  it("echo - roundtrip", async () => {
+    let eventRecieved = 0;
+    const eventSent = 100;
+    devTools.onEcho.addListener((_message: string) => {
+      ++eventRecieved;
+    });
+    const ready = [];
+    for (let i = 0; i < eventSent; i++) {
+      ready.push(devTools.echo(Guid.createValue(), "Hello, world!"));
+    }
+    await Promise.all(ready);
+    assert.equal(eventSent, eventRecieved);
+  });
   it("can ping backend", async () => {
     const pingSummary: PingTestResult = await devTools.ping(10);
     assert.isDefined(pingSummary);

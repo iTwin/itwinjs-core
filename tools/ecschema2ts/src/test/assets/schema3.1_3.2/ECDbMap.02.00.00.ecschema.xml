@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="ECDbMap" alias="ecdbmap" version="02.00.00" description="Custom attributes that customize ECDb's ECSchema to database mapping." displayLabel="ECDb DB Mapping" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECCustomAttributeClass typeName="SchemaMap" modifier="Sealed" appliesTo="Schema">
+        <ECProperty propertyName="TablePrefix" typeName="string" description="Specifies a prefix for generated tables. If not specified, the alias of the ECSchema is used"/>
+    </ECCustomAttributeClass>
+    
+    <ECCustomAttributeClass typeName="ClassMap" modifier="Sealed" appliesTo="EntityClass, RelationshipClass">
+        <ECProperty propertyName="MapStrategy" typeName="string" description="Defines how the ECClass is mapped to table(s). Values: OwnTable (default), TablePerHierarchy, ExistingTable, NotMapped"/>
+        <ECProperty propertyName="TableName" typeName="string" description="If MapStrategy is 'ExistingTable' provide the table name here. Must not be set in all other cases."/>
+        <ECProperty propertyName="ECInstanceIdColumn" typeName="string" description="Optionally specify the name of custom 'primary key' column which must be of type Int64."/>
+    </ECCustomAttributeClass>
+    
+    <ECCustomAttributeClass typeName="JoinedTablePerDirectSubclass" description="Maps subclasses and their children to a joined table. Can only be applied to classes in a hierarchy using MapStrategy TablePerHierarchy." modifier="Sealed" appliesTo="EntityClass"/>
+    
+    <ECCustomAttributeClass typeName="ShareColumns" description="Allows to share columns amongst ECProperties. Can only be applied to MapStrategy TablePerHierarchy" modifier="Sealed" appliesTo="EntityClass, RelationshipClass">
+        <ECProperty propertyName="ApplyToSubclassesOnly" typeName="boolean" description="False (Default):Columns are shared for the properties of the ECClass to which this CA is applied and all its subclasses. True: Columns are not shared for this ECClass but for all of its subclasses."/>
+        <ECProperty propertyName="MaxSharedColumnsBeforeOverflow" typeName="int" description="Maximum number of shared columns to use before using an overflow table (optional). If not specified, ECDb will create as many shared columns until the table has 63 columns."/>
+    </ECCustomAttributeClass>
+    
+    <ECCustomAttributeClass typeName="DbIndexList" modifier="Sealed" appliesTo="EntityClass, RelationshipClass">
+        <ECStructArrayProperty propertyName="Indexes" typeName="DbIndex" description="List of indexes on properties of this class. It can be use to improve query performance or to add unique constraint." minOccurs="1" maxOccurs="unbounded"/>
+    </ECCustomAttributeClass>
+    
+    <ECStructClass typeName="DbIndex" description="Specify a database index for an ECClass." modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string" description="Name of the index. Must follow EC identifier rules. It needs to be globally unique in the database."/>
+        <ECProperty propertyName="IsUnique" typeName="boolean" description="Default: false. If true, all values in the indexed properties must be unique."/>
+        <ECArrayProperty propertyName="Properties" typeName="string" description="List of properties that make up the index. Only properties of primitive type are supported." minOccurs="1" maxOccurs="unbounded"/>
+        <ECProperty propertyName="Where" typeName="string" description="Where constraint for index"/>
+    </ECStructClass>
+    
+    <ECCustomAttributeClass typeName="PropertyMap" modifier="Sealed" appliesTo="PrimitiveProperty">
+        <ECProperty propertyName="ColumnName" typeName="string" description="If not specified, the ECProperty name is used. It must follow EC Identifier specification."/>
+        <ECProperty propertyName="IsNullable" typeName="boolean" description="If false, values must not be unset for this property."/>
+        <ECProperty propertyName="IsUnique" typeName="boolean" description="Only allow unique values for this property."/>
+        <ECProperty propertyName="Collation" typeName="string" description="Specifies how string comparisons should work for this property. Possible values: Binary (default): bit to bit matching. NoCase: The same as binary, except that the 26 upper case characters of ASCII are folded to their lower case equivalents before comparing. Note that it only folds ASCII characters. RTrim: The same as binary, except that trailing space characters are ignored."/>
+    </ECCustomAttributeClass>
+    
+    <ECCustomAttributeClass typeName="ForeignKeyConstraint" modifier="Sealed" appliesTo="NavigationProperty" description="Creates a foreign key for this navigation property.">
+        <ECProperty propertyName="OnDeleteAction" typeName="string" description="Possible values: NoAction (default), Cascade (which deletes child rows when parent row is deleted), SetNull(foreign key property in child is set to NULL), Restrict (cannot delete parent if it still has children)."/>
+        <ECProperty propertyName="OnUpdateAction" typeName="string" description="Possible values: NoAction (default), Cascade (which updates child foreign key when parent primary key is updated)."/>
+    </ECCustomAttributeClass>
+    
+    <ECCustomAttributeClass typeName="LinkTableRelationshipMap" modifier="Sealed" appliesTo="RelationshipClass">
+        <ECProperty propertyName="SourceECInstanceIdColumn" typeName="string" description="Optional. If not set, a default column name will be used"/>
+        <ECProperty propertyName="TargetECInstanceIdColumn" typeName="string" description="Optional. If not set, a default column name will be used"/>
+        <ECProperty propertyName="CreateForeignKeyConstraints" typeName="boolean" description="Default: true. If set to false, no foreign key constraints are created on the link table. In that case, deleting instance does not delete its relationships in the link table."/>
+        <ECProperty propertyName="AllowDuplicateRelationships" typeName="boolean" description="Default: false. If set to true duplicate relationships are allowed."/>
+    </ECCustomAttributeClass>
+
+</ECSchema>

@@ -4,14 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
+// tslint:disable-next-line: no-duplicate-imports
+import { useCallback } from "react";
+import { useAsync } from "react-async-hook";
 import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
   IPresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
 import { Field } from "@bentley/presentation-common";
-import { GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs } from "@bentley/ui-components";
+import { GlobalContextMenu, ContextMenuItem, ContextMenuItemProps, Orientation } from "@bentley/ui-core";
+import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs, ActionButtonRendererProps } from "@bentley/ui-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import "./PropertiesWidget.css";
 
@@ -131,6 +134,27 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     );
   }
 
+  private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
+    const { dataProvider } = this.state;
+    const getFieldByPropertyRecordCallback = useCallback((property: PropertyRecord) => dataProvider.getFieldByPropertyRecord(property), [dataProvider]);
+    const { result: field } = useAsync(getFieldByPropertyRecordCallback, [props.property]);
+
+    return (
+      <div>
+        {
+          field &&
+          (Presentation.favoriteProperties.has(field) || props.isPropertyHovered) &&
+          <FavoriteActionButton
+            field={field} />
+        }
+      </div>
+    );
+  }
+
+  private _copyActionButtonRenderer = (_: ActionButtonRendererProps) => {
+    return <CopyActionButton />;
+  }
+
   public render() {
     return (
       <div className="PropertiesWidget">
@@ -140,9 +164,62 @@ export default class PropertiesWidget extends React.Component<Props, State> {
             dataProvider={this.state.dataProvider}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={this._onPropertyContextMenu}
+            actionButtonRenderers={[this._favoriteActionButtonRenderer, this._copyActionButtonRenderer]}
+            orientation={Orientation.Horizontal}
+            horizontalOrientationMinWidth={500}
           />
         </div>
         {this.renderContextMenu()}
+      </div>
+    );
+  }
+}
+
+class FavoriteActionButton extends React.Component<{ field: Field }> {
+
+  private _isMounted = false;
+
+  public componentDidMount() {
+    this._isMounted = true;
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  public render() {
+    return (
+      <div className="favorite-action-button" onClick={this._onActionButtonClicked}>
+        {this.isFavorite() ?
+          <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
+          <div style={{ width: "20px", height: "20px", background: "blue" }} />}
+      </div>
+    );
+  }
+
+  private _onActionButtonClicked = () => {
+    this.toggleFavoriteProperty(); // tslint:disable-line: no-floating-promises
+  }
+
+  private async toggleFavoriteProperty() {
+    if (this.isFavorite())
+      await Presentation.favoriteProperties.remove(this.props.field);
+    else
+      await Presentation.favoriteProperties.add(this.props.field);
+    if (this._isMounted)
+      this.setState({ isFavorite: this.isFavorite() });
+  }
+
+  private isFavorite(): boolean {
+    return Presentation.favoriteProperties.has(this.props.field);
+  }
+}
+
+class CopyActionButton extends React.Component {
+  public render() {
+    return (
+      <div className="copy-action-button" style={{ height: "20px" }}>
+        Copy
       </div>
     );
   }

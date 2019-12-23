@@ -16,7 +16,7 @@ import { SchemaKey, ECVersion } from "../SchemaKey";
 /**
  * A SchemaLocator implementation for locationg JSON Schema files
  * from the file system using configurable search paths.
- * @alpha Needs further testing and may be moved to a separate package.
+ * @alpha @deprecated class moved to ecschema-locaters package
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 

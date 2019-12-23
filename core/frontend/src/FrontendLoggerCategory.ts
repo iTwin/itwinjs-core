@@ -26,6 +26,9 @@ export enum FrontendLoggerCategory {
   /** The logger category used by OIDC-related functions on iOS. */
   OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
 
+  /** The logger category used by EventSource */
+  EventSource = "imodeljs-frontend.EventSource",
+
   /** The logger category used for general authorization purposes */
   Authorization = "imodeljs-frontend.Authorization",
 }

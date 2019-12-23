@@ -181,7 +181,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
     await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
 
     // This viewport isn't added to ViewManager, so it won't be notified (and have its scene invalidated) when new tiles become loaded.
-    this.sync.invalidateScene();
+    this.invalidateScene();
     return this.waitForAllTilesToRender();
   }
 

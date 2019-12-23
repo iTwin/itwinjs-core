@@ -15,7 +15,7 @@ import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { matchLinks } from "../../common/Links";
-
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
 import "./PropertyGrid.scss";
 
 /** Properties for [[PropertyGrid]] React component
@@ -56,6 +56,9 @@ export interface PropertyGridProps extends CommonProps {
   isOrientationFixed?: boolean;
   /** The minimum width before the auto-switch to Vertical when the width is too narrow. Defaults to 300. @beta */
   horizontalOrientationMinWidth?: number;
+
+  /** Array of action button renderers for each property record @beta */
+  actionButtonRenderers?: ActionButtonRenderer[];
 }
 
 /** Arguments for the Property Editing event callback
@@ -376,6 +379,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
                 isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
                 isPropertyRightClickSelectionEnabled={this.props.isPropertySelectionOnRightClickEnabled}
+                actionButtonRenderers={this.props.actionButtonRenderers}
               />
             ))
           }

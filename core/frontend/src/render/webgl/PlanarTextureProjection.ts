@@ -9,7 +9,7 @@ import { Frustum, RenderMode, FrustumPlanes, Npc } from "@bentley/imodeljs-commo
 import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d, Range2d, ConvexClipPlaneSet, ClipUtilities, GrowableXYZArray } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
 import { ViewState3d } from "../../ViewState";
-import { ViewFrustum } from "../../Viewport";
+import { ViewingSpace } from "../../Viewport";
 
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
@@ -20,7 +20,7 @@ export class PlanarTextureProjection {
         rangePoints.push(point);
     }, true, true, false);
   }
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, drapedTileTree: TileTree, drapeTileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewingSpace, drapedTileTree: TileTree, drapeTileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     // const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();

@@ -280,9 +280,9 @@ export class ViewManager {
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
   /** @internal */
-  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.invalidateScene()); }
   /** @internal */
-  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.setValidScene()); }
 
   /** @internal */
   public invalidateScenes(): void {

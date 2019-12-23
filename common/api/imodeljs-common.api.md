@@ -1319,6 +1319,8 @@ export interface DefinitionElementProps extends ElementProps {
 
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
+    // (undocumented)
+    echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void>;
     static getClient(): DevToolsRpcInterface;
     static readonly interfaceName = "DevToolsRpcInterface";
     static interfaceVersion: string;
@@ -1746,6 +1748,15 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
+// @internal
+export abstract class EventSourceRpcInterface extends RpcInterface {
+    // (undocumented)
+    fetch(_iModelToken: IModelTokenProps, _limit: number): Promise<QueuedEvent[]>;
+    static getClient(): EventSourceRpcInterface;
+    static readonly interfaceName = "EventSourceRpcInterface";
+    static interfaceVersion: string;
+}
+
 // @public
 export interface ExternalSourceAspectProps extends ElementAspectProps {
     checksum?: string;
@@ -1942,7 +1953,7 @@ export class Frustum {
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;
     transformBy(trans: Transform, result?: Frustum): Frustum;
-    translate(offset: Vector3d): void;
+    translate(offset: XYAndZ): void;
 }
 
 // @internal
@@ -4296,6 +4307,18 @@ export enum QueryResponseStatus {
     Timeout = 4
 }
 
+// @internal
+export interface QueuedEvent {
+    // (undocumented)
+    data: any;
+    // (undocumented)
+    eventId: number;
+    // (undocumented)
+    eventName: string;
+    // (undocumented)
+    namespace: string;
+}
+
 // @public
 export enum Rank {
     Application = 2,
@@ -5848,7 +5871,7 @@ export class Tween {
     // (undocumented)
     readonly isPlaying: boolean;
     // (undocumented)
-    onComplete(callback: TweenCallback): this;
+    onComplete(callback?: TweenCallback): this;
     // (undocumented)
     onRepeat(callback: TweenCallback): this;
     // (undocumented)
@@ -5890,6 +5913,7 @@ export class Tweens {
         to: any;
         duration: number;
         onUpdate: UpdateCallback;
+        onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
         easing?: EasingFunction;

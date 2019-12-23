@@ -52,8 +52,9 @@
           "SpeedIncrease": "Hold to increase speed over time",
           "SpeedDecrease": "Hold to decrease speed over time",
           "TouchZoneLL": "Lower left to move forward, backward, left, right",
-          "TouchZoneLR": "Lower right to look around the design",
-          "TouchTap": "Lower left toggle to move up, down, left, right"
+          "TouchZoneLR": "Lower right to look around",
+          "TouchTapLL": "Lower left to toggle up, down, left, right movement",
+          "TouchTapLR": "Lower right to toggle 2x movement speed"
         }
       },
       "Walk": {

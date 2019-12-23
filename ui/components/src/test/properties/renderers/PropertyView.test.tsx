@@ -42,7 +42,7 @@ describe("PropertyView", () => {
         columnRatio={0.6}
       />);
 
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "60% 40%");
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "60% auto");
   });
 
   it("renders ElementSeparator when orientation is horizontal", () => {
@@ -56,7 +56,7 @@ describe("PropertyView", () => {
 
     expect(propertyRenderer.childAt(0).hasClass("components-property-record--horizontal"), "class not found").to.be.true;
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator not found").to.be.true;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px 75%");
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
   });
 
   it("does not render ElementSeparator when onColumnRatioChanged callback is not provided", () => {
@@ -163,6 +163,48 @@ describe("PropertyView", () => {
       />);
 
     expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.true;
+  });
+
+  it("changes state on hovering if set to hoverable", async () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        isHoverable={true}
+      />);
+    expect(propertyRenderer.state("isHovered")).to.eq(false);
+    propertyRenderer.simulate("mouseenter");
+    expect(propertyRenderer.state("isHovered")).to.eq(true);
+    propertyRenderer.simulate("mouseleave");
+    expect(propertyRenderer.state("isHovered")).to.eq(false);
+  });
+
+  it("does not changes state on hovering if not set to hoverable", async () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        isHoverable={false}
+      />);
+    expect(propertyRenderer.state("isHovered")).to.eq(false);
+    propertyRenderer.simulate("mouseenter");
+    expect(propertyRenderer.state("isHovered")).to.eq(false);
+    propertyRenderer.simulate("mouseleave");
+    expect(propertyRenderer.state("isHovered")).to.eq(false);
+  });
+
+  it("renders action button list if action button renderers are passed", async () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        isHoverable={true}
+        actionButtonRenderers={[(_) => undefined]}
+      />);
+    expect(propertyRenderer.find(".components-property-action-button-list--horizontal").first().exists()).to.be.true;
   });
 
   it("renders only label when property record is non primitive", () => {

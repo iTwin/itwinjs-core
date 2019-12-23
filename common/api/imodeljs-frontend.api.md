@@ -1597,9 +1597,6 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
-// @internal
-export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean;
-
 // @beta
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
@@ -2678,6 +2675,8 @@ export interface DepthRangeNpc {
 // @internal
 export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
+    echo(id: GuidString, message: string): Promise<string>;
+    readonly onEcho: BeEvent<(id: string, message: string) => void>;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
@@ -3187,6 +3186,12 @@ export enum EventHandled {
     Yes = 1
 }
 
+// @internal
+export interface EventSourceOptions {
+    pollInterval: number;
+    prefetchLimit: number;
+}
+
 // @public
 export interface ExtentLimits {
     max: number;
@@ -3423,6 +3428,7 @@ export class FlyViewTool extends ViewManip {
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
+    EventSource = "imodeljs-frontend.EventSource",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     // @deprecated
@@ -4130,6 +4136,8 @@ export class IModelApp {
     static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @internal
+    static eventSourceOptions: EventSourceOptions;
     static readonly features: FeatureTrackingManager;
     // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
@@ -4246,6 +4254,8 @@ export class IModelConnection extends IModel {
     // @internal
     readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
+    // @internal
+    readonly eventSource: EventSource | undefined;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal
@@ -5717,7 +5727,7 @@ export class PerformanceMetrics {
     // (undocumented)
     beginOperation(operationName: string): void;
     // (undocumented)
-    completeFrameTimings(fbo: FrameBuffer, sceneMilSecElapsed?: number): void;
+    completeFrameTimings(fbo: FrameBuffer): void;
     // (undocumented)
     curSpfTimeIndex: number;
     // (undocumented)
@@ -5734,14 +5744,6 @@ export class PerformanceMetrics {
     gatherCurPerformanceMetrics: boolean;
     // (undocumented)
     gatherGlFinish: boolean;
-    // (undocumented)
-    loadTileSum: number;
-    // (undocumented)
-    loadTileTimes: number[];
-    // (undocumented)
-    renderSpfSum: number;
-    // (undocumented)
-    renderSpfTimes: number[];
     // (undocumented)
     spfSum: number;
     // (undocumented)
@@ -6932,9 +6934,9 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly textureDrapes: Map<string, RenderTextureDrape>;
     // (undocumented)
-    readonly viewFrustum: ViewFrustum;
+    readonly viewingSpace: ViewingSpace;
     // (undocumented)
-    withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewFrustum | undefined, func: () => void): void;
+    withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewingSpace | undefined, func: () => void): void;
     // (undocumented)
     withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void;
 }
@@ -6944,17 +6946,17 @@ export class ScreenViewport extends Viewport {
     // @internal
     protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
     // @internal (undocumented)
-    addDecorations(decorations: Decorations): void;
+    protected addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
     protected addLogo(): void;
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
-    animateFrustumChange(start: Frustum, end: Frustum, options: ViewAnimationOptions, fromUndo?: ViewStateUndo): void;
+    animateFrustumChange(options: ViewAnimationOptions): void;
     // @internal
-    animateToCurrent(start: Frustum, options?: ViewAnimationOptions): void;
+    animateToCurrent(options?: ViewAnimationOptions): void;
     readonly canvas: HTMLCanvasElement;
-    changeView(view: ViewState): void;
+    changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
     readonly decorationDiv: HTMLDivElement;
@@ -6963,7 +6965,7 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
     // (undocumented)
-    protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions): void;
+    protected finishViewChange(options?: ViewChangeOptions): void;
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
@@ -6990,12 +6992,14 @@ export class ScreenViewport extends Viewport {
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
-    setEventController(controller: EventController | undefined): void;
+    setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
     // @internal (undocumented)
     synchWithView(saveInUndo: boolean): void;
     readonly toolTipDiv: HTMLDivElement;
+    // @internal (undocumented)
+    protected validateRenderPlan(): void;
     // @internal (undocumented)
     viewCmdTargetCenter: Point3d | undefined;
     readonly viewRect: ViewRect;
@@ -7768,48 +7772,6 @@ export class SuspendedToolState {
     stop(): void;
     }
 
-// @internal
-export class SyncFlags {
-    // (undocumented)
-    initFrom(other: SyncFlags): void;
-    // (undocumented)
-    invalidateAnimationFraction(): void;
-    // (undocumented)
-    invalidateController(): void;
-    // (undocumented)
-    invalidateDecorations(): void;
-    // (undocumented)
-    invalidateRedrawPending(): void;
-    // (undocumented)
-    invalidateRenderPlan(): void;
-    // (undocumented)
-    invalidateScene(): void;
-    // (undocumented)
-    readonly isRedrawPending: boolean;
-    // (undocumented)
-    readonly isValidAnimationFraction: boolean;
-    // (undocumented)
-    readonly isValidController: boolean;
-    // (undocumented)
-    readonly isValidDecorations: boolean;
-    // (undocumented)
-    readonly isValidRenderPlan: boolean;
-    // (undocumented)
-    readonly isValidScene: boolean;
-    // (undocumented)
-    setRedrawPending(): void;
-    // (undocumented)
-    setValidAnimationFraction(): void;
-    // (undocumented)
-    setValidController(): void;
-    // (undocumented)
-    setValidDecorations(): void;
-    // (undocumented)
-    setValidRenderPlan(): void;
-    // (undocumented)
-    setValidScene(): void;
-}
-
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
     protected constructor(rect?: ViewRect);
@@ -7924,7 +7886,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
-    endPerfMetricFrame(sceneMilSecElapsed?: number): void;
+    endPerfMetricFrame(): void;
     // (undocumented)
     endPerfMetricRecord(): void;
     // (undocumented)
@@ -8287,7 +8249,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     setNotFound(): void;
     // (undocumented)
-    readonly sizeMultiplier: number;
+    readonly sizeMultiplier: number | undefined;
     // (undocumented)
     protected _sizeMultiplier?: number;
     // (undocumented)
@@ -8359,7 +8321,7 @@ export namespace Tile {
         // (undocumented)
         readonly viewClip?: ClipVector;
         // (undocumented)
-        viewFrustum?: ViewFrustum;
+        viewFrustum?: ViewingSpace;
         // (undocumented)
         protected readonly worldToViewMap: Map4d;
     }
@@ -9288,6 +9250,9 @@ export interface ViewAnimationOptions {
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;
+    noZoomOut?: boolean;
+    zoomOutDurationFactor?: number;
+    zoomOutMargin?: number;
 }
 
 // @public
@@ -9786,58 +9751,6 @@ export class ViewClipTool extends PrimitiveTool {
     protected showPrompt(): void;
 }
 
-// @internal
-export class ViewFrustum {
-    protected adjustAspectRatio(origin: Point3d, extent: Vector3d): void;
-    // (undocumented)
-    static createFromViewport(vp: Viewport): ViewFrustum | undefined;
-    // (undocumented)
-    static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined;
-    // (undocumented)
-    fromView(from: XYZ, to?: XYZ): void;
-    // (undocumented)
-    frustFraction: number;
-    getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
-    // (undocumented)
-    getPixelSizeAtPoint(inPoint?: Point3d): number;
-    // (undocumented)
-    getViewCorners(): Range3d;
-    // (undocumented)
-    readonly invalidFrustum: boolean;
-    static nearScaleLog24: number;
-    static nearScaleNonLog24: number;
-    npcToView(pt: Point3d, out?: Point3d): Point3d;
-    npcToViewArray(pts: Point3d[]): void;
-    npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;
-    npcToWorldArray(pts: Point3d[]): void;
-    readonly rotation: Matrix3d;
-    // (undocumented)
-    toView(from: XYZ, to?: XYZ): void;
-    view: ViewState;
-    view4dToWorld(input: Point4d, out?: Point3d): Point3d;
-    view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;
-    readonly viewDelta: Vector3d;
-    readonly viewDeltaUnexpanded: Vector3d;
-    readonly viewOrigin: Point3d;
-    readonly viewOriginUnexpanded: Point3d;
-    viewToNpc(pt: Point3d, out?: Point3d): Point3d;
-    viewToNpcArray(pts: Point3d[]): void;
-    viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
-    viewToWorldArray(pts: Point3d[]): void;
-    worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
-    worldToNpcArray(pts: Point3d[]): void;
-    // (undocumented)
-    readonly worldToNpcMap: Map4d;
-    worldToView(input: XYAndZ, out?: Point3d): Point3d;
-    worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
-    worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
-    worldToViewArray(pts: Point3d[]): void;
-    // (undocumented)
-    readonly worldToViewMap: Map4d;
-    // (undocumented)
-    readonly zClipAdjusted: boolean;
-}
-
 // @internal (undocumented)
 export class ViewHandleArray {
     constructor(viewTool: ViewManip);
@@ -9902,6 +9815,55 @@ export const enum ViewHandleType {
     Walk = 32,
     // (undocumented)
     Zoom = 16
+}
+
+// @internal
+export class ViewingSpace {
+    // (undocumented)
+    static createFromViewport(vp: Viewport): ViewingSpace | undefined;
+    // (undocumented)
+    static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewingSpace | undefined;
+    // (undocumented)
+    fromViewOrientation(from: XYZ, to?: XYZ): void;
+    // (undocumented)
+    frustFraction: number;
+    getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
+    // (undocumented)
+    getPixelSizeAtPoint(inPoint?: Point3d): number;
+    // (undocumented)
+    getViewCorners(): Range3d;
+    static nearScaleLog24: number;
+    static nearScaleNonLog24: number;
+    npcToView(pt: Point3d, out?: Point3d): Point3d;
+    npcToViewArray(pts: Point3d[]): void;
+    npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;
+    npcToWorldArray(pts: Point3d[]): void;
+    readonly rotation: Matrix3d;
+    // (undocumented)
+    toViewOrientation(from: XYZ, to?: XYZ): void;
+    view: ViewState;
+    view4dToWorld(input: Point4d, out?: Point3d): Point3d;
+    view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;
+    readonly viewDelta: Vector3d;
+    readonly viewDeltaUnexpanded: Vector3d;
+    readonly viewOrigin: Point3d;
+    readonly viewOriginUnexpanded: Point3d;
+    viewToNpc(pt: Point3d, out?: Point3d): Point3d;
+    viewToNpcArray(pts: Point3d[]): void;
+    viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
+    viewToWorldArray(pts: Point3d[]): void;
+    worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
+    worldToNpcArray(pts: Point3d[]): void;
+    // (undocumented)
+    readonly worldToNpcMap: Map4d;
+    worldToView(input: XYAndZ, out?: Point3d): Point3d;
+    worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
+    worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
+    worldToViewArray(pts: Point3d[]): void;
+    // (undocumented)
+    readonly worldToViewMap: Map4d;
+    // (undocumented)
+    readonly zClipAdjusted: boolean;
 }
 
 // @internal (undocumented)
@@ -10171,7 +10133,7 @@ export abstract class Viewport implements IDisposable {
     // @internal
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
-    addDecorations(_decorations: Decorations): void;
+    protected addDecorations(_decorations: Decorations): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @internal (undocumented)
@@ -10180,8 +10142,6 @@ export abstract class Viewport implements IDisposable {
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
-    // @internal (undocumented)
-    animationFraction: number;
     // @internal
     applyViewState(val: ViewState): void;
     // (undocumented)
@@ -10200,7 +10160,7 @@ export abstract class Viewport implements IDisposable {
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
     // @alpha
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
-    changeView(view: ViewState): void;
+    changeView(view: ViewState, _opts?: ViewChangeOptions): void;
     changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void>;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
@@ -10211,17 +10171,21 @@ export abstract class Viewport implements IDisposable {
     computeViewRange(): Range3d;
     continuousRendering: boolean;
     // @internal (undocumented)
+    readonly controllerValid: boolean;
+    // @internal (undocumented)
+    protected _controllerValid: boolean;
+    // @internal (undocumented)
     createSceneContext(): SceneContext;
     // @internal
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
+    // @internal (undocumented)
+    protected _decorationsValid: boolean;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
     displayStyle: DisplayStyleState;
     // (undocumented)
     dispose(): void;
-    // @internal (undocumented)
-    doAnimation(): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -10229,7 +10193,7 @@ export abstract class Viewport implements IDisposable {
     emphasisSettings: Hilite.Settings;
     featureOverrideProvider: FeatureOverrideProvider | undefined;
     // (undocumented)
-    protected finishViewChange(_startFrust: Frustum, options?: ViewChangeOptions): void;
+    protected finishViewChange(options?: ViewChangeOptions): void;
     // @internal
     flashDuration: number;
     // @internal
@@ -10243,7 +10207,7 @@ export abstract class Viewport implements IDisposable {
     // @internal
     freezeScene: boolean;
     // @internal (undocumented)
-    fromView(from: XYZ, to?: XYZ): void;
+    fromViewOrientation(from: XYZ, to?: XYZ): void;
     // @internal (undocumented)
     readonly frustFraction: number;
     // (undocumented)
@@ -10270,13 +10234,15 @@ export abstract class Viewport implements IDisposable {
     hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
+    // @internal (undocumented)
+    invalidateController(): void;
     // @beta
     invalidateDecorations(): void;
     // @internal (undocumented)
     invalidateRenderPlan(): void;
     // @internal (undocumented)
     invalidateScene(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
     readonly isAlwaysDrawnExclusive: boolean;
     // @internal (undocumented)
@@ -10345,8 +10311,18 @@ export abstract class Viewport implements IDisposable {
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal (undocumented)
     renderFrame(): void;
+    // @internal (undocumented)
+    readonly renderPlanValid: boolean;
+    // @internal (undocumented)
+    protected _renderPlanValid: boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
+    // @internal (undocumented)
+    protected _sceneValid: boolean;
+    // @internal (undocumented)
+    scheduleScriptFraction: number;
+    // @internal (undocumented)
+    protected _scheduleScriptFractionValid: boolean;
     // @internal (undocumented)
     readonly scheduleTime: number;
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
@@ -10357,34 +10333,40 @@ export abstract class Viewport implements IDisposable {
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
     setNeverDrawn(ids: Id64Set): void;
+    // @internal (undocumented)
+    setRedrawPending(): void;
+    // @internal (undocumented)
+    setRenderPlanValid(): void;
     setStandardRotation(id: StandardViewId): void;
     // @alpha
     setTileSizeModifier(modifier: number | undefined): void;
-    setupFromView(): ViewStatus;
+    setupFromView(pose?: ViewPose): ViewStatus;
     setupViewFromFrustum(inFrustum: Frustum): boolean;
+    // @internal (undocumented)
+    setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
-    // @internal (undocumented)
-    readonly sync: SyncFlags;
     synchWithView(_saveInUndo: boolean): void;
     // @internal (undocumented)
     readonly target: RenderTarget;
     // @alpha
     readonly tileSizeModifier: number;
     // @internal (undocumented)
-    toView(from: XYZ, to?: XYZ): void;
+    toViewOrientation(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
     static undoDelay: BeDuration;
     protected updateChangeFlags(newView: ViewState): void;
+    // @internal (undocumented)
+    protected validateRenderPlan(): void;
     readonly view: ViewState;
     view4dToWorld(input: Point4d, out?: Point3d): Point3d;
     view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;
     readonly viewDelta: Vector3d;
     viewFlags: ViewFlags;
     // @internal (undocumented)
-    readonly viewFrustum: ViewFrustum;
+    readonly viewingSpace: ViewingSpace;
     // @internal
     readonly viewportId: number;
     // @internal (undocumented)
@@ -10407,6 +10389,71 @@ export abstract class Viewport implements IDisposable {
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
+}
+
+// @public
+export abstract class ViewPose {
+    constructor(cameraOn: boolean);
+    // (undocumented)
+    cameraOn: boolean;
+    // (undocumented)
+    readonly center: Point3d;
+    // (undocumented)
+    abstract equal(other: ViewPose): boolean;
+    // (undocumented)
+    abstract equalState(view: ViewState): boolean;
+    // (undocumented)
+    abstract extents: Vector3d;
+    // (undocumented)
+    abstract origin: Point3d;
+    // (undocumented)
+    abstract rotation: Matrix3d;
+    // (undocumented)
+    readonly target: Point3d;
+    // (undocumented)
+    undoTime?: BeTimePoint;
+    // (undocumented)
+    readonly zVec: Vector3d;
+}
+
+// @internal (undocumented)
+export class ViewPose2d extends ViewPose {
+    constructor(view: ViewState2d);
+    // (undocumented)
+    readonly angle: Angle;
+    // (undocumented)
+    readonly delta: Point2d;
+    // (undocumented)
+    equal(other: ViewPose2d): boolean;
+    // (undocumented)
+    equalState(view: ViewState2d): boolean;
+    // (undocumented)
+    readonly extents: Vector3d;
+    // (undocumented)
+    readonly origin: Point3d;
+    // (undocumented)
+    readonly origin2: Point2d;
+    // (undocumented)
+    readonly rotation: Matrix3d;
+}
+
+// @internal (undocumented)
+export class ViewPose3d extends ViewPose {
+    constructor(view: ViewState3d);
+    // (undocumented)
+    readonly camera: Camera;
+    // (undocumented)
+    equal(other: ViewPose3d): boolean;
+    // (undocumented)
+    equalState(view: ViewState3d): boolean;
+    // (undocumented)
+    readonly extents: Vector3d;
+    // (undocumented)
+    readonly origin: Point3d;
+    // (undocumented)
+    readonly rotation: Matrix3d;
+    // (undocumented)
+    readonly target: Point3d;
 }
 
 // @public
@@ -10459,12 +10506,14 @@ export abstract class ViewState extends ElementState {
     abstract allow3dManipulations(): boolean;
     readonly analysisStyle: AnalysisStyle | undefined;
     // @internal (undocumented)
+    abstract applyPose(props: ViewPose): this;
+    // @internal (undocumented)
     readonly areAllTileTreesLoaded: boolean;
     readonly auxiliaryCoordinateSystem: AuxCoordSystemState;
     readonly backgroundColor: ColorDef;
+    // (undocumented)
+    calculateFocusCorners(): Point3d[];
     calculateFrustum(result?: Frustum): Frustum | undefined;
-    // @internal
-    canAnimateTo(other: ViewState): boolean;
     categorySelector: CategorySelectorState;
     // @internal (undocumented)
     static readonly className: string;
@@ -10492,7 +10541,7 @@ export abstract class ViewState extends ElementState {
     equals(other: this): boolean;
     extentLimits: ExtentLimits;
     // @internal (undocumented)
-    protected fixAspectRatio(windowAspect: number): void;
+    fixAspectRatio(windowAspect: number): void;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
@@ -10524,6 +10573,8 @@ export abstract class ViewState extends ElementState {
     getXVector(result?: Vector3d): Vector3d;
     getYVector(result?: Vector3d): Vector3d;
     getZVector(result?: Vector3d): Vector3d;
+    // @internal
+    hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
     is3d(): this is ViewState3d;
     isDrawingView(): this is DrawingViewState;
@@ -10539,8 +10590,6 @@ export abstract class ViewState extends ElementState {
     static maxSkew: number;
     readonly name: string;
     // @internal
-    abstract onRenderFrame(_viewport: Viewport): void;
-    // @internal
     peekDetail(name: string): any;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
@@ -10548,19 +10597,18 @@ export abstract class ViewState extends ElementState {
     removeDetail(name: string): void;
     resetExtentLimits(): void;
     // @internal (undocumented)
-    abstract saveForUndo(): ViewStateUndo;
+    abstract savePose(): ViewPose;
     // @internal
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
     setCategorySelector(categories: CategorySelectorState): void;
+    setCenter(center: Point3d): void;
     // @internal
     setDetail(name: string, value: any): void;
     // (undocumented)
     setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
-    // @internal (undocumented)
-    abstract setFromUndo(props: ViewStateUndo): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
     abstract setOrigin(viewOrg: Point3d): void;
     abstract setRotation(viewRot: Matrix3d): void;
@@ -10586,10 +10634,10 @@ export abstract class ViewState2d extends ViewState {
     allow3dManipulations(): boolean;
     // (undocumented)
     readonly angle: Angle;
+    // @internal (undocumented)
+    applyPose(val: ViewPose2d): this;
     // (undocumented)
     readonly baseModelId: Id64String;
-    // @internal (undocumented)
-    canAnimateTo(other: ViewState): boolean;
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
@@ -10618,11 +10666,9 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     readonly origin: Point2d;
     // @internal (undocumented)
-    saveForUndo(): ViewStateUndo;
+    savePose(): ViewPose;
     // (undocumented)
     setExtents(delta: Vector3d): void;
-    // @internal (undocumented)
-    setFromUndo(val: ViewState2dUndo): void;
     // (undocumented)
     setOrigin(origin: Point3d): void;
     // (undocumented)
@@ -10642,6 +10688,8 @@ export abstract class ViewState3d extends ViewState {
     constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState);
     // (undocumented)
     allow3dManipulations(): boolean;
+    // @internal (undocumented)
+    applyPose(val: ViewPose3d): this;
     calcLensAngle(): Angle;
     // (undocumented)
     protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number;
@@ -10662,6 +10710,8 @@ export abstract class ViewState3d extends ViewState {
     // @internal (undocumented)
     protected enableCamera(): void;
     readonly extents: Vector3d;
+    // @internal (undocumented)
+    fixAspectRatio(windowAspect: number): void;
     forceMinFrontDist: number;
     getBackDistance(): number;
     // (undocumented)
@@ -10697,13 +10747,11 @@ export abstract class ViewState3d extends ViewState {
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
     // @internal (undocumented)
-    saveForUndo(): ViewStateUndo;
+    savePose(): ViewPose;
     // (undocumented)
     setExtents(extents: XYAndZ): void;
     setEyePoint(pt: XYAndZ): void;
     setFocusDistance(dist: number): void;
-    // @internal (undocumented)
-    setFromUndo(val: ViewState3dUndo): void;
     setLensAngle(angle: Angle): void;
     // (undocumented)
     setOrigin(origin: XYAndZ): void;
@@ -10717,14 +10765,6 @@ export abstract class ViewState3d extends ViewState {
     toJSON(): ViewDefinition3dProps;
     turnCameraOff(): void;
     verifyFocusPlane(): void;
-}
-
-// @internal (undocumented)
-export abstract class ViewStateUndo {
-    // (undocumented)
-    abstract equalState(view: ViewState): boolean;
-    // (undocumented)
-    undoTime?: BeTimePoint;
 }
 
 // @public

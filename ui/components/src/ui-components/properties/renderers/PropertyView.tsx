@@ -7,9 +7,9 @@
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import { SharedRendererProps } from "./PropertyRenderer";
-
-import "./PropertyView.scss";
 import { PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { ActionButtonList } from "./ActionButtonList";
+import "./PropertyView.scss";
 
 /** Properties of [[PropertyView]] React component
  * @public
@@ -21,18 +21,37 @@ export interface PropertyViewProps extends SharedRendererProps {
   valueElement?: React.ReactNode;
 }
 
+/** @internal */
+interface PropertyViewState {
+  isHovered: boolean;
+}
+
 /**
  * A React component that renders property as label/value pair
  * @public
  */
-export class PropertyView extends React.Component<PropertyViewProps> {
+export class PropertyView extends React.Component<PropertyViewProps, PropertyViewState> {
+
   constructor(props: PropertyViewProps) {
     super(props);
+    this.state = {
+      isHovered: false,
+    };
   }
 
   private _onClick = () => {
     if (this.props.onClick)
       this.props.onClick(this.props.propertyRecord, this.props.uniqueKey);
+  }
+
+  private _onMouseEnter = () => {
+    if (this.props.isHoverable)
+      this.setState({ isHovered: true });
+  }
+
+  private _onMouseLeave = () => {
+    if (this.props.isHoverable)
+      this.setState({ isHovered: false });
   }
 
   private _onContextMenu = (e: React.MouseEvent) => {
@@ -61,14 +80,17 @@ export class PropertyView extends React.Component<PropertyViewProps> {
     if (props.orientation === Orientation.Horizontal) {
       if (props.onColumnRatioChanged)
         return {
-          gridTemplateColumns: `${ratio * 100}% 1px ${(1 - ratio) * 100}%`,
+          gridTemplateColumns: `${ratio * 100}% 1px auto auto`,
         };
       else
         return {
-          gridTemplateColumns: `${ratio * 100}% ${(1 - ratio) * 100}%`,
+          gridTemplateColumns: `${ratio * 100}% auto`,
         };
     }
-    return undefined;
+    // Orientation.Vertical
+    return {
+      gridTemplateColumns: "auto auto",
+    };
   }
 
   /** @internal */
@@ -81,6 +103,8 @@ export class PropertyView extends React.Component<PropertyViewProps> {
         className={this.getClassName(this.props)}
         onClick={this._onClick}
         onContextMenu={this._onContextMenu}
+        onMouseEnter={this._onMouseEnter}
+        onMouseLeave={this._onMouseLeave}
       >
         <div className="components-property-record-label">{this.props.labelElement}</div>
         {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged
@@ -93,8 +117,20 @@ export class PropertyView extends React.Component<PropertyViewProps> {
           />
           : undefined}
         {this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive
-          ? <div className="components-property-record-value">{this.props.valueElement}</div>
-          : undefined}
+          ? <div className="components-property-record-value"><span>{this.props.valueElement}</span></div>
+          : undefined
+        }
+        {this.props.actionButtonRenderers
+          ?
+          <ActionButtonList
+            orientation={this.props.orientation}
+            property={this.props.propertyRecord}
+            isPropertyHovered={this.state.isHovered}
+            actionButtonRenderers={this.props.actionButtonRenderers}
+          />
+          :
+          undefined
+        }
       </div>
     );
   }

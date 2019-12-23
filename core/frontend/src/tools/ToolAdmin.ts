@@ -1576,8 +1576,8 @@ export class WheelEventProcessor {
       saveInUndo: true,
       animateFrustumChange: true,
       cancelOnAbort: true,
-      animationTime: 200,
-      easingFunction: Easing.Linear.None,
+      animationTime: 175,
+      easingFunction: Easing.Cubic.Out,
     };
 
     let status: ViewStatus;
@@ -1602,7 +1602,7 @@ export class WheelEventProcessor {
         vp.npcToWorld(targetNpc, target);
       }
 
-      const cameraView: ViewState3d = vp.view;
+      const cameraView = vp.view;
       const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldCameraPos = cameraView.getEyePoint();
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
@@ -1625,11 +1625,9 @@ export class WheelEventProcessor {
         IModelApp.toolAdmin.currentInputState.lastWheelEvent = thisEvent;
       }
 
-      const before = vp.getFrustum();
       status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
       vp.synchWithView(true);
-      vp.animateToCurrent(before, animationOptions);
-
+      vp.animateToCurrent(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));

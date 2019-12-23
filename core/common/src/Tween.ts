@@ -89,6 +89,7 @@ export class Tweens {
     to: any,
     duration: number
     onUpdate: UpdateCallback,
+    onComplete?: TweenCallback
     delay?: number,
     start?: boolean,
     easing?: EasingFunction,
@@ -101,7 +102,8 @@ export class Tweens {
         .onUpdate(opts.onUpdate)
         .delay(opts.delay)
         .easing(opts.easing)
-        .interpolation(opts.interpolation);
+        .interpolation(opts.interpolation)
+        .onComplete(opts.onComplete);
       if (opts.start)
         t.start();
     }
@@ -310,7 +312,7 @@ export class Tween {
     return this;
   }
 
-  public onComplete(callback: TweenCallback) {
+  public onComplete(callback?: TweenCallback) {
     this._onCompleteCallback = callback;
     return this;
   }

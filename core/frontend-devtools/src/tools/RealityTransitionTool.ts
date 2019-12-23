@@ -75,7 +75,7 @@ export class RealityTransitionTool extends Tool {
     });
 
     displayStyle.scheduleScript = script;
-    vp.animationFraction = 0.0;
+    vp.scheduleScriptFraction = 0.0;
     return true;
   }
   public parseAndRun(...args: string[]): boolean {

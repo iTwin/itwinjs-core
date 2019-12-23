@@ -26,6 +26,7 @@ import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
+import { EventSourceRpcImpl } from "./rpc-impl/EventSourceRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
@@ -61,6 +62,22 @@ export interface CrashReportingConfig {
   dumpProcessorScriptFileName?: string;
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
+}
+/** Configuration for event sink
+ * @internal
+ */
+export interface EventSinkOptions {
+  maxQueueSize: number;
+  maxNamespace: number;
+}
+
+/**
+ * Type of the backend application
+ * @alpha
+ */
+export enum ApplicationType {
+  WebAgent,
+  WebApplicationBackend,
 }
 
 /** Configuration of imodeljs-backend.
@@ -134,7 +151,10 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-
+  /** Configuration for event sink
+   * @internal
+   */
+  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: (os.cpus().length - 1),
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -150,6 +170,12 @@ export class IModelHostConfiguration {
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
     },
   };
+
+  /**
+   * Application (host) type
+   * @alpha
+   */
+  public applicationType?: ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -301,13 +327,6 @@ export class IModelHost {
       }
     }
 
-    // if (configuration.crashReportingConfig === undefined) {
-    //   configuration.crashReportingConfig = {
-    //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     enableCrashDumps: false,
-    //   };
-    // }
-
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
@@ -335,7 +354,7 @@ export class IModelHost {
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
-
+    EventSourceRpcImpl.register();
     BisCoreSchema.registerSchema();
     GenericSchema.registerSchema();
     FunctionalSchema.registerSchema();

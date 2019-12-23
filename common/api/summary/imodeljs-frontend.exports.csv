@@ -34,7 +34,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-internal;areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 
@@ -130,6 +129,7 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
+internal;EventSourceOptions
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider
@@ -369,7 +369,6 @@ beta;SuppressLabelEditorParams
 alpha;SuppressUnitLabelEditorParams 
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
-internal;SyncFlags
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
@@ -439,19 +438,21 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
-internal;ViewFrustum
 internal;ViewHandleArray
 internal;enum ViewHandleType
+internal;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
+public;class ViewPose
+internal;ViewPose2d 
+internal;ViewPose3d 
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 
 public;class ViewState2d 
 public;class ViewState3d 
-internal;class ViewStateUndo
 public;ViewStatus
 public;ViewToggleCameraTool 
 public;class ViewTool 

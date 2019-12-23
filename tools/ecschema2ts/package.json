@@ -1,0 +1,78 @@
+{
+  "name": "@bentley/ecschema2ts",
+  "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
+  "license": "MIT",
+  "version": "1.10.0-dev.11",
+  "bin": {
+    "ecschema2ts": "./lib/index.js"
+  },
+  "main": "./lib/main",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2tss"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib .rush package-deps.json",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema2ts",
+    "copy:assets": "cpx ./src/index.js ./lib",
+    "lint": "tslint --project . 1>&2",
+    "docs": "",
+    "prebuild": "npm run copy:assets",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./src/test/",
+    "test:watch": "betools test-tsnode --watch",
+    "cli:dev": "npm run clean & npm run build & npm link",
+    "cover": "nyc npm test"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel",
+    "iModelJs",
+    "EC",
+    "BIS"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "1.10.0-dev.11",
+    "@types/chai": "^4.1.4",
+    "@types/chai-string": "^1.4.1",
+    "@types/chalk": "^2.2.0",
+    "@types/fs-extra": "^4.0.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/xmldom": "^0.1.29",
+    "chai": "^4.1.2",
+    "chai-string": "^1.5.0",
+    "cpx": "^1.5.0",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "source-map-support": "^0.5.6",
+    "ts-node": "^7.0.1",
+    "typescript": "~3.6.2"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "1.10.0-dev.11",
+    "@bentley/ecschema-metadata": "1.10.0-dev.11",
+    "@bentley/ecschema-locaters": "1.10.0-dev.11",
+    "@bentley/imodeljs-clients": "1.10.0-dev.11",
+    "@bentley/imodeljs-clients-backend": "1.10.0-dev.11",
+    "@bentley/imodeljs-common": "1.10.0-dev.11",
+    "@bentley/imodeljs-backend": "1.10.0-dev.11",
+    "@bentley/geometry-core": "1.10.0-dev.11",
+    "@types/chai-string": "^1.4.1",
+    "@types/xmldom": "^0.1.29",
+    "chai-string": "^1.5.0",
+    "chalk": "^2.4.1",
+    "commander": "^2.14.1",
+    "fs-extra": "^6.0.1",
+    "xmldom": "^0.1.27"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  }
+}

@@ -86,6 +86,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
       },
       complete: () => {
         this._selecting = false;
+        this.selectNodes();
       },
     });
 
@@ -114,6 +115,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
       },
       complete: () => {
         this._selecting = false;
+        this.selectNodes();
       },
     });
 

@@ -19,7 +19,7 @@ import {
   RenderPlanarClassifier,
   RenderTextureDrape,
 } from "./render/System";
-import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
+import { ScreenViewport, Viewport, ViewingSpace } from "./Viewport";
 import { Tile } from "./tile/Tile";
 import { TileTree } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
@@ -47,7 +47,7 @@ export class RenderContext {
   }
 
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
-  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
+  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint); }
 
   /** @internal */
   public get target(): RenderTarget { return this.viewport.target; }
@@ -442,7 +442,7 @@ export class SceneContext extends RenderContext {
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
-  private _viewFrustum?: ViewFrustum;
+  private _viewingSpace?: ViewingSpace;
   private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
   private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   private _activeVolumeClassifierModelId?: Id64String;
@@ -451,8 +451,8 @@ export class SceneContext extends RenderContext {
     super(vp, frustum);
   }
 
-  public get viewFrustum(): ViewFrustum {
-    return undefined !== this._viewFrustum ? this._viewFrustum : this.viewport.viewFrustum;
+  public get viewingSpace(): ViewingSpace {
+    return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
 
   public outputGraphic(graphic: RenderGraphic): void {
@@ -534,20 +534,20 @@ export class SceneContext extends RenderContext {
   public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
 
   public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
-    const frust = undefined !== plane ? ViewFrustum.createFromViewportAndPlane(this.viewport, plane) : undefined;
+    const frust = undefined !== plane ? ViewingSpace.createFromViewportAndPlane(this.viewport, plane) : undefined;
     this.withGraphicTypeAndFrustum(type, frust, func);
   }
 
-  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewFrustum | undefined, func: () => void): void {
+  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
     const prevType = this._graphicType;
-    const prevFrust = this._viewFrustum;
+    const prevFrust = this._viewingSpace;
 
     this._graphicType = type;
-    this._viewFrustum = frustum;
+    this._viewingSpace = frustum;
 
     func();
 
     this._graphicType = prevType;
-    this._viewFrustum = prevFrust;
+    this._viewingSpace = prevFrust;
   }
 }

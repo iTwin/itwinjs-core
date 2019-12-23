@@ -708,7 +708,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.performanceMetrics.beginFrame(sceneMilSecElapsed);
   }
 
-  public endPerfMetricFrame(sceneMilSecElapsed?: number) {
+  public endPerfMetricFrame() {
     if (this.renderSystem.isGLTimerSupported)
       this.renderSystem.glTimer.endFrame();
 
@@ -716,7 +716,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-    this.performanceMetrics.completeFrameTimings(this._fbo!, sceneMilSecElapsed);
+    this.performanceMetrics.completeFrameTimings(this._fbo!);
   }
 
   public beginPerfMetricRecord(operation: string): void {
@@ -811,7 +811,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._endPaint();
     this.endPerfMetricRecord();
 
-    this.endPerfMetricFrame(sceneMilSecElapsed);
+    this.endPerfMetricFrame();
   }
 
   private drawPass(pass: RenderPass): void {

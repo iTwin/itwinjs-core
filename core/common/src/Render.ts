@@ -15,6 +15,8 @@ import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
 
+// cSpell:ignore vals
+
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
  * @public
  */
@@ -1207,7 +1209,7 @@ export namespace HiddenLine {
       });
     }
 
-    /** Create a Style equivalent to this one but with the specified pattern overide. */
+    /** Create a Style equivalent to this one but with the specified pattern override. */
     public overridePattern(pattern: LinePixels | undefined): Style {
       if (pattern === this.pattern)
         return this;
@@ -1220,7 +1222,7 @@ export namespace HiddenLine {
       });
     }
 
-    /** Create a Style equivalent to this one but with the specified width overide. */
+    /** Create a Style equivalent to this one but with the specified width override. */
     public overrideWidth(width: number | undefined): Style {
       if (width === this.width)
         return this;
@@ -2168,7 +2170,7 @@ export enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
   Primary,
   /**
-   * This batch contains colod volumes which are used to classify a model's visible geometry.
+   * This batch contains color volumes which are used to classify a model's visible geometry.
    * The graphics themselves are not rendered to the screen; instead they are rendered to the stencil buffer
    * to resymbolize the primary geometry.
    */

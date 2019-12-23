@@ -31,10 +31,6 @@ export class PerformanceMetrics {
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;
-  public renderSpfTimes: number[] = [];
-  public renderSpfSum: number = 0;
-  public loadTileTimes: number[] = [];
-  public loadTileSum: number = 0;
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
 
@@ -90,7 +86,7 @@ export class PerformanceMetrics {
     this._operationNames = []; // This should be back to [] at this point
   }
 
-  public completeFrameTimings(fbo: FrameBuffer, sceneMilSecElapsed?: number): void {
+  public completeFrameTimings(fbo: FrameBuffer): void {
     if (this.gatherCurPerformanceMetrics) {
       const fpsTimerElapsed = this.fpsTimer.currentSeconds - this.fpsTimerStart;
       if (this.spfTimes[this.curSpfTimeIndex])
@@ -98,25 +94,6 @@ export class PerformanceMetrics {
 
       this.spfSum += fpsTimerElapsed;
       this.spfTimes[this.curSpfTimeIndex] = fpsTimerElapsed;
-
-      let renderTimeElapsed = 0;
-      this.frameTimings.forEach((val) => {
-        renderTimeElapsed += val;
-      });
-
-      if (this.renderSpfTimes[this.curSpfTimeIndex])
-        this.renderSpfSum -= this.renderSpfTimes[this.curSpfTimeIndex];
-
-      this.renderSpfSum += renderTimeElapsed;
-      this.renderSpfTimes[this.curSpfTimeIndex] = renderTimeElapsed;
-
-      if (sceneMilSecElapsed !== undefined) {
-        if (this.loadTileTimes[this.curSpfTimeIndex])
-          this.loadTileSum -= this.loadTileTimes[this.curSpfTimeIndex];
-
-        this.loadTileSum += sceneMilSecElapsed;
-        this.loadTileTimes[this.curSpfTimeIndex] = sceneMilSecElapsed;
-      }
 
       this.curSpfTimeIndex++;
       if (this.curSpfTimeIndex >= 50)

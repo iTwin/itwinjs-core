@@ -45,9 +45,11 @@ import {
 } from "../render/System";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { ViewFrustum } from "../Viewport";
+import { ViewingSpace } from "../Viewport";
 import { TileRequest } from "./TileRequest";
 import { TileLoader, TileTree, TraversalSelectionContext, TraversalDetails } from "./TileTree";
+
+// cSpell:ignore undisplayable bitfield
 
 const scratchRange2d = [new Point2d(), new Point2d(), new Point2d(), new Point2d()];
 function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
@@ -223,7 +225,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._state = TileState.Abandoned;
   }
 
-  public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
+  public get maximumSize(): number {
+    return undefined !== this.sizeMultiplier ? this._maximumSize * this.sizeMultiplier : this._maximumSize;
+  }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
   public get hasChildren(): boolean { return !this.isLeaf; }
   public get contentRange(): ElementAlignedBox3d {
@@ -243,7 +247,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
-  public get sizeMultiplier(): number { return undefined !== this._sizeMultiplier ? this._sizeMultiplier : 1.0; }
+  public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier(): boolean { return undefined !== this._sizeMultiplier; }
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
@@ -758,7 +762,7 @@ export namespace Tile {
     public readonly root: TileTree;
     public clipVolume?: RenderClipVolume;
     public readonly context: SceneContext;
-    public viewFrustum?: ViewFrustum;
+    public viewFrustum?: ViewingSpace;
     public readonly graphics: GraphicBranch = new GraphicBranch();
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
@@ -782,7 +786,7 @@ export namespace Tile {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
     protected get worldToViewMap(): Map4d {
-      return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
+      return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewingSpace.worldToViewMap;
     }
 
     public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume, parentsAndChildrenExclusive = true) {
@@ -793,7 +797,7 @@ export namespace Tile {
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
-      this.viewFrustum = context.viewFrustum;
+      this.viewFrustum = context.viewingSpace;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 

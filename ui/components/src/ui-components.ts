@@ -64,6 +64,8 @@ export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
+export * from "./ui-components/properties/renderers/ActionButtonList";
+export * from "./ui-components/properties/renderers/ActionButtonRenderer";
 
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";
