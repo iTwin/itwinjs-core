@@ -26,6 +26,7 @@ import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
+import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { AreaPattern } from "./AreaPattern";
 import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps } from "../ElementProps";
@@ -179,6 +180,8 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   textString?: TextStringProps;
   /** @beta */
   brep?: BRepEntity.DataProps;
+  /** @beta */
+  image?: ImageGraphicProps;
   subRange?: LowAndHighXYZ;
 }
 
