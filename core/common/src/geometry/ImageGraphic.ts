@@ -38,18 +38,34 @@ export interface ImageGraphicProps {
 /** Defines the 4 corners of an [[ImageGraphic]].
  * @beta
  */
-export interface ImageGraphicCorners {
-  0: Point3d;
-  1: Point3d;
-  2: Point3d;
-  3: Point3d;
-}
+export class ImageGraphicCorners {
+  public readonly 0: Point3d;
+  public readonly 1: Point3d;
+  public readonly 2: Point3d;
+  public readonly 3: Point3d;
 
-/** Create an [[ImageGraphicCorners]] from an array of 4 points.
- * @beta
- */
-export function imageGraphicCornersFromPoints(points: [ Point3d, Point3d, Point3d, Point3d ]): ImageGraphicCorners {
-  return { 0: points[0], 1: points[1], 2: points[2], 3: points[3] };
+  public constructor(p0: Point3d, p1: Point3d, p2: Point3d, p3: Point3d) {
+    this[0] = p0;
+    this[1] = p1;
+    this[2] = p2;
+    this[3] = p3;
+  }
+
+  public static fromJSON(props: ImageGraphicCornersProps): ImageGraphicCorners {
+    return new ImageGraphicCorners(Point3d.fromJSON(props[0]), Point3d.fromJSON(props[1]), Point3d.fromJSON(props[2]), Point3d.fromJSON(props[3]));
+  }
+
+  public static from4Points(points: [Point3d, Point3d, Point3d, Point3d]): ImageGraphicCorners {
+    return new ImageGraphicCorners(points[0], points[1], points[2], points[3]);
+  }
+
+  public clone(): ImageGraphicCorners {
+    return new ImageGraphicCorners(this[0].clone(), this[1].clone(), this[2].clone(), this[3].clone());
+  }
+
+  public toJSON(): ImageGraphicCornersProps {
+    return { 0: this[0].toJSON(), 1: this[1].toJSON(), 2: this[2].toJSON(), 3: this[3].toJSON() };
+  }
 }
 
 /** A geometric primitive that displays an image mapped to the corners of a rectangle, with an optional border.
@@ -76,13 +92,23 @@ export class ImageGraphic {
   }
 
   public static fromJSON(props: ImageGraphicProps): ImageGraphic {
-    const corners = { 0: Point3d.fromJSON(props.corners[0]), 1: Point3d.fromJSON(props.corners[1]), 2: Point3d.fromJSON(props.corners[2]), 3: Point3d.fromJSON(props.corners[3]) };
+    const corners = ImageGraphicCorners.fromJSON(props.corners);
     return new ImageGraphic(corners, props.textureId, props.hasBorder);
+  }
+
+  public clone(): ImageGraphic {
+    return new ImageGraphic(this.corners.clone(), this.textureId, this.hasBorder);
+  }
+
+  public cloneTransformed(transform: Transform): ImageGraphic {
+    const clone = this.clone();
+    clone.transformInPlace(transform);
+    return clone;
   }
 
   public toJSON(): ImageGraphicProps {
     return {
-      corners: { 0: this.corners[0].toJSON(), 1: this.corners[1].toJSON(), 2: this.corners[2].toJSON(), 3: this.corners[3].toJSON() },
+      corners: this.corners.toJSON(),
       textureId: this.textureId,
       hasBorder: this.hasBorder,
     };
