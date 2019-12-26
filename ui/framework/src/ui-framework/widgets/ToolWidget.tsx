@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
+import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/ui-abstract";
 import { CommonProps, Icon } from "@bentley/ui-core";
 import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 

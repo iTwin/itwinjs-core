@@ -4,19 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import {
-  Tool, PluginUiProvider, PluginUiManager, UiItemNode,
-} from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import { Tool } from "@bentley/imodeljs-frontend";
 import {
   ActionItemInsertSpec, GroupItemInsertSpec,
   ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
+  StageUsage, CommonStatusBarItem, StatusBarSection,
+  PluginUiProvider, PluginUiManager, AbstractStatusBarItemUtilities,
 } from "@bentley/ui-abstract";
+import { UiFramework, withStatusFieldProps, StatusBarItemUtilities } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
+import { ShadowField } from "../appui/statusfields/ShadowField";
 
 /** alpha test code */
 class TestUiProvider implements PluginUiProvider {
   public readonly id = "TestUiProvider";
-  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
     // tslint:disable-next-line: no-console
     // console.log(`Requesting tools for toolbar ${toolBarId}`);
 
@@ -98,6 +101,38 @@ class TestUiProvider implements PluginUiProvider {
     }
 
     return [];
+  }
+
+  public static statusBarItemIsVisible = true;
+
+  public provideStatusbarItems(_stageId: string, stageUsage: StageUsage): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    // tslint:disable-next-line: variable-name
+    const ShadowToggle = withStatusFieldProps(ShadowField);
+
+    if (stageUsage === StageUsage.General) {
+      statusBarItems.push(
+        AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin",
+          () => {
+            // tslint:disable-next-line: no-console
+            console.log("Got Here!");
+          }));
+
+      statusBarItems.push(
+        AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"));
+
+      statusBarItems.push(
+        AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem2", StatusBarSection.Center, 110, "icon-visibility-hide-2", "toggle items",
+          () => {
+            TestUiProvider.statusBarItemIsVisible = !TestUiProvider.statusBarItemIsVisible;
+            UiFramework.pluginStatusBarItemsManager.setIsVisible("PluginTest:StatusBarItem1", TestUiProvider.statusBarItemIsVisible);
+            UiFramework.pluginStatusBarItemsManager.setLabel("PluginTest:StatusBarLabel1", TestUiProvider.statusBarItemIsVisible ? "Hello" : "Goodbye");
+          }));
+
+      // add entry that supplies react component
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowToggle", StatusBarSection.Right, 5, <ShadowToggle />));
+    }
+    return statusBarItems;
   }
 }
 

@@ -5,33 +5,19 @@
 /** @module StatusBar */
 
 import * as React from "react";
-
-/** Enum for StatusBar section.
- * @beta
- */
-export enum StatusBarSection {
-  Left,
-  Center,
-  Right,
-}
+import { AbstractStatusBarCustomItem, CommonStatusBarItem, StatusBarItemType } from "@bentley/ui-abstract";
 
 /** Describes the data needed to insert an item into the StatusBar.
  * @beta
  */
-export interface StatusBarItem {
-  /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix be used. */
-  readonly id: string;
-  /** Section within the StatusBar. */
-  readonly section: StatusBarSection;
-  /** Priority within a section (recommend using values 1 through 100). */
-  readonly itemPriority: number;
-  /** React component for the StatusBar item. */
-  readonly component: React.ReactNode;
-  /** Indicates whether the item is visible. Defaults to true. */
-  readonly isVisible: boolean;
+export interface StatusBarItem extends AbstractStatusBarCustomItem {
+  /** React node for the StatusBar item. */
+  readonly reactNode: React.ReactNode;
 }
 
-/** Type for StatusBar Item Id
- * @beta
+/** StatusBarItem type guard.
+ * @alpha
  */
-export type StatusBarItemId = StatusBarItem["id"];
+export const isStatusBarItem = (item: CommonStatusBarItem): item is StatusBarItem => {
+  return item.type === StatusBarItemType.CustomItem && ("reactNode" in item);
+};

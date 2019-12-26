@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { BackstageSeparator as NZ_BackstageSeparator } from "@bentley/ui-ninezone";
-import { BackstageItemProps } from "./BackstageItem";
+import { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public

@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { BackstageItemsManager } from "@bentley/ui-abstract";
 import { Backstage } from "./Backstage";
-import { BackstageItemsManager } from "./BackstageItemsManager";
 import { UiFramework } from "../UiFramework";
 
 /** Arguments of [[BackstageManager.onToggled]].

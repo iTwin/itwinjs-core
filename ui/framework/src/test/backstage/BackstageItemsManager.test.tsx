@@ -9,6 +9,8 @@ import {
   isActionItem,
   isStageLauncher,
   BackstageItemsManager,
+} from "@bentley/ui-abstract";
+import {
   useBackstageItems,
 } from "../../ui-framework";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
@@ -268,5 +270,32 @@ describe("useBackstageItems", () => {
     sut.unmount();
 
     spy.calledOnce.should.true;
+  });
+
+  describe("more useBackstageItems", () => {
+    // tslint:disable-next-line:variable-name
+    const TestHook2 = (props: { mrg: BackstageItemsManager, onRender: (mrg: BackstageItemsManager) => void }) => {
+      props.onRender(props.mrg);
+      return null;
+    };
+
+    it("cover changing managers", () => {
+      const manager = new BackstageItemsManager();
+      manager.items = [
+        getActionItem(),
+      ];
+      const sut = mount(<TestHook2 mrg={manager}
+        onRender={(mrg: BackstageItemsManager) => useBackstageItems(mrg)}
+      />);
+
+      const manager2 = new BackstageItemsManager();
+      manager2.items = [
+        getActionItem({ id: "a" }),
+        getStageLauncherItem({ id: "b" }),
+      ];
+      sut.setProps({ mrg: manager2 });
+      sut.update();
+      sut.unmount();
+    });
   });
 });

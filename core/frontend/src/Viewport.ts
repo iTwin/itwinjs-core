@@ -11,7 +11,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
-  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, EasingFunction, Interpolation,
+  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, EasingFunction, Interpolation, Easing,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -26,13 +26,13 @@ import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/Tile";
-import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
+import { TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewPose, ViewState2d, ViewPose3d, ViewState3d } from "./ViewState";
-import { ToolSettings } from "./tools/Tool";
 import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 import { ViewRect } from "./ViewRect";
+import { ToolSettings } from "./tools/ToolSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -211,18 +211,12 @@ export interface Animator {
  * @public
  */
 export interface ViewAnimationOptions {
-  /** Amount of time for animation. Default is ToolSettings.animationTime, in milliseconds */
+  /** Amount of time for animation, in milliseconds. Default is [[ScreenViewport.animation.time.normal]] */
   animationTime?: number;
   /** if animation is aborted, don't move to end, leave at current point instead. */
   cancelOnAbort?: boolean;
   /** easing function for animation */
   easingFunction?: EasingFunction;
-  /** Do not zoom out to transition between two non-overlapping views */
-  noZoomOut?: boolean;
-  /** zoom out/in only if the beginning and ending views overlap by more than this margin percentage (of starting view x size). Default is 2 */
-  zoomOutMargin?: number;
-  /** multiply the duration of the animation by this factor if we have to zoom out */
-  zoomOutDurationFactor?: number;
 }
 
 /** Options that control how operations that change a viewport behave.
@@ -244,12 +238,16 @@ class FrustumAnimator implements Animator {
   private _tweens = new Tweens();
 
   public constructor(public options: ViewAnimationOptions, viewport: ScreenViewport, begin: ViewPose, end: ViewPose) {
-    let duration = undefined !== options.animationTime ? options.animationTime : ToolSettings.viewAnimate.time.normal.milliseconds;
-    if (duration <= 0 || begin.cameraOn !== end.cameraOn) // no duration means skip animation
+    const settings = ScreenViewport.animation;
+    const zoomSettings = settings.zoomOut;
+
+    let duration = undefined !== options.animationTime ? options.animationTime : settings.time.normal.milliseconds;
+    if (duration <= 0 || begin.cameraOn !== end.cameraOn) // no duration means skip animation. We can't animate if the camera toggles.
       return;
 
+    let extentBias: Vector3d | undefined;
+    let eyeBias: Vector3d | undefined;
     const zVec = begin.zVec;
-    const sameDir = zVec.isAlmostEqual(end.zVec);
     const view = viewport.view;
     const view3 = view as ViewState3d;
     const begin3 = begin as ViewPose3d;
@@ -257,61 +255,52 @@ class FrustumAnimator implements Animator {
     const beginTarget = begin.target;
     const endTarget = end.target;
     const axis = end.rotation.multiplyMatrixMatrixInverse(begin.rotation)!.getAxisAndAngleOfRotation(); // axis to rotate begin to get to end
-    const timing = { fraction: 0.0, zoomScale: 0, zoomFraction: 0 };
-    let zoomedExtents: Vector3d | undefined;
-    let zoomEyeBias: Vector3d | undefined;
+    const timing = { fraction: 0.0, height: 0, position: 0 }; // updated by tween.
 
-    // don't do "zoom out" if the two views aren't pointing in the same direction, or if they request cancel-on-abort (since that implies that the view
-    // is always at a linear interpolation from begin to end), or if they explicitly say they don't want it.
-    if (sameDir && !options.cancelOnAbort && !options.noZoomOut) {
+    // don't do "zoom out" if the two views aren't pointing in the same direction, or if they request cancelOnAbort (since that implies that the view
+    // is a linear interpolation from begin to end), or if it's disabled.
+    if (zoomSettings.enable && !options.cancelOnAbort && zVec.isAlmostEqual(end.zVec)) {
       view.applyPose(end); // start with the pose at the end
       const viewTransform = Transform.createOriginAndMatrix(undefined, view.getRotation());
       const endRange = Range3d.createTransformedArray(viewTransform, view.calculateFocusCorners()); // get the view-aligned range of the focus plane at the end
-      view.applyPose(begin);
-      const beginRange = Range3d.createTransformedArray(viewTransform, view.calculateFocusCorners()); // get the view-aligned range of the focus plane at the beginning
+      const beginRange = Range3d.createTransformedArray(viewTransform, view.applyPose(begin).calculateFocusCorners()); // get the view-aligned range of the focus plane at the beginning
 
       // do the starting and ending views (plus the margin) overlap? If not we need to zoom out to show how to get from one to the other
-      beginRange.expandInPlace(beginRange.xLength() * (undefined !== options.zoomOutMargin ? options.zoomOutMargin : 1));
-      if (!beginRange.intersectsRangeXY(endRange)) {
-        beginRange.extendTransformedXYZ(viewTransform, endTarget.x, endTarget.y, endTarget.z);
-        view3.lookAtViewAlignedVolume(beginRange, viewport.viewRect.aspect);
-        duration *= undefined !== options.zoomOutDurationFactor ? options.zoomOutDurationFactor : 2;
-        zoomedExtents = view.getExtents().minus(begin.extents);
+      const expand = (range: Range3d) => { const r = range.clone(); r.scaleAboutCenterInPlace(zoomSettings.margin); return r; };
+      if (!expand(beginRange).intersectsRangeXY(expand(endRange))) {
+        view3.lookAtViewAlignedVolume(beginRange.union(endRange), viewport.viewRect.aspect); // set up a view that would show both extents
+        duration *= zoomSettings.durationFactor; // increase duration so the zooming isn't too fast
+        extentBias = view.getExtents().minus(begin.extents); // if the camera is off, the "bias" is the amount the union-ed view is larger than the starting view
         if (begin.cameraOn)
-          zoomEyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye)));
+          eyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye))); // if the camera is on, the bias is the difference in height of the two eye positions
       }
     }
 
     this._tweens.create(timing, {
-      to: {
-        fraction: 1.0,
-        zoomScale: [0, 1.5, 2.0, 1.8, 1.5, 1.2, 1, 0], // the rate at which the view zooms to show both beginning and ending extents (only used if camera is off)
-        zoomFraction: [0, 0, 0, .1, .3, .5, 1, 1], // the rate at which the camera moves from starting to ending location when zooming. This makes it stay near start and end longer.
-      },
+      to: { fraction: 1.0, height: zoomSettings.heights, position: zoomSettings.positions },
       duration,
       start: true,
-      easing: options.easingFunction ? options.easingFunction : ToolSettings.viewAnimate.easing,
-      interpolation: Interpolation.Bezier,
-      onComplete: () => viewport.setupFromView(end), // when we're done, set up from final state
+      easing: options.easingFunction ? options.easingFunction : settings.easing,
+      interpolation: zoomSettings.interpolation,
+      onComplete: () =>
+        viewport.setupFromView(end), // when we're done, set up from final state
       onUpdate: () => {
-        const fraction = zoomedExtents ? timing.zoomFraction : timing.fraction; // if we're zooming, fraction comes from zoomFraction
+        const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
         const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
         if (begin.cameraOn) {
           const eye = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
-          if (undefined !== zoomEyeBias)
-            eye.plusScaled(zoomEyeBias, timing.zoomScale, eye);
+          if (undefined !== eyeBias)
+            eye.plusScaled(eyeBias, timing.height, eye);
           const target = eye.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
           const extents = begin.extents.interpolate(fraction, end.extents);
           view3.lookAt(eye, target, rot.getRow(1), extents);
         } else {
-          // the camera is off, just animate the rotation, origin and extents
           const extents = begin.extents.interpolate(timing.fraction, end.extents);
-          const newCenter = beginTarget.interpolate(fraction, endTarget);
-          if (zoomedExtents)
-            extents.plusScaled(zoomedExtents, timing.zoomScale, extents); // zooming out merely temporarily expands extents
+          if (undefined !== extentBias)
+            extents.plusScaled(extentBias, timing.height, extents); // no camera, zooming out expands extents
           view.setExtents(extents);
           view.setRotation(rot);
-          view.setCenter(newCenter); // must be done last - depends on extents and rotation
+          view.setCenter(beginTarget.interpolate(fraction, endTarget)); // must be done last - depends on extents and rotation
         }
         viewport.setupFromView();
       },
@@ -2750,6 +2739,45 @@ export abstract class Viewport implements IDisposable {
  * @public
  */
 export class ScreenViewport extends Viewport {
+
+  /** Settings that may be adjusted to control the way animations of viewing operations work.
+   * @beta
+   */
+  public static animation = {
+    /** Duration of animations of viewing operations. */
+    time: {
+      fast: BeDuration.fromSeconds(.75),
+      normal: BeDuration.fromSeconds(1.25),
+      slow: BeDuration.fromSeconds(2.0),
+    },
+    /** The easing function to use for view animations. */
+    easing: Easing.Cubic.Out,
+    /** ZoomOut pertains to view transitions that move far distances, but maintain the same view direction.
+     * In that case we zoom out, move the camera, and zoom back in rather than transitioning linearly to
+     * provide context for the starting and ending positions. These settings control how and when that happens.
+     */
+    zoomOut: {
+      /** whether to allow zooming out. If you don't want it, set this to false. */
+      enable: true,
+      /** The interpolation function used for camera height and position over the zoomOut operation. */
+      interpolation: Interpolation.Bezier,
+      /** Array of fractional height the camera rises over the animation. Height is interpolated over the array during the duration of the zoom operation.
+       * At 1.0 it will be high enough that both are visible if the camera were centered between then.
+       * Must start and end at 0.
+       */
+      heights: [0, 1.5, 2.0, 1.8, 1.5, 1.2, 1, 0],
+      /** Array of fractional positions of the camera from starting to ending location when zooming.
+       * Position is interpolated from the array using the interpolation function over the duration of the zoom operation (see tween.ts)
+       * Must start at 0 and end at 1.
+       */
+      positions: [0, 0, .1, .3, .5, .8, 1],
+      /** zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
+      margin: 2.5,
+      /** multiply the duration of the animation by this factor if perform a zoom out. */
+      durationFactor: 2,
+    },
+  };
+
   private _evController?: EventController;
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
@@ -2900,7 +2928,9 @@ export class ScreenViewport extends Viewport {
    * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.
    * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
-  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
+  public pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
+    if (undefined === radius)
+      radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
     const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
     if (DepthPointSource.TargetPoint === depthResult.source)
       return undefined;
@@ -2945,17 +2975,23 @@ export class ScreenViewport extends Viewport {
     const boresite = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
 
-    if (undefined !== this.backgroundMapPlane && undefined !== boresite.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+    // returns true if there's an intersection in the forward direction
+    const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
+      const dist = boresite.intersectionWithPlane(plane, projectedPt);
+      return dist !== undefined && dist > 0;
+    };
+
+    if (undefined !== this.backgroundMapPlane && boresiteIntersect(this.backgroundMapPlane))
       return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.backgroundMapPlane.getNormalRef())!, source: DepthPointSource.BackgroundMap };
 
     if (this.view.getDisplayStyle3d().environment.ground.display) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
-      if (undefined !== groundPlane && undefined !== boresite.intersectionWithPlane(groundPlane, projectedPt))
+      if (undefined !== groundPlane && boresiteIntersect(groundPlane))
         return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
     }
 
     const acsPlane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2));
-    if (undefined !== acsPlane && undefined !== boresite.intersectionWithPlane(acsPlane, projectedPt))
+    if (undefined !== acsPlane && boresiteIntersect(acsPlane))
       return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
 
     const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
@@ -3035,7 +3071,7 @@ export class ScreenViewport extends Viewport {
     this.setAnimator(undefined); // make sure we clear any active animators before we change views.
 
     if (opts === undefined)
-      opts = { animationTime: ToolSettings.viewAnimate.time.slow.milliseconds };
+      opts = { animationTime: ScreenViewport.animation.time.slow.milliseconds };
 
     // determined whether we can animate this ViewState change
     const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;

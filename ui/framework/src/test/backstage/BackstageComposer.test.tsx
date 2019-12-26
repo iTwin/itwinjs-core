@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import {
   Backstage as NZ_Backstage,
 } from "@bentley/ui-ninezone";
+import { BackstageItemsManager } from "@bentley/ui-abstract";
 import {
   BackstageComposer,
   BackstageManager,
   UiFramework,
   useGroupedItems,
-  BackstageItemsManager,
 } from "../../ui-framework";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { SinonSpy } from "../TestUtils";

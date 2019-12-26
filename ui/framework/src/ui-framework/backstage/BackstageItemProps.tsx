@@ -10,6 +10,7 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 /** Base properties for a [[Backstage]] item.
  * @public
+ * @deprecated - use BackstageItem in bentley/ui-abstract instead
  */
 export interface BackstageItemProps extends LabelProps, DescriptionProps, TooltipProps, IconProps {
   /** if set, component will be enabled - defaults to true */
@@ -23,7 +24,9 @@ export interface BackstageItemProps extends LabelProps, DescriptionProps, Toolti
 }
 
 /** Properties that define the state of a Backstage items.
+ *  * Deprecated - Use [[BackstageItem]($ui-abstract) in bentley/ui-abstract instead.
  * @public
+ * @deprecated - use BackstageItem in bentley/ui-abstract instead
  */
 export interface BackstageItemState {
   isEnabled: boolean;
@@ -36,7 +39,7 @@ export interface BackstageItemState {
 
 /** Helper method to set backstage item state from props.
  * @public
- * @deprecated Use [[BackstageItemUtilities.getBackstageItemStateFromProps]] instead
+ * @deprecated - use BackstageItem in bentley/ui-abstract instead
  */
 // istanbul ignore next
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {

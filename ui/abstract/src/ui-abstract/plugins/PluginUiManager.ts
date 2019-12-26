@@ -5,17 +5,11 @@
 /** @module Plugins */
 
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { ToolbarItemInsertSpec } from "@bentley/ui-abstract";
+import { ToolbarItemInsertSpec } from "./PluginUi";
+import { CommonStatusBarItem } from "../items/StatusBarItem";
+import { StageUsage } from "../stage/Stage";
 
 const loggerCategory = "imodeljs-frontend.Plugin";
-
-/** Describes the hierarchy of UI items.
- * @alpha
- */
-export class UiItemNode {
-  public children: UiItemNode[] = [];
-  public constructor(public id = "") { }
-}
 
 /** Describes the methods and properties that a plugin can provide if it want ui items added to the running ImodelApp.
  * @alpha
@@ -24,12 +18,12 @@ export interface PluginUiProvider {
   /** id of provider */
   readonly id: string;
   /** PluginUiManager calls following method to augment base toolbars */
-  provideToolbarItems?: (toolBarId: string, itemIds: UiItemNode) => ToolbarItemInsertSpec[];
+  provideToolbarItems?: (toolBarId: string) => ToolbarItemInsertSpec[];
+  /** PluginUiManager calls following method to augment base statusbar for stages that allow it. */
+  provideStatusbarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
   // ============ Future Functionality =================
   //  // uiAdmin calls following to augment base toolbars
   //  provideWidgets?: (zoneOrPanelId: string, isPanel: boolean, currentWidgetIds: string[]) => WidgetInsertSpec[];
-  //  // uiAdmin calls following to augment base status fields.
-  //  provideStatusFields?: (currentFieldIds: string[]) => StatusFieldInsertSpec[];
   //  // Called when addProvider method is called to register any control constructors that are needed to create widgets, status fields, and possibly stages.
   //  registerControls?: ();
   // ===================================================
@@ -51,6 +45,12 @@ export class PluginUiManager {
 
   /** Event raised any time a UiProvider is registered or unregistered. */
   public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiProviderRegisteredEventArgs) => void>();
+
+  /** Return number of registered UiProvider. */
+  public static get registeredProviderIds() {
+    const ids = [...PluginUiManager._registeredPluginUiProviders.keys()];
+    return ids;
+  }
 
   /** Return true if there is any registered UiProvider. */
   public static get hasRegisteredProviders(): boolean {
@@ -88,13 +88,14 @@ export class PluginUiManager {
 
   /** Remove a specific PluginUiProvider from the list of available providers. */
   public static unregister(uiProviderId: string): void {
-    if (PluginUiManager.getPluginUiProvider(uiProviderId)) {
-      PluginUiManager._registeredPluginUiProviders.delete(uiProviderId);
-      Logger.logInfo(loggerCategory, `PluginUiProvider (${uiProviderId}) unloaded`);
+    if (!PluginUiManager.getPluginUiProvider(uiProviderId))
+      return;
 
-      // trigger a refresh of the ui
-      PluginUiManager.sendRegisteredEvent({ providerId: uiProviderId } as UiProviderRegisteredEventArgs);
-    }
+    PluginUiManager._registeredPluginUiProviders.delete(uiProviderId);
+    Logger.logInfo(loggerCategory, `PluginUiProvider (${uiProviderId}) unloaded`);
+
+    // trigger a refresh of the ui
+    PluginUiManager.sendRegisteredEvent({ providerId: uiProviderId } as UiProviderRegisteredEventArgs);
   }
 
   /** Called when the application is populating a toolbar so that any registered PluginUiProvider can add tool buttons that either either execute
@@ -103,17 +104,38 @@ export class PluginUiManager {
    * @param itemIds provides hierarchy of item Ids of the items that comprise the 'base' toolbar. This allows the caller to determine a relative position for buttons the provider provides.
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
-  public static getToolbarItems(toolBarId: string, itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+  public static getToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
     const insertSpecs: ToolbarItemInsertSpec[] = [];
-    if (PluginUiManager._registeredPluginUiProviders.size > 0) {
-      PluginUiManager._registeredPluginUiProviders.forEach((uiProvider: PluginUiProvider) => {
-        if (uiProvider.provideToolbarItems) {
-          uiProvider.provideToolbarItems(toolBarId, itemIds).forEach((spec: ToolbarItemInsertSpec) => insertSpecs.push(spec));
-        }
-      });
-    }
+    if (0 === PluginUiManager._registeredPluginUiProviders.size)
+      return insertSpecs;
+
+    PluginUiManager._registeredPluginUiProviders.forEach((uiProvider: PluginUiProvider) => {
+      // istanbul ignore else
+      if (uiProvider.provideToolbarItems) {
+        uiProvider.provideToolbarItems(toolBarId).forEach((spec: ToolbarItemInsertSpec) => insertSpecs.push(spec));
+      }
+    });
 
     return insertSpecs;
   }
 
+  /** Called when the application is populating thw statusbar so that any registered PluginUiProvider can add status fields
+   * @param stageId a string identifier the active stage.
+   * @param stageUsage the StageUsage of the active stage.
+   * @returns An array of CommonStatusBarItem that will be used to create controls for the status bar.
+   */
+  public static getStatusbarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+
+    if (0 === PluginUiManager._registeredPluginUiProviders.size)
+      return statusBarItems;
+
+    PluginUiManager._registeredPluginUiProviders.forEach((uiProvider: PluginUiProvider) => {
+      // istanbul ignore else
+      if (uiProvider.provideStatusbarItems) {
+        uiProvider.provideStatusbarItems(stageId, stageUsage).forEach((item: CommonStatusBarItem) => statusBarItems.push(item));
+      }
+    });
+    return statusBarItems;
+  }
 }

@@ -32,6 +32,7 @@ import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidg
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 import { TestModalDialog } from "../dialogs/TestModalDialog";
+import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
 import { PopupTestDialog } from "../dialogs/PopupTest";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -121,7 +122,8 @@ export class Frontstage4 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
+              items={[
+                AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
                 AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
               itemsInColumn={4}
@@ -140,8 +142,10 @@ export class Frontstage4 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-                AppTools.item6, AppTools.item7, AppTools.item8]}
+              items={[
+                AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
+                AppTools.item6, AppTools.item7, AppTools.item8,
+              ]}
               direction={Direction.Right}
             />
             <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
@@ -162,6 +166,14 @@ export class Frontstage4 extends FrontstageProvider {
   private modalDialog(): React.ReactNode {
     return (
       <TestModalDialog
+        opened={true}
+      />
+    );
+  }
+
+  private modalDialog2(): React.ReactNode {
+    return (
+      <TestModalDialog2
         opened={true}
       />
     );
@@ -199,7 +211,8 @@ export class Frontstage4 extends FrontstageProvider {
           <>
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} />
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec!} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
+            <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
+            <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog2())} />
             <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
             <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
           </>
@@ -216,7 +229,8 @@ export class Frontstage4 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
+              items={[
+                AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
                 AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
                 this._spinnerTestDialogItem,
               ]}

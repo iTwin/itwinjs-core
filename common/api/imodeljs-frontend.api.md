@@ -186,7 +186,6 @@ import { TileHeader } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
-import { ToolbarItemInsertSpec } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -2096,11 +2095,15 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
     // (undocumented)
     setFrom(src: BeWheelEvent): this;
     // (undocumented)
+    time: number;
+    // (undocumented)
     wheelDelta: number;
 }
 
 // @public
 export interface BeWheelEventProps extends BeButtonEventProps {
+    // (undocumented)
+    time?: number;
     // (undocumented)
     wheelDelta?: number;
 }
@@ -4451,7 +4454,7 @@ export abstract class InteractiveTool extends Tool {
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string>;
     initLocateElements(enableLocate?: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     // (undocumented)
-    isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean;
+    isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean;
     readonly isDynamicsStarted: boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
@@ -4472,7 +4475,7 @@ export abstract class InteractiveTool extends Tool {
     onReinitialize(): void;
     onResetButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void;
+    onSelectedViewportChanged(_previous: ScreenViewport | undefined, _current: ScreenViewport | undefined): void;
     onSuspend(): void;
     onTouchCancel(_ev: BeTouchEvent): Promise<void>;
     onTouchComplete(_ev: BeTouchEvent): Promise<void>;
@@ -5884,22 +5887,6 @@ export class PluginAdmin {
 // @beta
 export type PluginLoadResults = Plugin | undefined | string | string[];
 
-// @alpha
-export class PluginUiManager {
-    static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
-    static getToolbarItems(toolBarId: string, itemIds: UiItemNode): ToolbarItemInsertSpec[];
-    static readonly hasRegisteredProviders: boolean;
-    static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: PluginUiProvider): void;
-    static unregister(uiProviderId: string): void;
-}
-
-// @alpha
-export interface PluginUiProvider {
-    readonly id: string;
-    provideToolbarItems?: (toolBarId: string, itemIds: UiItemNode) => ToolbarItemInsertSpec[];
-}
-
 // @beta
 export namespace Primitives {
     // (undocumented)
@@ -6955,6 +6942,23 @@ export class ScreenViewport extends Viewport {
     animateFrustumChange(options: ViewAnimationOptions): void;
     // @internal
     animateToCurrent(options?: ViewAnimationOptions): void;
+    // @beta
+    static animation: {
+        time: {
+            fast: BeDuration;
+            normal: BeDuration;
+            slow: BeDuration;
+        };
+        easing: (k: number) => number;
+        zoomOut: {
+            enable: boolean;
+            interpolation: (v: any, k: number) => number;
+            heights: number[];
+            positions: number[];
+            margin: number;
+            durationFactor: number;
+        };
+    };
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
@@ -6984,7 +6988,7 @@ export class ScreenViewport extends Viewport {
         source: DepthPointSource;
         sourceId?: string;
     };
-    pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
+    pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
     // @internal
@@ -8823,7 +8827,7 @@ export class ToolAdmin {
     fillEventFromCursorLocation(ev: BeButtonEvent): void;
     // @internal (undocumented)
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
-    protected filterViewport(vp: Viewport): boolean;
+    protected filterViewport(vp: ScreenViewport): boolean;
     // @internal
     forgetViewport(vp: ScreenViewport): void;
     // @internal (undocumented)
@@ -9017,15 +9021,6 @@ export class ToolSettings {
     static touchMoveDelay: BeDuration;
     static touchMoveDistanceInches: number;
     static touchZoomChangeThresholdInches: number;
-    // @beta (undocumented)
-    static viewAnimate: {
-        easing: (k: number) => number;
-        time: {
-            fast: BeDuration;
-            normal: BeDuration;
-            slow: BeDuration;
-        };
-    };
     static viewingInertia: {
         enabled: boolean;
         damping: number;
@@ -9209,21 +9204,6 @@ export class TwoWayViewportSync {
     disconnect(): void;
     }
 
-// @alpha
-export class UiItemNode {
-    constructor(id?: string);
-    // (undocumented)
-    children: UiItemNode[];
-    // (undocumented)
-    id: string;
-}
-
-// @alpha
-export interface UiProviderRegisteredEventArgs {
-    // (undocumented)
-    providerId: string;
-}
-
 // @internal
 export enum UsesDragSelect {
     Box = 0,
@@ -9250,9 +9230,6 @@ export interface ViewAnimationOptions {
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;
-    noZoomOut?: boolean;
-    zoomOutDurationFactor?: number;
-    zoomOutMargin?: number;
 }
 
 // @public

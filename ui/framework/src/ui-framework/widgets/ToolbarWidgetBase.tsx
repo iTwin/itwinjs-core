@@ -6,8 +6,7 @@
 
 import * as React from "react";
 
-import { PluginUiManager, UiItemNode } from "@bentley/imodeljs-frontend";
-import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
+import { ActionItemInsertSpec, GroupItemInsertSpec, PluginUiManager, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 
@@ -200,12 +199,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   }
 
   protected createCachedHorizontalItemList(toolbarId: string): void {
-    const toolbarHierarchy = new UiItemNode();
-    // istanbul ignore else
-    if (this.horizontalItems)
-      this.getItemHierarchy(toolbarHierarchy, this.horizontalItems.items);
-
-    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
+    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId);
     // istanbul ignore else
     if (insertSpecs && insertSpecs.length > 0) {
       // hacky way, but I don't want to modify public api to pass this in
@@ -216,12 +210,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   }
 
   protected createCachedVerticalItemList(toolbarId: string): void {
-    const toolbarHierarchy = new UiItemNode();
-    // istanbul ignore else
-    if (this.verticalItems)
-      this.getItemHierarchy(toolbarHierarchy, this.verticalItems.items);
-
-    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
+    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId);
     // istanbul ignore else
     if (insertSpecs && insertSpecs.length > 0) {
       this._cachedVerticalItems = this.createMergedItemList(this.verticalItems, insertSpecs);
@@ -237,21 +226,6 @@ export class ToolbarWidgetDefBase extends WidgetDef {
       this.createCachedHorizontalItemList(`${this.widgetBaseName}-horizontal`);
       this.createCachedVerticalItemList(`${this.widgetBaseName}-vertical`);
     }
-  }
-
-  /** Build item hierarchy that will be passed to Plugins so they can add their UI button into toolboxes supported in ninezone widgets  */
-  protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void {
-    items.forEach((item: ItemDefBase) => {
-      const childNode = new UiItemNode(item.id);
-      parentNode.children.push(childNode);
-
-      // istanbul ignore next
-      if (item instanceof ConditionalItemDef) {
-        this.getItemHierarchy(childNode, item.items);
-      } else if (item instanceof GroupItemDef) {
-        this.getItemHierarchy(childNode, item.items);
-      }
-    });
   }
 
   public renderHorizontalToolbar(): React.ReactNode {

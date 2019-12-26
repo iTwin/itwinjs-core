@@ -275,8 +275,6 @@ internal;PlanarClassifierMap = Map
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
-alpha;PluginUiManager
-alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
@@ -417,8 +415,6 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 alpha;TwoWayViewportSync
-alpha;UiItemNode
-alpha;UiProviderRegisteredEventArgs
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection

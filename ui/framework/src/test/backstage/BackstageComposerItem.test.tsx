@@ -6,16 +6,16 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { BackstageItemType as UIA_BackstageItemType } from "@bentley/ui-abstract";
 import {
   BackstageComposerActionItem,
-  BackstageItemType,
   BackstageComposerStageLauncher,
   UiFramework,
   BackstageManager,
-  BackstageActionItem,
-  BackstageStageLauncher,
   BackstageComposerItem,
   FrontstageManager,
+  BackstageItemType,
+  BackstageActionItem, BackstageStageLauncher,
 } from "../../ui-framework";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";
@@ -30,6 +30,7 @@ export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageAct
   itemPriority: 50,
   label: "Custom Label",
   type: BackstageItemType.ActionItem,
+  itemType: UIA_BackstageItemType.ActionItem,
   ...item ? item : {},
 });
 
@@ -43,6 +44,7 @@ export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): Ba
   label: "Custom Label",
   stageId: "stage-1",
   type: BackstageItemType.StageLauncher,
+  itemType: UIA_BackstageItemType.StageLauncher,
   ...item ? item : {},
 });
 
